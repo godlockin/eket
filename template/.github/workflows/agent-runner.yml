@@ -1,0 +1,82 @@
+name: EKET Agent Task Runner
+
+on:
+  schedule:
+    # 每小时运行一次，检查新任务
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      task_id:
+        description: 'Task ID to process'
+        required: false
+        default: ''
+
+jobs:
+  process-tasks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git
+        run: |
+          git config user.name "eket-agent"
+          git config user.email "agent@eket.local"
+
+      - name: Check for New Tasks
+        id: check_tasks
+        run: |
+          echo "检查待处理任务..."
+
+          # 查找 backlog 或 ready 状态的任务
+          READY_TASKS=()
+          for file in tasks/*.md; do
+            if [ -f "$file" ]; then
+              STATUS=$(grep "^status:" "$file" | cut -d' ' -f2)
+              if [[ "$STATUS" == "backlog" || "$STATUS" == "ready" ]]; then
+                TASK_ID=$(basename "$file" .md)
+                READY_TASKS+=("$TASK_ID")
+                echo "发现待处理任务：$TASK_ID"
+              fi
+            fi
+          done
+
+          # 输出任务列表
+          echo "ready_tasks=${READY_TASKS[@]}" >> $GITHUB_OUTPUT
+          echo "task_count=${#READY_TASKS[@]}" >> $GITHUB_OUTPUT
+
+      - name: Process Tasks
+        if: steps.check_tasks.outputs.task_count > 0
+        run: |
+          echo "开始处理 ${steps.check_tasks.outputs.task_count} 个任务..."
+
+          # 这里可以调用 Claude API 或其他 AI 服务
+          # 示例：调用 webhook 或发送消息到消息队列
+          for task_id in ${{ steps.check_tasks.outputs.ready_tasks }}; do
+            echo "处理任务：$task_id"
+
+            # 更新任务状态为 in_progress
+            TASK_FILE="tasks/$task_id.md"
+            if [ -f "$TASK_FILE" ]; then
+              # 创建状态更新文件
+              mkdir -p ".eket/state"
+              echo "processing: $task_id at $(date -Iseconds)" >> ".eket/state/processing.log"
+            fi
+          done
+
+      - name: Commit State Changes
+        run: |
+          if git status --porcelain | grep -q ".eket/state/"; then
+            git add .eket/state/
+            git commit -m "chore: update task processing state"
+            git push
+          else
+            echo "没有状态变更"
+          fi
+
+      - name: Notify Completion
+        if: always()
+        run: |
+          echo "任务处理完成"
+          # 可以在这里添加通知逻辑，如发送 Slack 消息等

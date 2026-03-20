@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "ask": [],
+    "auto": [
+      "Bash:.claude/commands/*.sh",
+      "Bash:./scripts/*.sh"
+    ],
+    "deny": []
+  }
+}

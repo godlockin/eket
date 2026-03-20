@@ -1,0 +1,139 @@
+# EKET 智能体系统 - 项目初始化配置
+
+# 此文件位于项目的 .eket/config.yml
+
+version: "0.1.0"
+
+# ==================== 项目配置 ====================
+
+project:
+  name: "{{PROJECT_NAME}}"
+  root: "{{PROJECT_ROOT}}"
+  initialized_at: "{{TIMESTAMP}}"
+
+# ==================== 智能体模式 ====================
+
+# 运行模式：
+# - claude_code: 作为 Claude Code 技能运行（推荐）
+# - standalone: 独立 Python 进程运行
+mode: "claude_code"
+
+# ==================== 能力配置 ====================
+
+capabilities:
+  # 启用的能力
+  enabled:
+    - requirement_analysis      # 需求分析
+    - task_creation             # 任务创建
+    - code_generation           # 代码生成
+    - test_generation           # 测试生成
+    - documentation             # 文档生成
+    - git_operations            # Git 操作
+    - pr_management             # PR 管理
+
+  # 禁用的能力
+  disabled:
+    - deployment                # 部署（可选）
+    - database_migration        # 数据库迁移（可选）
+
+# ==================== 任务配置 ====================
+
+tasks:
+  # 任务目录
+  directory: "tasks"
+  # 自动领取任务
+  auto_claim: true
+  # 最大并发任务数
+  max_concurrent: 3
+  # 任务超时（分钟）
+  timeout_minutes: 120
+
+# ==================== Git 配置 ====================
+
+git:
+  # 主分支
+  main_branch: "main"
+  # 分支前缀
+  branch_prefix: "feature/"
+  # 提交规范
+  commit_style: "conventional"  # conventional, simple, custom
+  # 自动推送
+  auto_push: true
+  # PR 创建
+  auto_create_pr: true
+
+# ==================== Review 配置 ====================
+
+review:
+  # Review 请求位置
+  request_location: "outbox/review_requests"
+  # 反馈位置
+  feedback_location: "inbox/human_feedback"
+  # 超时（小时）
+  timeout_hours: 24
+  # 自动合并（CI 通过后）
+  auto_merge: false
+
+# ==================== 通知配置 ====================
+
+notifications:
+  # 通知方式
+  methods:
+    - file  # 文件通知
+    # - console  # 控制台通知
+    # - slack  # Slack（需配置 webhook）
+
+  # 通知事件
+  on:
+    task_created: true
+    task_completed: true
+    pr_created: true
+    pr_merged: true
+    review_requested: true
+    blocker_detected: true
+
+# ==================== 记忆配置 ====================
+
+memory:
+  # 启用记忆
+  enabled: true
+  # 短期记忆（当前会话）
+  short_term:
+    enabled: true
+    max_items: 50
+  # 长期记忆（持久化）
+  long_term:
+    enabled: true
+    location: ".eket/memory/long_term"
+  # 外部记忆（项目文档）
+  external:
+    enabled: true
+    location: ".eket/memory/docs"
+
+# ==================== 日志配置 ====================
+
+logging:
+  # 日志级别
+  level: "info"  # debug, info, warning, error
+  # 日志位置
+  location: ".eket/logs"
+  # 日志格式
+  format: "[%(asctime)s] %(levelname)s: %(message)s"
+
+# ==================== 高级配置 ====================
+
+advanced:
+  # 文件锁
+  file_lock:
+    enabled: true
+    timeout_seconds: 300
+
+  # 重试配置
+  retry:
+    max_attempts: 3
+    delay_seconds: 5
+
+  # 资源限制
+  limits:
+    max_file_size_mb: 10
+    max_files_per_commit: 20

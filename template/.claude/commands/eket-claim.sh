@@ -1,0 +1,109 @@
+#!/bin/bash
+# /eket-claim - 领取任务
+
+echo "========================================"
+echo "EKET 任务领取"
+echo "========================================"
+echo ""
+
+TASK_ID="${1:-}"
+
+if [ -z "$TASK_ID" ]; then
+    echo "用法：/eket-claim [task-id]"
+    echo ""
+    echo "可领取的任务 (status: ready/backlog):"
+
+    # 检查 Jira 目录
+    if [ -d "jira/tickets" ]; then
+        for dir in feature task bugfix; do
+            if [ -d "jira/tickets/$dir" ]; then
+                for task_file in "jira/tickets/$dir"/*.md; do
+                    if [ -f "$task_file" ]; then
+                        status=$(grep -E "^status:" "$task_file" 2>/dev/null | cut -d: -f2 | tr -d ' ')
+                        if [ "$status" = "ready" ] || [ "$status" = "backlog" ]; then
+                            title=$(grep -E "^title:|^# " "$task_file" | head -1 | cut -d: -f2-)
+                            priority=$(grep -E "^priority:" "$task_file" 2>/dev/null | cut -d: -f2 | tr -d ' ')
+                            echo "  - $(basename "$task_file" .md): $title (priority: ${priority:-normal})"
+                        fi
+                    fi
+                done
+            fi
+        done
+    # 回退到本地 tasks 目录
+    elif [ -d "tasks" ] && [ "$(ls -A tasks 2>/dev/null)" ]; then
+        for task_file in tasks/*.md; do
+            if [ -f "$task_file" ]; then
+                status=$(grep -E "^status:" "$task_file" 2>/dev/null | cut -d: -f2 | tr -d ' ')
+                if [ "$status" = "ready" ] || [ "$status" = "backlog" ]; then
+                    title=$(grep -E "^title:|^# " "$task_file" | head -1 | cut -d: -f2-)
+                    echo "  - $(basename "$task_file" .md): $title"
+                fi
+            fi
+        done
+    else
+        echo "  暂无任务"
+    fi
+    echo ""
+else
+    # 查找任务文件 (Jira 优先)
+    TASK_FILE=""
+    if [ -d "jira/tickets" ]; then
+        for dir in feature task bugfix; do
+            if [ -f "jira/tickets/$dir/${TASK_ID}.md" ]; then
+                TASK_FILE="jira/tickets/$dir/${TASK_ID}.md"
+                break
+            fi
+        done
+    fi
+
+    # 回退到本地 tasks 目录
+    if [ -z "$TASK_FILE" ] && [ -f "tasks/${TASK_ID}.md" ]; then
+        TASK_FILE="tasks/${TASK_ID}.md"
+    fi
+
+    if [ -z "$TASK_FILE" ]; then
+        echo "✗ 任务不存在：$TASK_ID"
+        exit 1
+    fi
+
+    # 检查任务状态
+    STATUS=$(grep -E "^status:" "$TASK_FILE" 2>/dev/null | cut -d: -f2 | tr -d ' ')
+    if [ "$STATUS" = "in_progress" ]; then
+        echo "⚠ 任务已被领取，当前状态：in_progress"
+        exit 1
+    fi
+
+    if [ "$STATUS" != "ready" ] && [ "$STATUS" != "backlog" ]; then
+        echo "⚠ 任务状态不适合领取：$STATUS"
+        echo "   只有 status: ready 或 backlog 的任务可以被领取"
+        exit 1
+    fi
+
+    # 更新任务状态
+    if grep -q "^status:" "$TASK_FILE" 2>/dev/null; then
+        sed -i '' "s/^status:.*/status: in_progress/" "$TASK_FILE" 2>/dev/null || \
+        sed -i "s/^status:.*/status: in_progress/" "$TASK_FILE"
+    else
+        echo "status: in_progress" >> "$TASK_FILE"
+    fi
+
+    # 添加领取信息
+    echo "assigned_to: agent-$(date +%Y%m%d%H%M%S)" >> "$TASK_FILE"
+    echo "claimed_at: $(date -Iseconds)" >> "$TASK_FILE"
+
+    echo "✓ 已领取任务：$TASK_ID"
+    echo "  状态已更新为：in_progress"
+    echo "  任务文件：$TASK_FILE"
+    echo ""
+
+    # 加载 Agent Profile 和 Skills
+    if [ -x "scripts/load-agent-profile.sh" ]; then
+        echo "加载 Agent Profile 和 Skills..."
+        echo ""
+        ./scripts/load-agent-profile.sh "$TASK_ID"
+    else
+        echo "提示：运行 scripts/load-agent-profile.sh $TASK_ID 加载 Agent Profile"
+    fi
+fi
+
+echo "========================================"

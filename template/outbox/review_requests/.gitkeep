@@ -1,0 +1,4 @@
+# 智能体输出目录
+
+# Review 请求会放在这里
+# 位置：outbox/review_requests/

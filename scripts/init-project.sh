@@ -1,0 +1,240 @@
+#!/bin/bash
+# EKET 项目初始化脚本
+
+# 使用方法:
+# 1. 在当前目录初始化:
+#    ./init-project.sh <project-name>
+#
+# 2. 指定项目根目录:
+#    ./init-project.sh <project-name> /path/to/project
+#
+# 3. 从 eket 目录运行（推荐）:
+#    ./scripts/init-project.sh <project-name> /path/to/project
+
+set -e
+
+PROJECT_NAME="${1:-my-project}"
+PROJECT_ROOT="${2:-$(pwd)}"
+EKET_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+EKET_TEMPLATE_DIR="$EKET_ROOT/template"
+
+echo "========================================"
+echo "EKET 项目初始化"
+echo "========================================"
+echo ""
+echo "项目名称：$PROJECT_NAME"
+echo "项目根目录：$PROJECT_ROOT"
+echo ""
+
+# 颜色定义
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# 创建目录结构
+create_directories() {
+    echo "创建目录结构..."
+
+    # 进入项目根目录
+    mkdir -p "$PROJECT_ROOT"
+    cd "$PROJECT_ROOT"
+
+    directories=(
+        ".eket"
+        ".eket/state"
+        ".eket/memory/long_term"
+        ".eket/memory/docs"
+        ".eket/logs"
+        "inbox"
+        "inbox/human_feedback"
+        "outbox"
+        "outbox/review_requests"
+        "tasks"
+        "outbox"
+    )
+
+    for dir in "${directories[@]}"; do
+        if [ -d "$dir" ]; then
+            echo -e "${GREEN}✓${NC} $dir (已存在)"
+        else
+            mkdir -p "$dir"
+            echo -e "${GREEN}✓${NC} $dir"
+        fi
+    done
+}
+
+# 复制模板文件
+copy_templates() {
+    echo ""
+    echo "复制模板文件..."
+
+    # 从 eket template 目录复制
+    if [ -d "$EKET_TEMPLATE_DIR" ]; then
+        # 复制 CLAUDE.md
+        if [ ! -f "CLAUDE.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/CLAUDE.md" "CLAUDE.md"
+            # 替换占位符
+            sed -i '' "s/\${PROJECT_NAME}/$PROJECT_NAME/g" "CLAUDE.md" 2>/dev/null || \
+            sed -i "s/\${PROJECT_NAME}/$PROJECT_NAME/g" "CLAUDE.md"
+            echo -e "${GREEN}✓${NC} CLAUDE.md"
+        fi
+
+        # 复制配置文件
+        if [ ! -f ".eket/config.yml" ]; then
+            cp "$EKET_TEMPLATE_DIR/.eket/config.yml" ".eket/config.yml"
+            sed -i '' "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" ".eket/config.yml" 2>/dev/null || \
+            sed -i "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" ".eket/config.yml"
+            sed -i '' "s|{{PROJECT_ROOT}}|$PROJECT_ROOT|g" ".eket/config.yml" 2>/dev/null || \
+            sed -i "s|{{PROJECT_ROOT}}|$PROJECT_ROOT|g" ".eket/config.yml"
+            sed -i '' "s/{{TIMESTAMP}}/$(date -Iseconds)/g" ".eket/config.yml" 2>/dev/null || \
+            sed -i "s/{{TIMESTAMP}}/$(date -Iseconds)/g" ".eket/config.yml"
+            echo -e "${GREEN}✓${NC} .eket/config.yml"
+        fi
+
+        # 复制 inbox 模板
+        if [ ! -f "inbox/human_input.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/inbox/human_input.md" "inbox/human_input.md"
+            echo -e "${GREEN}✓${NC} inbox/human_input.md"
+        fi
+
+        # 复制 README
+        if [ ! -f "README.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/README.md" "README.md"
+            sed -i '' "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "README.md" 2>/dev/null || \
+            sed -i "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "README.md"
+            echo -e "${GREEN}✓${NC} README.md"
+        fi
+
+        # 复制 .claude 配置（Claude Code Commands）
+        if [ -d "$EKET_TEMPLATE_DIR/.claude/commands" ]; then
+            mkdir -p ".claude/commands"
+            cp "$EKET_TEMPLATE_DIR/.claude/commands/"*.sh ".claude/commands/" 2>/dev/null || true
+            echo -e "${GREEN}✓${NC} .claude/commands/"
+        fi
+        if [ -f "$EKET_TEMPLATE_DIR/.claude/settings.json" ] && [ ! -f ".claude/settings.json" ]; then
+            cp "$EKET_TEMPLATE_DIR/.claude/settings.json" ".claude/settings.json"
+            echo -e "${GREEN}✓${NC} .claude/settings.json"
+        fi
+        if [ -f "$EKET_TEMPLATE_DIR/.claude/CLAUDE.md" ] && [ ! -f ".claude/CLAUDE.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/.claude/CLAUDE.md" ".claude/CLAUDE.md"
+            echo -e "${GREEN}✓${NC} .claude/CLAUDE.md"
+        fi
+
+        # 复制 human_feedback 模板
+        if [ -d "$EKET_TEMPLATE_DIR/inbox/human_feedback" ]; then
+            mkdir -p "inbox/human_feedback"
+            cp "$EKET_TEMPLATE_DIR/inbox/human_feedback/"*.md "inbox/human_feedback/" 2>/dev/null || true
+            echo -e "${GREEN}✓${NC} inbox/human_feedback/ (模板)"
+        fi
+
+        # 复制 .eket 工具脚本
+        if [ -f "$EKET_TEMPLATE_DIR/.eket/health_check.sh" ]; then
+            mkdir -p ".eket"
+            cp "$EKET_TEMPLATE_DIR/.eket/health_check.sh" ".eket/health_check.sh"
+            chmod +x ".eket/health_check.sh"
+            echo -e "${GREEN}✓${NC} .eket/health_check.sh"
+        fi
+        if [ -f "$EKET_TEMPLATE_DIR/.eket/version.yml" ]; then
+            mkdir -p ".eket"
+            cp "$EKET_TEMPLATE_DIR/.eket/version.yml" ".eket/version.yml"
+            # 替换占位符
+            sed -i '' "s/{{TIMESTAMP}}/$(date -Iseconds)/g" ".eket/version.yml" 2>/dev/null || \
+            sed -i "s/{{TIMESTAMP}}/$(date -Iseconds)/g" ".eket/version.yml"
+            sed -i '' "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" ".eket/version.yml" 2>/dev/null || \
+            sed -i "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" ".eket/version.yml"
+            echo -e "${GREEN}✓${NC} .eket/version.yml"
+        fi
+
+        # 复制 examples 目录（快速开始示例）
+        if [ -d "$EKET_TEMPLATE_DIR/examples" ]; then
+            mkdir -p "examples"
+            cp -r "$EKET_TEMPLATE_DIR/examples/"* "examples/" 2>/dev/null || true
+            echo -e "${GREEN}✓${NC} examples/ (快速开始示例)"
+        fi
+
+        # 复制 .gitignore（敏感信息保护）
+        if [ -f "$EKET_TEMPLATE_DIR/.gitignore" ] && [ ! -f ".gitignore" ]; then
+            cp "$EKET_TEMPLATE_DIR/.gitignore" ".gitignore"
+            echo -e "${GREEN}✓${NC} .gitignore (敏感信息保护)"
+        fi
+
+        # 复制 SECURITY.md（安全指南）
+        if [ -f "$EKET_TEMPLATE_DIR/SECURITY.md" ] && [ ! -f "SECURITY.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/SECURITY.md" "SECURITY.md"
+            echo -e "${GREEN}✓${NC} SECURITY.md (安全指南)"
+        fi
+
+        # 复制 .github/workflows（CI/CD 配置）
+        if [ -d "$EKET_TEMPLATE_DIR/.github/workflows" ]; then
+            mkdir -p ".github/workflows"
+            cp "$EKET_TEMPLATE_DIR/.github/workflows/"*.yml ".github/workflows/" 2>/dev/null || true
+            echo -e "${GREEN}✓${NC} .github/workflows/ (CI/CD 配置)"
+        fi
+
+        # 复制 docs 目录（文档）
+        if [ -d "$EKET_TEMPLATE_DIR/docs" ]; then
+            mkdir -p "docs"
+            cp -r "$EKET_TEMPLATE_DIR/docs/"* "docs/" 2>/dev/null || true
+            echo -e "${GREEN}✓${NC} docs/ (项目文档)"
+        fi
+    else
+        echo -e "${YELLOW}⚠${NC} 未找到 template 目录，跳过文件复制"
+    fi
+}
+
+# 初始化 Git 仓库
+init_git() {
+    echo ""
+    echo "初始化 Git 仓库..."
+
+    if [ ! -d ".git" ]; then
+        git init -b main
+        git config user.name "eket-agent"
+        git config user.email "agent@eket.local"
+        echo -e "${GREEN}✓${NC} Git 仓库初始化完成"
+    else
+        echo -e "${GREEN}✓${NC} Git 仓库已存在"
+    fi
+}
+
+# 显示使用指南
+show_guide() {
+    echo ""
+    echo "========================================"
+    echo "初始化完成!"
+    echo "========================================"
+    echo ""
+    echo "项目信息:"
+    echo "  名称：$PROJECT_NAME"
+    echo "  位置：$PROJECT_ROOT"
+    echo ""
+    echo "快速开始:"
+    echo ""
+    echo "1. 进入项目目录:"
+    echo "   cd $PROJECT_ROOT"
+    echo ""
+    echo "2. 在 inbox/human_input.md 中描述你的需求"
+    echo ""
+    echo "3. 使用 Claude Code 与智能体交互:"
+    echo "   - /eket-status   查看状态"
+    echo "   - /eket-task     创建任务"
+    echo "   - /eket-review   请求 Review"
+    echo ""
+    echo "4. 查看智能体输出:"
+    echo "   - outbox/review_requests/  - Review 请求"
+    echo "   - tasks/                   - 任务列表"
+    echo ""
+    echo "========================================"
+    echo ""
+}
+
+# 主流程
+main() {
+    create_directories
+    copy_templates
+    init_git
+    show_guide
+}
+
+main "$@"

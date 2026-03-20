@@ -1,0 +1,109 @@
+name: PR Review Assistant
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  validate-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PR Description
+        run: |
+          echo "验证 PR 描述格式..."
+          # 检查是否包含必要的章节
+          PR_BODY="${{ github.event.pull_request.body }}"
+
+          if ! echo "$PR_BODY" | grep -q "## 变更内容"; then
+            echo "::warning::PR 描述缺少'变更内容'章节"
+          fi
+
+          if ! echo "$PR_BODY" | grep -q "## 验收标准"; then
+            echo "::warning::PR 描述缺少'验收标准'章节"
+          fi
+
+          if ! echo "$PR_BODY" | grep -q "## 关联任务"; then
+            echo "::warning::PR 描述缺少'关联任务'章节"
+          fi
+
+      - name: Check Linked Task
+        run: |
+          PR_BODY="${{ github.event.pull_request.body }}"
+
+          # 提取任务 ID（假设格式为 task-XXX 或 TASK-XXX）
+          TASK_ID=$(echo "$PR_BODY" | grep -oE '(task|TASK)-[0-9]+' | head -1)
+
+          if [ -n "$TASK_ID" ]; then
+            echo "关联任务：$TASK_ID"
+
+            # 检查任务文件是否存在
+            TASK_FILE="tasks/$TASK_ID.md"
+            if [ -f "$TASK_FILE" ]; then
+              echo "任务文件存在：$TASK_FILE"
+
+              # 检查任务状态
+              STATUS=$(grep "^status:" "$TASK_FILE" | cut -d' ' -f2)
+              echo "当前任务状态：$STATUS"
+
+              # 更新任务状态为 review
+              if [[ "$STATUS" == "dev" || "$STATUS" == "test" ]]; then
+                sed -i "s/^status: $STATUS/status: review/" "$TASK_FILE"
+                echo "任务状态已更新为 review"
+
+                # 提交状态更新
+                git config user.name "github-actions"
+                git config user.email "github-actions@github.com"
+                git add "$TASK_FILE"
+                git commit -m "chore: update task $TASK_ID status to review"
+                git push
+              fi
+            else
+              echo "::warning::任务文件 $TASK_FILE 不存在"
+            fi
+          else
+            echo "::warning::PR 描述中未找到任务 ID"
+          fi
+
+  run-tests:
+    runs-on: ubuntu-latest
+    needs: validate-pr
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Project Tests
+        run: |
+          echo "运行项目测试..."
+          # 根据项目类型添加相应的测试命令
+          # 例如：npm test, pytest, go test, etc.
+          if [ -f "package.json" ]; then
+            npm install && npm test
+          elif [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt && pytest
+          elif [ -f "go.mod" ]; then
+            go test ./...
+          else
+            echo "未检测到项目类型，跳过测试"
+          fi
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: validate-pr
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Security Scan
+        run: |
+          echo "执行安全扫描..."
+
+          # 检查是否有敏感信息泄露
+          if git diff --cached | grep -iE "(password|secret|api_key|token)\s*[:=]"; then
+            echo "::error::检测到可能的敏感信息泄露"
+            exit 1
+          fi
+
+          # 使用 gitleaks 进行扫描（如果安装）
+          if command -v gitleaks &> /dev/null; then
+            gitleaks detect --source . -v || true
+          fi

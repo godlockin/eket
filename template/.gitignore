@@ -1,0 +1,76 @@
+# EKET 核心文件
+.eket/state/
+.eket/logs/
+.eket/memory/
+
+# 临时文件
+*.tmp
+*.log
+*.bak
+*.swp
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
+# 敏感信息 - 凭证和密钥
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets.json
+credentials.json
+credentials.yml
+*.secret
+*.secrets
+
+# API 密钥和令牌
+api_keys.txt
+tokens.json
+auth.json
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+data.db
+
+# 私有配置
+private/
+*.private
+*.local.yml
+*.local.json
+
+# 人类反馈中的敏感内容
+inbox/human_feedback/*-sensitive.md
+inbox/human_feedback/credentials*
+inbox/human_feedback/passwords*
+
+# 智能体私有工作区
+private/
+
+# 构建产物
+dist/
+build/
+*.o
+*.so
+*.dylib
+
+# 依赖
+node_modules/
+vendor/
+.venv/
+venv/
+__pycache__/
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*

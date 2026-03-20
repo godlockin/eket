@@ -1,0 +1,12 @@
+# EKET
+.eket/state/
+.eket/logs/
+.eket/memory/
+
+# 临时文件
+*.tmp
+*.log
+
+# 系统文件
+.DS_Store
+Thumbs.db

@@ -1,0 +1,65 @@
+name: EKET Health Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run EKET Health Check
+        run: |
+          chmod +x .eket/health_check.sh
+          ./.eket/health_check.sh
+
+  validate-tickets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Ticket Format
+        run: |
+          echo "验证 tasks/ 目录中的票券格式..."
+          for file in tasks/*.md; do
+            if [ -f "$file" ]; then
+              echo "检查 $file"
+              # 检查必要字段
+              if ! grep -q "^id:" "$file"; then
+                echo "错误：$file 缺少 id 字段"
+                exit 1
+              fi
+              if ! grep -q "^status:" "$file"; then
+                echo "错误：$file 缺少 status 字段"
+                exit 1
+              fi
+            fi
+          done
+          echo "所有票券格式验证通过"
+
+  check-sensitive-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for Sensitive Files
+        run: |
+          echo "检查是否提交了敏感文件..."
+
+          # 检查是否有 .env 文件
+          if find . -name ".env*" -not -path "*/.git/*" | grep -q .; then
+            echo "错误：检测到 .env 文件，请勿提交敏感信息"
+            exit 1
+          fi
+
+          # 检查是否有密钥文件
+          if find . -name "*.pem" -o -name "*.key" -not -path "*/.git/*" | grep -q .; then
+            echo "错误：检测到密钥文件，请勿提交"
+            exit 1
+          fi
+
+          echo "敏感文件检查通过"

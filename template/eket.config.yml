@@ -1,0 +1,119 @@
+# EKET 项目初始化配置
+
+# 当你使用 eket 初始化一个新项目时，复制此文件并填写配置
+
+# ==================== 项目基础信息 ====================
+
+project:
+  # 项目名称
+  name: "my-project"
+  # 项目根目录（绝对路径）
+  root: "/path/to/your/project"
+  # 项目类型
+  type: "web_app"  # web_app, mobile_app, api, library, etc.
+
+# ==================== 技术栈 ====================
+
+tech_stack:
+  # 前端
+  frontend:
+    framework: "react"  # react, vue, nextjs, vanilla
+    language: "typescript"  # typescript, javascript
+    package_manager: "pnpm"  # npm, yarn, pnpm, bun
+
+  # 后端
+  backend:
+    framework: "fastapi"  # fastapi, express, spring, etc.
+    language: "python"  # python, nodejs, java, go
+    package_manager: "pip"
+
+  # 数据库
+  database:
+    type: "postgresql"  # postgresql, mysql, mongodb, redis
+    migration_tool: "alembic"
+
+  # DevOps
+  devops:
+    container: "docker"
+    ci_cd: "github_actions"
+    cloud: "aws"  # aws, gcp, azure, local
+
+# ==================== 智能体配置 ====================
+
+agents:
+  # 启用的执行智能体
+  enabled_executors:
+    - frontend_dev
+    - backend_dev
+    - tester
+    # - designer
+    # - devops
+    # - storage
+
+  # 自定义智能体（可选）
+  custom_executors: []
+
+  # 智能体偏好设置
+  preferences:
+    # 代码风格
+    code_style: "conventional"
+    # 测试覆盖率要求
+    min_test_coverage: 80
+    # PR 审核要求
+    require_pr_review: true
+    # 自动合并（无冲突时）
+    auto_merge_on_ci_pass: false
+
+# ==================== 工作流程 ====================
+
+workflow:
+  # 任务自动分配
+  auto_assign_tasks: true
+  # 最大并发任务数
+  max_concurrent_tasks: 5
+  # 任务超时（分钟）
+  task_timeout_minutes: 120
+  # Review 超时（小时）
+  review_timeout_hours: 24
+
+# ==================== Git 配置 ====================
+
+git:
+  # 主分支名称
+  main_branch: "main"
+  # 开发分支前缀
+  feature_branch_prefix: "feature/"
+  # 提交规范
+  commit_convention: "conventional_commits"  # conventional_commits, custom
+  # PR 模板
+  pr_template: true
+
+# ==================== 通知配置 ====================
+
+notifications:
+  # 通知方式
+  methods:
+    - type: "file"  # 文件通知（默认）
+      enabled: true
+    # - type: "slack"
+    #   webhook: ""
+    # - type: "email"
+    #   smtp: ""
+
+  # 通知事件
+  events:
+    task_assigned: true
+    task_completed: true
+    pr_created: true
+    pr_merged: true
+    blocker_detected: true
+
+# ==================== 记忆持久化 ====================
+
+memory:
+  # 保存长期记忆
+  persist_long_term: true
+  # 记忆位置
+  location: ".eket/memory"
+  # 共享记忆（跨项目）
+  shared_memory: false
