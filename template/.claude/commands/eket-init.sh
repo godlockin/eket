@@ -150,9 +150,85 @@ fi
 echo ""
 
 # ==========================================
-# 步骤 5: 选择任务模式
+# 步骤 5: 数据依赖追问检查
 # ==========================================
-echo -e "${BLUE}## 步骤 5: 选择任务模式${NC}"
+echo -e "${BLUE}## 步骤 5: 数据依赖追问检查${NC}"
+echo ""
+
+# 检查 human_input.md 中是否包含数据依赖信息
+HAS_DEPENDENCY_INFO=false
+
+if [ -f "inbox/human_input.md" ]; then
+    # 检查是否包含数据库、API 等关键词
+    if grep -qiE "(database|mongodb|mysql|postgresql|sqlite|api.*key|api.*endpoint|存储 | 数据源|认证)" "inbox/human_input.md" 2>/dev/null; then
+        HAS_DEPENDENCY_INFO=true
+        echo -e "${GREEN}✓${NC} 检测到数据依赖信息"
+    else
+        echo -e "${YELLOW}⚠${NC} 未检测到数据依赖信息"
+    fi
+fi
+
+# 检查是否已有依赖检查清单
+if [ -f "inbox/dependency-checklist.md" ]; then
+    echo -e "${GREEN}✓${NC} 依赖检查清单已填写"
+    HAS_DEPENDENCY_INFO=true
+fi
+
+# 如果缺少依赖信息，创建追问文件
+if [ "$HAS_DEPENDENCY_INFO" = false ]; then
+    echo ""
+    echo -e "${YELLOW}⚠ 检测到缺失的依赖配置信息${NC}"
+    echo ""
+    echo " EKET 框架需要以下信息才能正确构建项目:"
+    echo "  - 数据源配置 (数据库/API/存储)"
+    echo "  - 认证和密钥管理方式"
+    echo "  - 基础设施配置"
+    echo ""
+
+    # 复制追问模板
+    if [ -f "$(dirname "$0")/../../template/inbox/dependency-clarification.md" ]; then
+        cp "$(dirname "$0")/../../template/inbox/dependency-clarification.md" "inbox/dependency-clarification.md"
+        echo -e "${GREEN}✓${NC} 已创建追问文件：inbox/dependency-clarification.md"
+    fi
+
+    echo ""
+    echo -e "${YELLOW}========================================${NC}"
+    echo -e "${YELLOW}需要用户补充依赖信息${NC}"
+    echo -e "${YELLOW}========================================${NC}"
+    echo ""
+    echo "请完成以下操作之一:"
+    echo ""
+    echo "1. 编辑 inbox/human_input.md，补充数据依赖信息"
+    echo "   或"
+    echo "2. 填写 inbox/dependency-clarification.md 追问文件"
+    echo ""
+    echo "填写完成后，保存文件并重新运行 /eket-init"
+    echo ""
+
+    # 保存追问状态
+    mkdir -p ".eket/state"
+    cat > ".eket/state/dependency-status.yml" << EOF
+status: pending_clarification
+missing_categories:
+  - data_sources
+  - api_configuration
+  - credentials_management
+clarification_file: inbox/dependency-clarification.md
+created_at: $(date -Iseconds)
+retry_required: true
+EOF
+
+    exit 1
+fi
+
+echo ""
+echo -e "${GREEN}✓${NC} 数据依赖信息完整"
+echo ""
+
+# ==========================================
+# 步骤 6: 选择任务模式
+# ==========================================
+echo -e "${BLUE}## 步骤 6: 选择任务模式${NC}"
 echo ""
 echo "EKET 框架有两种任务模式:"
 echo ""
@@ -191,9 +267,9 @@ echo "当前选择：${YELLOW}$MODE${NC}"
 echo ""
 
 # ==========================================
-# 步骤 6: 显示快速开始指南
+# 步骤 7: 显示快速开始指南
 # ==========================================
-echo -e "${BLUE}## 步骤 6: 快速开始指南${NC}"
+echo -e "${BLUE}## 步骤 7: 快速开始指南${NC}"
 echo ""
 
 if [ "$MODE" = "setup" ]; then
@@ -237,9 +313,9 @@ fi
 echo ""
 
 # ==========================================
-# 步骤 7: 显示当前输入状态
+# 步骤 8: 显示当前输入状态
 # ==========================================
-echo -e "${BLUE}## 当前输入状态${NC}"
+echo -e "${BLUE}## 步骤 8: 显示当前输入状态${NC}"
 echo ""
 
 if [ -f "inbox/human_input.md" ]; then

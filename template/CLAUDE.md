@@ -46,6 +46,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 | `/eket-review [id]` | 请求 Review |
 | `/eket-claim [id]` | 领取任务 |
 | `/eket-help` | 显示帮助 |
+| `/eket-ask` | 依赖追问（当缺少数据源/API/认证配置时） |
+
+---
+
+## 依赖追问机制
+
+**触发条件**: 当检测到项目缺少必要依赖配置时自动触发
+
+**依赖信息包括**:
+- 数据源配置（数据库类型、连接方式）
+- 外部 API（API 名称、认证方式、端点）
+- 认证和密钥管理（API Key、OAuth 等）
+- 基础设施（部署目标、域名、HTTPS）
+
+**追问流程**:
+```
+1. 智能体分析需求
+   ↓
+2. 检测缺失依赖配置
+   ↓
+3. 创建 inbox/dependency-clarification.md
+   ↓
+4. 停止执行，等待用户填写
+   ↓
+5. 用户填写后运行 /eket-ask
+   ↓
+6. 继续项目构建
+```
+
+**相关文件**:
+- `inbox/dependency-clarification.md` - 依赖追问文件
+- `inbox/dependency-checklist.md` - 依赖检查清单（可选）
+- `.eket/state/dependency-status.yml` - 依赖状态
 
 ---
 

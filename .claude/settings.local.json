@@ -20,7 +20,8 @@
       "Bash(find /Users/chenchen/working/sourcecode/tools/dev-tools/searcher/skills -name \"*.md\" 2>/dev/null | head -20)",
       "Bash(cd /Users/chenchen/working/sourcecode/tools/dev-tools/searcher/code_repo/src/backend && npm install 2>&1 | head -50)",
       "Bash(chmod +x /Users/chenchen/working/sourcecode/tools/dev-tools/eket/template/.claude/commands/eket-phase-review.sh)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "mcp__plugin_serena_serena__create_text_file"
     ]
   }
 }

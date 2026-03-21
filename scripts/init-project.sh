@@ -98,6 +98,14 @@ copy_templates() {
             echo -e "${GREEN}✓${NC} inbox/human_input.md"
         fi
 
+        # 复制依赖追问模板
+        if [ ! -f "inbox/dependency-clarification.md" ]; then
+            if [ -f "$EKET_TEMPLATE_DIR/inbox/dependency-clarification.md" ]; then
+                cp "$EKET_TEMPLATE_DIR/inbox/dependency-clarification.md" "inbox/dependency-clarification.md"
+                echo -e "${GREEN}✓${NC} inbox/dependency-clarification.md (依赖追问模板)"
+            fi
+        fi
+
         # 复制 README
         if [ ! -f "README.md" ]; then
             cp "$EKET_TEMPLATE_DIR/README.md" "README.md"
@@ -111,6 +119,13 @@ copy_templates() {
             mkdir -p ".claude/commands"
             cp "$EKET_TEMPLATE_DIR/.claude/commands/"*.sh ".claude/commands/" 2>/dev/null || true
             echo -e "${GREEN}✓${NC} .claude/commands/"
+        fi
+        # 复制追问脚本
+        if [ -f "$EKET_ROOT/scripts/dependency-check.sh" ]; then
+            mkdir -p ".claude/commands"
+            cp "$EKET_ROOT/scripts/dependency-check.sh" ".claude/commands/eket-ask.sh"
+            chmod +x ".claude/commands/eket-ask.sh"
+            echo -e "${GREEN}✓${NC} .claude/commands/eket-ask.sh (依赖追问)"
         fi
         if [ -f "$EKET_TEMPLATE_DIR/.claude/settings.json" ] && [ ! -f ".claude/settings.json" ]; then
             cp "$EKET_TEMPLATE_DIR/.claude/settings.json" ".claude/settings.json"
