@@ -1,0 +1,52 @@
+# Skill: API Design
+
+**Category**: design
+**Version**: 1.0.0
+
+---
+
+## Description
+
+根据功能需求设计 RESTful API 接口。
+
+## Inputs
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| functional_requirements | array | true | 功能需求列表 |
+| data_models | array | false | 数据模型定义 |
+
+## Outputs
+
+| Name | Type | Description |
+|------|------|-------------|
+| api_spec | object | API 规格说明 |
+| openapi_doc | file | OpenAPI 文档 (YAML/JSON) |
+
+## Steps
+
+1. **识别资源** - 从需求中提取资源
+2. **定义端点** - 设计 RESTful 端点
+3. **设计请求/响应** - 定义输入输出格式
+4. **生成 OpenAPI 文档** - 生成标准文档
+
+## Example
+
+```yaml
+inputs:
+  functional_requirements:
+    - "用户可以注册"
+    - "用户可以登录"
+  data_models:
+    - name: User
+      fields: [id, username, email, password]
+
+outputs:
+  api_spec:
+    endpoints:
+      - path: /api/register
+        method: POST
+      - path: /api/login
+        method: POST
+  openapi_doc: "openapi.yaml"
+```

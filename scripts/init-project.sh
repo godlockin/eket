@@ -172,6 +172,25 @@ copy_templates() {
             echo -e "${GREEN}✓${NC} .github/workflows/ (CI/CD 配置)"
         fi
 
+        # 复制 scripts 目录（工具脚本）
+        if [ -d "$EKET_ROOT/scripts" ]; then
+            mkdir -p "scripts"
+            for script in "$EKET_ROOT/scripts/"*.sh; do
+                if [ -f "$script" ]; then
+                    cp "$script" "scripts/"
+                    chmod +x "scripts/$(basename "$script")"
+                fi
+            done
+            echo -e "${GREEN}✓${NC} scripts/ (工具脚本)"
+        fi
+
+        # 复制 skills 目录（Skills 定义）
+        if [ -d "$EKET_TEMPLATE_DIR/skills" ]; then
+            mkdir -p "skills"
+            cp -r "$EKET_TEMPLATE_DIR/skills/"* "skills/" 2>/dev/null || true
+            echo -e "${GREEN}✓${NC} skills/ (Skills 定义)"
+        fi
+
         # 复制 docs 目录（文档）
         if [ -d "$EKET_TEMPLATE_DIR/docs" ]; then
             mkdir -p "docs"
@@ -209,6 +228,15 @@ show_guide() {
     echo "  名称：$PROJECT_NAME"
     echo "  位置：$PROJECT_ROOT"
     echo ""
+    echo "目录结构:"
+    echo "  .claude/commands/     - Claude Code 命令"
+    echo "  .eket/                - EKET 配置和状态"
+    echo "  inbox/                - 输入目录"
+    echo "  outbox/               - 输出目录"
+    echo "  tasks/                - 任务目录"
+    echo "  skills/               - Skills 定义"
+    echo "  scripts/              - 工具脚本"
+    echo ""
     echo "快速开始:"
     echo ""
     echo "1. 进入项目目录:"
@@ -220,6 +248,7 @@ show_guide() {
     echo "   - /eket-status   查看状态"
     echo "   - /eket-task     创建任务"
     echo "   - /eket-review   请求 Review"
+    echo "   - /eket-claim    领取任务"
     echo ""
     echo "4. 查看智能体输出:"
     echo "   - outbox/review_requests/  - Review 请求"

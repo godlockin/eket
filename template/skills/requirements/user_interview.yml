@@ -1,0 +1,48 @@
+# Skill: User Interview
+
+**Category**: requirements
+**Version**: 1.0.0
+
+---
+
+## Description
+
+用户需求访谈技能，用于收集和理解用户的原始需求。
+
+## Inputs
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| user_input | string | true | 用户的原始输入/需求描述 |
+| context | object | false | 项目背景信息 |
+
+## Outputs
+
+| Name | Type | Description |
+|------|------|-------------|
+| interview_notes | string | 访谈笔记和要点 |
+| identified_needs | array | 识别出的用户需求列表 |
+
+## Steps
+
+1. **分析用户输入** - 提取关键词和主题
+2. **识别需求类型** - 功能性/非功能性需求分类
+3. **澄清模糊点** - 标记需要进一步确认的内容
+4. **总结需求要点** - 形成结构化的需求笔记
+
+## Example
+
+```yaml
+inputs:
+  user_input: "我想要一个用户登录功能"
+  context:
+    project_type: web_application
+    tech_stack: [react, nodejs]
+
+outputs:
+  interview_notes: "用户需要一个登录功能..."
+  identified_needs:
+    - "用户身份验证"
+    - "会话管理"
+    - "错误处理"
+```

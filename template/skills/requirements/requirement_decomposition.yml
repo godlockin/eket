@@ -1,0 +1,48 @@
+# Skill: Requirement Decomposition
+
+**Category**: requirements
+**Version**: 1.0.0
+
+---
+
+## Description
+
+将原始需求拆解为可执行的功能点。
+
+## Inputs
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| raw_requirement | string | true | 用户的原始需求描述 |
+| project_context | object | false | 项目背景信息 |
+
+## Outputs
+
+| Name | Type | Description |
+|------|------|-------------|
+| feature_list | array | 拆解后的功能点列表 |
+| dependencies | array | 功能点之间的依赖关系 |
+
+## Steps
+
+1. **分析需求** - 提取关键词
+2. **识别功能模块** - 映射到具体功能
+3. **定义依赖关系** - 分析功能间依赖
+4. **输出功能列表** - 形成结构化列表
+
+## Example
+
+```yaml
+inputs:
+  raw_requirement: "我想要一个用户登录功能，支持用户名密码登录"
+  project_context:
+    project_type: web_application
+    tech_stack: [react, nodejs]
+
+outputs:
+  feature_list:
+    - "创建登录表单组件"
+    - "实现登录 API 接口"
+    - "添加表单验证逻辑"
+    - "实现会话管理"
+```

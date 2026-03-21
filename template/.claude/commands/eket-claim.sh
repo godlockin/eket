@@ -66,6 +66,41 @@ else
         exit 1
     fi
 
+    # 检查依赖任务 (新增依赖验证)
+    DEPENDENCIES=$(grep -E "^dependencies:" "$TASK_FILE" 2>/dev/null | cut -d: -f2 | tr -d ' ')
+    if [ -n "$DEPENDENCIES" ] && [ "$DEPENDENCIES" != "none" ]; then
+        echo "检查依赖任务..."
+        for dep in $(echo "$DEPENDENCIES" | tr ',' ' '); do
+            dep_file=""
+            # 在 Jira 目录中查找依赖任务
+            if [ -d "jira/tickets" ]; then
+                for d in feature task bugfix; do
+                    if [ -f "jira/tickets/$d/${dep}.md" ]; then
+                        dep_file="jira/tickets/$d/${dep}.md"
+                        break
+                    fi
+                done
+            fi
+            # 回退到 tasks 目录
+            if [ -z "$dep_file" ] && [ -f "tasks/${dep}.md" ]; then
+                dep_file="tasks/${dep}.md"
+            fi
+
+            if [ -z "$dep_file" ]; then
+                echo "✗ 依赖任务不存在：$dep"
+                exit 1
+            fi
+
+            dep_status=$(grep -E "^status:" "$dep_file" 2>/dev/null | cut -d: -f2 | tr -d ' ')
+            if [ "$dep_status" != "done" ]; then
+                echo "✗ 依赖任务 $dep 未完成 (当前状态：$dep_status)"
+                echo "   无法领取任务，请先完成依赖任务或联系 Master 协调"
+                exit 1
+            fi
+            echo "  ✓ 依赖任务 $dep: $dep_status"
+        done
+    fi
+
     # 检查任务状态
     STATUS=$(grep -E "^status:" "$TASK_FILE" 2>/dev/null | cut -d: -f2 | tr -d ' ')
     if [ "$STATUS" = "in_progress" ]; then

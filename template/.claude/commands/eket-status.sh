@@ -8,7 +8,27 @@ echo ""
 
 # 检查任务目录
 echo "## 任务列表"
-if [ -d "tasks" ] && [ "$(ls -A tasks 2>/dev/null)" ]; then
+
+# 优先检查 Jira 仓库
+if [ -d "jira/tickets" ]; then
+    TASK_COUNT=0
+    for dir in feature task bugfix; do
+        if [ -d "jira/tickets/$dir" ]; then
+            for task_file in "jira/tickets/$dir"/*.md; do
+                if [ -f "$task_file" ]; then
+                    TASK_COUNT=$((TASK_COUNT + 1))
+                    echo ""
+                    echo "### $(basename "$task_file")"
+                    grep -E "^title:|^status:|^priority:|^id:" "$task_file" 2>/dev/null || head -10 "$task_file"
+                fi
+            done
+        fi
+    done
+    if [ "$TASK_COUNT" -eq 0 ]; then
+        echo "暂无任务"
+    fi
+# 回退到本地 tasks 目录
+elif [ -d "tasks" ] && [ "$(ls -A tasks 2>/dev/null)" ]; then
     for task_file in tasks/*.md; do
         if [ -f "$task_file" ]; then
             echo ""
