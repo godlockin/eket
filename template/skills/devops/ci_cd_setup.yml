@@ -1,0 +1,100 @@
+# CI/CD 配置 Skill
+
+**版本**: 1.0.0
+**分类**: devops
+
+---
+
+```yaml
+name: ci_cd_setup
+version: 1.0.0
+category: devops
+description: 配置 CI/CD 流水线
+
+# 输入参数定义
+inputs:
+  - name: platform
+    type: string
+    required: true
+    description: CI/CD 平台
+    example: "github_actions"
+
+  - name: pipeline_config
+    type: object
+    required: true
+    description: 流水线配置
+    example:
+      stages: [build, test, deploy]
+      deploy_target: "aws"
+
+  - name: branch_protection
+    type: object
+    required: false
+    description: 分支保护配置
+    example:
+      protected_branches: [main, develop]
+      require_reviews: 1
+
+# 输出定义
+outputs:
+  - name: workflow_files
+    type: array
+    description: 工作流文件
+
+  - name: pipeline_status
+    type: object
+    description: 流水线状态
+
+# 执行步骤
+steps:
+  - name: analyze_requirements
+    description: 分析需求
+    action: parse_pipeline
+    params:
+      config: "{{inputs.pipeline_config}}"
+
+  - name: generate_workflows
+    description: 生成工作流
+    action: write_yaml
+    params:
+      platform: "{{inputs.platform}}"
+      stages: "{{inputs.pipeline_config.stages}}"
+
+  - name: configure_branch_protection
+    description: 配置分支保护
+    action: setup_protection
+    params:
+      branches: "{{inputs.branch_protection.protected_branches}}"
+      rules:
+        require_reviews: "{{inputs.branch_protection.require_reviews}}"
+
+  - name: setup_deployments
+    description: 配置部署
+    action: configure_deploy
+    params:
+      target: "{{inputs.pipeline_config.deploy_target}}"
+      environments: [staging, production]
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: GitHub Actions 配置
+    inputs:
+      platform: "github_actions"
+      pipeline_config:
+        stages: [build, test, deploy]
+        deploy_target: "aws"
+      branch_protection:
+        protected_branches: [main]
+        require_reviews: 1
+    expected_outputs:
+      workflow_files:
+        - ".github/workflows/ci.yml"
+        - ".github/workflows/deploy.yml"
+```
+
+---
+
+**维护者**: EKET Framework Team

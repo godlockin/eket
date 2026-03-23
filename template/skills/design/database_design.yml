@@ -1,0 +1,112 @@
+# 数据库设计 Skill
+
+**版本**: 1.0.0
+**分类**: design
+
+---
+
+```yaml
+name: database_design
+version: 1.0.0
+category: design
+description: 根据数据需求设计数据库 Schema
+
+# 输入参数定义
+inputs:
+  - name: data_requirements
+    type: array
+    required: true
+    description: 数据需求列表
+    example:
+      - "需要存储用户信息"
+      - "需要记录登录日志"
+
+  - name: access_patterns
+    type: array
+    required: false
+    description: 数据访问模式
+    example:
+      - "频繁查询用户 by email"
+      - "按时间范围查询日志"
+
+  - name: db_type
+    type: string
+    required: false
+    description: 数据库类型
+    example: "postgresql"
+
+# 输出定义
+outputs:
+  - name: schema_design
+    type: object
+    description: Schema 设计
+
+  - name: migration_scripts
+    type: array
+    description: 数据库迁移脚本
+
+# 执行步骤
+steps:
+  - name: identify_entities
+    description: 识别实体
+    action: extract_entities
+    params:
+      requirements: "{{inputs.data_requirements}}"
+
+  - name: define_relationships
+    description: 定义实体关系
+    action: map_erd
+    params:
+      entities: "{{steps.identify_entities.list}}"
+
+  - name: normalize_schema
+    description: 范式化设计
+    action: normalize
+    params:
+      schema: "{{steps.define_relationships.erd}}"
+      normal_form: "3NF"
+
+  - name: add_indexes
+    description: 添加索引
+    action: design_indexes
+    params:
+      schema: "{{steps.normalize_schema.tables}}"
+      access_patterns: "{{inputs.access_patterns}}"
+
+  - name: generate_migrations
+    description: 生成迁移脚本
+    action: write_sql
+    params:
+      schema: "{{steps.add_indexes.final}}"
+      db_type: "{{inputs.db_type}}"
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: 用户系统数据库设计
+    inputs:
+      data_requirements:
+        - "需要存储用户信息 (用户名、邮箱、密码)"
+        - "需要记录登录日志"
+        - "需要存储用户角色"
+      access_patterns:
+        - "频繁查询用户 by email"
+        - "按角色筛选用户"
+      db_type: "postgresql"
+    expected_outputs:
+      schema_design:
+        tables:
+          - name: "users"
+            columns:
+              - {name: "id", type: "SERIAL PRIMARY KEY"}
+              - {name: "username", type: "VARCHAR(50) UNIQUE"}
+              - {name: "email", type: "VARCHAR(100) UNIQUE"}
+              - {name: "password_hash", type: "VARCHAR(255)"}
+            indexes: ["email"]
+```
+
+---
+
+**维护者**: EKET Framework Team

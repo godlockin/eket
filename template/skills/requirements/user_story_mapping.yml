@@ -1,0 +1,104 @@
+# 用户故事地图 Skill
+
+**版本**: 1.0.0
+**分类**: requirements
+
+---
+
+```yaml
+name: user_story_mapping
+version: 1.0.0
+category: requirements
+description: 将需求转换为用户故事地图
+
+# 输入参数定义
+inputs:
+  - name: requirement_doc
+    type: object
+    required: true
+    description: 需求文档
+    example:
+      features: ["用户登录", "个人资料管理"]
+
+  - name: user_personas
+    type: array
+    required: false
+    description: 用户角色定义
+    example:
+      - name: "普通用户"
+        goals: ["浏览内容", "管理个人设置"]
+
+# 输出定义
+outputs:
+  - name: user_story_map
+    type: object
+    description: 用户故事地图
+
+  - name: story_cards
+    type: array
+    description: 用户故事卡片列表
+
+# 执行步骤
+steps:
+  - name: identify_users
+    description: 识别用户类型
+    action: extract_personas
+    params:
+      requirement: "{{inputs.requirement_doc}}"
+      personas: "{{inputs.user_personas}}"
+
+  - name: define_activities
+    description: 定义用户活动
+    action: map_activities
+    params:
+      features: "{{inputs.requirement_doc.features}}"
+      users: "{{steps.identify_users.list}}"
+
+  - name: create_user_stories
+    description: 创建用户故事
+    action: write_stories
+    params:
+      format: "As a {user}, I want {goal}, so that {benefit}"
+      activities: "{{steps.define_activities.map}}"
+
+  - name: prioritize_stories
+    description: 优先级排序
+    action: rank_stories
+    params:
+      stories: "{{steps.create_user_stories.list}}"
+      criteria: [business_value, user_impact, technical_feasibility]
+
+  - name: generate_map
+    description: 生成故事地图
+    action: visualize_map
+    params:
+      backbone: "{{steps.define_activities.map}}"
+      stories: "{{steps.prioritize_stories.ranked}}"
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: 电商系统用户故事地图
+    inputs:
+      requirement_doc:
+        features: ["商品浏览", "购物车", "下单支付"]
+      user_personas:
+        - name: "购物者"
+          goals: ["浏览商品", "购买商品"]
+        - name: "商家"
+          goals: ["管理商品", "处理订单"]
+    expected_outputs:
+      user_story_map:
+        backbone:
+          - "浏览商品"
+          - "加入购物车"
+          - "结算支付"
+        stories:
+          - "As a 购物者，I want 搜索商品，so that 快速找到想要的商品"
+```
+
+---
+
+**维护者**: EKET Framework Team

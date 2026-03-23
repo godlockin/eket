@@ -1,56 +1,130 @@
-# Skill: Backend Development
+# 后端开发 Skill
 
-**Category**: development
-**Version**: 1.0.0
+**版本**: 1.0.0
+**分类**: development
 
 ---
 
-## Description
-
-根据 API 设计和数据库设计实现后端服务代码。
-
-## Inputs
-
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| api_spec | object | true | API 接口定义 |
-| database_schema | object | false | 数据库 Schema 设计 |
-| tech_stack | array | true | 技术栈选择 |
-
-## Outputs
-
-| Name | Type | Description |
-|------|------|-------------|
-| backend_code | file | 生成的后端代码 |
-| api_docs | file | API 文档 |
-| test_cases | file | 测试用例 |
-
-## Steps
-
-1. **设置项目结构** - 创建目录和配置文件
-2. **实现数据模型** - 根据 Schema 创建 Models
-3. **实现 API 端点** - 根据 API spec 创建 Controllers
-4. **实现业务逻辑** - 编写 Services 层代码
-5. **编写单元测试** - 为核心功能编写测试
-6. **生成 API 文档** - 自动生成 OpenAPI 文档
-
-## Example
-
 ```yaml
-inputs:
-  api_spec:
-    endpoints:
-      - path: /api/login
-        method: POST
-        body: { username: string, password: string }
-  database_schema:
-    tables:
-      - name: users
-        columns: [id, username, email, password_hash]
-  tech_stack: [nodejs, express, postgresql]
+name: backend_development
+version: 1.0.0
+category: development
+description: 根据 API 定义和数据库设计实现后端服务
 
+# 输入参数定义
+inputs:
+  - name: api_definition
+    type: object
+    required: true
+    description: API 接口定义
+    example:
+      endpoints:
+        - path: /api/users
+          method: POST
+
+  - name: database_schema
+    type: object
+    required: true
+    description: 数据库 Schema 设计
+    example:
+      tables:
+        - name: users
+          columns: [...]
+
+  - name: tech_stack
+    type: array
+    required: true
+    description: 技术栈
+    example: [nodejs, express, postgresql]
+
+# 输出定义
 outputs:
-  backend_code: "src/controllers/auth.controller.js..."
-  api_docs: "docs/api.yaml"
-  test_cases: "tests/unit/auth.test.js"
+  - name: backend_code
+    type: file
+    description: 生成的后端代码
+
+  - name: api_docs
+    type: file
+    description: API 文档
+
+# 执行步骤
+steps:
+  - name: setup_project
+    description: 设置项目结构
+    action: create_structure
+    params:
+      framework: "{{inputs.tech_stack.0}}"
+      language: typescript
+
+  - name: create_models
+    description: 创建数据模型
+    action: generate_models
+    params:
+      schema: "{{inputs.database_schema}}"
+      orm: prisma
+
+  - name: create_controllers
+    description: 创建控制器
+    action: generate_controllers
+    params:
+      endpoints: "{{inputs.api_definition.endpoints}}"
+      models: "{{steps.create_models.list}}"
+
+  - name: create_routes
+    description: 创建路由
+    action: generate_routes
+    params:
+      endpoints: "{{inputs.api_definition.endpoints}}"
+      controllers: "{{steps.create_controllers.list}}"
+
+  - name: add_middleware
+    description: 添加中间件
+    action: implement_middleware
+    params:
+      routes: "{{steps.create_routes.list}}"
+      middleware: [auth, validation, logging]
+
+  - name: write_tests
+    description: 编写测试
+    action: generate_tests
+    params:
+      endpoints: "{{inputs.api_definition.endpoints}}"
+      test_framework: jest
+
+# 依赖的其它 Skill
+dependencies:
+  - testing/unit_test
+
+# 使用示例
+examples:
+  - name: 用户 API 开发
+    inputs:
+      api_definition:
+        endpoints:
+          - path: /api/users
+            method: POST
+            request: {username: string, email: string, password: string}
+            response: {id: number, username: string, email: string}
+          - path: /api/users/{id}
+            method: GET
+            response: {id: number, username: string, email: string}
+      database_schema:
+        tables:
+          - name: users
+            columns:
+              - {name: id, type: SERIAL PRIMARY KEY}
+              - {name: username, type: VARCHAR(50)}
+              - {name: email, type: VARCHAR(100)}
+              - {name: password_hash, type: VARCHAR(255)}
+      tech_stack: [nodejs, express, postgresql]
+    expected_outputs:
+      backend_code:
+        - src/models/User.ts
+        - src/controllers/userController.ts
+        - src/routes/userRoutes.ts
+        - src/middleware/auth.ts
 ```
+
+---
+
+**维护者**: EKET Framework Team

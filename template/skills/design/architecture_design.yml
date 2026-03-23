@@ -1,0 +1,111 @@
+# 架构设计 Skill
+
+**版本**: 1.0.0
+**分类**: design
+
+---
+
+```yaml
+name: architecture_design
+version: 1.0.0
+category: design
+description: 根据需求文档进行系统架构设计
+
+# 输入参数定义
+inputs:
+  - name: requirement_doc
+    type: object
+    required: true
+    description: 需求文档
+    example:
+      features: ["用户登录", "数据管理"]
+      non_functional: ["高可用", "可扩展"]
+
+  - name: tech_constraints
+    type: object
+    required: false
+    description: 技术约束
+    example:
+      must_use: ["existing_auth_system"]
+      avoid: ["legacy_database"]
+
+# 输出定义
+outputs:
+  - name: architecture_design
+    type: object
+    description: 架构设计稿
+    properties:
+      system_overview: string
+      components: array
+      relationships: array
+      tech_stack: object
+
+  - name: architecture_diagram
+    type: string
+    description: 架构图 (Mermaid 格式)
+
+# 执行步骤
+steps:
+  - name: analyze_requirements
+    description: 分析需求
+    action: parse_requirements
+    params:
+      requirements: "{{inputs.requirement_doc}}"
+
+  - name: identify_components
+    description: 识别系统组件
+    action: define_components
+    params:
+      features: "{{steps.analyze_requirements.features}}"
+      constraints: "{{inputs.tech_constraints}}"
+
+  - name: define_relationships
+    description: 定义组件关系
+    action: map_relationships
+    params:
+      components: "{{steps.identify_components.list}}"
+
+  - name: select_tech_stack
+    description: 选择技术栈
+    action: choose_technologies
+    params:
+      requirements: "{{steps.analyze_requirements.requirements}}"
+      constraints: "{{inputs.tech_constraints}}"
+
+  - name: generate_diagram
+    description: 生成架构图
+    action: create_mermaid_diagram
+    params:
+      components: "{{steps.identify_components.list}}"
+      relationships: "{{steps.define_relationships.map}}"
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: Web 应用架构设计
+    inputs:
+      requirement_doc:
+        features: ["用户登录", "数据管理", "报表生成"]
+        non_functional: ["高可用", "可扩展", "安全性"]
+      tech_constraints:
+        must_use: ["existing_auth_system"]
+    expected_outputs:
+      architecture_design:
+        system_overview: "基于 React + Node.js 的 Web 应用"
+        components:
+          - name: "Frontend"
+            type: "SPA"
+            tech: "React"
+          - name: "API Gateway"
+            type: "Gateway"
+            tech: "Node.js"
+          - name: "Auth Service"
+            type: "Service"
+            tech: "existing_auth_system"
+```
+
+---
+
+**维护者**: EKET Framework Team

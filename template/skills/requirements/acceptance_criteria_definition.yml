@@ -1,0 +1,84 @@
+# 验收标准定义 Skill
+
+**版本**: 1.0.0
+**分类**: requirements
+
+---
+
+```yaml
+name: acceptance_criteria_definition
+version: 1.0.0
+category: requirements
+description: 为功能点定义清晰的验收标准
+
+# 输入参数定义
+inputs:
+  - name: feature_list
+    type: array
+    required: true
+    description: 功能点列表
+    example:
+      - "创建登录表单组件"
+      - "实现登录 API 接口"
+
+  - name: user_stories
+    type: array
+    required: false
+    description: 用户故事列表
+    example:
+      - "作为用户，我希望能够使用邮箱登录"
+
+# 输出定义
+outputs:
+  - name: acceptance_criteria
+    type: array
+    description: 每个功能点的验收标准
+
+  - name: test_cases
+    type: array
+    description: 对应的测试用例
+
+# 执行步骤
+steps:
+  - name: analyze_features
+    description: 分析功能点
+    action: parse_features
+    params:
+      features: "{{inputs.feature_list}}"
+
+  - name: define_given_when_then
+    description: 定义 GWT 格式验收标准
+    action: generate_gwt
+    params:
+      features: "{{steps.analyze_features.parsed}}"
+      user_stories: "{{inputs.user_stories}}"
+
+  - name: create_test_cases
+    description: 创建测试用例
+    action: generate_tests
+    params:
+      acceptance_criteria: "{{steps.define_given_when_then.criteria}}"
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: 登录功能验收标准
+    inputs:
+      feature_list:
+        - "创建登录表单组件"
+        - "实现登录 API 接口"
+      user_stories:
+        - "作为用户，我希望能够使用邮箱和密码登录"
+    expected_outputs:
+      acceptance_criteria:
+        - feature: "创建登录表单组件"
+          criteria:
+            - "Given 用户打开登录页面，When 输入邮箱和密码，Then 显示登录按钮"
+            - "Given 用户输入无效邮箱格式，When 尝试提交，Then 显示错误提示"
+```
+
+---
+
+**维护者**: EKET Framework Team

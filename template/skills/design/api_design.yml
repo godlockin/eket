@@ -1,52 +1,104 @@
-# Skill: API Design
+# API 设计 Skill
 
-**Category**: design
-**Version**: 1.0.0
+**版本**: 1.0.0
+**分类**: design
 
 ---
 
-## Description
-
-根据功能需求设计 RESTful API 接口。
-
-## Inputs
-
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| functional_requirements | array | true | 功能需求列表 |
-| data_models | array | false | 数据模型定义 |
-
-## Outputs
-
-| Name | Type | Description |
-|------|------|-------------|
-| api_spec | object | API 规格说明 |
-| openapi_doc | file | OpenAPI 文档 (YAML/JSON) |
-
-## Steps
-
-1. **识别资源** - 从需求中提取资源
-2. **定义端点** - 设计 RESTful 端点
-3. **设计请求/响应** - 定义输入输出格式
-4. **生成 OpenAPI 文档** - 生成标准文档
-
-## Example
-
 ```yaml
-inputs:
-  functional_requirements:
-    - "用户可以注册"
-    - "用户可以登录"
-  data_models:
-    - name: User
-      fields: [id, username, email, password]
+name: api_design
+version: 1.0.0
+category: design
+description: 根据功能需求设计 RESTful API
 
+# 输入参数定义
+inputs:
+  - name: functional_requirements
+    type: array
+    required: true
+    description: 功能需求列表
+    example:
+      - "用户可以注册"
+      - "用户可以登录"
+      - "用户可以查看个人信息"
+
+  - name: data_models
+    type: array
+    required: false
+    description: 数据模型
+    example:
+      - name: User
+        fields: [id, username, email, password]
+
+# 输出定义
 outputs:
-  api_spec:
-    endpoints:
-      - path: /api/register
-        method: POST
-      - path: /api/login
-        method: POST
-  openapi_doc: "openapi.yaml"
+  - name: api_spec
+    type: object
+    description: API 规格说明
+
+  - name: openapi_doc
+    type: file
+    description: OpenAPI 文档 (YAML 格式)
+
+# 执行步骤
+steps:
+  - name: identify_resources
+    description: 识别资源
+    action: extract_resources
+    params:
+      requirements: "{{inputs.functional_requirements}}"
+
+  - name: define_endpoints
+    description: 定义端点
+    action: design_endpoints
+    params:
+      resources: "{{steps.identify_resources.list}}"
+      style: restful
+
+  - name: define_request_response
+    description: 定义请求响应格式
+    action: design_payloads
+    params:
+      endpoints: "{{steps.define_endpoints.list}}"
+      data_models: "{{inputs.data_models}}"
+
+  - name: generate_openapi
+    description: 生成 OpenAPI 文档
+    action: write_openapi
+    params:
+      endpoints: "{{steps.define_endpoints.list}}"
+      payloads: "{{steps.define_request_response.map}}"
+      format: yaml
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: 用户管理 API 设计
+    inputs:
+      functional_requirements:
+        - "用户可以注册"
+        - "用户可以登录"
+        - "用户可以查看个人信息"
+        - "用户可以更新个人信息"
+      data_models:
+        - name: User
+          fields: [id, username, email, password, created_at]
+    expected_outputs:
+      api_spec:
+        endpoints:
+          - path: "/api/users"
+            method: POST
+            description: "用户注册"
+          - path: "/api/auth/login"
+            method: POST
+            description: "用户登录"
+          - path: "/api/users/{id}"
+            method: GET
+            description: "获取用户信息"
 ```
+
+---
+
+**维护者**: EKET Framework Team

@@ -6,19 +6,41 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # EKET - AI 智能体协作框架
 
+**版本**: 0.6.0
+**最后更新**: 2026-03-23
+
+## 核心设计理念
+
+> **一切皆 Task** —— 从需求收集、分析、拆解，到研发、迭代、Review、Merge，所有工作都是 Task，只是难度和持续时间不同。
+
+每个 Agent 是独立的 Instance，主动承接符合自己角色的任务：
+
+```
+需求收集 → 需求分析 → 任务拆解 → 系统设计 → 开发 → 测试 → Review → Merge
+   │           │           │           │         │       │        │
+   └───────────┴───────────┴───────────┴─────────┴───────┴────────┘
+                              │
+                    不同角色的 Agent 主动承接
+```
+
 ## 快速开始
 
 ```bash
-# 初始化新项目
+# 1. 初始化项目
 ./scripts/init-project.sh <project-name> /path/to/project
 
-# 进入项目目录
+# 2. 进入项目目录
 cd /path/to/project
 
-# 启动实例（自动检测模式）
+# 3. 启动 Agent 实例（自动检测角色）
 /eket-start
 
-# 或启用自动模式（自动领取任务）
+# 或启动特定角色的 Agent
+/eket-start --role product_manager
+/eket-start --role frontend_dev
+/eket-start --role reviewer
+
+# 或启用自动模式（自动领取匹配任务）
 /eket-start -a
 ```
 
@@ -34,7 +56,6 @@ cd /path/to/project
 | `/eket-status` | 查看状态和任务列表 |
 | `/eket-claim <id>` | 领取任务 |
 | `/eket-review <id>` | 请求 Review |
-| `/eket-review-merge <id>` | Review + Merge 流程 (见下方说明) |
 | `/eket-help` | 显示帮助 |
 
 ## 常用脚本
@@ -64,140 +85,28 @@ cd /path/to/project
 
 ---
 
-## Review + Merge 流程
+## Agent 角色
 
-**命令**: `/eket-review-merge <task-id> [--merge | --no-merge]`
+| 角色 | 职责 | 处理 Task |
+|------|------|----------|
+| `product_manager` | 产品经理 | 需求收集、分析、任务拆解、优先级设定 |
+| `architect` | 架构师 | 系统设计、技术选型、架构评审 |
+| `frontend_dev` | 前端开发 | 前端开发、UI 实现、状态管理 |
+| `backend_dev` | 后端开发 | 后端开发、API 设计、数据库设计 |
+| `qa_engineer` | 测试工程师 | 测试用例、单元测试、E2E 测试 |
+| `devops_engineer` | 运维工程师 | CI/CD、部署、监控 |
+| `reviewer` | 审核员 | 代码 Review、合并审核 |
 
-**用途**: 当任务开发完成后，进行 Review 并根据结果创建后续任务
+### Agent 特性
 
-### 流程说明
-
-```
-1. 检查任务状态和 PR 文件
-       ↓
-2. 用户确认 Review 结果
-       ↓
-   ┌─────────────┬─────────────┐
-   │ Review 通过  │ Review 不通过 │
-   └─────────────┴─────────────┘
-         ↓                ↓
-   提示是否合并        创建修改任务
-         ↓                ↓
-   ┌─────┴─────┐
-   │ 是        │  否
-   ↓           ↓
-执行合并     等待合并   创建测试任务 + 潜在修复任务
-   ↓
-创建测试任务
-创建潜在修复任务
-```
-
-### Review 通过 → 执行合并 → 创建任务
-
-```bash
-# Review 通过，执行合并并创建测试和修复任务
-/eket-review-merge FEAT-001 --merge
-```
-
-**产出**:
-- 任务状态更新为 `done`
-- 创建测试任务：`TEST-FEAT-001` (状态：ready)
-- 创建潜在修复任务：`FIX-FEAT-001-post` (状态：backlog，测试发现问题后激活)
-
-### Review 不通过 → 创建修改任务
-
-```bash
-# Review 不通过，创建修改任务
-/eket-review-merge FEAT-001
-# 选择 "2. Review 不通过 - 需要修改"
-```
-
-**产出**:
-- 创建修改任务：`FIX-FEAT-001-20260321...` (状态：ready)
-- 原任务状态更新为 `review_failed`
+- **独立运行**: 每个 Agent 有自己的进程/会话，互不干扰
+- **主动承接**: 根据角色设定，主动领取匹配的任务
+- **可插拔**: 可随时启动新的 Agent 实例加入协作
+- **状态隔离**: Agent 之间有明确的状态边界
 
 ---
 
-## 开发规范
-
-### Bash 脚本权限
-
-确保所有 `.sh` 脚本具有执行权限：
-```bash
-chmod +x scripts/*.sh
-chmod +x template/.claude/commands/*.sh
-chmod +x tests/*.sh
-```
-
-### Red Line 安全政策 🚫
-
-**所有敏感信息禁止上传到 GitHub**
-
-敏感信息包括：
-- API Key、Token、Secret
-- 认证文件 (`.pem`, `.key`, `.p12`, credentials.json)
-- 本地文件绝对路径
-- 账号密码
-- 数据库连接字符串
-
-**正确做法**:
-- 使用 `.env` 文件管理环境变量
-- 使用密钥管理服务 (AWS Secrets Manager, Vault)
-- CI/CD 中使用 GitHub Secrets
-
-详见：`docs/05-reference/red-line-security.md`
-
-### 测试运行
-
-运行单元测试验证功能：
-```bash
-./tests/run-unit-tests.sh
-```
-
-测试覆盖（10 个单元测试）：
-- **模式检测**（U01-U02）：setup/execution 模式切换
-- **优先级计算**（U03-U05）：urgent 任务 100 分、bugfix +20 分、依赖-15 分
-- **任务推荐**（U06）：Top 3 推荐算法
-- **Agent Profile 匹配**（U07-U08）：frontend/backend 标签匹配
-- **任务领取**（U09-U10）：正常领取/重复领取拒绝
-
-### 集成测试场景
-
-```bash
-# 1. 项目初始化
-./scripts/init-project.sh <project> /path/to/project
-
-# 2. 启动实例（任务设定模式）
-cd /path/to/project
-/eket-start
-
-# 3. 创建任务后启动（任务承接模式）
-/eket-start              # 手动模式
-/eket-start -a           # 自动模式
-
-# 4. 查看状态
-/eket-status
-
-# 5. 领取任务
-/eket-claim FEAT-001
-
-# 6. 加载 Agent Profile
-./scripts/load-agent-profile.sh FEAT-001
-```
-
-### 权限配置
-
-Claude Code 权限配置位于 `template/.claude/settings.json`：
-```json
-{
-  "permissions": {
-    "auto": [
-      "Bash:.claude/commands/*.sh",
-      "Bash:./scripts/*.sh"
-    ]
-  }
-}
-```
+## 核心架构
 
 ---
 
@@ -222,64 +131,54 @@ code_repo/                    # 主代码仓库
 └── src/                      # 源代码
 ```
 
-### 智能体架构
+---
+
+## Agent 启动流程
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    顶层协调智能体小组                         │
-│  ┌─────────────┬─────────────┬─────────────┬─────────────┐  │
-│  │ 需求分析师   │  技术经理    │  项目经理    │  文档监控员  │  │
-│  │ (Requirement│ (Tech       │ (Project    │ (Doc        │  │
-│  │  Analyst)   │  Manager)   │  Manager)   │  Monitor)   │  │
-│  └─────────────┴─────────────┴─────────────┴─────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  执行层智能体（去中心化网络）                   │
-│  ┌─────────┬─────────┬──────────┬──────────┬────────┬──────┐ │
-│  │ 设计师   │ 测试员   │ 前端开发  │ 后端开发   │ 运维    │ 存储 │ │
-│  │Designer │ Tester  │Frontend  │ Backend  │DevOps  │Storage│ │
-│  └─────────┴─────────┴──────────┴──────────┴────────┴──────┘ │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### 智能体分类
-
-| 类型 | 生命周期 | 职责 | 示例 |
-|------|---------|------|------|
-| **协调智能体** | 常驻 | 人类交互、任务分析、架构定义、PR review | 需求分析师、技术经理、项目经理 |
-| **执行智能体** | 按需 | 任务领取、分支开发、PR 提交 | 设计师、开发、测试、运维 |
-
-## 实例初始化流程
-
-实例启动时自动检测项目状态并进入对应模式：
-
-```
-1. 检查三仓库目录
+1. 实例启动
    │
-   ├─ 任一缺失 → 任务设定模式 (Task Setup)
-   │             - 协调智能体负责
-   │             - 创建 Epic/Tasks
-   │             - 创建 Confluence 文档
+   ├─ 检查 Master 标记 → 判断项目是否已初始化
+   ├─ 检查三仓库状态 → confluence/jira/code_repo
    │
-   └─ 都存在 → 任务承接模式 (Task Execution)
-                 - 执行智能体负责
-                 - 自动/手动领取任务
-                 - 开发 → PR → 合并
+   ▼
+2. 决定模式
+   │
+   ├─ Master 标记不存在 → Master 模式 (项目初始化)
+   │                     - 创建三仓库目录
+   │                     - 设置 Master 标记
+   │                     - 初始化 main 分支
+   │
+   └─ Master 标记存在 → Slaver 模式 (任务执行)
+                       - 创建 worktree 同步状态
+                       - 读取项目背景
+                       - 领取/执行任务
+   │
+   ▼
+3. 执行任务
+   │
+   ├─ Master: 需求分析 → 任务拆解 → 创建 tickets
+   └─ Slaver: 领取任务 → 开发 → 测试 → 提交 PR
 ```
+
+---
 
 ## 工作流程
 
-### 任务设定模式 (Task Setup Mode)
+### Master 模式 (项目初始化)
 
-**触发条件**: 三仓库目录不存在或不完整
+**触发条件**: Master 标记不存在
 
-**负责智能体**: 协调智能体小组（需求分析师、技术经理、项目经理）
+**职责**:
+- 创建三仓库目录和 Master 标记
+- 初始化 main 分支
+- 需求分析 → 任务拆解 → 创建 Jira tickets
+- 创建 Confluence 文档
+- 代码 Review → 合并到 main
 
 **工作流程**:
 ```
-1. 读取 `inbox/human_input.md` 中的需求
+1. 读取 inbox/human_input.md 中的需求
        ↓
 2. 分析需求并拆解为 Epic 和功能任务
        ↓
@@ -288,46 +187,59 @@ code_repo/                    # 主代码仓库
 4. 创建 Jira 任务票
        ↓
 5. 设定任务优先级和依赖关系
+       ↓
+6. 等待 Slaver 领取任务
 ```
-
-**输出位置**:
-- `confluence/projects/{project}/requirements/` - 需求文档
-- `confluence/projects/{project}/architecture/` - 架构文档
-- `jira/epics/` - Epic 定义
-- `jira/tickets/feature/` - 功能任务
 
 ---
 
-### 任务承接模式 (Task Execution Mode)
+### Slaver 模式 (任务执行)
 
-**触发条件**: 三仓库目录都存在
+**触发条件**: Master 标记存在
 
-**负责智能体**: 执行智能体（前端开发、后端开发、设计师、测试员、运维）
+**职责**:
+- 领取 Jira tickets 并执行
+- 自主规划、开发、测试、迭代
+- 提交 PR 到 testing 分支
+- 请求 Master 审核
 
 **两种运行方式**:
 
 | 方式 | 行为 | 命令 |
 |------|------|------|
-| 自动模式 | 自动领取最高优先级任务 | `/eket-start -a` |
-| 手动模式 | 显示 Top 3 推荐任务 | `/eket-start` |
+| 自动模式 | 根据 ticket 优先级自动领取并执行 | `/eket-start -a` |
+| 手动模式 | 分析项目状态，由人类协助决策 | `/eket-start` |
 
-**工作流程**:
+**自动模式流程**:
 ```
-1. 阅读 Confluence 了解项目背景
+1. 同步三仓库状态 (通过 worktree)
        ↓
-2. 检查 Jira 任务列表
+2. 分析 Jira tickets 优先级
        ↓
-3. 领取任务（自动/手动）
+3. 初始化 Profile (根据任务类型匹配角色)
        ↓
-4. 加载对应 Agent Profile 和 Skills
+4. 领取最高优先级任务
        ↓
-5. 创建 Git 分支 → 开发 → 提交
+5. 更新任务状态为 in_progress
        ↓
-6. 创建 PR 到 testing 分支
+6. 自主规划 → 开发 → 测试 → 迭代
        ↓
-7. 测试通过 → PR 到 main
+7. 提交 PR 到 testing 分支
        ↓
-8. 合并完成 → 更新 Jira 状态
+8. 请求 Master 审核
+```
+
+**手动模式流程**:
+```
+1. 同步三仓库状态 (通过 worktree)
+       ↓
+2. 分析项目背景和当前状态
+       ↓
+3. 整理 Ticket 列表
+       ↓
+4. 给出处理建议
+       ↓
+5. 等待人类指示 → 配合执行
 ```
 
 ---
@@ -407,9 +319,7 @@ SKILL 是独立、可配置、可复用的能力单元。主要分类：
 
 ---
 
-## 代码库结构
-
-### 框架目录 (eket/)
+## 文件结构
 
 ```
 eket/
@@ -420,6 +330,10 @@ eket/
 │   ├── 03-implementation/    # 实现细节
 │   ├── 04-testing/           # 测试验证
 │   └── 05-reference/         # 参考资料
+├── template/                 # 项目模板
+│   ├── CLAUDE.md             # 项目 CLAUDE.md 模板
+│   ├── .claude/commands/     # Claude Code 命令
+│   └── .eket/                # EKET 配置
 ├── scripts/                  # 工具脚本
 │   ├── init-project.sh       # 项目初始化
 │   ├── init-three-repos.sh   # 三仓库初始化
@@ -427,39 +341,7 @@ eket/
 │   ├── manage.sh             # 管理命令
 │   ├── prioritize-tasks.sh   # 任务优先级排序
 │   └── recommend-tasks.sh    # 任务推荐
-├── tests/                    # 测试
-│   ├── run-unit-tests.sh     # 单元测试
-│   ├── run-integration-tests.sh
-│   └── run-scenario-tests.sh
-└── template/                 # 项目模板
-    ├── CLAUDE.md             # 项目 CLAUDE.md 模板
-    ├── .claude/commands/     # Claude Code 命令
-    └── .eket/                # EKET 配置
-```
-
-### 项目模板结构 (template/)
-
-```
-template/
-├── .claude/
-│   ├── commands/             # Claude Code 命令脚本
-│   │   ├── eket-init.sh
-│   │   ├── eket-start.sh
-│   │   ├── eket-status.sh
-│   │   ├── eket-claim.sh
-│   │   ├── eket-review.sh
-│   │   └── eket-help.sh
-│   ├── CLAUDE.md             # 项目内 CLAUDE 指南
-│   └── settings.json         # 权限配置
-├── .eket/
-│   ├── config.yml            # Agent 配置
-│   ├── version.yml           # 版本信息
-│   └── health_check.sh       # 健康检查
-├── .github/workflows/        # CI/CD 配置
-├── agents/                   # Agent 配置模板
-├── inbox/                    # 输入目录模板
-├── outbox/                   # 输出目录模板
-└── tasks/                    # 任务目录模板
+└── tests/                    # 测试
 ```
 
 ---
@@ -527,40 +409,6 @@ template/
 
 ---
 
-**版本**: 0.2.0
-**最后更新**: 2026-03-20
+**版本**: 0.5.0
+**最后更新**: 2026-03-23
 **维护者**: EKET Framework Team
-
----
-
-## v0.2.1 改进说明 (2026-03-20)
-
-### 新增功能
-
-1. **Skills 目录支持**
-   - 新增 `template/skills/` 目录，包含 6 大类 Skills 定义
-   - 项目初始化时自动复制 Skills 到项目目录
-   - 包含 `requirements/`, `design/`, `development/`, `testing/`, `devops/`, `documentation/` 分类
-
-2. **脚本目录自动复制**
-   - 项目初始化时自动复制 `scripts/` 目录
-   - 包含 `load-agent-profile.sh`, `prioritize-tasks.sh`, `recommend-tasks.sh` 等工具脚本
-
-3. **eket-status 增强**
-   - 支持读取 Jira 仓库目录 (`jira/tickets/`)
-   - 优先显示 Jira 任务，回退到本地 `tasks/` 目录
-
-### 修复问题
-
-1. **缺失模板文件** - 新增 `inbox/human_input.md` 模板
-2. **eket-status 不支持 Jira** - 更新脚本支持双目录结构
-3. **脚本权限** - 初始化时自动 `chmod +x` 所有脚本
-
-### 测试覆盖
-
-10 个单元测试全部通过：
-- 模式检测 (U01-U02) ✓
-- 优先级计算 (U03-U05) ✓
-- 任务推荐 (U06) ✓
-- Agent Profile 匹配 (U07-U08) ✓
-- 任务领取 (U09-U10) ✓
