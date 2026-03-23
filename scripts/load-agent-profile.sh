@@ -1,7 +1,7 @@
 #!/bin/bash
 # scripts/load-agent-profile.sh - 加载 Agent Profile 和 Skills
 
-set -e
+# 不使用 set -e，避免意外退出
 
 TASK_ID="$1"
 TASK_FILE="jira/tickets/*/$TASK_ID.md"
@@ -97,7 +97,7 @@ fi
 echo ""
 echo "加载 Skills..."
 for skill in $AGENT_SKILLS; do
-    SKILL_FILE="skills/${skill}.yml"
+    SKILL_FILE="template/skills/${skill}.yml"
     if [ -f "$SKILL_FILE" ]; then
         echo "  ✓ $skill"
     else

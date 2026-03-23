@@ -1,0 +1,121 @@
+# 集成测试 Skill
+
+**版本**: 1.0.0
+**分类**: testing
+
+---
+
+```yaml
+name: integration_test
+version: 1.0.0
+category: testing
+description: 执行模块间集成测试
+
+# 输入参数定义
+inputs:
+  - name: modules
+    type: array
+    required: true
+    description: 需要测试的模块列表
+    example:
+      - "用户认证模块"
+      - "订单管理模块"
+
+  - name: test_framework
+    type: string
+    required: true
+    description: 测试框架
+    example: "pytest"
+
+  - name: integration_points
+    type: array
+    required: true
+    description: 模块间接口点
+    example:
+      - {from: "用户认证", to: "订单管理", type: "API"}
+
+# 输出定义
+outputs:
+  - name: test_files
+    type: array
+    description: 生成的测试文件
+
+  - name: test_report
+    type: object
+    description: 测试报告
+    properties:
+      passed: number
+      failed: number
+      integration_issues: array
+
+# 执行步骤
+steps:
+  - name: analyze_interfaces
+    description: 分析接口
+    action: parse_interfaces
+    params:
+      modules: "{{inputs.modules}}"
+      integration_points: "{{inputs.integration_points}}"
+
+  - name: design_test_cases
+    description: 设计测试用例
+    action: map_test_cases
+    params:
+      interfaces: "{{steps.analyze_interfaces.list}}"
+      scenarios: [happy_path, error_handling, edge_cases]
+
+  - name: setup_test_environment
+    description: 设置测试环境
+    action: configure_env
+    params:
+      services: "{{inputs.modules}}"
+      mock_external: true
+
+  - name: write_tests
+    description: 编写测试
+    action: generate_test_code
+    params:
+      test_cases: "{{steps.design_test_cases.list}}"
+      framework: "{{inputs.test_framework}}"
+
+  - name: run_tests
+    description: 运行测试
+    action: execute_tests
+    params:
+      test_files: "{{steps.write_tests.files}}"
+      environment: test
+
+  - name: report_issues
+    description: 报告问题
+    action: generate_report
+    params:
+      results: "{{steps.run_tests.results}}"
+      focus: integration_issues
+
+# 依赖的其它 Skill
+dependencies:
+  - testing/unit_test
+
+# 使用示例
+examples:
+  - name: 用户认证与订单集成测试
+    inputs:
+      modules: ["用户认证", "订单管理", "支付网关"]
+      test_framework: "pytest"
+      integration_points:
+        - {from: "用户认证", to: "订单管理", type: "API"}
+        - {from: "订单管理", to: "支付网关", type: "Webhook"}
+    expected_outputs:
+      test_files:
+        - "tests/integration/auth_order_test.py"
+        - "tests/integration/order_payment_test.py"
+      test_report:
+        passed: 15
+        failed: 2
+        integration_issues:
+          - "订单模块未正确处理未认证用户"
+```
+
+---
+
+**维护者**: EKET Framework Team

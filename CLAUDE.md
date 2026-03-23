@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # EKET - AI 智能体协作框架
 
-**版本**: 0.5.0
+**版本**: 0.6.0
 **最后更新**: 2026-03-23
 
 ## 核心设计理念

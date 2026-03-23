@@ -59,6 +59,13 @@ skills:
     version: 1.0.0
     description: 验收标准定义
 
+  - name: user_story_mapping
+    path: requirements/user_story_mapping.yml
+    category: requirements
+    status: active
+    version: 1.0.0
+    description: 用户故事地图
+
   # ===== 技术设计类 =====
   - name: architecture_design
     path: design/architecture_design.yml
@@ -110,6 +117,13 @@ skills:
     status: active
     version: 1.0.0
     description: E2E 测试
+
+  - name: integration_test
+    path: testing/integration_test.yml
+    category: testing
+    status: active
+    version: 1.0.0
+    description: 集成测试
 
   # ===== 运维部署类 =====
   - name: docker_build
@@ -166,6 +180,7 @@ recommended_combinations:
   qa_engineer:
     - testing/unit_test
     - testing/e2e_test
+    - testing/integration_test
 
   devops_engineer:
     - devops/docker_build
