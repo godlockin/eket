@@ -38,14 +38,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 
 ## 可用命令
 
+### 通用命令
+
 | 命令 | 功能 |
 |------|------|
 | `/eket-init` | 初始化向导（首次启动运行） |
+| `/eket-start` | 启动实例（自动检测 Master/Slaver） |
+| `/eket-start -a` | 自动模式启动（Slaver 自动领取任务） |
+| `/eket-role <role>` | 设置 Slaver 角色类型 |
 | `/eket-status` | 查看智能体状态和任务列表 |
-| `/eket-task <desc>` | 创建新任务 |
-| `/eket-review [id]` | 请求 Review |
 | `/eket-claim [id]` | 领取任务 |
+| `/eke-submit-pr` | 提交 PR 请求审核 |
 | `/eket-help` | 显示帮助 |
+
+### Master 专用命令
+
+| 命令 | 功能 |
+|------|------|
+| `/eket-analyze` | 分析需求并拆解任务 |
+| `/eket-review-pr` | 审核 Slaver 提交的 PR |
+| `/eket-merge` | 合并 PR 到 main 分支 |
+| `/eket-check-progress` | 检查 Slaver 任务进度 |
 
 ---
 
