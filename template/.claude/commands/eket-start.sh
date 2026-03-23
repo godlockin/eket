@@ -320,6 +320,17 @@ if [ "$INSTANCE_ROLE" = "master" ]; then
             echo -e "${YELLOW}  ⚠${NC} 配置文件验证失败 (可选)"
     fi
 
+    # 全量验证 (v0.5.2) - 可选，用于完整校验
+    if [ -f "../../scripts/validate-all.sh" ]; then
+        echo -e "${BLUE}## EKET 全量验证 (v0.5.2)${NC}"
+        if ../../scripts/validate-all.sh 2>/dev/null; then
+            echo -e "${GREEN}  ✓${NC} 全量验证通过"
+        else
+            echo -e "${YELLOW}  ⚠${NC} 全量验证发现警告（可稍后修复）"
+            echo "     运行：../../scripts/validate-all.sh --fix 查看详细信息"
+        fi
+    fi
+
     echo ""
 
     # ==========================================
@@ -489,6 +500,17 @@ EOF
     # ==========================================
     echo -e "${BLUE}## v0.5.1: 初始化 Slaver 权限和监控${NC}"
     echo ""
+
+    # 配置验证 (v0.5.2)
+    if [ -f "../../scripts/validate-all.sh" ]; then
+        echo -e "${BLUE}## 验证配置文件 (v0.5.2)${NC}"
+        if ../../scripts/validate-all.sh 2>/dev/null; then
+            echo -e "${GREEN}  ✓${NC} 配置验证通过"
+        else
+            echo -e "${YELLOW}  ⚠${NC} 配置验证发现警告"
+            echo "     运行：../../scripts/validate-all.sh --fix 查看详情"
+        fi
+    fi
 
     # 检查权限脚本
     if [ -f "../../scripts/slaver-permissions.sh" ]; then
