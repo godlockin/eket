@@ -289,9 +289,43 @@ if [ "$INSTANCE_ROLE" = "master" ]; then
     echo ""
 
     # ==========================================
-    # 步骤 4.3: 检查/创建需求输入文件
+    # 步骤 4.3: 启动 Master 监控服务 (v0.5.1)
     # ==========================================
-    echo -e "${BLUE}## 步骤 4.3: 检查需求输入${NC}"
+    echo -e "${BLUE}## 步骤 4.3: 启动 Master 监控服务${NC}"
+    echo ""
+
+    # 启动心跳监控守护进程
+    if [ -f "../../scripts/heartbeatmonitor.sh" ]; then
+        echo -e "${GREEN}✓${NC} 启动心跳监控守护进程..."
+        ../../scripts/heartbeatmonitor.sh --daemon &>/dev/null &
+        echo -e "${GREEN}  ✓${NC} 心跳监控已启动 (后台守护进程)"
+    else
+        echo -e "${YELLOW}⚠${NC} 心跳监控脚本未找到"
+    fi
+
+    # 启动 Memory Review Agent (v0.5.1)
+    if [ -f "../../scripts/memory-review-agent.sh" ]; then
+        echo -e "${GREEN}✓${NC} 启动 Memory Review Agent..."
+        ../../scripts/memory-review-agent.sh --daemon &>/dev/null &
+        echo -e "${GREEN}  ✓${NC} Memory Review Agent 已启动 (后台守护进程)"
+    else
+        echo -e "${YELLOW}⚠${NC} Memory Review Agent 脚本未找到"
+    fi
+
+    # 配置验证 (v0.5.1)
+    if [ -f "../../scripts/validate-config.sh" ]; then
+        echo -e "${BLUE}## 验证配置文件${NC}"
+        ../../scripts/validate-config.sh 2>/dev/null && \
+            echo -e "${GREEN}  ✓${NC} 配置文件验证通过" || \
+            echo -e "${YELLOW}  ⚠${NC} 配置文件验证失败 (可选)"
+    fi
+
+    echo ""
+
+    # ==========================================
+    # 步骤 4.4: 检查/创建需求输入文件
+    # ==========================================
+    echo -e "${BLUE}## 步骤 4.4: 检查需求输入${NC}"
     echo ""
 
     if [ -f "inbox/human_input.md" ]; then
@@ -453,7 +487,7 @@ EOF
     # ==========================================
     # v0.5 新增：Slaver 权限和计时初始化
     # ==========================================
-    echo -e "${BLUE}## v0.5: 初始化 Slaver 权限和计时${NC}"
+    echo -e "${BLUE}## v0.5.1: 初始化 Slaver 权限和监控${NC}"
     echo ""
 
     # 检查权限脚本
@@ -467,6 +501,20 @@ EOF
     if [ "$AUTO_MODE" = true ] && [ -f "../../scripts/mock-detector.sh" ]; then
         echo -e "${BLUE}## 执行 Mock 实现检测${NC}"
         ../../scripts/mock-detector.sh detect code_repo/src 2>/dev/null || true
+    fi
+
+    # Merge Validator (v0.5.1) - 配置合并验证逻辑
+    if [ -f "../../scripts/merge-validator.sh" ]; then
+        echo -e "${GREEN}✓${NC} Merge Validator 已配置"
+    else
+        echo -e "${YELLOW}⚠${NC} Merge Validator 脚本未找到"
+    fi
+
+    # 测试门禁系统集成 (v0.5.1)
+    if [ -f "../../scripts/test-gate-system.sh" ]; then
+        echo -e "${GREEN}✓${NC} 测试门禁系统已就绪"
+    else
+        echo -e "${YELLOW}⚠${NC} 测试门禁系统脚本未找到"
     fi
 
     echo ""
