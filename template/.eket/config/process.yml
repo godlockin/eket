@@ -1,0 +1,84 @@
+# EKET 流程配置模块
+
+process:
+  # Sprint 配置
+  sprint:
+    duration_days: 7
+    tasks_per_sprint: 5
+    review_after_sprints: 2  # 每 2 个 sprint 后回顾
+
+    # Sprint Review 配置 v0.5.1
+    review:
+      automated_report: true
+      report_location: "outbox/sprint-reports"
+      include_metrics:
+        - "completed_tasks"
+        - "incomplete_tasks"
+        - "code_quality"
+        - "velocity"
+        - "blockers"
+
+  # Checkpoint 配置
+  checkpoint:
+    enabled: true
+    # 验证配置 v0.5.1
+    validation:
+      enabled: true
+      strict_mode: false  # false = 警告，true = 阻塞
+
+    task_start:
+      enabled: true
+      actions:
+        - "check_dependencies"
+        - "create_branch"
+        - "start_timer"
+        - "verify_agent_profile"
+    task_dev_complete:
+      enabled: true
+      actions:
+        - "run_unit_tests"
+        - "run_lint"
+        - "check_coverage"
+        - "verify_code_quality"
+    task_test_complete:
+      enabled: true
+      actions:
+        - "run_e2e_tests"
+        - "create_pr_draft"
+        - "verify_test_coverage"
+    task_complete:
+      enabled: true
+      actions:
+        - "verify_all_features"
+        - "create_follow_up_tickets"
+        - "update_documentation"
+        - "sync_confluence"
+
+  # Retrospective 配置
+  retrospective:
+    enabled: true
+    after_sprint_pairs: true
+    after_stage: true
+    output_location: "confluence/memory/retrospectives"
+    topics:
+      - "task_progress_issues"
+      - "review_process_issues"
+      - "lessons_learned"
+      - "framework_improvements"
+
+    # 索引和复用 v0.5.1
+    index:
+      enabled: true
+      index_file: "confluence/memory/retrospectives/index.yml"
+      # 任务前检查
+      pre_task_check:
+        enabled: true
+        similarity_threshold: 0.7
+        max_results: 3
+
+    # 行动计划追踪 v0.5.1
+    action_tracking:
+      enabled: true
+      create_improvement_tasks: true
+      track_completion: true
+      review_previous: true

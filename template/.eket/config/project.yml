@@ -1,0 +1,11 @@
+# EKET 项目配置模块
+
+version: "0.5.1"
+
+project:
+  name: "{{PROJECT_NAME}}"
+  root: "{{PROJECT_ROOT}}"
+  initialized_at: "{{TIMESTAMP}}"
+  stage: "phase_1"  # phase_1, phase_2, phase_3, ...
+
+mode: "claude_code"

@@ -1,0 +1,54 @@
+# EKET Review 和 Merge 配置模块
+
+review:
+  request_location: "outbox/review_requests"
+  feedback_location: "inbox/human_feedback"
+  timeout_hours: 24
+  auto_merge: false
+
+  # Review 超时升级机制 v0.5.1
+  escalation:
+    enabled: true
+    after_24h: "notify_tech_lead"
+    after_48h: "notify_project_manager"
+    after_72h: "auto_assign_alternative_reviewer"
+
+  # Merge 策略 v0.5.1
+  merge_strategy:
+    # 所有功能点完成
+    all_features_complete: true
+    # UT 测试通过
+    unit_tests_pass: true
+    # Master Review 通过
+    master_review_pass: true
+    # 部分完成处理
+    incomplete_features:
+      action: "create_follow_up_ticket"  # create_follow_up_ticket | partial_merge | cherry_pick
+      prefix: "FIX"
+      allow_partial_merge: true
+      min_completion_percent: 80
+      require_feature_flags: true
+
+merge:
+  # 合并验证 v0.5.1
+  validation:
+    enabled: true
+    # 验证项
+    verify:
+      - "all_features_complete"
+      - "unit_tests_pass"
+      - "master_review_pass"
+      - "lint_pass"
+      - "coverage_threshold"
+    # 验证失败处理
+    on_failure:
+      - "block_merge"
+      - "create_fix_task"
+      - "notify_author"
+
+  # 合并后动作
+  post_merge:
+    - "delete_feature_branch"
+    - "update_ticket_status"
+    - "notify_stakeholders"
+    - "trigger_deployment"

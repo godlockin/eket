@@ -1,0 +1,54 @@
+# EKET 监控配置模块
+
+monitoring:
+  # Master 监控配置
+  master:
+    enabled: true
+    check_interval_seconds: 60
+    timely_alert_minutes: 5
+    # 自动启动配置 v0.5.1
+    auto_start: true
+    log_file: "logs/master-monitor.log"
+
+  # Slaver 心跳配置
+  slaver:
+    enabled: true
+    heartbeat_interval_seconds: 30
+    timeout_seconds: 300
+    # 心跳文件位置
+    health_file: ".eket/state/slaver-health.yml"
+    # 超时后动作
+    on_timeout:
+      - "alert_master"
+      - "notify_slaver"
+      - "reset_task_if_needed"
+
+  # 任务超时监控
+  task_timeout:
+    enabled: true
+    check_interval_seconds: 120
+    alert_before_timeout_minutes: 15
+    # 超时后动作
+    on_timeout:
+      - "create_alert"
+      - "notify_human"
+      - "reset_task"
+
+  # Memory Review Agent 健康检查 v0.5.1
+  memory_agent:
+    enabled: true
+    health_file: ".eket/state/memory-agent-health.yml"
+    check_interval_seconds: 300
+    timeout_seconds: 3600
+    # 超时后自动重启
+    auto_restart: true
+    max_restart_attempts: 3
+    restart_delay_seconds: 10
+
+  # 并发控制 v0.5.1
+  concurrency:
+    enabled: true
+    max_concurrent_slavers: 3
+    max_concurrent_tasks: 5
+    # 超时后释放
+    release_on_timeout_seconds: 600

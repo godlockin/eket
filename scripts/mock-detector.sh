@@ -25,11 +25,14 @@ MOCK_PATTERNS=(
     'return \{\}'
     'return undefined'
     'return null'
+    "return ''"
+    'return ""'
 
     # Python 空返回
     'return pass'
     'raise NotImplementedError'
     'pass  # TODO'
+    '^\s*\.\.\.$'  # Python ... 作为函数体
 
     # 通用 TODO
     '// TODO'
@@ -37,10 +40,16 @@ MOCK_PATTERNS=(
     '/* TODO'
     'TODO:'
 
+    # 空函数体
+    'function.*\{\s*\}'
+    'async.*\{\s*\}'
+    '=> \{\s*\}'
+
     # 空实现标记
     'MockLegacySearchAdapter'
     'Mock.*Adapter'
     'Fake.*Impl'
+    'Stub.*Repository'
 )
 
 # ==========================================
@@ -242,16 +251,49 @@ EOF
 
 deep_code_analysis() {
     local src_dir="${1:-code_repo/src}"
+    local alert_count=0
 
     echo -e "${BLUE}## 深度代码分析${NC}"
 
     # 检测空函数体
+    echo ""
     echo "检测空函数体..."
-    local empty_funcs=$(grep -A 3 "^async.*Promise.*{" "$src_dir" -r --include="*.ts" 2>/dev/null | grep -B 1 "return \[\]" || true)
+    local empty_funcs=$(grep -rnE "function\s*\w*\s*\([^)]*\)\s*\{\s*\}" "$src_dir" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" 2>/dev/null | grep -v "test\|spec" || true)
 
     if [ -n "$empty_funcs" ]; then
         echo -e "${RED}⚠ 发现空函数体：${NC}"
         echo "$empty_funcs"
+        ((alert_count++))
+    fi
+
+    # 检测空箭头函数
+    echo "检测空箭头函数..."
+    local empty_arrows=$(grep -rnE "const\s+\w+\s*=\s*\([^)]*\)\s*=>\s*\{\s*\}" "$src_dir" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" 2>/dev/null | grep -v "test\|spec" || true)
+
+    if [ -n "$empty_arrows" ]; then
+        echo -e "${RED}⚠ 发现空箭头函数：${NC}"
+        echo "$empty_arrows"
+        ((alert_count++))
+    fi
+
+    # 检测异步空函数
+    echo "检测异步空函数..."
+    local empty_async=$(grep -rnE "async\s+\w*\s*\([^)]*\)\s*\{\s*\}" "$src_dir" --include="*.ts" --include="*.js" 2>/dev/null | grep -v "test\|spec" || true)
+
+    if [ -n "$empty_async" ]; then
+        echo -e "${RED}⚠ 发现异步空函数：${NC}"
+        echo "$empty_async"
+        ((alert_count++))
+    fi
+
+    # 检测 Python 空函数 (... 作为函数体)
+    echo "检测 Python 空函数体..."
+    local empty_python=$(grep -rnB1 "^\s*\.\.\.$" "$src_dir" --include="*.py" 2>/dev/null | grep -E "^\s*def\s+" || true)
+
+    if [ -n "$empty_python" ]; then
+        echo -e "${RED}⚠ 发现 Python 空函数体：${NC}"
+        echo "$empty_python"
+        ((alert_count++))
     fi
 
     # 检测未实现的接口
@@ -261,15 +303,46 @@ deep_code_analysis() {
     if [ -n "$unimplemented" ]; then
         echo -e "${RED}⚠ 发现未实现接口：${NC}"
         echo "$unimplemented"
+        ((alert_count++))
     fi
 
     # 检测硬编码的空值
     echo "检测硬编码空值..."
-    local hardcoded_empty=$(grep -rn "data: \[\]" "$src_dir" --include="*.ts" --include="*.js" 2>/dev/null | grep -v "test\|spec" || true)
+    local hardcoded_empty=$(grep -rn "data:\s*\[\]" "$src_dir" --include="*.ts" --include="*.js" 2>/dev/null | grep -v "test\|spec" || true)
 
     if [ -n "$hardcoded_empty" ]; then
         echo -e "${YELLOW}⚠ 发现硬编码空值：${NC}"
         echo "$hardcoded_empty"
+        ((alert_count++))
+    fi
+
+    # 检测 Mock 文件
+    echo "检测 Mock 文件..."
+    local mock_files=$(find "$src_dir" -type f \( -name "*Mock*" -o -name "*Fake*" -o -name "*Stub*" \) 2>/dev/null | grep -v "test\|spec" || true)
+
+    if [ -n "$mock_files" ]; then
+        echo -e "${YELLOW}⚠ 发现 Mock 文件：${NC}"
+        echo "$mock_files"
+        ((alert_count++))
+    fi
+
+    # 检测硬编码的假数据
+    echo "检测硬编码假数据..."
+    local fake_data=$(grep -rnE "return\s*['\"].*mock|fake|dummy|placeholder.*['\"]" "$src_dir" --include="*.ts" --include="*.js" --include="*.py" 2>/dev/null | grep -v "test\|spec" || true)
+
+    if [ -n "$fake_data" ]; then
+        echo -e "${RED}⚠ 发现硬编码假数据：${NC}"
+        echo "$fake_data"
+        ((alert_count++))
+    fi
+
+    echo ""
+    if [ $alert_count -gt 0 ]; then
+        echo -e "${RED}深度分析完成：发现 $alert_count 类问题${NC}"
+        return 1
+    else
+        echo -e "${GREEN}深度分析完成：未发现明显 Mock/Empty 实现${NC}"
+        return 0
     fi
 }
 

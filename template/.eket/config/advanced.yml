@@ -1,0 +1,164 @@
+# EKET 高级配置模块
+
+advanced:
+  # 文件锁
+  file_lock:
+    enabled: true
+    timeout_seconds: 300
+
+  # 重试配置
+  retry:
+    max_attempts: 3
+    delay_seconds: 5
+
+  # 资源限制
+  limits:
+    max_file_size_mb: 10
+    max_files_per_commit: 20
+
+  # Mock 实现检测
+  mock_detection:
+    enabled: true
+    auto_create_clarification_task: true
+    # 检测模式 v0.5.1
+    patterns:
+      # 空返回值
+      - "return \\[\\]"
+      - "return \\{\\}"
+      - "return ''"
+      - 'return ""'
+      - "return None$"
+      - "return null$"
+      # TODO 注释
+      - "// TODO"
+      - "# TODO"
+      - "/\\* TODO"
+      - "pass  # TODO"
+      # 未实现异常
+      - "NotImplementedError"
+      - "throw new Error.*TODO"
+      # 空函数体
+      - "function.*\\{\\s*\\}"
+      - "async.*\\{\\s*\\}"
+      # Mock 文件
+      - "Mock.*Adapter"
+      - "Fake.*Service"
+      - "Stub.*Repository"
+    # 排除路径
+    exclude_paths:
+      - "*.test.*"
+      - "*.spec.*"
+      - "**/__tests__/**"
+      - "**/mocks/**"
+      - "**/stubs/**"
+
+  # 依赖追问
+  dependency_clarification:
+    enabled: true
+    auto_create_task: true
+    task_prefix: "DEP"
+    require_user_response: true
+    # 人类持续等待 v0.5.1
+    wait_indefinitely: true
+
+  # 仲裁决策
+  arbitration:
+    enabled: true
+    timeout_minutes: 30
+    escalate_to_human_hours: 24
+
+  # 配置验证 v0.5.1
+  config_validation:
+    enabled: true
+    validate_on_start: true
+    strict_mode: false
+
+  # 错误处理规范 v0.5.1
+  error_handling:
+    enabled: true
+   统一_error码：true
+    统一日志格式：true
+    统一退出码：true
+    # 错误码范围
+    error_codes:
+      success: 0
+      general_error: 1
+      config_error: 2
+      permission_error: 3
+      timeout_error: 4
+      validation_error: 5
+
+  # 文档同步 v0.5.1
+  documentation_sync:
+    enabled: true
+    # 同步节点
+    sync_on:
+      - "task_analysis_complete"
+      - "plan_approved"
+      - "dev_complete"
+      - "merge_complete"
+    # 审查节点
+    review_on:
+      - "plan_approved"
+      - "dev_complete"
+      - "merge_complete"
+
+  # 通知配置
+  notifications:
+    methods:
+      - file
+      - console
+    # 用户参与触发
+    user_involvement:
+      dependency_clarification: true
+      arbitration_request: true
+      task_completion: true
+      sprint_completion: true
+      stage_completion: true
+    on:
+      task_created: true
+      task_completed: true
+      pr_created: true
+      pr_merged: true
+      review_requested: true
+      blocker_detected: true
+      timeout_detected: true
+      mock_detected: true
+      task_reset: true  # v0.5.1 新增
+
+  # 同步配置
+  synchronization:
+    tri_repo_sync:
+      enabled: true
+      check_interval_minutes: 5
+      auto_resolve_conflict: false
+
+    confluence:
+      sync_on_start: true
+      sync_interval_minutes: 10
+
+    jira:
+      sync_on_start: true
+      sync_interval_minutes: 5
+
+    code_repo:
+      sync_on_start: true
+      worktree_sync_interval_minutes: 15
+
+  # 能力配置
+  capabilities:
+    enabled:
+      - requirement_analysis
+      - task_creation
+      - code_generation
+      - test_generation
+      - documentation
+      - git_operations
+      - pr_management
+      - time_tracking
+      - mock_detection
+      - dependency_clarification
+
+    disabled:
+      - deployment
+      - database_migration

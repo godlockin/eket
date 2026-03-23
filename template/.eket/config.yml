@@ -1,374 +1,67 @@
-# EKET 智能体系统 - 项目配置 v0.5
+# EKET 智能体系统 - 项目配置 v0.5.1
+#
+# 配置采用模块化设计，主配置文件引用各模块配置
+# 模块配置位于 config/ 目录下
 
-# 此文件位于项目的 .eket/config.yml
+version: "0.5.1"
 
-version: "0.5.0"
+# ==================== 模块化配置引用 ====================
 
-# ==================== 项目配置 ====================
+# 模块加载顺序 (不要修改注释格式，脚本需要解析)
+# @load config/project.yml
+# @load config/tasks.yml
+# @load config/monitoring.yml
+# @load config/permissions.yml
+# @load config/git.yml
+# @load config/review_merge.yml
+# @load config/process.yml
+# @load config/testing.yml
+# @load config/memory_log.yml
+# @load config/advanced.yml
 
-project:
-  name: "{{PROJECT_NAME}}"
-  root: "{{PROJECT_ROOT}}"
-  initialized_at: "{{TIMESTAMP}}"
-  stage: "phase_3"  # phase_1, phase_2, phase_3, ...
+# ==================== 快速配置覆盖 ====================
+# 在此处定义的参数会覆盖模块配置中的值
 
-# ==================== 智能体模式 ====================
+# 项目基本信息 (示例)
+# project:
+#   name: "MyProject"
+#   stage: "phase_1"
 
+# 模式选择
 mode: "claude_code"
 
-# ==================== 角色定义 ====================
+# 预设配置 (lightweight | standard | enterprise)
+# lightweight: 适合小型项目，禁用高级功能
+# standard: 默认配置，适合中型项目
+# enterprise: 启用所有功能，适合大型项目
+profile: "standard"
 
-roles:
-  master:
-    description: "协调实例 - 负责任务分析、Review、合并"
-    permissions:
-      jira:
-        - create_ticket
-        - update_ticket
-        - change_status
-        - assign_ticket
-      confluence:
-        - read
-        - write
-        - sync
-      code_repo:
-        - read
-        - write
-        - merge_to_main
-        - merge_to_testing
-      git:
-        - checkout_main
-        - create_branch
-        - push_main
-    responsibilities:
-      - "任务分析与拆解"
-      - "Slaver 任务进度监控"
-      - "代码 Review"
-      - "合并到主分支"
-      - "仲裁 Slaver 冲突"
+# ==================== 环境变量引用 ====================
+# 使用 ${ENV_VAR} 格式引用环境变量
 
-  slaver:
-    description: "执行实例 - 负责领取并执行任务"
-    permissions:
-      jira:
-        - read_ticket
-        - update_ticket_assigned_to_self
-        - change_status_self_assigned
-      confluence:
-        - read
-        - sync
-        - write_role_specific
-      code_repo:
-        - worktree_create
-        - feature_branch_create
-        - feature_branch_commit
-        - create_pr
-      git:
-        - checkout_feature
-        - create_pr
-        - push_feature
-    permissions_question:
-      confluence:
-        - "write_architecture_doc"
-        - "write_requirement_doc"
-    permissions_reject:
-      git:
-        - "push_main"
-        - "push_testing"
-      code_repo:
-        - "merge_any_branch"
-    responsibilities:
-      - "领取 Jira tickets 并执行"
-      - "自主规划、开发、测试、迭代"
-      - "提交 PR 请求 Master 审核"
-      - "超时主动更新 ticket 或请求仲裁"
+# API 密钥 (从环境变量读取)
+# api_key: ${GEMINI_API_KEY}
 
-# ==================== 能力配置 ====================
-
-capabilities:
-  enabled:
-    - requirement_analysis
-    - task_creation
-    - code_generation
-    - test_generation
-    - documentation
-    - git_operations
-    - pr_management
-    - time_tracking
-    - mock_detection
-    - dependency_clarification
-
-  disabled:
-    - deployment
-    - database_migration
-
-# ==================== 任务配置 ====================
-
-tasks:
-  directory: "jira/tickets"
-  auto_claim: true
-  max_concurrent: 3
-
-  # 时间配置 (新增)
-  time:
-    # 默认预估时间 (分钟)
-    default_estimated_minutes: 120
-    # 超时阈值 (分钟)
-    timeout_minutes: 180
-    # 无响应阈值 (分钟)
-    no_response_timeout_minutes: 30
-    # 人类参与任务超时 (小时)
-    human_timeout_hours: 48
-
-  # 状态重置配置 (新增)
-  reset:
-    # 超过无响应阈值后重置状态
-    reset_on_no_response: true
-    # 重置后状态
-    reset_to_status: "ready"
-    # 重置后移除归属
-    reset_remove_assignment: true
-
-# ==================== Git 配置 ====================
-
-git:
-  main_branch: "main"
-  testing_branch: "testing"
-
-  # 分支命名 (新增)
-  branch_prefix: "feature/"
-  branch_naming: "{slaver_name}-{ticket_id}-{short_desc}"
-
-  commit_style: "conventional"
-  auto_push: true
-  auto_create_pr: true
-
-  # Worktree 配置 (新增)
-  worktree:
-    enabled: true
-    base_dir: ".eket/worktrees"
-    naming: "{slaver_name}-{ticket_id}"
-    auto_cleanup: true
-    auto_cleanup_days: 7
-
-# ==================== Review 配置 ====================
-
-review:
-  request_location: "outbox/review_requests"
-  feedback_location: "inbox/human_feedback"
-  timeout_hours: 24
-  auto_merge: false
-
-  # Merge 策略 (新增)
-  merge_strategy:
-    # 所有功能点完成
-    all_features_complete: true
-    # UT 测试通过
-    unit_tests_pass: true
-    # Master Review 通过
-    master_review_pass: true
-    # 未完成功能点处理
-    incomplete_features:
-      action: "create_follow_up_ticket"
-      prefix: "FIX"
-
-# ==================== 通知配置 ====================
-
-notifications:
-  methods:
-    - file
-    - console
-
-  # 用户参与触发 (新增)
-  user_involvement:
-    dependency_clarification: true
-    arbitration_request: true
-    task_completion: true
-    sprint_completion: true
-    stage_completion: true
-
-  on:
-    task_created: true
-    task_completed: true
-    pr_created: true
-    pr_merged: true
-    review_requested: true
-    blocker_detected: true
-    timeout_detected: true
-    mock_detected: true
-
-# ==================== 记忆配置 ====================
-
-memory:
+# ==================== 配置验证 ====================
+# 启动时验证配置
+validation:
   enabled: true
+  strict_mode: false
 
-  short_term:
-    enabled: true
-    max_items: 50
-
-  long_term:
-    enabled: true
-    location: ".eket/memory/long_term"
-
-    # 记忆 Review 配置 (新增)
-    review:
-      enabled: true
-      independent_process: true
-      compression_enabled: true
-      compression_threshold_items: 100
-      validation_enabled: true
-      retention_days: 30
-      max_size_mb: 100
-
-  external:
-    enabled: true
-    location: ".eket/memory/docs"
-
-# ==================== 日志配置 ====================
-
-logging:
-  level: "info"
-  location: ".eket/logs"
-  format: "[%(asctime)s] %(levelname)s: %(message)s"
-
-  # 日志轮转 (新增)
-  rotation:
-    enabled: true
-    max_file_size_mb: 10
-    max_files: 10
-    compress_old: true
-    compress_after_days: 7
-
-# ==================== 监控配置 ====================
-
-monitoring:
-  # Master 监控配置 (新增)
-  master:
-    enabled: true
-    check_interval_seconds: 60
-    timely_alert_minutes: 5
-
-  # Slaver 心跳配置 (新增)
-  slaver:
-    enabled: true
-    heartbeat_interval_seconds: 30
-    timeout_seconds: 300
-
-  # 任务超时监控 (新增)
-  task_timeout:
-    enabled: true
-    check_interval_seconds: 120
-    alert_before_timeout_minutes: 15
-
-# ==================== 同步配置 ====================
-
-synchronization:
-  # 三仓库同步检查 (新增)
-  tri_repo_sync:
-    enabled: true
-    check_interval_minutes: 5
-    auto_resolve_conflict: false
-
-  # Confluence 同步
-  confluence:
-    sync_on_start: true
-    sync_interval_minutes: 10
-
-  # Jira 同步
-  jira:
-    sync_on_start: true
-    sync_interval_minutes: 5
-
-  # Code Repo 同步
-  code_repo:
-    sync_on_start: true
-    worktree_sync_interval_minutes: 15
-
-# ==================== Checkpoint/Sprint/Retrospective 配置 ====================
-
-process:
-  # Sprint 配置 (新增)
-  sprint:
-    duration_days: 7
-    tasks_per_sprint: 5
-    review_after_sprints: 2  # 每 2 个 sprint 后回顾
-
-  # Checkpoint 配置 (新增)
-  checkpoint:
-    task_start:
-      enabled: true
-      actions:
-        - "check_dependencies"
-        - "create_branch"
-        - "start_timer"
-    task_dev_complete:
-      enabled: true
-      actions:
-        - "run_unit_tests"
-        - "run_lint"
-        - "check_coverage"
-    task_test_complete:
-      enabled: true
-      actions:
-        - "run_e2e_tests"
-        - "create_pr_draft"
-    task_complete:
-      enabled: true
-      actions:
-        - "verify_all_features"
-        - "create_follow_up_tickets"
-        - "update_documentation"
-
-  # Retrospective 配置 (新增)
-  retrospective:
-    enabled: true
-    after_sprint_pairs: true
-    after_stage: true
-    output_location: "confluence/memory/retrospectives"
-    topics:
-      - "task_progress_issues"
-      - "review_process_issues"
-      - "lessons_learned"
-      - "framework_improvements"
-
-# ==================== 高级配置 ====================
-
-advanced:
-  # 文件锁
-  file_lock:
-    enabled: true
-    timeout_seconds: 300
-
-  # 重试配置
-  retry:
-    max_attempts: 3
-    delay_seconds: 5
-
-  # 资源限制
-  limits:
-    max_file_size_mb: 10
-    max_files_per_commit: 20
-
-  # Mock 实现检测 (新增)
-  mock_detection:
-    enabled: true
-    auto_create_clarification_task: true
-    patterns:
-      - "return \\[\\]"
-      - "return \\{\\}"
-      - "// TODO"
-      - "pass  # TODO"
-      - " NotImplementedException"
-
-  # 依赖追问 (新增)
-  dependency_clarification:
-    enabled: true
-    auto_create_task: true
-    task_prefix: "DEP"
-    require_user_response: true
-
-  # 仲裁决策 (新增)
-  arbitration:
-    enabled: true
-    timeout_minutes: 30
-    escalate_to_human_hours: 24
+# ==================== 配置合并说明 ====================
+#
+# 配置合并规则:
+# 1. 模块配置首先加载
+# 2. 主配置中的值覆盖模块配置
+# 3. 环境变量最后替换
+#
+# 示例:
+# - 模块 config/tasks.yml 定义 timeout_minutes: 180
+# - 主配置定义 tasks.timeout_minutes: 240
+# - 最终使用 240
+#
+# ==================== 相关文档 ====================
+#
+# - docs/05-reference/config-schema.md - 配置结构说明
+# - docs/05-reference/config-validation.md - 配置验证规则
+# - docs/06-sop/configuration-management.md - 配置管理 SOP

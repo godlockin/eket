@@ -1,0 +1,101 @@
+# EKET 测试配置模块 v0.5.1
+
+testing:
+  # 测试门禁系统
+  gate_system:
+    enabled: true
+    # 必须步骤
+    required_gates:
+      - "unit_test"
+      - "lint"
+      - "integration_test"
+      - "code_review"
+
+  # 单元测试配置
+  unit_test:
+    enabled: true
+    # 动态覆盖率阈值 v0.5.1
+    coverage:
+      dynamic_threshold: true
+      # 按任务重要性
+      by_priority:
+        P0: 95  # 核心功能
+        P1: 90  # 重要功能
+        P2: 80  # 一般功能
+        P3: 75  # 次要功能
+      # 按任务类型
+      by_type:
+        feature: 80
+        bugfix: 85
+        hotfix: 70
+        documentation: null
+        research: null
+      # 按模块重要性
+      by_module:
+        critical: 95
+        important: 90
+        normal: 80
+
+  # 集成测试配置
+  integration_test:
+    enabled: true
+    run_after_unit: true
+    environment: "test"
+
+  # E2E 测试配置
+  e2e_test:
+    enabled: true
+    run_on_pr: true
+    browser: "chrome"
+
+  # 验收测试配置
+  acceptance_test:
+    enabled: true
+    verify_criteria: true
+    human_involved: true
+
+  # UI/UX 测试配置
+  ui_ux_test:
+    enabled: true
+    trigger_on: "frontend_changes"
+    visual_regression: true
+
+  # 性能测试配置
+  performance_test:
+    enabled: true
+    trigger_on:
+      - "core_logic_changes"
+      - "database_query_changes"
+      - "api_endpoint_changes"
+    thresholds:
+      response_time_ms: 500
+      throughput_rps: 1000
+      error_rate_percent: 0.1
+
+  # 安全性测试配置
+  security_test:
+    enabled: true
+    trigger_on:
+      - "auth_changes"
+      - "permission_changes"
+      - "data_access_changes"
+    tests:
+      - "injection_test"
+      - "xss_test"
+      - "csrf_test"
+      - "auth_bypass_test"
+
+  # 代码 Review 配置
+  code_review:
+    enabled: true
+    required_before_merge: true
+    min_reviewers: 1
+    auto_assign: true
+
+  # 测试报告配置
+  report:
+    enabled: true
+    location: "outbox/test-reports"
+    format: "markdown"
+    include_coverage: true
+    include_flaky_tests: true

@@ -1,0 +1,54 @@
+# EKET 记忆和日志配置模块
+
+memory:
+  enabled: true
+
+  short_term:
+    enabled: true
+    max_items: 50
+
+  long_term:
+    enabled: true
+    location: ".eket/memory/long_term"
+
+    # 记忆 Review 配置
+    review:
+      enabled: true
+      independent_process: true
+      compression_enabled: true
+      compression_threshold_items: 100
+      validation_enabled: true
+      retention_days: 30
+      max_size_mb: 100
+
+    # Memory Review Agent 健康检查 v0.5.1
+    agent_health:
+      enabled: true
+      health_file: ".eket/state/memory-agent-health.yml"
+      report_interval_seconds: 300
+      timeout_seconds: 3600
+      auto_restart: true
+
+  external:
+    enabled: true
+    location: ".eket/memory/docs"
+
+logging:
+  level: "info"
+  location: ".eket/logs"
+  format: "[%(asctime)s] %(levelname)s: %(message)s"
+
+  # 日志轮转 v0.5.1
+  rotation:
+    enabled: true
+    max_file_size_mb: 10
+    max_files: 10
+    compress_old: true
+    compress_after_days: 7
+    delete_after_days: 30
+
+  # 日志清理脚本 v0.5.1
+  cleanup:
+    enabled: true
+    script: "scripts/log-rotate.sh"
+    schedule: "daily"

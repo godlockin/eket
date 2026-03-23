@@ -1,0 +1,71 @@
+# EKET 任务配置模块
+
+tasks:
+  directory: "jira/tickets"
+  auto_claim: true
+  max_concurrent: 3
+
+  # 时间配置 v0.5.1
+  time:
+    # 默认预估时间 (分钟)
+    default_estimated_minutes: 120
+    # 最大预估时间 (分钟) - 防止任务过大
+    max_estimated_minutes: 480
+    # 超时阈值 (分钟) - 动态计算：预估 * multiplier
+    timeout_multiplier: 1.5
+    # 最小超时时间 (分钟)
+    min_timeout_minutes: 180
+    # 无响应阈值 (分钟) - 人类响应超时
+    no_response_timeout_minutes: 120
+    # 重置前宽限期 (分钟)
+    grace_period_minutes: 30
+    # 人类参与任务超时 (小时) - 持续等待，不设上限
+    human_timeout_hours: null
+
+  # 状态重置配置
+  reset:
+    # 超过无响应阈值后重置状态
+    reset_on_no_response: true
+    # 重置后状态
+    reset_to_status: "ready"
+    # 重置后移除归属
+    reset_remove_assignment: true
+    # 重置前广播通知
+    broadcast_on_reset: true
+
+  # 优先级算法配置 v0.5.1
+  priority:
+    algorithm: "weighted_scoring"
+    factors:
+      # 基础优先级 (P0=100, P1=75, P2=50, P3=25)
+      base_priority: 0.25
+      # 被依赖任务计数和重要性加权
+      dependency_count: 0.20
+      # 对未来的影响 (技术债务、扩展性)
+      future_impact: 0.20
+      # 当前 Phase 中的重要性
+      phase_importance: 0.15
+      # 紧急程度 (时间敏感度)
+      urgency: 0.10
+      # 重要程度 (业务价值)
+      importance: 0.10
+    # 紧急重要平衡
+    urgency_importance_balance: 0.5
+
+  # 任务类型配置
+  types:
+    feature:
+      default_timeout_minutes: 240
+      min_coverage: 80
+    bugfix:
+      default_timeout_minutes: 120
+      min_coverage: 85
+    hotfix:
+      default_timeout_minutes: 60
+      min_coverage: 70
+    documentation:
+      default_timeout_minutes: 90
+      min_coverage: null
+    research:
+      default_timeout_minutes: 180
+      min_coverage: null

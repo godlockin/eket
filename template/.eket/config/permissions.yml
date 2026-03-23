@@ -1,0 +1,139 @@
+# EKET 权限配置模块 v0.5.1
+
+permissions:
+  # 基于风险的动态权限模型
+  model: "risk_based"
+
+  # 自动允许模式 (只读操作)
+  auto_allow_patterns:
+    - "read_*"
+    - "list_*"
+    - "get_*"
+    - "fetch_*"
+    - "search_*"
+    - "count_*"
+    - "exists_*"
+
+  # 自动询问模式 (修改操作)
+  auto_question_patterns:
+    - "update_*"
+    - "change_*"
+    - "modify_*"
+    - "create_*"
+    - "add_*"
+    - "set_*"
+    - "assign_*"
+
+  # 自动拒绝模式 (删除操作)
+  auto_reject_patterns:
+    - "delete_*"
+    - "drop_*"
+    - "purge_*"
+    - "destroy_*"
+    - "remove_*"
+    - "clear_*"
+
+  # 特异配置 - 针对特定操作的精细控制
+  # 优先级：specific > pattern
+  specific:
+    # 允许的操作
+    allow:
+      - "read_conference_*"
+      - "read_ticket_*"
+      - "update_status_self_assigned"
+      - "create_pr"
+      - "push_feature_branch"
+
+    # 需要询问的操作
+    question:
+      - "change_priority"
+      - "assign_agent"
+      - "write_architecture_doc"
+      - "write_requirement_doc"
+      - "merge_to_testing"
+
+    # 拒绝的操作
+    reject:
+      - "delete_ticket"
+      - "change_type"
+      - "push_main"
+      - "push_testing"
+      - "merge_any_branch"
+      - "read_conference_release_plan"
+      - "read_security_config"
+
+  # 角色权限配置
+  roles:
+    master:
+      description: "协调实例 - 负责任务分析、Review、合并"
+      permissions:
+        jira:
+          - create_ticket
+          - update_ticket
+          - change_status
+          - assign_ticket
+        confluence:
+          - read
+          - write
+          - sync
+        code_repo:
+          - read
+          - write
+          - merge_to_main
+          - merge_to_testing
+        git:
+          - checkout_main
+          - create_branch
+          - push_main
+          - push_testing
+      responsibilities:
+        - "任务分析与拆解"
+        - "Slaver 任务进度监控"
+        - "代码 Review"
+        - "合并到主分支"
+        - "仲裁 Slaver 冲突"
+
+    slaver:
+      description: "执行实例 - 负责领取并执行任务"
+      permissions:
+        jira:
+          - read_ticket
+          - update_ticket_assigned_to_self
+          - change_status_self_assigned
+        confluence:
+          - read
+          - sync
+          - write_role_specific
+        code_repo:
+          - worktree_create
+          - feature_branch_create
+          - feature_branch_commit
+          - create_pr
+        git:
+          - checkout_feature
+          - create_pr
+          - push_feature
+      permissions_question:
+        confluence:
+          - "write_architecture_doc"
+          - "write_requirement_doc"
+      permissions_reject:
+        git:
+          - "push_main"
+          - "push_testing"
+        code_repo:
+          - "merge_any_branch"
+      responsibilities:
+        - "领取 Jira tickets 并执行"
+        - "自主规划、开发、测试、迭代"
+        - "提交 PR 请求 Master 审核"
+        - "超时主动更新 ticket 或请求仲裁"
+
+  # 权限检查配置
+  check:
+    # 每次操作前检查
+    before_each_operation: true
+    # 记录权限日志
+    log_all_checks: true
+    # 违规警报
+    alert_on_violation: true

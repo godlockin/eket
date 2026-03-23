@@ -1,0 +1,51 @@
+# EKET Git 配置模块
+
+git:
+  main_branch: "main"
+  testing_branch: "testing"
+
+  # 分支命名
+  branch_prefix: "feature/"
+  branch_naming: "{slaver_name}-{ticket_id}-{short_desc}"
+
+  commit_style: "conventional"
+  auto_push: true
+  auto_create_pr: true
+
+  # Worktree 配置
+  worktree:
+    enabled: true
+    base_dir: ".eket/worktrees"
+    naming: "{slaver_name}-{ticket_id}"
+    # 自动清理 v0.5.1
+    auto_cleanup: true
+    auto_cleanup_days: 7
+    keep_last_n: 5
+    # 清理策略
+    cleanup_policy:
+      remove_merged: true
+      remove_abandoned_days: 14
+      compress_logs: true
+
+  # 分支保护 v0.5.1
+  protection:
+    main:
+      protected: true
+      allow_direct_push: false
+      require_review: true
+      require_tests: true
+    testing:
+      protected: true
+      allow_direct_push: false
+      require_tests: true
+
+  # Slaver 限制 v0.5.1
+  slaver_restrictions:
+    cannot_push_to:
+      - "main"
+      - "testing"
+    cannot_merge_to:
+      - "main"
+      - "testing"
+    must_use_worktree: true
+    must_create_pr: true
