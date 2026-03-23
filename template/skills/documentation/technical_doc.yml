@@ -1,0 +1,100 @@
+# 技术文档 Skill
+
+**版本**: 1.0.0
+**分类**: documentation
+
+---
+
+```yaml
+name: technical_doc
+version: 1.0.0
+category: documentation
+description: 编写技术文档
+
+# 输入参数定义
+inputs:
+  - name: doc_type
+    type: string
+    required: true
+    description: 文档类型
+    example: "architecture_doc"
+
+  - name: content_source
+    type: object
+    required: true
+    description: 内容来源
+    example:
+      design_docs: ["design/architecture.md"]
+      code_path: "src/"
+
+  - name: target_audience
+    type: string
+    required: false
+    description: 目标读者
+    example: "developers"
+
+# 输出定义
+outputs:
+  - name: tech_doc
+    type: file
+    description: 技术文档
+
+  - name: doc_structure
+    type: object
+    description: 文档结构
+
+# 执行步骤
+steps:
+  - name: analyze_source
+    description: 分析源码
+    action: parse_source
+    params:
+      design_docs: "{{inputs.content_source.design_docs}}"
+      code_path: "{{inputs.content_source.code_path}}"
+
+  - name: outline_document
+    description: 文档大纲
+    action: create_outline
+    params:
+      doc_type: "{{inputs.doc_type}}"
+      content: "{{steps.analyze_source.content}}"
+
+  - name: write_sections
+    description: 编写章节
+    action: write_content
+    params:
+      outline: "{{steps.outline_document.sections}}"
+      audience: "{{inputs.target_audience}}"
+
+  - name: add_diagrams
+    description: 添加图表
+    action: generate_diagrams
+    params:
+      content: "{{steps.write_sections.content}}"
+      diagram_type: "mermaid"
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: 架构设计文档
+    inputs:
+      doc_type: "architecture_doc"
+      content_source:
+        design_docs: ["design/architecture.md"]
+        code_path: "src/"
+      target_audience: "developers"
+    expected_outputs:
+      tech_doc: "confluence/architecture/system_architecture.md"
+      doc_structure:
+        sections:
+          - "系统概述"
+          - "组件架构"
+          - "数据流"
+          - "部署架构"
+```
+
+---
+
+**维护者**: EKET Framework Team

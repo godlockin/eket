@@ -1,0 +1,101 @@
+# API 文档 Skill
+
+**版本**: 1.0.0
+**分类**: documentation
+
+---
+
+```yaml
+name: api_documentation
+version: 1.0.0
+category: documentation
+description: 生成 API 文档
+
+# 输入参数定义
+inputs:
+  - name: api_spec
+    type: object
+    required: true
+    description: API 规格
+    example:
+      endpoints:
+        - path: /api/users
+          method: GET
+
+  - name: doc_format
+    type: string
+    required: true
+    description: 文档格式
+    example: "markdown"
+
+  - name: include_examples
+    type: boolean
+    required: false
+    description: 包含示例代码
+    default: true
+
+# 输出定义
+outputs:
+  - name: api_docs
+    type: file
+    description: API 文档文件
+
+  - name: openapi_spec
+    type: file
+    description: OpenAPI 规格文件
+
+# 执行步骤
+steps:
+  - name: parse_api_spec
+    description: 解析 API 规格
+    action: parse_spec
+    params:
+      spec: "{{inputs.api_spec}}"
+
+  - name: generate_endpoint_docs
+    description: 生成端点文档
+    action: write_docs
+    params:
+      endpoints: "{{steps.parse_api_spec.endpoints}}"
+      format: "{{inputs.doc_format}}"
+      include_examples: "{{inputs.include_examples}}"
+
+  - name: generate_openapi
+    description: 生成 OpenAPI
+    action: write_openapi
+    params:
+      endpoints: "{{steps.parse_api_spec.endpoints}}"
+      format: yaml
+
+  - name: add_examples
+    description: 添加示例
+    action: write_examples
+    params:
+      endpoints: "{{steps.generate_endpoint_docs.docs}}"
+      condition: "{{inputs.include_examples}}"
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: 用户 API 文档
+    inputs:
+      api_spec:
+        endpoints:
+          - path: /api/users
+            method: GET
+            description: "获取用户列表"
+            response:
+              type: array
+              items: {id: number, name: string}
+      doc_format: "markdown"
+      include_examples: true
+    expected_outputs:
+      api_docs: "docs/api/users.md"
+      openapi_spec: "openapi.yaml"
+```
+
+---
+
+**维护者**: EKET Framework Team

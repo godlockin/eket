@@ -1,0 +1,106 @@
+# 用户访谈 Skill
+
+**版本**: 1.0.0
+**分类**: requirements
+
+---
+
+```yaml
+name: user_interview
+version: 1.0.0
+category: requirements
+description: 与用户进行需求访谈，收集和整理需求要点
+
+# 输入参数定义
+inputs:
+  - name: user_description
+    type: string
+    required: true
+    description: 用户对需求的初步描述
+    example: "我需要一个能管理客户信息的系统"
+
+  - name: interview_channel
+    type: string
+    required: false
+    description: 访谈渠道 (im/chat/email/voice)
+    example: "chat"
+
+# 输出定义
+outputs:
+  - name: interview_notes
+    type: object
+    description: 访谈记录
+    properties:
+      background: string
+      pain_points: array
+      goals: array
+      constraints: array
+
+  - name: requirement_summary
+    type: string
+    description: 需求总结
+
+# 执行步骤
+steps:
+  - name: collect_background
+    description: 收集项目背景
+    action: ask_questions
+    params:
+      questions:
+        - "这个系统的目标用户是谁？"
+        - "主要解决什么问题？"
+        - "有什么特殊的业务场景？"
+
+  - name: identify_pain_points
+    description: 识别痛点
+    action: extract_pain_points
+    params:
+      user_input: "{{inputs.user_description}}"
+
+  - name: define_goals
+    description: 定义目标
+    action: summarize_goals
+    params:
+      discussion: "{{steps.collect_background.responses}}"
+
+  - name: identify_constraints
+    description: 识别约束条件
+    action: extract_constraints
+    params:
+      discussion: "{{steps.collect_background.responses}}"
+
+  - name: generate_summary
+    description: 生成访谈总结
+    action: write_summary
+    params:
+      notes:
+        background: "{{steps.collect_background.summary}}"
+        pain_points: "{{steps.identify_pain_points.list}}"
+        goals: "{{steps.define_goals.list}}"
+        constraints: "{{steps.identify_constraints.list}}"
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: CRM 系统需求访谈
+    inputs:
+      user_description: "我需要一个能管理客户信息的系统，现在太乱了"
+      interview_channel: "chat"
+    expected_outputs:
+      interview_notes:
+        background: "现有客户信息管理混乱，缺乏统一系统"
+        pain_points:
+          - "客户信息分散在多处"
+          - "无法追踪客户跟进记录"
+          - "团队成员之间信息不同步"
+        goals:
+          - "统一管理客户信息"
+          - "记录客户跟进历史"
+          - "团队协作共享"
+```
+
+---
+
+**维护者**: EKET Framework Team

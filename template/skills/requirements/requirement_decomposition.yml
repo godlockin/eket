@@ -1,0 +1,91 @@
+# 需求拆解 Skill
+
+**版本**: 1.0.0
+**分类**: requirements
+
+---
+
+```yaml
+name: requirement_decomposition
+version: 1.0.0
+category: requirements
+description: 将原始需求拆解为可执行的功能点
+
+# 输入参数定义
+inputs:
+  - name: raw_requirement
+    type: string
+    required: true
+    description: 用户的原始需求描述
+    example: "我想要一个用户登录功能"
+
+  - name: project_context
+    type: object
+    required: false
+    description: 项目背景信息
+    example:
+      project_type: web_application
+      tech_stack: [react, nodejs]
+
+# 输出定义
+outputs:
+  - name: feature_list
+    type: array
+    description: 拆解后的功能点列表
+
+  - name: dependencies
+    type: array
+    description: 功能点之间的依赖关系
+
+# 执行步骤
+steps:
+  - name: analyze_requirement
+    description: 分析需求关键词
+    action: extract_keywords
+    params:
+      text: "{{inputs.raw_requirement}}"
+
+  - name: identify_features
+    description: 识别功能模块
+    action: map_to_features
+    params:
+      keywords: "{{steps.analyze_requirement.keywords}}"
+      context: "{{inputs.project_context}}"
+
+  - name: define_dependencies
+    description: 定义依赖关系
+    action: analyze_dependencies
+    params:
+      features: "{{steps.identify_features.list}}"
+
+  - name: create_jira_tickets
+    description: 创建 Jira 任务票
+    action: generate_tickets
+    params:
+      features: "{{steps.identify_features.list}}"
+      dependencies: "{{steps.define_dependencies.map}}"
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: 用户登录功能拆解
+    inputs:
+      raw_requirement: "我想要一个用户登录功能，支持用户名密码登录"
+      project_context:
+        project_type: web_application
+        tech_stack: [react, nodejs]
+    expected_outputs:
+      feature_list:
+        - "创建登录表单组件"
+        - "实现登录 API 接口"
+        - "添加表单验证逻辑"
+        - "实现会话管理"
+      dependencies:
+        - {from: "实现登录 API 接口", to: "创建登录表单组件"}
+```
+
+---
+
+**维护者**: EKET Framework Team

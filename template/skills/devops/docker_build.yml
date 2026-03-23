@@ -1,0 +1,110 @@
+# Docker 构建 Skill
+
+**版本**: 1.0.0
+**分类**: devops
+
+---
+
+```yaml
+name: docker_build
+version: 1.0.0
+category: devops
+description: 为项目创建 Docker 配置并构建镜像
+
+# 输入参数定义
+inputs:
+  - name: project_type
+    type: string
+    required: true
+    description: 项目类型
+    example: "nodejs_api"
+
+  - name: build_config
+    type: object
+    required: true
+    description: 构建配置
+    example:
+      node_version: "18"
+      base_image: "node:18-alpine"
+      ports: [3000]
+
+  - name: registry
+    type: string
+    required: false
+    description: 镜像仓库
+    example: "ghcr.io/myorg/myapp"
+
+# 输出定义
+outputs:
+  - name: dockerfile
+    type: file
+    description: Dockerfile 文件
+
+  - name: docker_compose
+    type: file
+    description: Docker Compose 文件
+
+  - name: build_status
+    type: object
+    description: 构建状态
+    properties:
+      success: boolean
+      image_id: string
+      size: string
+
+# 执行步骤
+steps:
+  - name: analyze_project
+    description: 分析项目
+    action: detect_dependencies
+    params:
+      project_type: "{{inputs.project_type}}"
+
+  - name: generate_dockerfile
+    description: 生成 Dockerfile
+    action: write_dockerfile
+    params:
+      base_image: "{{inputs.build_config.base_image}}"
+      dependencies: "{{steps.analyze_project.deps}}"
+      ports: "{{inputs.build_config.ports}}"
+
+  - name: generate_compose
+    description: 生成 Docker Compose
+    action: write_compose
+    params:
+      services:
+        - name: app
+          build: .
+          ports: "{{inputs.build_config.ports}}"
+
+  - name: build_image
+    description: 构建镜像
+    action: docker_build
+    params:
+      context: .
+      tag: "{{inputs.registry}}"
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: Node.js API Docker 化
+    inputs:
+      project_type: "nodejs_api"
+      build_config:
+        node_version: "18"
+        base_image: "node:18-alpine"
+        ports: [3000]
+      registry: "ghcr.io/myorg/myapp:latest"
+    expected_outputs:
+      dockerfile: "Dockerfile"
+      docker_compose: "docker-compose.yml"
+      build_status:
+        success: true
+        image_id: "sha256:abc123"
+```
+
+---
+
+**维护者**: EKET Framework Team

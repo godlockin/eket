@@ -1,0 +1,112 @@
+# 前端开发 Skill
+
+**版本**: 1.0.0
+**分类**: development
+
+---
+
+```yaml
+name: frontend_development
+version: 1.0.0
+category: development
+description: 根据设计稿和 API 定义实现前端界面
+
+# 输入参数定义
+inputs:
+  - name: design_spec
+    type: object
+    required: true
+    description: 设计规格说明
+    example:
+      components: [LoginForm, Header]
+      styles: tailwind
+
+  - name: api_definition
+    type: object
+    required: true
+    description: API 接口定义
+    example:
+      endpoints:
+        - path: /api/login
+          method: POST
+
+  - name: tech_stack
+    type: array
+    required: true
+    description: 技术栈
+    example: [react, typescript, tailwind]
+
+# 输出定义
+outputs:
+  - name: frontend_code
+    type: file
+    description: 生成的前端代码
+
+  - name: component_docs
+    type: file
+    description: 组件文档
+
+# 执行步骤
+steps:
+  - name: setup_project
+    description: 设置项目结构
+    action: create_structure
+    params:
+      framework: "{{inputs.tech_stack.0}}"
+      language: typescript
+
+  - name: create_components
+    description: 创建组件
+    action: generate_components
+    params:
+      components: "{{inputs.design_spec.components}}"
+      styles: "{{inputs.design_spec.styles}}"
+
+  - name: integrate_api
+    description: 集成 API
+    action: implement_api_calls
+    params:
+      endpoints: "{{inputs.api_definition.endpoints}}"
+
+  - name: add_state_management
+    description: 添加状态管理
+    action: implement_state
+    params:
+      components: "{{steps.create_components.list}}"
+      api_calls: "{{steps.integrate_api.calls}}"
+
+  - name: write_tests
+    description: 编写测试
+    action: generate_tests
+    params:
+      components: "{{steps.create_components.list}}"
+      test_framework: jest
+
+# 依赖的其它 Skill
+dependencies:
+  - testing/unit_test
+
+# 使用示例
+examples:
+  - name: 登录页面开发
+    inputs:
+      design_spec:
+        components: [LoginForm, Header, ErrorMessage]
+        styles: tailwind
+      api_definition:
+        endpoints:
+          - path: /api/login
+            method: POST
+            request: {email: string, password: string}
+            response: {token: string, user: object}
+      tech_stack: [react, typescript, tailwind]
+    expected_outputs:
+      frontend_code:
+        - src/components/LoginForm.tsx
+        - src/components/Header.tsx
+        - src/services/auth.ts
+```
+
+---
+
+**维护者**: EKET Framework Team

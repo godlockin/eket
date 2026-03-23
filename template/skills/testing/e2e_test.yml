@@ -1,0 +1,105 @@
+# E2E 测试 Skill
+
+**版本**: 1.0.0
+**分类**: testing
+
+---
+
+```yaml
+name: e2e_test
+version: 1.0.0
+category: testing
+description: 编写和执行端到端测试
+
+# 输入参数定义
+inputs:
+  - name: user_flows
+    type: array
+    required: true
+    description: 用户流程列表
+    example:
+      - "用户注册 -> 登录 -> 查看个人信息"
+
+  - name: test_framework
+    type: string
+    required: true
+    description: 测试框架
+    example: "playwright"
+
+  - name: base_url
+    type: string
+    required: true
+    description: 测试环境地址
+    example: "http://localhost:3000"
+
+# 输出定义
+outputs:
+  - name: test_files
+    type: array
+    description: 生成的测试文件
+
+  - name: test_report
+    type: object
+    description: 测试报告
+    properties:
+      passed: number
+      failed: number
+      screenshots: array
+
+# 执行步骤
+steps:
+  - name: analyze_flows
+    description: 分析用户流程
+    action: parse_flows
+    params:
+      flows: "{{inputs.user_flows}}"
+
+  - name: define_steps
+    description: 定义测试步骤
+    action: map_steps
+    params:
+      flows: "{{steps.analyze_flows.parsed}}"
+
+  - name: write_tests
+    description: 编写测试
+    action: generate_test_code
+    params:
+      steps: "{{steps.define_steps.list}}"
+      framework: "{{inputs.test_framework}}"
+
+  - name: run_tests
+    description: 运行测试
+    action: execute_tests
+    params:
+      test_files: "{{steps.write_tests.files}}"
+      base_url: "{{inputs.base_url}}"
+      headless: true
+
+  - name: capture_screenshots
+    description: 捕获截图
+    action: take_screenshots
+    params:
+      failed_tests: "{{steps.run_tests.failures}}"
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: 用户登录流程测试
+    inputs:
+      user_flows:
+        - "打开首页 -> 点击登录 -> 输入凭证 -> 验证跳转"
+      test_framework: "playwright"
+      base_url: "http://localhost:3000"
+    expected_outputs:
+      test_files:
+        - "tests/e2e/login.spec.ts"
+      test_report:
+        passed: 5
+        failed: 0
+```
+
+---
+
+**维护者**: EKET Framework Team

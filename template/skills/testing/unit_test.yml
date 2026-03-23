@@ -1,0 +1,105 @@
+# 单元测试 Skill
+
+**版本**: 1.0.0
+**分类**: testing
+
+---
+
+```yaml
+name: unit_test
+version: 1.0.0
+category: testing
+description: 为代码编写和执行单元测试
+
+# 输入参数定义
+inputs:
+  - name: code_path
+    type: string
+    required: true
+    description: 代码路径
+    example: "src/components/LoginForm.tsx"
+
+  - name: test_framework
+    type: string
+    required: true
+    description: 测试框架
+    example: "jest"
+
+  - name: coverage_target
+    type: number
+    required: false
+    description: 覆盖率目标 (百分比)
+    example: 80
+
+# 输出定义
+outputs:
+  - name: test_files
+    type: array
+    description: 生成的测试文件
+
+  - name: test_report
+    type: object
+    description: 测试报告
+    properties:
+      passed: number
+      failed: number
+      coverage: number
+
+# 执行步骤
+steps:
+  - name: analyze_code
+    description: 分析代码结构
+    action: parse_code
+    params:
+      code_path: "{{inputs.code_path}}"
+
+  - name: identify_test_cases
+    description: 识别测试用例
+    action: map_test_cases
+    params:
+      functions: "{{steps.analyze_code.functions}}"
+      components: "{{steps.analyze_code.components}}"
+
+  - name: write_tests
+    description: 编写测试
+    action: generate_test_code
+    params:
+      test_cases: "{{steps.identify_test_cases.list}}"
+      framework: "{{inputs.test_framework}}"
+
+  - name: run_tests
+    description: 运行测试
+    action: execute_tests
+    params:
+      test_files: "{{steps.write_tests.files}}"
+      framework: "{{inputs.test_framework}}"
+
+  - name: check_coverage
+    description: 检查覆盖率
+    action: report_coverage
+    params:
+      test_results: "{{steps.run_tests.results}}"
+      target: "{{inputs.coverage_target}}"
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: 登录组件测试
+    inputs:
+      code_path: "src/components/LoginForm.tsx"
+      test_framework: "jest"
+      coverage_target: 80
+    expected_outputs:
+      test_files:
+        - "src/components/LoginForm.test.tsx"
+      test_report:
+        passed: 12
+        failed: 0
+        coverage: 85
+```
+
+---
+
+**维护者**: EKET Framework Team
