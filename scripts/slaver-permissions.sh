@@ -114,11 +114,12 @@ check_permission() {
     local -n question_list="${category^^}_QUESTION"
     local -n reject_list="${category^^}_REJECT"
 
-    if [[ -v "allow_list[$action]" ]]; then
+    # 检查行动是否在允许列表中
+    if [[ "${allow_list[$action]+isset}" ]]; then
         echo -e "${GREEN}✓${NC} 允许执行：${category}.${action}"
         return 0
 
-    elif [[ -v "question_list[$action]" ]]; then
+    elif [[ "${question_list[$action]+isset}" ]]; then
         echo -e "${YELLOW}?${NC} 需要确认：${category}.${action}"
         echo ""
         echo "操作详情:"
@@ -138,7 +139,7 @@ check_permission() {
             return 1
         fi
 
-    elif [[ -v "reject_list[$action]" ]]; then
+    elif [[ "${reject_list[$action]+isset}" ]]; then
         echo -e "${RED}✗${NC} 禁止执行：${category}.${action}"
         echo ""
         echo "Slaver $slaver_name 尝试执行被禁止的操作:"
