@@ -1,5 +1,5 @@
 #!/bin/bash
-# EKET Memory Review Agent v0.5
+# EKET Memory Review Agent v0.5.1 - 心跳和故障恢复
 # 独立进程：监控、压缩、更新、校验记忆内容
 
 set -e
@@ -17,7 +17,15 @@ MEMORY_DIR=".eket/memory"
 LONG_TERM_DIR="$MEMORY_DIR/long_term"
 EXTERNAL_DIR="$MEMORY_DIR/docs"
 STATE_FILE=".eket/state/memory-review.yml"
+STATE_DIR=".eket/state"
 LOG_FILE=".eket/logs/memory-review.log"
+HEARTBEAT_FILE=".eket/state/memory-agent-heartbeat.yml"
+PID_FILE=".eket/state/memory-agent.pid"
+
+# 心跳配置
+HEARTBEAT_INTERVAL=60  # 心跳间隔（秒）
+HEARTBEAT_TIMEOUT=600  # 超时时间（秒）- 10 分钟
+CHECK_INTERVAL=300     # 检查间隔（秒）- 5 分钟
 
 # ==========================================
 # 读取配置
@@ -487,24 +495,208 @@ log_action() {
 }
 
 # ==========================================
-# 主循环 - Memory Review Agent
+# 心跳机制 (v0.5.1)
+# ==========================================
+
+update_heartbeat() {
+    local status="${1:-healthy}"
+    local last_action="${2:-idle}"
+    local issues_found="${3:-0}"
+    local timestamp=$(date -Iseconds)
+
+    mkdir -p "$(dirname "$HEARTBEAT_FILE")"
+
+    cat > "$HEARTBEAT_FILE" << EOF
+# Memory Review Agent 心跳
+# 更新于：$timestamp
+
+status: $status
+last_heartbeat: $timestamp
+last_action: $last_action
+issues_found: $issues_found
+pid: $$
+uptime: $(uptime -p 2>/dev/null || echo "unknown")
+EOF
+}
+
+check_heartbeat() {
+    if [ ! -f "$HEARTBEAT_FILE" ]; then
+        return 1
+    fi
+
+    local last_update=$(grep "^last_heartbeat:" "$HEARTBEAT_FILE" 2>/dev/null | cut -d':' -f2- | tr -d ' ')
+    if [ -z "$last_update" ]; then
+        return 1
+    fi
+
+    # 解析时间戳 (兼容不同格式)
+    local last_ts
+    if command -v date &>/dev/null; then
+        last_ts=$(date -d "$last_update" +%s 2>/dev/null || echo "0")
+    else
+        last_ts=0
+    fi
+
+    local now_ts=$(date +%s)
+    local elapsed=$((now_ts - last_ts))
+
+    if [ "$elapsed" -gt "$HEARTBEAT_TIMEOUT" ]; then
+        log_action "HEARTBEAT_TIMEOUT" "Last heartbeat: ${elapsed}s ago (threshold: ${HEARTBEAT_TIMEOUT}s)"
+        return 1
+    fi
+
+    return 0
+}
+
+# 守护进程模式 - 带心跳 (v0.5.1)
+run_daemon() {
+    log_info "启动 Memory Review Agent 守护进程 (带心跳监控)..."
+
+    # 检查是否已在运行
+    if [ -f "$PID_FILE" ]; then
+        local existing_pid=$(cat "$PID_FILE" 2>/dev/null || echo "")
+        if [ -n "$existing_pid" ] && kill -0 "$existing_pid" 2>/dev/null; then
+            log_warn "Agent 已在运行 (PID: $existing_pid)"
+            return 0
+        fi
+        rm -f "$PID_FILE"
+    fi
+
+    # 保存当前 PID
+    echo $$ > "$PID_FILE"
+
+    # 后台运行
+    (
+        while true; do
+            # 更新心跳
+            update_heartbeat "healthy" "monitoring" "0"
+
+            # 执行监控
+            monitor_memory 2>/dev/null || update_heartbeat "error" "monitor_failed" "1"
+
+            # 等待
+            sleep "$CHECK_INTERVAL"
+        done
+    ) &
+
+    disown
+    log_info "✓ 守护进程已启动 (PID: $!)"
+}
+
+# 故障恢复 (v0.5.1)
+recover_from_failure() {
+    log_action "RECOVERY" "Attempting to recover from failure..."
+
+    # 检查心跳文件
+    if [ -f "$HEARTBEAT_FILE" ]; then
+        local last_status=$(grep "^status:" "$HEARTBEAT_FILE" 2>/dev/null | cut -d':' -f2 | tr -d ' ')
+        if [ "$last_status" = "error" ]; then
+            log_action "RECOVERY" "Last status was error, restarting..."
+            restart_agent
+        fi
+    fi
+
+    # 检查进程是否存在
+    if [ -f "$PID_FILE" ]; then
+        local pid=$(cat "$PID_FILE" 2>/dev/null || echo "")
+        if [ -n "$pid" ] && ! kill -0 "$pid" 2>/dev/null; then
+            log_action "RECOVERY" "Process dead, restarting..."
+            restart_agent
+        fi
+    fi
+}
+
+restart_agent() {
+    log_info "重启 Memory Review Agent..."
+
+    # 清理旧进程
+    if [ -f "$PID_FILE" ]; then
+        local old_pid=$(cat "$PID_FILE" 2>/dev/null || echo "")
+        if [ -n "$old_pid" ] && kill -0 "$old_pid" 2>/dev/null; then
+            kill "$old_pid" 2>/dev/null || true
+            log_info "已停止旧进程：$old_pid"
+        fi
+        rm -f "$PID_FILE"
+    fi
+
+    # 启动新进程
+    run_daemon
+}
+
+show_status() {
+    echo ""
+    echo "=== Memory Review Agent 状态 ==="
+    echo ""
+
+    if [ -f "$PID_FILE" ]; then
+        local pid=$(cat "$PID_FILE" 2>/dev/null || echo "")
+        if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+            echo -e "${GREEN}✓${NC} 进程运行中 (PID: $pid)"
+        else
+            echo -e "${YELLOW}⚠${NC} 进程文件存在但进程已停止"
+        fi
+    else
+        echo -e "${YELLOW}○${NC} 进程未运行"
+    fi
+
+    if [ -f "$HEARTBEAT_FILE" ]; then
+        local last=$(grep "^last_heartbeat:" "$HEARTBEAT_FILE" 2>/dev/null | cut -d':' -f2- | tr -d ' ')
+        local status=$(grep "^status:" "$HEARTBEAT_FILE" 2>/dev/null | cut -d':' -f2 | tr -d ' ')
+        echo "最后心跳：$last"
+        echo "状态：$status"
+
+        # 检查心跳是否超时
+        if check_heartbeat; then
+            echo -e "${GREEN}✓${NC} 心跳正常"
+        else
+            echo -e "${RED}✗${NC} 心跳超时"
+        fi
+    else
+        echo "心跳文件：不存在"
+    fi
+
+    echo ""
+}
+
+# ==========================================
+# 主循环 - Memory Review Agent (带心跳 v0.5.1)
 # ==========================================
 
 memory_review_loop() {
-    echo -e "${BLUE}## 启动 Memory Review Agent${NC}"
+    echo -e "${BLUE}## 启动 Memory Review Agent (带心跳监控)${NC}"
 
-    local check_interval=300  # 5 分钟
+    # 初始心跳
+    update_heartbeat "starting" "initializing" "0"
 
     while true; do
         log_action "CYCLE_START" "Memory Review Agent cycle started"
 
+        # 更新心跳
+        update_heartbeat "healthy" "monitoring" "0"
+
         monitor_memory
+        local monitor_status=$?
+
+        update_heartbeat "healthy" "validating" "0"
+
         validate_memories
+        local validate_status=$?
+
+        update_heartbeat "healthy" "indexing" "0"
+
         update_memory_index
 
-        log_action "CYCLE_COMPLETE" "Memory Review Agent cycle completed"
+        # 计算问题数
+        local issues=0
+        [ $monitor_status -ne 0 ] && ((issues++)) || true
+        [ $validate_status -ne 0 ] && ((issues++)) || true
 
-        sleep $check_interval
+        log_action "CYCLE_COMPLETE" "Memory Review Agent cycle completed (issues: $issues)"
+
+        # 更新最终心跳
+        update_heartbeat "healthy" "completed" "$issues"
+
+        sleep $CHECK_INTERVAL
     done
 }
 
@@ -517,7 +709,42 @@ read_config
 # 创建必要的目录
 mkdir -p "$MEMORY_DIR" "$LONG_TERM_DIR" "$EXTERNAL_DIR" "$STATE_DIR"
 
-case "${1:-monitor}" in
+# 颜色输出函数
+log_info() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+case "${1:-}" in
+    --daemon|-d)
+        run_daemon
+        ;;
+    --status|-s)
+        show_status
+        ;;
+    --restart|-r)
+        restart_agent
+        ;;
+    --recover)
+        recover_from_failure
+        ;;
+    --stop)
+        if [ -f "$PID_FILE" ]; then
+            local pid=$(cat "$PID_FILE" 2>/dev/null || echo "")
+            if [ -n "$pid" ]; then
+                kill "$pid" 2>/dev/null || true
+                rm -f "$PID_FILE"
+                log_info "已停止 Agent"
+            fi
+        fi
+        ;;
     monitor)
         monitor_memory
         ;;
@@ -542,7 +769,14 @@ case "${1:-monitor}" in
         update_memory_index
         ;;
     *)
-        echo "用法：$0 <command>"
+        echo "用法：$0 [--daemon|--status|--restart|--recover|--stop|monitor|validate|compress|cleanup|index|loop|full]"
+        echo ""
+        echo "选项:"
+        echo "  --daemon, -d    后台守护进程模式 (带心跳)"
+        echo "  --status, -s    显示运行状态"
+        echo "  --restart, -r   重启 Agent"
+        echo "  --recover       故障恢复"
+        echo "  --stop          停止 Agent"
         echo ""
         echo "命令:"
         echo "  monitor    - 监控记忆状态"
@@ -550,7 +784,7 @@ case "${1:-monitor}" in
         echo "  compress   - 触发记忆压缩"
         echo "  cleanup    - 触发记忆清理"
         echo "  index      - 更新记忆索引"
-        echo "  loop       - 启动独立监控进程"
+        echo "  loop       - 启动独立监控进程 (带心跳)"
         echo "  full       - 完整检查流程"
         ;;
 esac
