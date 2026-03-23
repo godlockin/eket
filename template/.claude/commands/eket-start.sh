@@ -22,6 +22,11 @@ NC='\033[0m'
 AUTO_MODE=false
 PROJECT_ROOT="$(pwd)"
 
+# 路径配置 (v0.5.2)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+SCRIPTS_DIR="$PROJECT_ROOT/scripts"
+
 # 检查参数
 while getopts "ah" opt; do
     case $opt in
@@ -295,39 +300,39 @@ if [ "$INSTANCE_ROLE" = "master" ]; then
     echo ""
 
     # 启动心跳监控守护进程
-    if [ -f "../../scripts/heartbeatmonitor.sh" ]; then
+    if [ -f "$SCRIPTS_DIR/heartbeatmonitor.sh" ]; then
         echo -e "${GREEN}✓${NC} 启动心跳监控守护进程..."
-        ../../scripts/heartbeatmonitor.sh --daemon &>/dev/null &
+        "$SCRIPTS_DIR/heartbeatmonitor.sh" --daemon &>/dev/null &
         echo -e "${GREEN}  ✓${NC} 心跳监控已启动 (后台守护进程)"
     else
         echo -e "${YELLOW}⚠${NC} 心跳监控脚本未找到"
     fi
 
     # 启动 Memory Review Agent (v0.5.1)
-    if [ -f "../../scripts/memory-review-agent.sh" ]; then
+    if [ -f "$SCRIPTS_DIR/memory-review-agent.sh" ]; then
         echo -e "${GREEN}✓${NC} 启动 Memory Review Agent..."
-        ../../scripts/memory-review-agent.sh --daemon &>/dev/null &
+        "$SCRIPTS_DIR/memory-review-agent.sh" --daemon &>/dev/null &
         echo -e "${GREEN}  ✓${NC} Memory Review Agent 已启动 (后台守护进程)"
     else
         echo -e "${YELLOW}⚠${NC} Memory Review Agent 脚本未找到"
     fi
 
     # 配置验证 (v0.5.1)
-    if [ -f "../../scripts/validate-config.sh" ]; then
+    if [ -f "$SCRIPTS_DIR/validate-config.sh" ]; then
         echo -e "${BLUE}## 验证配置文件${NC}"
-        ../../scripts/validate-config.sh 2>/dev/null && \
+        "$SCRIPTS_DIR/validate-config.sh" 2>/dev/null && \
             echo -e "${GREEN}  ✓${NC} 配置文件验证通过" || \
             echo -e "${YELLOW}  ⚠${NC} 配置文件验证失败 (可选)"
     fi
 
     # 全量验证 (v0.5.2) - 可选，用于完整校验
-    if [ -f "../../scripts/validate-all.sh" ]; then
+    if [ -f "$SCRIPTS_DIR/validate-all.sh" ]; then
         echo -e "${BLUE}## EKET 全量验证 (v0.5.2)${NC}"
-        if ../../scripts/validate-all.sh 2>/dev/null; then
+        if "$SCRIPTS_DIR/validate-all.sh" 2>/dev/null; then
             echo -e "${GREEN}  ✓${NC} 全量验证通过"
         else
             echo -e "${YELLOW}  ⚠${NC} 全量验证发现警告（可稍后修复）"
-            echo "     运行：../../scripts/validate-all.sh --fix 查看详细信息"
+            echo "     运行：$SCRIPTS_DIR/validate-all.sh --fix 查看详细信息"
         fi
     fi
 
@@ -502,38 +507,38 @@ EOF
     echo ""
 
     # 配置验证 (v0.5.2)
-    if [ -f "../../scripts/validate-all.sh" ]; then
+    if [ -f "$SCRIPTS_DIR/validate-all.sh" ]; then
         echo -e "${BLUE}## 验证配置文件 (v0.5.2)${NC}"
-        if ../../scripts/validate-all.sh 2>/dev/null; then
+        if "$SCRIPTS_DIR/validate-all.sh" 2>/dev/null; then
             echo -e "${GREEN}  ✓${NC} 配置验证通过"
         else
             echo -e "${YELLOW}  ⚠${NC} 配置验证发现警告"
-            echo "     运行：../../scripts/validate-all.sh --fix 查看详情"
+            echo "     运行：$SCRIPTS_DIR/validate-all.sh --fix 查看详情"
         fi
     fi
 
     # 检查权限脚本
-    if [ -f "../../scripts/slaver-permissions.sh" ]; then
+    if [ -f "$SCRIPTS_DIR/slaver-permissions.sh" ]; then
         echo -e "${GREEN}✓${NC} Slaver 权限控制已加载"
     else
         echo -e "${YELLOW}⚠${NC} Slaver 权限脚本未找到"
     fi
 
     # Mock 检测（仅在自动模式执行）
-    if [ "$AUTO_MODE" = true ] && [ -f "../../scripts/mock-detector.sh" ]; then
+    if [ "$AUTO_MODE" = true ] && [ -f "$SCRIPTS_DIR/mock-detector.sh" ]; then
         echo -e "${BLUE}## 执行 Mock 实现检测${NC}"
-        ../../scripts/mock-detector.sh detect code_repo/src 2>/dev/null || true
+        "$SCRIPTS_DIR/mock-detector.sh" detect code_repo/src 2>/dev/null || true
     fi
 
     # Merge Validator (v0.5.1) - 配置合并验证逻辑
-    if [ -f "../../scripts/merge-validator.sh" ]; then
+    if [ -f "$SCRIPTS_DIR/merge-validator.sh" ]; then
         echo -e "${GREEN}✓${NC} Merge Validator 已配置"
     else
         echo -e "${YELLOW}⚠${NC} Merge Validator 脚本未找到"
     fi
 
     # 测试门禁系统集成 (v0.5.1)
-    if [ -f "../../scripts/test-gate-system.sh" ]; then
+    if [ -f "$SCRIPTS_DIR/test-gate-system.sh" ]; then
         echo -e "${GREEN}✓${NC} 测试门禁系统已就绪"
     else
         echo -e "${YELLOW}⚠${NC} 测试门禁系统脚本未找到"

@@ -1,6 +1,11 @@
 #!/bin/bash
 # /eket-claim - 领取任务 (v0.5 - 集成时间追踪和权限控制)
 
+# 路径配置 (v0.5.2)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+SCRIPTS_DIR="$PROJECT_ROOT/scripts"
+
 echo "========================================"
 echo "EKET 任务领取 v0.5"
 echo "========================================"
@@ -145,9 +150,9 @@ else
         ESTIMATED_MINUTES=120
     fi
 
-    if [ -x "../../scripts/task-time-tracker.sh" ]; then
+    if [ -x "$SCRIPTS_DIR/task-time-tracker.sh" ]; then
         echo "启动任务计时器..."
-        ../../scripts/task-time-tracker.sh start "$TASK_ID" "$SLAVER_NAME" "$ESTIMATED_MINUTES" || true
+        "$SCRIPTS_DIR/task-time-tracker.sh" start "$TASK_ID" "$SLAVER_NAME" "$ESTIMATED_MINUTES" || true
     else
         echo "提示：任务计时器脚本未找到，手动记录时间信息"
         echo "开始时间：$(date -Iseconds)" >> "$TASK_FILE"
@@ -162,7 +167,7 @@ else
     echo -e "${BLUE}## v0.5: Slaver 权限配置${NC}"
     echo ""
 
-    if [ -x "../../scripts/slaver-permissions.sh" ]; then
+    if [ -x "$SCRIPTS_DIR/slaver-permissions.sh" ]; then
         echo "Slaver 权限控制已加载"
         echo "  - 允许的操作：read_ticket, update_ticket_assigned_to_self, ..."
         echo "  - 需要确认的操作：write_architecture_doc, ..."
@@ -179,19 +184,19 @@ else
     echo -e "${BLUE}## v0.5: 创建 Task Start Checkpoint${NC}"
     echo ""
 
-    if [ -x "../../scripts/checkpoint-sprint-retro.sh" ]; then
-        ../../scripts/checkpoint-sprint-retro.sh checkpoint task_start "$TASK_ID" "$SLAVER_NAME" || true
+    if [ -x "$SCRIPTS_DIR/checkpoint-sprint-retro.sh" ]; then
+        "$SCRIPTS_DIR/checkpoint-sprint-retro.sh" checkpoint task_start "$TASK_ID" "$SLAVER_NAME" || true
     fi
 
     echo ""
 
     # 加载 Agent Profile 和 Skills
-    if [ -x "../../scripts/load-agent-profile.sh" ]; then
+    if [ -x "$SCRIPTS_DIR/load-agent-profile.sh" ]; then
         echo "加载 Agent Profile 和 Skills..."
         echo ""
-        ../../scripts/load-agent-profile.sh "$TASK_ID"
+        "$SCRIPTS_DIR/load-agent-profile.sh" "$TASK_ID"
     else
-        echo "提示：运行 ../../scripts/load-agent-profile.sh $TASK_ID 加载 Agent Profile"
+        echo "提示：运行 $SCRIPTS_DIR/load-agent-profile.sh $TASK_ID 加载 Agent Profile"
     fi
 fi
 
