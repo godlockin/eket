@@ -1,6 +1,6 @@
 #!/bin/bash
-# /eket-start - EKET 实例启动和初始化逻辑 (v0.4)
-# Master/Slaver 模式自动检测 + Worktree 同步
+# /eket-start - EKET 实例启动和初始化逻辑 (v0.5)
+# Master/Slaver 模式自动检测 + Worktree 同步 + 时间追踪 + 权限控制 + Mock 检测
 
 set -e
 
@@ -450,6 +450,27 @@ EOF
     echo -e "${BLUE}## 步骤 4.4: 执行模式逻辑${NC}"
     echo ""
 
+    # ==========================================
+    # v0.5 新增：Slaver 权限和计时初始化
+    # ==========================================
+    echo -e "${BLUE}## v0.5: 初始化 Slaver 权限和计时${NC}"
+    echo ""
+
+    # 检查权限脚本
+    if [ -f "../../scripts/slaver-permissions.sh" ]; then
+        echo -e "${GREEN}✓${NC} Slaver 权限控制已加载"
+    else
+        echo -e "${YELLOW}⚠${NC} Slaver 权限脚本未找到"
+    fi
+
+    # Mock 检测（仅在自动模式执行）
+    if [ "$AUTO_MODE" = true ] && [ -f "../../scripts/mock-detector.sh" ]; then
+        echo -e "${BLUE}## 执行 Mock 实现检测${NC}"
+        ../../scripts/mock-detector.sh detect code_repo/src 2>/dev/null || true
+    fi
+
+    echo ""
+
     if [ "$AUTO_MODE" = true ]; then
         # ========== 自动模式 ==========
         echo -e "${GREEN}✓${NC} 运行模式：${YELLOW}自动模式${NC}"
@@ -460,9 +481,11 @@ EOF
         echo "│  2. 初始化 Profile (根据任务类型匹配角色)                     │"
         echo "│  3. 领取最高优先级任务                                       │"
         echo "│  4. 更新任务状态为 in_progress                               │"
-        echo "│  5. 自主规划 → 开发 → 测试 → 迭代                            │"
-        echo "│  6. 提交 PR 到 testing 分支                                   │"
-        echo "│  7. 请求 Master 审核                                         │"
+        echo "│  5. 启动任务计时器 (v0.5)                                   │"
+        echo "│  6. 自主规划 → 开发 → 测试 → 迭代                            │"
+        echo "│  7. 定期更新心跳 (v0.5)                                     │"
+        echo "│  8. 提交 PR 到 testing 分支                                   │"
+        echo "│  9. 请求 Master 审核                                         │"
         echo "└──────────────────────────────────────────────────────────────┘"
         echo ""
 
@@ -475,6 +498,7 @@ EOF
             if [ "$READY_COUNT" -gt 0 ]; then
                 echo ""
                 echo "下一步：分析任务优先级并领取..."
+                echo -e "${BLUE}v0.5: 领取任务后将自动启动计时器和心跳机制${NC}"
             fi
         fi
 
@@ -539,18 +563,34 @@ if [ "$INSTANCE_ROLE" = "master" ]; then
     echo "Master 职责:"
     echo "  - 任务分析 → 任务拆解 → 进度 Check → 代码 Review → 合并到 main"
     echo ""
+    echo "v0.5 新增功能:"
+    echo "  - 时间监控：监控所有任务超时和无响应状态"
+    echo "  - 合并验证：功能点/UT/Review 三项验证"
+    echo "  - 记忆 Review：独立进程监控记忆质量"
+    echo "  - Sprint/Retrospective: 每 2 个 Sprint 后回顾"
+    echo ""
     echo "可用命令:"
     echo "  /eket-analyze     - 分析需求并拆解任务"
     echo "  /eket-review-pr   - 审核 Slaver 提交的 PR"
     echo "  /eket-merge       - 合并 PR 到 main 分支"
     echo "  /eket-check-progress - 检查 Slaver 任务进度"
+    echo "  /eket-monitor     - 启动 Master 监控 (v0.5)"
 else
     echo "Slaver 职责:"
     echo "  - 领取任务 → 自主规划 → 开发 → 测试 → 提交 PR"
     echo ""
+    echo "v0.5 新增功能:"
+    echo "  - 时间追踪：任务领取后自动启动计时器"
+    echo "  - 心跳机制：定期更新任务状态避免超时重置"
+    echo "  - 权限控制：allow/question/reject 三级权限"
+    echo "  - Mock 检测：自动检测空实现并创建依赖任务"
+    echo "  - Worktree 隔离：slaver_name-ticket_id 命名"
+    echo ""
     echo "可用命令:"
     echo "  /eket-claim       - 领取任务"
     echo "  /eket-submit-pr   - 提交 PR 请求审核"
+    echo "  /eket-heartbeat   - 更新任务心跳 (v0.5)"
+    echo "  /eket-checkpoint  - 创建检查点 (v0.5)"
 fi
 
 echo ""

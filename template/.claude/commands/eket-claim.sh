@@ -1,12 +1,13 @@
 #!/bin/bash
-# /eket-claim - 领取任务
+# /eket-claim - 领取任务 (v0.5 - 集成时间追踪和权限控制)
 
 echo "========================================"
-echo "EKET 任务领取"
+echo "EKET 任务领取 v0.5"
 echo "========================================"
 echo ""
 
 TASK_ID="${1:-}"
+SLAVER_NAME="${2:-agent-$(hostname)}"
 
 if [ -z "$TASK_ID" ]; then
     echo "用法：/eket-claim [task-id]"
@@ -125,19 +126,72 @@ else
     # 添加领取信息
     echo "assigned_to: agent-$(date +%Y%m%d%H%M%S)" >> "$TASK_FILE"
     echo "claimed_at: $(date -Iseconds)" >> "$TASK_FILE"
+    echo "slaver: $SLAVER_NAME" >> "$TASK_FILE"
 
     echo "✓ 已领取任务：$TASK_ID"
     echo "  状态已更新为：in_progress"
+    echo "  负责人：$SLAVER_NAME"
     echo "  任务文件：$TASK_FILE"
     echo ""
 
+    # ==========================================
+    # v0.5 新增：启动任务计时器
+    # ==========================================
+    echo -e "${BLUE}## v0.5: 启动任务计时器${NC}"
+    echo ""
+
+    ESTIMATED_MINUTES=$(grep -E "^预估时间:" "$TASK_FILE" 2>/dev/null | cut -d: -f2 | tr -d ' ' || echo "120")
+    if [ "$ESTIMATED_MINUTES" = "null" ] || [ -z "$ESTIMATED_MINUTES" ]; then
+        ESTIMATED_MINUTES=120
+    fi
+
+    if [ -x "../../scripts/task-time-tracker.sh" ]; then
+        echo "启动任务计时器..."
+        ../../scripts/task-time-tracker.sh start "$TASK_ID" "$SLAVER_NAME" "$ESTIMATED_MINUTES" || true
+    else
+        echo "提示：任务计时器脚本未找到，手动记录时间信息"
+        echo "开始时间：$(date -Iseconds)" >> "$TASK_FILE"
+        echo "预估时长：$ESTIMATED_MINUTES 分钟" >> "$TASK_FILE"
+    fi
+
+    echo ""
+
+    # ==========================================
+    # v0.5 新增：Slaver 权限检查
+    # ==========================================
+    echo -e "${BLUE}## v0.5: Slaver 权限配置${NC}"
+    echo ""
+
+    if [ -x "../../scripts/slaver-permissions.sh" ]; then
+        echo "Slaver 权限控制已加载"
+        echo "  - 允许的操作：read_ticket, update_ticket_assigned_to_self, ..."
+        echo "  - 需要确认的操作：write_architecture_doc, ..."
+        echo "  - 禁止的操作：push_main, merge_any_branch, ..."
+    else
+        echo "提示：权限控制脚本未找到"
+    fi
+
+    echo ""
+
+    # ==========================================
+    # v0.5 新增：创建 Checkpoint
+    # ==========================================
+    echo -e "${BLUE}## v0.5: 创建 Task Start Checkpoint${NC}"
+    echo ""
+
+    if [ -x "../../scripts/checkpoint-sprint-retro.sh" ]; then
+        ../../scripts/checkpoint-sprint-retro.sh checkpoint task_start "$TASK_ID" "$SLAVER_NAME" || true
+    fi
+
+    echo ""
+
     # 加载 Agent Profile 和 Skills
-    if [ -x "scripts/load-agent-profile.sh" ]; then
+    if [ -x "../../scripts/load-agent-profile.sh" ]; then
         echo "加载 Agent Profile 和 Skills..."
         echo ""
-        ./scripts/load-agent-profile.sh "$TASK_ID"
+        ../../scripts/load-agent-profile.sh "$TASK_ID"
     else
-        echo "提示：运行 scripts/load-agent-profile.sh $TASK_ID 加载 Agent Profile"
+        echo "提示：运行 ../../scripts/load-agent-profile.sh $TASK_ID 加载 Agent Profile"
     fi
 fi
 
