@@ -76,9 +76,9 @@ advanced:
   # 错误处理规范 v0.5.1
   error_handling:
     enabled: true
-   统一_error码：true
-    统一日志格式：true
-    统一退出码：true
+    unified_error_codes: true
+    unified_log_format: true
+    unified_exit_codes: true
     # 错误码范围
     error_codes:
       success: 0
