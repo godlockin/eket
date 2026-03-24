@@ -16,9 +16,12 @@ Thumbs.db
 
 # 运行生成物
 outbox/
-tests/results/*.md
+tests/results/
 inbox/human_feedback/*
 !inbox/human_feedback/.gitkeep
+
+# 已删除的空目录
+sys_init/
 
 # 运行时数据
 confluence/memory/retrospectives/
