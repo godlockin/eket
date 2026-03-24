@@ -161,6 +161,9 @@ export class EketErrorClass extends Error {
   }
 }
 
+// 导出别名方便使用
+export const EketError = EketErrorClass;
+
 // ============================================================================
 // Utility Types
 // ============================================================================

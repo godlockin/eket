@@ -10,6 +10,9 @@ import { Command } from 'commander';
 import { createRedisClient } from './core/redis-client.js';
 import { createSQLiteClient } from './core/sqlite-client.js';
 import { registerClaim } from './commands/claim.js';
+import { runInitWizard } from './commands/init-wizard.js';
+import { createMessageQueue, createMessage } from './core/message-queue.js';
+import { createHeartbeatManager, createSlaverMonitor } from './core/heartbeat-monitor.js';
 import type { RedisConfig } from './types';
 
 const pkg = {
@@ -280,6 +283,127 @@ async function main(): Promise<void> {
 
   // 注册 claim 命令
   registerClaim(program);
+
+  // 注册 init 命令
+  program
+    .command('init')
+    .description('项目初始化向导')
+    .option('-p, --path <path>', '项目路径', process.cwd())
+    .action(async (options) => {
+      console.log('\n启动项目初始化向导...\n');
+      const result = await runInitWizard(options.path);
+      if (!result) {
+        process.exit(1);
+      }
+    });
+
+  // 注册 heartbeat 命令
+  program
+    .command('heartbeat:start <slaverId>')
+    .description('启动 Slaver 心跳')
+    .option('-i, --interval <ms>', '心跳间隔（毫秒）', '10000')
+    .action(async (slaverId, options) => {
+      const manager = createHeartbeatManager(slaverId, {
+        heartbeatInterval: parseInt(options.interval, 10),
+      });
+
+      const result = await manager.start();
+      if (!result.success) {
+        console.error('启动心跳失败:', result.error.message);
+        process.exit(1);
+      }
+
+      console.log(`心跳已启动：${slaverId}`);
+      console.log('按 Ctrl+C 停止...\n');
+
+      // 等待退出信号
+      process.on('SIGINT', async () => {
+        await manager.stop();
+        process.exit(0);
+      });
+
+      process.on('SIGTERM', async () => {
+        await manager.stop();
+        process.exit(0);
+      });
+
+      // 保持进程运行
+      setInterval(() => {}, 1000);
+    });
+
+  program
+    .command('heartbeat:status')
+    .description('查看 Slaver 心跳状态')
+    .action(async () => {
+      const monitor = createSlaverMonitor();
+      await monitor.start();
+
+      const result = await monitor.getActiveSlavers();
+      if (result.success) {
+        if (result.data.length === 0) {
+          console.log('暂无活跃 Slaver');
+        } else {
+          console.table(
+            result.data.map((s) => ({
+              Slaver ID: s.slaverId,
+              状态：s.status,
+              当前任务：s.currentTaskId || '-',
+              最后心跳：new Date(s.timestamp).toLocaleString(),
+            }))
+          );
+        }
+      } else {
+        console.error('获取状态失败:', result.error.message);
+      }
+
+      await monitor.stop();
+    });
+
+  // 注册 mq:test 命令
+  program
+    .command('mq:test')
+    .description('测试消息队列')
+    .action(async () => {
+      console.log('=== 消息队列测试 ===\n');
+
+      const mq = createMessageQueue({ mode: 'auto' });
+      const connectResult = await mq.connect();
+
+      if (!connectResult.success) {
+        console.error('连接消息队列失败:', connectResult.error.message);
+        process.exit(1);
+      }
+
+      console.log(`当前模式：${mq.getMode()}\n`);
+
+      // 订阅测试通道
+      await mq.subscribe('test', (message) => {
+        console.log('收到消息:', message);
+      });
+
+      // 发送测试消息
+      const testMessage = createMessage(
+        'notification',
+        'system',
+        'all',
+        { text: '这是一条测试消息' }
+      );
+
+      console.log('发送测试消息...');
+      const publishResult = await mq.publish('test', testMessage);
+
+      if (publishResult.success) {
+        console.log('✓ 消息发送成功');
+      } else {
+        console.error('✗ 消息发送失败:', publishResult.error.message);
+      }
+
+      // 等待消息处理
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      await mq.disconnect();
+      console.log('\n测试完成');
+    });
 
   // 解析命令行
   await program.parseAsync(process.argv);
