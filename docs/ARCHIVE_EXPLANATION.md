@@ -37,6 +37,8 @@
 | `framework-risk-review.md` | v0.4 历史风险评审 | `docs/05-reference/v0.5.1-framework-risk-review.md` |
 | `目标设定.md` | 原始需求文档，已实现 | - |
 | `目标设定_v1.md` | 需求文档 v1，已实现 | - |
+| `CHANGELOG_v0.2.md` | v0.2 变更日志 | 主 CHANGELOG 或历史参考 |
+| `WORKFLOW_DIAGRAM.md` | v0.2 流程图，部分过时 | `docs/03-implementation/STATE_MACHINE.md` |
 
 ### docs/05-reference/ (保留)
 

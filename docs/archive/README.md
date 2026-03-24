@@ -9,7 +9,11 @@
 | 文件 | 原版本 | 归档原因 | 替代文档 |
 |------|--------|---------|---------|
 | `MASTER_SLAYER_ROLES.md` | v0.4.0 | 术语已弃用 (Master/Slaver → Coordinator/Executor) | `docs/02-architecture/AGENTS_CONFIG.md` |
-| `目标设定_v1.md` | v1.0.0 | 原始需求文档，已实现 | `docs/03-implementation/FRAMEWORK_COMPLETION_REPORT.md` |
+| `framework-risk-review.md` | v0.4.0 | v0.4 历史风险评审 | `docs/05-reference/v0.5.1-framework-risk-review.md` |
+| `目标设定.md` | v1.0.0 | 原始需求文档，已实现 | - |
+| `目标设定_v1.md` | v1.0.0 | 原始需求文档 v1，已实现 | - |
+| `CHANGELOG_v0.2.md` | v0.2.0 | v0.2 变更日志，可合并到主 CHANGELOG | - |
+| `WORKFLOW_DIAGRAM.md` | v0.2.0 | v0.2 流程图，部分过时 | `docs/03-implementation/STATE_MACHINE.md` |
 
 ---
 

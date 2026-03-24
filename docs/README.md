@@ -83,11 +83,19 @@ docs/
 
 | 文档 | 内容 |
 |------|------|
-| [CHANGELOG_v0.2.md](05-reference/CHANGELOG_v0.2.md) | v0.2 变更总结 |
 | [CODE_REVIEW_CHECKLIST.md](05-reference/CODE_REVIEW_CHECKLIST.md) | 代码 Review 清单 |
-| [WORKFLOW_DIAGRAM.md](05-reference/WORKFLOW_DIAGRAM.md) | 可视化流程图 |
 | [CLEANUP_REPORT.md](05-reference/CLEANUP_REPORT.md) | 清理报告 |
+| [DOCUMENT_ORGANIZATION.md](05-reference/DOCUMENT_ORGANIZATION.md) | 文档组织说明 |
 | [expert-review.md](05-reference/expert-review.md) | 专家组审查报告 |
+| [red-line-security.md](05-reference/red-line-security.md) | 安全红线 |
+| [REPAIR_PLAN_v0.6.1.md](05-reference/REPAIR_PLAN_v0.6.1.md) | v0.6.1 修复计划 |
+| [v0.5-framework-risk-review.md](05-reference/v0.5-framework-risk-review.md) | v0.5 风险评审 |
+| [v0.5.1-framework-risk-review.md](05-reference/v0.5.1-framework-risk-review.md) | v0.5.1 风险评审 |
+| [v0.5-implementation-review.md](05-reference/v0.5-implementation-review.md) | v0.5 实施评审 |
+
+**已归档** (移至 `archive/`):
+- `CHANGELOG_v0.2.md` - v0.2 变更日志
+- `WORKFLOW_DIAGRAM.md` - v0.2 流程图
 
 ---
 
