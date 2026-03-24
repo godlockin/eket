@@ -9,6 +9,7 @@
 import { Command } from 'commander';
 import { createRedisClient } from './core/redis-client.js';
 import { createSQLiteClient } from './core/sqlite-client.js';
+import { registerClaim } from './commands/claim.js';
 import type { RedisConfig } from './types';
 
 const pkg = {
@@ -272,6 +273,13 @@ async function main(): Promise<void> {
 
       console.log('');
     });
+
+  // ============================================================================
+  // 任务管理命令
+  // ============================================================================
+
+  // 注册 claim 命令
+  registerClaim(program);
 
   // 解析命令行
   await program.parseAsync(process.argv);
