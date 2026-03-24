@@ -501,9 +501,45 @@ EOF
     echo ""
 
     # ==========================================
-    # v0.5 新增：Slaver 权限和计时初始化
+    # v0.5.1: 初始化 Slaver 权限和监控
     # ==========================================
     echo -e "${BLUE}## v0.5.1: 初始化 Slaver 权限和监控${NC}"
+    echo ""
+
+    # v0.6.0 新增：Docker 环境检测和容器启动
+    echo -e "${BLUE}## v0.6.0: Docker 环境检测${NC}"
+    echo ""
+
+    if [ -x "$SCRIPTS_DIR/check-docker.sh" ]; then
+        if "$SCRIPTS_DIR/check-docker.sh" --silent; then
+            echo -e "${GREEN}✓${NC} Docker 环境检测通过"
+
+            # 启动 SQLite 容器（如果未运行）
+            if [ -x "$SCRIPTS_DIR/docker-sqlite.sh" ]; then
+                if ! docker ps --filter "name=eket-sqlite" &>/dev/null; then
+                    echo "启动 Docker SQLite 容器..."
+                    "$SCRIPTS_DIR/docker-sqlite.sh" start || true
+                else
+                    echo -e "${GREEN}✓${NC} SQLite 容器已在运行"
+                fi
+            fi
+
+            # 启动 Redis 容器（如果未运行）
+            if [ -x "$SCRIPTS_DIR/docker-redis.sh" ]; then
+                if ! docker ps --filter "name=eket-redis" &>/dev/null; then
+                    echo "启动 Docker Redis 容器..."
+                    "$SCRIPTS_DIR/docker-redis.sh" start || true
+                else
+                    echo -e "${GREEN}✓${NC} Redis 容器已在运行"
+                fi
+            fi
+        else
+            echo -e "${YELLOW}○${NC} Docker 未安装或未运行，跳过容器启动"
+        fi
+    else
+        echo -e "${YELLOW}⚠${NC} Docker 检测脚本未找到"
+    fi
+
     echo ""
 
     # 配置验证 (v0.5.2)
@@ -542,6 +578,61 @@ EOF
         echo -e "${GREEN}✓${NC} 测试门禁系统已就绪"
     else
         echo -e "${YELLOW}⚠${NC} 测试门禁系统脚本未找到"
+    fi
+
+    echo ""
+
+    # v0.6.0 新增：Slaver 进程注册
+    echo -e "${BLUE}## v0.6.0: Slaver 进程注册${NC}"
+    echo ""
+
+    SLAVER_NAME="slaver_$(hostname)_$$"
+    echo "Slaver 名称：$SLAVER_NAME"
+    echo "进程 PID: $$"
+    echo "主机：$(hostname)"
+
+    # 获取当前任务 ID（如果有）
+    CURRENT_TASK=""
+    if [ -f ".eket/state/current_task.yml" ]; then
+        CURRENT_TASK=$(grep "^task_id:" ".eket/state/current_task.yml" 2>/dev/null | cut -d':' -f2 | tr -d ' ' || echo "")
+    fi
+
+    if [ -n "$CURRENT_TASK" ]; then
+        echo "当前任务：$CURRENT_TASK"
+    else
+        echo "当前任务：未分配"
+    fi
+
+    # 注册到文件和数据库
+    if [ -x "$SCRIPTS_DIR/slaver-heartbeat.sh" ]; then
+        "$SCRIPTS_DIR/slaver-heartbeat.sh" register "$SLAVER_NAME" "$CURRENT_TASK" || true
+
+        # 启动心跳守护进程
+        "$SCRIPTS_DIR/slaver-heartbeat.sh" start-daemon "$SLAVER_NAME" || true
+
+        echo -e "${GREEN}✓${NC} Slaver 进程已注册"
+        echo "  状态文件：.eket/state/slavers/${SLAVER_NAME}.yml"
+        echo "  心跳间隔：${HEARTBEAT_INTERVAL:-30}秒"
+        echo "  超时阈值：${HEARTBEAT_TIMEOUT:-300}秒"
+    else
+        echo -e "${YELLOW}⚠${NC} Slaver 心跳脚本未找到"
+
+        # 回退：手动创建状态文件
+        mkdir -p ".eket/state/slavers"
+        cat > ".eket/state/slavers/${SLAVER_NAME}.yml" << EOF
+# Slaver 进程状态文件
+# 创建于：$(date -Iseconds)
+
+slaver_name: $SLAVER_NAME
+pid: $$
+task_id: ${CURRENT_TASK:-null}
+host: $(hostname)
+status: active
+started_at: $(date -Iseconds)
+last_heartbeat: $(date -Iseconds)
+heartbeat_count: 0
+EOF
+        echo "已创建状态文件：.eket/state/slavers/${SLAVER_NAME}.yml"
     fi
 
     echo ""

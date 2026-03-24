@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# EKET 心跳监控和告警脚本 v0.5.1
-# 用途：监控 Slaver 心跳，检测超时并触发告警和重置
+# EKET 心跳监控和告警脚本 v0.6.0
+# 用途：监控 Slaver 心跳，检测超时并触发告警、重置和杀进程
 #
 # 用法：
 #   ./scripts/heartbeat-monitor.sh [--daemon]
@@ -14,9 +14,10 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 STATE_DIR="$PROJECT_ROOT/.eket/state"
 LOGS_DIR="$PROJECT_ROOT/logs"
 CONFIG_DIR="$PROJECT_ROOT/.eket/config"
+SLAVER_STATE_DIR="$STATE_DIR/slavers"
 
 # 确保目录存在
-mkdir -p "$STATE_DIR" "$LOGS_DIR"
+mkdir -p "$STATE_DIR" "$LOGS_DIR" "$SLAVER_STATE_DIR"
 
 # 日志文件
 LOG_FILE="$LOGS_DIR/heartbeat-monitor.log"
@@ -196,20 +197,30 @@ EOF
     log INFO "已通知人类：$message_file"
 }
 
-# 重置 Slaver 任务
+# 重置 Slaver 任务（v0.6.0 升级：增加杀进程功能）
 reset_slaver_task() {
     local slaver_name="$1"
     local state_file="$2"
 
     log INFO "重置 Slaver $slaver_name 的任务..."
 
+    # 获取进程 PID
+    local pid=$(grep "^pid:" "$state_file" 2>/dev/null | cut -d':' -f2 | tr -d ' ' || echo "")
+
     # 获取当前任务 ID
     local task_id=$(grep "current_task:" "$state_file" 2>/dev/null | cut -d':' -f2 | tr -d ' ' || echo "")
 
     if [ -n "$task_id" ]; then
         # 更新任务状态
-        local ticket_file="$PROJECT_ROOT/jira/tickets/*/$task_id.md"
-        if [ -f "$ticket_file" ]; then
+        local ticket_file=""
+        for dir in feature task bugfix; do
+            if [ -f "$PROJECT_ROOT/jira/tickets/$dir/$task_id.md" ]; then
+                ticket_file="$PROJECT_ROOT/jira/tickets/$dir/$task_id.md"
+                break
+            fi
+        done
+
+        if [ -n "$ticket_file" ] && [ -f "$ticket_file" ]; then
             # 使用 sed 更新状态
             sed -i.bak "s/^status:.*$/status: ready/" "$ticket_file"
             sed -i.bak "s/^assigned_to:.*$/assigned_to: null/" "$ticket_file"
@@ -220,6 +231,7 @@ reset_slaver_task() {
 
         # 创建任务重置通知
         local reset_file="$PROJECT_ROOT/inbox/human_feedback/task-reset-${task_id}.md"
+        mkdir -p "$(dirname "$reset_file")"
         cat > "$reset_file" << EOF
 # 任务重置通知
 
@@ -238,30 +250,103 @@ EOF
         log INFO "任务重置通知已创建：$reset_file"
     fi
 
-    # 清理 Slaver 状态
+    # v0.6.0 新增：杀死超时进程
+    if [ -n "$pid" ]; then
+        log WARN "尝试杀死超时进程：PID=$pid"
+
+        if kill -0 "$pid" 2>/dev/null; then
+            # 进程仍在运行，尝试杀死
+            if kill "$pid" 2>/dev/null; then
+                log INFO "已发送 SIGTERM 信号到进程 $pid"
+
+                # 等待进程退出
+                local wait_count=0
+                while kill -0 "$pid" 2>/dev/null && [ $wait_count -lt 10 ]; do
+                    sleep 1
+                    ((wait_count++))
+                done
+
+                # 如果进程仍未退出，强制杀死
+                if kill -0 "$pid" 2>/dev/null; then
+                    log WARN "进程 $pid 未响应 SIGTERM，发送 SIGKILL"
+                    kill -9 "$pid" 2>/dev/null || true
+                fi
+
+                log INFO "进程 $pid 已终止"
+            else
+                log WARN "无法杀死进程 $pid"
+            fi
+        else
+            log INFO "进程 $pid 已不存在"
+        fi
+    fi
+
+    # v0.6.0 新增：从 Redis 删除
+    local redis_config="$CONFIG_DIR/docker-redis.yml"
+    if [ -f "$redis_config" ]; then
+        local redis_host=$(grep "host:" "$redis_config" 2>/dev/null | head -1 | awk '{print $2}' || echo "localhost")
+        local redis_port=$(grep "port:" "$redis_config" 2>/dev/null | head -1 | awk '{print $2}' || echo "6380")
+        local redis_password=$(grep "password:" "$redis_config" 2>/dev/null | head -1 | awk '{print $2}' || echo "")
+
+        if command -v redis-cli &>/dev/null; then
+            if [ -n "$redis_password" ]; then
+                redis-cli -h "$redis_host" -p "$redis_port" -a "$redis_password" DEL "slaver:$slaver_name" &>/dev/null || true
+            else
+                redis-cli -h "$redis_host" -p "$redis_port" DEL "slaver:$slaver_name" &>/dev/null || true
+            fi
+            log INFO "已从 Redis 删除 Slaver 记录"
+        fi
+    fi
+
+    # v0.6.0 新增：从 SQLite 删除
+    local sqlite_config="$CONFIG_DIR/docker-sqlite.yml"
+    if [ -f "$sqlite_config" ]; then
+        local sqlite_db=$(grep "database:" "$sqlite_config" 2>/dev/null | head -1 | awk '{print $2}' || echo "")
+
+        if [ -n "$sqlite_db" ] && [ -f "$sqlite_db" ]; then
+            python3 -c "
+import sqlite3
+try:
+    conn = sqlite3.connect('$sqlite_db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM slaver_processes WHERE slaver_name = ?', ['$slaver_name'])
+    conn.commit()
+    conn.close()
+    print('已从 SQLite 删除 Slaver 记录')
+except Exception as e:
+    print(f'SQLite 删除失败：{e}')
+" 2>/dev/null || true
+        fi
+    fi
+
+    # 清理 Slaver 状态文件
     rm -f "$state_file"
     log INFO "Slaver 状态文件已清理：$state_file"
 }
 
-# 检查所有 Slaver 心跳
+# 检查所有 Slaver 心跳（v0.6.0 升级：支持 slavers 目录）
 check_all_heartbeats() {
     log INFO "开始检查 Slaver 心跳..."
 
     local timeout_count=0
+    local checked_count=0
 
-    # 查找所有 Slaver 状态文件
-    for state_file in "$STATE_DIR"/slaver-*.yml; do
+    # 查找所有 Slaver 状态文件（支持旧版和新版目录）
+    for state_file in "$SLAVER_STATE_DIR"/*.yml "$STATE_DIR"/slaver-*.yml; do
         if [ -f "$state_file" ]; then
+            ((checked_count++))
             if ! check_slaver_heartbeat "$state_file"; then
                 ((timeout_count++))
             fi
         fi
     done
 
-    if [ $timeout_count -gt 0 ]; then
+    if [ $checked_count -eq 0 ]; then
+        log INFO "未找到任何 Slaver 状态文件"
+    elif [ $timeout_count -gt 0 ]; then
         log WARN "发现 $timeout_count 个 Slaver 心跳超时"
     else
-        log INFO "所有 Slaver 心跳正常"
+        log INFO "所有 $checked_count 个 Slaver 心跳正常"
     fi
 
     return $timeout_count

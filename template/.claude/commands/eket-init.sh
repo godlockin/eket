@@ -131,6 +131,41 @@ fi
 echo ""
 
 # ==========================================
+# 步骤 3.5: Docker 环境检测和容器启动 (v0.6.0)
+# ==========================================
+echo -e "${BLUE}## 步骤 3.5: Docker 环境检测 (v0.6.0)${NC}"
+echo ""
+
+if [ -x "$SCRIPTS_DIR/check-docker.sh" ]; then
+    if "$SCRIPTS_DIR/check-docker.sh" --silent; then
+        echo -e "${GREEN}✓${NC} Docker 环境检测通过"
+        echo ""
+
+        # 启动 Docker SQLite 容器
+        if [ -x "$SCRIPTS_DIR/docker-sqlite.sh" ]; then
+            echo "启动 Docker SQLite 容器..."
+            "$SCRIPTS_DIR/docker-sqlite.sh" start || true
+        fi
+
+        # 启动 Docker Redis 容器
+        if [ -x "$SCRIPTS_DIR/docker-redis.sh" ]; then
+            echo "启动 Docker Redis 容器..."
+            "$SCRIPTS_DIR/docker-redis.sh" start || true
+        fi
+
+        echo ""
+        echo -e "${GREEN}✓${NC} Docker 容器已启动"
+    else
+        echo -e "${YELLOW}○${NC} Docker 未安装或未运行"
+        echo "   提示：安装 Docker 后可启用 SQLite 和 Redis 容器支持"
+    fi
+else
+    echo -e "${YELLOW}⚠${NC} Docker 检测脚本未找到"
+fi
+
+echo ""
+
+# ==========================================
 # 步骤 4: 初始化 CLAUDE.md
 # ==========================================
 echo -e "${BLUE}## 步骤 4: 初始化 CLAUDE.md${NC}"
