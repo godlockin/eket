@@ -114,6 +114,22 @@ copy_templates() {
             echo -e "${GREEN}✓${NC} README.md"
         fi
 
+        # 复制 SYSTEM-SETTINGS.md (系统设定模板)
+        if [ ! -f "SYSTEM-SETTINGS.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/SYSTEM-SETTINGS.md" "SYSTEM-SETTINGS.md"
+            # 替换占位符
+            sed -i '' "s/\${PROJECT_NAME}/$PROJECT_NAME/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
+            sed -i "s/\${PROJECT_NAME}/$PROJECT_NAME/g" "SYSTEM-SETTINGS.md"
+            sed -i '' "s/\${CREATE_DATE}/$(date -I)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
+            sed -i "s/\${CREATE_DATE}/$(date -I)/g" "SYSTEM-SETTINGS.md"
+            sed -i '' "s/\${UPDATE_DATE}/$(date -I)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
+            sed -i "s/\${UPDATE_DATE}/$(date -I)/g" "SYSTEM-SETTINGS.md"
+            sed -i '' "s/\${MAINTAINER}/$(whoami)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
+            sed -i "s/\${MAINTAINER}/$(whoami)/g" "SYSTEM-SETTINGS.md"
+            echo -e "${GREEN}✓${NC} SYSTEM-SETTINGS.md (系统设定模板)"
+            echo -e "${YELLOW}  → 请编辑此文件，替换所有占位符和不适用的章节${NC}"
+        fi
+
         # 复制 .claude 配置（Claude Code Commands）
         if [ -d "$EKET_TEMPLATE_DIR/.claude/commands" ]; then
             mkdir -p ".claude/commands"
