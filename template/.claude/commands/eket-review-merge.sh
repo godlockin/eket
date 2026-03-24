@@ -7,6 +7,11 @@
 
 set -e
 
+# 路径配置 (v0.5.2)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+SCRIPTS_DIR="$PROJECT_ROOT/scripts"
+
 # 颜色定义
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -273,6 +278,55 @@ if ! git rev-parse --verify "$BRANCH" >/dev/null 2>&1; then
     echo ""
     exit 1
 fi
+
+# ==========================================
+# v0.5.2: 合并前验证 (新增)
+# ==========================================
+echo -e "${BLUE}## 步骤：合并前验证 (v0.5.2)${NC}"
+echo ""
+
+# 1. 测试门禁验证
+if [ -x "$SCRIPTS_DIR/test-gate-system.sh" ]; then
+    echo "运行测试门禁系统..."
+    if "$SCRIPTS_DIR/test-gate-system.sh" all "$TASK_ID" 2>/dev/null; then
+        echo -e "${GREEN}✓${NC} 测试门禁通过"
+    else
+        echo -e "${RED}✗${NC} 测试门禁未通过，阻止合并"
+        echo ""
+        echo "请修复以下问题后重新尝试合并:"
+        echo "  - 运行：$SCRIPTS_DIR/test-gate-system.sh all $TASK_ID 查看详情"
+        exit 1
+    fi
+else
+    echo -e "${YELLOW}⚠${NC} 测试门禁系统未找到，跳过验证"
+fi
+
+# 2. 合并策略检查
+if [ -x "$SCRIPTS_DIR/merge-strategy.sh" ]; then
+    echo "检查合并策略..."
+    if "$SCRIPTS_DIR/merge-strategy.sh" "$TASK_ID" --auto 2>/dev/null; then
+        echo -e "${GREEN}✓${NC} 合并策略检查通过"
+    else
+        echo -e "${RED}✗${NC} 合并策略检查失败"
+        exit 1
+    fi
+else
+    echo -e "${YELLOW}⚠${NC} 合并策略脚本未找到，跳过验证"
+fi
+
+# 3. Checkpoint 验证
+if [ -x "$SCRIPTS_DIR/checkpoint-validator.sh" ]; then
+    echo "验证任务 Checkpoint..."
+    if "$SCRIPTS_DIR/checkpoint-validator.sh" "$TASK_ID" 2>/dev/null; then
+        echo -e "${GREEN}✓${NC} Checkpoint 验证通过"
+    else
+        echo -e "${YELLOW}⚠${NC} Checkpoint 验证失败 (可选)"
+    fi
+else
+    echo -e "${YELLOW}⚠${NC} Checkpoint 验证脚本未找到，跳过验证"
+fi
+
+echo ""
 
 # 合并到 testing
 echo "正在合并到 testing 分支..."
