@@ -6,8 +6,15 @@
 # 临时文件
 *.tmp
 *.log
+*.bak
 
 # 系统文件
 .DS_Store
 Thumbs.db
 .claude/settings.local.json
+
+# 运行生成物
+outbox/
+tests/results/*.md
+inbox/human_feedback/*
+!inbox/human_feedback/.gitkeep
