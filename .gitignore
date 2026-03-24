@@ -2,6 +2,7 @@
 .eket/state/
 .eket/logs/
 .eket/memory/
+.eket/data/
 
 # 临时文件
 *.tmp
@@ -18,3 +19,6 @@ outbox/
 tests/results/*.md
 inbox/human_feedback/*
 !inbox/human_feedback/.gitkeep
+
+# 运行时数据
+confluence/memory/retrospectives/
