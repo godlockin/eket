@@ -1,7 +1,22 @@
 # EKET 框架文档索引
 
-**版本**: 0.2.0
-**最后更新**: 2026-03-20
+**版本**: 0.6.2
+**最后更新**: 2026-03-24
+
+---
+
+## 🚀 推荐阅读顺序
+
+### 新用户快速路径
+
+1. **[QUICKSTART.md](../QUICKSTART.md)** - 5 分钟快速开始
+2. **[COMPLETE_FRAMEWORK_v0.2.md](01-getting-started/COMPLETE_FRAMEWORK_v0.2.md)** - 完整功能说明
+3. **[FRAMEWORK.md](02-architecture/FRAMEWORK.md)** - 框架白皮书
+
+### v0.6.2 新增内容
+
+- **[IMPLEMENTATION-v0.6.2.md](IMPLEMENTATION-v0.6.2.md)** - PR 审查机制增强实施总结
+- **[PROJECT_REVIEW_REPORT.md](PROJECT_REVIEW_REPORT.md)** - 项目文件审查报告
 
 ---
 
@@ -146,6 +161,11 @@ docs/
 | 0.1.0 | 2026-03-18 | 初始版本 |
 | 0.1.0 | 2026-03-19 | 专家组审查 |
 | 0.2.0 | 2026-03-20 | 架构重构 |
+| 0.5.0 | 2026-03-23 | Master/Slaver 架构 |
+| 0.5.1 | 2026-03-23 | 修复和优化 |
+| 0.6.0 | 2026-03-24 | Docker 集成和心跳监控 |
+| 0.6.1 | 2026-03-24 | SYSTEM-SETTINGS 模板升级 |
+| 0.6.2 | 2026-03-24 | PR 审查机制增强 |
 
 ---
 

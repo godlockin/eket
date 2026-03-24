@@ -1,5 +1,5 @@
 # EKET Framework Version
-version: 0.1.0
-template_version: 0.1.0
+version: 0.6.2
+template_version: 0.6.2
 created_at: {{TIMESTAMP}}
 initialized_by: {{PROJECT_NAME}}

@@ -9,7 +9,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SCRIPTS_DIR="$PROJECT_ROOT/scripts"
 
 echo "========================================"
-echo "EKET PR 审核 v0.5"
+echo "EKET PR 审核 v0.6.2"
 echo "========================================"
 echo ""
 
@@ -159,8 +159,129 @@ fi
 
 echo ""
 
+# ==========================================
+# 完整审查流程 (v0.6.2 新增)
+# ==========================================
+
+echo -e "${BLUE}## 步骤 3: 运行完整审查流程${NC}"
+echo ""
+echo "启动增强审查机制："
+echo "  - 测试门禁验证"
+echo "  - 领域专家评审 (架构/安全/性能/代码质量)"
+echo "  - Roadmap 对齐检查"
+echo ""
+
+# 创建审查结果目录
+REVIEW_DIR="outbox/review_results"
+mkdir -p "$REVIEW_DIR"
+
+# 3.1 运行测试门禁验证
+echo -e "${CYAN}[3.1] 测试门禁验证${NC}"
+if [ -f "$SCRIPTS_DIR/test-gate-system.sh" ]; then
+    if "$SCRIPTS_DIR/test-gate-system.sh" all "$TICKET_ID" 2>/dev/null; then
+        echo -e "${GREEN}  ✓ 测试门禁通过${NC}"
+        TEST_GATE_PASSED=true
+    else
+        echo -e "${YELLOW}  ⚠ 测试门禁存在未通过项${NC}"
+        TEST_GATE_PASSED=false
+    fi
+else
+    echo -e "${YELLOW}  ⚠ 测试门禁脚本不存在，跳过${NC}"
+    TEST_GATE_PASSED=true
+fi
+echo ""
+
+# 3.2 运行领域专家评审
+echo -e "${CYAN}[3.2] 领域专家评审${NC}"
+if [ -f "$SCRIPTS_DIR/expert-review.sh" ]; then
+    if "$SCRIPTS_DIR/expert-review.sh" "$TICKET_ID" "$BRANCH" 2>/dev/null; then
+        echo -e "${GREEN}  ✓ 专家评审完成${NC}"
+        EXPERT_REVIEW_DONE=true
+    else
+        echo -e "${YELLOW}  ⚠ 专家评审存在警告项${NC}"
+        EXPERT_REVIEW_DONE=true  # 评审完成，可能有警告
+    fi
+else
+    echo -e "${YELLOW}  ⚠ 专家评审脚本不存在，跳过${NC}"
+    EXPERT_REVIEW_DONE=true
+fi
+echo ""
+
+# 3.3 运行 Roadmap 对齐检查
+echo -e "${CYAN}[3.3] Roadmap 对齐检查${NC}"
+if [ -f "$SCRIPTS_DIR/roadmap-alignment-check.sh" ]; then
+    if "$SCRIPTS_DIR/roadmap-alignment-check.sh" "$TICKET_ID" "$BRANCH" 2>/dev/null; then
+        echo -e "${GREEN}  ✓ Roadmap 对齐检查完成${NC}"
+        ROADMAP_CHECK_DONE=true
+    else
+        echo -e "${YELLOW}  ⚠ Roadmap 对齐检查存在警告${NC}"
+        ROADMAP_CHECK_DONE=true
+    fi
+else
+    echo -e "${YELLOW}  ⚠ Roadmap 检查脚本不存在，跳过${NC}"
+    ROADMAP_CHECK_DONE=true
+fi
+echo ""
+
+# 3.4 读取评审结果
+echo -e "${BLUE}[3.4] 综合审查结果${NC}"
+ENV_FILE="$REVIEW_DIR/.review_${TICKET_ID}.env"
+if [ -f "$ENV_FILE" ]; then
+    source "$ENV_FILE"
+
+    echo "┌──────────────────────────────────────────────────────────────┐"
+    echo "│  审查结果汇总                                                │"
+    echo "├──────────────────────────────────────────────────────────────┤"
+    printf "│  %-50s │\n" "测试门禁：$([ "$TEST_GATE_PASSED" = true ] && echo "✓ 通过" || echo "⚠ 未通过")"
+    printf "│  %-50s │\n" "架构评审：$([ "${ARCH_STATUS:-fail}" = "pass" ] && echo "✓ 通过 (${ARCH_SCORE:-N/A}/5)" || echo "⚠ 需改进 (${ARCH_SCORE:-N/A}/5)")"
+    printf "│  %-50s │\n" "安全评审：$([ "${SECURITY_STATUS:-fail}" = "pass" ] && echo "✓ 通过 (${SECURITY_SCORE:-N/A}/5)" || echo "✗ 需修复 (${SECURITY_SCORE:-N/A}/5)")"
+    printf "│  %-50s │\n" "性能评审：$([ "${PERFORMANCE_STATUS:-fail}" = "pass" ] && echo "✓ 通过 (${PERFORMANCE_SCORE:-N/A}/5)" || echo "⚠ 需优化 (${PERFORMANCE_SCORE:-N/A}/5)")"
+    printf "│  %-50s │\n" "代码质量：$([ "${QUALITY_STATUS:-fail}" = "pass" ] && echo "✓ 通过 (${QUALITY_SCORE:-N/A}/5)" || echo "⚠ 需改进 (${QUALITY_SCORE:-N/A}/5)")"
+    printf "│  %-50s │\n" "Roadmap 对齐：$([ "${ROADMAP_STATUS:-pass}" = "pass" ] && echo "✓ 对齐 (${ROADMAP_SCORE:-N/A}/5)" || echo "⚠ 需关注 (${ROADMAP_SCORE:-N/A}/5)")"
+    echo "└──────────────────────────────────────────────────────────────┘"
+
+    # 计算综合评分
+    total_score=0
+    count=0
+    for score in "${ARCH_SCORE:-3}" "${SECURITY_SCORE:-3}" "${PERFORMANCE_SCORE:-3}" "${QUALITY_SCORE:-3}" "${ROADMAP_SCORE:-3}"; do
+        total_score=$((total_score + score))
+        count=$((count + 1))
+    done
+    avg_score=$(echo "scale=1; $total_score / $count" | bc 2>/dev/null || echo "$((total_score / count))")
+
+    echo ""
+    echo "综合评分：$avg_score / 5.0"
+
+    # 判断是否推荐批准
+    if [ "$TEST_GATE_PASSED" = true ] && [ "${SECURITY_STATUS:-fail}" = "pass" ] && [ "$(echo "$avg_score >= 4" | bc 2>/dev/null)" = "1" ]; then
+        RECOMMENDED_ACTION="approve"
+        echo -e "${GREEN}推荐：批准合并${NC}"
+    elif [ "${SECURITY_STATUS:-fail}" = "fail" ]; then
+        RECOMMENDED_ACTION="reject"
+        echo -e "${RED}推荐：拒绝 (存在安全问题)${NC}"
+    else
+        RECOMMENDED_ACTION="modify"
+        echo -e "${YELLOW}推荐：需要修改${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠ 评审结果文件不存在，使用基础审查${NC}"
+    RECOMMENDED_ACTION="manual"
+fi
+echo ""
+
+# 显示审查报告文件
+if [ -f "$REVIEW_DIR/expert-review-${TICKET_ID}-"*".md" ] 2>/dev/null; then
+    EXPERT_REPORT=$(ls "$REVIEW_DIR/expert-review-${TICKET_ID}-"*".md" 2>/dev/null | head -1)
+    echo -e "${BLUE}专家评审报告：$EXPERT_REPORT${NC}"
+fi
+if [ -f "$REVIEW_DIR/roadmap-alignment-${TICKET_ID}-"*".md" ] 2>/dev/null; then
+    ROADMAP_REPORT=$(ls "$REVIEW_DIR/roadmap-alignment-${TICKET_ID}-"*".md" 2>/dev/null | head -1)
+    echo -e "${BLUE}Roadmap 对齐报告：$ROADMAP_REPORT${NC}"
+fi
+echo ""
+
 # 显示审核选项
-echo -e "${BLUE}## 步骤 3: 选择审核结果${NC}"
+echo -e "${BLUE}## 步骤 4: 选择审核结果${NC}"
 echo ""
 echo "请选择审核结果:"
 echo ""
@@ -168,6 +289,9 @@ echo "  ${GREEN}[1]${NC} 批准 - 代码符合标准，可以合并"
 echo "  ${YELLOW}[2]${NC} 需要修改 - 存在问题需要修复"
 echo "  ${RED}[3]${NC} 拒绝 - 严重问题，需要重新设计"
 echo ""
+if [ "$RECOMMENDED_ACTION" != "manual" ]; then
+    echo -e "${CYAN}推荐：$RECOMMENDED_ACTION${NC}"
+fi
 echo -n "请输入选择 [1-3]: "
 
 # 读取用户输入（使用兼容方式）
@@ -198,6 +322,20 @@ case "$CHOICE" in
 ## 审核意见
 
 代码已通过审核，可以合并到 testing 分支。
+
+## 审查维度
+
+- 测试门禁：$([ "$TEST_GATE_PASSED" = true ] && echo "✓ 通过" || echo "⚠ 未通过")
+- 架构评审：$([ "${ARCH_STATUS:-fail}" = "pass" ] && echo "✓ 通过" || echo "⚠ 需改进")
+- 安全评审：$([ "${SECURITY_STATUS:-fail}" = "pass" ] && echo "✓ 通过" || echo "✗ 需修复")
+- 性能评审：$([ "${PERFORMANCE_STATUS:-fail}" = "pass" ] && echo "✓ 通过" || echo "⚠ 需优化")
+- 代码质量：$([ "${QUALITY_STATUS:-fail}" = "pass" ] && echo "✓ 通过" || echo "⚠ 需改进")
+- Roadmap 对齐：$([ "${ROADMAP_STATUS:-pass}" = "pass" ] && echo "✓ 对齐" || echo "⚠ 需关注")
+
+## 评审报告
+
+- 专家评审：$EXPERT_REPORT:-未生成
+- Roadmap 对齐：$ROADMAP_REPORT:-未生成
 
 ## 下一步
 
@@ -233,6 +371,22 @@ EOF
 
 $COMMENTS
 
+---
+
+## 审查维度详情
+
+- 测试门禁：$([ "$TEST_GATE_PASSED" = true ] && echo "✓ 通过" || echo "⚠ 未通过")
+- 架构评审：$([ "${ARCH_STATUS:-fail}" = "pass" ] && echo "✓ 通过 (${ARCH_SCORE:-N/A}/5)" || echo "⚠ 需改进 (${ARCH_SCORE:-N/A}/5)")
+- 安全评审：$([ "${SECURITY_STATUS:-fail}" = "pass" ] && echo "✓ 通过 (${SECURITY_SCORE:-N/A}/5)" || echo "✗ 需修复 (${SECURITY_SCORE:-N/A}/5)")
+- 性能评审：$([ "${PERFORMANCE_STATUS:-fail}" = "pass" ] && echo "✓ 通过 (${PERFORMANCE_SCORE:-N/A}/5)" || echo "⚠ 需优化 (${PERFORMANCE_SCORE:-N/A}/5)")
+- 代码质量：$([ "${QUALITY_STATUS:-fail}" = "pass" ] && echo "✓ 通过 (${QUALITY_SCORE:-N/A}/5)" || echo "⚠ 需改进 (${QUALITY_SCORE:-N/A}/5)")
+- Roadmap 对齐：$([ "${ROADMAP_STATUS:-pass}" = "pass" ] && echo "✓ 对齐 (${ROADMAP_SCORE:-N/A}/5)" || echo "⚠ 需关注 (${ROADMAP_SCORE:-N/A}/5)")
+
+## 评审报告
+
+- 专家评审：${EXPERT_REPORT:-未生成}
+- Roadmap 对齐：${ROADMAP_REPORT:-未生成}
+
 ## 修改要求
 
 请根据上述意见修改代码后重新提交 PR。
@@ -265,6 +419,22 @@ EOF
 ## 拒绝原因
 
 $REASONS
+
+---
+
+## 审查维度详情
+
+- 测试门禁：$([ "$TEST_GATE_PASSED" = true ] && echo "✓ 通过" || echo "⚠ 未通过")
+- 架构评审：$([ "${ARCH_STATUS:-fail}" = "pass" ] && echo "✓ 通过 (${ARCH_SCORE:-N/A}/5)" || echo "⚠ 需改进 (${ARCH_SCORE:-N/A}/5)")
+- 安全评审：$([ "${SECURITY_STATUS:-fail}" = "pass" ] && echo "✓ 通过 (${SECURITY_SCORE:-N/A}/5)" || echo "✗ 需修复 (${SECURITY_SCORE:-N/A}/5)")
+- 性能评审：$([ "${PERFORMANCE_STATUS:-fail}" = "pass" ] && echo "✓ 通过 (${PERFORMANCE_SCORE:-N/A}/5)" || echo "⚠ 需优化 (${PERFORMANCE_SCORE:-N/A}/5)")
+- 代码质量：$([ "${QUALITY_STATUS:-fail}" = "pass" ] && echo "✓ 通过 (${QUALITY_SCORE:-N/A}/5)" || echo "⚠ 需改进 (${QUALITY_SCORE:-N/A}/5)")
+- Roadmap 对齐：$([ "${ROADMAP_STATUS:-pass}" = "pass" ] && echo "✓ 对齐 (${ROADMAP_SCORE:-N/A}/5)" || echo "⚠ 需关注 (${ROADMAP_SCORE:-N/A}/5)")
+
+## 评审报告
+
+- 专家评审：${EXPERT_REPORT:-未生成}
+- Roadmap 对齐：${ROADMAP_REPORT:-未生成}
 
 ## 建议
 
@@ -339,7 +509,7 @@ echo ""
 
 # 如果是批准，询问是否合并
 if [ "$CHOICE" = "1" ]; then
-    echo -e "${BLUE}## 步骤 4: 合并到 testing 分支${NC}"
+    echo -e "${BLUE}## 步骤 5: 合并到 testing 分支${NC}"
     echo ""
     echo "是否现在合并到 testing 分支？[y/N]"
     read -r MERGE_CONFIRM

@@ -9,7 +9,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SCRIPTS_DIR="$PROJECT_ROOT/scripts"
 
 echo "========================================"
-echo "EKET 合并 PR v0.5"
+echo "EKET 合并 PR v0.6.2"
 echo "========================================"
 echo ""
 
@@ -133,6 +133,81 @@ fi
 echo -e "${BLUE}## 步骤 1: 读取 PR 信息${NC}"
 echo ""
 
+# ==========================================
+# 审查报告验证 (v0.6.2 新增)
+# ==========================================
+
+echo -e "${CYAN}[1.5] 审查报告验证${NC}"
+
+REVIEW_DIR="outbox/review_results"
+REVIEW_VALID=true
+
+# 检查专家评审报告
+EXPERT_REPORT=$(ls "$REVIEW_DIR/expert-review-${TICKET_ID}-"*".md" 2>/dev/null | head -1)
+if [ -n "$EXPERT_REPORT" ] && [ -f "$EXPERT_REPORT" ]; then
+    echo -e "${GREEN}  ✓ 专家评审报告存在：$EXPERT_REPORT${NC}"
+
+    # 检查安全评审状态
+    if grep -q "SECURITY_STATUS=fail" "$REVIEW_DIR/.review_${TICKET_ID}.env" 2>/dev/null; then
+        echo -e "${RED}  ✗ 安全评审未通过，需要修复${NC}"
+        REVIEW_VALID=false
+    else
+        echo -e "${GREEN}  ✓ 安全评审通过${NC}"
+    fi
+else
+    echo -e "${YELLOW}  ⚠ 专家评审报告不存在 (可能已跳过)${NC}"
+fi
+
+# 检查 Roadmap 对齐报告
+ROADMAP_REPORT=$(ls "$REVIEW_DIR/roadmap-alignment-${TICKET_ID}-"*".md" 2>/dev/null | head -1)
+if [ -n "$ROADMAP_REPORT" ] && [ -f "$ROADMAP_REPORT" ]; then
+    echo -e "${GREEN}  ✓ Roadmap 对齐报告存在：$ROADMAP_REPORT${NC}"
+else
+    echo -e "${YELLOW}  ⚠ Roadmap 对齐报告不存在 (可能已跳过)${NC}"
+fi
+
+# 检查测试门禁报告
+TEST_REPORT=$(ls "$REVIEW_DIR/test-gate-report-${TICKET_ID}-"*".md" 2>/dev/null | head -1)
+if [ -n "$TEST_REPORT" ] && [ -f "$TEST_REPORT" ]; then
+    echo -e "${GREEN}  ✓ 测试门禁报告存在：$TEST_REPORT${NC}"
+else
+    echo -e "${YELLOW}  ⚠ 测试门禁报告不存在 (可能已跳过)${NC}"
+fi
+
+# 检查 merge-validator 验证
+echo ""
+echo -e "${CYAN}[1.6] 合并前置验证${NC}"
+if [ -f "$SCRIPTS_DIR/merge-validator.sh" ]; then
+    if "$SCRIPTS_DIR/merge-validator.sh" validate "$TICKET_ID" 2>/dev/null; then
+        echo -e "${GREEN}  ✓ 合并验证通过${NC}"
+        MERGE_VALIDATOR_PASSED=true
+    else
+        echo -e "${YELLOW}  ⚠ 合并验证存在未通过项${NC}"
+        MERGE_VALIDATOR_PASSED=false
+    fi
+else
+    echo -e "${YELLOW}  ⚠ 合并验证脚本不存在，跳过${NC}"
+    MERGE_VALIDATOR_PASSED=true
+fi
+
+# 判断是否可以继续合并
+if [ "$REVIEW_VALID" = false ]; then
+    echo ""
+    echo -e "${RED}✗ 存在未通过的审查项，请修复后重新提交${NC}"
+    echo ""
+    echo "未通过项:"
+    if grep -q "SECURITY_STATUS=fail" "$REVIEW_DIR/.review_${TICKET_ID}.env" 2>/dev/null; then
+        echo "  - 安全评审未通过"
+    fi
+    echo ""
+    echo "建议:"
+    echo "  1. 查看评审报告：$EXPERT_REPORT"
+    echo "  2. 修复安全问题后重新提交 PR"
+    exit 1
+fi
+
+echo ""
+
 # 获取分支名称
 if [ -z "$BRANCH_NAME" ]; then
     BRANCH_NAME=$(grep -m1 "^**分支" "$PR_FILE" 2>/dev/null | cut -d':' -f2 | tr -d ' ' || echo "")
@@ -172,7 +247,7 @@ fi
 echo ""
 
 # 合并到目标分支
-echo -e "${BLUE}## 步骤 3: 合并到 $TARGET_BRANCH${NC}"
+echo -e "${BLUE}## 步骤 4: 合并到 $TARGET_BRANCH${NC}"
 echo ""
 
 # 切换到目标分支
@@ -198,7 +273,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>" && \
 echo ""
 
 # 推送到远程
-echo -e "${BLUE}## 步骤 4: 推送到远程${NC}"
+echo -e "${BLUE}## 步骤 5: 推送到远程${NC}"
 echo ""
 
 git push origin "$TARGET_BRANCH" && \
@@ -208,7 +283,7 @@ git push origin "$TARGET_BRANCH" && \
 # 如果是合并到 testing，还需要合并到 main
 if [ "$TARGET_BRANCH" = "testing" ]; then
     echo ""
-    echo -e "${BLUE}## 步骤 5: 合并到 main 分支${NC}"
+    echo -e "${BLUE}## 步骤 6: 合并到 main 分支${NC}"
     echo ""
 
     echo "切换到 main 分支..."
