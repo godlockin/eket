@@ -6,8 +6,58 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # EKET - AI 智能体协作框架
 
-**版本**: 0.6.2
+**版本**: 0.7.0
 **最后更新**: 2026-03-24
+
+## 变更说明 (v0.7.0)
+
+### Node.js 混合架构
+
+- **Redis 客户端**: Slaver 心跳监控、消息队列 (ioredis)
+- **SQLite 客户端**: Retrospective 数据持久化 (better-sqlite3)
+- **CLI 框架**: 统一的命令行界面 (Commander.js)
+- **混合适配器**: 自动路由和三级降级 (Node.js → Shell → 文件队列)
+
+### 新增目录
+
+```
+node/                       # Node.js 项目目录
+├── src/
+│   ├── index.ts            # CLI 入口
+│   ├── types/              # TypeScript 类型定义
+│   └── core/               # 核心模块 (Redis/SQLite 客户端)
+└── dist/                   # 编译产物
+lib/adapters/
+└── hybrid-adapter.sh       # 混合适配器脚本
+```
+
+### 新增脚本
+
+- `scripts/enable-advanced.sh`: 安装 Node.js 依赖，启用高级功能
+- `lib/adapters/hybrid-adapter.sh`: 命令路由和降级
+
+### 新增命令
+
+```bash
+# Redis 相关
+./lib/adapters/hybrid-adapter.sh redis:check
+./lib/adapters/hybrid-adapter.sh redis:list-slavers
+
+# SQLite 相关
+./lib/adapters/hybrid-adapter.sh sqlite:check
+./lib/adapters/hybrid-adapter.sh sqlite:list-retros
+./lib/adapters/hybrid-adapter.sh sqlite:search "<keyword>"
+./lib/adapters/hybrid-adapter.sh sqlite:report
+
+# 系统诊断
+./lib/adapters/hybrid-adapter.sh doctor
+```
+
+### 升级指南
+
+详见 [docs/v0.7-upgrade-guide.md](docs/v0.7-upgrade-guide.md)
+
+---
 
 ## 变更说明 (v0.6.2)
 
@@ -148,6 +198,18 @@ cd /path/to/project
 ./scripts/heartbeat-monitor.sh      # 心跳监控
 ./scripts/slaver-heartbeat.sh       # Slaver 心跳上报
 ./scripts/log-rotate.sh             # 日志轮转
+./scripts/enable-advanced.sh        # 启用 Node.js 高级功能
+```
+
+### Node.js 命令 (通过混合适配器)
+```bash
+./lib/adapters/hybrid-adapter.sh redis:check          # 检查 Redis 连接
+./lib/adapters/hybrid-adapter.sh redis:list-slavers   # 列出活跃 Slaver
+./lib/adapters/hybrid-adapter.sh sqlite:check         # 检查 SQLite 数据库
+./lib/adapters/hybrid-adapter.sh sqlite:list-retros   # 列出 Retrospective
+./lib/adapters/hybrid-adapter.sh sqlite:search "<kw>" # 搜索 Retrospective
+./lib/adapters/hybrid-adapter.sh sqlite:report        # 生成统计报告
+./lib/adapters/hybrid-adapter.sh doctor               # 系统诊断
 ```
 
 ### 验证和检查
@@ -406,7 +468,9 @@ eket/
 │   ├── 02-architecture/      # 架构设计
 │   ├── 03-implementation/    # 实现细节
 │   ├── 04-testing/           # 测试验证
-│   └── 05-reference/         # 参考资料
+│   ├── 05-reference/         # 参考资料
+│   ├── plans/                # 设计文档
+│   └── v0.7-upgrade-guide.md # v0.7 升级指南
 ├── template/                 # 项目模板
 │   ├── CLAUDE.md             # 项目 CLAUDE.md 模板
 │   ├── .claude/commands/     # Claude Code 命令
@@ -417,7 +481,16 @@ eket/
 │   ├── start.sh              # 启动实例
 │   ├── manage.sh             # 管理命令
 │   ├── prioritize-tasks.sh   # 任务优先级排序
-│   └── recommend-tasks.sh    # 任务推荐
+│   ├── recommend-tasks.sh    # 任务推荐
+│   └── enable-advanced.sh    # 启用 Node.js 高级功能
+├── lib/
+│   └── adapters/
+│       └── hybrid-adapter.sh # 混合适配器
+├── node/                     # Node.js 项目
+│   ├── src/                  # TypeScript 源码
+│   ├── core/                 # 核心模块
+│   ├── types/                # 类型定义
+│   └── dist/                 # 编译产物
 └── tests/                    # 测试
 ```
 
@@ -486,6 +559,6 @@ eket/
 
 ---
 
-**版本**: 0.6.0
+**版本**: 0.7.0
 **最后更新**: 2026-03-24
 **维护者**: EKET Framework Team

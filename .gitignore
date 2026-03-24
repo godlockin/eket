@@ -25,3 +25,15 @@ sys_init/
 
 # 运行时数据
 confluence/memory/retrospectives/
+
+# Node.js
+node/node_modules/
+node/dist/
+node/package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+tsconfig.tsbuildinfo
+.eket/venv-node/
