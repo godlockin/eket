@@ -11,6 +11,7 @@ import { createRedisClient } from './core/redis-client.js';
 import { createSQLiteClient } from './core/sqlite-client.js';
 import { registerClaim } from './commands/claim.js';
 import { runInitWizard } from './commands/init-wizard.js';
+import { registerSubmitPR } from './commands/submit-pr.js';
 import { createMessageQueue, createMessage } from './core/message-queue.js';
 import { createHeartbeatManager, createSlaverMonitor } from './core/heartbeat-monitor.js';
 import type { RedisConfig } from './types';
@@ -404,6 +405,9 @@ async function main(): Promise<void> {
       await mq.disconnect();
       console.log('\n测试完成');
     });
+
+  // 注册 submit-pr 命令
+  registerSubmitPR(program);
 
   // 解析命令行
   await program.parseAsync(process.argv);

@@ -1,5 +1,6 @@
 #!/bin/bash
 # scripts/init-three-repos.sh - 初始化三 Git 仓库架构
+# 从 .eket/config/config.yml 读取配置
 
 set -e
 
@@ -15,21 +16,51 @@ BLUE='\033[0;34m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-# 参数
-PROJECT_NAME="${1:-my-project}"
-ORG_NAME="${2:-my-org}"
-REMOTE_TYPE="${3:-github}"  # github 或 gitlab
-
-# 仓库 URL 前缀
-if [ "$REMOTE_TYPE" = "github" ]; then
-    BASE_URL="https://github.com/${ORG_NAME}"
-else
-    BASE_URL="https://gitlab.com/${ORG_NAME}"
+# 检查配置文件
+CONFIG_FILE=".eket/config/config.yml"
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo -e "${RED}✗${NC} 错误：未找到配置文件 $CONFIG_FILE"
+    echo ""
+    echo "请先运行项目初始化向导："
+    echo "  node node/dist/index.js init"
+    echo ""
+    echo "或手动创建配置文件"
+    exit 1
 fi
 
-MAIN_REPO="${BASE_URL}/${PROJECT_NAME}.git"
-CONFLUENCE_REPO="${BASE_URL}/${PROJECT_NAME}-confluence.git"
-JIRA_REPO="${BASE_URL}/${PROJECT_NAME}-jira.git"
+echo -e "${BLUE}读取配置文件：$CONFIG_FILE${NC}"
+echo ""
+
+# 简单 YAML 解析函数
+parse_yaml_value() {
+    local file="$1"
+    local key="$2"
+    grep -E "^\s*${key}:" "$file" | head -1 | sed 's/.*:\s*//' | sed 's/^["'\'']//' | sed 's/["'\'']$//' | sed 's/\s*$//'
+}
+
+parse_yaml_nested() {
+    local file="$1"
+    local section="$2"
+    local key="$3"
+    awk "/^${section}:/,/^[a-z]/" "$file" | grep -E "^\s+${key}:" | head -1 | sed 's/.*:\s*//' | sed 's/^["'\'']//' | sed 's/["'\'']$//' | sed 's/\s*$//'
+}
+
+# 从配置文件读取项目信息
+PROJECT_NAME=$(parse_yaml_nested "$CONFIG_FILE" "project" "name")
+ORG_NAME=$(parse_yaml_nested "$CONFIG_FILE" "project" "organization")
+
+# 读取仓库配置
+CONFLUENCE_URL=$(parse_yaml_nested "$CONFIG_FILE" "repositories" "confluence" | grep -A1 "url:" | tail -1 | sed 's/.*:\s*//' | sed 's/^["'\'']//' | sed 's/["'\'']$//')
+JIRA_URL=$(parse_yaml_nested "$CONFIG_FILE" "repositories" "jira" | grep -A1 "url:" | tail -1 | sed 's/.*:\s*//' | sed 's/^["'\'']//' | sed 's/["'\'']$//')
+CODE_REPO_URL=$(parse_yaml_nested "$CONFIG_FILE" "repositories" "code_repo" | grep -A1 "url:" | tail -1 | sed 's/.*:\s*//' | sed 's/^["'\'']//' | sed 's/["'\'']$//')
+
+# 从 URL 推断平台
+REMOTE_TYPE="github"
+if echo "$CONFLUENCE_URL" | grep -q "gitlab.com"; then
+    REMOTE_TYPE="gitlab"
+elif echo "$CONFLUENCE_URL" | grep -q "gitee.com"; then
+    REMOTE_TYPE="gitee"
+fi
 
 echo "项目信息:"
 echo "  项目名称：$PROJECT_NAME"
@@ -37,9 +68,9 @@ echo "  组织名称：$ORG_NAME"
 echo "  远程类型：$REMOTE_TYPE"
 echo ""
 echo "仓库 URL:"
-echo "  主仓库：$MAIN_REPO"
-echo "  Confluence: $CONFLUENCE_REPO"
-echo "  Jira: $JIRA_REPO"
+echo "  Confluence: $CONFLUENCE_URL"
+echo "  Jira: $JIRA_URL"
+echo "  Code Repo: $CODE_REPO_URL"
 echo ""
 
 # 确认
@@ -225,7 +256,7 @@ if [ -f ".gitmodules" ]; then
         echo -e "${GREEN}✓${NC} Confluence submodule 已配置"
     else
         echo "添加 Confluence submodule..."
-        git submodule add "$CONFLUENCE_REPO" confluence
+        git submodule add "$CONFLUENCE_URL" confluence
         echo -e "${GREEN}✓${NC} Confluence submodule 添加成功"
     fi
 
@@ -233,7 +264,7 @@ if [ -f ".gitmodules" ]; then
         echo -e "${GREEN}✓${NC} Jira submodule 已配置"
     else
         echo "添加 Jira submodule..."
-        git submodule add "$JIRA_REPO" jira
+        git submodule add "$JIRA_URL" jira
         echo -e "${GREEN}✓${NC} Jira submodule 添加成功"
     fi
 else
@@ -241,12 +272,12 @@ else
 
     # 添加 Confluence submodule
     if [ -d "confluence/.git" ]; then
-        git submodule add "$CONFLUENCE_REPO" confluence
+        git submodule add "$CONFLUENCE_URL" confluence
     fi
 
     # 添加 Jira submodule
     if [ -d "jira/.git" ]; then
-        git submodule add "$JIRA_REPO" jira
+        git submodule add "$JIRA_URL" jira
     fi
 
     echo -e "${GREEN}✓${NC} .gitmodules 创建完成"
@@ -264,7 +295,7 @@ if git remote -v | grep -q "origin"; then
     echo -e "${GREEN}✓${NC} 主仓库 remote 已配置"
 else
     echo "添加主仓库 remote..."
-    git remote add origin "$MAIN_REPO"
+    git remote add origin "$CODE_REPO_URL"
     echo -e "${GREEN}✓${NC} 主仓库 remote 添加成功"
 fi
 
@@ -287,6 +318,11 @@ echo "仓库结构:"
 echo "  主仓库：$(pwd)"
 echo "  Confluence: $(pwd)/confluence"
 echo "  Jira: $(pwd)/jira"
+echo ""
+echo "仓库 URL:"
+echo "  Code Repo: $CODE_REPO_URL"
+echo "  Confluence: $CONFLUENCE_URL"
+echo "  Jira: $JIRA_URL"
 echo ""
 echo "下一步:"
 echo "  1. 推送所有仓库到远程:"

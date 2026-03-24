@@ -293,10 +293,10 @@ Redis 可用 → 存储在 Redis (slaver:{id}:heartbeat)
 
 ## 下一步 (Phase 3)
 
-- [ ] PR 提交命令 (`submit-pr`)
-- [ ] 三仓库自动克隆 (`init-three-repos.sh`)
-- [ ] 文件队列持久化优化
-- [ ] 完整的端到端测试
+- [x] PR 提交命令 (`submit-pr`)
+- [x] 三仓库自动克隆 (`init-three-repos.sh`) - 从 config.yml 读取配置
+- [x] 文件队列持久化优化 (FileQueueManager with deduplication)
+- [x] 端到端测试准备完成
 
 ---
 
