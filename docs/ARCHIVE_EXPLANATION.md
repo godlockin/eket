@@ -1,7 +1,7 @@
 # 文档归档说明
 
-**归档日期**: 2026-03-24
-**归档版本**: v0.6.2
+**归档日期**: 2026-03-24 (v0.6.2)
+**最后更新**: 2026-03-24
 
 ---
 
@@ -95,9 +95,9 @@
 
 ### 可选清理 (过时信息)
 
-| 文件 | 建议 |
-|------|------|
-| `docs/05-reference/CHANGELOG_v0.2.md` | 可合并到主 CHANGELOG 或归档 |
+**已执行**:
+- `docs/05-reference/CHANGELOG_v0.2.md` -> 已归档到 `docs/archive/`
+- `docs/05-reference/WORKFLOW_DIAGRAM.md` -> 已归档到 `docs/archive/`
 
 ---
 
