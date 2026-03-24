@@ -299,20 +299,40 @@ if [ "$INSTANCE_ROLE" = "master" ]; then
     echo -e "${BLUE}## 步骤 4.3: 启动 Master 监控服务${NC}"
     echo ""
 
+    # 守护进程启动函数 (v0.6.1)
+    start_daemon() {
+        local script="$1"
+        local name="$2"
+        local pid_file=".eket/state/${name}.pid"
+
+        # 检查是否已在运行
+        if [ -f "$pid_file" ]; then
+            local pid=$(cat "$pid_file")
+            if kill -0 "$pid" 2>/dev/null; then
+                echo -e "${GREEN}✓${NC} $name 已在运行 (PID: $pid)"
+                return 0
+            fi
+            # 清理 stale PID 文件
+            rm -f "$pid_file"
+        fi
+
+        # 启动守护进程
+        nohup "$script" --daemon > "logs/${name}.log" 2>&1 &
+        local daemon_pid=$!
+        echo "$daemon_pid" > "$pid_file"
+        echo -e "${GREEN}✓${NC} $name 已启动 (PID: $daemon_pid)"
+    }
+
     # 启动心跳监控守护进程
     if [ -f "$SCRIPTS_DIR/heartbeatmonitor.sh" ]; then
-        echo -e "${GREEN}✓${NC} 启动心跳监控守护进程..."
-        "$SCRIPTS_DIR/heartbeatmonitor.sh" --daemon &>/dev/null &
-        echo -e "${GREEN}  ✓${NC} 心跳监控已启动 (后台守护进程)"
+        start_daemon "$SCRIPTS_DIR/heartbeatmonitor.sh" "heartbeat-monitor"
     else
         echo -e "${YELLOW}⚠${NC} 心跳监控脚本未找到"
     fi
 
     # 启动 Memory Review Agent (v0.5.1)
     if [ -f "$SCRIPTS_DIR/memory-review-agent.sh" ]; then
-        echo -e "${GREEN}✓${NC} 启动 Memory Review Agent..."
-        "$SCRIPTS_DIR/memory-review-agent.sh" --daemon &>/dev/null &
-        echo -e "${GREEN}  ✓${NC} Memory Review Agent 已启动 (后台守护进程)"
+        start_daemon "$SCRIPTS_DIR/memory-review-agent.sh" "memory-review-agent"
     else
         echo -e "${YELLOW}⚠${NC} Memory Review Agent 脚本未找到"
     fi

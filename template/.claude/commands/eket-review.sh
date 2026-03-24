@@ -1,6 +1,13 @@
 #!/bin/bash
 # /eket-review - 请求 Review
 
+set -e
+
+# 动态路径配置 (v0.6.1)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+SCRIPTS_DIR="$PROJECT_ROOT/scripts"
+
 echo "========================================"
 echo "EKET Review 请求"
 echo "========================================"
