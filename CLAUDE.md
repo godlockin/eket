@@ -6,8 +6,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # EKET - AI 智能体协作框架
 
-**版本**: 0.6.1
+**版本**: 0.6.2
 **最后更新**: 2026-03-24
+
+## 变更说明 (v0.6.2)
+
+### PR 审查机制增强
+
+- **领域专家评审**: 架构/安全/性能/代码质量 4 个维度
+- **Roadmap 对齐检查**: 确保实现与项目规划一致
+- **综合审查报告**: 自动生成结构化评审报告
+- **智能决策推荐**: 基于审查结果推荐批准/修改/拒绝
+
+### 新增脚本
+
+- `scripts/expert-review.sh`: 专家评审脚本
+- `scripts/roadmap-alignment-check.sh`: Roadmap 对齐检查
+
+---
 
 ## 变更说明 (v0.6.1)
 
