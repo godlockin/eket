@@ -21,6 +21,13 @@ export class RedisClient {
   }
 
   /**
+   * 获取底层 Redis 客户端（用于高级操作）
+   */
+  getClient(): any | null {
+    return this.client;
+  }
+
+  /**
    * 连接 Redis
    */
   async connect(): Promise<Result<void>> {

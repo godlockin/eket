@@ -127,7 +127,12 @@ export type AgentRole =
   | 'backend_dev'
   | 'qa_engineer'
   | 'devops_engineer'
-  | 'reviewer';
+  | 'reviewer'
+  | 'business_analyst'
+  | 'ux_designer'
+  | 'security_expert'
+  | 'data_scientist'
+  | 'doc_monitor';
 
 export type AgentMode = 'setup' | 'execution' | 'auto';
 
@@ -136,6 +141,78 @@ export interface AgentProfile {
   role: AgentRole;
   mode: AgentMode;
   capabilities: string[];
+}
+
+// ============================================================================
+// Instance Types (Phase 4.1)
+// ============================================================================
+
+export interface Instance {
+  id: string;
+  type: 'human' | 'ai';
+  agent_type: AgentRole;
+  skills: string[];
+  status: 'idle' | 'busy' | 'offline';
+  currentTaskId?: string;
+  currentLoad: number; // Number of active tasks
+  lastHeartbeat?: number;
+  metadata?: Record<string, unknown>;
+  updatedAt?: number; // Added for compatibility
+}
+
+export interface InstanceRegistryConfig {
+  redisPrefix?: string;
+  heartbeatTimeout?: number; // milliseconds (default: 30000)
+}
+
+// ============================================================================
+// Task Types (Phase 4.3)
+// ============================================================================
+
+export interface Ticket {
+  id: string;
+  title: string;
+  description?: string;
+  priority: 'urgent' | 'high' | 'normal' | 'low';
+  tags: string[];
+  status: string;
+  required_role?: AgentRole;
+  assignee?: string; // Instance ID
+  created_at?: number;
+  updated_at?: number;
+}
+
+export interface TaskAssignment {
+  ticketId: string;
+  instanceId: string;
+  assignedAt: number;
+  status: 'assigned' | 'accepted' | 'in_progress' | 'completed' | 'failed';
+}
+
+// ============================================================================
+// Skill Types (Phase 4.3)
+// ============================================================================
+
+export interface SkillDefinition {
+  name: string;
+  description: string;
+  category: string;
+  input_schema?: Record<string, unknown>;
+  output_schema?: Record<string, unknown>;
+  steps: SkillStep[];
+}
+
+export interface SkillStep {
+  name: string;
+  action: string;
+  parameters?: Record<string, unknown>;
+}
+
+export interface SkillExecutionResult {
+  success: boolean;
+  output?: Record<string, unknown>;
+  error?: string;
+  duration: number; // milliseconds
 }
 
 // ============================================================================

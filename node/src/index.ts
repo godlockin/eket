@@ -12,8 +12,11 @@ import { createSQLiteClient } from './core/sqlite-client.js';
 import { registerClaim } from './commands/claim.js';
 import { runInitWizard } from './commands/init-wizard.js';
 import { registerSubmitPR } from './commands/submit-pr.js';
+import { startInstance, listAvailableRoles } from './commands/start-instance.js';
 import { createMessageQueue, createMessage } from './core/message-queue.js';
 import { createHeartbeatManager, createSlaverMonitor } from './core/heartbeat-monitor.js';
+import { registerTeamStatus } from './commands/team-status.js';
+import { registerSetRole } from './commands/set-role.js';
 
 const pkg = {
   name: 'eket-cli',
@@ -291,6 +294,41 @@ async function main(): Promise<void> {
       }
     });
 
+  // 注册 start:instance 命令
+  program
+    .command('start:instance')
+    .description('启动 Instance（支持人类/AI 模式）')
+    .option('--human', '人类控制的 Instance')
+    .option('--role <role>', '指定 Agent 角色（人类模式必需）')
+    .option('--auto', 'AI 自动模式（自动领取任务）')
+    .option('-p, --project-root <path>', '项目根目录', process.cwd())
+    .option('--list-roles', '列出所有可用角色')
+    .action(async (options) => {
+      if (options.listRoles) {
+        listAvailableRoles();
+        return;
+      }
+
+      // 人类模式必须指定角色
+      if (options.human && !options.role) {
+        console.error('错误：人类模式必须指定 --role');
+        console.error('\n可用角色：运行 eket-cli start:instance --list-roles');
+        process.exit(1);
+      }
+
+      const result = await startInstance({
+        human: options.human,
+        role: options.role,
+        auto: options.auto,
+        projectRoot: options.projectRoot,
+      });
+
+      if (!result.success) {
+        console.error(`Instance 启动失败：${result.error.message}`);
+        process.exit(1);
+      }
+    });
+
   // 注册 heartbeat 命令
   program
     .command('heartbeat:start <slaverId>')
@@ -401,6 +439,12 @@ async function main(): Promise<void> {
 
   // 注册 submit-pr 命令
   registerSubmitPR(program);
+
+  // 注册 team-status 命令
+  registerTeamStatus(program);
+
+  // 注册 set-role 命令
+  registerSetRole(program);
 
   // 解析命令行
   await program.parseAsync(process.argv);
