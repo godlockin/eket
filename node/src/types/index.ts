@@ -150,14 +150,19 @@ export interface EketError {
 }
 
 export class EketErrorClass extends Error {
-  code: string;
-  context?: Record<string, unknown>;
+  readonly code: string;
+  readonly context?: Record<string, unknown>;
 
   constructor(code: string, message: string, context?: Record<string, unknown>) {
     super(message);
     this.code = code;
     this.context = context;
     this.name = 'EketError';
+
+    // Capture stack trace
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, EketErrorClass);
+    }
   }
 }
 

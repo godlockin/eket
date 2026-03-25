@@ -94,8 +94,8 @@ else
     echo "创建 Confluence 仓库结构..."
 
     # 如果远程仓库存在，clone 它
-    if git ls-remote "$CONFLUENCE_REPO" &>/dev/null; then
-        git clone "$CONFLUENCE_REPO" confluence
+    if git ls-remote "$CONFLUENCE_URL" &>/dev/null; then
+        git clone "$CONFLUENCE_URL" confluence
         echo -e "${GREEN}✓${NC} 从远程 clone Confluence 仓库"
     else
         # 创建本地仓库结构
@@ -159,8 +159,8 @@ else
     echo "创建 Jira 仓库结构..."
 
     # 如果远程仓库存在，clone 它
-    if git ls-remote "$JIRA_REPO" &>/dev/null; then
-        git clone "$JIRA_REPO" jira
+    if git ls-remote "$JIRA_URL" &>/dev/null; then
+        git clone "$JIRA_URL" jira
         echo -e "${GREEN}✓${NC} 从远程 clone Jira 仓库"
     else
         # 创建本地仓库结构

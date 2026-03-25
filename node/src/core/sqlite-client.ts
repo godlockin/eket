@@ -6,13 +6,8 @@
 import Database from 'better-sqlite3';
 import * as path from 'path';
 import * as fs from 'fs';
-import type {
-  Retrospective,
-  RetroContent,
-  Result,
-  EketErrorClass,
-} from '../types';
-import { EketErrorClass as EketError } from '../types';
+import type { Retrospective, RetroContent, Result } from '../types/index.js';
+import { EketError } from '../types/index.js';
 
 export class SQLiteClient {
   private db: Database.Database | null = null;
@@ -47,11 +42,10 @@ export class SQLiteClient {
 
       console.log(`[SQLite] Connected to ${this.dbPath}`);
       return { success: true, data: undefined };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_CONNECTION_FAILED', `Failed to connect SQLite: ${err.message}`),
+        error: new EketError('SQLITE_CONNECTION_FAILED', 'Failed to connect SQLite'),
       };
     }
   }
@@ -168,11 +162,10 @@ export class SQLiteClient {
 
       const result = stmt.run(retro.sprintId, retro.fileName, retro.title, retro.date);
       return { success: true, data: result.lastInsertRowid as number };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', `Failed to insert retrospective: ${err.message}`),
+        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to insert retrospective'),
       };
     }
   }
@@ -192,11 +185,10 @@ export class SQLiteClient {
       const stmt = this.db.prepare('SELECT * FROM retrospectives WHERE sprint_id = ?');
       const retro = stmt.get(sprintId) as Retrospective | undefined;
       return { success: true, data: retro || null };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', `Failed to get retrospective: ${err.message}`),
+        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to get retrospective'),
       };
     }
   }
@@ -216,11 +208,10 @@ export class SQLiteClient {
       const stmt = this.db.prepare('SELECT * FROM retrospectives ORDER BY date DESC');
       const retros = stmt.all() as Retrospective[];
       return { success: true, data: retros };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', `Failed to list retrospectives: ${err.message}`),
+        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to list retrospectives'),
       };
     }
   }
@@ -249,11 +240,10 @@ export class SQLiteClient {
 
       const result = stmt.run(content.retroId, content.category, content.content, content.createdBy);
       return { success: true, data: result.lastInsertRowid as number };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', `Failed to insert retro content: ${err.message}`),
+        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to insert retro content'),
       };
     }
   }
@@ -275,11 +265,10 @@ export class SQLiteClient {
       );
       const contents = stmt.all(retroId, category) as RetroContent[];
       return { success: true, data: contents };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', `Failed to get retro content: ${err.message}`),
+        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to get retro content'),
       };
     }
   }
@@ -308,11 +297,10 @@ export class SQLiteClient {
       const searchPattern = `%${keyword}%`;
       const retros = stmt.all(searchPattern, searchPattern) as Retrospective[];
       return { success: true, data: retros };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', `Failed to search retrospectives: ${err.message}`),
+        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to search retrospectives'),
       };
     }
   }
@@ -365,11 +353,10 @@ export class SQLiteClient {
           byCategory,
         },
       };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', `Failed to generate report: ${err.message}`),
+        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to generate report'),
       };
     }
   }

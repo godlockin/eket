@@ -17,6 +17,7 @@ export interface ExecResult {
 export interface ExecOptions {
   timeout?: number; // 超时时间（毫秒），默认 30000
   maxBuffer?: number; // 缓冲区大小，默认 10MB
+  cwd?: string; // 工作目录
 }
 
 /**
@@ -33,6 +34,7 @@ export async function execFileNoThrow(
   const {
     timeout = 30000, // 30 秒超时
     maxBuffer = 10 * 1024 * 1024, // 10MB buffer
+    cwd,
   } = options;
 
   const controller = new AbortController();
@@ -42,6 +44,7 @@ export async function execFileNoThrow(
     const { stdout, stderr } = await execFileAsync(command, args, {
       maxBuffer,
       signal: controller.signal,
+      cwd,
     });
     clearTimeout(timeoutId);
     return {
@@ -49,12 +52,11 @@ export async function execFileNoThrow(
       stderr,
       status: 0,
     };
-  } catch (error) {
+  } catch (err) {
     clearTimeout(timeoutId);
-    const err = error as { code?: string; status?: number; stdout?: string; stderr?: string; message?: string };
 
     // 超时错误
-    if (err.code === 'ABORT_ERR') {
+    if (isAbortError(err)) {
       return {
         stdout: '',
         stderr: `Command timeout after ${timeout}ms`,
@@ -63,11 +65,57 @@ export async function execFileNoThrow(
     }
 
     return {
-      stdout: err.stdout || '',
-      stderr: err.stderr || '',
-      status: err.status || 1,
+      stdout: getStdout(err),
+      stderr: getStderr(err),
+      status: getStatus(err),
     };
   }
+}
+
+/**
+ * Type guard for AbortError
+ */
+function isAbortError(err: unknown): boolean {
+  return err !== null &&
+    typeof err === 'object' &&
+    'code' in err &&
+    (err as { code: unknown }).code === 'ABORT_ERR';
+}
+
+/**
+ * Safely extract stdout from error
+ */
+function getStdout(err: unknown): string {
+  if (err !== null && typeof err === 'object' && 'stdout' in err) {
+    const maybeStdout = (err as { stdout: unknown }).stdout;
+    return typeof maybeStdout === 'string' ? maybeStdout : '';
+  }
+  return '';
+}
+
+/**
+ * Safely extract stderr from error
+ */
+function getStderr(err: unknown): string {
+  if (err !== null && typeof err === 'object' && 'stderr' in err) {
+    const maybeStderr = (err as { stderr: unknown }).stderr;
+    return typeof maybeStderr === 'string' ? maybeStderr : '';
+  }
+  if (err instanceof Error) {
+    return err.message;
+  }
+  return '';
+}
+
+/**
+ * Safely extract status from error
+ */
+function getStatus(err: unknown): number {
+  if (err !== null && typeof err === 'object' && 'status' in err) {
+    const maybeStatus = (err as { status: unknown }).status;
+    return typeof maybeStatus === 'number' ? maybeStatus : 1;
+  }
+  return 1;
 }
 
 /**

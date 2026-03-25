@@ -14,7 +14,6 @@ import { runInitWizard } from './commands/init-wizard.js';
 import { registerSubmitPR } from './commands/submit-pr.js';
 import { createMessageQueue, createMessage } from './core/message-queue.js';
 import { createHeartbeatManager, createSlaverMonitor } from './core/heartbeat-monitor.js';
-import type { RedisConfig } from './types';
 
 const pkg = {
   name: 'eket-cli',
@@ -58,13 +57,7 @@ async function main(): Promise<void> {
     .description('检查 Redis 连接状态')
     .option('-h, --host <host>', 'Redis 主机', process.env.EKET_REDIS_HOST || 'localhost')
     .option('-p, --port <port>', 'Redis 端口', process.env.EKET_REDIS_PORT || '6379')
-    .action(async (options) => {
-      const config: RedisConfig = {
-        host: options.host,
-        port: parseInt(options.port, 10),
-        password: process.env.EKET_REDIS_PASSWORD,
-      };
-
+    .action(async () => {
       const client = createRedisClient();
       const result = await client.connect();
 
@@ -73,7 +66,7 @@ async function main(): Promise<void> {
         const slavers = await client.getActiveSlavers();
         if (slavers.success && slavers.data.length > 0) {
           console.log(`活跃 Slaver: ${slavers.data.length}`);
-          slavers.data.forEach((s) => {
+          slavers.data.forEach((s: { slaverId: string; status: string }) => {
             console.log(`  - ${s.slaverId} (${s.status})`);
           });
         } else {
@@ -101,9 +94,9 @@ async function main(): Promise<void> {
           console.table(
             result.data.map((s) => ({
               ID: s.slaverId,
-              状态：s.status,
-              当前任务：s.currentTaskId || '-',
-              时间：new Date(s.timestamp).toLocaleTimeString(),
+              Status: s.status,
+              CurrentTask: s.currentTaskId || '-',
+              Time: new Date(s.timestamp).toLocaleTimeString(),
             }))
           );
         }
@@ -154,12 +147,12 @@ async function main(): Promise<void> {
           console.log('暂无 Retrospective');
         } else {
           console.table(
-            result.data.map((r) => ({
+            result.data.map((r: { id: number; sprintId: string; title: string; date: string; fileName: string }) => ({
               ID: r.id,
               Sprint: r.sprintId,
-              标题：r.title,
-              日期：r.date,
-              文件：r.fileName,
+              Title: r.title,
+              Date: r.date,
+              File: r.fileName,
             }))
           );
         }
@@ -184,10 +177,10 @@ async function main(): Promise<void> {
         } else {
           console.log(`找到 ${result.data.length} 条匹配结果:`);
           console.table(
-            result.data.map((r) => ({
+            result.data.map((r: { sprintId: string; title: string; date: string }) => ({
               Sprint: r.sprintId,
-              标题：r.title,
-              日期：r.date,
+              Title: r.title,
+              Date: r.date,
             }))
           );
         }
@@ -212,7 +205,7 @@ async function main(): Promise<void> {
         console.log(`总 Sprints: ${report.data.totalSprints}`);
         console.log(`总条目数：${report.data.totalItems}`);
         console.log('\n按类别统计:');
-        report.data.byCategory.forEach((c) => {
+        report.data.byCategory.forEach((c: { category: string; count: number }) => {
           console.log(`  ${c.category}: ${c.count}`);
         });
         console.log('');
@@ -346,10 +339,10 @@ async function main(): Promise<void> {
         } else {
           console.table(
             result.data.map((s) => ({
-              Slaver ID: s.slaverId,
-              状态：s.status,
-              当前任务：s.currentTaskId || '-',
-              最后心跳：new Date(s.timestamp).toLocaleString(),
+              'Slaver ID': s.slaverId,
+              Status: s.status,
+              'Current Task': s.currentTaskId || '-',
+              'Last Heartbeat': new Date(s.timestamp).toLocaleString(),
             }))
           );
         }
@@ -378,7 +371,7 @@ async function main(): Promise<void> {
       console.log(`当前模式：${mq.getMode()}\n`);
 
       // 订阅测试通道
-      await mq.subscribe('test', (message) => {
+      await mq.subscribe('test', async (message) => {
         console.log('收到消息:', message);
       });
 

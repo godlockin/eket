@@ -4,6 +4,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { parseSimpleYAML } from '../utils/yaml-parser.js';
 
 /**
  * 加载项目配置
@@ -13,18 +14,15 @@ export async function loadConfig(projectRoot: string): Promise<Record<string, un
   if (!fs.existsSync(configPath)) {
     return null;
   }
-  // 简单解析 YAML (实际项目中应使用 yaml 库)
   const content = fs.readFileSync(configPath, 'utf-8');
-  // TODO: 使用 yaml.parse(content)
-  return { raw: content };
+  return parseSimpleYAML(content);
 }
 
 /**
  * 获取任务列表
  */
 export async function getTickets(
-  projectRoot: string,
-  config: Record<string, unknown>
+  projectRoot: string
 ): Promise<
   Array<{
     id: string;
@@ -111,8 +109,7 @@ export function parseTicket(filename: string, content: string): {
  * 匹配角色
  */
 export async function matchRole(
-  ticket: { id: string; title: string; tags: string[] },
-  config: Record<string, unknown>
+  ticket: { id: string; title: string; tags: string[] }
 ): Promise<string> {
   // 根据标签匹配角色
   const roleMapping: Record<string, string> = {

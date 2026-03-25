@@ -28,9 +28,8 @@ export async function runCleanup(): Promise<void> {
   for (const fn of cleanupFunctions) {
     try {
       await fn();
-    } catch (error) {
-      const err = error as Error;
-      console.error(`清理函数执行失败：${err.message}`);
+    } catch {
+      console.error('清理函数执行失败');
     }
   }
 
@@ -59,14 +58,13 @@ export function setupProcessHandlers(): void {
   process.on('SIGTERM', () => exitHandler('SIGTERM'));
 
   // 捕获未处理的异常
-  process.on('uncaughtException', (error) => {
-    console.error('未捕获的异常:', error.message);
+  process.on('uncaughtException', () => {
+    console.error('未捕获的异常');
     runCleanup().then(() => process.exit(1));
   });
 
   // 捕获未处理的 Promise 拒绝
-  process.on('unhandledRejection', (reason) => {
-    console.error('未处理的 Promise 拒绝:', reason);
+  process.on('unhandledRejection', () => {
     // 不立即退出，让当前操作完成
   });
 }
@@ -84,6 +82,7 @@ export async function cleanupWorktree(projectRoot: string, worktreePath: string)
   // 检查是否有未提交的更改
   const result = await execFileNoThrow('git', ['status', '--porcelain'], {
     cwd: worktreePath,
+    timeout: 10000,
   });
 
   if (result.stdout.trim()) {
@@ -94,6 +93,7 @@ export async function cleanupWorktree(projectRoot: string, worktreePath: string)
   // 删除 worktree
   await execFileNoThrow('git', ['worktree', 'remove', '-f', worktreePath], {
     cwd: projectRoot,
+    timeout: 10000,
   });
 
   console.log(`worktree 已删除：${worktreePath}`);
@@ -106,7 +106,7 @@ export async function findProjectRoot(): Promise<string | null> {
   let current = process.cwd();
   while (current !== '/') {
     const eketDir = path.join(current, '.eket');
-    if (fs.existsSync(ektDir)) {
+    if (fs.existsSync(eketDir)) {
       return current;
     }
     current = path.dirname(current);

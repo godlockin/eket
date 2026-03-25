@@ -6,7 +6,6 @@
 import * as readline from 'readline';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
 
 interface GitRepoConfig {
   url: string;
@@ -408,9 +407,8 @@ export async function runInitWizard(projectRoot?: string): Promise<ProjectConfig
     console.log('     /eket-start\n');
 
     return config;
-  } catch (error) {
-    const err = error as Error;
-    console.error('初始化失败:', err.message);
+  } catch {
+    console.error('初始化失败');
     return null;
   } finally {
     rl.close();

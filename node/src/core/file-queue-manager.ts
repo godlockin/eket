@@ -5,8 +5,9 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import type { Message } from '../types';
-import type { Result } from '../types';
+import type { Message } from '../types/index.js';
+import type { Result } from '../types/index.js';
+import { EketError } from '../types/index.js';
 
 export interface FileQueueConfig {
   queueDir: string;
@@ -64,9 +65,8 @@ export class FileQueueManager {
         const data = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
         this.processedIds = new Set(data.ids || []);
         return { success: true, data: undefined };
-      } catch (error) {
-        const err = error as Error;
-        console.warn(`[FileQueue] 加载 processed.json 失败：${err.message}，使用空集合`);
+      } catch {
+        console.warn('[FileQueue] 加载 processed.json 失败，使用空集合');
         this.processedIds = new Set();
         return { success: true, data: undefined }; // 非致命错误
       }
@@ -84,10 +84,9 @@ export class FileQueueManager {
       const ids = Array.from(this.processedIds).slice(-10000);
       fs.writeFileSync(indexPath, JSON.stringify({ ids, updated: new Date().toISOString() }));
       return { success: true, data: undefined };
-    } catch (error) {
-      const err = error as Error;
-      console.error(`[FileQueue] 保存 processed.json 失败：${err.message}`);
-      return { success: false, error: err };
+    } catch {
+      console.error('[FileQueue] 保存 processed.json 失败');
+      return { success: false, error: new EketError('QUEUE_ERROR', '保存已处理 ID 失败') };
     }
   }
 
@@ -117,7 +116,7 @@ export class FileQueueManager {
       // 去重检查
       if (this.isProcessed(message.id)) {
         console.log(`[FileQueue] 跳过已处理消息：${message.id}`);
-        return { success: false, error: new Error('消息已处理') };
+        return { success: false, error: new EketError('DUPLICATE_MESSAGE', '消息已处理') };
       }
 
       const filename = `${channel}_${message.id}_${Date.now()}.json`;
@@ -131,10 +130,9 @@ export class FileQueueManager {
 
       fs.writeFileSync(filepath, JSON.stringify(fileMessage, null, 2));
       return { success: true, data: filepath };
-    } catch (error) {
-      const err = error as Error;
-      console.error(`[FileQueue] Enqueue error: ${err.message}`);
-      return { success: false, error: err };
+    } catch {
+      console.error('[FileQueue] Enqueue error');
+      return { success: false, error: new EketError('QUEUE_ERROR', '写入队列失败') };
     }
   }
 
@@ -171,9 +169,8 @@ export class FileQueueManager {
           // 忽略损坏的文件
         }
       }
-    } catch (error) {
-      const err = error as Error;
-      console.error('[FileQueue] Dequeue error:', err.message);
+    } catch {
+      console.error('[FileQueue] Dequeue error');
     }
 
     return messages;
@@ -195,9 +192,8 @@ export class FileQueueManager {
         this.markProcessed(message.id);
         fs.unlinkSync(filepath);
         processedCount++;
-      } catch (error) {
-        const err = error as Error;
-        console.error(`[FileQueue] Process message ${message.id} error: ${err.message}`);
+      } catch {
+        console.error(`[FileQueue] Process message ${message.id} error`);
       }
     }
 
@@ -239,9 +235,8 @@ export class FileQueueManager {
           cleanedCount++;
         }
       }
-    } catch (error) {
-      const err = error as Error;
-      console.error('[FileQueue] Cleanup error:', err.message);
+    } catch {
+      console.error('[FileQueue] Cleanup error');
     }
 
     return cleanedCount;
@@ -367,7 +362,7 @@ export class FileQueueManager {
           const content = fs.readFileSync(filepath, 'utf-8');
           const message = JSON.parse(content) as Message & { _channel?: string; _enqueue_time?: number };
 
-          const time = message._enqueue_time || message.timestamp?.getTime() || 0;
+          const time = message._enqueue_time || (message.timestamp ? new Date(message.timestamp).getTime() : 0);
           if (time >= startDate && time <= endDate) {
             if (!options?.channel || message._channel === options.channel) {
               history.push(message);

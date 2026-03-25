@@ -3,17 +3,21 @@
  * 用于 Slaver 心跳监控和消息队列
  */
 
-import Redis from 'ioredis';
-import type { RedisConfig, SlaverHeartbeat, Result, EketErrorClass } from '../types';
-import { EketErrorClass as EketError } from '../types';
+import type { SlaverHeartbeat, Result } from '../types/index.js';
+import { EketError } from '../types/index.js';
+
+// Runtime import (lazy loaded)
+// Using dynamic import for ESM compatibility with ioredis
+let RedisConstructor: any = null;
 
 export class RedisClient {
-  private client: Redis | null = null;
-  private config: RedisConfig;
+  private client: any | null = null;
+  private config: { host: string; port: number; password?: string; db?: number; keyPrefix?: string };
   private isConnected: boolean = false;
 
-  constructor(config: RedisConfig) {
-    this.config = config;
+  constructor(config: { host: string; port: number; password?: string; db?: number; keyPrefix?: string }) {
+    // Defensive copy to prevent external mutation
+    this.config = { ...config };
   }
 
   /**
@@ -21,13 +25,19 @@ export class RedisClient {
    */
   async connect(): Promise<Result<void>> {
     try {
-      this.client = new Redis({
+      // Lazy load ioredis for ESM compatibility
+      if (!RedisConstructor) {
+        const ioredis = await import('ioredis');
+        RedisConstructor = ioredis.default;
+      }
+
+      this.client = new RedisConstructor({
         host: this.config.host,
         port: this.config.port,
         password: this.config.password,
         db: this.config.db,
         keyPrefix: this.config.keyPrefix || 'eket:',
-        retryStrategy: (times) => {
+        retryStrategy: (times: number) => {
           if (times > 3) {
             return null; // 停止重试
           }
@@ -40,9 +50,9 @@ export class RedisClient {
         console.log('[Redis] Connected');
       });
 
-      this.client.on('error', (err) => {
+      this.client.on('error', () => {
         this.isConnected = false;
-        console.error('[Redis] Error:', err.message);
+        console.error('[Redis] Error');
       });
 
       this.client.on('close', () => {
@@ -60,11 +70,10 @@ export class RedisClient {
       });
 
       return { success: true, data: undefined };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('REDIS_CONNECTION_FAILED', `Failed to connect Redis: ${err.message}`),
+        error: new EketError('REDIS_CONNECTION_FAILED', 'Failed to connect Redis'),
       };
     }
   }
@@ -115,11 +124,10 @@ export class RedisClient {
       await this.client.sadd('slavers:active', heartbeat.slaverId);
 
       return { success: true, data: undefined };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('REDIS_OPERATION_FAILED', `Failed to register slaver: ${err.message}`),
+        error: new EketError('REDIS_OPERATION_FAILED', 'Failed to register slaver'),
       };
     }
   }
@@ -160,11 +168,10 @@ export class RedisClient {
       }
 
       return { success: true, data: heartbeats };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('REDIS_OPERATION_FAILED', `Failed to get active slavers: ${err.message}`),
+        error: new EketError('REDIS_OPERATION_FAILED', 'Failed to get active slavers'),
       };
     }
   }
@@ -183,11 +190,10 @@ export class RedisClient {
     try {
       await this.client.publish(channel, message);
       return { success: true, data: undefined };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('REDIS_OPERATION_FAILED', `Failed to publish message: ${err.message}`),
+        error: new EketError('REDIS_OPERATION_FAILED', 'Failed to publish message'),
       };
     }
   }
@@ -207,31 +213,33 @@ export class RedisClient {
     }
 
     try {
-      const subscriber = new Redis({
+      // Lazy load ioredis for ESM compatibility
+      if (!RedisConstructor) {
+        const ioredis = await import('ioredis');
+        RedisConstructor = ioredis.default;
+      }
+
+      const subscriber = new RedisConstructor({
         host: this.config.host,
         port: this.config.port,
         password: this.config.password,
         db: this.config.db,
       });
 
-      subscriber.subscribe(channel, (err) => {
-        if (err) {
-          console.error('[Redis] Subscribe error:', err.message);
-        }
-      });
+      // Promise-based subscribe
+      await subscriber.subscribe(channel);
 
-      subscriber.on('message', (ch, msg) => {
+      subscriber.on('message', (ch: string, msg: string) => {
         if (ch === channel) {
           onMessage(msg);
         }
       });
 
       return { success: true, data: undefined };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('REDIS_OPERATION_FAILED', `Failed to subscribe: ${err.message}`),
+        error: new EketError('REDIS_OPERATION_FAILED', 'Failed to subscribe'),
       };
     }
   }

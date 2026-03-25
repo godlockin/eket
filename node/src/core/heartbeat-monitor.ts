@@ -4,15 +4,14 @@
  */
 
 import { RedisClient } from './redis-client.js';
-import type { SlaverHeartbeat, Result, EketErrorClass } from '../types';
-import { EketErrorClass as EketError } from '../types';
+import type { SlaverHeartbeat, Result } from '../types/index.js';
 
 export interface HeartbeatConfig {
   redisHost?: string;
   redisPort?: number;
   redisPassword?: string;
   heartbeatInterval?: number; // 心跳间隔（毫秒）
-  heartbeatTimeout?: number; // 超时时间（毫秒）
+  heartbeatTimeout?: number; // 超时时间（毫秒），仅 ActiveSlaverMonitor 使用
 }
 
 export type HeartbeatStatus = 'active' | 'busy' | 'offline';
@@ -24,7 +23,6 @@ export class SlaverHeartbeatManager {
   private client: RedisClient;
   private slaverId: string;
   private heartbeatInterval: number;
-  private heartbeatTimeout: number;
   private intervalId: NodeJS.Timeout | null = null;
   private currentStatus: HeartbeatStatus = 'offline';
   private currentTaskId?: string;
@@ -32,7 +30,6 @@ export class SlaverHeartbeatManager {
   constructor(slaverId: string, config: HeartbeatConfig = {}) {
     this.slaverId = slaverId;
     this.heartbeatInterval = config.heartbeatInterval || 10000; // 默认 10 秒
-    this.heartbeatTimeout = config.heartbeatTimeout || 30000; // 默认 30 秒
 
     this.client = new RedisClient({
       host: config.redisHost || process.env.EKET_REDIS_HOST || 'localhost',
@@ -56,9 +53,8 @@ export class SlaverHeartbeatManager {
 
     // 启动定时心跳
     this.intervalId = setInterval(() => {
-      this.sendHeartbeat().catch((error) => {
-        const err = error as Error;
-        console.error(`[Heartbeat] Send error: ${err.message}`);
+      this.sendHeartbeat().catch(() => {
+        console.error('[Heartbeat] Send error');
       });
     }, this.heartbeatInterval);
 
@@ -98,7 +94,7 @@ export class SlaverHeartbeatManager {
 
     const result = await this.client.registerSlaver(heartbeat);
     if (!result.success) {
-      console.error(`[Heartbeat] Register failed: ${result.error.message}`);
+      console.error('[Heartbeat] Register failed');
     }
   }
 
@@ -140,7 +136,6 @@ export class SlaverHeartbeatManager {
 export class ActiveSlaverMonitor {
   private client: RedisClient;
   private checkInterval: number;
-  private intervalId: NodeJS.Timeout | null = null;
 
   constructor(config: HeartbeatConfig = {}) {
     this.checkInterval = config.heartbeatTimeout || 30000;
@@ -169,10 +164,6 @@ export class ActiveSlaverMonitor {
    * 停止监控
    */
   async stop(): Promise<void> {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
     await this.client.disconnect();
     console.log('[SlaverMonitor] Stopped');
   }
@@ -188,14 +179,12 @@ export class ActiveSlaverMonitor {
    * 获取指定 Slaver 状态
    */
   async getSlaverStatus(slaverId: string): Promise<Result<SlaverHeartbeat | null>> {
-    // 需要从 Redis 获取单个 slaver 状态
-    // 这里简化处理，获取所有后过滤
     const result = await this.getActiveSlavers();
     if (!result.success) {
       return result;
     }
 
-    const slaver = result.data.find((s) => s.slaverId === slaverId) || null;
+    const slaver = result.data.find((s: SlaverHeartbeat) => s.slaverId === slaverId) || null;
     return { success: true, data: slaver };
   }
 

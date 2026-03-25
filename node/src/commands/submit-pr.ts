@@ -7,7 +7,10 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
+import { findProjectRoot } from '../utils/process-cleanup.js';
 import type { Result } from '../types/index.js';
+import { parseSimpleYAML } from '../utils/yaml-parser.js';
+import { EketError } from '../types/index.js';
 
 interface SubmitPROptions {
   title?: string;
@@ -87,7 +90,7 @@ export function registerSubmitPR(program: Command): void {
       console.log('✓ 推送成功');
 
       // 5. 获取代码仓库配置
-      const prConfigResult = await getPRConfig(projectRoot, config);
+      const prConfigResult = await getPRConfig(config);
       if (!prConfigResult.success) {
         console.log('警告：未配置 PR 平台，跳过 PR 创建');
         console.log('请手动创建 PR 或配置 .eket/config.yml');
@@ -127,7 +130,7 @@ export function registerSubmitPR(program: Command): void {
       }
 
       // 9. 发送通知
-      await sendPRNotification(projectRoot, prData);
+      await sendPRNotification(prData);
       console.log('✓ 通知已发送');
 
       console.log('\n========================================');
@@ -141,21 +144,6 @@ export function registerSubmitPR(program: Command): void {
 }
 
 /**
- * 查找项目根目录
- */
-async function findProjectRoot(): Promise<string | null> {
-  let current = process.cwd();
-  while (current !== '/') {
-    const eketDir = path.join(current, '.eket');
-    if (fs.existsSync(eketDir)) {
-      return current;
-    }
-    current = path.dirname(current);
-  }
-  return null;
-}
-
-/**
  * 加载项目配置
  */
 async function loadConfig(projectRoot: string): Promise<Record<string, unknown> | null> {
@@ -164,73 +152,7 @@ async function loadConfig(projectRoot: string): Promise<Record<string, unknown> 
     return null;
   }
   const content = fs.readFileSync(configPath, 'utf-8');
-  // 简单解析 YAML
   return parseSimpleYAML(content);
-}
-
-/**
- * 简单 YAML 解析（支持基础结构）
- */
-function parseSimpleYAML(content: string): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  const lines = content.split('\n');
-  let currentSection: string | null = null;
-  let currentSubSection: Record<string, unknown> | null = null;
-
-  for (const line of lines) {
-    if (line.trim().startsWith('#') || line.trim() === '') continue;
-
-    const match = line.match(/^(\s*)(\w+):\s*(.*)$/);
-    if (!match) continue;
-
-    const [, indent, key, value] = match;
-    const trimmedValue = value.trim();
-
-    if (indent.length === 0) {
-      // 顶层
-      currentSection = key;
-      currentSubSection = null;
-      if (trimmedValue) {
-        result[key] = parseValue(trimmedValue);
-      } else {
-        result[key] = {} as Record<string, unknown>;
-      }
-    } else if (indent.length === 2 && currentSection) {
-      // 第二层
-      if (typeof result[currentSection] === 'object') {
-        const section = result[currentSection] as Record<string, unknown>;
-        if (trimmedValue) {
-          section[key] = parseValue(trimmedValue);
-        } else {
-          section[key] = {} as Record<string, unknown>;
-          currentSubSection = section[key] as Record<string, unknown>;
-        }
-      }
-    } else if (indent.length === 4 && currentSection && currentSubSection) {
-      // 第三层
-      currentSubSection[key] = parseValue(trimmedValue);
-    }
-  }
-
-  return result;
-}
-
-/**
- * 解析 YAML 值
- */
-function parseValue(value: string): unknown {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  if (value.startsWith('"') && value.endsWith('"')) {
-    return value.slice(1, -1);
-  }
-  if (value.startsWith("'") && value.endsWith("'")) {
-    return value.slice(1, -1);
-  }
-  if (/^\d+$/.test(value)) {
-    return parseInt(value, 10);
-  }
-  return value;
 }
 
 /**
@@ -244,7 +166,7 @@ async function getBranchInfo(projectRoot: string): Promise<Result<BranchInfo>> {
     });
 
     if (branchResult.status !== 0) {
-      return { success: false, error: new Error('无法获取当前分支') };
+      return { success: false, error: new EketError('GIT_BRANCH_FAILED', '无法获取当前分支') };
     }
 
     const currentBranch = branchResult.stdout.trim();
@@ -272,9 +194,8 @@ async function getBranchInfo(projectRoot: string): Promise<Result<BranchInfo>> {
         commitMessage: commitResult.stdout.trim(),
       },
     };
-  } catch (error) {
-    const err = error as Error;
-    return { success: false, error: new Error(`获取分支信息失败：${err.message}`) };
+  } catch {
+    return { success: false, error: new EketError('GIT_BRANCH_FAILED', '获取分支信息失败') };
   }
 }
 
@@ -289,33 +210,32 @@ async function pushBranch(projectRoot: string, branch: string): Promise<Result<v
     if (result.status === 0) {
       return { success: true, data: undefined };
     } else {
-      return { success: false, error: new Error(`推送失败：${result.stderr}`) };
+      return { success: false, error: new EketError('GIT_PUSH_FAILED', `推送失败：${result.stderr}`) };
     }
-  } catch (error) {
-    const err = error as Error;
-    return { success: false, error: new Error(`推送异常：${err.message}`) };
+  } catch {
+    return { success: false, error: new EketError('GIT_PUSH_FAILED', '推送异常') };
   }
 }
 
 /**
  * 获取 PR 配置
  */
-async function getPRConfig(projectRoot: string, config: Record<string, unknown>): Promise<Result<PRConfig>> {
+async function getPRConfig(config: Record<string, unknown>): Promise<Result<PRConfig>> {
   try {
     // 从 code_repo URL 解析
     const repos = config.repositories as Record<string, unknown> | undefined;
     if (!repos) {
-      return { success: false, error: new Error('未配置 repositories') };
+      return { success: false, error: new EketError('CONFIG_ERROR', '未配置 repositories') };
     }
 
     const codeRepo = repos.code_repo as Record<string, unknown> | undefined;
     if (!codeRepo) {
-      return { success: false, error: new Error('未配置 code_repo') };
+      return { success: false, error: new EketError('CONFIG_ERROR', '未配置 code_repo') };
     }
 
     const url = codeRepo.url as string;
     if (!url) {
-      return { success: false, error: new Error('未配置 code_repo.url') };
+      return { success: false, error: new EketError('CONFIG_ERROR', '未配置 code_repo.url') };
     }
 
     // 解析 URL
@@ -347,7 +267,7 @@ async function getPRConfig(projectRoot: string, config: Record<string, unknown>)
     }
 
     if (!owner || !repo) {
-      return { success: false, error: new Error('无法从 URL 解析 owner/repo') };
+      return { success: false, error: new EketError('URL_PARSE_ERROR', '无法从 URL 解析 owner/repo') };
     }
 
     return {
@@ -360,9 +280,8 @@ async function getPRConfig(projectRoot: string, config: Record<string, unknown>)
         baseUrl: getAPIBaseURL(platform),
       },
     };
-  } catch (error) {
-    const err = error as Error;
-    return { success: false, error: new Error(`解析 PR 配置失败：${err.message}`) };
+  } catch {
+    return { success: false, error: new EketError('CONFIG_ERROR', '解析 PR 配置失败') };
   }
 }
 
@@ -398,7 +317,7 @@ async function createPR(
   const { platform, owner, repo, apiToken, baseUrl } = config;
 
   if (!apiToken) {
-    return { success: false, error: new Error('未配置 API Token') };
+    return { success: false, error: new EketError('CONFIG_ERROR', '未配置 API Token') };
   }
 
   let apiUrl: string;
@@ -448,7 +367,7 @@ async function createPR(
       break;
 
     default:
-      return { success: false, error: new Error(`不支持的平台：${platform}`) };
+      return { success: false, error: new EketError('UNSUPPORTED_PLATFORM', `不支持的平台：${platform}`) };
   }
 
   try {
@@ -465,7 +384,7 @@ async function createPR(
     ]);
 
     if (result.status !== 0) {
-      return { success: false, error: new Error(`创建 PR 失败：${result.stderr}`) };
+      return { success: false, error: new EketError('PR_CREATE_FAILED', `创建 PR 失败：${result.stderr}`) };
     }
 
     const response = JSON.parse(result.stdout);
@@ -478,9 +397,8 @@ async function createPR(
         title: response.title,
       },
     };
-  } catch (error) {
-    const err = error as Error;
-    return { success: false, error: new Error(`创建 PR 异常：${err.message}`) };
+  } catch {
+    return { success: false, error: new EketError('PR_CREATE_FAILED', '创建 PR 异常') };
   }
 }
 
@@ -554,7 +472,6 @@ function generatePRDescription(branchInfo: {
 }): string {
   const ticketMatch = branchInfo.currentBranch.match(/(?:feature|bugfix|hotfix)\/([^-]+)-(.+)/);
   const ticketId = ticketMatch ? ticketMatch[1] : '';
-  const desc = ticketMatch ? ticketMatch[2].replace(/-/g, ' ') : '';
 
   return `## 变更说明
 
@@ -582,9 +499,14 @@ ${ticketId ? `-${ticketId}` : '- N/A'}
  * 发送 PR 通知
  */
 async function sendPRNotification(
-  projectRoot: string,
   prData: { number: number; htmlUrl: string; title: string }
 ): Promise<void> {
+  const projectRoot = await findProjectRoot();
+  if (!projectRoot) {
+    console.error('警告：无法发送通知，未找到项目根目录');
+    return;
+  }
+
   const queueDir = path.join(projectRoot, '.eket', 'data', 'queue');
   fs.mkdirSync(queueDir, { recursive: true });
 

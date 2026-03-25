@@ -14,7 +14,6 @@ import {
   matchRole,
   initializeProfile,
   sendClaimMessage,
-  parseTicket,
 } from './claim-helpers.js';
 
 interface ClaimOptions {
@@ -90,7 +89,7 @@ export function registerClaim(program: Command): void {
       }
 
       // 3. 获取任务列表
-      const tickets = await getTickets(projectRoot, config);
+      const tickets = await getTickets(projectRoot);
       if (tickets.length === 0) {
         console.log('当前没有可领取的任务');
         return;
@@ -121,7 +120,7 @@ export function registerClaim(program: Command): void {
       }
 
       // 5. 检查角色匹配
-      const role = options.role || await matchRole(selectedTicket, config);
+      const role = options.role || await matchRole(selectedTicket);
       console.log(`匹配角色：${role}`);
 
       // 6. 更新任务状态
@@ -146,20 +145,4 @@ export function registerClaim(program: Command): void {
       console.log(`  worktree: ${worktreePath}`);
       console.log('\n下一步：开始任务执行 /eket-start\n');
     });
-}
-
-/**
- * 创建 worktree
- */
-async function createWorktree(projectRoot: string, ticketId: string): Promise<string> {
-  const worktreeDir = path.join(projectRoot, '.eket', 'worktrees', ticketId);
-
-  // 确保目录存在
-  fs.mkdirSync(path.dirname(worktreeDir), { recursive: true });
-
-  // 调用 git worktree add (使用安全执行)
-  const branchName = ticketId.replace(/[^a-zA-Z0-9_-]/g, '_');
-  await execFileNoThrow('git', ['worktree', 'add', '-b', branchName, worktreeDir]);
-
-  return worktreeDir;
 }

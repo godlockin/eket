@@ -6,8 +6,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { RedisClient } from '../core/redis-client.js';
-import type { Message, Result, EketErrorClass } from '../types';
-import { EketErrorClass as EketError } from '../types';
+import type { Message, Result } from '../types/index.js';
+import { EketError } from '../types/index.js';
 
 export interface MessageQueueConfig {
   mode: 'redis' | 'file' | 'auto';
@@ -72,9 +72,8 @@ export class RedisMessageQueue implements MessageQueue {
       try {
         const message = JSON.parse(data) as Message;
         handler(message);
-      } catch (error) {
-        const err = error as Error;
-        console.error(`[Redis MQ] Parse message error: ${err.message}`);
+      } catch {
+        console.error('[Redis MQ] Parse message error');
       }
     });
   }
@@ -124,11 +123,10 @@ export class FileMessageQueue implements MessageQueue {
 
       fs.writeFileSync(filepath, JSON.stringify(fileMessage, null, 2));
       return { success: true, data: undefined };
-    } catch (error) {
-      const err = error as Error;
+    } catch {
       return {
         success: false,
-        error: new EketError('FILE_WRITE_FAILED', `Failed to write message: ${err.message}`),
+        error: new EketError('FILE_WRITE_FAILED', 'Failed to write message'),
       };
     }
   }
@@ -173,14 +171,12 @@ export class FileMessageQueue implements MessageQueue {
             // 处理后删除文件
             fs.unlinkSync(filepath);
           }
-        } catch (error) {
-          const err = error as Error;
-          console.error(`[File MQ] Process file error: ${err.message}`);
+        } catch {
+          console.error('[File MQ] Process file error');
         }
       }
-    } catch (error) {
-      const err = error as Error;
-      console.error(`[File MQ] Process queue error: ${err.message}`);
+    } catch {
+      console.error('[File MQ] Process queue error');
     }
   }
 }
