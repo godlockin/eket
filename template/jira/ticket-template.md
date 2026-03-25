@@ -1,72 +1,166 @@
-# Jira Ticket 模板
+# Jira Ticket 模板 (v0.9.0)
+
+<!--
+================================================================================
+  元信息区域 - 放在文件开头，便于快速查看和解析
+================================================================================
+-->
 
 **Ticket ID**: {{TICKET_ID}}
-**创建时间**: {{TIMESTAMP}}
+**标题**: {{TITLE}}
+**类型**: {{TYPE}}  <!-- feature / bugfix / task / improvement / research -->
+**优先级**: {{PRIORITY}}  <!-- P0(紧急) / P1(高) / P2(中) / P3(低) -->
+
+**状态**: {{STATUS}}  <!-- backlog → analysis → approved → design → ready → in_progress → test → review → done -->
+**创建时间**: {{CREATED_AT}}
+**最后更新**: {{UPDATED_AT}}
+
+**负责人**: {{ASSIGEE}}
+**执行 Agent**: {{SLAVER_NAME}}
+**所属 Epic**: {{EPIC_ID}}
+
+<!--
+================================================================================
+  以下为详细内容
+================================================================================
+-->
 
 ---
 
-## 基本信息
-
-- **标题**: {{TITLE}}
-- **类型**: {{TYPE}}  <!-- feature / bugfix / task / improvement -->
-- **优先级**: {{PRIORITY}}  <!-- P0 / P1 / P2 / P3 -->
-- **状态**: {{STATUS}}  <!-- backlog / ready / in_progress / test / review / done -->
-- **负责人**: {{ASSIGEE}}
-- **Slaver**: {{SLAVER_NAME}}
-
----
-
-## 时间追踪 (v0.5 新增)
-
-- **预估时间**: {{ESTIMATED_MINUTES}} 分钟
-- **开始时间**: {{START_TIME}}
-- **截止时间**: {{DEADLINE_TIME}}
-- **最后更新**: {{LAST_UPDATED}}
-- **最后心跳**: {{LAST_HEARTBEAT}}
-- **无响应计时**: {{NO_RESPONSE_MINUTES}} 分钟
-
----
-
-## 任务描述
+## 1. 任务描述
 
 {{DESCRIPTION}}
 
 ---
 
-## 验收标准
+## 2. 验收标准
 
 {{ACCEPTANCE_CRITERIA}}
 
 ---
 
-## 依赖
+## 3. 依赖关系
 
+### 3.1 前置依赖
 {{DEPENDENCIES}}
+
+### 3.2 阻塞其他
+{{BLOCKS}}
 
 ---
 
-## 执行日志
+## 4. 时间追踪
+
+| 项目 | 值 |
+|------|-----|
+| 预估时间 | {{ESTIMATED_MINUTES}} 分钟 |
+| 开始时间 | {{START_TIME}} |
+| 截止时间 | {{DEADLINE_TIME}} |
+| 最后心跳 | {{LAST_HEARTBEAT}} |
+| 无响应计时 | {{NO_RESPONSE_MINUTES}} 分钟 |
+
+---
+
+## 5. 任务分析文档 (v0.8.0+)
+
+**文档链接**: {{TASK_ANALYSIS_DOC}}
+**审查状态**: {{ANALYSIS_STATUS}}  <!-- pending_review / approved / rejected -->
+**审查者**: {{REVIEWER}}
+**批准时间**: {{APPROVED_AT}}
+
+---
+
+## 6. 执行日志
 
 {{EXECUTION_LOG}}
 
 ---
 
-## 关联
+## 7. Review 记录 (v0.9.0+)
 
-- **Epic**: {{EPIC_ID}}
-- **Blocked By**: {{BLOCKED_BY}}
-- **Blocks**: {{BLOCKS}}
-- **Related PR**: {{PR_URL}}
+### 7.1 Master Review 初始化
+
+**Review 发起时间**: {{REVIEW_STARTED_AT}}
+**Review Master**: {{MASTER_ID}}
+**共享记忆 Subagents**:
+
+| Subagent ID | 角色 | 职责 | 状态 |
+|-------------|------|------|------|
+| {{SUBAGENT_1_ID}} | 代码审查员 | 代码质量、规范检查 | initialized / analyzing / complete |
+| {{SUBAGENT_2_ID}} | 测试审查员 | 测试覆盖、边界检查 | initialized / analyzing / complete |
+| {{SUBAGENT_3_ID}} | 安全审查员 | 安全漏洞、权限检查 | initialized / analyzing / complete |
+| {{SUBAGENT_4_ID}} | 文档审查员 | 文档完整性、一致性 | initialized / analyzing / complete |
+
+### 7.2 Subagent 审查意见
+
+#### 代码审查员
+- **状态**: {{CODE_REVIEW_STATUS}}
+- **意见**: {{CODE_REVIEW_COMMENTS}}
+- **评分**: {{CODE_REVIEW_SCORE}} / 10
+
+#### 测试审查员
+- **状态**: {{TEST_REVIEW_STATUS}}
+- **意见**: {{TEST_REVIEW_COMMENTS}}
+- **评分**: {{TEST_REVIEW_SCORE}} / 10
+
+#### 安全审查员
+- **状态**: {{SECURITY_REVIEW_STATUS}}
+- **意见**: {{SECURITY_REVIEW_COMMENTS}}
+- **评分**: {{SECURITY_REVIEW_SCORE}} / 10
+
+#### 文档审查员
+- **状态**: {{DOC_REVIEW_STATUS}}
+- **意见**: {{DOC_REVIEW_COMMENTS}}
+- **评分**: {{DOC_REVIEW_SCORE}} / 10
+
+### 7.3 综合审查结果
+
+**Review 状态**: {{REVIEW_STATUS}}  <!-- pending / in_progress / completed -->
+**Review 完成时间**: {{REVIEW_COMPLETED_AT}}
+**审查结果**: {{REVIEW_RESULT}}  <!-- approved / changes_requested / rejected -->
+
+**Master 意见**:
+{{MASTER_COMMENTS}}
 
 ---
 
-## 人类参与 (v0.5 新增)
+## 8. 人类参与 (v0.9.0+)
 
-- [ ] 依赖确认 (如需要)
-- [ ] 仲裁决策 (如需要)
-- [ ] 任务完成确认
+### 8.1 人类审查点
+
+| 审查点 | 类型 | 状态 | 审查者 | 日期 |
+|--------|------|------|--------|------|
+| B1: 任务分析文档 | 必须 | {{HUMAN_REVIEW_B1_STATUS}} | {{HUMAN_REVIEWER_B1}} | {{B1_DATE}} |
+| B2: PR 验证审查 | 必须 | {{HUMAN_REVIEW_B2_STATUS}} | {{HUMAN_REVIEWER_B2}} | {{B2_DATE}} |
+
+### 8.2 人类反馈
+
+{{HUMAN_FEEDBACK}}
 
 ---
 
-**模板版本**: v0.5
-**最后更新**: 2026-03-23
+## 9. 变更记录
+
+| 版本 | 日期 | 变更内容 | 变更者 |
+|------|------|----------|--------|
+| v1.0 | {{CREATED_AT}} | 初始创建 | {{CREATOR}} |
+| {{VERSION}} | {{CHANGE_DATE}} | {{CHANGE_DESCRIPTION}} | {{CHANGER}} |
+
+---
+
+## 10. 关联资源
+
+- **PR URL**: {{PR_URL}}
+- **分支**: {{BRANCH_NAME}}
+- **任务分析文档**: {{TASK_ANALYSIS_URL}}
+- **测试报告**: {{TEST_REPORT_URL}}
+
+---
+
+**模板版本**: v0.9.0
+**最后更新**: 2026-03-25
+**变更说明**:
+- 元信息移到文件开头
+- 新增 Master Review Subagent 初始化记录
+- 新增人类参与审查点追踪
+- 结构化审查流程
