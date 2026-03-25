@@ -1,70 +1,81 @@
 # EKET 快速开始指南
 
-**版本**: 0.2.0
-**最后更新**: 2026-03-20
+**版本**: 0.7.2
+**最后更新**: 2026-03-25
 
 ---
 
 ## 5 分钟快速开始
 
-### 步骤 1: 克隆框架
+### 前置要求
+
+- Node.js >= 18.0.0
+- npm >= 9.0.0
+- Git >= 2.30.0
+
+### 步骤 1: 克隆项目
 
 ```bash
-git clone <eket-repo-url> eket-framework
-cd eket-framework
+git clone <eket-repo-url> my-project
+cd my-project
 ```
 
-### 步骤 2: 初始化新项目
+### 步骤 2: 安装依赖
 
 ```bash
-./scripts/init-project.sh my-awesome-project /path/to/your/project
+cd node && npm install && cd ..
+./scripts/enable-advanced.sh
 ```
 
-### 步骤 3: 进入项目并启动 Claude
+### 步骤 3: 运行初始化向导
 
 ```bash
-cd /path/to/your/project
-claude
+node node/dist/index.js init
 ```
 
-### 步骤 4: 运行初始化向导
+### 步骤 4: 初始化三仓库
 
 ```bash
-/eket-init
+./scripts/init-three-repos.sh
 ```
 
-### 步骤 5: 开始你的项目
-
-#### 选项 A: 任务设定模式 (新项目)
-
-1. 编辑 `inbox/human_input.md` 描述你的项目愿景
-2. 保存并发送消息给 Claude："我已经写好了需求，请开始分析"
-3. 协调智能体会自动分析需求并创建任务
-
-#### 选项 B: 任务承接模式 (已有项目)
+### 步骤 5: 启动 Agent
 
 ```bash
-# 启动实例 (自动检测模式)
+# 查看帮助
+/eket-help
+
+# 启动实例
 /eket-start
 
 # 或启用自动模式
 /eket-start -a
-
-# 查看推荐任务并领取
-/eket-claim <task-id>
 ```
 
 ---
 
 ## 核心命令速查
 
+### Node.js CLI (v0.7 新增)
+
+| 命令 | 功能 |
+|------|------|
+| `node node/dist/index.js check` | 检查模块可用性 |
+| `node node/dist/index.js doctor` | 系统诊断 |
+| `node node/dist/index.js redis:check` | 检查 Redis |
+| `node node/dist/index.js sqlite:check` | 检查 SQLite |
+| `node node/dist/index.js init` | 初始化向导 |
+| `node node/dist/index.js claim [id]` | 领取任务 |
+| `node node/dist/index.js submit-pr` | 提交 PR |
+| `node node/dist/index.js heartbeat:start <id>` | 启动心跳 |
+
+### Claude Code 命令
+
 | 命令 | 功能 | 适用场景 |
 |------|------|---------|
 | `/eket-init` | 初始化向导 | 首次启动 |
 | `/eket-start` | 启动实例 | 每次会话开始 |
 | `/eket-start -a` | 自动模式启动 | 自动领取任务 |
-| `/eket-mode setup` | 切换到设定模式 | 创建新任务 |
-| `/eket-mode execution` | 切换到承接模式 | 执行任务 |
 | `/eket-status` | 查看状态 | 查看任务列表 |
 | `/eket-claim <id>` | 领取任务 | 开始处理任务 |
 | `/eket-review <id>` | 请求 Review | 完成开发后 |
