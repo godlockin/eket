@@ -6,48 +6,52 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # EKET - AI 智能体协作框架
 
-**版本**: 0.7.0
-**最后更新**: 2026-03-24
+**版本**: 0.7.2
+**最后更新**: 2026-03-25
 
-## 变更说明 (v0.7.0)
+## 变更说明 (v0.7.2)
 
-### Node.js 混合架构
+### 代码质量提升
 
-- **Redis 客户端**: Slaver 心跳监控、消息队列 (ioredis)
-- **SQLite 客户端**: Retrospective 数据持久化 (better-sqlite3)
-- **CLI 框架**: 统一的命令行界面 (Commander.js)
-- **混合适配器**: 自动路由和三级降级 (Node.js → Shell → 文件队列)
+- **类型安全**: 修复 ESM 兼容性，统一使用 `.js` 扩展名
+- **错误处理**: 使用 `EketError` 统一错误类型，添加错误码
+- **DRY 原则**: 创建 `yaml-parser.ts` 共享工具，消除重复代码
+- **防御式编程**: 添加 null 检查，配置对象防御性拷贝
+- **不可变性**: `EketError` 属性改为 `readonly`
 
-### 新增目录
+### 新增工具
 
-```
-node/                       # Node.js 项目目录
-├── src/
-│   ├── index.ts            # CLI 入口
-│   ├── types/              # TypeScript 类型定义
-│   └── core/               # 核心模块 (Redis/SQLite 客户端)
-└── dist/                   # 编译产物
-lib/adapters/
-└── hybrid-adapter.sh       # 混合适配器脚本
-```
+- `node/src/utils/yaml-parser.ts` - YAML 解析共享工具
+- `node/src/utils/execFileNoThrow.ts` - 类型守卫函数
 
-### 新增脚本
+### 改进模块
 
-- `scripts/enable-advanced.sh`: 安装 Node.js 依赖，启用高级功能
-- `lib/adapters/hybrid-adapter.sh`: 命令路由和降级
+- `core/redis-client.ts` - ESM 兼容，防御性配置拷贝
+- `core/file-queue-manager.ts` - 改进错误处理和时间戳处理
+- `commands/submit-pr.ts` - 移除重复函数，使用共享工具
 
-### 新增命令
+---
 
-```bash
-# Redis 相关
-./lib/adapters/hybrid-adapter.sh redis:check
-./lib/adapters/hybrid-adapter.sh redis:list-slavers
+## 变更说明 (v0.7.1)
 
-# SQLite 相关
-./lib/adapters/hybrid-adapter.sh sqlite:check
-./lib/adapters/hybrid-adapter.sh sqlite:list-retros
-./lib/adapters/hybrid-adapter.sh sqlite:search "<keyword>"
-./lib/adapters/hybrid-adapter.sh sqlite:report
+### Phase 3 完整实现
+
+- **PR 提交命令**: 支持 GitHub/GitLab/Gitee 平台
+  - 自动分支检测和目标分支推断
+  - API Token 认证和错误处理
+  - Reviewers 添加和自动合并支持
+
+- **三仓库克隆增强**: 从 `.eket/config/config.yml` 读取配置
+  - 自动 YAML 解析和平台检测
+  - 改进的错误提示和输出
+
+- **文件队列持久化**:
+  - 消息去重机制（`processed.json`）
+  - 过期清理（`maxAge: 24h`）
+  - 自动归档（`archiveAfter: 1h`）
+  - 定期清理和统计功能
+
+---
 
 # 系统诊断
 ./lib/adapters/hybrid-adapter.sh doctor
