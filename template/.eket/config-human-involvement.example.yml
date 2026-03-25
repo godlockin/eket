@@ -1,0 +1,364 @@
+# EKET 配置 - 人类参与模式示例
+
+**版本**: 1.0.0
+**创建日期**: 2026-03-25
+
+---
+
+本文件展示如何在 `.eket/config.yml` 中配置人类参与模式。
+
+---
+
+## 配置位置
+
+在 `.eket/config.yml` 中添加以下配置：
+
+```yaml
+# ==================== 人类参与模式配置 ====================
+
+human_involvement:
+  # 模式选择
+  # - autonomous: 全自主模式 (人类最小参与)
+  # - deep_involvement: 人类深度参与模式
+  # - hybrid: 混合模式 (推荐)
+  mode: "hybrid"
+
+  # 必须参与环节 (不可关闭，只能配置交互方式)
+  mandatory:
+    # M1: 需求提出
+    requirement_input:
+      # 需求收集方式
+      # - interactive: 交互式追问 (默认)
+      # - document: 文档提交
+      collection_method: "interactive"
+
+      # 是否需要人类确认需求理解
+      require_confirmation: true
+
+    # M2: 背景知识补充
+    context_supplement:
+      # Agent 追问方式
+      # - immediate: 立即追问 (发现缺失时)
+      # - batch: 批量追问 (整理后统一问)
+      query_style: "immediate"
+
+      # 最大追问轮次
+      max_query_rounds: 3
+
+    # M3: 项目方向把握
+    direction_setting:
+      # 需要人类确认的决策
+      decisions_requiring_human:
+        - "architecture_change"  # 架构重大变更
+        - "priority_shift"       # 优先级重大调整
+        - "scope_expansion"      # 范围显著扩大
+        - "timeline_change"      # 时间线重大变更
+
+      # 上报阈值 (任务预估工时 > 此值需上报)
+      escalation_threshold_hours: 8
+
+  # 选择性参与环节 (可配置)
+  optional:
+    # O1: 文档审查
+    document_review:
+      # 是否启用人类审查
+      enabled: true
+
+      # 审查门槛
+      # - all: 全部审查
+      # - critical: 只审查关键文档
+      # - none: Agent 自主审查
+      threshold: "critical"
+
+      # 关键文档类型 (threshold=critical 时使用)
+      critical_documents:
+        - "requirements"      # 需求文档
+        - "architecture"      # 架构设计
+        - "task_analysis"     # 任务分析 (仅复杂任务)
+
+      # 审查超时设置 (小时)
+      # 超过此时间未审查，自动批准 (避免流程阻塞)
+      review_timeout_hours: 24
+
+      # 超时前提醒 (小时)
+      reminder_before_timeout: 2
+
+    # O2: 任务承接
+    task_claim:
+      # 是否启用人类分配任务
+      enabled: false
+
+      # 分配模式
+      # - auto: Agent 自动领取 (默认)
+      # - manual: 人类手动分配
+      # - hybrid: 混合 (Agent 推荐，人类确认)
+      assignment_mode: "auto"
+
+      # 人类分配时的过滤规则
+      manual_assignment_filters:
+        # 哪些任务需要人类分配
+        require_human_assignment:
+          - "urgent"    # 紧急任务
+          - "critical"  # 关键功能
+        # 哪些任务 Agent 可自动领取
+        auto_claim_allowed:
+          - "bugfix"    # Bug 修复
+          - "docs"      # 文档更新
+          - "minor"     # 小功能
+
+    # O3: 角色扮演
+    role_playing:
+      # 是否启用人类角色扮演
+      enabled: false
+
+      # 人类要扮演的角色列表
+      # 可选值：product_owner, tech_manager, qa_lead, ux_reviewer, etc.
+      human_roles: []
+      # 示例:
+      # human_roles:
+      #   - "product_owner"  # 人类担任产品负责人
+      #   - "ux_reviewer"    # 人类担任 UX 审查者
+
+      # 角色职责范围
+      role_responsibilities:
+        product_owner:
+          - "priority_decision"     # 优先级决策
+          - "requirement_clarification"  # 需求澄清
+        ux_reviewer:
+          - "ui_review"             # UI 审查
+          - "accessibility_check"   # 无障碍检查
+
+    # O4: PR 审查
+    pr_review:
+      # 是否启用人类 PR 审查
+      enabled: true
+
+      # 审查门槛
+      # - all: 全部审查
+      # - critical: 只审查关键 PR
+      # - none: Agent 自主审查
+      threshold: "critical"
+
+      # 关键 PR 判断规则 (threshold=critical 时使用)
+      critical_pr_rules:
+        # 工作量阈值 (小时)
+        effort_threshold_hours: 8
+
+        # 核心模块路径 (匹配文件路径)
+        core_modules:
+          - "src/core/"
+          - "src/auth/"
+          - "src/payment/"
+
+        # 涉及安全变更
+        security_changes: true
+
+        # 涉及 API 变更
+        api_changes: true
+
+      # 审查清单模板
+      review_checklist:
+        - "实现与批准文档一致"
+        - "代码质量达标"
+        - "测试充分"
+        - "无安全隐患"
+
+      # 审查超时设置 (小时)
+      review_timeout_hours: 12
+
+  # 通知配置
+  notifications:
+    # 审查请求通知方式
+    review_request:
+      # 通知渠道
+      # - console: 控制台输出 (默认)
+      # - email: 邮件通知
+      # - slack: Slack 通知
+      # - webhook: Webhook
+      channels:
+        - "console"
+
+      # 通知模板
+      template: |
+        [审查请求] {task_id}
+
+        任务：{task_title}
+        审查类型：{review_type}
+        审查者：{reviewer}
+
+        链接：{document_link}
+
+        请在 {timeout} 前完成审查。
+
+    # 审查完成通知
+    review_complete:
+      channels:
+        - "console"
+
+      # 包含审查意见
+      include_comments: true
+
+    # 超时提醒
+    timeout_reminder:
+      enabled: true
+      # 提前多久提醒 (小时)
+      remind_before_hours: 2
+
+  # 审批流程配置
+  approval_workflow:
+    # 自动批准规则
+    auto_approval:
+      enabled: true
+
+      # 满足以下所有条件时自动批准
+      conditions:
+        # 低风险任务
+        risk_level_below: "medium"
+
+        # 工作量小于此值 (小时)
+        effort_below_hours: 4
+
+        # 无人类提出的问题时
+        no_human_questions: true
+
+        # Agent 自信度高
+        confidence_above: 0.8
+
+    # 审查意见处理
+    comment_handling:
+      # 审查意见分类
+      categories:
+        - "approved"        # 批准
+        - "minor_changes"   # 小修改
+        - "major_changes"   # 大修改
+        - "rejected"        # 拒绝
+
+      # 小修改可直接实施，无需重新审查
+      minor_changes_auto_approve: true
+
+      # 大修改需要重新审查
+      major_changes_re_review: true
+```
+
+---
+
+## 预设配置
+
+### 预设 1: 全自主模式
+
+```yaml
+human_involvement:
+  mode: "autonomous"
+
+  optional:
+    document_review:
+      enabled: false
+      threshold: "none"
+
+    task_claim:
+      enabled: false
+      assignment_mode: "auto"
+
+    role_playing:
+      enabled: false
+
+    pr_review:
+      enabled: false
+      threshold: "none"
+```
+
+**适用场景**:
+- 人类时间极其有限
+- 项目复杂度低
+- Agent 能力强、可信度高
+
+---
+
+### 预设 2: 深度参与模式
+
+```yaml
+human_involvement:
+  mode: "deep_involvement"
+
+  optional:
+    document_review:
+      enabled: true
+      threshold: "all"
+
+    task_claim:
+      enabled: true
+      assignment_mode: "manual"
+
+    role_playing:
+      enabled: true
+      human_roles:
+        - "product_owner"
+        - "tech_manager"
+
+    pr_review:
+      enabled: true
+      threshold: "all"
+```
+
+**适用场景**:
+- 新项目启动阶段
+- 项目复杂度高
+- 人类希望深度参与
+
+---
+
+### 预设 3: 混合模式 (推荐)
+
+```yaml
+human_involvement:
+  mode: "hybrid"
+
+  optional:
+    document_review:
+      enabled: true
+      threshold: "critical"
+
+    task_claim:
+      enabled: false
+      assignment_mode: "auto"
+
+    role_playing:
+      enabled: false
+
+    pr_review:
+      enabled: true
+      threshold: "critical"
+```
+
+**适用场景**:
+- 大部分项目
+- 平衡效率与质量
+- 长期维护项目
+
+---
+
+## 配置验证
+
+运行以下命令验证配置：
+
+```bash
+./scripts/validate-config.sh
+```
+
+配置验证会检查：
+- [ ] `mode` 值有效
+- [ ] `threshold` 值有效
+- [ ] 必要字段存在
+- [ ] 数值范围合理
+
+---
+
+## 配置变更日志
+
+| 版本 | 日期 | 变更内容 |
+|------|------|----------|
+| 1.0.0 | 2026-03-25 | 初始版本 |
+
+---
+
+**维护者**: EKET Framework Team
