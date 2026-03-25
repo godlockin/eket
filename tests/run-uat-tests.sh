@@ -1,7 +1,7 @@
 #!/bin/bash
 # tests/run-uat-tests.sh - 用户验收测试
 
-set -e
+# 不使用 set -e，因为测试需要捕获失败的命令
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"

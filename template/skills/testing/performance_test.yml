@@ -1,0 +1,165 @@
+# 性能测试 Skill
+
+**版本**: 1.0.0
+**分类**: testing
+
+---
+
+```yaml
+name: performance_test
+version: 1.0.0
+category: testing
+description: 执行性能测试和基准测试
+
+# 输入参数定义
+inputs:
+  - name: test_type
+    type: string
+    required: true
+    description: 测试类型
+    example: "load|stress|spike|endurance|scalability"
+
+  - name: target_service
+    type: object
+    required: true
+    description: 目标服务
+    properties:
+      endpoint: string
+      method: string
+      headers: object
+
+  - name: performance_goals
+    type: object
+    required: true
+    description: 性能目标
+    properties:
+      response_time_p95: number  # 毫秒
+      response_time_p99: number  # 毫秒
+      throughput: number         # QPS
+      error_rate: number         # 百分比
+      concurrent_users: number
+
+  - name: test_duration
+    type: string
+    required: true
+    description: 测试持续时间
+    example: "5m|30m|1h|24h"
+
+# 输出定义
+outputs:
+  - name: test_results
+    type: object
+    description: 测试结果
+    properties:
+      response_times: object
+      throughput: object
+      error_rates: object
+      resource_usage: object
+
+  - name: performance_report
+    type: object
+    description: 性能报告
+
+  - name: bottlenecks
+    type: array
+    description: 发现的性能瓶颈
+
+  - name: recommendations
+    type: array
+    description: 优化建议
+
+# 执行步骤
+steps:
+  - name: test_plan_creation
+    description: 创建测试计划
+    action: create_test_plan
+    params:
+      test_type: "{{inputs.test_type}}"
+      target: "{{inputs.target_service}}"
+      goals: "{{inputs.performance_goals}}"
+      duration: "{{inputs.test_duration}}"
+
+  - name: test_script_generation
+    description: 生成测试脚本
+    action: generate_test_script
+    params:
+      plan: "{{steps.test_plan_creation.plan}}"
+      framework: "k6|jmeter|locust"
+
+  - name: baseline_test
+    description: 基准测试
+    action: run_baseline_test
+    params:
+      script: "{{steps.test_script_generation.script}}"
+      users: 1
+
+  - name: load_test
+    description: 负载测试
+    action: run_load_test
+    params:
+      script: "{{steps.test_script_generation.script}}"
+      ramp_up: "5m"
+      peak_users: "{{inputs.performance_goals.concurrent_users}}"
+
+  - name: stress_test
+    description: 压力测试 (如果适用)
+    action: run_stress_test
+    params:
+      script: "{{steps.test_script_generation.script}}"
+      break_point_search: true
+
+  - name: result_analysis
+    description: 结果分析
+    action: analyze_results
+    params:
+      results: "{{steps.load_test.results}}"
+      goals: "{{inputs.performance_goals}}"
+
+  - name: bottleneck_identification
+    description: 瓶颈识别
+    action: identify_bottlenecks
+    params:
+      analysis: "{{steps.result_analysis.analysis}}"
+
+  - name: generate_report
+    description: 生成报告
+    action: create_performance_report
+    params:
+      results: "{{steps.result_analysis.results}}"
+      bottlenecks: "{{steps.bottleneck_identification.bottlenecks}}"
+
+# 依赖的其它 Skill
+dependencies:
+  - testing/unit_test
+
+# 使用示例
+examples:
+  - name: API 性能测试
+    inputs:
+      test_type: "load"
+      target_service:
+        endpoint: "https://api.example.com/articles"
+        method: "GET"
+      performance_goals:
+        response_time_p95: 200
+        response_time_p99: 500
+        throughput: 1000
+        error_rate: 0.1
+        concurrent_users: 100
+      test_duration: "30m"
+    expected_outputs:
+      test_results:
+        response_times:
+          p50: 85
+          p95: 180
+          p99: 420
+      bottlenecks:
+        - "数据库查询在用户量>500 时变慢"
+      recommendations:
+        - "添加 Redis 缓存层"
+        - "优化数据库索引"
+```
+
+---
+
+**维护者**: EKET Framework Team

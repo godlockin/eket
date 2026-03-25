@@ -1,13 +1,13 @@
 # Skills 注册表
 
-**版本**: 1.0.0
-**最后更新**: 2026-03-23
+**版本**: 1.0.1
+**最后更新**: 2026-03-25
 
 ---
 
 ```yaml
-version: 1.0.0
-last_updated: 2026-03-23
+version: 1.0.1
+last_updated: 2026-03-25
 
 # Skills 分类索引
 categories:
@@ -88,6 +88,20 @@ skills:
     version: 1.0.0
     description: 数据库 Schema 设计
 
+  - name: ui_ux_design
+    path: design/ui_ux_design.yml
+    category: design
+    status: active
+    version: 1.0.0
+    description: UI/UX 设计
+
+  - name: icon_design
+    path: design/icon_design.yml
+    category: design
+    status: active
+    version: 1.0.0
+    description: 图标设计
+
   # ===== 开发实现类 =====
   - name: frontend_development
     path: development/frontend_development.yml
@@ -125,6 +139,13 @@ skills:
     version: 1.0.0
     description: 集成测试
 
+  - name: performance_test
+    path: testing/performance_test.yml
+    category: testing
+    status: active
+    version: 1.0.0
+    description: 性能测试
+
   # ===== 运维部署类 =====
   - name: docker_build
     path: devops/docker_build.yml
@@ -140,6 +161,20 @@ skills:
     version: 1.0.0
     description: CI/CD 配置
 
+  - name: kubernetes_deploy
+    path: devops/kubernetes_deploy.yml
+    category: devops
+    status: active
+    version: 1.0.0
+    description: Kubernetes 部署
+
+  - name: monitoring_setup
+    path: devops/monitoring_setup.yml
+    category: devops
+    status: active
+    version: 1.0.0
+    description: 监控配置
+
   # ===== 文档类 =====
   - name: api_documentation
     path: documentation/api_documentation.yml
@@ -154,6 +189,20 @@ skills:
     status: active
     version: 1.0.0
     description: 技术文档
+
+  - name: user_guide
+    path: documentation/user_guide.yml
+    category: documentation
+    status: active
+    version: 1.0.0
+    description: 用户指南
+
+  - name: release_notes
+    path: documentation/release_notes.yml
+    category: documentation
+    status: active
+    version: 1.0.0
+    description: 发布说明
 
 # Agent 推荐的 Skill 组合
 recommended_combinations:
@@ -185,6 +234,19 @@ recommended_combinations:
   devops_engineer:
     - devops/docker_build
     - devops/ci_cd_setup
+    - devops/kubernetes_deploy
+    - devops/monitoring_setup
+
+  designer:
+    - design/ui_ux_design
+    - design/icon_design
+    - documentation/technical_doc
+
+  technical_writer:
+    - documentation/technical_doc
+    - documentation/api_documentation
+    - documentation/user_guide
+    - documentation/release_notes
 ```
 
 ---

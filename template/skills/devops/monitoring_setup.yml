@@ -1,0 +1,184 @@
+# 监控配置 Skill
+
+**版本**: 1.0.0
+**分类**: devops
+
+---
+
+```yaml
+name: monitoring_setup
+version: 1.0.0
+category: devops
+description: 监控系统配置和告警设置
+
+# 输入参数定义
+inputs:
+  - name: monitoring_stack
+    type: string
+    required: true
+    description: 监控技术栈
+    example: "prometheus|datadog|newrelic|elastic"
+
+  - name: targets
+    type: array
+    required: true
+    description: 监控目标
+    items:
+      type: object
+      properties:
+        name: string
+        type: string  # service|database|cache|queue
+        endpoint: string
+        metrics: array
+
+  - name: dashboards
+    type: array
+    required: true
+    description: 需要的仪表板
+    items:
+      type: string
+      example: "overview|performance|errors|business"
+
+  - name: alerts
+    type: array
+    required: true
+    description: 告警配置
+    items:
+      type: object
+      properties:
+        name: string
+        condition: string
+        threshold: string
+        severity: string
+        channels: array
+
+  - name: retention
+    type: object
+    required: false
+    description: 数据保留策略
+    properties:
+      metrics: string  # e.g., "30d"
+      logs: string     # e.g., "7d"
+      traces: string   # e.g., "7d"
+
+# 输出定义
+outputs:
+  - name: monitoring_config
+    type: object
+    description: 监控配置
+
+  - name: dashboards
+    type: array
+    description: 创建的仪表板
+
+  - name: alert_rules
+    type: array
+    description: 告警规则
+
+  - name: runbooks
+    type: array
+    description: 运维手册
+
+# 执行步骤
+steps:
+  - name: stack_deployment
+    description: 部署监控栈
+    action: deploy_monitoring
+    params:
+      stack: "{{inputs.monitoring_stack}}"
+      namespace: "monitoring"
+
+  - name: target_configuration
+    description: 配置监控目标
+    action: configure_targets
+    params:
+      targets: "{{inputs.targets}}"
+      scrape_interval: "15s"
+
+  - name: dashboard_creation
+    description: 创建仪表板
+    action: create_dashboards
+    params:
+      stack: "{{inputs.monitoring_stack}}"
+      dashboard_types: "{{inputs.dashboards}}"
+      targets: "{{inputs.targets}}"
+
+  - name: alert_rule_creation
+    description: 创建告警规则
+    action: create_alert_rules
+    params:
+      alerts: "{{inputs.alerts}}"
+      evaluation_interval: "30s"
+
+  - name: notification_setup
+    description: 配置通知渠道
+    action: configure_notifications
+    params:
+      channels:
+        - type: "slack"
+          webhook: "${SLACK_WEBHOOK}"
+        - type: "email"
+          recipients: "${ALERT_EMAILS}"
+        - type: "pagerduty"
+          service_key: "${PAGERDUTY_KEY}"
+
+  - name: runbook_creation
+    description: 创建运维手册
+    action: create_runbooks
+    params:
+      alerts: "{{inputs.alerts}}"
+      include_troubleshooting: true
+
+  - name: verification
+    description: 验证配置
+    action: verify_monitoring
+    params:
+      targets: "{{inputs.targets}}"
+      alerts: "{{inputs.alerts}}"
+
+# 依赖的其它 Skill
+dependencies:
+  - devops/kubernetes_deploy
+
+# 使用示例
+examples:
+  - name: 博客系统监控配置
+    inputs:
+      monitoring_stack: "prometheus"
+      targets:
+        - name: "blog-api"
+          type: "service"
+          endpoint: "http://blog-api:8080/metrics"
+          metrics: ["http_requests", "http_duration", "jvm_metrics"]
+        - name: "postgresql"
+          type: "database"
+          endpoint: "http://postgres-exporter:9187/metrics"
+          metrics: ["pg_stat", "pg_locks"]
+      dashboards:
+        - "overview"
+        - "performance"
+        - "errors"
+      alerts:
+        - name: "HighErrorRate"
+          condition: "rate(http_requests_total{status=~'5..'}[5m]) / rate(http_requests_total[5m])"
+          threshold: "> 0.01"
+          severity: "critical"
+          channels: ["slack", "pagerduty"]
+        - name: "HighLatency"
+          condition: "histogram_quantile(0.95, http_duration_seconds_bucket)"
+          threshold: "> 1"
+          severity: "warning"
+          channels: ["slack"]
+    expected_outputs:
+      dashboards:
+        - "Blog API Overview"
+        - "Blog API Performance"
+        - "Blog API Errors"
+      alert_rules:
+        - "HighErrorRate: error_rate > 1%"
+        - "HighLatency: p95 > 1s"
+```
+
+---
+
+**维护者**: EKET Framework Team

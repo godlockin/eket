@@ -1,7 +1,7 @@
 #!/bin/bash
 # EKET 框架管理脚本
 
-set -e
+# 不使用 set -e，避免在可恢复错误处退出
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"

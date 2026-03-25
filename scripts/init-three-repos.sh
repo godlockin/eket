@@ -2,7 +2,7 @@
 # scripts/init-three-repos.sh - 初始化三 Git 仓库架构
 # 从 .eket/config/config.yml 读取配置
 
-set -e
+# 不使用 set -e，避免在可恢复错误处退出
 
 echo "========================================"
 echo "EKET 三仓库初始化"

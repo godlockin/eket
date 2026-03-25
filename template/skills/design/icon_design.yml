@@ -1,0 +1,139 @@
+# 图标设计 Skill
+
+**版本**: 1.0.0
+**分类**: design
+
+---
+
+```yaml
+name: icon_design
+version: 1.0.0
+category: design
+description: 图标设计和创作
+
+# 输入参数定义
+inputs:
+  - name: icon_type
+    type: string
+    required: true
+    description: 图标类型
+    example: "app_icon|feature_icon|status_icon|action_icon"
+
+  - name: style
+    type: string
+    required: true
+    description: 设计风格
+    example: "flat|outline|filled|duotone|3d"
+
+  - name: size
+    type: string
+    required: true
+    description: 图标尺寸
+    example: "24x24|32x32|48x48|64x64"
+
+  - name: color_scheme
+    type: object
+    required: false
+    description: 配色方案
+    properties:
+      primary: string
+      secondary: string
+      accent: string
+
+  - name: concept
+    type: string
+    required: true
+    description: 图标概念描述
+    example: "表示保存功能的软盘图标"
+
+# 输出定义
+outputs:
+  - name: icon_concepts
+    type: array
+    description: 图标概念设计
+
+  - name: icon_files
+    type: array
+    description: 生成的图标文件
+    properties:
+      format: string
+      sizes: array
+
+  - name: icon_guide
+    type: object
+    description: 图标使用指南
+
+# 执行步骤
+steps:
+  - name: concept_analysis
+    description: 概念分析
+    action: analyze_concept
+    params:
+      concept: "{{inputs.concept}}"
+      icon_type: "{{inputs.icon_type}}"
+
+  - name: sketch_creation
+    description: 创建草图
+    action: generate_sketches
+    params:
+      concept: "{{steps.concept_analysis.concept}}"
+      style: "{{inputs.style}}"
+      count: 3
+
+  - name: vector_creation
+    description: 创建矢量图
+    action: create_vector_icons
+    params:
+      sketch: "{{steps.sketch_creation.best_sketch}}"
+      style: "{{inputs.style}}"
+      color_scheme: "{{inputs.color_scheme}}"
+
+  - name: export_icons
+    description: 导出图标
+    action: export_multiple_formats
+    params:
+      vector: "{{steps.vector_creation.vector}}"
+      sizes:
+        - "16x16"
+        - "24x24"
+        - "32x32"
+        - "48x48"
+        - "64x64"
+      formats:
+        - "SVG"
+        - "PNG"
+        - "ICO"
+
+  - name: create_guide
+    description: 创建使用指南
+    action: generate_icon_guide
+    params:
+      icons: "{{steps.export_icons.files}}"
+      usage_scenarios: all
+
+# 依赖的其它 Skill
+dependencies:
+  - design/ui_ux_design
+
+# 使用示例
+examples:
+  - name: 博客系统图标集
+    inputs:
+      icon_type: "feature_icon"
+      style: "outline"
+      size: "24x24"
+      color_scheme:
+        primary: "#333333"
+        accent: "#007AFF"
+      concept: "文章编辑功能图标"
+    expected_outputs:
+      icon_files:
+        - format: "SVG"
+          path: "assets/icons/edit-article.svg"
+        - format: "PNG"
+          sizes: ["16x16", "24x24", "32x32"]
+```
+
+---
+
+**维护者**: EKET Framework Team

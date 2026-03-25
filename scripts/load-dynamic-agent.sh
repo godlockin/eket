@@ -1,7 +1,7 @@
 #!/bin/bash
 # scripts/load-dynamic-agent.sh - 动态 Agent 加载脚本
 
-set -e
+# 不使用 set -e，避免在可恢复错误处退出
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"

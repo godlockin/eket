@@ -2,7 +2,7 @@
 # /eket-ask - EKET 依赖追问脚本
 # 用途：当检测到缺失依赖配置时，主动追问用户
 
-set -e
+# 不使用 set -e，避免在可恢复错误处退出
 
 # 动态路径配置 (v0.6.1)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

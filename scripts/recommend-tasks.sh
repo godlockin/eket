@@ -1,7 +1,7 @@
 #!/bin/bash
 # scripts/recommend-tasks.sh - 任务推荐 (手动模式)
 
-set -e
+# 不使用 set -e，避免在可恢复错误处退出
 
 JIRA_DIR="jira/tickets"
 

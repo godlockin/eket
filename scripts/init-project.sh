@@ -11,7 +11,7 @@
 # 3. 从 eket 目录运行（推荐）:
 #    ./scripts/init-project.sh <project-name> /path/to/project
 
-set -e
+# 不使用 set -e，避免在可恢复错误处退出
 
 PROJECT_NAME="${1:-my-project}"
 PROJECT_ROOT="${2:-$(pwd)}"

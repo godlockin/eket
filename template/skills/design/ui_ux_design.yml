@@ -1,0 +1,120 @@
+# UI/UX 设计 Skill
+
+**版本**: 1.0.0
+**分类**: design
+
+---
+
+```yaml
+name: ui_ux_design
+version: 1.0.0
+category: design
+description: 用户界面和用户体验设计
+
+# 输入参数定义
+inputs:
+  - name: requirements
+    type: object
+    required: true
+    description: 设计需求
+    properties:
+      target_users: array
+      user_scenarios: array
+      functional_requirements: array
+
+  - name: brand_guidelines
+    type: object
+    required: false
+    description: 品牌指南
+    properties:
+      colors: object
+      typography: object
+      logo: string
+
+  - name: platform
+    type: string
+    required: true
+    description: 目标平台
+    example: "web|mobile|desktop"
+
+# 输出定义
+outputs:
+  - name: wireframes
+    type: array
+    description: 线框图
+
+  - name: mockups
+    type: array
+    description: 设计稿
+
+  - name: design_spec
+    type: object
+    description: 设计规范文档
+
+# 执行步骤
+steps:
+  - name: analyze_requirements
+    description: 分析需求
+    action: parse_requirements
+    params:
+      requirements: "{{inputs.requirements}}"
+
+  - name: user_flow_design
+    description: 用户流程设计
+    action: create_user_flow
+    params:
+      scenarios: "{{inputs.requirements.user_scenarios}}"
+      platform: "{{inputs.platform}}"
+
+  - name: wireframe_creation
+    description: 创建线框图
+    action: generate_wireframes
+    params:
+      user_flow: "{{steps.user_flow_design.flow}}"
+      requirements: "{{inputs.requirements}}"
+
+  - name: visual_design
+    description: 视觉设计
+    action: create_mockups
+    params:
+      wireframes: "{{steps.wireframe_creation.wireframes}}"
+      brand_guidelines: "{{inputs.brand_guidelines}}"
+
+  - name: design_spec_creation
+    description: 创建设计规范
+    action: generate_design_spec
+    params:
+      mockups: "{{steps.visual_design.mockups}}"
+      components: all
+
+# 依赖的其它 Skill
+dependencies: []
+
+# 使用示例
+examples:
+  - name: 博客系统首页设计
+    inputs:
+      requirements:
+        target_users: ["读者", "作者", "管理员"]
+        user_scenarios:
+          - "读者浏览文章列表"
+          - "作者发布文章"
+          - "管理员管理内容"
+        functional_requirements:
+          - "文章列表展示"
+          - "搜索功能"
+          - "用户登录"
+      platform: "web"
+    expected_outputs:
+      wireframes:
+        - "首页线框图"
+        - "文章详情页线框图"
+        - "登录页线框图"
+      mockups:
+        - "首页高保真设计稿"
+        - "文章详情页设计稿"
+```
+
+---
+
+**维护者**: EKET Framework Team

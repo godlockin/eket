@@ -5,7 +5,7 @@
 # - Review 通过 → 创建测试和修复任务
 # - Review 不通过 → 创建修改任务
 
-set -e
+# 不使用 set -e，避免在可恢复错误处退出
 
 # 路径配置 (v0.5.2)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

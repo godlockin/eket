@@ -2,7 +2,7 @@
 # /eket-start - EKET 实例启动和初始化逻辑 (v0.5)
 # Master/Slaver 模式自动检测 + Worktree 同步 + 时间追踪 + 权限控制 + Mock 检测
 
-set -e
+# 不使用 set -e，避免在可恢复错误处退出
 
 echo "========================================"
 echo "EKET 实例启动 v0.4"

@@ -2,7 +2,7 @@
 # EKET Slaver 操作权限控制 v0.5
 # 定义和执行 Slaver 的 allow/question/reject 权限
 
-set -e
+# 不使用 set -e，避免在可恢复错误处退出
 
 # 颜色定义
 GREEN='\033[0;32m'

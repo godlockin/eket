@@ -1,0 +1,159 @@
+# 用户指南 Skill
+
+**版本**: 1.0.0
+**分类**: documentation
+
+---
+
+```yaml
+name: user_guide
+version: 1.0.0
+category: documentation
+description: 创建用户指南和使用文档
+
+# 输入参数定义
+inputs:
+  - name: product_info
+    type: object
+    required: true
+    description: 产品信息
+    properties:
+      name: string
+      version: string
+      description: string
+      target_audience: string
+
+  - name: features
+    type: array
+    required: true
+    description: 功能列表
+    items:
+      type: object
+      properties:
+        name: string
+        description: string
+        user_stories: array
+
+  - name: user_level
+    type: string
+    required: true
+    description: 目标用户水平
+    example: "beginner|intermediate|advanced"
+
+  - name: include_screenshots
+    type: boolean
+    required: false
+    description: 是否包含截图
+    default: true
+
+# 输出定义
+outputs:
+  - name: user_guide
+    type: object
+    description: 用户指南文档
+
+  - name: quick_start
+    type: object
+    description: 快速入门指南
+
+  - name: faq
+    type: array
+    description: 常见问题解答
+
+# 执行步骤
+steps:
+  - name: audience_analysis
+    description: 分析目标受众
+    action: analyze_audience
+    params:
+      user_level: "{{inputs.user_level}}"
+      target_audience: "{{inputs.product_info.target_audience}}"
+
+  - name: content_outline
+    description: 创建内容大纲
+    action: create_outline
+    params:
+      features: "{{inputs.features}}"
+      user_level: "{{inputs.user_level}}"
+      structure:
+        - "简介"
+        - "快速入门"
+        - "功能详解"
+        - "最佳实践"
+        - "常见问题"
+        - "故障排查"
+
+  - name: quick_start_creation
+    description: 创建快速入门
+    action: write_quick_start
+    params:
+      product: "{{inputs.product_info}}"
+      steps: 5  # 5 步内完成入门
+
+  - name: feature_documentation
+    description: 编写功能文档
+    action: write_feature_docs
+    params:
+      features: "{{inputs.features}}"
+      include_screenshots: "{{inputs.include_screenshots}}"
+      format: "task-oriented"
+
+  - name: faq_creation
+    description: 创建 FAQ
+    action: generate_faq
+    params:
+      features: "{{inputs.features}}"
+      common_issues: true
+      troubleshooting: true
+
+  - name: review_and_refine
+    description: 审查和优化
+    action: review_content
+    params:
+      clarity: true
+      completeness: true
+      consistency: true
+
+# 依赖的其它 Skill
+dependencies:
+  - documentation/technical_doc
+
+# 使用示例
+examples:
+  - name: 博客系统用户指南
+    inputs:
+      product_info:
+        name: "博客系统"
+        version: "1.0.0"
+        description: "简单易用的博客发布平台"
+        target_audience: "内容创作者、博主"
+      features:
+        - name: "文章管理"
+          description: "创建、编辑、发布文章"
+          user_stories:
+            - "作为作者，我想写文章并发布"
+            - "作为作者，我想保存草稿"
+        - name: "评论管理"
+          description: "管理和回复读者评论"
+          user_stories:
+            - "作为作者，我想回复读者评论"
+            - "作为作者，我想删除不当评论"
+      user_level: "beginner"
+      include_screenshots: true
+    expected_outputs:
+      user_guide:
+        sections:
+          - "简介"
+          - "快速入门"
+          - "文章管理"
+          - "评论管理"
+          - "个人设置"
+          - "常见问题"
+      quick_start:
+        steps: 5
+        estimated_time: "10 分钟"
+```
+
+---
+
+**维护者**: EKET Framework Team

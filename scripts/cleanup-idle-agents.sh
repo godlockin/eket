@@ -1,7 +1,7 @@
 #!/bin/bash
 # scripts/cleanup-idle-agents.sh - 清理空闲动态 Agent
 
-set -e
+# 不使用 set -e，避免在可恢复错误处退出
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"

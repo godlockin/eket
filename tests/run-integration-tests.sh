@@ -1,7 +1,7 @@
 #!/bin/bash
 # tests/run-integration-tests.sh - 运行集成测试
 
-set -e
+# 不使用 set -e，因为测试需要捕获失败的命令
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
@@ -54,7 +54,7 @@ run_test() {
 # ==========================================
 cat > "$SCRIPT_DIR/integration/I01.sh" << 'EOFTEST'
 #!/bin/bash
-set -e
+# 不使用 set -e，测试需要捕获失败
 
 TEST_DIR=$(mktemp -d)
 cd "$TEST_DIR"
@@ -93,7 +93,7 @@ chmod +x "$SCRIPT_DIR/integration/I01.sh"
 # ==========================================
 cat > "$SCRIPT_DIR/integration/I02.sh" << 'EOFTEST'
 #!/bin/bash
-set -e
+# 不使用 set -e，测试需要捕获失败
 
 TEST_DIR=$(mktemp -d)
 cd "$TEST_DIR"
@@ -142,7 +142,7 @@ chmod +x "$SCRIPT_DIR/integration/I02.sh"
 # ==========================================
 cat > "$SCRIPT_DIR/integration/I03.sh" << 'EOFTEST'
 #!/bin/bash
-set -e
+# 不使用 set -e，测试需要捕获失败
 
 TEST_DIR=$(mktemp -d)
 cd "$TEST_DIR"
@@ -201,7 +201,7 @@ chmod +x "$SCRIPT_DIR/integration/I03.sh"
 # ==========================================
 cat > "$SCRIPT_DIR/integration/I04.sh" << 'EOFTEST'
 #!/bin/bash
-set -e
+# 不使用 set -e，测试需要捕获失败
 
 TEST_DIR=$(mktemp -d)
 cd "$TEST_DIR"

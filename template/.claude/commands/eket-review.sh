@@ -1,7 +1,7 @@
 #!/bin/bash
 # /eket-review - 请求 Review
 
-set -e
+# 不使用 set -e，避免在可恢复错误处退出
 
 # 动态路径配置 (v0.6.1)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

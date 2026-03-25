@@ -11,7 +11,7 @@
 # 3. 完全清理（包括 Git 仓库）:
 #    ./cleanup-project.sh --full /path/to/project
 
-set -e
+# 不使用 set -e，避免在可恢复错误处退出
 
 PROJECT_ROOT="${2:-$(pwd)}"
 FULL_CLEAN=false

@@ -1,0 +1,172 @@
+# 发布说明 Skill
+
+**版本**: 1.0.0
+**分类**: documentation
+
+---
+
+```yaml
+name: release_notes
+version: 1.0.0
+category: documentation
+description: 创建版本发布说明
+
+# 输入参数定义
+inputs:
+  - name: version
+    type: string
+    required: true
+    description: 版本号
+    example: "1.0.0"
+
+  - name: release_type
+    type: string
+    required: true
+    description: 发布类型
+    example: "major|minor|patch|hotfix"
+
+  - name: changes
+    type: object
+    required: true
+    description: 变更内容
+    properties:
+      features: array      # 新功能
+      improvements: array  # 改进
+      bugfixes: array      # 修复
+      breaking_changes: array  # 破坏性变更
+      deprecations: array  # 弃用
+      security: array      # 安全修复
+
+  - name: contributors
+    type: array
+    required: false
+    description: 贡献者列表
+    items:
+      type: string
+
+  - name: links
+    type: object
+    required: false
+    description: 相关链接
+    properties:
+      prs: array
+      issues: array
+      docs: array
+
+# 输出定义
+outputs:
+  - name: release_notes
+    type: object
+    description: 发布说明文档
+
+  - name: changelog_entry
+    type: string
+    description: CHANGELOG 条目
+
+  - name: announcement
+    type: object
+    description: 发布公告
+
+# 执行步骤
+steps:
+  - name: change_categorization
+    description: 变更分类
+    action: categorize_changes
+    params:
+      changes: "{{inputs.changes}}"
+      release_type: "{{inputs.release_type}}"
+
+  - name: highlight_extraction
+    description: 提取亮点
+    action: extract_highlights
+    params:
+      changes: "{{inputs.changes}}"
+      max_highlights: 5
+
+  - name: breaking_change_documentation
+    description: 记录破坏性变更
+    action: document_breaking_changes
+    params:
+      changes: "{{inputs.changes.breaking_changes}}"
+      include_migration_guide: true
+
+  - name: full_release_notes
+    description: 编写完整发布说明
+    action: write_release_notes
+    params:
+      version: "{{inputs.version}}"
+      categorized_changes: "{{steps.change_categorization.categorized}}"
+      highlights: "{{steps.highlight_extraction.highlights}}"
+      format: "markdown"
+
+  - name: changelog_update
+    description: 更新 CHANGELOG
+    action: generate_changelog_entry
+    params:
+      version: "{{inputs.version}}"
+      changes: "{{inputs.changes}}"
+      format: "keepachangelog"
+
+  - name: announcement_creation
+    description: 创建发布公告
+    action: create_announcement
+    params:
+      version: "{{inputs.version}}"
+      highlights: "{{steps.highlight_extraction.highlights}}"
+      channels:
+        - "github_releases"
+        - "email"
+        - "slack"
+
+# 依赖的其它 Skill
+dependencies:
+  - documentation/technical_doc
+
+# 使用示例
+examples:
+  - name: v1.0.0 发布说明
+    inputs:
+      version: "1.0.0"
+      release_type: "major"
+      changes:
+        features:
+          - "用户注册和登录系统"
+          - "文章创建、编辑、删除"
+          - "评论功能"
+          - "标签和分类"
+        improvements:
+          - "优化数据库查询性能"
+          - "改进错误处理"
+        bugfixes:
+          - "修复登录状态判断错误"
+          - "修复分页显示问题"
+        breaking_changes: []
+        deprecations: []
+        security:
+          - "添加密码加密存储"
+          - "实现 CSRF 保护"
+      contributors:
+        - "@alice"
+        - "@bob"
+      links:
+        prs: [42, 43, 44]
+        issues: [10, 11, 12]
+    expected_outputs:
+      release_notes:
+        sections:
+          - "亮点"
+          - "新功能"
+          - "改进"
+          - "修复"
+          - "安全更新"
+          - "贡献者"
+      changelog_entry: |
+        ## [1.0.0] - 2024-01-15
+        ### Added
+        - 用户注册和登录系统
+        ...
+```
+
+---
+
+**维护者**: EKET Framework Team

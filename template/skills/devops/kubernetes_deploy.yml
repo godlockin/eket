@@ -1,0 +1,174 @@
+# Kubernetes 部署 Skill
+
+**版本**: 1.0.0
+**分类**: devops
+
+---
+
+```yaml
+name: kubernetes_deploy
+version: 1.0.0
+category: devops
+description: Kubernetes 容器编排和部署
+
+# 输入参数定义
+inputs:
+  - name: application
+    type: object
+    required: true
+    description: 应用信息
+    properties:
+      name: string
+      version: string
+      image: string
+      port: number
+
+  - name: cluster
+    type: object
+    required: true
+    description: 集群信息
+    properties:
+      name: string
+      namespace: string
+      context: string
+
+  - name: resources
+    type: object
+    required: true
+    description: 资源配置
+    properties:
+      requests:
+        cpu: string
+        memory: string
+      limits:
+        cpu: string
+        memory: string
+
+  - name: scaling
+    type: object
+    required: true
+    description: 扩缩容配置
+    properties:
+      min_replicas: number
+      max_replicas: number
+      target_cpu_utilization: number
+
+  - name: environment
+    type: string
+    required: true
+    description: 部署环境
+    example: "development|staging|production"
+
+# 输出定义
+outputs:
+  - name: k8s_manifests
+    type: array
+    description: Kubernetes 清单文件
+
+  - name: deployment_status
+    type: object
+    description: 部署状态
+
+  - name: rollout_report
+    type: object
+    description: 发布报告
+
+# 执行步骤
+steps:
+  - name: manifest_generation
+    description: 生成清单文件
+    action: generate_k8s_manifests
+    params:
+      app: "{{inputs.application}}"
+      resources: "{{inputs.resources}}"
+      namespace: "{{inputs.cluster.namespace}}"
+
+  - name: hpa_configuration
+    description: 配置 HPA
+    action: create_hpa
+    params:
+      app: "{{inputs.application}}"
+      scaling: "{{inputs.scaling}}"
+
+  - name: service_configuration
+    description: 配置 Service
+    action: create_service
+    params:
+      app: "{{inputs.application}}"
+      port: "{{inputs.application.port}}"
+      type: "ClusterIP|LoadBalancer|NodePort"
+
+  - name: ingress_configuration
+    description: 配置 Ingress (如果需要)
+    action: create_ingress
+    params:
+      app: "{{inputs.application}}"
+      host: "{{inputs.ingress_host}}"
+      tls: true
+
+  - name: apply_manifests
+    description: 应用清单
+    action: kubectl_apply
+    params:
+      manifests: "{{steps.manifest_generation.manifests}}"
+      context: "{{inputs.cluster.context}}"
+      namespace: "{{inputs.cluster.namespace}}"
+
+  - name: verify_deployment
+    description: 验证部署
+    action: kubectl_verify
+    params:
+      deployment: "{{inputs.application.name}}"
+      namespace: "{{inputs.cluster.namespace}}"
+      timeout: "300s"
+
+  - name: health_check
+    description: 健康检查
+    action: perform_health_check
+    params:
+      endpoint: "{{inputs.health_endpoint}}"
+      expected_status: 200
+
+# 依赖的其它 Skill
+dependencies:
+  - devops/docker_build
+
+# 使用示例
+examples:
+  - name: 博客系统生产环境部署
+    inputs:
+      application:
+        name: "blog-api"
+        version: "1.0.0"
+        image: "myorg/blog-api:1.0.0"
+        port: 8080
+      cluster:
+        name: "production"
+        namespace: "blog"
+        context: "gke_project_us-central1_blog-prod"
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
+      scaling:
+        min_replicas: 2
+        max_replicas: 10
+        target_cpu_utilization: 70
+      environment: "production"
+    expected_outputs:
+      k8s_manifests:
+        - "deployments/blog-api.yml"
+        - "services/blog-api.yml"
+        - "hpa/blog-api.yml"
+        - "ingress/blog-api.yml"
+      deployment_status:
+        available_replicas: 2
+        ready: true
+```
+
+---
+
+**维护者**: EKET Framework Team

@@ -7,7 +7,7 @@
 #   ./scripts/checkpoint-validator.sh <checkpoint_type> [ticket_id]
 #
 
-set -e
+# 不使用 set -e，避免在可恢复错误处退出
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
