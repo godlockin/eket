@@ -1,9 +1,13 @@
-# EKET Agent Framework
+# EKET Framework
 
-**版本**: 0.6.2
-**最后更新**: 2026-03-24
+**AI 智能体协作框架 | Version 0.7.2**
+**最后更新**: 2026-03-25
 
-> **EKET** 是一个基于 AI 智能体协作的开发框架，通过 Master/Slaver 架构实现自动化软件生产和跨领域任务处理。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-green.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
+
+> **EKET** 是一个基于 AI 智能体协作的开发框架，通过 Master-Slaver 架构和三仓库（Confluence/Jira/Code Repo）分离实现自动化软件生产和跨领域任务处理。
 
 ---
 
@@ -17,19 +21,43 @@
 
 ## 快速开始
 
-### 1. 初始化新项目
+### 1. 前置要求
+
+- Node.js >= 18.0.0
+- npm >= 9.0.0
+- Git >= 2.30.0
+- （可选）Redis >= 6.0
+
+### 2. 安装
 
 ```bash
-# 使用 EKET 框架初始化新项目
-./scripts/init-project.sh my-project /path/to/my-project
+# 克隆模板
+git clone https://github.com/godlockin/eket.git my-project
+cd my-project
 
-# 进入新项目目录
-cd /path/to/my-project
+# 安装 Node.js 依赖
+cd node && npm install && cd ..
+
+# 启用高级功能
+./scripts/enable-advanced.sh
 ```
 
-### 2. 启动智能体
+### 3. 初始化项目
 
 ```bash
+# 运行初始化向导
+node node/dist/index.js init
+
+# 初始化三仓库
+./scripts/init-three-repos.sh
+```
+
+### 4. 启动 Agent
+
+```bash
+# 查看帮助
+/eket-help
+
 # 启动实例（自动检测 Master/Slaver 模式）
 /eket-start
 
@@ -37,24 +65,35 @@ cd /path/to/my-project
 /eket-start -a
 ```
 
-### 3. 查看状态和任务
-
-```bash
-# 查看智能体状态和任务列表
-/eket-status
-
-# 领取任务
-/eket-claim <task-id>
-
-# 获取帮助
-/eket-help
-```
-
 ---
 
 ## 核心特性
 
-### Master/Slaver 架构
+### Node.js 混合架构 (v0.7 新增)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   混合适配器层                            │
+├─────────────────────────────────────────────────────────┤
+│  Level 1: Node.js + Redis (完整功能)                     │
+│  - Redis Pub/Sub 消息队列                                │
+│  - Redis Hash 心跳存储                                   │
+│  - SQLite 数据持久化                                     │
+│                                                         │
+│  ↓ (Redis 不可用)                                        │
+│                                                         │
+│  Level 2: Node.js + 文件队列 (降级模式)                   │
+│  - .eket/data/queue/*.json                              │
+│  - 去重机制 (processed.json)                            │
+│  - 过期清理 + 自动归档                                   │
+│                                                         │
+│  ↓ (Node.js 不可用)                                      │
+│                                                         │
+│  Level 3: Shell 脚本 (基础模式)                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Master-Slaver 架构
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -166,7 +205,42 @@ my-project/
 
 ## 核心命令
 
-### 通用命令
+### Node.js CLI 命令 (v0.7 新增)
+
+#### 系统命令
+
+```bash
+node node/dist/index.js check          # 检查 Node.js 模块可用性
+node node/dist/index.js doctor         # 诊断系统状态
+```
+
+#### Redis 命令
+
+```bash
+node node/dist/index.js redis:check          # 检查 Redis 连接
+node node/dist/index.js redis:list-slavers   # 列出活跃 Slaver
+```
+
+#### SQLite 命令
+
+```bash
+node node/dist/index.js sqlite:check          # 检查 SQLite 数据库
+node node/dist/index.js sqlite:list-retros    # 列出 Retrospective
+node node/dist/index.js sqlite:search "<kw>"  # 搜索 Retrospective
+node node/dist/index.js sqlite:report         # 生成统计报告
+```
+
+#### 任务管理
+
+```bash
+node node/dist/index.js init                  # 项目初始化向导
+node node/dist/index.js claim [id]            # 领取任务
+node node/dist/index.js submit-pr             # 提交 PR
+node node/dist/index.js heartbeat:start <id>  # 启动心跳
+node node/dist/index.js heartbeat:status      # 查看心跳状态
+```
+
+### Claude Code 命令
 
 | 命令 | 功能 |
 |------|------|
@@ -212,6 +286,14 @@ my-project/
 
 ## 文档导航
 
+### v0.7 文档
+
+- [RELEASE-v0.7.md](docs/RELEASE-v0.7.md) - v0.7 发布说明
+- [IMPLEMENTATION_SUMMARY.md](docs/IMPLEMENTATION_SUMMARY.md) - v0.7 实施总结
+- [IMPLEMENTATION-v0.7-phase2.md](docs/IMPLEMENTATION-v0.7-phase2.md) - Phase 2 实施文档
+- [IMPLEMENTATION-v0.7-phase3.md](docs/IMPLEMENTATION-v0.7-phase3.md) - Phase 3 实施文档
+- [v0.7-upgrade-guide.md](docs/v0.7-upgrade-guide.md) - v0.7 升级指南
+
 ### 框架文档
 
 - [docs/README.md](docs/README.md) - 文档索引
@@ -235,17 +317,46 @@ my-project/
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
-| 0.6.1 | 2026-03-24 | SYSTEM-SETTINGS.md 模板升级：专家 Agent 可定制、技术栈可配置、任务状态机灵活配置 |
+| **0.7.2** | 2026-03-25 | 代码质量提升：类型安全、错误处理、DRY 优化 |
+| **0.7.1** | 2026-03-25 | Phase 3 完整实现：PR 提交、三仓库克隆、文件队列 |
+| **0.7.0** | 2026-03-24 | Node.js 混合架构实现 |
+| 0.6.2 | 2026-03-24 | PR 审查机制增强、Roadmap 对齐检查 |
+| 0.6.1 | 2026-03-24 | SYSTEM-SETTINGS.md 模板升级：专家 Agent 可定制 |
 | 0.6.0 | 2026-03-24 | Docker 集成和 Slaver 心跳监控 |
 | 0.5.x | 2026-03-23 | Merge 流程升级、路径标准化 |
 
 ---
 
+## 技术栈
+
+### 运行时
+
+- **Node.js**: >= 18.0.0
+- **TypeScript**: 5.x (Target: ES2022)
+
+### 核心依赖
+
+| 依赖 | 用途 |
+|------|------|
+| `ioredis` | Redis 客户端（消息队列、心跳） |
+| `better-sqlite3` | SQLite 客户端（数据持久化） |
+| `commander` | CLI 框架 |
+
+### 开发依赖
+
+| 工具 | 用途 |
+|------|------|
+| `typescript` | 类型检查 |
+| `eslint` | 代码风格 |
+| `@types/node` | Node.js 类型定义 |
+
+---
+
 ## 许可证
 
-EKET Framework - AI Agent Collaboration Framework
+MIT License
 
 ---
 
 **维护者**: EKET Framework Team
-**问题反馈**: 请查看 docs/ 目录或运行 `/eket-help`
+**问题反馈**: 查看 [docs/](docs/) 目录或运行 `/eket-help`
