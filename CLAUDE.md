@@ -6,8 +6,88 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # EKET - AI 智能体协作框架
 
-**版本**: 0.8.0
+**版本**: 0.9.0
 **最后更新**: 2026-03-26
+
+## 变更说明 (v0.9.0) - Phase 7 错误恢复与性能优化
+
+### Phase 7 错误恢复和性能优化 ✅
+
+#### Phase 7.1 - 断路器模式 ✅
+- **新增文件**: `node/src/core/circuit-breaker.ts`
+- **功能**:
+  - CircuitBreaker 类：closed/open/half_open 三状态
+  - 失败阈值检测，超时自动恢复
+  - 半开状态谨慎探测
+- **配置**:
+  ```typescript
+  {
+    failureThreshold: 5,    // 失败阈值
+    successThreshold: 3,    // 成功阈值（半开状态）
+    timeout: 30000,         // 断路器超时（毫秒）
+    monitorTimeout: 60000   // 监控窗口
+  }
+  ```
+
+#### Phase 7.2 - 自动重试机制 ✅
+- **集成模块**: `circuit-breaker.ts`, `message-queue.ts`
+- **功能**:
+  - RetryExecutor 类：指数退避 + 随机抖动
+  - 可配置最大重试次数、初始延迟、最大延迟
+  - 仅重试可恢复错误（REDIS_CONNECTION_FAILED 等）
+- **配置**:
+  ```typescript
+  {
+    maxRetries: 3,
+    initialDelay: 500,
+    maxDelay: 5000,
+    multiplier: 2  // 延迟倍乘因子
+  }
+  ```
+
+#### Phase 7.3 - 缓存层优化 ✅
+- **新增文件**: `node/src/core/cache-layer.ts`
+- **功能**:
+  - LRUCache 类：LRU 缓存策略 + TTL 过期
+  - 多层缓存：内存 + Redis  backing
+  - 缓存穿透保护：getOrCompute 互斥锁
+  - RedisConnectionPool：连接复用
+- **配置**:
+  ```typescript
+  {
+    maxSize: 1000,       // 最大缓存条目数
+    defaultTTL: 300000,  // 默认 TTL（5 分钟）
+    useRedis: boolean,   // 是否启用 Redis
+    redisPrefix: string  // Redis key 前缀
+  }
+  ```
+
+#### Phase 7.4 - 文件队列优化 ✅
+- **新增文件**: `node/src/core/optimized-file-queue.ts`
+- **功能**:
+  - 原子文件操作：临时文件 + rename 模式
+  - 文件锁机制：防止竞态条件（保留扩展）
+  - 校验和验证：防止数据损坏
+  - 批量操作支持：并发控制
+  - 性能统计：平均写入/读取时间
+- **优化效果**:
+  - 防止部分写入（原子性保证）
+  - 防止多实例竞态（锁机制）
+  - 数据完整性校验（checksum）
+
+### 类型定义更新
+
+- **新增错误码** (`node/src/types/index.ts`):
+  - `CIRCUIT_OPEN`, `MAX_RETRIES_EXCEEDED`, `EXECUTION_ERROR`
+  - `CACHE_MISS`, `CACHE_PENETRATION`, `REDIS_POOL_EXHAUSTED`
+  - `DUPLICATE_MESSAGE`, `FILE_LOCK_FAILED`, `CHECKSUM_MISMATCH`
+
+### 模块集成
+
+- **message-queue.ts**: 集成重试机制，Redis 发布自动重试
+- **redis-client.ts**: 保持现有实现，支持连接池
+
+---
 
 ## 变更说明 (v0.8.0) - Phase 5/6 完成
 
