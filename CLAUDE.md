@@ -6,8 +6,88 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # EKET - AI 智能体协作框架
 
-**版本**: 0.9.0
+**版本**: 0.9.1
 **最后更新**: 2026-03-26
+
+## 变更说明 (v0.9.1) - 连接管理与 Master 选举
+
+### Phase 9.1 连接管理和 Master 选举 ✅
+
+#### 四级降级策略 ✅
+- **新增文件**: `node/src/core/connection-manager.ts`
+- **功能**:
+  - ConnectionManager 类：四级降级（远程 Redis → 本地 Redis → SQLite → File）
+  - 自动初始化：选择最高可用连接级别
+  - 统计信息：fallback 次数、最后降级时间
+  - 支持升级：当高级别连接恢复时
+- **配置**:
+  ```typescript
+  {
+    remoteRedis: { host, port, password, db },    // 可选
+    localRedis: { host, port },                    // 可选
+    sqlitePath: string,                            // 可选
+    fileQueueDir: string,                          // 可选
+    driverMode: 'js' | 'shell'                     // 驱动模式
+  }
+  ```
+- **环境变量**:
+  ```bash
+  EKET_REMOTE_REDIS_HOST=redis-cluster.example.com
+  EKET_LOCAL_REDIS_HOST=localhost
+  EKET_SQLITE_PATH=~/.eket/data/sqlite/eket.db
+  EKET_FILE_QUEUE_DIR=./.eket/data/queue
+  ```
+
+#### Master 选举机制 ✅
+- **新增文件**: `node/src/core/master-election.ts`
+- **功能**:
+  - MasterElection 类：三级选举（Redis SETNX / SQLite 事务 / File mkdir）
+  - 分布式锁：原子操作防止竞态条件
+  - 声明等待期：2 秒检测冲突
+  - 租约续期：每 15 秒自动续期（租约 30 秒）
+  - 防止多 Master：选举流程保证只有一个 Master
+- **选举流程**:
+  ```
+  1. 尝试获取锁 (SETNX / INSERT / mkdir)
+       │
+       ├── 成功 → 声明等待期 (2 秒) → 无冲突 → 成为 Master
+       │                              │
+       │                              └── 有冲突 → 成为 Slaver
+       │
+       └── 失败 → 降级下一级 (SQLite → File)
+  ```
+- **配置**:
+  ```typescript
+  {
+    redis: { host, port, password },
+    projectRoot: string,
+    electionTimeout: 5000,      // 选举超时
+    declarationPeriod: 2000,    // 声明等待期
+    leaseTime: 30000            // 租约时间
+  }
+  ```
+
+### 类型定义更新
+
+- **新增连接级别** (`node/src/types/index.ts`):
+  - `ConnectionLevel`: 'remote_redis' | 'local_redis' | 'sqlite' | 'file'
+  - `DriverMode`: 'js' | 'shell'
+  - `ConnectionStats`: 连接统计信息
+
+- **新增 Master 选举类型**:
+  - `ElectionLevel`: 'redis' | 'sqlite' | 'file'
+  - `MasterElectionResult`: 选举结果
+
+- **新增错误码**:
+  - `CONNECTION_FAILED`, `REMOTE_REDIS_NOT_CONFIGURED`, `LOCAL_REDIS_NOT_CONFIGURED`
+  - `ELECTION_FAILED`, `MASTER_ALREADY_EXISTS`, `CONFLICT_DETECTED`
+
+### 模块集成
+
+- **start-instance.ts**: 使用 `MasterElection` 替代简单的文件检测
+- **types/index.ts**: 新增类型和错误码
+
+---
 
 ## 变更说明 (v0.9.0) - Phase 7 错误恢复与性能优化
 
@@ -418,11 +498,21 @@ cd /path/to/project
 
 ### 测试
 ```bash
+./tests/run-smoke-tests.sh          # 冒烟测试（快速验证）
 ./tests/run-unit-tests.sh           # 运行单元测试
 ./tests/run-all-tests.sh            # 运行所有测试
 ./tests/run-integration-tests.sh    # 运行集成测试
 ./tests/run-scenario-tests.sh       # 运行场景测试
+./tests/dry-run/*.sh                # Dry-Run 测试
 ```
+
+**测试报告**: `tests/results/test-report.md`
+
+**v0.9.1 新增测试**:
+- `node/tests/cache-layer.test.ts` - LRU 缓存测试（28 个测试用例）
+- `node/tests/circuit-breaker.test.ts` - 断路器测试（22 个测试用例）
+- `node/tests/master-election.test.ts` - Master 选举测试（15 个测试用例）
+- `node/tests/connection-manager.test.ts` - 连接管理测试（12 个测试用例）
 
 ### 运维和监控
 ```bash

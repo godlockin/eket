@@ -4,10 +4,10 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
-import { Recommender, createRecommender } from '../core/recommender.js';
-import { HistoryTracker, createHistoryTracker } from '../core/history-tracker.js';
-import type { Recommendation, TaskHistory, RecommenderConfig } from '../types/recommender.js';
-import type { Instance, Ticket } from '../types/index.js';
+import { Recommender, createRecommender } from '../core/recommender';
+import { HistoryTracker, createHistoryTracker } from '../core/history-tracker';
+import type { Recommendation, TaskHistory, RecommenderConfig } from '../types/recommender';
+import type { Instance, Ticket } from '../types/index';
 
 describe('Recommender', () => {
   describe('calculateRecommendation', () => {

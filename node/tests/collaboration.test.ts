@@ -12,25 +12,25 @@ import {
   CommunicationProtocol,
   createCommunicationProtocol,
   type CommunicationProtocolConfig,
-} from '../core/communication-protocol.js';
+} from '../core/communication-protocol';
 import {
   WorkflowEngine,
   createWorkflowEngine,
   createDependencyCollaborationWorkflow,
   createHandoverWorkflow,
-} from '../core/workflow-engine.js';
+} from '../core/workflow-engine';
 import {
   ConflictResolver,
   createConflictResolver,
   LockManager,
-} from '../core/conflict-resolver.js';
+} from '../core/conflict-resolver';
 import {
   KnowledgeBase,
   createKnowledgeBase,
   createArtifact,
   createLesson,
-} from '../core/knowledge-base.js';
-import type { Instance, ConflictResolutionConfig } from '../types/index.js';
+} from '../core/knowledge-base';
+import type { Instance, ConflictResolutionConfig } from '../types/index';
 
 // ============================================================================
 // Communication Protocol Tests

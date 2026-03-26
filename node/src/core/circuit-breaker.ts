@@ -44,6 +44,18 @@ export interface CircuitStats {
 }
 
 /**
+ * 断路器状态对象（用于测试）
+ */
+export interface CircuitBreakerState {
+  state: CircuitState;
+  failureCount: number;
+  successCount: number;
+  lastFailureTime?: number;
+  lastSuccessTime?: number;
+  lastStateChange?: number;
+}
+
+/**
  * 重试配置
  */
 export interface RetryConfig {
@@ -65,6 +77,7 @@ export class CircuitBreaker {
   private openedAt?: number;
   private lastFailureTime?: number;
   private lastSuccessTime?: number;
+  private lastStateChange: number = Date.now();
 
   constructor(config: Partial<CircuitBreakerConfig> = {}) {
     this.config = {
@@ -140,8 +153,11 @@ export class CircuitBreaker {
 
     if (this.state === 'half_open') {
       if (this.successes >= this.config.successThreshold) {
-        this.reset();
+        this.doReset();
       }
+    } else if (this.state === 'closed') {
+      // Closed 状态下成功，重置失败计数
+      this.failures = 0;
     }
   }
 
@@ -149,6 +165,15 @@ export class CircuitBreaker {
    * 处理失败
    */
   private onFailure(): void {
+    // 检查是否超过 monitorTimeout
+    if (this.lastFailureTime && this.config.monitorTimeout) {
+      const timeSinceLastFailure = Date.now() - this.lastFailureTime;
+      if (timeSinceLastFailure > this.config.monitorTimeout) {
+        // 超过监控窗口，重置失败计数
+        this.failures = 0;
+      }
+    }
+
     this.failures++;
     this.lastFailureTime = Date.now();
 
@@ -167,6 +192,7 @@ export class CircuitBreaker {
   private open(): void {
     this.state = 'open';
     this.openedAt = Date.now();
+    this.lastStateChange = Date.now();
     this.successes = 0;
     console.warn(`[CircuitBreaker] Circuit opened after ${this.failures} failures`);
   }
@@ -174,19 +200,55 @@ export class CircuitBreaker {
   /**
    * 重置断路器
    */
-  private reset(): void {
+  private doReset(): void {
     this.state = 'closed';
     this.failures = 0;
     this.successes = 0;
     this.openedAt = undefined;
+    this.lastStateChange = Date.now();
     console.log('[CircuitBreaker] Circuit reset');
   }
 
   /**
-   * 获取当前状态
+   * 获取当前状态（用于测试）
    */
-  getState(): CircuitState {
-    return this.state;
+  getState(): CircuitBreakerState {
+    return {
+      state: this.state,
+      failureCount: this.failures,
+      successCount: this.successes,
+      lastFailureTime: this.lastFailureTime,
+      lastSuccessTime: this.lastSuccessTime,
+      lastStateChange: this.lastStateChange,
+    };
+  }
+
+  /**
+   * 检查是否允许请求（用于测试）
+   */
+  allowRequest(): boolean {
+    return this.canExecute();
+  }
+
+  /**
+   * 记录成功（用于测试）
+   */
+  recordSuccess(): void {
+    this.onSuccess();
+  }
+
+  /**
+   * 记录失败（用于测试）
+   */
+  recordFailure(): void {
+    this.onFailure();
+  }
+
+  /**
+   * 重置断路器（用于测试）
+   */
+  reset(): void {
+    this.doReset();
   }
 
   /**
@@ -207,7 +269,7 @@ export class CircuitBreaker {
    * 强制重置（用于测试）
    */
   forceReset(): void {
-    this.reset();
+    this.doReset();
   }
 }
 
@@ -330,4 +392,11 @@ export function createRetryExecutor(
   circuitConfig?: Partial<CircuitBreakerConfig>
 ): RetryExecutor {
   return new RetryExecutor(retryConfig, circuitConfig);
+}
+
+/**
+ * 创建断路器
+ */
+export function createCircuitBreaker(config?: Partial<CircuitBreakerConfig>): CircuitBreaker {
+  return new CircuitBreaker(config);
 }

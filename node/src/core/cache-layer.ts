@@ -79,9 +79,32 @@ export class LRUCache<T = unknown> {
   }
 
   /**
-   * 获取缓存值
+   * 获取缓存值（同步版本，仅内存缓存）
    */
-  async get(key: string): Promise<T | null> {
+  get(key: string): T | undefined {
+    // 先从内存缓存获取
+    const entry = this.cache.get(key);
+    if (entry) {
+      // expiresAt 为 0 或 Infinity 表示永不过期
+      if (entry.expiresAt === 0 || entry.expiresAt === Infinity || entry.expiresAt > Date.now()) {
+        entry.hits++;
+        this.stats.hits++;
+        return entry.value as T;
+      } else {
+        // 过期，删除
+        this.cache.delete(key);
+        this.stats.expirations++;
+      }
+    }
+
+    this.stats.misses++;
+    return undefined;
+  }
+
+  /**
+   * 获取缓存值（异步版本，包含 Redis 回源）
+   */
+  async getAsync(key: string): Promise<T | null> {
     // 先从内存缓存获取
     const entry = this.cache.get(key);
     if (entry) {
@@ -120,13 +143,39 @@ export class LRUCache<T = unknown> {
   }
 
   /**
-   * 设置缓存值
+   * 设置缓存值（同步版本，仅内存缓存）
    */
-  async set(key: string, value: T, ttl?: number): Promise<void> {
+  set(key: string, value: T, ttl?: number): void {
     const now = Date.now();
+    // TTL 为 0 或 -1 表示永不过期
+    const expiresAt = (ttl === 0 || ttl === -1) ? Infinity : now + (ttl ?? this.config.defaultTTL);
+
     const entry: CacheEntry<T> = {
       value,
-      expiresAt: now + (ttl || this.config.defaultTTL),
+      expiresAt,
+      hits: 0,
+      createdAt: now,
+    };
+
+    // LRU 驱逐
+    if (this.cache.size >= this.config.maxSize) {
+      this.evictLRU();
+    }
+
+    this.cache.set(key, entry);
+  }
+
+  /**
+   * 设置缓存值（异步版本，同时写入 Redis）
+   */
+  async setAsync(key: string, value: T, ttl?: number): Promise<void> {
+    const now = Date.now();
+    // TTL 为 0 或 -1 表示永不过期
+    const expiresAt = (ttl === 0 || ttl === -1) ? Infinity : now + (ttl ?? this.config.defaultTTL);
+
+    const entry: CacheEntry<T> = {
+      value,
+      expiresAt,
       hits: 0,
       createdAt: now,
     };
@@ -143,12 +192,17 @@ export class LRUCache<T = unknown> {
       try {
         const client = this.redis.getClient();
         if (client) {
-          const ttlSeconds = Math.ceil((ttl || this.config.defaultTTL) / 1000);
-          await client.setex(
-            `${this.config.redisPrefix}${key}`,
-            ttlSeconds,
-            JSON.stringify(value)
-          );
+          // Redis 中 TTL 为 0 表示永不过期
+          const ttlSeconds = (ttl === 0 || ttl === -1) ? 0 : Math.ceil((ttl ?? this.config.defaultTTL) / 1000);
+          if (ttlSeconds === 0) {
+            await client.set(`${this.config.redisPrefix}${key}`, JSON.stringify(value));
+          } else {
+            await client.setex(
+              `${this.config.redisPrefix}${key}`,
+              ttlSeconds,
+              JSON.stringify(value)
+            );
+          }
         }
       } catch {
         console.warn('[LRUCache] Redis set error');
@@ -157,9 +211,33 @@ export class LRUCache<T = unknown> {
   }
 
   /**
-   * 删除缓存
+   * 删除缓存（同步版本）
    */
-  async delete(key: string): Promise<void> {
+  delete(key: string): void {
+    this.cache.delete(key);
+  }
+
+  /**
+   * 检查键是否存在（同步版本）
+   */
+  has(key: string): boolean {
+    const entry = this.cache.get(key);
+    if (entry) {
+      if (entry.expiresAt > Date.now()) {
+        return true;
+      } else {
+        // 过期，删除
+        this.cache.delete(key);
+        this.stats.expirations++;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * 删除缓存（异步版本，同时删除 Redis）
+   */
+  async deleteAsync(key: string): Promise<void> {
     this.cache.delete(key);
 
     if (this.redis && this.redis.isReady()) {
@@ -175,9 +253,16 @@ export class LRUCache<T = unknown> {
   }
 
   /**
-   * 清除所有缓存
+   * 清除所有缓存（同步版本）
    */
-  async clear(): Promise<void> {
+  clear(): void {
+    this.cache.clear();
+  }
+
+  /**
+   * 清除所有缓存（异步版本，同时清除 Redis）
+   */
+  async clearAsync(): Promise<void> {
     this.cache.clear();
 
     if (this.redis && this.redis.isReady()) {
@@ -210,11 +295,18 @@ export class LRUCache<T = unknown> {
   }
 
   /**
+   * 获取缓存大小
+   */
+  get size(): number {
+    return this.cache.size;
+  }
+
+  /**
    * 预热缓存（批量加载）
    */
   async warmup(entries: Array<{ key: string; value: T; ttl?: number }>): Promise<void> {
     for (const { key, value, ttl } of entries) {
-      await this.set(key, value, ttl);
+      await this.setAsync(key, value, ttl);
     }
   }
 
@@ -226,9 +318,15 @@ export class LRUCache<T = unknown> {
     compute: () => Promise<T>,
     ttl?: number
   ): Promise<T> {
-    // 使用互斥锁防止缓存穿透
+    // 先从内存缓存获取
+    const cached = this.get(key);
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    // 使用互斥锁防止缓存穿透（使用 async 版本）
     const lockKey = `${key}:lock`;
-    const lockValue = await this.get(lockKey) as unknown as string | null;
+    const lockValue = await this.getAsync(lockKey) as unknown as string | null;
 
     if (lockValue) {
       // 正在计算中，等待
@@ -236,21 +334,16 @@ export class LRUCache<T = unknown> {
       return this.getOrCompute(key, compute, ttl);
     }
 
-    const cached = await this.get(key);
-    if (cached !== null) {
-      return cached;
-    }
-
     // 设置锁
-    await this.set(lockKey, 'computing' as unknown as T, 5000);
+    await this.setAsync(lockKey, 'computing' as unknown as T, 5000);
 
     try {
       const value = await compute();
-      await this.set(key, value, ttl);
+      await this.setAsync(key, value, ttl);
       return value;
     } finally {
       // 释放锁
-      await this.delete(lockKey);
+      await this.deleteAsync(lockKey);
     }
   }
 

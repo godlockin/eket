@@ -370,6 +370,22 @@ export enum EketErrorCode {
   FILE_LOCK_FAILED = 'FILE_LOCK_FAILED',
   CHECKSUM_MISMATCH = 'CHECKSUM_MISMATCH',
   FILE_CORRUPTED = 'FILE_CORRUPTED',
+
+  // Phase 9.1 - 连接管理
+  CONNECTION_FAILED = 'CONNECTION_FAILED',
+  REMOTE_REDIS_NOT_CONFIGURED = 'REMOTE_REDIS_NOT_CONFIGURED',
+  LOCAL_REDIS_NOT_CONFIGURED = 'LOCAL_REDIS_NOT_CONFIGURED',
+  SQLITE_CONNECT_FAILED = 'SQLITE_CONNECT_FAILED',
+  FILE_CONNECT_FAILED = 'FILE_CONNECT_FAILED',
+  UPGRADE_FAILED = 'UPGRADE_FAILED',
+  DOWNGRADE_FAILED = 'DOWNGRADE_FAILED',
+
+  // Phase 9.1 - Master 选举
+  ELECTION_FAILED = 'ELECTION_FAILED',
+  MASTER_ALREADY_EXISTS = 'MASTER_ALREADY_EXISTS',
+  CONFLICT_DETECTED = 'CONFLICT_DETECTED',
+  LEASE_RENEWAL_FAILED = 'LEASE_RENEWAL_FAILED',
+  NOT_MASTER = 'NOT_MASTER',
 }
 
 export interface EketError {
@@ -537,3 +553,95 @@ export type {
   RecommendationRequest,
   RecommendationResponse,
 } from './recommender.js';
+
+// ============================================================================
+// Phase 9.1 - Connection Manager Types
+// ============================================================================
+
+/**
+ * 连接级别
+ */
+export type ConnectionLevel = 'remote_redis' | 'local_redis' | 'sqlite' | 'file';
+
+/**
+ * 驱动模式
+ */
+export type DriverMode = 'js' | 'shell';
+
+/**
+ * 连接管理器配置
+ */
+export interface ConnectionManagerConfig {
+  // Redis 配置
+  remoteRedis?: {
+    host: string;
+    port: number;
+    password?: string;
+    db?: number;
+  };
+  localRedis?: {
+    host: string;
+    port: number;
+  };
+  // SQLite 配置
+  sqlitePath?: string;
+  // 文件队列配置
+  fileQueueDir?: string;
+  // 驱动模式
+  driverMode?: DriverMode;
+}
+
+/**
+ * 连接统计信息
+ */
+export interface ConnectionStats {
+  currentLevel: ConnectionLevel;
+  driverMode: DriverMode;
+  remoteRedisAvailable: boolean;
+  localRedisAvailable: boolean;
+  sqliteAvailable: boolean;
+  fileAvailable: boolean;
+  lastFallbackTime?: number;
+  fallbackCount: number;
+}
+
+// ============================================================================
+// Phase 9.1 - Master Election Types
+// ============================================================================
+
+/**
+ * 选举级别
+ */
+export type ElectionLevel = 'redis' | 'sqlite' | 'file';
+
+/**
+ * Master 选举配置
+ */
+export interface MasterElectionConfig {
+  // Redis 配置
+  redis?: {
+    host: string;
+    port: number;
+    password?: string;
+  };
+  // SQLite 配置
+  sqlitePath?: string;
+  // 文件配置
+  projectRoot: string;
+  // 选举超时（毫秒）
+  electionTimeout?: number;
+  // 声明等待期（毫秒）
+  declarationPeriod?: number;
+  // Master 租约时间（毫秒）
+  leaseTime?: number;
+}
+
+/**
+ * Master 选举结果
+ */
+export interface MasterElectionResult {
+  isMaster: boolean;
+  electionLevel: ElectionLevel;
+  masterId?: string;
+  conflictDetected: boolean;
+}
