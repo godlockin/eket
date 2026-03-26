@@ -6,8 +6,158 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # EKET - AI 智能体协作框架
 
-**版本**: 0.7.2
-**最后更新**: 2026-03-25
+**版本**: 0.8.0
+**最后更新**: 2026-03-26
+
+## 变更说明 (v0.8.0) - Phase 5/6 完成
+
+### Phase 5 高级功能增强
+
+#### Phase 5.1 - Web UI 监控面板 ✅
+- **新增文件**: `web/index.html`, `web/styles.css`, `web/app.js`, `node/src/api/web-server.ts`
+- **功能**: 实时系统状态监控、Instance 状态列表、任务优先级展示、统计面板
+- **启动命令**: `eket-cli web:dashboard --port 3000`
+
+#### Phase 5.2 - 智能任务推荐 ✅
+- **新增文件**: `node/src/commands/recommend.ts`, `node/src/core/recommender.ts`
+- **功能**: 基于技能/负载/历史表现的三维度推荐
+- **命令**: `eket-cli recommend --type task` / `eket-cli recommend --type instance`
+
+#### Phase 5.3 - 任务依赖分析 ✅
+- **新增文件**: `node/src/commands/dependency-analyze.ts`, `node/src/core/dependency-analyzer.ts`
+- **功能**: 依赖图构建、循环依赖检测、关键路径分析、Mermaid 可视化
+- **命令**:
+  - `eket-cli dependency:analyze` - 基础分析
+  - `eket-cli dependency:analyze --mermaid` - Mermaid 图表
+  - `eket-cli dependency:analyze --check-cycles` - 循环检测
+  - `eket-cli dependency:analyze --critical-path` - 关键路径
+
+### Phase 6 多实例协同机制
+
+#### Phase 6.1 - 多 Instance 协同 ✅
+- **新增文件**:
+  - `node/src/core/communication-protocol.ts` - Instance 间通信协议
+  - `node/src/core/workflow-engine.ts` - 工作流引擎
+  - `node/src/core/conflict-resolver.ts` - 冲突解决机制
+  - `node/src/core/knowledge-base.ts` - 知识库系统
+
+- **功能**:
+  - 通信协议：支持 dependency_notify、knowledge_share、handover_request 等消息类型
+  - 工作流引擎：预定义 Dependency Collaboration 和 Task Handover 工作流
+  - 冲突解决：支持任务/资源/优先级三种冲突，提供 First Claim Wins/Role Priority 等策略
+  - 知识库：支持 artifact/pattern/decision/lesson/api/config 六种知识类型
+
+#### Phase 6.2 - 异常告警和通知 ✅
+- **新增文件**: `node/src/core/alerting.ts`, `node/src/commands/alerts.ts`
+- **功能**:
+  - 四级告警：info/warning/error/critical
+  - 多渠道通知：Slack、钉钉、Email、Webhook
+  - 预定义规则：Instance 离线、任务阻塞、关键路径延误、系统降级
+- **命令**:
+  - `eket-cli alerts:status` - 查看告警状态
+  - `eket-cli alerts:acknowledge <alertId>` - 确认告警
+  - `eket-cli alerts:resolve <alertId>` - 解决告警
+
+### 新增 CLI 命令
+
+| 命令 | 功能 | 文件 |
+|------|------|------|
+| `web:dashboard` | 启动 Web 监控面板 | `api/web-server.ts` |
+| `recommend` | 智能任务推荐 | `commands/recommend.ts` |
+| `dependency:analyze` | 依赖分析 | `commands/dependency-analyze.ts` |
+| `alerts:status` | 告警状态 | `commands/alerts.ts` |
+| `alerts:acknowledge` | 确认告警 | `commands/alerts.ts` |
+| `alerts:resolve` | 解决告警 | `commands/alerts.ts` |
+
+### 类型增强
+
+- **新增错误码** (`EketErrorCode`): 40+ 错误码，覆盖所有模块
+- **统一错误处理**: 使用 `EketErrorClass` 替代对象字面量
+- **类型安全**: 修复 ESM 兼容性，统一使用 `.js` 扩展名
+
+### 文件清单
+
+**核心模块** (12 个):
+- `communication-protocol.ts` - 通信协议
+- `workflow-engine.ts` - 工作流引擎
+- `conflict-resolver.ts` - 冲突解决
+- `knowledge-base.ts` - 知识库
+- `recommender.ts` - 推荐系统
+- `dependency-analyzer.ts` - 依赖分析
+- `alerting.ts` - 告警系统
+- `lock-manager.ts` - 资源锁管理
+- `history-tracker.ts` - 历史追踪
+- `instance-registry.ts` - Instance 注册
+- `message-queue.ts` - 消息队列
+- `redis-client.ts` / `sqlite-client.ts` - 数据持久化
+
+**命令模块** (7 个):
+- `recommend.ts` - 推荐命令
+- `dependency-analyze.ts` - 依赖分析命令
+- `alerts.ts` - 告警命令
+- `claim.ts` / `claim-helpers.ts` - 任务领取
+- `submit-pr.ts` - PR 提交
+- `start-instance.ts` - Instance 启动
+- `team-status.ts` / `set-role.ts` - 状态管理
+
+**Web 前端** (3 个):
+- `web/index.html` - Dashboard HTML
+- `web/styles.css` - 样式
+- `web/app.js` - 前端逻辑
+
+---
+
+## 变更说明 (v0.7.3)
+
+### Phase 5.1 - Web UI 监控面板
+
+- **新增 Web Dashboard**: 实时监控系统状态、Instance 状态、任务进度
+  - 原生 HTML/CSS/JavaScript 实现，零构建依赖
+  - 自动刷新（每 5 秒轮询）
+  - 响应式设计，支持移动端
+
+- **新增文件**:
+  - `web/index.html` - 主页面
+  - `web/styles.css` - 样式表
+  - `web/app.js` - 前端逻辑
+  - `node/src/api/web-server.ts` - Web 服务器和 API 端点
+  - `scripts/start-web-dashboard.sh` - 启动脚本
+
+- **API 端点**:
+  - `GET /api/dashboard` - 获取完整仪表盘数据
+  - `GET /api/status` - 获取系统状态
+  - `GET /api/instances` - 获取所有 Instance
+  - `GET /api/tasks` - 获取任务列表
+  - `GET /api/stats` - 获取统计数据
+
+- **新增类型** (`node/src/types/index.ts`):
+  - `DashboardSystemStatus` - 系统状态
+  - `DashboardInstance` - Instance 信息
+  - `DashboardTask` - 任务信息
+  - `DashboardStats` - 统计数据
+  - `DashboardData` - 完整仪表盘数据
+
+### 使用方法
+
+```bash
+# 启动 Web Dashboard
+./scripts/start-web-dashboard.sh
+
+# 或使用 CLI 命令
+node dist/index.js web:dashboard --port 3000 --host localhost
+
+# 访问地址
+http://localhost:3000
+```
+
+### 功能特性
+
+- **Instance 状态面板**: 显示所有 Instance 列表、状态指示器、控制器类型、角色和技能
+- **任务进度面板**: 进行中的任务、任务分配情况
+- **系统状态面板**: 降级模式指示（Level 1-5）、Redis/DB 连接状态、消息队列状态
+- **统计数据面板**: 总 Instances、活跃/空闲/离线数量、任务统计、成功率
+
+---
 
 ## 变更说明 (v0.7.2)
 

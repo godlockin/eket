@@ -17,10 +17,14 @@ import { createMessageQueue, createMessage } from './core/message-queue.js';
 import { createHeartbeatManager, createSlaverMonitor } from './core/heartbeat-monitor.js';
 import { registerTeamStatus } from './commands/team-status.js';
 import { registerSetRole } from './commands/set-role.js';
+import { registerRecommend } from './commands/recommend.js';
+import { createWebDashboardServer } from './api/web-server.js';
+import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
+import { registerAlerts } from './commands/alerts.js';
 
 const pkg = {
   name: 'eket-cli',
-  version: '0.7.0',
+  version: '0.7.3',
   description: 'EKET Framework CLI - Hybrid Node.js Implementation',
 };
 
@@ -445,6 +449,58 @@ async function main(): Promise<void> {
 
   // 注册 set-role 命令
   registerSetRole(program);
+
+  // 注册 recommend 命令
+  registerRecommend(program);
+
+  // 注册 dependency:analyze 命令
+  registerDependencyAnalyze(program);
+
+  // 注册 alerts 命令
+  registerAlerts(program);
+
+  // ============================================================================
+  // Web Dashboard 命令 (Phase 5.1)
+  // ============================================================================
+
+  program
+    .command('web:dashboard')
+    .description('启动 Web 监控面板')
+    .option('-p, --port <port>', '端口号', '3000')
+    .option('-H, --host <host>', '主机地址', 'localhost')
+    .action(async (options) => {
+      const port = parseInt(options.port, 10);
+      const host = options.host;
+
+      console.log('\n=== EKET Web Dashboard ===\n');
+      console.log('正在启动 Web 服务器...');
+
+      const server = createWebDashboardServer({ port, host });
+      const result = await server.start();
+
+      if (!result.success) {
+        console.error('启动失败:', result.error.message);
+        process.exit(1);
+      }
+
+      console.log('\n访问地址：http://' + host + ':' + port);
+      console.log('按 Ctrl+C 停止...\n');
+
+      // 等待退出信号
+      process.on('SIGINT', async () => {
+        console.log('\n正在关闭服务器...');
+        await server.stop();
+        process.exit(0);
+      });
+
+      process.on('SIGTERM', async () => {
+        await server.stop();
+        process.exit(0);
+      });
+
+      // 保持进程运行
+      setInterval(() => {}, 1000);
+    });
 
   // 解析命令行
   await program.parseAsync(process.argv);

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EKET Monitor Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <h1>EKET Monitor Dashboard</h1>
+        <span id="system-status" class="status-badge status-unknown">Loading...</span>
+      </div>
+      <div class="header-right">
+        <button id="refresh-btn" class="btn btn-primary">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6M1 20v-6h6"/>
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+          </svg>
+          刷新
+        </button>
+        <span id="last-updated" class="updated-time">最后更新：--</span>
+      </div>
+    </header>
+
+    <!-- System Status Panel -->
+    <section class="panel system-status-panel">
+      <h2>System Status</h2>
+      <div class="status-grid">
+        <div class="status-item">
+          <span class="status-label">降级级别</span>
+          <span id="degradation-level" class="status-value">--</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Redis</span>
+          <span id="redis-status" class="status-indicator">○</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">SQLite</span>
+          <span id="sqlite-status" class="status-indicator">○</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">消息队列</span>
+          <span id="mq-status" class="status-indicator">○</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Panel -->
+    <section class="panel stats-panel">
+      <h2>Statistics</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total-instances">0</div>
+          <div class="stat-label">总 Instances</div>
+        </div>
+        <div class="stat-card stat-active">
+          <div class="stat-value" id="stat-active-instances">0</div>
+          <div class="stat-label">忙碌</div>
+        </div>
+        <div class="stat-card stat-idle">
+          <div class="stat-value" id="stat-idle-instances">0</div>
+          <div class="stat-label">空闲</div>
+        </div>
+        <div class="stat-card stat-offline">
+          <div class="stat-value" id="stat-offline-instances">0</div>
+          <div class="stat-label">离线</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total-tasks">0</div>
+          <div class="stat-label">总任务</div>
+        </div>
+        <div class="stat-card stat-progress">
+          <div class="stat-value" id="stat-in-progress-tasks">0</div>
+          <div class="stat-label">进行中</div>
+        </div>
+        <div class="stat-card stat-success">
+          <div class="stat-value" id="stat-success-rate">100%</div>
+          <div class="stat-label">成功率</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Instances Panel -->
+    <section class="panel instances-panel">
+      <div class="panel-header">
+        <h2>Instances (<span id="instance-count">0</span>)</h2>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>角色</th>
+              <th>类型</th>
+              <th>状态</th>
+              <th>当前任务</th>
+              <th>负载</th>
+              <th>心跳</th>
+            </tr>
+          </thead>
+          <tbody id="instances-table-body">
+            <tr class="loading-row">
+              <td colspan="7">加载中...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tasks Panel -->
+    <section class="panel tasks-panel">
+      <div class="panel-header">
+        <h2>Active Tasks (<span id="task-count">0</span>)</h2>
+      </div>
+      <div id="tasks-list" class="tasks-list">
+        <div class="loading-message">加载中...</div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span>EKET Framework v0.7.2</span>
+      <span>Phase 5.1 - Web Dashboard</span>
+    </footer>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -28,6 +28,7 @@ export interface MessageQueue {
   publish(channel: string, message: Message): Promise<Result<void>>;
   subscribe(channel: string, handler: MessageHandler): Promise<Result<void>>;
   unsubscribe(channel: string): Promise<void>;
+  getMode(): 'redis' | 'file';
 }
 
 /**
@@ -81,6 +82,10 @@ export class RedisMessageQueue implements MessageQueue {
   async unsubscribe(channel: string): Promise<void> {
     this.subscribedChannels.delete(channel);
     // Redis 客户端目前没有直接的 unsubscribe 方法，需要时添加
+  }
+
+  getMode(): 'redis' | 'file' {
+    return 'redis';
   }
 }
 
@@ -144,6 +149,10 @@ export class FileMessageQueue implements MessageQueue {
 
   async unsubscribe(channel: string): Promise<void> {
     this.handlers.delete(channel);
+  }
+
+  getMode(): 'redis' | 'file' {
+    return 'file';
   }
 
   private startPolling(): void {
