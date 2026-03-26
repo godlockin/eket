@@ -8,6 +8,7 @@ import * as path from 'path';
 import { RedisClient } from '../core/redis-client.js';
 import type { Message, Result } from '../types/index.js';
 import { EketError } from '../types/index.js';
+import { createRetryExecutor, type RetryExecutor } from './circuit-breaker.js';
 
 export interface MessageQueueConfig {
   mode: 'redis' | 'file' | 'auto';
@@ -28,6 +29,7 @@ export interface MessageQueue {
   publish(channel: string, message: Message): Promise<Result<void>>;
   subscribe(channel: string, handler: MessageHandler): Promise<Result<void>>;
   unsubscribe(channel: string): Promise<void>;
+  getMode(): 'redis' | 'file';
 }
 
 /**
@@ -81,6 +83,10 @@ export class RedisMessageQueue implements MessageQueue {
   async unsubscribe(channel: string): Promise<void> {
     this.subscribedChannels.delete(channel);
     // Redis 客户端目前没有直接的 unsubscribe 方法，需要时添加
+  }
+
+  getMode(): 'redis' | 'file' {
+    return 'redis';
   }
 }
 
@@ -146,6 +152,10 @@ export class FileMessageQueue implements MessageQueue {
     this.handlers.delete(channel);
   }
 
+  getMode(): 'redis' | 'file' {
+    return 'file';
+  }
+
   private startPolling(): void {
     this.pollInterval = setInterval(async () => {
       await this.processQueue();
@@ -188,6 +198,7 @@ export class HybridMessageQueue implements MessageQueue {
   private redisMQ: RedisMessageQueue | null = null;
   private fileMQ: FileMessageQueue | null = null;
   private mode: 'redis' | 'file' = 'file';
+  private retryExecutor: RetryExecutor;
 
   constructor(config: MessageQueueConfig) {
     if (config.mode === 'redis' || config.mode === 'auto') {
@@ -196,6 +207,11 @@ export class HybridMessageQueue implements MessageQueue {
     if (config.mode === 'file' || config.mode === 'auto') {
       this.fileMQ = new FileMessageQueue(config);
     }
+    this.retryExecutor = createRetryExecutor({
+      maxRetries: 3,
+      initialDelay: 500,
+      maxDelay: 5000,
+    });
   }
 
   async connect(): Promise<Result<void>> {
@@ -236,7 +252,17 @@ export class HybridMessageQueue implements MessageQueue {
 
   async publish(channel: string, message: Message): Promise<Result<void>> {
     if (this.mode === 'redis' && this.redisMQ) {
-      return await this.redisMQ.publish(channel, message);
+      // 使用重试机制发布消息
+      const redisMQ = this.redisMQ;
+      const result = await this.retryExecutor.execute(
+        async () => await redisMQ.publish(channel, message),
+        `publish:${channel}`
+      );
+      // 转换 Result 类型
+      if (result.success) {
+        return { success: true, data: undefined };
+      }
+      return result;
     }
     if (this.fileMQ) {
       return await this.fileMQ.publish(channel, message);

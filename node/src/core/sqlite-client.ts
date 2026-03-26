@@ -68,6 +68,13 @@ export class SQLiteClient {
   }
 
   /**
+   * 获取底层数据库实例（用于高级操作）
+   */
+  getDB(): Database.Database | null {
+    return this.db;
+  }
+
+  /**
    * 初始化表结构
    */
   private initializeTables(): void {

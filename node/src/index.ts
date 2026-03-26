@@ -12,12 +12,19 @@ import { createSQLiteClient } from './core/sqlite-client.js';
 import { registerClaim } from './commands/claim.js';
 import { runInitWizard } from './commands/init-wizard.js';
 import { registerSubmitPR } from './commands/submit-pr.js';
+import { startInstance, listAvailableRoles } from './commands/start-instance.js';
 import { createMessageQueue, createMessage } from './core/message-queue.js';
 import { createHeartbeatManager, createSlaverMonitor } from './core/heartbeat-monitor.js';
+import { registerTeamStatus } from './commands/team-status.js';
+import { registerSetRole } from './commands/set-role.js';
+import { registerRecommend } from './commands/recommend.js';
+import { createWebDashboardServer } from './api/web-server.js';
+import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
+import { registerAlerts } from './commands/alerts.js';
 
 const pkg = {
   name: 'eket-cli',
-  version: '0.7.0',
+  version: '0.7.3',
   description: 'EKET Framework CLI - Hybrid Node.js Implementation',
 };
 
@@ -291,6 +298,41 @@ async function main(): Promise<void> {
       }
     });
 
+  // 注册 start:instance 命令
+  program
+    .command('start:instance')
+    .description('启动 Instance（支持人类/AI 模式）')
+    .option('--human', '人类控制的 Instance')
+    .option('--role <role>', '指定 Agent 角色（人类模式必需）')
+    .option('--auto', 'AI 自动模式（自动领取任务）')
+    .option('-p, --project-root <path>', '项目根目录', process.cwd())
+    .option('--list-roles', '列出所有可用角色')
+    .action(async (options) => {
+      if (options.listRoles) {
+        listAvailableRoles();
+        return;
+      }
+
+      // 人类模式必须指定角色
+      if (options.human && !options.role) {
+        console.error('错误：人类模式必须指定 --role');
+        console.error('\n可用角色：运行 eket-cli start:instance --list-roles');
+        process.exit(1);
+      }
+
+      const result = await startInstance({
+        human: options.human,
+        role: options.role,
+        auto: options.auto,
+        projectRoot: options.projectRoot,
+      });
+
+      if (!result.success) {
+        console.error(`Instance 启动失败：${result.error.message}`);
+        process.exit(1);
+      }
+    });
+
   // 注册 heartbeat 命令
   program
     .command('heartbeat:start <slaverId>')
@@ -401,6 +443,64 @@ async function main(): Promise<void> {
 
   // 注册 submit-pr 命令
   registerSubmitPR(program);
+
+  // 注册 team-status 命令
+  registerTeamStatus(program);
+
+  // 注册 set-role 命令
+  registerSetRole(program);
+
+  // 注册 recommend 命令
+  registerRecommend(program);
+
+  // 注册 dependency:analyze 命令
+  registerDependencyAnalyze(program);
+
+  // 注册 alerts 命令
+  registerAlerts(program);
+
+  // ============================================================================
+  // Web Dashboard 命令 (Phase 5.1)
+  // ============================================================================
+
+  program
+    .command('web:dashboard')
+    .description('启动 Web 监控面板')
+    .option('-p, --port <port>', '端口号', '3000')
+    .option('-H, --host <host>', '主机地址', 'localhost')
+    .action(async (options) => {
+      const port = parseInt(options.port, 10);
+      const host = options.host;
+
+      console.log('\n=== EKET Web Dashboard ===\n');
+      console.log('正在启动 Web 服务器...');
+
+      const server = createWebDashboardServer({ port, host });
+      const result = await server.start();
+
+      if (!result.success) {
+        console.error('启动失败:', result.error.message);
+        process.exit(1);
+      }
+
+      console.log('\n访问地址：http://' + host + ':' + port);
+      console.log('按 Ctrl+C 停止...\n');
+
+      // 等待退出信号
+      process.on('SIGINT', async () => {
+        console.log('\n正在关闭服务器...');
+        await server.stop();
+        process.exit(0);
+      });
+
+      process.on('SIGTERM', async () => {
+        await server.stop();
+        process.exit(0);
+      });
+
+      // 保持进程运行
+      setInterval(() => {}, 1000);
+    });
 
   // 解析命令行
   await program.parseAsync(process.argv);

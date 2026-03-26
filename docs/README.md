@@ -1,164 +1,182 @@
 # EKET 框架文档索引
 
-**版本**: 0.6.2
-**最后更新**: 2026-03-24
+**版本**: 0.7.2
+**最后更新**: 2026-03-25
 
 ---
 
-## 🚀 推荐阅读顺序
+## 📚 v0.7 文档（推荐）
 
-### 新用户快速路径
+### 核心文档
 
-1. **[QUICKSTART.md](../QUICKSTART.md)** - 5 分钟快速开始
-2. **[COMPLETE_FRAMEWORK_v0.2.md](01-getting-started/COMPLETE_FRAMEWORK_v0.2.md)** - 完整功能说明
-3. **[FRAMEWORK.md](02-architecture/FRAMEWORK.md)** - 框架白皮书
+| 文档 | 内容 | 适合人群 |
+|------|------|---------|
+| **[RELEASE-v0.7.md](RELEASE-v0.7.md)** | v0.7 发布说明 | 所有用户 |
+| **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** | v0.7 实施总结 | 技术负责人 |
+| **[IMPLEMENTATION-v0.7-phase2.md](IMPLEMENTATION-v0.7-phase2.md)** | Phase 2 实施细节 | 开发者 |
+| **[IMPLEMENTATION-v0.7-phase3.md](IMPLEMENTATION-v0.7-phase3.md)** | Phase 3 实施细节 | 开发者 |
+| **[v0.7-upgrade-guide.md](v0.7-upgrade-guide.md)** | v0.7 升级指南 | 升级用户 |
 
-### v0.6.2 新增内容
+### 快速开始
 
-- **[IMPLEMENTATION-v0.6.2.md](IMPLEMENTATION-v0.6.2.md)** - PR 审查机制增强实施总结
-- **[PROJECT_REVIEW_REPORT.md](PROJECT_REVIEW_REPORT.md)** - 项目文件审查报告
+1. **[README.md](../README.md)** - 项目首页
+2. **[RELEASE-v0.7.md](RELEASE-v0.7.md)** - 完整功能说明
+3. **[02-architecture/FRAMEWORK.md](02-architecture/FRAMEWORK.md)** - 架构白皮书
 
 ---
 
-## 文档目录结构
+## 📁 文档目录结构
 
 ```
 docs/
 ├── 01-getting-started/     # 入门文档
 ├── 02-architecture/        # 架构设计
-├── 03-implementation/      # 实现细节
+├── 03-implementation/      # 实现细节 (v0.7)
 ├── 04-testing/             # 测试验证
 ├── 05-reference/           # 参考资料
-├── archive/                # 归档文档
+├── 06-sop/                 # 标准操作流程
+├── archive/                # 归档文档 (v0.6 及之前)
 └── README.md               # 本文件
 ```
 
 ---
 
-## 📁 01-getting-started/ 入门文档
+## 📂 各目录内容
 
-新手入门路线：**QUICKSTART.md** → **COMPLETE_FRAMEWORK_v0.2.md** → **FRAMEWORK.md**
-
-| 文档 | 内容 | 适合人群 |
-|------|------|---------|
-| [QUICKSTART.md](01-getting-started/QUICKSTART.md) | 5 分钟快速开始 | 所有用户 |
-| [COMPLETE_FRAMEWORK_v0.2.md](01-getting-started/COMPLETE_FRAMEWORK_v0.2.md) | v0.2 完整功能说明 | 所有用户 |
-| [USAGE.md](01-getting-started/USAGE.md) | 使用指南 | 新用户 |
-| [FRAMEWORK.md](02-architecture/FRAMEWORK.md) | 框架白皮书 | 架构师/技术负责人 |
-
----
-
-## 📁 02-architecture/ 架构设计
-
-| 文档 | 内容 | 核心概念 |
-|------|------|---------|
-| [THREE_REPO_ARCHITECTURE.md](02-architecture/THREE_REPO_ARCHITECTURE.md) | 三 Git 仓库架构 | confluence/jira/code_repo |
-| [AGENTS_CONFIG.md](02-architecture/AGENTS_CONFIG.md) | 智能体配置 | 协调者/执行者 |
-| [SKILLS_SYSTEM.md](02-architecture/SKILLS_SYSTEM.md) | Skills 体系 | 6 大类技能 |
-
----
-
-## 📁 03-implementation/ 实现细节
-
-| 文档 | 内容 | 适合场景 |
-|------|------|---------|
-| [INSTANCE_INITIALIZATION.md](03-implementation/INSTANCE_INITIALIZATION.md) | 实例初始化流程 | 理解启动逻辑 |
-| [AGENT_BEHAVIOR.md](03-implementation/AGENT_BEHAVIOR.md) | Agent 行为流程 | 理解 Agent 工作 |
-| [BRANCH_STRATEGY.md](03-implementation/BRANCH_STRATEGY.md) | 分支策略 | Git 流程 |
-| [STATE_MACHINE.md](03-implementation/STATE_MACHINE.md) | Jira 状态机 | 任务状态流转 |
-| [IMPLEMENTATION_STATUS.md](03-implementation/IMPLEMENTATION_STATUS.md) | 实现状态 | 了解进度 |
-
----
-
-## 📁 04-testing/ 测试验证
+### 01-getting-started/ 入门文档
 
 | 文档 | 内容 |
 |------|------|
-| [TEST_FRAMEWORK.md](04-testing/TEST_FRAMEWORK.md) | 测试框架说明 |
-| [VALIDATION_REPORT.md](04-testing/VALIDATION_REPORT.md) | 合理性有效性验证报告 |
+| [QUICKSTART.md](01-getting-started/QUICKSTART.md) | 快速开始 |
+| [USAGE.md](01-getting-started/USAGE.md) | 使用指南 |
+| [DESIGN_PHILOSOPHY.md](01-getting-started/DESIGN_PHILOSOPHY.md) | 设计理念 |
 
----
-
-## 📁 05-reference/ 参考资料
+### 02-architecture/ 架构设计
 
 | 文档 | 内容 |
 |------|------|
-| [CODE_REVIEW_CHECKLIST.md](05-reference/CODE_REVIEW_CHECKLIST.md) | 代码 Review 清单 |
-| [CLEANUP_REPORT.md](05-reference/CLEANUP_REPORT.md) | 清理报告 |
-| [DOCUMENT_ORGANIZATION.md](05-reference/DOCUMENT_ORGANIZATION.md) | 文档组织说明 |
-| [expert-review.md](05-reference/expert-review.md) | 专家组审查报告 |
+| [FRAMEWORK.md](02-architecture/FRAMEWORK.md) | 框架白皮书 |
+| [AGENTS_CONFIG.md](02-architecture/AGENTS_CONFIG.md) | Agent 配置 |
+| [SKILLS_SYSTEM.md](02-architecture/SKILLS_SYSTEM.md) | Skills 体系 |
+| [THREE_REPO_ARCHITECTURE.md](02-architecture/THREE_REPO_ARCHITECTURE.md) | 三仓库架构 |
+
+### 03-implementation/ 实现细节
+
+| 文档 | 内容 |
+|------|------|
+| [BRANCH_STRATEGY.md](03-implementation/BRANCH_STRATEGY.md) | 分支策略 |
+| [STATE_MACHINE.md](03-implementation/STATE_MACHINE.md) | 状态机设计 |
+| [dependency-clarification.md](03-implementation/dependency-clarification.md) | 依赖说明 |
+
+### 04-testing/ 测试验证
+
+| 文档 | 内容 |
+|------|------|
+| [TEST_FRAMEWORK.md](04-testing/TEST_FRAMEWORK.md) | 测试框架 |
+
+### 05-reference/ 参考资料
+
+| 文档 | 内容 |
+|------|------|
 | [red-line-security.md](05-reference/red-line-security.md) | 安全红线 |
-| [REPAIR_PLAN_v0.6.1.md](05-reference/REPAIR_PLAN_v0.6.1.md) | v0.6.1 修复计划 |
-| [v0.5-framework-risk-review.md](05-reference/v0.5-framework-risk-review.md) | v0.5 风险评审 |
-| [v0.5.1-framework-risk-review.md](05-reference/v0.5.1-framework-risk-review.md) | v0.5.1 风险评审 |
-| [v0.5-implementation-review.md](05-reference/v0.5-implementation-review.md) | v0.5 实施评审 |
+| [CODE_REVIEW_CHECKLIST.md](05-reference/CODE_REVIEW_CHECKLIST.md) | 代码 Review 清单 |
 
-**已归档** (移至 `archive/`):
-- `CHANGELOG_v0.2.md` - v0.2 变更日志
-- `WORKFLOW_DIAGRAM.md` - v0.2 流程图
+### 06-sop/ 标准操作流程
 
----
-
-## 使用场景与阅读路径
-
-### 场景 1: 新项目从零开始
-
-**阅读**: [QUICKSTART.md](01-getting-started/QUICKSTART.md) → [THREE_REPO_ARCHITECTURE.md](02-architecture/THREE_REPO_ARCHITECTURE.md)
-
-```bash
-./scripts/init-project.sh my-project /path/to/project
-./scripts/init-three-repos.sh my-project my-org github
-```
-
-### 场景 2: 理解初始化流程
-
-**阅读**: [INSTANCE_INITIALIZATION.md](03-implementation/INSTANCE_INITIALIZATION.md)
-
-```bash
-/eket-start        # 启动实例
-/eket-start -a     # 自动模式
-```
-
-### 场景 3: 查看测试验证
-
-**阅读**: [TEST_FRAMEWORK.md](04-testing/TEST_FRAMEWORK.md) → [VALIDATION_REPORT.md](04-testing/VALIDATION_REPORT.md)
-
-```bash
-./tests/run-unit-tests.sh    # 运行单元测试
-```
+| 目录 | 内容 |
+|------|------|
+| [phase-1-initiation/](06-sop/phase-1-initiation/README.md) | Phase 1: 初始化 |
+| [phase-2-development/](06-sop/phase-2-development/README.md) | Phase 2: 开发 |
+| [phase-3-review-merge/](06-sop/phase-3-review-merge/README.md) | Phase 3: Review & Merge |
+| [task-types/](06-sop/task-types/) | 任务类型 |
 
 ---
 
-## 核心架构图
+## 🗄️ 归档文档
+
+旧版本文档已移至 `archive/` 目录：
+
+| 版本 | 归档位置 |
+|------|---------|
+| v0.6.x | [archive/v0.6/](archive/v0.6/) |
+| v0.5.x | [archive/v0.5/](archive/v0.5/) |
+| v0.2.x | [archive/v0.2/](archive/v0.2/) |
+
+---
+
+## 📖 推荐阅读顺序
+
+### 新用户（v0.7）
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        EKET v0.2 架构                        │
-├─────────────────────────────────────────────────────────────┤
-│  用户界面层                                                  │
-│  /eket-init  /eket-mode  /eket-status  /eket-claim          │
-├─────────────────────────────────────────────────────────────┤
-│  智能体层                                                    │
-│  协调智能体 (常驻)  │  执行智能体 (按需)                      │
-├─────────────────────────────────────────────────────────────┤
-│  数据持久化层 (三 Git 仓库)                                    │
-│  Confluence  │  Code Repo  │  Jira                          │
-└─────────────────────────────────────────────────────────────┘
+README.md (项目首页)
+    ↓
+RELEASE-v0.7.md (了解功能)
+    ↓
+v0.7-upgrade-guide.md (如需升级)
+    ↓
+IMPLEMENTATION_SUMMARY.md (深入了解)
+```
+
+### 开发者
+
+```
+IMPLEMENTATION-v0.7-phase2.md
+    ↓
+IMPLEMENTATION-v0.7-phase3.md
+    ↓
+02-architecture/FRAMEWORK.md
+```
+
+### 架构师/技术负责人
+
+```
+02-architecture/THREE_REPO_ARCHITECTURE.md
+    ↓
+02-architecture/AGENTS_CONFIG.md
+    ↓
+06-sop/README.md (SOP 流程)
 ```
 
 ---
 
-## 命令参考
+## 📋 CLI 命令参考
+
+### Node.js CLI (v0.7 新增)
+
+```bash
+# 系统检查
+node node/dist/index.js check
+node node/dist/index.js doctor
+
+# Redis
+node node/dist/index.js redis:check
+node node/dist/index.js redis:list-slavers
+
+# SQLite
+node node/dist/index.js sqlite:check
+node node/dist/index.js sqlite:list-retros
+node node/dist/index.js sqlite:search "<keyword>"
+node node/dist/index.js sqlite:report
+
+# 任务管理
+node node/dist/index.js init                  # 初始化向导
+node node/dist/index.js claim [id]            # 领取任务
+node node/dist/index.js submit-pr             # 提交 PR
+node node/dist/index.js heartbeat:start <id>  # 启动心跳
+node node/dist/index.js heartbeat:status      # 查看状态
+```
+
+### Claude Code 命令
 
 | 命令 | 功能 |
 |------|------|
 | `/eket-init` | 初始化向导 |
 | `/eket-start` | 启动实例 |
 | `/eket-start -a` | 自动模式 |
-| `/eket-mode setup/exe` | 切换模式 |
 | `/eket-status` | 查看状态 |
-| `/eket-claim [id]` | 领取任务 |
-| `/eket-review [id]` | 请求 Review |
+| `/eket-claim <id>` | 领取任务 |
+| `/eket-help` | 帮助 |
 
 ---
 
@@ -166,14 +184,13 @@ docs/
 
 | 版本 | 日期 | 重点 |
 |------|------|------|
-| 0.1.0 | 2026-03-18 | 初始版本 |
-| 0.1.0 | 2026-03-19 | 专家组审查 |
-| 0.2.0 | 2026-03-20 | 架构重构 |
-| 0.5.0 | 2026-03-23 | Master/Slaver 架构 |
-| 0.5.1 | 2026-03-23 | 修复和优化 |
-| 0.6.0 | 2026-03-24 | Docker 集成和心跳监控 |
-| 0.6.1 | 2026-03-24 | SYSTEM-SETTINGS 模板升级 |
-| 0.6.2 | 2026-03-24 | PR 审查机制增强 |
+| **0.7.2** | 2026-03-25 | 代码质量提升 |
+| **0.7.1** | 2026-03-25 | Phase 3 完整实现 |
+| **0.7.0** | 2026-03-24 | Node.js 混合架构 |
+| 0.6.2 | 2026-03-24 | PR 审查增强 |
+| 0.6.1 | 2026-03-24 | 专家 Agent 定制 |
+| 0.6.0 | 2026-03-24 | Docker 集成 |
+| 0.5.x | 2026-03-23 | Master-Slaver 架构 |
 
 ---
 
