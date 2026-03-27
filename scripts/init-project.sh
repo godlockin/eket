@@ -391,6 +391,176 @@ configure_git_repos() {
     echo -e "${GREEN}✓${NC} Git Submodules 配置完成"
 }
 
+# 配置 Slaver 模式和自动执行
+configure_slaver_mode() {
+    echo ""
+    echo "========================================"
+    echo "配置 Slaver 模式和自动执行"
+    echo "========================================"
+    echo ""
+
+    cd "$PROJECT_ROOT"
+
+    # 选择角色模式
+    echo "请选择实例角色:"
+    echo "  1) Master - 协调实例 (负责任务分析和 Review)"
+    echo "  2) Slaver - 执行实例 (负责领取和执行任务)"
+    echo ""
+    read -p "选择 [1/2]，默认 2: " ROLE_CHOICE
+
+    if [ "$ROLE_CHOICE" = "1" ]; then
+        INSTANCE_ROLE="master"
+        echo -e "${BLUE}✓${NC} 已选择：Master 模式"
+    else
+        INSTANCE_ROLE="slaver"
+        echo -e "${BLUE}✓${NC} 已选择：Slaver 模式"
+    fi
+
+    # Slaver 特有配置
+    if [ "$INSTANCE_ROLE" = "slaver" ]; then
+        echo ""
+        echo "----------------------------------------"
+        echo "Slaver 角色配置"
+        echo "----------------------------------------"
+        echo ""
+
+        echo "选择 Slaver 专家角色:"
+        echo "  1) frontend_dev - 前端开发 (React/Vue/TypeScript)"
+        echo "  2) backend_dev - 后端开发 (Node.js/Python/Go)"
+        echo "  3) fullstack - 全栈开发"
+        echo "  4) tester - 测试工程师"
+        echo "  5) devops - 运维工程师"
+        echo ""
+        read -p "选择 [1-5]，默认 1: " SLAVER_ROLE_CHOICE
+
+        case "$SLAVER_ROLE_CHOICE" in
+            1) AGENT_TYPE="frontend_dev" ;;
+            2) AGENT_TYPE="backend_dev" ;;
+            3) AGENT_TYPE="fullstack" ;;
+            4) AGENT_TYPE="tester" ;;
+            5) AGENT_TYPE="devops" ;;
+            *) AGENT_TYPE="frontend_dev" ;;
+        esac
+        echo -e "${GREEN}✓${NC} 已选择角色：$AGENT_TYPE"
+
+        echo ""
+        echo "----------------------------------------"
+        echo "自动执行配置"
+        echo "----------------------------------------"
+        echo ""
+        echo "Slaver 自动执行流程:"
+        echo "  1. 查看 Jira tickets 并按优先级排序"
+        echo "  2. 选择一个 ticket 并修改状态 (ready → in_progress)"
+        echo "  3. 创建 worktree/分支"
+        echo "  4. 设计并编写测试 (TDD)"
+        echo "  5. 实现功能/修复"
+        echo "  6. 测试/迭代/完善"
+        echo "  7. 提交 PR 并等待 Review"
+        echo ""
+        read -p "是否启用自动执行？[y/N]: " AUTO_EXEC_CHOICE
+
+        if [[ "$AUTO_EXEC_CHOICE" =~ ^[Yy]$ ]]; then
+            AUTO_MODE="true"
+            echo -e "${GREEN}✓${NC} 已启用自动执行模式"
+        else
+            AUTO_MODE="false"
+            echo -e "${YELLOW}⚠${NC} 已禁用自动执行模式 (手动模式)"
+        fi
+    else
+        AGENT_TYPE="null"
+        AUTO_MODE="false"
+    fi
+
+    # 创建实例配置文件
+    mkdir -p ".eket/state"
+    cat > ".eket/state/instance_config.yml" << EOF
+# EKET 实例配置
+# 自动生成于：$(date -Iseconds)
+
+# 实例角色
+role: "${INSTANCE_ROLE}"
+
+# Slaver 角色类型（仅在 role=slaver 时有效）
+agent_type: "${AGENT_TYPE}"
+
+# 自动模式
+auto_mode: ${AUTO_MODE}
+
+# 实例状态
+status: "initialized"
+
+# 工作区配置
+workspace:
+  confluence_initialized: true
+  jira_initialized: true
+  code_repo_initialized: true
+
+# Slaver 自动执行配置（v0.9.2）
+slaver_auto_exec:
+  enabled: ${AUTO_MODE}
+  role: "${AGENT_TYPE}"
+  # 自动处理流程
+  workflow:
+    - "fetch_tickets"        # 获取 Jira tickets
+    - "sort_by_priority"     # 按优先级排序
+    - "select_ticket"        # 选择一个 ticket
+    - "update_status"        # 更新状态为 in_progress
+    - "create_worktree"      # 创建 worktree/分支
+    - "design_tests"          # 设计测试 (TDD)
+    - "implement"             # 实现功能
+    - "test_iterate"          # 测试/迭代/完善
+    - "submit_pr"             # 提交 PR
+    - "wait_review"           # 等待 Review
+EOF
+
+    echo ""
+    echo -e "${GREEN}✓${NC} 实例配置已保存到 .eket/state/instance_config.yml"
+
+    # 创建 Slaver Profile 配置（如果是 Slaver 模式）
+    if [ "$INSTANCE_ROLE" = "slaver" ]; then
+        mkdir -p ".eket/state/profiles"
+        cat > ".eket/state/profiles/${AGENT_TYPE}.yml" << EOF
+# ${AGENT_TYPE} 专家角色配置
+
+role: "${AGENT_TYPE}"
+skills:
+  - "requirements_analysis"
+  - "technical_design"
+EOF
+
+        # 根据角色添加特定 skills
+        case "$AGENT_TYPE" in
+            frontend_dev)
+                cat >> ".eket/state/profiles/${AGENT_TYPE}.yml" << 'EOF'
+  - "react_development"
+  - "typescript"
+  - "tailwindcss"
+  - "unit_testing"
+  - "e2e_testing"
+EOF
+                ;;
+            backend_dev)
+                cat >> ".eket/state/profiles/${AGENT_TYPE}.yml" << 'EOF'
+  - "api_design"
+  - "database_design"
+  - "nodejs"
+  - "unit_testing"
+EOF
+                ;;
+            fullstack)
+                cat >> ".eket/state/profiles/${AGENT_TYPE}.yml" << 'EOF'
+  - "react_development"
+  - "api_design"
+  - "database_design"
+  - "fullstack_testing"
+EOF
+                ;;
+        esac
+
+        echo -e "${GREEN}✓${NC} Slaver Profile 已创建"
+    fi
+}
+
 # 显示使用指南
 show_guide() {
     echo ""
@@ -402,6 +572,22 @@ show_guide() {
     echo "  名称：$PROJECT_NAME"
     echo "  位置：$PROJECT_ROOT"
     echo ""
+
+    # 读取实例配置
+    if [ -f ".eket/state/instance_config.yml" ]; then
+        ROLE=$(grep "^role:" ".eket/state/instance_config.yml" | cut -d':' -f2 | tr -d ' "')
+        AGENT_TYPE=$(grep "^agent_type:" ".eket/state/instance_config.yml" | cut -d':' -f2 | tr -d ' "')
+        AUTO_MODE=$(grep "^auto_mode:" ".eket/state/instance_config.yml" | cut -d':' -f2 | tr -d ' ')
+
+        echo "实例配置:"
+        echo "  角色：$ROLE"
+        if [ "$ROLE" = "slaver" ]; then
+            echo "  专家类型：$AGENT_TYPE"
+            echo "  自动执行：$AUTO_MODE"
+        fi
+        echo ""
+    fi
+
     echo "目录结构:"
     echo "  .claude/commands/     - Claude Code 命令"
     echo "  .eket/                - EKET 配置和状态"
@@ -419,23 +605,43 @@ show_guide() {
     echo "1. 进入项目目录:"
     echo "   cd $PROJECT_ROOT"
     echo ""
-    echo "2. 配置远程仓库 (如果需要):"
-    echo "   git remote add origin <your-repo-url>"
-    echo "   cd confluence && git remote add origin <confluence-url>"
-    echo "   cd ../jira && git remote add origin <jira-url>"
-    echo "   cd ../code_repo && git remote add origin <code-repo-url>"
+
+    # 根据角色显示不同指南
+    if [ "$ROLE" = "slaver" ]; then
+        if [ "$AUTO_MODE" = "true" ]; then
+            echo "2. 启动 Slaver (自动模式):"
+            echo "   /eket-start -a"
+            echo ""
+            echo "   Slaver 将自动执行:"
+            echo "   - 查看 Jira tickets 并按优先级排序"
+            echo "   - 选择一个 ticket 并更新状态"
+            echo "   - 创建分支进行开发"
+            echo "   - 编写测试并实现功能"
+            echo "   - 提交 PR 并等待 Review"
+        else
+            echo "2. 启动 Slaver (手动模式):"
+            echo "   /eket-start"
+            echo ""
+            echo "   然后:"
+            echo "   - /eket-status   查看任务列表"
+            echo "   - /eket-claim    领取任务"
+            echo "   - /eket-submit-pr 提交 PR"
+        fi
+    else
+        echo "2. 启动 Master:"
+        echo "   /eket-start"
+        echo ""
+        echo "   Master 职责:"
+        echo "   - /eket-analyze   分析需求并拆解任务"
+        echo "   - /eket-review-pr 审核 PR"
+        echo "   - /eket-merge     合并到 main"
+    fi
+
     echo ""
-    echo "3. 在 inbox/human_input.md 中描述你的需求"
-    echo ""
-    echo "4. 使用 Claude Code 与智能体交互:"
-    echo "   - /eket-status   查看状态"
-    echo "   - /eket-task     创建任务"
-    echo "   - /eket-review   请求 Review"
-    echo "   - /eket-claim    领取任务"
-    echo ""
-    echo "5. 查看智能体输出:"
+    echo "3. 查看智能体输出:"
     echo "   - outbox/review_requests/  - Review 请求"
     echo "   - tasks/                   - 任务列表"
+    echo "   - jira/tickets/            - Jira 票证"
     echo ""
     echo "========================================"
     echo ""
@@ -446,6 +652,7 @@ main() {
     create_directories
     copy_templates
     configure_git_repos
+    configure_slaver_mode
     show_guide
 }
 
