@@ -233,19 +233,162 @@ copy_templates() {
     fi
 }
 
-# 初始化 Git 仓库
-init_git() {
+# 配置 Git 仓库信息
+configure_git_repos() {
     echo ""
-    echo "初始化 Git 仓库..."
+    echo "========================================"
+    echo "配置 Git 项目信息"
+    echo "========================================"
+    echo ""
 
+    cd "$PROJECT_ROOT"
+
+    # 初始化主仓库
     if [ ! -d ".git" ]; then
         git init -b main
         git config user.name "eket-agent"
         git config user.email "agent@eket.local"
-        echo -e "${GREEN}✓${NC} Git 仓库初始化完成"
+        echo -e "${GREEN}✓${NC} 主仓库 Git 初始化完成"
     else
-        echo -e "${GREEN}✓${NC} Git 仓库已存在"
+        echo -e "${GREEN}✓${NC} 主仓库 Git 已存在"
     fi
+
+    echo ""
+    echo "请配置以下 Git 远程仓库信息（可选，跳过请输入 -）"
+    echo ""
+
+    # 配置主代码仓库 remote
+    read -p "主仓库 Remote URL (例如：git@github.com:org/project.git): " CODE_REPO_URL
+    if [ -n "$CODE_REPO_URL" ] && [ "$CODE_REPO_URL" != "-" ]; then
+        git remote add origin "$CODE_REPO_URL" 2>/dev/null || git remote set-url origin "$CODE_REPO_URL"
+        echo -e "${GREEN}✓${NC} 主仓库 remote 已配置：$CODE_REPO_URL"
+    fi
+
+    # ==========================================
+    # 初始化三仓库架构
+    # ==========================================
+    echo ""
+    echo "----------------------------------------"
+    echo "EKET 使用三仓库架构 (Confluence/Jira/CodeRepo)"
+    echo "----------------------------------------"
+    echo ""
+
+    # Confluence 仓库
+    read -p "Confluence 仓库 URL (或留空创建本地仓库): " CONFLUENCE_URL
+    if [ -n "$CONFLUENCE_URL" ] && [ "$CONFLUENCE_URL" != "-" ]; then
+        if git ls-remote "$CONFLUENCE_URL" &>/dev/null; then
+            git clone "$CONFLUENCE_URL" confluence
+            echo -e "${GREEN}✓${NC} Confluence 仓库已 clone"
+        else
+            echo -e "${YELLOW}⚠${NC} 远程仓库不可访问，创建本地仓库"
+            mkdir -p confluence
+            cd confluence
+            git init -b main
+            git config user.name "eket-agent"
+            git config user.email "agent@eket.local"
+            mkdir -p projects/"$PROJECT_NAME"/{requirements,architecture,design,specifications,meetings,releases}
+            mkdir -p memory/{best-practices,decisions,lessons-learned}
+            mkdir -p templates
+            echo "# $PROJECT_NAME Confluence" > README.md
+            git add . && git commit -m "init: Confluence 仓库初始化"
+            cd ..
+            echo -e "${GREEN}✓${NC} Confluence 本地仓库已创建"
+        fi
+    else
+        echo "创建 Confluence 本地仓库..."
+        mkdir -p confluence
+        cd confluence
+        git init -b main
+        git config user.name "eket-agent"
+        git config user.email "agent@eket.local"
+        mkdir -p projects/"$PROJECT_NAME"/{requirements,architecture,design,specifications,meetings,releases}
+        mkdir -p memory/{best-practices,decisions,lessons-learned}
+        mkdir -p templates
+        echo "# $PROJECT_NAME Confluence" > README.md
+        git add . && git commit -m "init: Confluence 仓库初始化"
+        cd ..
+        echo -e "${GREEN}✓${NC} Confluence 本地仓库已创建"
+    fi
+
+    # Jira 仓库
+    read -p "Jira 仓库 URL (或留空创建本地仓库): " JIRA_URL
+    if [ -n "$JIRA_URL" ] && [ "$JIRA_URL" != "-" ]; then
+        if git ls-remote "$JIRA_URL" &>/dev/null; then
+            git clone "$JIRA_URL" jira
+            echo -e "${GREEN}✓${NC} Jira 仓库已 clone"
+        else
+            echo -e "${YELLOW}⚠${NC} 远程仓库不可访问，创建本地仓库"
+            mkdir -p jira
+            cd jira
+            git init -b main
+            git config user.name "eket-agent"
+            git config user.email "agent@eket.local"
+            mkdir -p {epics,tickets/feature,tickets/bugfix,tickets/task,index/{by-feature,by-status,by-assignee},state,templates}
+            echo "# $PROJECT_NAME Jira" > README.md
+            git add . && git commit -m "init: Jira 仓库初始化"
+            cd ..
+            echo -e "${GREEN}✓${NC} Jira 本地仓库已创建"
+        fi
+    else
+        echo "创建 Jira 本地仓库..."
+        mkdir -p jira
+        cd jira
+        git init -b main
+        git config user.name "eket-agent"
+        git config user.email "agent@eket.local"
+        mkdir -p {epics,tickets/feature,tickets/bugfix,tickets/task,index/{by-feature,by-status,by-assignee},state,templates}
+        echo "# $PROJECT_NAME Jira" > README.md
+        git add . && git commit -m "init: Jira 仓库初始化"
+        cd ..
+        echo -e "${GREEN}✓${NC} Jira 本地仓库已创建"
+    fi
+
+    # Code 仓库
+    read -p "Code 仓库 URL (或留空创建本地仓库): " CODE_SUB_REPO_URL
+    if [ -n "$CODE_SUB_REPO_URL" ] && [ "$CODE_SUB_REPO_URL" != "-" ]; then
+        if git ls-remote "$CODE_SUB_REPO_URL" &>/dev/null; then
+            git clone "$CODE_SUB_REPO_URL" code_repo
+            echo -e "${GREEN}✓${NC} Code 仓库已 clone"
+        else
+            echo -e "${YELLOW}⚠${NC} 远程仓库不可访问，创建本地仓库"
+            mkdir -p code_repo
+            cd code_repo
+            git init -b main
+            git config user.name "eket-agent"
+            git config user.email "agent@eket.local"
+            mkdir -p {src,tests,configs,deployments,docs}
+            echo "# $PROJECT_NAME Code Repository" > README.md
+            git add . && git commit -m "init: Code 仓库初始化"
+            cd ..
+            echo -e "${GREEN}✓${NC} Code 本地仓库已创建"
+        fi
+    else
+        echo "创建 Code 本地仓库..."
+        mkdir -p code_repo
+        cd code_repo
+        git init -b main
+        git config user.name "eket-agent"
+        git config user.email "agent@eket.local"
+        mkdir -p {src,tests,configs,deployments,docs}
+        echo "# $PROJECT_NAME Code Repository" > README.md
+        git add . && git commit -m "init: Code 仓库初始化"
+        cd ..
+        echo -e "${GREEN}✓${NC} Code 本地仓库已创建"
+    fi
+
+    # 配置 submodule
+    echo ""
+    echo "配置 Git Submodules..."
+    if [ -d "confluence/.git" ]; then
+        git submodule add ./confluence confluence 2>/dev/null || echo "Confluence submodule 已配置"
+    fi
+    if [ -d "jira/.git" ]; then
+        git submodule add ./jira jira 2>/dev/null || echo "Jira submodule 已配置"
+    fi
+    if [ -d "code_repo/.git" ]; then
+        git submodule add ./code_repo code_repo 2>/dev/null || echo "Code submodule 已配置"
+    fi
+    echo -e "${GREEN}✓${NC} Git Submodules 配置完成"
 }
 
 # 显示使用指南
@@ -267,21 +410,30 @@ show_guide() {
     echo "  tasks/                - 任务目录"
     echo "  skills/               - Skills 定义"
     echo "  scripts/              - 工具脚本"
+    echo "  confluence/           - 文档仓库 (Git)"
+    echo "  jira/                 - 任务仓库 (Git)"
+    echo "  code_repo/            - 代码仓库 (Git)"
     echo ""
     echo "快速开始:"
     echo ""
     echo "1. 进入项目目录:"
     echo "   cd $PROJECT_ROOT"
     echo ""
-    echo "2. 在 inbox/human_input.md 中描述你的需求"
+    echo "2. 配置远程仓库 (如果需要):"
+    echo "   git remote add origin <your-repo-url>"
+    echo "   cd confluence && git remote add origin <confluence-url>"
+    echo "   cd ../jira && git remote add origin <jira-url>"
+    echo "   cd ../code_repo && git remote add origin <code-repo-url>"
     echo ""
-    echo "3. 使用 Claude Code 与智能体交互:"
+    echo "3. 在 inbox/human_input.md 中描述你的需求"
+    echo ""
+    echo "4. 使用 Claude Code 与智能体交互:"
     echo "   - /eket-status   查看状态"
     echo "   - /eket-task     创建任务"
     echo "   - /eket-review   请求 Review"
     echo "   - /eket-claim    领取任务"
     echo ""
-    echo "4. 查看智能体输出:"
+    echo "5. 查看智能体输出:"
     echo "   - outbox/review_requests/  - Review 请求"
     echo "   - tasks/                   - 任务列表"
     echo ""
@@ -293,7 +445,7 @@ show_guide() {
 main() {
     create_directories
     copy_templates
-    init_git
+    configure_git_repos
     show_guide
 }
 
