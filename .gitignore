@@ -30,6 +30,10 @@ confluence/memory/retrospectives/
 node/node_modules/
 node/dist/
 node/package-lock.json
+node/tests/*.js
+node/tests/*.js.map
+node/tests/*.d.ts
+node/tests/*.d.ts.map
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
