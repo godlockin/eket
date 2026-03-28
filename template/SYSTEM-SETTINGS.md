@@ -498,6 +498,41 @@ done ←── review ←── [执行状态] ←──────────
 | `review` | Review 中 | 技术经理/审核专家 | 执行完成 |
 | `done` | 任务完成 | - | review 通过 |
 
+#### 任务元数据字段
+
+每个任务 ticket 包含以下元数据字段：
+
+| 字段 | 类型 | 说明 | 示例值 |
+|------|------|------|--------|
+| **重要性** | enum | 业务重要性级别 | `critical`, `high`, `medium`, `low` |
+| **优先级** | enum | 处理优先级 | `P0`, `P1`, `P2`, `P3` |
+| **背景** | text | 任务背景和业务价值 | 描述文字 |
+| **依赖关系** | object | 任务依赖配置 | 见下方 YAML 示例 |
+| **标签** | array | 任务分类标签 | `frontend`, `backend`, `api` |
+| **Epic** | string | 所属 Epic ID | `EPIC-20260327` |
+| **技能要求** | array | 完成需要的技能 | `react`, `typescript`, `nodejs` |
+| **预估工时** | string | 预计完成时间 | `2h`, `4h`, `1d` |
+
+#### 依赖关系 YAML 格式
+
+```yaml
+# 依赖关系配置
+dependencies:
+  blocks: []        # 本任务阻塞的任务列表
+  blocked_by: []    # 本任务依赖的任务列表
+  related: []       # 相关任务，可并行开发
+  external: []      # 外部依赖（如：等待 API 文档）
+```
+
+#### 依赖关系说明
+
+| 类型 | 说明 | 示例 |
+|------|------|------|
+| `blocks` | 本任务完成后，其他任务才能开始 | FEAT-001 完成后 FEAT-002 才能开始 |
+| `blocked_by` | 本任务需要等待其他任务完成 | FEAT-002 需要等待 FEAT-001 完成 |
+| `related` | 相关任务，可以并行开发 | FEAT-003 和 FEAT-004 可以同时进行 |
+| `external` | 外部依赖，非本项目的任务 | 等待第三方 API 文档、等待设计稿 |
+
 #### 执行状态（根据任务类型定制）
 
 `analysis_review` 通过后，任务进入执行阶段。根据任务类型不同，执行状态也不同：
@@ -635,6 +670,122 @@ task_types:
 | `${CUSTOM_MSG_TYPE}` | ${FROM} → ${TO} | ${CUSTOM_MSG_DESC} |
 
 > **提示**: 请根据项目需要添加自定义消息类型。
+
+---
+
+## 7.5 PR 提交和 Master 通知流程
+
+### 7.5.1 Slaver 提交 PR
+
+当 Slaver 完成开发任务后，运行 `/eket-submit-pr` 命令提交 PR：
+
+```bash
+/eket-submit-pr -t <ticket-id> -b <branch-name>
+```
+
+**脚本自动执行以下步骤**：
+
+1. **检查分支状态** - 验证工作区干净、分支存在
+2. **提交代码变更** - 使用 Conventional Commits 格式提交
+3. **推送到远程仓库** - 将 feature 分支推送到 origin
+4. **创建 PR 描述文件** - 生成详细的 PR 描述文档
+5. **发送 Review 请求消息** - 通知 Master 审核
+6. **更新 Ticket 状态** - 将任务状态改为 `review`
+
+### 7.5.2 PR 描述文件格式
+
+PR 描述文件创建在 `outbox/review_requests/` 目录：
+
+```markdown
+# PR 请求：FEAT-001
+
+**提交者**: slaver_frontend_dev
+**分支**: feature/FEAT-001-user-login
+**目标分支**: testing
+**创建时间**: 2026-03-27T10:30:00+08:00
+
+---
+
+## 关联 Ticket
+
+- FEAT-001
+
+## 变更摘要
+
+ src/components/Login.tsx       | 150 +++++++++++
+ src/hooks/useAuth.ts           |  80 ++++++
+ tests/Login.test.tsx           | 120 +++++++++
+
+## 变更详情
+
+<!-- 详细描述变更内容 -->
+
+## 验收标准
+
+- [ ] 代码符合项目规范
+- [ ] 测试覆盖关键逻辑
+- [ ] 文档已更新（如需要）
+
+## 测试情况
+
+- [ ] 单元测试通过
+- [ ] 手动测试完成（如需要）
+
+## 注意事项
+
+<!-- 列出需要 Reviewer 特别注意的内容 -->
+
+---
+
+## 状态：pending_review
+
+**等待 Master 审核**
+```
+
+### 7.5.3 Review 请求消息格式
+
+消息发送到 `shared/message_queue/inbox/`：
+
+```json
+{
+  "id": "msg_20260327_103000",
+  "timestamp": "2026-03-27T10:30:00+08:00",
+  "from": "slaver_frontend_dev_103000",
+  "to": "master",
+  "type": "pr_review_request",
+  "priority": "normal",
+  "payload": {
+    "ticket_id": "FEAT-001",
+    "branch": "feature/FEAT-001-user-login",
+    "target": "testing",
+    "pr_file": "outbox/review_requests/pr_FEAT-001_20260327_103000.md",
+    "summary": "请求审核 FEAT-001 的实现"
+  }
+}
+```
+
+### 7.5.4 Master 审核流程
+
+Master 收到 Review 请求后：
+
+1. **读取 PR 描述文件** - 了解变更内容和测试情况
+2. **检查代码变更** - Review 代码质量和规范符合性
+3. **运行测试验证** - 执行单元测试和集成测试
+4. **提供审核意见**：
+   - **批准** - 合并到 `testing` 分支，等待进一步验证
+   - **需要修改** - 返回 Slaver 进行修改
+5. **更新 Ticket 状态** - 标记为 `approved` 或 `rejected`
+
+### 7.5.5 状态流转
+
+```
+Slaver 提交 PR:
+  dev/test → review → (Master 审核) → approved | rejected
+
+Master 审核:
+  review → approved  (合并到 testing)
+  review → rejected  (返回 Slaver 修改)
+```
 
 ---
 

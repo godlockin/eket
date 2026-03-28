@@ -233,7 +233,7 @@ copy_templates() {
     fi
 }
 
-# 配置 Git 仓库信息
+# 配置 Git 仓库信息（简化版 - 只创建本地仓库）
 configure_git_repos() {
     echo ""
     echo "========================================"
@@ -254,148 +254,122 @@ configure_git_repos() {
     fi
 
     echo ""
-    echo "请配置以下 Git 远程仓库信息（可选，跳过请输入 -）"
+    echo "Git 远程仓库配置可在实例初始化时完成"
+    echo "支持："
+    echo "  - 完整 Git 模式（远程仓库）"
+    echo "  - 本地 Git 模式（本地仓库）"
+    echo "  - 降级模式（纯文件系统）"
     echo ""
 
-    # 配置主代码仓库 remote
-    read -p "主仓库 Remote URL (例如：git@github.com:org/project.git): " CODE_REPO_URL
-    if [ -n "$CODE_REPO_URL" ] && [ "$CODE_REPO_URL" != "-" ]; then
-        git remote add origin "$CODE_REPO_URL" 2>/dev/null || git remote set-url origin "$CODE_REPO_URL"
-        echo -e "${GREEN}✓${NC} 主仓库 remote 已配置：$CODE_REPO_URL"
-    fi
-
     # ==========================================
-    # 初始化三仓库架构
+    # 初始化三仓库架构（本地模式）
     # ==========================================
-    echo ""
     echo "----------------------------------------"
     echo "EKET 使用三仓库架构 (Confluence/Jira/CodeRepo)"
     echo "----------------------------------------"
     echo ""
 
-    # Confluence 仓库
-    read -p "Confluence 仓库 URL (或留空创建本地仓库): " CONFLUENCE_URL
-    if [ -n "$CONFLUENCE_URL" ] && [ "$CONFLUENCE_URL" != "-" ]; then
-        if git ls-remote "$CONFLUENCE_URL" &>/dev/null; then
-            git clone "$CONFLUENCE_URL" confluence
-            echo -e "${GREEN}✓${NC} Confluence 仓库已 clone"
-        else
-            echo -e "${YELLOW}⚠${NC} 远程仓库不可访问，创建本地仓库"
-            mkdir -p confluence
-            cd confluence
-            git init -b main
-            git config user.name "eket-agent"
-            git config user.email "agent@eket.local"
-            mkdir -p projects/"$PROJECT_NAME"/{requirements,architecture,design,specifications,meetings,releases}
-            mkdir -p memory/{best-practices,decisions,lessons-learned}
-            mkdir -p templates
-            echo "# $PROJECT_NAME Confluence" > README.md
-            git add . && git commit -m "init: Confluence 仓库初始化"
-            cd ..
-            echo -e "${GREEN}✓${NC} Confluence 本地仓库已创建"
-        fi
-    else
-        echo "创建 Confluence 本地仓库..."
-        mkdir -p confluence
-        cd confluence
-        git init -b main
-        git config user.name "eket-agent"
-        git config user.email "agent@eket.local"
-        mkdir -p projects/"$PROJECT_NAME"/{requirements,architecture,design,specifications,meetings,releases}
-        mkdir -p memory/{best-practices,decisions,lessons-learned}
-        mkdir -p templates
-        echo "# $PROJECT_NAME Confluence" > README.md
-        git add . && git commit -m "init: Confluence 仓库初始化"
-        cd ..
-        echo -e "${GREEN}✓${NC} Confluence 本地仓库已创建"
-    fi
+    # Confluence 仓库（本地）
+    echo "创建 Confluence 本地仓库..."
+    mkdir -p confluence
+    cd confluence
+    git init -b main
+    git config user.name "eket-agent"
+    git config user.email "agent@eket.local"
+    mkdir -p projects/"$PROJECT_NAME"/{requirements,architecture,design,specifications,meetings,releases}
+    mkdir -p memory/{best-practices,decisions,lessons-learned}
+    mkdir -p templates
+    echo "# $PROJECT_NAME Confluence" > README.md
+    git add . && git commit -m "init: Confluence 仓库初始化" -q
+    cd ..
+    echo -e "${GREEN}✓${NC} Confluence 本地仓库已创建"
 
-    # Jira 仓库
-    read -p "Jira 仓库 URL (或留空创建本地仓库): " JIRA_URL
-    if [ -n "$JIRA_URL" ] && [ "$JIRA_URL" != "-" ]; then
-        if git ls-remote "$JIRA_URL" &>/dev/null; then
-            git clone "$JIRA_URL" jira
-            echo -e "${GREEN}✓${NC} Jira 仓库已 clone"
-        else
-            echo -e "${YELLOW}⚠${NC} 远程仓库不可访问，创建本地仓库"
-            mkdir -p jira
-            cd jira
-            git init -b main
-            git config user.name "eket-agent"
-            git config user.email "agent@eket.local"
-            mkdir -p {epics,tickets/feature,tickets/bugfix,tickets/task,index/{by-feature,by-status,by-assignee},state,templates}
-            echo "# $PROJECT_NAME Jira" > README.md
-            git add . && git commit -m "init: Jira 仓库初始化"
-            cd ..
-            echo -e "${GREEN}✓${NC} Jira 本地仓库已创建"
-        fi
-    else
-        echo "创建 Jira 本地仓库..."
-        mkdir -p jira
-        cd jira
-        git init -b main
-        git config user.name "eket-agent"
-        git config user.email "agent@eket.local"
-        mkdir -p {epics,tickets/feature,tickets/bugfix,tickets/task,index/{by-feature,by-status,by-assignee},state,templates}
-        echo "# $PROJECT_NAME Jira" > README.md
-        git add . && git commit -m "init: Jira 仓库初始化"
-        cd ..
-        echo -e "${GREEN}✓${NC} Jira 本地仓库已创建"
-    fi
+    # Jira 仓库（本地）
+    echo "创建 Jira 本地仓库..."
+    mkdir -p jira
+    cd jira
+    git init -b main
+    git config user.name "eket-agent"
+    git config user.email "agent@eket.local"
+    mkdir -p {epics,tickets/feature,tickets/bugfix,tickets/task,index/{by-feature,by-status,by-assignee},state,templates}
+    mkdir -p tickets/feature/.gitkeep
+    mkdir -p tickets/bugfix/.gitkeep
+    mkdir -p tickets/task/.gitkeep
+    echo "# $PROJECT_NAME Jira" > README.md
+    git add . && git commit -m "init: Jira 仓库初始化" -q
+    cd ..
+    echo -e "${GREEN}✓${NC} Jira 本地仓库已创建"
 
-    # Code 仓库
-    read -p "Code 仓库 URL (或留空创建本地仓库): " CODE_SUB_REPO_URL
-    if [ -n "$CODE_SUB_REPO_URL" ] && [ "$CODE_SUB_REPO_URL" != "-" ]; then
-        if git ls-remote "$CODE_SUB_REPO_URL" &>/dev/null; then
-            git clone "$CODE_SUB_REPO_URL" code_repo
-            echo -e "${GREEN}✓${NC} Code 仓库已 clone"
-        else
-            echo -e "${YELLOW}⚠${NC} 远程仓库不可访问，创建本地仓库"
-            mkdir -p code_repo
-            cd code_repo
-            git init -b main
-            git config user.name "eket-agent"
-            git config user.email "agent@eket.local"
-            mkdir -p {src,tests,configs,deployments,docs}
-            echo "# $PROJECT_NAME Code Repository" > README.md
-            git add . && git commit -m "init: Code 仓库初始化"
-            cd ..
-            echo -e "${GREEN}✓${NC} Code 本地仓库已创建"
-        fi
-    else
-        echo "创建 Code 本地仓库..."
-        mkdir -p code_repo
-        cd code_repo
-        git init -b main
-        git config user.name "eket-agent"
-        git config user.email "agent@eket.local"
-        mkdir -p {src,tests,configs,deployments,docs}
-        echo "# $PROJECT_NAME Code Repository" > README.md
-        git add . && git commit -m "init: Code 仓库初始化"
-        cd ..
-        echo -e "${GREEN}✓${NC} Code 本地仓库已创建"
-    fi
+    # Code 仓库（本地）
+    echo "创建 Code 本地仓库..."
+    mkdir -p code_repo
+    cd code_repo
+    git init -b main
+    git config user.name "eket-agent"
+    git config user.email "agent@eket.local"
+    mkdir -p {src,tests,configs,deployments,docs}
+    echo "# $PROJECT_NAME Code Repository" > README.md
+    git add . && git commit -m "init: Code 仓库初始化" -q
+    cd ..
+    echo -e "${GREEN}✓${NC} Code 本地仓库已创建"
 
     # 配置 submodule
     echo ""
     echo "配置 Git Submodules..."
-    if [ -d "confluence/.git" ]; then
-        git submodule add ./confluence confluence 2>/dev/null || echo "Confluence submodule 已配置"
-    fi
-    if [ -d "jira/.git" ]; then
-        git submodule add ./jira jira 2>/dev/null || echo "Jira submodule 已配置"
-    fi
-    if [ -d "code_repo/.git" ]; then
-        git submodule add ./code_repo code_repo 2>/dev/null || echo "Code submodule 已配置"
-    fi
+    git submodule add ./confluence confluence 2>/dev/null || echo "Confluence submodule 已配置"
+    git submodule add ./jira jira 2>/dev/null || echo "Jira submodule 已配置"
+    git submodule add ./code_repo code_repo 2>/dev/null || echo "Code submodule 已配置"
     echo -e "${GREEN}✓${NC} Git Submodules 配置完成"
+
+    # 创建连接配置
+    mkdir -p ".eket/config"
+    cat > ".eket/config/connection.yml" << EOF
+# 连接管理器配置
+# 支持四级降级：远程 Redis → 本地 Redis → SQLite → 文件系统
+
+# Git 模式配置
+git_mode:
+  enabled: true
+  type: "local"  # local | remote
+  # 远程配置（可选，在实例初始化时设置）
+  # remote:
+  #   main_repo: ""
+  #   confluence_repo: ""
+  #   jira_repo: ""
+  #   code_repo: ""
+
+# 降级模式配置
+fallback:
+  # 1. 远程 Redis (可选)
+  remote_redis:
+    enabled: false
+    # host: \${EKET_REMOTE_REDIS_HOST}
+    # port: 6379
+
+  # 2. 本地 Redis (可选)
+  local_redis:
+    enabled: false
+    # host: localhost
+    # port: 6380
+
+  # 3. SQLite
+  sqlite:
+    enabled: true
+    path: ".eket/data/sqlite/eket.db"
+
+  # 4. 文件系统（最终降级）
+  filesystem:
+    enabled: true
+    base_dir: ".eket/data/fs"
+EOF
+    echo -e "${GREEN}✓${NC} 连接配置文件已创建"
 }
 
 # 配置 Slaver 模式和自动执行
 configure_slaver_mode() {
     echo ""
     echo "========================================"
-    echo "配置 Slaver 模式和自动执行"
+    echo "配置实例模式和存储后端"
     echo "========================================"
     echo ""
 
@@ -414,6 +388,74 @@ configure_slaver_mode() {
     else
         INSTANCE_ROLE="slaver"
         echo -e "${BLUE}✓${NC} 已选择：Slaver 模式"
+    fi
+
+    # ==========================================
+    # 配置存储后端（Git 模式或降级模式）
+    # ==========================================
+    echo ""
+    echo "----------------------------------------"
+    echo "配置存储后端"
+    echo "----------------------------------------"
+    echo ""
+    echo "选择存储模式:"
+    echo "  1) Git 完整模式 - 使用 Git 进行版本控制和状态管理"
+    echo "  2) Git + SQLite 模式 - Git 代码 + SQLite 状态存储"
+    echo "  3) 降级模式 - 纯文件系统（无 Git 依赖）"
+    echo ""
+    read -p "选择 [1-3]，默认 1: " STORAGE_CHOICE
+
+    case "$STORAGE_CHOICE" in
+        2)
+            STORAGE_MODE="git_sqlite"
+            echo -e "${GREEN}✓${NC} 已选择：Git + SQLite 模式"
+            ;;
+        3)
+            STORAGE_MODE="filesystem"
+            echo -e "${GREEN}✓${NC} 已选择：降级模式（纯文件系统）"
+            ;;
+        *)
+            STORAGE_MODE="git_full"
+            echo -e "${GREEN}✓${NC} 已选择：Git 完整模式"
+            ;;
+    esac
+
+    # 配置远程仓库（仅 Git 模式）
+    if [ "$STORAGE_MODE" = "git_full" ] || [ "$STORAGE_MODE" = "git_sqlite" ]; then
+        echo ""
+        echo "----------------------------------------"
+        echo "配置 Git 远程仓库（可选）"
+        echo "----------------------------------------"
+        echo ""
+        read -p "主仓库 Remote URL (留空跳过): " MAIN_REMOTE
+        if [ -n "$MAIN_REMOTE" ]; then
+            git remote add origin "$MAIN_REMOTE" 2>/dev/null || git remote set-url origin "$MAIN_REMOTE"
+            echo -e "${GREEN}✓${NC} 主仓库 remote 已配置"
+        fi
+
+        read -p "Confluence 仓库 Remote URL (留空跳过): " CONFLUENCE_REMOTE
+        if [ -n "$CONFLUENCE_REMOTE" ]; then
+            cd confluence
+            git remote add origin "$CONFLUENCE_REMOTE" 2>/dev/null || git remote set-url origin "$CONFLUENCE_REMOTE"
+            cd ..
+            echo -e "${GREEN}✓${NC} Confluence remote 已配置"
+        fi
+
+        read -p "Jira 仓库 Remote URL (留空跳过): " JIRA_REMOTE
+        if [ -n "$JIRA_REMOTE" ]; then
+            cd jira
+            git remote add origin "$JIRA_REMOTE" 2>/dev/null || git remote set-url origin "$JIRA_REMOTE"
+            cd ..
+            echo -e "${GREEN}✓${NC} Jira remote 已配置"
+        fi
+
+        read -p "Code 仓库 Remote URL (留空跳过): " CODE_REMOTE
+        if [ -n "$CODE_REMOTE" ]; then
+            cd code_repo
+            git remote add origin "$CODE_REMOTE" 2>/dev/null || git remote set-url origin "$CODE_REMOTE"
+            cd ..
+            echo -e "${GREEN}✓${NC} Code remote 已配置"
+        fi
     fi
 
     # Slaver 特有配置
@@ -486,6 +528,12 @@ agent_type: "${AGENT_TYPE}"
 # 自动模式
 auto_mode: ${AUTO_MODE}
 
+# 存储模式
+# git_full: 完整 Git 模式
+# git_sqlite: Git + SQLite
+# filesystem: 纯文件系统（降级模式）
+storage_mode: "${STORAGE_MODE}"
+
 # 实例状态
 status: "initialized"
 
@@ -515,6 +563,52 @@ EOF
 
     echo ""
     echo -e "${GREEN}✓${NC} 实例配置已保存到 .eket/state/instance_config.yml"
+
+    # 更新连接配置
+    cat > ".eket/config/connection.yml" << EOF
+# 连接管理器配置
+# 支持四级降级：远程 Redis → 本地 Redis → SQLite → 文件系统
+
+# Git 模式配置
+git_mode:
+  enabled: $([ "$STORAGE_MODE" != "filesystem" ] && echo "true" || echo "false")
+  type: "${STORAGE_MODE}"
+
+# 降级模式配置
+fallback:
+  # 1. 远程 Redis (可选)
+  remote_redis:
+    enabled: false
+    # host: \${EKET_REMOTE_REDIS_HOST}
+    # port: 6379
+
+  # 2. 本地 Redis (可选)
+  local_redis:
+    enabled: false
+    # host: localhost
+    # port: 6380
+
+  # 3. SQLite
+  sqlite:
+    enabled: $([ "$STORAGE_MODE" = "git_sqlite" ] || [ "$STORAGE_MODE" = "filesystem" ] && echo "true" || echo "false")
+    path: ".eket/data/sqlite/eket.db"
+
+  # 4. 文件系统（最终降级）
+  filesystem:
+    enabled: true
+    base_dir: ".eket/data/fs"
+
+# 状态存储
+state_storage:
+$(if [ "$STORAGE_MODE" = "filesystem" ]; then
+    echo "  primary: \"filesystem\""
+    echo "  fallback: null"
+else
+    echo "  primary: \"git\""
+    echo "  fallback: \"sqlite\""
+fi)
+EOF
+    echo -e "${GREEN}✓${NC} 连接配置已更新"
 
     # 创建 Slaver Profile 配置（如果是 Slaver 模式）
     if [ "$INSTANCE_ROLE" = "slaver" ]; then
@@ -578,15 +672,38 @@ show_guide() {
         ROLE=$(grep "^role:" ".eket/state/instance_config.yml" | cut -d':' -f2 | tr -d ' "')
         AGENT_TYPE=$(grep "^agent_type:" ".eket/state/instance_config.yml" | cut -d':' -f2 | tr -d ' "')
         AUTO_MODE=$(grep "^auto_mode:" ".eket/state/instance_config.yml" | cut -d':' -f2 | tr -d ' ')
+        STORAGE_MODE=$(grep "^storage_mode:" ".eket/state/instance_config.yml" | cut -d':' -f2 | tr -d ' "')
 
         echo "实例配置:"
         echo "  角色：$ROLE"
+        echo "  存储模式：$STORAGE_MODE"
         if [ "$ROLE" = "slaver" ]; then
             echo "  专家类型：$AGENT_TYPE"
             echo "  自动执行：$AUTO_MODE"
         fi
         echo ""
     fi
+
+    # 显示存储模式说明
+    echo "存储模式说明:"
+    case "$STORAGE_MODE" in
+        git_full)
+            echo "  Git 完整模式 - 使用 Git 进行版本控制和状态管理"
+            echo "  - 代码仓库：Git"
+            echo "  - 状态存储：Git + 文件"
+            ;;
+        git_sqlite)
+            echo "  Git + SQLite 模式 - Git 代码 + SQLite 状态存储"
+            echo "  - 代码仓库：Git"
+            echo "  - 状态存储：SQLite"
+            ;;
+        filesystem)
+            echo "  降级模式 - 纯文件系统（无 Git 依赖）"
+            echo "  - 代码仓库：文件"
+            echo "  - 状态存储：文件"
+            ;;
+    esac
+    echo ""
 
     echo "目录结构:"
     echo "  .claude/commands/     - Claude Code 命令"

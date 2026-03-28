@@ -8,7 +8,6 @@
 
 | 文档 | 说明 |
 |------|------|
-| [身份卡片系统](IDENTITY.md) | Master/Slaver 身份确认和职责说明 |
 | [Slaver 自动执行模式使用指南](SLAVER-AUTO-EXEC-GUIDE.md) | Slaver 自动执行模式配置和使用方法 |
 | [Master 工作流程与 Skills 加载机制](MASTER-WORKFLOW.md) | Master 实例在各阶段加载 Skills 的机制和任务元数据定义 |
 | [Master PR Review 流程规范](MASTER-PR-REVIEW-FLOW.md) | Master PR 审查完整流程和检查清单 |

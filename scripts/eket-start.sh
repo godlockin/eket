@@ -1,11 +1,11 @@
 #!/bin/bash
-# /eket-start - EKET 实例启动和初始化逻辑 (v0.5)
-# Master/Slaver 模式自动检测 + Worktree 同步 + 时间追踪 + 权限控制 + Mock 检测
+# /eket-start - EKET 实例启动和初始化逻辑 (v0.9.3)
+# Master/Slaver 模式自动检测 + Worktree 同步 + 时间追踪 + 权限控制 + Mock 检测 + 身份卡片
 
 # 不使用 set -e，避免在可恢复错误处退出
 
 echo "========================================"
-echo "EKET 实例启动 v0.4"
+echo "EKET 实例启动 v0.9.3"
 echo "========================================"
 echo ""
 
@@ -20,6 +20,7 @@ NC='\033[0m'
 
 # 模式
 AUTO_MODE=false
+FORCE_ROLE=""
 PROJECT_ROOT="$(pwd)"
 
 # 路径配置 (v0.5.2)
@@ -28,17 +29,28 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SCRIPTS_DIR="$PROJECT_ROOT/scripts"
 
 # 检查参数
-while getopts "ah" opt; do
+while getopts "afr:h" opt; do
     case $opt in
         a)
             AUTO_MODE=true
             echo -e "${BLUE}✓${NC} 自动模式已启用"
             ;;
+        f)
+            FORCE_ROLE="master"
+            echo -e "${BLUE}✓${NC} 强制模式：Master 角色"
+            ;;
+        r)
+            FORCE_ROLE="$2"
+            echo -e "${BLUE}✓${NC} 强制角色：$FORCE_ROLE"
+            shift
+            ;;
         h)
-            echo "用法：/eket-start [-a] [-h]"
+            echo "用法：/eket-start [-a] [-f] [-r <role>] [-h]"
             echo ""
             echo "选项:"
             echo "  -a    启用自动模式 (默认：手动模式)"
+            echo "  -f    强制 Master 角色 (忽略自动检测)"
+            echo "  -r    指定角色 (master/slaver)"
             echo "  -h    显示帮助"
             echo ""
             exit 0
@@ -131,7 +143,11 @@ echo ""
 echo -e "${BLUE}## 步骤 3: 决定实例角色${NC}"
 echo ""
 
-if [ "$MASTER_EXISTS" = true ]; then
+# 如果指定了强制角色，使用指定的角色
+if [ -n "$FORCE_ROLE" ]; then
+    INSTANCE_ROLE="$FORCE_ROLE"
+    echo -e "${GREEN}✓${NC} 使用强制指定的角色：${INSTANCE_ROLE}"
+elif [ "$MASTER_EXISTS" = true ]; then
     INSTANCE_ROLE="slaver"
     echo -e "${GREEN}检测到 Master 已初始化${NC}"
     echo -e "实例角色：${MAGENTA}Slaver (执行实例)${NC}"
@@ -744,6 +760,74 @@ echo ""
 # 更新状态为 ready
 sed -i '' "s/status: \"initializing\"/status: \"ready\"/" ".eket/state/instance_config.yml" 2>/dev/null || \
 sed -i "s/status: \"initializing\"/status: \"ready\"/" ".eket/state/instance_config.yml"
+
+# ==========================================
+# 步骤 5: 显示身份卡片 (v0.9.3)
+# ==========================================
+echo -e "${BLUE}## 步骤 5: 读取身份卡片${NC}"
+echo ""
+
+IDENTITY_FILE=".eket/IDENTITY.md"
+if [ -f "$IDENTITY_FILE" ]; then
+    echo "┌──────────────────────────────────────────────────────────────┐"
+    echo "│  身份确认 - $INSTANCE_ROLE                                   │"
+    echo "├──────────────────────────────────────────────────────────────┤"
+
+    if [ "$INSTANCE_ROLE" = "master" ]; then
+        echo "│                                                              │"
+        echo "│  【Master 核心职责】                                         │"
+        echo "│  1. 需求分析 → 分析人类输入，拆解为任务                      │"
+        echo "│  2. 任务拆解 → 创建 Epic 和 Jira tickets                      │"
+        echo "│  3. 架构设计 → 设计系统架构和技术方案                        │"
+        echo "│  4. PR 审核 → 审核 Slaver 提交的代码                          │"
+        echo "│  5. 代码合并 → 将审核通过的代码合并到 main 分支               │"
+        echo "│  6. 进度检查 → 定期检查 Slaver 任务进度                       │"
+        echo "│                                                              │"
+        echo "│  【禁止操作】                                                │"
+        echo "│  ❌ 直接修改功能代码 (应由 Slaver 完成)                        │"
+        echo "│  ❌ 领取任务进行开发                                         │"
+        echo "│  ❌ 绕过 Review 直接合并                                       │"
+        echo "│                                                              │"
+        echo "│  【启动检查清单】                                            │"
+        echo "│  □ 已确认身份：我是 Master (协调实例)                          │"
+        echo "│  □ 已检查 inbox/human_input.md 是否有新需求                   │"
+        echo "│  □ 已检查 outbox/review_requests/是否有待审核 PR             │"
+        echo "│  □ 已检查 jira/tickets/是否有进行中的任务                     │"
+        echo "│  □ 已准备执行 Master 职责                                     │"
+    else
+        AGENT_TYPE=$(grep "^agent_type:" ".eket/state/instance_config.yml" 2>/dev/null | cut -d':' -f2 | tr -d ' ' || echo "未设置")
+        echo "│                                                              │"
+        echo "│  【Slaver 核心职责】                                         │"
+        echo "│  1. 领取任务 → 从 Jira 领取匹配角色的 tickets                   │"
+        echo "│  2. 自主规划 → 设计实现方案                                  │"
+        echo "│  3. 开发实现 → 编写代码和测试                                │"
+        echo "│  4. 提交 PR → 完成开发后提交 PR 请求审核                       │"
+        echo "│  5. 修改迭代 → 根据 Review 意见修改代码                       │"
+        echo "│                                                              │"
+        echo "│  【当前角色】${AGENT_TYPE}"
+        echo "│                                                              │"
+        echo "│  【禁止操作】                                                │"
+        echo "│  ❌ 合并代码到 main 分支                                       │"
+        echo "│  ❌ 审核自己的 PR                                             │"
+        echo "│  ❌ 领取超出能力范围的任务                                   │"
+        echo "│  ❌ 跳过测试直接提交                                         │"
+        echo "│                                                              │"
+        echo "│  【启动检查清单】                                            │"
+        echo "│  □ 已确认身份：我是 Slaver (执行实例)                          │"
+        echo "│  □ 已确认角色：${AGENT_TYPE}"
+        echo "│  □ 已检查 jira/tickets/中 ready 状态的任务                     │"
+        echo "│  □ 已检查 outbox/review_requests/中自己的 PR 状态             │"
+        echo "│  □ 已准备执行 Slaver 职责                                     │"
+        echo "│                                                              │"
+    fi
+    echo "└──────────────────────────────────────────────────────────────┘"
+    echo ""
+    echo -e "${GREEN}✓${NC} 身份卡片已显示 (详见 $IDENTITY_FILE)"
+else
+    echo -e "${YELLOW}⚠${NC} 身份卡片文件不存在：$IDENTITY_FILE"
+fi
+
+echo ""
 
 if [ "$INSTANCE_ROLE" = "master" ]; then
     echo "Master 职责:"

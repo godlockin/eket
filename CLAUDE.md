@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 重要：身份确认
+
+**每次启动 Claude Code 时，请首先读取 `.eket/IDENTITY.md` 确认你的身份！**
+
+该文件包含：
+- 当前实例角色（Master 或 Slaver）
+- 核心职责和禁止操作
+- 启动检查清单
+- 可用命令
+
 ---
 
 # EKET - AI 智能体协作框架

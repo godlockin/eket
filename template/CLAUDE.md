@@ -2,6 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working in this repository.
 
+## 重要：身份确认
+
+**每次启动 Claude Code 时，请首先读取 `.eket/IDENTITY.md` 确认你的身份！**
+
+该文件包含：
+- 当前实例角色（Master 或 Slaver）
+- 核心职责和禁止操作
+- 启动检查清单
+- 可用命令
+
+---
+
 ## EKET Agent Framework
 
 本项目使用 **EKET Agent Framework** 进行 AI 驱动的开发。Claude Code 作为智能体实例在此系统中运行。
@@ -48,7 +60,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 | `/eket-role <role>` | 设置 Slaver 角色类型 |
 | `/eket-status` | 查看智能体状态和任务列表 |
 | `/eket-claim [id]` | 领取任务 |
-| `/eke-submit-pr` | 提交 PR 请求审核 |
+| `/eket-submit-pr` | 提交 PR 请求审核（自动创建 PR 信息并通知 Master） |
 | `/eket-help` | 显示帮助 |
 | `/eket-ask` | 依赖追问（当缺少数据源/API/认证配置时） |
 
@@ -124,6 +136,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 
 **分支命名**: `feature/<task-id>-<description>`
 
+**Task ID 格式**: `{PREFIX}-{SEQ}` (如：`FEAT-001`, `FIX-001`, `TASK-001`)
+
 **提交信息**: Conventional Commits
 ```
 <type>(<scope>): <description>
@@ -134,22 +148,88 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 
 ---
 
+## Ticket 编号规则
+
+| 类型 | 前缀 | 示例 | 用途 |
+|------|------|------|------|
+| 功能需求卡 | `FEAT` | `FEAT-001` | 功能开发任务 |
+| 任务卡 | `TASK` | `TASK-001` | 一般任务（文档/重构等） |
+| 缺陷修复卡 | `FIX` | `FIX-001` | Bug 修复任务 |
+| 测试卡 | `TEST` | `TEST-001` | 测试编写任务 |
+| 产品需求卡 | `PRD` | `PRD-001` | 产品需求文档 |
+| UI/UX设计卡 | `U-DESIGN` | `U-DESIGN-001` | UI/UX 设计任务 |
+| 技术设计卡 | `T-DESIGN` | `T-DESIGN-001` | 技术设计任务 |
+| 部署卡 | `DEPL` | `DEPL-001` | 部署任务 |
+| 文档卡 | `DOC` | `DOC-001` | 文档编写任务 |
+| 用户调研卡 | `USER-RES` | `USER-RES-001` | 用户调研任务 |
+| 数据分析卡 | `DATA-ANALYSIS` | `DATA-ANALYSIS-001` | 数据分析任务 |
+| 合规审查卡 | `COMPLIANCE` | `COMPLIANCE-001` | 合规审查任务 |
+
+---
+
 ## PR 描述模板
 
 ```markdown
-## 关联任务
-<task-id>
+# PR 请求：FEAT-001
 
-## 变更内容
--
+**提交者**: slaver
+**分支**: feature/FEAT-001-user-login
+**目标分支**: testing
+**创建时间**: 2026-03-27T10:30:00+08:00
+
+---
+
+## 关联 Ticket
+
+- FEAT-001
+
+## 变更摘要
+
+ src/components/Login.tsx       | 150 +++++++++++
+ src/hooks/useAuth.ts           |  80 ++++++
+ tests/Login.test.tsx           | 120 +++++++++
+
+## 变更详情
+
+<!-- 详细描述变更内容 -->
 
 ## 验收标准
-- [ ]
 
-## 测试
+- [ ] 代码符合项目规范
+- [ ] 测试覆盖关键逻辑
+- [ ] 文档已更新（如需要）
+
+## 测试情况
+
 - [ ] 单元测试通过
-- [ ] 手动测试完成
+- [ ] 手动测试完成（如需要）
+
+## 注意事项
+
+<!-- 列出需要 Reviewer 特别注意的内容 -->
+
+---
+
+## 状态：pending_review
+
+**等待 Master 审核**
 ```
+
+### PR 提交流程
+
+运行 `/eket-submit-pr` 后，脚本会自动：
+
+1. **提交代码变更** 到远程仓库
+2. **创建 PR 描述文件** 到 `outbox/review_requests/`
+3. **发送 Review 请求消息** 到 `shared/message_queue/inbox/`
+4. **更新 Ticket 状态** 为 `review`
+5. **通知 Master** 进行审查
+
+Master 收到请求后会：
+1. 读取 PR 描述文件
+2. 检查代码变更和测试
+3. 提供审核意见（批准/需要修改）
+4. 合并到 main 分支（如批准）
 
 ---
 

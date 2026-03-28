@@ -1,0 +1,410 @@
+# Master 实例工作流程与 Skills 加载机制
+
+**版本**: 0.9.3
+**最后更新**: 2026-03-27
+
+---
+
+## 1. 概述
+
+Master 实例是 EKET 框架中的协调智能体，负责需求分析、任务拆解、架构设计和代码 Review。
+
+Master 在工作的不同阶段会加载不同的 Skills，以确保专业性和效率。
+
+---
+
+## 2. Master 工作流程
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Master 工作流程                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  1. 收集需求 → 加载【需求整理 Skills】                            │
+│       ↓                                                         │
+│  2. 构建 PRD → 加载【产品 Skills】                                │
+│       ↓                                                         │
+│  3. 架构设计 → 加载【技术经理 Skills】                            │
+│       ↓                                                         │
+│  4. 任务拆解 → 加载【技术经理 + Scrum Master Skills】             │
+│       ↓                                                         │
+│  5. 分配任务 → 发布到 Jira Tickets                               │
+│       ↓                                                         │
+│  6. 审核 PR → 加载【代码审查 Skills】                            │
+│       ↓                                                         │
+│  7. 合并代码 → 更新状态                                          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 3. 各阶段 Skills 加载
+
+### 3.1 阶段 1: 收集需求
+
+**触发条件**: 检测到 `inbox/human_input.md` 有新需求
+
+**加载 Skills**:
+```yaml
+skills:
+  - requirements/user_interview
+  - requirements/requirement_decomposition
+  - requirements/acceptance_criteria_definition
+  - requirements/stakeholder_analysis
+```
+
+**产出物**:
+- `confluence/projects/{project}/requirements/raw_requirements.md` - 原始需求整理
+- `confluence/projects/{project}/requirements/user_stories.md` - 用户故事地图
+
+---
+
+### 3.2 阶段 2: 构建 PRD
+
+**触发条件**: 需求收集完成
+
+**加载 Skills**:
+```yaml
+skills:
+  - product/prd_writing
+  - product/user_persona
+  - product/competitive_analysis
+  - product/feature_prioritization
+  - product/roadmap_planning
+```
+
+**产出物**:
+- `confluence/projects/{project}/requirements/prd.md` - 产品需求文档
+- `confluence/projects/{project}/requirements/user_personas.md` - 用户画像
+- `confluence/projects/{project}/requirements/roadmap.md` - 产品路线图
+
+---
+
+### 3.3 阶段 3: 架构设计
+
+**触发条件**: PRD 已批准
+
+**加载 Skills**:
+```yaml
+skills:
+  - architecture/system_design
+  - architecture/architecture_patterns
+  - architecture/scalability_design
+  - architecture/security_design
+  - architecture/api_design
+  - architecture/database_design
+  - architecture/tech_stack_selection
+```
+
+**产出物**:
+- `confluence/projects/{project}/architecture/system_architecture.md` - 系统架构
+- `confluence/projects/{project}/architecture/api_spec.md` - API 规范
+- `confluence/projects/{project}/architecture/database_schema.md` - 数据库设计
+- `confluence/projects/{project}/architecture/tech_stack.md` - 技术栈选型
+
+---
+
+### 3.4 阶段 4: 任务拆解
+
+**触发条件**: 架构设计完成
+
+**加载 Skills**:
+```yaml
+skills:
+  - management/task_decomposition
+  - management/dependency_analysis
+  - management/effort_estimation
+  - management/priority_setting
+  - management/risk_assessment
+```
+
+**任务信息结构**:
+```markdown
+# Ticket: {TICKET-ID}
+
+## 元数据
+- **重要性**: critical | high | medium | low
+- **优先级**: P0 | P1 | P2 | P3
+- **背景**: 任务背景和业务价值
+- **依赖关系**:
+  - blocks: [阻塞的任务]
+  - blocked_by: [被阻塞的依赖]
+  - related: [相关任务]
+- **标签**: [frontend], [backend], [api], [database], etc.
+- **Epic**: 所属 Epic
+- **预估工时**: 2h | 4h | 8h | 1d | etc.
+- **技能要求**: [react], [nodejs], [typescript], etc.
+```
+
+**产出物**:
+- `jira/epics/{EPIC-ID}.md` - Epic 文档
+- `jira/tickets/feature/{TICKET-ID}.md` - 功能票
+- `jira/tickets/task/{TICKET-ID}.md` - 任务票
+- `jira/tickets/bugfix/{TICKET-ID}.md` - 缺陷票
+- `jira/index/by-feature/` - 按功能索引
+- `jira/index/by-status/` - 按状态索引
+- `jira/index/by-assignee/` - 按负责人索引
+
+---
+
+### 3.5 阶段 5: 分配任务
+
+**触发条件**: 任务已创建并标记为 `ready`
+
+**加载 Skills**:
+```yaml
+skills:
+  - management/resource_allocation
+  - management/sprint_planning
+  - management/slaver_matching
+  - communication/task_assignment
+```
+
+**分配策略**:
+| 任务标签 | 匹配 Slaver 角色 |
+|----------|-----------------|
+| `frontend`, `ui`, `react` | frontend_dev |
+| `backend`, `api`, `database` | backend_dev |
+| `fullstack`, `integration` | fullstack |
+| `test`, `qa` | tester |
+| `devops`, `deploy`, `docker` | devops |
+
+**产出物**:
+- `jira/state/active_tasks.json` - 活跃任务列表
+- `shared/message_queue/outbox/task_assigned_*.json` - 任务分配消息
+
+---
+
+### 3.6 阶段 6: 审核 PR
+
+**触发条件**: 收到 `pr_review_request` 消息
+
+**加载 Skills**:
+```yaml
+skills:
+  - review/code_quality_review
+  - review/security_review
+  - review/performance_review
+  - review/test_coverage_review
+  - review/documentation_review
+  - review/architecture_compliance
+```
+
+**审核维度**:
+1. **代码质量**: 代码规范、可读性、可维护性
+2. **安全性**: 漏洞检查、输入验证、认证授权
+3. **性能**: 时间复杂度、空间复杂度、缓存策略
+4. **测试**: 单元测试覆盖率、集成测试完整性
+5. **文档**: API 文档、注释完整性
+6. **架构**: 是否符合架构设计、模块边界清晰
+
+**产出物**:
+- `outbox/review_requests/pr_{TICKET-ID}_review.md` - PR 审核报告
+- `shared/message_queue/outbox/pr_approved_*.json` 或 `pr_rejected_*.json`
+
+---
+
+### 3.7 阶段 7: 合并代码
+
+**触发条件**: PR 审核通过
+
+**加载 Skills**:
+```yaml
+skills:
+  - git/merge_management
+  - git/conflict_resolution
+  - git/release_management
+```
+
+**产出物**:
+- 代码合并到 `main` 分支
+- `jira/tickets/{TICKET-ID}.md` 状态更新为 `done`
+- `confluence/projects/{project}/releases/release_{version}.md` - 发布说明
+
+---
+
+## 4. 任务元数据详解
+
+### 4.1 重要性 (Importance)
+
+| 级别 | 说明 | 处理策略 |
+|------|------|----------|
+| `critical` | 关键业务功能，阻塞其他任务 | 立即处理，分配给最合适的 Slaver |
+| `high` | 重要功能，影响核心体验 | 优先处理，当前 sprint 完成 |
+| `medium` | 一般功能，提升用户体验 | 按顺序处理 |
+| `low` | 优化类功能，可选 | 有时间时处理 |
+
+### 4.2 优先级 (Priority)
+
+| 级别 | 说明 | 建议响应时间 |
+|------|------|-------------|
+| `P0` | 紧急缺陷，生产事故 | 立即响应，2 小时内 |
+| `P1` | 高优先级功能 | 24 小时内 |
+| `P2` | 正常优先级 | 3 天内 |
+| `P3` | 低优先级 | 1 周内 |
+
+### 4.3 依赖关系 (Dependencies)
+
+```markdown
+## 依赖关系
+
+### 阻塞关系
+- **blocks**:
+  - FEAT-002 (FEAT-002 依赖本任务完成)
+- **blocked_by**:
+  - FEAT-001 (本任务依赖 FEAT-001 完成)
+
+### 相关任务
+- **related**:
+  - FEAT-003 (功能相关，可并行开发)
+
+### 外部依赖
+- **external**:
+  - 等待 API 接口文档
+  - 等待第三方服务接入
+```
+
+### 4.4 背景信息 (Context)
+
+```markdown
+## 背景
+
+### 业务价值
+- 解决什么问题
+- 为谁解决问题
+- 带来的价值是什么
+
+### 技术背景
+- 当前系统的限制
+- 为什么需要这个功能
+- 技术选型的考量
+
+### 历史参考
+- 类似功能的参考
+- 过往的经验教训
+```
+
+---
+
+## 5. Master 配置文件
+
+### 5.1 实例配置
+
+`.eket/state/instance_config.yml`:
+
+```yaml
+role: "master"
+status: "ready"
+
+# Master 配置
+master:
+  # 启用的工作流程
+  workflows:
+    - requirements_analysis
+    - prd_creation
+    - architecture_design
+    - task_decomposition
+    - pr_review
+
+  # 自动加载 Skills
+  auto_load_skills: true
+
+  # 技能配置
+  skills:
+    requirements:
+      - user_interview
+      - requirement_decomposition
+      - acceptance_criteria_definition
+    product:
+      - prd_writing
+      - user_persona
+      - roadmap_planning
+    architecture:
+      - system_design
+      - api_design
+      - database_design
+    management:
+      - task_decomposition
+      - dependency_analysis
+      - priority_setting
+    review:
+      - code_quality_review
+      - security_review
+      - performance_review
+```
+
+### 5.2 Agent Profile
+
+`.eket/state/profiles/master.yml`:
+
+```yaml
+role: "master"
+type: "coordinator"
+
+# 核心能力
+core_capabilities:
+  - requirements_analysis
+  - system_design
+  - task_planning
+  - code_review
+
+# 技能矩阵
+skills_matrix:
+  requirements: 5  # 1-5 分
+  product: 5
+  architecture: 5
+  management: 4
+  review: 5
+  development: 3  # 作为 Master，开发技能要求较低
+
+# 工作流程
+workflows:
+  - name: "需求分析流程"
+    trigger: "new_human_input"
+    skills:
+      - requirements/user_interview
+      - requirements/requirement_decomposition
+
+  - name: "PRD 创建流程"
+    trigger: "requirements_approved"
+    skills:
+      - product/prd_writing
+      - product/user_persona
+
+  - name: "架构设计流程"
+    trigger: "prd_approved"
+    skills:
+      - architecture/system_design
+      - architecture/api_design
+
+  - name: "任务拆解流程"
+    trigger: "architecture_approved"
+    skills:
+      - management/task_decomposition
+      - management/dependency_analysis
+
+  - name: "PR 审核流程"
+    trigger: "pr_review_request"
+    skills:
+      - review/code_quality_review
+      - review/security_review
+```
+
+---
+
+## 6. 命令参考
+
+### Master 专用命令
+
+| 命令 | 功能 | 加载的 Skills |
+|------|------|-------------|
+| `/eket-analyze` | 分析需求并拆解任务 | requirements/*, product/* |
+| `/eket-review-pr` | 审核 Slaver 提交的 PR | review/* |
+| `/eket-merge` | 合并 PR 到 main 分支 | git/* |
+| `/eket-check-progress` | 检查 Slaver 任务进度 | management/* |
+
+---
+
+**维护者**: EKET Framework Team
+**版本**: 0.9.3

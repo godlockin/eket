@@ -160,10 +160,25 @@ fi
 echo ""
 
 # ==========================================
-# 完整审查流程 (v0.6.2 新增)
+# 步骤 3: 加载 Review Skills
 # ==========================================
+echo -e "${BLUE}## 步骤 3: 加载 Review Skills${NC}"
+echo ""
+echo "正在加载 Review Skills:"
+echo "  - review/code_quality_review      # 代码质量审查"
+echo "  - review/security_review          # 安全审查"
+echo "  - review/performance_review       # 性能审查"
+echo "  - review/test_coverage_review     # 测试覆盖审查"
+echo "  - review/documentation_review     # 文档审查"
+echo "  - review/architecture_compliance  # 架构合规审查"
+echo ""
+echo "Skills 已加载，准备执行审查..."
+echo ""
 
-echo -e "${BLUE}## 步骤 3: 运行完整审查流程${NC}"
+# ==========================================
+# 步骤 4: 运行完整审查流程
+# ==========================================
+echo -e "${BLUE}## 步骤 4: 运行完整审查流程${NC}"
 echo ""
 echo "启动增强审查机制："
 echo "  - 测试门禁验证"
