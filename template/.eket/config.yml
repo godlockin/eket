@@ -48,6 +48,43 @@ validation:
   enabled: true
   strict_mode: false
 
+# ==================== OpenCLAW 集成配置 ====================
+
+openclaw:
+  enabled: false  # 启用 OpenCLAW 集成
+  mode: managed   # managed | autonomous
+
+  # API Gateway 配置
+  gateway:
+    port: 8080
+    host: localhost
+    auth:
+      type: api_key
+      key_env: OPENCLAW_API_KEY
+
+  # 消息队列配置
+  message_queue:
+    type: redis  # redis | rabbitmq | file
+    connection:
+      host: ${REDIS_HOST:-localhost}
+      port: ${REDIS_PORT:-6379}
+    channels:
+      task_assignment: "openclaw:tasks:assign"
+      status_update: "openclaw:tasks:status"
+      agent_lifecycle: "openclaw:agents:lifecycle"
+
+  # Agent 配置
+  agents:
+    auto_spawn: true
+    max_concurrent: 5
+    idle_timeout: 3600  # 1 小时无任务自动休眠
+
+  # 人类参与配置
+  human_in_loop:
+    requirements_review: true
+    tech_design_approval: true
+    pr_final_signoff: false  # false=Master 可批准
+
 # ==================== 配置合并说明 ====================
 #
 # 配置合并规则:
@@ -65,3 +102,4 @@ validation:
 # - docs/05-reference/config-schema.md - 配置结构说明
 # - docs/05-reference/config-validation.md - 配置验证规则
 # - docs/06-sop/configuration-management.md - 配置管理 SOP
+# - docs/OPENCLAW-INTEGRATION-DESIGN.md - OpenCLAW 集成设计
