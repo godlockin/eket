@@ -22,6 +22,7 @@ import { createWebDashboardServer } from './api/web-server.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { registerAlerts } from './commands/alerts.js';
 import { OpenCLAWGateway } from './api/openclaw-gateway.js';
+import { createHttpHookServer } from './hooks/http-hook-server.js';
 
 // Skills 系统导出（仅供库使用者 import，不参与 CLI 命令）
 // 使用方式：import { SkillsRegistry, SkillLoader, UnifiedSkillInterface } from 'eket-cli';
@@ -533,6 +534,79 @@ async function main(): Promise<void> {
 
       // 保持进程运行
       setInterval(() => {}, 1000);
+    });
+
+  // ============================================================================
+  // HTTP Hook Server 命令 (v1.2.0)
+  // ============================================================================
+
+  program
+    .command('hooks:start')
+    .description('启动 HTTP Hook 服务器（接收 Agent 生命周期事件）')
+    .option('-p, --port <port>', '端口号', '8899')
+    .option('-H, --host <host>', '主机地址', '0.0.0.0')
+    .option('-s, --secret <secret>', '认证密钥（可选）')
+    .action(async (options) => {
+      const port = parseInt(options.port, 10);
+      const host = options.host;
+      const secret = options.secret || process.env.EKET_HOOK_SECRET;
+
+      console.log('\n=== EKET HTTP Hook Server v1.2.0 ===\n');
+      console.log('正在启动 HTTP Hook 服务器...');
+      console.log('配置：');
+      console.log(`  端口：${port}`);
+      console.log(`  主机：${host}`);
+      console.log(`  认证：${secret ? '已启用' : '未启用'}`);
+      console.log('');
+
+      const server = createHttpHookServer({ port, host, secret });
+
+      // 注册示例处理器（实际使用时应通过配置文件或插件注册）
+      server.on('PreToolUse', async (payload) => {
+        console.log(`[Hook] PreToolUse: ${payload.data.toolName} by ${payload.agentName || 'unknown'}`);
+        return { action: 'allow' };
+      });
+
+      server.on('TeammateIdle', async (payload) => {
+        console.log(`[Hook] TeammateIdle: ${payload.agentName} is idle`);
+        return { action: 'allow', feedback: 'Task assignment available' };
+      });
+
+      server.on('TaskCompleted', async (payload) => {
+        console.log(`[Hook] TaskCompleted: ${payload.data.taskId} by ${payload.agentName}`);
+        return { action: 'allow' };
+      });
+
+      try {
+        await server.start();
+        console.log('\nHTTP Hook Server 已启动');
+        console.log('端点：');
+        console.log('  POST /hooks/pre-tool-use       - PreToolUse 事件');
+        console.log('  POST /hooks/post-tool-use      - PostToolUse 事件');
+        console.log('  POST /hooks/teammate-idle      - TeammateIdle 事件');
+        console.log('  POST /hooks/task-completed     - TaskCompleted 事件');
+        console.log('  POST /hooks/permission-request - PermissionRequest 事件');
+        console.log('  GET  /health                   - 健康检查');
+        console.log('\n按 Ctrl+C 停止...\n');
+
+        // 等待退出信号
+        process.on('SIGINT', async () => {
+          console.log('\n正在关闭 Hook 服务器...');
+          await server.stop();
+          process.exit(0);
+        });
+
+        process.on('SIGTERM', async () => {
+          await server.stop();
+          process.exit(0);
+        });
+
+        // 保持进程运行
+        setInterval(() => {}, 1000);
+      } catch (err) {
+        console.error('Hook Server 启动失败:', err instanceof Error ? err.message : 'Unknown error');
+        process.exit(1);
+      }
     });
 
   // ============================================================================
