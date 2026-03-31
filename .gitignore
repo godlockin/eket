@@ -41,3 +41,16 @@ pnpm-debug.log*
 lerna-debug.log*
 tsconfig.tsbuildinfo
 .eket/venv-node/
+
+# 安全相关 - 敏感文件
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.cer
+private.*
+secret.*
+credentials.json
+service-account*.json
