@@ -23,6 +23,7 @@ import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { registerAlerts } from './commands/alerts.js';
 import { OpenCLAWGateway } from './api/openclaw-gateway.js';
 import { createHttpHookServer } from './hooks/http-hook-server.js';
+import { createAgentPoolManager } from './core/agent-pool.js';
 
 // Skills 系统导出（仅供库使用者 import，不参与 CLI 命令）
 // 使用方式：import { SkillsRegistry, SkillLoader, UnifiedSkillInterface } from 'eket-cli';
@@ -606,6 +607,117 @@ async function main(): Promise<void> {
       } catch (err) {
         console.error('Hook Server 启动失败:', err instanceof Error ? err.message : 'Unknown error');
         process.exit(1);
+      }
+    });
+
+  // ============================================================================
+  // Agent Pool 命令 (v1.3.0)
+  // ============================================================================
+
+  program
+    .command('pool:status')
+    .description('查看 Agent Pool 状态')
+    .option('-r, --role <role>', '按角色过滤')
+    .action(async (options) => {
+      console.log('\n=== EKET Agent Pool Status v1.3.0 ===\n');
+
+      const pool = createAgentPoolManager();
+      const startResult = await pool.start();
+
+      if (!startResult.success) {
+        console.error('启动失败:', startResult.error.message);
+        console.error('提示：确保 Redis 已启动并配置正确');
+        process.exit(1);
+      }
+
+      try {
+        // 获取统计信息
+        const statsResult = await pool.getStats();
+        if (statsResult.success) {
+          const stats = statsResult.data;
+          console.log('Pool 统计:');
+          console.log(`  总 Agent 数：${stats.totalAgents}`);
+          console.log(`  空闲：${stats.idleAgents}`);
+          console.log(`  忙碌：${stats.busyAgents}`);
+          console.log(`  离线：${stats.offlineAgents}`);
+          console.log(`  总容量：${stats.totalCapacity}`);
+          console.log(`  已用容量：${stats.usedCapacity}`);
+          console.log(`  利用率：${(stats.utilizationRate * 100).toFixed(1)}%`);
+          console.log('');
+        }
+
+        // 获取容量信息
+        const capacityResult = await pool.getAllAgentCapacities(options.role);
+        if (capacityResult.success && capacityResult.data.length > 0) {
+          console.log('Agent 容量:');
+          console.table(
+            capacityResult.data.map((c) => ({
+              'Agent ID': c.agentId,
+              '角色': c.role,
+              '当前负载': c.currentLoad,
+              '最大负载': c.maxLoad,
+              '可用槽位': c.availableSlots,
+              '利用率': `${(c.utilizationRate * 100).toFixed(0)}%`,
+            }))
+          );
+          console.log('');
+        } else {
+          console.log('暂无 Agent 信息');
+          console.log('');
+        }
+      } finally {
+        await pool.stop();
+      }
+    });
+
+  program
+    .command('pool:select')
+    .description('选择最适合的 Agent')
+    .requiredOption('-r, --role <role>', '需要的角色')
+    .option('-s, --skills <skills>', '需要的技能（逗号分隔）')
+    .option('-S, --strategy <strategy>', '选择策略', 'least_loaded')
+    .action(async (options) => {
+      console.log('\n=== EKET Agent Selection v1.3.0 ===\n');
+
+      const requiredSkills = options.skills ? options.skills.split(',').map((s: string) => s.trim()) : undefined;
+      const strategy = options.strategy as any;
+
+      console.log(`搜索条件:`);
+      console.log(`  角色：${options.role}`);
+      if (requiredSkills) {
+        console.log(`  技能：${requiredSkills.join(', ')}`);
+      }
+      console.log(`  策略：${strategy}`);
+      console.log('');
+
+      const pool = createAgentPoolManager();
+      const startResult = await pool.start();
+
+      if (!startResult.success) {
+        console.error('启动失败:', startResult.error.message);
+        process.exit(1);
+      }
+
+      try {
+        const result = await pool.selectAgent(options.role, requiredSkills, strategy);
+
+        if (!result.success) {
+          console.error('选择失败:', result.error?.message);
+          process.exit(1);
+        }
+
+        if (result.data) {
+          console.log('选中 Agent:');
+          console.log(`  ID: ${result.data.id}`);
+          console.log(`  角色：${result.data.role}`);
+          console.log(`  技能：${result.data.skills.join(', ')}`);
+          console.log(`  当前负载：${result.data.currentLoad}/${result.data.maxLoad}`);
+          console.log(`  状态：${result.data.status}`);
+        } else {
+          console.log('未找到符合条件的 Agent');
+        }
+      } finally {
+        await pool.stop();
       }
     });
 
