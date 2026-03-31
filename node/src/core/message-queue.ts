@@ -9,6 +9,7 @@ import { RedisClient } from '../core/redis-client.js';
 import type { Message, Result } from '../types/index.js';
 import { EketError } from '../types/index.js';
 import { createRetryExecutor, type RetryExecutor } from './circuit-breaker.js';
+import { writeToMailbox as writeAgentMailbox } from './agent-mailbox.js';
 
 export interface MessageQueueConfig {
   mode: 'redis' | 'file' | 'auto';
@@ -296,6 +297,25 @@ export class HybridMessageQueue implements MessageQueue {
 
   getMode(): 'redis' | 'file' {
     return this.mode;
+  }
+
+  /**
+   * fallbackToMailbox: 使用 Agent Mailbox 发送消息（最后降级方案）
+   * 将消息发送到指定 Agent 的 inbox，支持结构化消息类型
+   */
+  async fallbackToMailbox(
+    agentId: string,
+    message: {
+      id: string;
+      from: string;
+      text: string;
+      timestamp: string;
+      summary?: string;
+      color?: string;
+    }
+  ): Promise<Result<void>> {
+    console.log(`[Hybrid MQ] Fallback to agent mailbox for agent: ${agentId}`);
+    return await writeAgentMailbox(agentId, message);
   }
 }
 
