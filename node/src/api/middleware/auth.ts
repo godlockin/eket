@@ -33,7 +33,7 @@ export interface AuthMiddlewareOptions {
  * app.use(authMiddleware({ apiKeyManager }));
  */
 export function authMiddleware(options: AuthMiddlewareOptions = {}) {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const authHeader = req.headers.authorization;
 
     // 检查 Authorization 头
@@ -57,7 +57,7 @@ export function authMiddleware(options: AuthMiddlewareOptions = {}) {
 
     // 如果提供了 ApiKeyManager，使用安全的验证方式
     if (options.apiKeyManager) {
-      const result = options.apiKeyManager.validateKey(token);
+      const result = await options.apiKeyManager.validateKey(token);
 
       if (!result.valid) {
         const statusCode = result.error === 'revoked' ? 403 : 401;

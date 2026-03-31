@@ -80,6 +80,51 @@ export class OptimizedFileQueueManager {
     this.ensureDirectories();
     this.loadProcessedIds();
     this.startStatsCollection();
+
+    // 启动时清理旧临时文件
+    this.cleanupTempFiles();
+  }
+
+  /**
+   * 清理启动时残留的临时文件
+   *
+   * 当进程崩溃时，临时文件 `.tmp.${pid}` 可能残留。
+   * 此方法在启动时清理超过 1 小时的临时文件，防止文件堆积。
+   */
+  private cleanupTempFiles(): void {
+    try {
+      if (!fs.existsSync(this.config.queueDir)) {
+        return;
+      }
+
+      const files = fs.readdirSync(this.config.queueDir);
+      const tempFiles = files.filter(f => f.includes('.tmp.'));
+
+      let cleanedCount = 0;
+      for (const file of tempFiles) {
+        try {
+          const filePath = path.join(this.config.queueDir, file);
+
+          // 检查文件年龄，只清理超过 1 小时的临时文件
+          const stats = fs.statSync(filePath);
+          const fileAge = Date.now() - stats.mtimeMs;
+
+          if (fileAge > 3600000) {  // 1 小时
+            fs.unlinkSync(filePath);
+            cleanedCount++;
+          }
+        } catch (error) {
+          // 忽略删除失败的文件
+          console.warn(`[OptimizedFileQueue] Failed to cleanup temp file: ${file}`);
+        }
+      }
+
+      if (cleanedCount > 0) {
+        console.log(`[OptimizedFileQueue] Cleaned up ${cleanedCount} stale temp files`);
+      }
+    } catch (error) {
+      console.warn('[OptimizedFileQueue] Failed to cleanup temp files:', error);
+    }
   }
 
   /**

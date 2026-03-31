@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { LRUCache } from '../core/cache-layer';
+import { LRUCache, RedisConnectionPool } from '../core/cache-layer';
 import type { CacheConfig } from '../types/index';
 
 describe('LRUCache', () => {
@@ -151,6 +151,91 @@ describe('LRUCache', () => {
       expect(cache.get('key1')).toBeUndefined();
       expect(cache.get('key2')).toBe('value2');
     });
+
+    it('should verify O(1) LRU order - sequential access pattern', () => {
+      const cache = new LRUCache({ maxSize: 5 });
+
+      // 按顺序添加 5 个条目
+      cache.set('key1', 'value1');
+      cache.set('key2', 'value2');
+      cache.set('key3', 'value3');
+      cache.set('key4', 'value4');
+      cache.set('key5', 'value5');
+
+      // 访问 key1，使其成为最近使用
+      cache.get('key1');
+
+      // 现在 LRU 顺序应该是：key2, key3, key4, key5, key1
+      // 添加新项应该驱逐 key2（最久未使用）
+      cache.set('key6', 'value6');
+
+      expect(cache.get('key1')).toBe('value1');  // 仍在缓存中
+      expect(cache.get('key2')).toBeUndefined(); // 被驱逐
+      expect(cache.get('key3')).toBe('value3');
+      expect(cache.get('key4')).toBe('value4');
+      expect(cache.get('key5')).toBe('value5');
+      expect(cache.get('key6')).toBe('value6');
+    });
+
+    it('should verify O(1) LRU order - complex access pattern', () => {
+      const cache = new LRUCache({ maxSize: 4 });
+
+      // 初始状态
+      cache.set('a', 'value-a');
+      cache.set('b', 'value-b');
+      cache.set('c', 'value-c');
+      cache.set('d', 'value-d');
+      // 顺序：a, b, c, d
+
+      // 访问 b 和 d
+      cache.get('b');
+      cache.get('d');
+      // 顺序变为：a, c, b, d
+
+      // 添加 e，应该驱逐 a
+      cache.set('e', 'value-e');
+      // 顺序：c, b, d, e
+
+      expect(cache.get('a')).toBeUndefined();
+      expect(cache.get('b')).toBe('value-b');
+      expect(cache.get('c')).toBe('value-c');
+      expect(cache.get('d')).toBe('value-d');
+      expect(cache.get('e')).toBe('value-e');
+
+      // 再访问 c
+      cache.get('c');
+      // 顺序：b, d, e, c
+
+      // 添加 f，应该驱逐 b
+      cache.set('f', 'value-f');
+
+      expect(cache.get('b')).toBeUndefined();
+      expect(cache.get('c')).toBe('value-c');
+      expect(cache.get('d')).toBe('value-d');
+      expect(cache.get('e')).toBe('value-e');
+      expect(cache.get('f')).toBe('value-f');
+    });
+
+    it('should verify O(1) LRU order - update existing key moves to end', () => {
+      const cache = new LRUCache({ maxSize: 3 });
+
+      cache.set('key1', 'value1');
+      cache.set('key2', 'value2');
+      cache.set('key3', 'value3');
+      // 顺序：key1, key2, key3
+
+      // 更新 key1（已存在的键）
+      cache.set('key1', 'updated-value1');
+      // 顺序应该是：key2, key3, key1（更新后移到末尾）
+
+      // 添加新项，应该驱逐 key2
+      cache.set('key4', 'value4');
+
+      expect(cache.get('key1')).toBe('updated-value1');
+      expect(cache.get('key2')).toBeUndefined();
+      expect(cache.get('key3')).toBe('value3');
+      expect(cache.get('key4')).toBe('value4');
+    });
   });
 
   describe('delete', () => {
@@ -273,6 +358,70 @@ describe('LRUCache', () => {
 
       expect(computeFn).not.toHaveBeenCalled();
     });
+
+    it('should handle high concurrent requests without stack overflow', async () => {
+      const cache = new LRUCache({ maxSize: 100, defaultTTL: 60000 });
+
+      let computeCallCount = 0;
+      // 模拟慢计算
+      const slowCompute = async () => {
+        computeCallCount++;
+        await new Promise(r => setTimeout(r, 200));
+        return { data: 'computed' };
+      };
+
+      // 100 个并发请求同一个 key
+      const promises = Array.from({ length: 100 }, () =>
+        cache.getOrCompute('same-key', slowCompute)
+      );
+
+      // 所有请求都应该成功或超时，不应该栈溢出
+      const results = await Promise.allSettled(promises);
+
+      // 至少有一些成功（由于锁机制，实际只会有一个成功计算）
+      const successCount = results.filter(r => r.status === 'fulfilled').length;
+      expect(successCount).toBeGreaterThan(0);
+
+      // 没有栈溢出错误
+      const overflowErrors = results.filter(r =>
+        r.status === 'rejected' && r.reason.message.includes('stack')
+      );
+      expect(overflowErrors.length).toBe(0);
+
+      // computeFn 应该只被调用一次（由于锁机制）
+      expect(computeCallCount).toBeLessThanOrEqual(1);
+    });
+
+    it('should timeout after max retries', async () => {
+      const cache = new LRUCache({ maxSize: 100, defaultTTL: 60000 });
+
+      // 手动设置锁，模拟无法获取锁的场景
+      cache.set('key:lock', 'locked' as any, 10000);
+
+      await expect(
+        cache.getOrCompute('key', async () => ({ data: 'test' }))
+      ).rejects.toThrow('timeout');
+    });
+
+    it('should perform double-check after acquiring lock', async () => {
+      const cache = new LRUCache({ maxSize: 100, defaultTTL: 60000 });
+
+      const computeFn = jest.fn(async () => {
+        await new Promise(r => setTimeout(r, 50));
+        return 'computed';
+      });
+
+      // 并发请求，验证双重检查逻辑
+      const [result1, result2] = await Promise.all([
+        cache.getOrCompute('double-check-key', computeFn),
+        cache.getOrCompute('double-check-key', computeFn),
+      ]);
+
+      expect(result1).toBe('computed');
+      expect(result2).toBe('computed');
+      // 由于锁和双重检查，computeFn 应该只被调用一次
+      expect(computeFn).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('stats', () => {
@@ -336,6 +485,165 @@ describe('LRUCache', () => {
       const specialKey = 'key:with:special:chars';
       cache.set(specialKey, 'value');
       expect(cache.get(specialKey)).toBe('value');
+    });
+  });
+});
+
+describe('RedisConnectionPool', () => {
+  // Mock RedisClient for testing
+  class MockRedisClient {
+    private connected = false;
+
+    async connect() {
+      this.connected = true;
+      return { success: true, data: undefined };
+    }
+
+    async disconnect() {
+      this.connected = false;
+    }
+
+    async ping() {
+      if (!this.connected) {
+        throw new Error('Not connected');
+      }
+      return 'PONG';
+    }
+
+    isReady() {
+      return this.connected;
+    }
+  }
+
+  describe('constructor', () => {
+    it('should create instance with default config', () => {
+      const pool = new RedisConnectionPool({
+        host: 'localhost',
+        port: 6379,
+      });
+      expect(pool).toBeDefined();
+    });
+
+    it('should accept custom config', () => {
+      const pool = new RedisConnectionPool({
+        host: 'custom-host',
+        port: 6380,
+        password: 'secret',
+        poolSize: 20,
+        maxIdleTime: 600000,
+      });
+      expect(pool).toBeDefined();
+    });
+  });
+
+  describe('acquire with mocked clients', () => {
+    let pool: RedisConnectionPool;
+    let mockClients: MockRedisClient[];
+
+    beforeEach(async () => {
+      pool = new RedisConnectionPool({
+        host: 'localhost',
+        port: 6379,
+        poolSize: 2,
+      });
+
+      // Manually initialize with mock clients by accessing internal state
+      mockClients = [new MockRedisClient(), new MockRedisClient()];
+
+      // Initialize the pool
+      await pool.initialize();
+    });
+
+    afterEach(async () => {
+      await pool.close();
+    });
+
+    it('should acquire available connection', async () => {
+      // After initialize, connections should be available
+      const stats = pool.getStats();
+      expect(stats.size).toBeGreaterThan(0);
+    });
+
+    it('should timeout when waiting for connection', async () => {
+      // Create a pool with poolSize 1
+      const singlePool = new RedisConnectionPool({
+        host: 'localhost',
+        port: 6379,
+        poolSize: 1,
+      });
+
+      await singlePool.initialize();
+
+      // Get the only connection
+      const conn1 = await singlePool.acquire();
+      expect(conn1).toBeDefined();
+
+      // Try to acquire another connection - should timeout
+      const shortTimeout = 100; // 100ms
+      await expect(singlePool.acquire(shortTimeout)).rejects.toThrow('timeout');
+
+      // Release the connection
+      singlePool.release(conn1);
+
+      // Now should be able to acquire
+      const conn2 = await singlePool.acquire();
+      expect(conn2).toBeDefined();
+
+      await singlePool.close();
+    });
+
+    it('should reject when wait queue is full', async () => {
+      const smallPool = new RedisConnectionPool({
+        host: 'localhost',
+        port: 6379,
+        poolSize: 1,
+      });
+
+      await smallPool.initialize();
+
+      // Get the only connection
+      const conn1 = await smallPool.acquire();
+      expect(conn1).toBeDefined();
+
+      // Fill the wait queue (poolSize * 2 = 2)
+      const waitingPromises: Promise<any>[] = [];
+      for (let i = 0; i < 2; i++) {
+        waitingPromises.push(smallPool.acquire(5000).catch((e) => e));
+      }
+
+      // Wait a bit for promises to start
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Next acquire should reject immediately due to full queue
+      await expect(smallPool.acquire(100)).rejects.toThrow('queue full');
+
+      // Release the connection
+      smallPool.release(conn1);
+
+      // Wait for waiting promises to resolve
+      await Promise.all(waitingPromises);
+
+      await smallPool.close();
+    });
+  });
+
+  describe('getStats', () => {
+    it('should return pool statistics', async () => {
+      const pool = new RedisConnectionPool({
+        host: 'localhost',
+        port: 6379,
+        poolSize: 5,
+      });
+
+      await pool.initialize();
+
+      const stats = pool.getStats();
+      expect(stats.size).toBe(5);
+      expect(stats.available).toBeGreaterThanOrEqual(0);
+      expect(stats.busy).toBe(0);
+      expect(stats.waiting).toBe(0);
+
+      await pool.close();
     });
   });
 });

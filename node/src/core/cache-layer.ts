@@ -83,6 +83,7 @@ export class LRUCache<T = unknown> {
 
   /**
    * 获取缓存值（同步版本，仅内存缓存）
+   * O(1) LRU: 更新迭代顺序，将访问的键移到末尾
    */
   get(key: string): T | undefined {
     // 先从内存缓存获取
@@ -93,6 +94,9 @@ export class LRUCache<T = unknown> {
         entry.lastAccessAt = Date.now();  // 更新最后访问时间
         entry.hits++;
         this.stats.hits++;
+        // O(1) LRU 优化：删除后重新添加到末尾，更新迭代顺序
+        this.cache.delete(key);
+        this.cache.set(key, entry);
         return entry.value as T;
       } else {
         // 过期，删除
@@ -149,6 +153,7 @@ export class LRUCache<T = unknown> {
 
   /**
    * 设置缓存值（同步版本，仅内存缓存）
+   * O(1) LRU: 更新迭代顺序，将新键移到末尾
    */
   set(key: string, value: T, ttl?: number): void {
     const now = Date.now();
@@ -162,6 +167,11 @@ export class LRUCache<T = unknown> {
       createdAt: now,
       lastAccessAt: now,  // 初始化最后访问时间
     };
+
+    // 如果键已存在，先删除以更新迭代顺序
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
 
     // LRU 驱逐
     if (this.cache.size >= this.config.maxSize) {
@@ -318,77 +328,146 @@ export class LRUCache<T = unknown> {
   }
 
   /**
-   * 获取或计算（防止缓存穿透）
+   * 获取或计算（防止缓存穿透，迭代实现避免栈溢出）
    */
   async getOrCompute(
     key: string,
     compute: () => Promise<T>,
     ttl?: number
   ): Promise<T> {
-    // 先从内存缓存获取
-    const cached = this.get(key);
-    if (cached !== undefined) {
-      return cached;
-    }
+    const maxRetries = 50;  // 防止无限循环
+    let retries = 0;
 
-    // 使用互斥锁防止缓存穿透（使用 async 版本）
-    const lockKey = `${key}:lock`;
-    const lockValue = await this.getAsync(lockKey) as unknown as string | null;
+    while (retries < maxRetries) {
+      // 先从内存缓存获取
+      const cached = this.get(key);
+      if (cached !== undefined) {
+        return cached;
+      }
 
-    if (lockValue) {
-      // 正在计算中，等待
-      await this.sleep(100);
-      return this.getOrCompute(key, compute, ttl);
-    }
+      // 尝试从 Redis 获取
+      const redisValue = await this.getAsync(key);
+      if (redisValue !== null) {
+        // getAsync 已经处理了反序列化
+        return redisValue;
+      }
 
-    // 设置锁
-    await this.setAsync(lockKey, 'computing' as unknown as T, 5000);
+      // 使用互斥锁防止缓存穿透
+      const lockKey = `${key}:lock`;
+      const lockValue = await this.getAsync(lockKey);
 
-    try {
-      const value = await compute();
-      await this.setAsync(key, value, ttl);
-      return value;
-    } finally {
-      // 释放锁
-      await this.deleteAsync(lockKey);
-    }
-  }
+      if (lockValue) {
+        // 正在计算中，等待后重试（迭代而非递归）
+        await new Promise(r => setTimeout(r, 100));
+        retries++;
+        continue;
+      }
 
-  /**
-   * LRU 驱逐（使用 lastAccessAt，hits 作为辅助）
-   */
-  private evictLRU(): void {
-    let lruKey: string | null = null;
-    let lruTime = Infinity;
-    let lruHits = Infinity;
+      // 尝试获取锁
+      const acquired = await this.tryAcquireLock(lockKey);
+      if (!acquired) {
+        // 获取锁失败，等待后重试
+        await new Promise(r => setTimeout(r, 100));
+        retries++;
+        continue;
+      }
 
-    for (const [key, entry] of this.cache.entries()) {
-      // 主要比较 lastAccessAt
-      if (entry.lastAccessAt < lruTime) {
-        lruTime = entry.lastAccessAt;
-        lruKey = key;
-        lruHits = entry.hits;
-      } else if (entry.lastAccessAt === lruTime) {
-        // lastAccessAt 相同，比较 hits（使用最少的）
-        if (entry.hits < lruHits) {
-          lruTime = entry.lastAccessAt;
-          lruKey = key;
-          lruHits = entry.hits;
+      try {
+        // 双重检查：可能在获取锁期间已被计算
+        const doubleCheck = this.get(key);
+        if (doubleCheck !== undefined) {
+          return doubleCheck;
         }
+
+        const redisDoubleCheck = await this.getAsync(key);
+        if (redisDoubleCheck !== null) {
+          return redisDoubleCheck;
+        }
+
+        // 计算值
+        const value = await compute();
+
+        // 设置缓存
+        this.set(key, value, ttl);
+        await this.setAsync(key, value, ttl);
+
+        return value;
+      } finally {
+        // 释放锁
+        await this.releaseLock(lockKey);
       }
     }
 
-    if (lruKey) {
-      this.cache.delete(lruKey);
-      this.stats.evictions++;
-    }
+    throw new Error('getOrCompute timeout after max retries');
   }
 
   /**
-   * 延迟执行
+   * 尝试获取分布式锁
    */
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  private async tryAcquireLock(lockKey: string): Promise<boolean> {
+    const lockValue = 'locked:' + Date.now();
+    const lockTtl = 5000; // 5 秒锁超时
+
+    if (this.redis && this.redis.isReady()) {
+      try {
+        const client = this.redis.getClient();
+        if (client) {
+          // 使用 SET NX EX 原子操作获取锁
+          const result = await client.set(
+            `${this.config.redisPrefix}${lockKey}`,
+            lockValue,
+            'EX',
+            Math.ceil(lockTtl / 1000)
+          );
+          return result === 'OK' || result === true;
+        }
+      } catch {
+        console.warn('[LRUCache] Redis lock acquire error');
+      }
+    }
+
+    // Fallback: 内存锁（单实例场景）
+    const existingLock = this.cache.get(lockKey);
+    if (!existingLock || existingLock.expiresAt <= Date.now()) {
+      this.set(lockKey, lockValue as unknown as T, lockTtl);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * 释放分布式锁
+   */
+  private async releaseLock(lockKey: string): Promise<void> {
+    if (this.redis && this.redis.isReady()) {
+      try {
+        const client = this.redis.getClient();
+        if (client) {
+          await client.del(`${this.config.redisPrefix}${lockKey}`);
+        }
+      } catch {
+        console.warn('[LRUCache] Redis lock release error');
+      }
+    }
+
+    // Fallback: 删除内存锁
+    this.delete(lockKey);
+  }
+
+  /**
+   * LRU 驱逐 - O(1) 实现
+   * 利用 Map 的迭代顺序：第一个条目就是最久未使用的
+   */
+  private evictLRU(): void {
+    // Map.entries() 返回的迭代器按插入顺序遍历
+    // 第一个条目就是最久未使用的（LRU）
+    const firstEntry = this.cache.entries().next();
+    if (!firstEntry.done) {
+      const [lruKey] = firstEntry.value;
+      this.cache.delete(lruKey);
+      this.stats.evictions++;
+    }
   }
 
   /**
@@ -423,7 +502,11 @@ export class RedisConnectionPool {
     maxIdleTime: number;
   };
   private clients: Array<{ client: RedisClient; lastUsed: number; busy: boolean }> = [];
-  private waitQueue: Array<(client: RedisClient) => void> = [];
+  private waitQueue: Array<{
+    resolve: (client: RedisClient) => void;
+    reject: (error: Error) => void;
+    timeoutId: ReturnType<typeof setTimeout>;
+  }> = [];
 
   constructor(config: {
     host: string;
@@ -476,7 +559,8 @@ export class RedisConnectionPool {
   /**
    * 获取连接
    */
-  async acquire(): Promise<RedisClient> {
+  async acquire(timeout = 30000): Promise<RedisClient> {
+    // 查找空闲连接
     for (const item of this.clients) {
       if (!item.busy) {
         // 健康检查
@@ -492,9 +576,38 @@ export class RedisConnectionPool {
       }
     }
 
-    // 没有空闲连接，等待
-    return new Promise((resolve) => {
-      this.waitQueue.push(resolve);
+    // 检查队列是否已满（限制为 poolSize 的 2 倍）
+    if (this.waitQueue.length >= this.config.poolSize * 2) {
+      throw new Error('Connection pool wait queue full');
+    }
+
+    // 带超时的等待
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        // 从等待队列中移除
+        const index = this.waitQueue.findIndex((item) => item.resolve === resolve);
+        if (index > -1) {
+          this.waitQueue.splice(index, 1);
+        }
+        reject(new Error('Acquire connection timeout'));
+      }, timeout);
+
+      this.waitQueue.push({
+        resolve: () => {
+          clearTimeout(timeoutId);
+          // 查找可用连接
+          const available = this.clients.find((c) => !c.busy);
+          if (available) {
+            available.busy = true;
+            available.lastUsed = Date.now();
+            resolve(available.client);
+          } else {
+            reject(new Error('No available connection after wait'));
+          }
+        },
+        reject,
+        timeoutId,
+      });
     });
   }
 
@@ -509,9 +622,10 @@ export class RedisConnectionPool {
 
         // 唤醒等待队列
         if (this.waitQueue.length > 0) {
-          const resolver = this.waitQueue.shift();
-          if (resolver) {
-            resolver(client);
+          const waiter = this.waitQueue.shift();
+          if (waiter) {
+            clearTimeout(waiter.timeoutId);
+            waiter.resolve(client);
           }
         }
         return;

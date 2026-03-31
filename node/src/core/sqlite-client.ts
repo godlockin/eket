@@ -75,6 +75,72 @@ export class SQLiteClient {
   }
 
   /**
+   * 执行 SQL 语句（用于通用操作）
+   */
+  execute(sql: string, params: unknown[] = []): Result<void> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+      };
+    }
+
+    try {
+      this.db.prepare(sql).run(...params);
+      return { success: true, data: undefined };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError('SQLITE_OPERATION_FAILED', (e as Error).message),
+      };
+    }
+  }
+
+  /**
+   * 查询单行数据
+   */
+  get(sql: string, params: unknown[] = []): Result<unknown> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+      };
+    }
+
+    try {
+      const row = this.db.prepare(sql).get(...params);
+      return { success: true, data: row || null };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError('SQLITE_OPERATION_FAILED', (e as Error).message),
+      };
+    }
+  }
+
+  /**
+   * 查询多行数据
+   */
+  all(sql: string, params: unknown[] = []): Result<unknown[]> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+      };
+    }
+
+    try {
+      const rows = this.db.prepare(sql).all(...params);
+      return { success: true, data: rows || [] };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError('SQLITE_OPERATION_FAILED', (e as Error).message),
+      };
+    }
+  }
+
+  /**
    * 初始化表结构
    */
   private initializeTables(): void {
