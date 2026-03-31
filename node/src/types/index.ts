@@ -415,6 +415,13 @@ export class EketErrorClass extends Error {
 // 导出别名方便使用
 export const EketError = EketErrorClass;
 
+/**
+ * Type guard to check if an error is an EketError
+ */
+export function isEketError(error: unknown): error is EketErrorClass {
+  return error instanceof EketErrorClass;
+}
+
 // ============================================================================
 // Utility Types
 // ============================================================================
@@ -644,4 +651,62 @@ export interface MasterElectionResult {
   electionLevel: ElectionLevel;
   masterId?: string;
   conflictDetected: boolean;
+}
+
+// ============================================================================
+// OpenCLAW Gateway Types
+// ============================================================================
+
+/**
+ * Gateway 配置
+ */
+export interface GatewayConfig {
+  enabled: boolean;
+  port: number;
+  host: string;
+  apiKey: string;
+  projectRoot: string;
+}
+
+/**
+ * OpenCLAW 运行模式
+ */
+export type OpenCLAWMode = 'managed' | 'autonomous';
+
+/**
+ * OpenCLAW 集成配置
+ */
+export interface OpenCLAWConfig {
+  enabled: boolean;
+  mode: OpenCLAWMode;
+  gateway: {
+    port: number;
+    host: string;
+    auth: {
+      type: string;
+      keyEnv: string;
+    };
+  };
+  messageQueue: {
+    type: 'redis' | 'rabbitmq' | 'file';
+    connection: {
+      host: string;
+      port: number;
+    };
+    channels: {
+      taskAssignment: string;
+      statusUpdate: string;
+      agentLifecycle: string;
+    };
+  };
+  agents: {
+    autoSpawn: boolean;
+    maxConcurrent: number;
+    idleTimeout: number;
+  };
+  humanInLoop: {
+    requirementsReview: boolean;
+    techDesignApproval: boolean;
+    prFinalSignoff: boolean;
+  };
 }

@@ -529,6 +529,12 @@ export class MasterElection {
    * 启动租约续期
    */
   private startLeaseRenewal(level?: ElectionLevel, lockFile?: string): void {
+    // 清理旧 Timer（防止泄漏）
+    if (this.leaseTimer) {
+      clearInterval(this.leaseTimer);
+      this.leaseTimer = undefined;
+    }
+
     const renewInterval = this.config.leaseTime / 2;
 
     const renew = async () => {
@@ -561,7 +567,12 @@ export class MasterElection {
           fs.writeFileSync(lockFile, JSON.stringify(lockInfo, null, 2));
         }
       } catch (error) {
-        console.error('[MasterElection] Lease renewal failed:', error);
+        console.error('[MasterElection] Lease renewal failed:', {
+          instanceId: this.instanceId,
+          electionLevel: level,
+          error: error instanceof Error ? error.message : 'Unknown',
+          timestamp: new Date().toISOString(),
+        });
         this.isMaster = false;
       }
     };

@@ -21,6 +21,39 @@ import { registerRecommend } from './commands/recommend.js';
 import { createWebDashboardServer } from './api/web-server.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { registerAlerts } from './commands/alerts.js';
+import { OpenCLAWGateway } from './api/openclaw-gateway.js';
+
+// Skills 系统导出（仅供库使用者 import，不参与 CLI 命令）
+// 使用方式：import { SkillsRegistry, SkillLoader, UnifiedSkillInterface } from 'eket-cli';
+export {
+  // 类型
+  type Skill,
+  type SkillInput,
+  type SkillOutput,
+  type SkillRegistry,
+  type SkillLoaderConfig,
+  type UnifiedSkillExecuteParams,
+  type UnifiedSkillExecuteResult,
+  // 类
+  SkillsRegistry,
+  SkillLoader,
+  UnifiedSkillInterface,
+  // 工厂函数
+  createSkillsRegistry,
+  createSkillLoader,
+  createUnifiedSkillInterface,
+  // 拦截器
+  LoggingInterceptor,
+  ValidationInterceptor,
+  CachingInterceptor,
+  // 内置 Skills
+  RequirementDecompositionSkill,
+  APIDesignSkill,
+  FrontendDevelopmentSkill,
+  UnitTestSkill,
+  DockerBuildSkill,
+  APIDocumentationSkill,
+} from './skills/index.js';
 
 const pkg = {
   name: 'eket-cli',
@@ -500,6 +533,91 @@ async function main(): Promise<void> {
 
       // 保持进程运行
       setInterval(() => {}, 1000);
+    });
+
+  // ============================================================================
+  // OpenCLAW Gateway 命令
+  // ============================================================================
+
+  program
+    .command('gateway:start')
+    .description('启动 OpenCLAW API Gateway')
+    .option('-p, --port <port>', '端口号', '8080')
+    .option('-H, --host <host>', '主机地址', 'localhost')
+    .option('-k, --api-key <key>', 'API Key（不推荐，建议使用环境变量）')
+    .option('-P, --project-root <path>', '项目根目录', process.cwd())
+    .action(async (options) => {
+      const port = parseInt(options.port, 10);
+      const host = options.host;
+      const projectRoot = options.projectRoot;
+
+      // 安全修复：从环境变量获取 API Key，不提供默认值
+      const apiKey = options.apiKey || process.env.OPENCLAW_API_KEY;
+
+      // 强制要求 API Key
+      if (!apiKey) {
+        console.error('\n❌ 错误：缺少 API Key');
+        console.error('\n请使用以下方法之一设置 API Key:');
+        console.error('  1. 命令行参数：--api-key <your-key>');
+        console.error('  2. 环境变量：export OPENCLAW_API_KEY=<your-key>');
+        console.error('\n安全提示:');
+        console.error('  - API Key 应至少 32 个字符');
+        console.error('  - 使用随机生成的字符串（如：openssl rand -hex 16）');
+        console.error('  - 不要使用默认值或简单字符串\n');
+        process.exit(1);
+      }
+
+      // 警告使用默认/简单 Key
+      const dangerousKeys = ['eket-dev-key', 'dev-key', 'test-key', 'changeme', '123456'];
+      if (dangerousKeys.includes(apiKey.toLowerCase()) || apiKey.length < 16) {
+        console.warn('\n⚠️  安全警告：API Key 过于简单');
+        console.warn('建议生成一个更安全的 Key:');
+        console.warn('  openssl rand -hex 16');
+        console.warn('  或使用：node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"\n');
+      }
+
+      console.log('\n=== OpenCLAW API Gateway ===\n');
+      console.log('正在启动 API Gateway...');
+      console.log('配置：');
+      console.log(`  端口：${port}`);
+      console.log(`  主机：${host}`);
+      console.log(`  项目目录：${projectRoot}`);
+      console.log('');
+
+      const gateway = new OpenCLAWGateway({
+        port,
+        host,
+        apiKey,
+        projectRoot,
+      });
+
+      try {
+        await gateway.start();
+        console.log('\n访问地址：http://' + host + ':' + port);
+        console.log('API 端点：');
+        console.log('  POST/GET /api/v1/workflow - Workflow 管理');
+        console.log('  POST/GET /api/v1/task     - Task 管理');
+        console.log('  POST/GET /api/v1/agent    - Agent 管理');
+        console.log('  GET  /api/v1/memory       - Memory 查询');
+        console.log('  GET  /health              - 健康检查');
+        console.log('\n按 Ctrl+C 停止...\n');
+
+        // 等待退出信号
+        process.on('SIGINT', async () => {
+          console.log('\n正在关闭 Gateway...');
+          process.exit(0);
+        });
+
+        process.on('SIGTERM', async () => {
+          process.exit(0);
+        });
+
+        // 保持进程运行
+        setInterval(() => {}, 1000);
+      } catch (err) {
+        console.error('Gateway 启动失败:', err instanceof Error ? err.message : 'Unknown error');
+        process.exit(1);
+      }
     });
 
   // 解析命令行

@@ -104,6 +104,16 @@ export class RedisClient {
   }
 
   /**
+   * Ping Redis 服务器（健康检查）
+   */
+  async ping(): Promise<string> {
+    if (!this.client) {
+      throw new Error('Redis client not connected');
+    }
+    return await this.client.ping();
+  }
+
+  /**
    * 注册 Slaver 心跳
    */
   async registerSlaver(heartbeat: SlaverHeartbeat): Promise<Result<void>> {

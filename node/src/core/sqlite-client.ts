@@ -292,6 +292,10 @@ export class SQLiteClient {
     }
 
     try {
+      // 安全修复：转义 LIKE 通配符，防止 SQL 注入
+      const escapedKeyword = this.escapeLikePattern(keyword);
+      const searchPattern = `%${escapedKeyword}%`;
+
       const stmt = this.db.prepare(`
         SELECT DISTINCT r.*
         FROM retrospectives r
@@ -301,7 +305,6 @@ export class SQLiteClient {
         LIMIT 10
       `);
 
-      const searchPattern = `%${keyword}%`;
       const retros = stmt.all(searchPattern, searchPattern) as Retrospective[];
       return { success: true, data: retros };
     } catch {
@@ -310,6 +313,15 @@ export class SQLiteClient {
         error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to search retrospectives'),
       };
     }
+  }
+
+  /**
+   * 转义 SQL LIKE 语句中的通配符
+   * 防止 LIKE 注入攻击
+   */
+  private escapeLikePattern(str: string): string {
+    // 转义 \ 必须在最前面，避免重复转义
+    return str.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
   }
 
   /**

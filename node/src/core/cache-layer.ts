@@ -26,6 +26,7 @@ interface CacheEntry<T> {
   expiresAt: number;
   hits: number;
   createdAt: number;
+  lastAccessAt: number;
 }
 
 /**
@@ -36,6 +37,7 @@ export interface CacheConfig {
   defaultTTL: number;        // 默认 TTL（毫秒）
   useRedis: boolean;         // 是否启用 Redis 缓存
   redisPrefix: string;       // Redis key 前缀
+  redisClient?: RedisClient; // 可选的共享 Redis 客户端
 }
 
 /**
@@ -73,8 +75,9 @@ export class LRUCache<T = unknown> {
     };
     this.cache = new Map();
 
+    // 支持传入现有 Redis 客户端或创建新客户端
     if (this.config.useRedis) {
-      this.redis = createRedisClient();
+      this.redis = config.redisClient || createRedisClient();
     }
   }
 
@@ -87,6 +90,7 @@ export class LRUCache<T = unknown> {
     if (entry) {
       // expiresAt 为 0 或 Infinity 表示永不过期
       if (entry.expiresAt === 0 || entry.expiresAt === Infinity || entry.expiresAt > Date.now()) {
+        entry.lastAccessAt = Date.now();  // 更新最后访问时间
         entry.hits++;
         this.stats.hits++;
         return entry.value as T;
@@ -109,6 +113,7 @@ export class LRUCache<T = unknown> {
     const entry = this.cache.get(key);
     if (entry) {
       if (entry.expiresAt > Date.now()) {
+        entry.lastAccessAt = Date.now();  // 更新最后访问时间
         entry.hits++;
         this.stats.hits++;
         return entry.value as T;
@@ -155,6 +160,7 @@ export class LRUCache<T = unknown> {
       expiresAt,
       hits: 0,
       createdAt: now,
+      lastAccessAt: now,  // 初始化最后访问时间
     };
 
     // LRU 驱逐
@@ -178,6 +184,7 @@ export class LRUCache<T = unknown> {
       expiresAt,
       hits: 0,
       createdAt: now,
+      lastAccessAt: now,  // 初始化最后访问时间
     };
 
     // LRU 驱逐
@@ -348,17 +355,26 @@ export class LRUCache<T = unknown> {
   }
 
   /**
-   * LRU 驱逐
+   * LRU 驱逐（使用 lastAccessAt，hits 作为辅助）
    */
   private evictLRU(): void {
     let lruKey: string | null = null;
     let lruTime = Infinity;
+    let lruHits = Infinity;
 
     for (const [key, entry] of this.cache.entries()) {
-      const accessTime = entry.createdAt + (entry.hits * 1000); // 简化的 LRU
-      if (accessTime < lruTime) {
-        lruTime = accessTime;
+      // 主要比较 lastAccessAt
+      if (entry.lastAccessAt < lruTime) {
+        lruTime = entry.lastAccessAt;
         lruKey = key;
+        lruHits = entry.hits;
+      } else if (entry.lastAccessAt === lruTime) {
+        // lastAccessAt 相同，比较 hits（使用最少的）
+        if (entry.hits < lruHits) {
+          lruTime = entry.lastAccessAt;
+          lruKey = key;
+          lruHits = entry.hits;
+        }
       }
     }
 
@@ -461,12 +477,18 @@ export class RedisConnectionPool {
    * 获取连接
    */
   async acquire(): Promise<RedisClient> {
-    // 查找空闲连接
     for (const item of this.clients) {
-      if (!item.busy && item.client.isReady()) {
-        item.busy = true;
-        item.lastUsed = Date.now();
-        return item.client;
+      if (!item.busy) {
+        // 健康检查
+        try {
+          await item.client.ping();
+          item.busy = true;
+          item.lastUsed = Date.now();
+          return item.client;
+        } catch (error) {
+          // 连接失效，替换
+          await this.replaceConnection(item);
+        }
       }
     }
 
@@ -494,6 +516,36 @@ export class RedisConnectionPool {
         }
         return;
       }
+    }
+  }
+
+  /**
+   * 替换失效的连接
+   */
+  private async replaceConnection(
+    item: { client: RedisClient; lastUsed: number; busy: boolean }
+  ): Promise<void> {
+    try {
+      // 断开旧连接
+      await item.client.disconnect();
+    } catch {
+      // Ignore disconnect errors
+    }
+
+    // 创建新连接
+    const newClient = new RedisClient({
+      host: this.config.host,
+      port: this.config.port,
+      password: this.config.password,
+    });
+
+    const result = await newClient.connect();
+    if (result.success) {
+      item.client = newClient;
+      item.lastUsed = Date.now();
+      console.log('[RedisPool] Replaced stale connection');
+    } else {
+      console.warn('[RedisPool] Failed to replace connection');
     }
   }
 

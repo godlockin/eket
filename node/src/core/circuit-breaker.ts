@@ -14,7 +14,7 @@
  */
 
 import type { Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, isEketError } from '../types/index.js';
 
 /**
  * 断路器状态
@@ -325,7 +325,10 @@ export class RetryExecutor {
         return circuitResult;
       }
 
-      lastError = circuitResult.error as unknown as Error;
+      // 使用类型守卫转换错误类型
+      lastError = isEketError(circuitResult.error)
+        ? new Error(`${circuitResult.error.code}: ${circuitResult.error.message}`)
+        : circuitResult.error as Error;
 
       if (attempt < this.config.maxRetries) {
         // 等待后重试（指数退避）
