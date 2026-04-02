@@ -27,7 +27,7 @@ export interface RequirementDecompositionInput {
  */
 export interface RequirementDecompositionOutput {
   /** 拆解后的子任务列表 */
-  subTasks: {
+  subTasks: Array<{
     /** 任务标题 */
     title: string;
     /** 任务描述 */
@@ -40,7 +40,7 @@ export interface RequirementDecompositionOutput {
     requiredSkills: string[];
     /** 依赖的其他任务 ID */
     dependencies: string[];
-  }[];
+  }>;
   /** 总体预估工作量 */
   totalEstimatedHours: number;
   /** 建议的执行顺序 */
@@ -57,8 +57,7 @@ export const RequirementDecompositionSkill: Skill<
   RequirementDecompositionOutput
 > = {
   name: 'requirement_decomposition',
-  description:
-    '将复杂需求拆解为可执行的子任务，包括任务类型、工作量预估、依赖关系分析',
+  description: '将复杂需求拆解为可执行的子任务，包括任务类型、工作量预估、依赖关系分析',
   category: SkillCategory.REQUIREMENTS,
   tags: ['requirements', 'analysis', 'decomposition', 'planning'],
   version: '1.0.0',
@@ -154,10 +153,7 @@ export const RequirementDecompositionSkill: Skill<
       logs.push(`拆解为 ${subTasks.length} 个子任务`);
 
       // 4. 计算总工作量
-      const totalEstimatedHours = subTasks.reduce(
-        (sum, task) => sum + task.estimatedHours,
-        0
-      );
+      const totalEstimatedHours = subTasks.reduce((sum, task) => sum + task.estimatedHours, 0);
 
       // 5. 分析依赖关系
       analyzeDependencies(subTasks);
@@ -442,7 +438,9 @@ function createComponentTask(
 /**
  * 分析依赖关系
  */
-function analyzeDependencies(tasks: Array<RequirementDecompositionOutput['subTasks'][number]>): void {
+function analyzeDependencies(
+  tasks: Array<RequirementDecompositionOutput['subTasks'][number]>
+): void {
   // 建立任务标题到索引的映射
   const titleToIndex = new Map<string, number>();
   tasks.forEach((task, index) => {

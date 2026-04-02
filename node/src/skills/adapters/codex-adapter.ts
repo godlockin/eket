@@ -5,9 +5,10 @@
  * Adapter for integrating with Codex via HTTP API
  */
 
-import type { SkillAdapter, CodexConfig } from './types.js';
 import type { SkillDefinition, SkillExecutionResult } from '../../types/index.js';
 import { EketErrorClass } from '../../types/index.js';
+
+import type { SkillAdapter, CodexConfig } from './types.js';
 
 /**
  * Codex API 请求格式
@@ -68,7 +69,7 @@ export class CodexSkillAdapter implements SkillAdapter {
 
   private baseUrl: string;
   private headers: Record<string, string>;
-  private requestIdCounter: number = 0;
+  private requestIdCounter = 0;
 
   constructor(config: CodexConfig) {
     this.baseUrl = config.baseUrl;
@@ -99,11 +100,9 @@ export class CodexSkillAdapter implements SkillAdapter {
       });
     } catch (error) {
       const err = error as Error;
-      throw new EketErrorClass(
-        'CONNECTION_FAILED',
-        `Failed to connect to Codex: ${err.message}`,
-        { baseUrl: this.baseUrl }
-      );
+      throw new EketErrorClass('CONNECTION_FAILED', `Failed to connect to Codex: ${err.message}`, {
+        baseUrl: this.baseUrl,
+      });
     }
   }
 
@@ -154,7 +153,10 @@ export class CodexSkillAdapter implements SkillAdapter {
    */
   async listSkills(): Promise<string[]> {
     try {
-      const response = await this.callCodexAPI<{ skills: Array<{ name: string }> }>('/skills/list', {});
+      const response = await this.callCodexAPI<{ skills: Array<{ name: string }> }>(
+        '/skills/list',
+        {}
+      );
       return response.skills.map((s) => s.name);
     } catch (error) {
       const err = error as Error;
@@ -169,10 +171,7 @@ export class CodexSkillAdapter implements SkillAdapter {
   /**
    * 执行 Skill
    */
-  async execute(
-    skillName: string,
-    params: Record<string, unknown>
-  ): Promise<SkillExecutionResult> {
+  async execute(skillName: string, params: Record<string, unknown>): Promise<SkillExecutionResult> {
     const startTime = Date.now();
 
     try {
@@ -225,7 +224,7 @@ export class CodexSkillAdapter implements SkillAdapter {
         );
       }
 
-      const result: CodexAPIResponse<T> = await response.json() as CodexAPIResponse<T>;
+      const result: CodexAPIResponse<T> = (await response.json()) as CodexAPIResponse<T>;
 
       if (!result.success) {
         throw new EketErrorClass(
@@ -248,11 +247,10 @@ export class CodexSkillAdapter implements SkillAdapter {
         throw error;
       }
       const err = error as Error;
-      throw new EketErrorClass(
-        'EXECUTION_ERROR',
-        `Failed to call Codex API: ${err.message}`,
-        { endpoint, baseUrl: this.baseUrl }
-      );
+      throw new EketErrorClass('EXECUTION_ERROR', `Failed to call Codex API: ${err.message}`, {
+        endpoint,
+        baseUrl: this.baseUrl,
+      });
     }
   }
 

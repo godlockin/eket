@@ -168,7 +168,7 @@ export class ApiKeyStorage {
       return [];
     }
 
-    return (result.data as Record<string, unknown>[]).map((row) => this.rowToRecord(row));
+    return (result.data as Array<Record<string, unknown>>).map((row) => this.rowToRecord(row));
   }
 
   /**

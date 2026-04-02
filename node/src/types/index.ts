@@ -466,7 +466,7 @@ export interface WorkflowStep {
   required_role?: AgentRole;
   timeout_ms?: number;
   on_complete?: string; // 下一步骤 ID
-  on_error?: string;    // 错误处理步骤 ID
+  on_error?: string; // 错误处理步骤 ID
 }
 
 export interface WorkflowTrigger {
@@ -654,6 +654,79 @@ export interface MasterElectionResult {
 }
 
 // ============================================================================
+// Phase 10 - Scalability Types
+// ============================================================================
+
+/**
+ * Redis Cluster 节点配置
+ */
+export interface RedisClusterNode {
+  host: string;
+  port: number;
+}
+
+/**
+ * Redis Cluster 配置
+ */
+export interface RedisClusterConfig {
+  nodes: RedisClusterNode[];
+  password?: string;
+  db?: number;
+  keyPrefix?: string;
+  slotsRefreshTimeout?: number;
+  retryDelayOnFail?: number;
+}
+
+/**
+ * 一致性哈希环配置
+ */
+export interface ConsistentHashConfig {
+  replicas?: number; // 虚拟节点数（默认 150）
+  hashFunction?: 'murmer3' | 'sha1' | 'md5'; // 哈希函数
+}
+
+/**
+ * 消息队列分片配置
+ */
+export interface MessageQueueShardingConfig {
+  enabled: boolean;
+  shardCount: number; // 分片数量
+  consistentHash?: ConsistentHashConfig;
+}
+
+/**
+ * 批量心跳配置
+ */
+export interface BatchHeartbeatConfig {
+  enabled: boolean;
+  batchSize: number; // 批量大小（默认 100）
+  flushInterval: number; // 刷新间隔（毫秒，默认 1000）
+}
+
+/**
+ * 分布式轮询索引配置
+ */
+export interface DistributedRoundRobinConfig {
+  enabled: boolean;
+  ttl: number; // 计数器 TTL（秒，默认 3600）
+  keyPrefix?: string;
+}
+
+/**
+ * 扩展性配置
+ */
+export interface ScalabilityConfig {
+  // Redis Cluster 配置
+  cluster?: RedisClusterConfig;
+  // 消息队列分片配置
+  sharding?: MessageQueueShardingConfig;
+  // 批量心跳配置
+  batchHeartbeat?: BatchHeartbeatConfig;
+  // 分布式轮询索引配置
+  roundRobin?: DistributedRoundRobinConfig;
+}
+
+// ============================================================================
 // OpenCLAW Gateway Types
 // ============================================================================
 
@@ -710,3 +783,76 @@ export interface OpenCLAWConfig {
     prFinalSignoff: boolean;
   };
 }
+
+// ============================================================================
+// Phase 10 - Dependency Injection Types
+// ============================================================================
+
+/**
+ * Service lifecycle types for DI container
+ */
+export type ServiceLifetime = 'singleton' | 'transient';
+
+/**
+ * Service descriptor for DI registration
+ */
+export interface ServiceDescriptor {
+  lifetime: ServiceLifetime;
+  factory?: () => unknown;
+  instance?: unknown;
+  dependencies?: string[];
+}
+
+// ============================================================================
+// Phase 10 - Configuration Types
+// ============================================================================
+
+/**
+ * Application configuration sources
+ */
+export type ConfigSource = 'env' | 'yaml' | 'default' | 'override';
+
+/**
+ * Redis connection configuration
+ */
+export interface RedisConnectionConfig {
+  host: string;
+  port: number;
+  password?: string;
+  db?: number;
+}
+
+/**
+ * SQLite configuration
+ */
+export interface SQLiteConnectionConfig {
+  path: string;
+}
+
+// ============================================================================
+// Phase 10 - Event Bus Types
+// ============================================================================
+
+/**
+ * Domain event interface
+ */
+export interface DomainEvent<T = unknown> {
+  id: string;
+  type: string;
+  timestamp: number;
+  source?: string;
+  payload: T;
+}
+
+/**
+ * Event handler function type
+ */
+export type EventHandler<T = unknown> = (event: T) => void | Promise<void>;
+
+/**
+ * Event interceptor function type
+ */
+export type EventInterceptor<T = unknown> = (
+  event: T,
+  next: () => void | Promise<void>
+) => void | Promise<void>;

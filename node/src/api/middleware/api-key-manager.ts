@@ -8,6 +8,7 @@
  */
 
 import * as crypto from 'crypto';
+
 import { ApiKeyStorage } from './api-key-storage.js';
 
 export interface ApiKeyInfo {
@@ -103,7 +104,7 @@ export class ApiKeyManager {
     name: string,
     userId: string,
     permissions: string[] = ['read', 'write'],
-    expiresIn: number = 0
+    expiresIn = 0
   ): Promise<{ key: string; keyId: string; keyHash: string }> {
     if (!this.initialized) {
       throw new Error('ApiKeyManager not initialized. Call initialize() first.');
@@ -281,7 +282,11 @@ export class ApiKeyManager {
     await this.revokeKey(keyId, 'rotated');
 
     // 生成新 Key
-    return this.generateKey(name || `${oldKeyInfo.name} (rotated)`, oldKeyInfo.userId, permissions || oldKeyInfo.permissions);
+    return this.generateKey(
+      name || `${oldKeyInfo.name} (rotated)`,
+      oldKeyInfo.userId,
+      permissions || oldKeyInfo.permissions
+    );
   }
 
   /**
@@ -331,7 +336,7 @@ export class ApiKeyManager {
   /**
    * 导出密钥元数据（用于备份，不含哈希）
    */
-  exportMetadata(): Record<string, unknown>[] {
+  exportMetadata(): Array<Record<string, unknown>> {
     return Array.from(this.keys.values()).map(({ keyHash, ...info }) => ({
       ...info,
       // 哈希值不导出

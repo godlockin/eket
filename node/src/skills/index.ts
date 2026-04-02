@@ -27,20 +27,10 @@ export type {
 } from './types.js';
 
 // 注册表
-export {
-  SkillsRegistry,
-  createSkillsRegistry,
-  getGlobalSkillsRegistry,
-  resetGlobalSkillsRegistry,
-} from './registry.js';
+export { SkillsRegistry, createSkillsRegistry } from './registry.js';
 
 // 加载器
-export {
-  SkillLoader,
-  createSkillLoader,
-  loadSkillsFromDirectory,
-  loadSkill,
-} from './loader.js';
+export { SkillLoader, createSkillLoader, loadSkillsFromDirectory, loadSkill } from './loader.js';
 
 // 统一接口
 export {

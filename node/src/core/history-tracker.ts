@@ -5,19 +5,19 @@
  * Phase 5.2 - Intelligent Task Recommendation System
  */
 
-import type { TaskHistory, InstancePerformance } from '../types/recommender.js';
+import { createSQLiteClient, type SQLiteClient } from '../core/sqlite-client.js';
 import type { Result } from '../types/index.js';
 import { EketError } from '../types/index.js';
-import { createSQLiteClient, type SQLiteClient } from '../core/sqlite-client.js';
+import type { TaskHistory, InstancePerformance } from '../types/recommender.js';
 
 /**
  * Instance 表现统计配置
  */
 export interface PerformanceStatsConfig {
-  minTasksForStats: number;    // 计算统计所需的最小任务数
-  qualityWeight: number;       // 质量权重
-  onTimeWeight: number;        // 按时权重
-  efficiencyWeight: number;    // 效率权重
+  minTasksForStats: number; // 计算统计所需的最小任务数
+  qualityWeight: number; // 质量权重
+  onTimeWeight: number; // 按时权重
+  efficiencyWeight: number; // 效率权重
 }
 
 const DEFAULT_STATS_CONFIG: PerformanceStatsConfig = {
@@ -67,7 +67,9 @@ export class HistoryTracker {
    */
   private initializeTables(): void {
     const db = (this.sqlite as unknown as { db: { exec: (sql: string) => void } }).db;
-    if (!db) return;
+    if (!db) {
+      return;
+    }
 
     db.exec(`
       -- 任务历史表（用于推荐系统）
@@ -97,12 +99,14 @@ export class HistoryTracker {
    * 记录任务完成历史
    */
   async recordTaskCompletion(history: TaskHistory): Promise<Result<number>> {
-    const db = (this.sqlite as unknown as {
-      db: {
-        prepare: (sql: string) => { run: (...args: unknown[]) => { lastInsertRowid: number } };
-        close: () => void;
-      } | null
-    }).db;
+    const db = (
+      this.sqlite as unknown as {
+        db: {
+          prepare: (sql: string) => { run: (...args: unknown[]) => { lastInsertRowid: number } };
+          close: () => void;
+        } | null;
+      }
+    ).db;
 
     if (!db) {
       return {
@@ -134,7 +138,10 @@ export class HistoryTracker {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', `Failed to record task history: ${errorMessage}`),
+        error: new EketError(
+          'SQLITE_OPERATION_FAILED',
+          `Failed to record task history: ${errorMessage}`
+        ),
       };
     }
   }
@@ -143,12 +150,14 @@ export class HistoryTracker {
    * 获取 Instance 的历史记录
    */
   async getInstanceHistory(instanceId: string, limit?: number): Promise<Result<TaskHistory[]>> {
-    const db = (this.sqlite as unknown as {
-      db: {
-        prepare: (sql: string) => { all: (...args: unknown[]) => TaskHistory[] };
-        close: () => void;
-      } | null
-    }).db;
+    const db = (
+      this.sqlite as unknown as {
+        db: {
+          prepare: (sql: string) => { all: (...args: unknown[]) => TaskHistory[] };
+          close: () => void;
+        } | null;
+      }
+    ).db;
 
     if (!db) {
       return {
@@ -174,7 +183,10 @@ export class HistoryTracker {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', `Failed to fetch instance history: ${errorMessage}`),
+        error: new EketError(
+          'SQLITE_OPERATION_FAILED',
+          `Failed to fetch instance history: ${errorMessage}`
+        ),
       };
     }
   }
@@ -182,7 +194,10 @@ export class HistoryTracker {
   /**
    * 获取 Instance 的表现统计
    */
-  async getInstancePerformance(instanceId: string, role?: string): Promise<Result<InstancePerformance>> {
+  async getInstancePerformance(
+    instanceId: string,
+    role?: string
+  ): Promise<Result<InstancePerformance>> {
     const historyResult = await this.getInstanceHistory(instanceId);
 
     if (!historyResult.success) {
@@ -247,19 +262,23 @@ export class HistoryTracker {
    * 获取所有 Instance 的表现统计（按角色）
    */
   async getAllPerformanceStats(role?: string): Promise<Result<InstancePerformance[]>> {
-    const db = (this.sqlite as unknown as {
-      db: {
-        prepare: (sql: string) => { all: (...args: unknown[]) => Array<{
-          instance_id: string;
-          role: string;
-          total_tasks: number;
-          avg_quality: number;
-          avg_duration: number;
-          on_time_rate: number;
-        }> };
-        close: () => void;
-      } | null
-    }).db;
+    const db = (
+      this.sqlite as unknown as {
+        db: {
+          prepare: (sql: string) => {
+            all: (...args: unknown[]) => Array<{
+              instance_id: string;
+              role: string;
+              total_tasks: number;
+              avg_quality: number;
+              avg_duration: number;
+              on_time_rate: number;
+            }>;
+          };
+          close: () => void;
+        } | null;
+      }
+    ).db;
 
     if (!db) {
       return {
@@ -287,22 +306,22 @@ export class HistoryTracker {
       `);
 
       const rows = role
-        ? stmt.all(role) as Array<{
+        ? (stmt.all(role) as Array<{
             instance_id: string;
             role: string;
             total_tasks: number;
             avg_quality: number;
             avg_duration: number;
             on_time_rate: number;
-          }>
-        : stmt.all() as Array<{
+          }>)
+        : (stmt.all() as Array<{
             instance_id: string;
             role: string;
             total_tasks: number;
             avg_quality: number;
             avg_duration: number;
             on_time_rate: number;
-          }>;
+          }>);
 
       const performances: InstancePerformance[] = rows.map((row) => {
         const normalizedQuality = (row.avg_quality - 1) / 4;
@@ -327,7 +346,10 @@ export class HistoryTracker {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', `Failed to fetch performance stats: ${errorMessage}`),
+        error: new EketError(
+          'SQLITE_OPERATION_FAILED',
+          `Failed to fetch performance stats: ${errorMessage}`
+        ),
       };
     }
   }
@@ -335,13 +357,19 @@ export class HistoryTracker {
   /**
    * 获取任务的承接历史（用于去重）
    */
-  async getTaskAssignments(taskId: string): Promise<Result<Array<{ instanceId: string; completedAt: number }>>> {
-    const db = (this.sqlite as unknown as {
-      db: {
-        prepare: (sql: string) => { all: (...args: unknown[]) => Array<{ instance_id: string; completed_at: number }> };
-        close: () => void;
-      } | null
-    }).db;
+  async getTaskAssignments(
+    taskId: string
+  ): Promise<Result<Array<{ instanceId: string; completedAt: number }>>> {
+    const db = (
+      this.sqlite as unknown as {
+        db: {
+          prepare: (sql: string) => {
+            all: (...args: unknown[]) => Array<{ instance_id: string; completed_at: number }>;
+          };
+          close: () => void;
+        } | null;
+      }
+    ).db;
 
     if (!db) {
       return {
@@ -370,7 +398,10 @@ export class HistoryTracker {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', `Failed to fetch task assignments: ${errorMessage}`),
+        error: new EketError(
+          'SQLITE_OPERATION_FAILED',
+          `Failed to fetch task assignments: ${errorMessage}`
+        ),
       };
     }
   }
@@ -378,13 +409,15 @@ export class HistoryTracker {
   /**
    * 清理过期的历史记录
    */
-  async cleanupHistory(olderThanDays: number = 90): Promise<Result<number>> {
-    const db = (this.sqlite as unknown as {
-      db: {
-        prepare: (sql: string) => { run: (...args: unknown[]) => { changes: number } };
-        close: () => void;
-      } | null
-    }).db;
+  async cleanupHistory(olderThanDays = 90): Promise<Result<number>> {
+    const db = (
+      this.sqlite as unknown as {
+        db: {
+          prepare: (sql: string) => { run: (...args: unknown[]) => { changes: number } };
+          close: () => void;
+        } | null;
+      }
+    ).db;
 
     if (!db) {
       return {
@@ -394,7 +427,7 @@ export class HistoryTracker {
     }
 
     try {
-      const cutoffTime = Date.now() - (olderThanDays * 24 * 60 * 60 * 1000);
+      const cutoffTime = Date.now() - olderThanDays * 24 * 60 * 60 * 1000;
       const stmt = db.prepare(`
         DELETE FROM task_history
         WHERE completed_at < ?
@@ -406,7 +439,10 @@ export class HistoryTracker {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', `Failed to cleanup history: ${errorMessage}`),
+        error: new EketError(
+          'SQLITE_OPERATION_FAILED',
+          `Failed to cleanup history: ${errorMessage}`
+        ),
       };
     }
   }

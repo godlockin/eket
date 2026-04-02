@@ -5,23 +5,23 @@
  * 轻量级 HTTP 服务器，提供监控面板 API 和静态文件服务
  */
 
-import http from 'http';
 import fs from 'fs';
+import http from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import { createInstanceRegistry } from '../core/instance-registry.js';
+import { createRedisClient } from '../core/redis-client.js';
+import { createSQLiteClient } from '../core/sqlite-client.js';
 import type {
   DashboardData,
   DashboardSystemStatus,
   DashboardInstance,
   DashboardTask,
   DashboardStats,
-  Result
+  Result,
 } from '../types/index.js';
 import { EketError } from '../types/index.js';
-import { createRedisClient } from '../core/redis-client.js';
-import { createSQLiteClient } from '../core/sqlite-client.js';
-import { createInstanceRegistry } from '../core/instance-registry.js';
 
 // ES module compatibility
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -163,12 +163,19 @@ export class WebDashboardServer {
   /**
    * 处理 API 请求
    */
-  private async handleApiRequest(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+  private async handleApiRequest(
+    req: http.IncomingMessage,
+    res: http.ServerResponse
+  ): Promise<void> {
     const url = req.url || '/';
     const method = req.method || 'GET';
 
     if (method !== 'GET') {
-      this.sendJson(res, 405, { success: false, error: 'Method not allowed', timestamp: Date.now() });
+      this.sendJson(res, 405, {
+        success: false,
+        error: 'Method not allowed',
+        timestamp: Date.now(),
+      });
       return;
     }
 
@@ -197,7 +204,7 @@ export class WebDashboardServer {
       this.sendJson(res, 500, {
         success: false,
         error: errorMessage,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
   }
@@ -205,8 +212,11 @@ export class WebDashboardServer {
   /**
    * 处理静态文件请求
    */
-  private async handleStaticFile(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
-    let url = req.url === '/' ? '/index.html' : req.url;
+  private async handleStaticFile(
+    req: http.IncomingMessage,
+    res: http.ServerResponse
+  ): Promise<void> {
+    const url = req.url === '/' ? '/index.html' : req.url;
     if (!url) {
       res.writeHead(400);
       res.end('Bad request');
@@ -286,7 +296,7 @@ export class WebDashboardServer {
       this.sendJson(res, 500, {
         success: false,
         error: result.error.message,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
   }

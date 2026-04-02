@@ -7,11 +7,12 @@
  */
 
 import express, { Express, Request, Response, NextFunction } from 'express';
-import { WorkflowRouter } from './routes/workflow.js';
-import { TaskRouter } from './routes/task.js';
+
+import { authMiddleware } from './middleware/auth.js';
 import { AgentRouter } from './routes/agent.js';
 import { MemoryRouter } from './routes/memory.js';
-import { authMiddleware } from './middleware/auth.js';
+import { TaskRouter } from './routes/task.js';
+import { WorkflowRouter } from './routes/workflow.js';
 
 export interface OpenCLAWGatewayConfig {
   port: number;
@@ -49,7 +50,7 @@ export class OpenCLAWGateway {
       res.json({
         status: 'healthy',
         version: '1.0.0',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
 
@@ -58,7 +59,7 @@ export class OpenCLAWGateway {
       console.error('[OpenCLAW Gateway] Error:', err);
       res.status(500).json({
         error: 'internal_error',
-        message: err.message
+        message: err.message,
       });
     });
   }
@@ -66,7 +67,9 @@ export class OpenCLAWGateway {
   public start(): Promise<void> {
     return new Promise((resolve, reject) => {
       const server = this.app.listen(this.config.port, this.config.host, () => {
-        console.log(`[OpenCLAW Gateway] Server running on http://${this.config.host}:${this.config.port}`);
+        console.log(
+          `[OpenCLAW Gateway] Server running on http://${this.config.host}:${this.config.port}`
+        );
         console.log(`[OpenCLAW Gateway] API endpoints:`);
         console.log(`  POST/GET /api/v1/workflow - Workflow 管理`);
         console.log(`  POST/GET /api/v1/task     - Task 管理`);

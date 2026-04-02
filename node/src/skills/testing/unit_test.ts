@@ -71,11 +71,11 @@ export interface UnitTestOutput {
   /** 测试文件路径 */
   testFilePath: string;
   /** 测试用例列表 */
-  testCases: {
+  testCases: Array<{
     name: string;
     description: string;
     assertions: string[];
-  }[];
+  }>;
   /** Mock 设置代码 */
   mockSetup?: string;
   /** 运行命令 */
@@ -158,7 +158,10 @@ export const UnitTestSkill: Skill<UnitTestInput, UnitTestOutput> = {
       return false;
     }
 
-    if (!req.targetType || !['function', 'class', 'module', 'component'].includes(req.targetType as string)) {
+    if (
+      !req.targetType ||
+      !['function', 'class', 'module', 'component'].includes(req.targetType as string)
+    ) {
       return false;
     }
 
@@ -169,9 +172,7 @@ export const UnitTestSkill: Skill<UnitTestInput, UnitTestOutput> = {
     return true;
   },
 
-  async execute(
-    input: SkillInput<UnitTestInput>
-  ): Promise<SkillOutput<UnitTestOutput>> {
+  async execute(input: SkillInput<UnitTestInput>): Promise<SkillOutput<UnitTestOutput>> {
     const startTime = Date.now();
     const logs: string[] = [];
 
@@ -191,7 +192,8 @@ export const UnitTestSkill: Skill<UnitTestInput, UnitTestOutput> = {
       logs.push(`开始生成测试：${targetName}`);
 
       // 1. 生成测试用例
-      const generatedTestCases = testCases || generateTestCases(targetName, targetType, description);
+      const generatedTestCases =
+        testCases || generateTestCases(targetName, targetType, description);
       logs.push(`生成 ${generatedTestCases.length} 个测试场景`);
 
       // 2. 生成 Mock 设置
@@ -237,7 +239,7 @@ export const UnitTestSkill: Skill<UnitTestInput, UnitTestOutput> = {
             name: tc.description.replace(/\s+/g, '_'),
             description: tc.description,
             assertions: generateAssertions(tc),
-          })) as { name: string; description: string; assertions: string[] }[],
+          })) as Array<{ name: string; description: string; assertions: string[] }>,
           mockSetup,
           runCommand,
           coverageCommand,
@@ -318,11 +320,7 @@ function generateTestCases(
 /**
  * 生成 Mock 设置
  */
-function generateMockSetup(
-  language: string,
-  _testFramework: string,
-  config: MockConfig
-): string {
+function generateMockSetup(language: string, _testFramework: string, config: MockConfig): string {
   if (language === 'python') {
     return generatePythonMockSetup(_testFramework, config);
   }
@@ -583,11 +581,7 @@ function generateJavaTestCode(config: {
 /**
  * 生成测试文件路径
  */
-function generateTestFilePath(
-  targetName: string,
-  language: string,
-  testFramework: string
-): string {
+function generateTestFilePath(targetName: string, language: string, testFramework: string): string {
   const name = targetName.toLowerCase().replace(/[^a-z0-9]/g, '_');
 
   if (language === 'python') {

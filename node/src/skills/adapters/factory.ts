@@ -5,6 +5,11 @@
  * Factory for creating external AI adapters
  */
 
+import { EketErrorClass } from '../../types/index.js';
+
+import { createClaudeCodeAdapter } from './claude-code-adapter.js';
+import { createCodexAdapter } from './codex-adapter.js';
+import { createOpenCLAWAdapter } from './openclaw-adapter.js';
 import type {
   SkillAdapter,
   AnyAdapterConfig,
@@ -12,10 +17,6 @@ import type {
   ClaudeCodeConfig,
   CodexConfig,
 } from './types.js';
-import { createOpenCLAWAdapter } from './openclaw-adapter.js';
-import { createClaudeCodeAdapter } from './claude-code-adapter.js';
-import { createCodexAdapter } from './codex-adapter.js';
-import { EketErrorClass } from '../../types/index.js';
 
 /**
  * 适配器工厂实现
@@ -47,11 +48,9 @@ export class AdapterFactory {
         return createCodexAdapter(config as CodexConfig);
 
       default:
-        throw new EketErrorClass(
-          'NOT_SUPPORTED',
-          `Unsupported adapter type: ${type}`,
-          { supportedTypes: ['openclaw', 'claude-code', 'codex'] }
-        );
+        throw new EketErrorClass('NOT_SUPPORTED', `Unsupported adapter type: ${type}`, {
+          supportedTypes: ['openclaw', 'claude-code', 'codex'],
+        });
     }
   }
 

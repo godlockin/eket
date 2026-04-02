@@ -39,9 +39,7 @@ export class TaskAssigner {
     }
 
     // 2. 过滤出状态为 idle 的 Instance
-    const availableInstances = matchedInstances.filter(
-      (inst) => inst.status === 'idle'
-    );
+    const availableInstances = matchedInstances.filter((inst) => inst.status === 'idle');
 
     if (availableInstances.length === 0) {
       return {
@@ -51,9 +49,7 @@ export class TaskAssigner {
     }
 
     // 3. 负载最低的优先
-    const sortedInstances = availableInstances.sort(
-      (a, b) => a.currentLoad - b.currentLoad
-    );
+    const sortedInstances = availableInstances.sort((a, b) => a.currentLoad - b.currentLoad);
 
     // 4. 返回负载最低的 Instance
     return {
@@ -96,9 +92,7 @@ export class TaskAssigner {
 
     for (const ticket of tickets) {
       // 过滤出未分配的 Instances
-      const availableInstances = instances.filter(
-        (inst) => !assignedInstances.has(inst.id)
-      );
+      const availableInstances = instances.filter((inst) => !assignedInstances.has(inst.id));
 
       const result = this.assignTicket(ticket, availableInstances);
 

@@ -2,6 +2,10 @@
  * EKET Framework - Communication Protocol
  * Phase 6.1: Multi-Instance Collaboration
  *
+ * v2.0.0 扩展性增强:
+ * - 一致性哈希分片支持
+ * - 基于 instanceId 的消息路由
+ *
  * 标准化的 Instance 间通信协议，支持：
  * - 任务相关消息（分配、领取、进度、完成、阻塞）
  * - 协作相关消息（请求帮助、知识分享、依赖通知）
@@ -15,9 +19,12 @@ import type {
   Result,
   CollaborationPayload,
   CommunicationProtocolConfig,
+  MessageQueueShardingConfig,
 } from '../types/index.js';
 import { EketError } from '../types/index.js';
+
 import { createMessageQueue, type MessageQueue } from './message-queue.js';
+import { createShardingManager, type ShardingManager } from './sharding.js';
 
 /**
  * 消息回调类型
@@ -30,20 +37,31 @@ export type MessageCallback<T extends MessageType> = (
 /**
  * 基于消息类型的负载类型映射
  */
-export type TypedMessagePayload<T extends MessageType> =
-  T extends 'task_assigned' ? TaskAssignedPayload :
-  T extends 'task_claimed' ? TaskClaimedPayload :
-  T extends 'task_progress' ? TaskProgressPayload :
-  T extends 'task_complete' ? TaskCompletePayload :
-  T extends 'task_blocked' ? TaskBlockedPayload :
-  T extends 'help_request' ? HelpRequestPayload :
-  T extends 'help_response' ? HelpResponsePayload :
-  T extends 'knowledge_share' ? KnowledgeSharePayload :
-  T extends 'dependency_notify' ? DependencyNotifyPayload :
-  T extends 'status_change' ? StatusChangePayload :
-  T extends 'handover_request' ? HandoverRequestPayload :
-  T extends 'handover_complete' ? HandoverCompletePayload :
-  CollaborationPayload;
+export type TypedMessagePayload<T extends MessageType> = T extends 'task_assigned'
+  ? TaskAssignedPayload
+  : T extends 'task_claimed'
+    ? TaskClaimedPayload
+    : T extends 'task_progress'
+      ? TaskProgressPayload
+      : T extends 'task_complete'
+        ? TaskCompletePayload
+        : T extends 'task_blocked'
+          ? TaskBlockedPayload
+          : T extends 'help_request'
+            ? HelpRequestPayload
+            : T extends 'help_response'
+              ? HelpResponsePayload
+              : T extends 'knowledge_share'
+                ? KnowledgeSharePayload
+                : T extends 'dependency_notify'
+                  ? DependencyNotifyPayload
+                  : T extends 'status_change'
+                    ? StatusChangePayload
+                    : T extends 'handover_request'
+                      ? HandoverRequestPayload
+                      : T extends 'handover_complete'
+                        ? HandoverCompletePayload
+                        : CollaborationPayload;
 
 // ============================================================================
 // 消息负载类型定义
@@ -161,15 +179,17 @@ export interface HandoverCompletePayload {
 export class CommunicationProtocol {
   private config: CommunicationProtocolConfig;
   private messageQueue: MessageQueue;
+  private shardingManager: ShardingManager;
   private callbacks: Map<MessageType, Set<MessageCallback<MessageType>>> = new Map();
-  private isConnected: boolean = false;
+  private isConnected = false;
   private readonly maxRetries: number;
 
-  constructor(config: CommunicationProtocolConfig) {
+  constructor(config: CommunicationProtocolConfig, shardingConfig?: MessageQueueShardingConfig) {
     // Defensive copy
     this.config = { ...config };
     this.maxRetries = config.maxRetries || 3;
     this.messageQueue = createMessageQueue({ mode: 'auto' });
+    this.shardingManager = createShardingManager(shardingConfig);
   }
 
   /**
@@ -212,10 +232,7 @@ export class CommunicationProtocol {
   /**
    * 注册消息处理器
    */
-  on<T extends MessageType>(
-    messageType: T,
-    callback: MessageCallback<T>
-  ): void {
+  on<T extends MessageType>(messageType: T, callback: MessageCallback<T>): void {
     if (!this.callbacks.has(messageType)) {
       this.callbacks.set(messageType, new Set());
     }
@@ -230,10 +247,7 @@ export class CommunicationProtocol {
   /**
    * 注销消息处理器
    */
-  off<T extends MessageType>(
-    messageType: T,
-    callback: MessageCallback<T>
-  ): void {
+  off<T extends MessageType>(messageType: T, callback: MessageCallback<T>): void {
     const handlers = this.callbacks.get(messageType);
     if (handlers) {
       handlers.delete(callback as MessageCallback<MessageType>);
@@ -420,12 +434,12 @@ export class CommunicationProtocol {
   /**
    * 带重试的发送
    */
-  private async sendWithRetry(message: Message, retryCount: number = 0): Promise<Result<void>> {
+  private async sendWithRetry(message: Message, retryCount = 0): Promise<Result<void>> {
     try {
-      const result = await this.messageQueue.publish(
-        this.getChannelName(message.type),
-        message
-      );
+      // 使用一致性哈希获取分片通道（如果启用分片）
+      const channel = this.getShardedChannel(message.type, message.to);
+
+      const result = await this.messageQueue.publish(channel, message);
 
       if (result.success) {
         return { success: true, data: undefined };
@@ -463,29 +477,31 @@ export class CommunicationProtocol {
   private subscribeToChannel(messageType: MessageType): void {
     const channel = this.getChannelName(messageType);
 
-    this.messageQueue.subscribe(channel, async (message: Message) => {
-      // 跳过自己发送的消息
-      if (message.from === this.config.instanceId) {
-        return;
-      }
+    this.messageQueue
+      .subscribe(channel, async (message: Message) => {
+        // 跳过自己发送的消息
+        if (message.from === this.config.instanceId) {
+          return;
+        }
 
-      // 调用所有注册的回调
-      const handlers = this.callbacks.get(messageType);
-      if (handlers) {
-        for (const handler of handlers) {
-          try {
-            await handler(message.payload as TypedMessagePayload<MessageType>, message.from);
-          } catch (err) {
-            console.error(
-              `[CommunicationProtocol] Handler error for ${messageType}:`,
-              err instanceof Error ? err.message : err
-            );
+        // 调用所有注册的回调
+        const handlers = this.callbacks.get(messageType);
+        if (handlers) {
+          for (const handler of handlers) {
+            try {
+              await handler(message.payload as TypedMessagePayload<MessageType>, message.from);
+            } catch (err) {
+              console.error(
+                `[CommunicationProtocol] Handler error for ${messageType}:`,
+                err instanceof Error ? err.message : err
+              );
+            }
           }
         }
-      }
-    }).catch((err) => {
-      console.error(`[CommunicationProtocol] Subscribe to ${channel} failed:`, err);
-    });
+      })
+      .catch((err) => {
+        console.error(`[CommunicationProtocol] Subscribe to ${channel} failed:`, err);
+      });
   }
 
   /**
@@ -493,6 +509,21 @@ export class CommunicationProtocol {
    */
   private getChannelName(messageType: MessageType): string {
     return `eket:msg:${messageType}`;
+  }
+
+  /**
+   * 获取分片通道名称（基于一致性哈希）
+   */
+  private getShardedChannel(messageType: MessageType, targetInstance: string): string {
+    const baseChannel = this.getChannelName(messageType);
+
+    // 广播消息不使用分片
+    if (targetInstance === 'all') {
+      return baseChannel;
+    }
+
+    // 使用一致性哈希获取分片
+    return this.shardingManager.getShardedKey(baseChannel, targetInstance);
   }
 
   /**
@@ -514,6 +545,13 @@ export class CommunicationProtocol {
    */
   getQueueMode(): 'redis' | 'file' {
     return this.messageQueue.getMode();
+  }
+
+  /**
+   * 获取分片管理器（用于测试和监控）
+   */
+  getShardingManager(): ShardingManager {
+    return this.shardingManager;
   }
 }
 

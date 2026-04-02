@@ -3,8 +3,9 @@
  * 用于监控 Slaver 实例的活跃状态
  */
 
-import { RedisClient } from './redis-client.js';
 import type { SlaverHeartbeat, Result } from '../types/index.js';
+
+import { RedisClient } from './redis-client.js';
 
 export interface HeartbeatConfig {
   redisHost?: string;

@@ -12,12 +12,18 @@ export function parseYAMLValue(value: string): unknown {
   const trimmed = value.trim();
 
   // 布尔值
-  if (trimmed === 'true') return true;
-  if (trimmed === 'false') return false;
+  if (trimmed === 'true') {
+    return true;
+  }
+  if (trimmed === 'false') {
+    return false;
+  }
 
   // 字符串（引号包裹）
-  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
-      (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
     return trimmed.slice(1, -1);
   }
 
@@ -32,7 +38,9 @@ export function parseYAMLValue(value: string): unknown {
   // 数组（简单格式：[a, b, c]）
   if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
     const inner = trimmed.slice(1, -1).trim();
-    if (inner === '') return [];
+    if (inner === '') {
+      return [];
+    }
     return inner.split(',').map((item) => parseYAMLValue(item.trim()));
   }
 
@@ -99,7 +107,7 @@ export function parseSimpleYAML(content: string): Record<string, unknown> {
 /**
  * 将 JavaScript 对象转换为简单 YAML 字符串
  */
-export function toSimpleYAML(obj: Record<string, unknown>, indent: number = 0): string {
+export function toSimpleYAML(obj: Record<string, unknown>, indent = 0): string {
   const lines: string[] = [];
   const prefix = '  '.repeat(indent);
 

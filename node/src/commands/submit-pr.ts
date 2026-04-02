@@ -3,14 +3,16 @@
  * 用于提交 PR 到代码仓库
  */
 
-import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { Command } from 'commander';
+
+import type { Result } from '../types/index.js';
+import { EketError } from '../types/index.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
-import type { Result } from '../types/index.js';
 import { parseSimpleYAML } from '../utils/yaml-parser.js';
-import { EketError } from '../types/index.js';
 
 interface SubmitPROptions {
   title?: string;
@@ -210,7 +212,10 @@ async function pushBranch(projectRoot: string, branch: string): Promise<Result<v
     if (result.status === 0) {
       return { success: true, data: undefined };
     } else {
-      return { success: false, error: new EketError('GIT_PUSH_FAILED', `推送失败：${result.stderr}`) };
+      return {
+        success: false,
+        error: new EketError('GIT_PUSH_FAILED', `推送失败：${result.stderr}`),
+      };
     }
   } catch {
     return { success: false, error: new EketError('GIT_PUSH_FAILED', '推送异常') };
@@ -267,7 +272,10 @@ async function getPRConfig(config: Record<string, unknown>): Promise<Result<PRCo
     }
 
     if (!owner || !repo) {
-      return { success: false, error: new EketError('URL_PARSE_ERROR', '无法从 URL 解析 owner/repo') };
+      return {
+        success: false,
+        error: new EketError('URL_PARSE_ERROR', '无法从 URL 解析 owner/repo'),
+      };
     }
 
     return {
@@ -367,7 +375,10 @@ async function createPR(
       break;
 
     default:
-      return { success: false, error: new EketError('UNSUPPORTED_PLATFORM', `不支持的平台：${platform}`) };
+      return {
+        success: false,
+        error: new EketError('UNSUPPORTED_PLATFORM', `不支持的平台：${platform}`),
+      };
   }
 
   try {
@@ -384,7 +395,10 @@ async function createPR(
     ]);
 
     if (result.status !== 0) {
-      return { success: false, error: new EketError('PR_CREATE_FAILED', `创建 PR 失败：${result.stderr}`) };
+      return {
+        success: false,
+        error: new EketError('PR_CREATE_FAILED', `创建 PR 失败：${result.stderr}`),
+      };
     }
 
     const response = JSON.parse(result.stdout);
@@ -405,12 +419,18 @@ async function createPR(
 /**
  * 添加 Reviewers (GitHub only)
  */
-async function addReviewers(config: PRConfig, prNumber: number, reviewers: string[]): Promise<void> {
+async function addReviewers(
+  config: PRConfig,
+  prNumber: number,
+  reviewers: string[]
+): Promise<void> {
   if (config.platform !== 'github') {
     return; // 仅 GitHub 支持
   }
 
-  if (!config.apiToken) return;
+  if (!config.apiToken) {
+    return;
+  }
 
   const { execFileNoThrow } = await import('../utils/execFileNoThrow.js');
   const apiUrl = `${config.baseUrl}/repos/${config.owner}/${config.repo}/pulls/${prNumber}/requested_reviewers`;
@@ -440,7 +460,9 @@ async function enableAutoMerge(config: PRConfig, prNumber: number): Promise<void
     return;
   }
 
-  if (!config.apiToken) return;
+  if (!config.apiToken) {
+    return;
+  }
 
   const { execFileNoThrow } = await import('../utils/execFileNoThrow.js');
   const apiUrl = `${config.baseUrl}/repos/${config.owner}/${config.repo}/pulls/${prNumber}/merge`;
@@ -498,9 +520,11 @@ ${ticketId ? `-${ticketId}` : '- N/A'}
 /**
  * 发送 PR 通知
  */
-async function sendPRNotification(
-  prData: { number: number; htmlUrl: string; title: string }
-): Promise<void> {
+async function sendPRNotification(prData: {
+  number: number;
+  htmlUrl: string;
+  title: string;
+}): Promise<void> {
   const projectRoot = await findProjectRoot();
   if (!projectRoot) {
     console.error('警告：无法发送通知，未找到项目根目录');

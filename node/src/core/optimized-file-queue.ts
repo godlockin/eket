@@ -10,18 +10,19 @@
  * - 性能统计
  */
 
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as crypto from 'crypto';
+
 import type { Message, Result } from '../types/index.js';
 import { EketError } from '../types/index.js';
 
 export interface OptimizedFileQueueConfig {
   queueDir: string;
   archiveDir: string;
-  maxAge: number;           // 消息最大保留时间（毫秒）
-  archiveAfter: number;     // 多久后归档（毫秒）
-  atomicWrites: boolean;    // 是否启用原子写入
+  maxAge: number; // 消息最大保留时间（毫秒）
+  archiveAfter: number; // 多久后归档（毫秒）
+  atomicWrites: boolean; // 是否启用原子写入
 }
 
 export interface OptimizedQueueStats {
@@ -98,7 +99,7 @@ export class OptimizedFileQueueManager {
       }
 
       const files = fs.readdirSync(this.config.queueDir);
-      const tempFiles = files.filter(f => f.includes('.tmp.'));
+      const tempFiles = files.filter((f) => f.includes('.tmp.'));
 
       let cleanedCount = 0;
       for (const file of tempFiles) {
@@ -109,7 +110,8 @@ export class OptimizedFileQueueManager {
           const stats = fs.statSync(filePath);
           const fileAge = Date.now() - stats.mtimeMs;
 
-          if (fileAge > 3600000) {  // 1 小时
+          if (fileAge > 3600000) {
+            // 1 小时
             fs.unlinkSync(filePath);
             cleanedCount++;
           }
@@ -131,10 +133,7 @@ export class OptimizedFileQueueManager {
    * 确保所有必需目录存在
    */
   private ensureDirectories(): void {
-    const dirs = [
-      this.config.queueDir,
-      this.config.archiveDir,
-    ];
+    const dirs = [this.config.queueDir, this.config.archiveDir];
     for (const dir of dirs) {
       fs.mkdirSync(dir, { recursive: true });
     }
@@ -171,7 +170,7 @@ export class OptimizedFileQueueManager {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10000);
 
-      const data = { ids: entries.map(e => e[0]), updated: new Date().toISOString() };
+      const data = { ids: entries.map((e) => e[0]), updated: new Date().toISOString() };
 
       // 原子写入
       fs.writeFileSync(tempPath, JSON.stringify(data, null, 2));
@@ -215,6 +214,7 @@ export class OptimizedFileQueueManager {
    */
   enqueue(channel: string, message: Message): Result<string> {
     const startTime = Date.now();
+    let tempPath: string | null = null;
 
     const executeWrite = (): Result<string> => {
       try {
@@ -237,11 +237,12 @@ export class OptimizedFileQueueManager {
         };
 
         const content = JSON.stringify(fileMessage, null, 2);
-        const tempPath = `${filepath}.tmp.${process.pid}`;
+        tempPath = `${filepath}.tmp.${process.pid}`;
 
         // 原子写入：先写临时文件，再重命名
         fs.writeFileSync(tempPath, content);
         fs.renameSync(tempPath, filepath);
+        tempPath = null; // 重命名成功，临时文件已删除
 
         this.stats.pending++;
         this.recordWriteTime(Date.now() - startTime);
@@ -254,6 +255,15 @@ export class OptimizedFileQueueManager {
           success: false,
           error: new EketError('QUEUE_ERROR', '写入队列失败'),
         };
+      } finally {
+        // 清理临时文件（如果仍然存在）
+        if (tempPath && fs.existsSync(tempPath)) {
+          try {
+            fs.unlinkSync(tempPath);
+          } catch {
+            // 忽略清理临时文件时的错误
+          }
+        }
       }
     };
 
@@ -273,7 +283,7 @@ export class OptimizedFileQueueManager {
   /**
    * 从队列获取消息（支持批量）
    */
-  dequeue(channel?: string, batchSize: number = 100): Array<{ filepath: string; message: FileMessage }> {
+  dequeue(channel?: string, batchSize = 100): Array<{ filepath: string; message: FileMessage }> {
     const startTime = Date.now();
     const messages: Array<{ filepath: string; message: FileMessage }> = [];
 
@@ -283,7 +293,9 @@ export class OptimizedFileQueueManager {
 
       let processed = 0;
       for (const file of messageFiles) {
-        if (processed >= batchSize) break;
+        if (processed >= batchSize) {
+          break;
+        }
 
         const filepath = path.join(this.config.queueDir, file);
 
@@ -335,7 +347,7 @@ export class OptimizedFileQueueManager {
   async processQueue(
     handler: (message: FileMessage) => Promise<void>,
     channel?: string,
-    concurrency: number = 1
+    concurrency = 1
   ): Promise<number> {
     const messages = this.dequeue(channel);
     let processedCount = 0;
@@ -448,7 +460,9 @@ export class OptimizedFileQueueManager {
   /**
    * 批量写入消息（优化大量消息）
    */
-  enqueueBatch(messages: Array<{ channel: string; message: Message }>): Result<{ success: number; failed: number }> {
+  enqueueBatch(
+    messages: Array<{ channel: string; message: Message }>
+  ): Result<{ success: number; failed: number }> {
     let success = 0;
     let failed = 0;
 

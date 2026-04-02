@@ -7,6 +7,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import type { Skill, SkillLoaderConfig, SkillLoadResult, LoadedSkill } from './types.js';
 
 /**
@@ -44,9 +45,7 @@ export class SkillLoader {
    * @returns 加载结果
    */
   async loadFromDirectory(dir?: string): Promise<SkillLoadResult> {
-    const scanDir = dir
-      ? path.resolve(this.config.skillsRootDir, dir)
-      : this.config.skillsRootDir;
+    const scanDir = dir ? path.resolve(this.config.skillsRootDir, dir) : this.config.skillsRootDir;
 
     // 检查目录是否存在
     if (!fs.existsSync(scanDir)) {
@@ -327,9 +326,11 @@ export class SkillLoader {
           }
         } else if (entry.isFile()) {
           // 检查文件扩展名
-          if (entry.name.endsWith(this.config.fileExtension) ||
-              entry.name.endsWith('.js') ||
-              entry.name.endsWith('.mts')) {
+          if (
+            entry.name.endsWith(this.config.fileExtension) ||
+            entry.name.endsWith('.js') ||
+            entry.name.endsWith('.mts')
+          ) {
             files.push(fullPath);
           }
         }
@@ -403,9 +404,7 @@ export class SkillLoader {
       'documentation',
     ];
 
-    return categories.map((cat) =>
-      path.resolve(this.config.skillsRootDir, cat, name, 'skill.ts')
-    );
+    return categories.map((cat) => path.resolve(this.config.skillsRootDir, cat, name, 'skill.ts'));
   }
 
   /**
@@ -454,10 +453,7 @@ export async function loadSkillsFromDirectory(
 /**
  * 便捷函数：加载单个 Skill
  */
-export async function loadSkill(
-  skillsRootDir: string,
-  name: string
-): Promise<Skill | null> {
+export async function loadSkill(skillsRootDir: string, name: string): Promise<Skill | null> {
   const loader = createSkillLoader({ skillsRootDir });
   return await loader.loadSkill(name);
 }

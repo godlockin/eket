@@ -4,9 +4,10 @@
  * 查询 EKET Memory 系统
  */
 
-import { Router, Request, Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { Router, Request, Response } from 'express';
 
 export const MemoryRouter = Router();
 

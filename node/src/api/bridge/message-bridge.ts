@@ -47,7 +47,7 @@ export class MessageBridge {
       host: config.redis.host,
       port: config.redis.port,
       password: config.redis.password,
-      db: config.redis.db
+      db: config.redis.db,
     });
     this.listeners = new Map();
   }
@@ -55,32 +55,23 @@ export class MessageBridge {
   /**
    * 发送消息到 OpenCLAW
    */
-  async sendToOpenCLAW(
-    messageType: MessageType,
-    payload: unknown
-  ): Promise<void> {
+  async sendToOpenCLAW(messageType: MessageType, payload: unknown): Promise<void> {
     const message: BridgeMessage = {
       protocol: 'openclaw-eket-bridge',
       version: '1.0',
       direction: 'eket_to_openclaw',
       message_type: messageType,
       payload,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
-    await this.redis.publish(
-      this.config.channels.statusUpdate,
-      JSON.stringify(message)
-    );
+    await this.redis.publish(this.config.channels.statusUpdate, JSON.stringify(message));
   }
 
   /**
    * 监听来自 OpenCLAW 的消息
    */
-  onMessageFromOpenCLAW(
-    messageType: MessageType,
-    handler: (msg: BridgeMessage) => void
-  ): void {
+  onMessageFromOpenCLAW(messageType: MessageType, handler: (msg: BridgeMessage) => void): void {
     if (!this.listeners.has(messageType)) {
       this.listeners.set(messageType, []);
     }

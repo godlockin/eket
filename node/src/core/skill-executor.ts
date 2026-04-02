@@ -7,10 +7,11 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import type { SkillDefinition, SkillExecutionResult, Result } from '../types/index.js';
 import { EketError } from '../types/index.js';
-import { parseSimpleYAML } from '../utils/yaml-parser.js';
 import { execFileNoThrow, type ExecResult } from '../utils/execFileNoThrow.js';
+import { parseSimpleYAML } from '../utils/yaml-parser.js';
 
 /**
  * Skill 执行上下文
@@ -266,9 +267,9 @@ export class SkillExecutor {
     }
 
     return {
-      name: parsed.name as string || name,
-      description: parsed.description as string || '',
-      category: parsed.category as string || 'unknown',
+      name: (parsed.name as string) || name,
+      description: (parsed.description as string) || '',
+      category: (parsed.category as string) || 'unknown',
       input_schema: parsed.input_schema as Record<string, unknown> | undefined,
       output_schema: parsed.output_schema as Record<string, unknown> | undefined,
       steps,

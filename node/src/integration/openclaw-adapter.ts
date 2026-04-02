@@ -11,20 +11,15 @@
  * @module openclaw-adapter
  */
 
-import type {
-  Ticket,
-  Instance,
-  Result,
-} from '../types/index.js';
-import { EketErrorClass } from '../types/index.js';
-import type { TaskAssignment } from '../types/index.js';
 import { createInstanceRegistry } from '../core/instance-registry.js';
 import type { MessageQueue } from '../core/message-queue.js';
 import { createMessage } from '../core/message-queue.js';
-import type { TaskAssigner } from '../core/task-assigner.js';
-import { createTaskAssigner } from '../core/task-assigner.js';
 import type { SkillExecutor, SkillContext } from '../core/skill-executor.js';
 import { createSkillExecutor } from '../core/skill-executor.js';
+import type { TaskAssigner } from '../core/task-assigner.js';
+import { createTaskAssigner } from '../core/task-assigner.js';
+import { EketErrorClass } from '../types/index.js';
+import type { TaskAssignment, Ticket, Instance, Result, AgentRole } from '../types/index.js';
 
 // ============================================================================
 // OpenCLAW 类型定义
@@ -243,7 +238,7 @@ export function openCLAWToEKET(task: OpenCLAWTask): Ticket {
     priority: (PRIORITY_TO_PRIORITY[task.priority] || 'normal') as Ticket['priority'],
     tags: task.skills_required || [],
     status: 'ready',
-    required_role: task.assignee as any,
+    required_role: task.assignee ? (task.assignee as AgentRole) : undefined,
     created_at: task.created_at || Date.now(),
     updated_at: task.updated_at || Date.now(),
   };
@@ -311,9 +306,7 @@ export class OpenCLAWIntegrationAdapter {
     this.instanceRegistry = createInstanceRegistry();
     this.messageQueue = config.messageQueue || null;
     this.taskAssigner = createTaskAssigner();
-    this.skillExecutor = config.projectRoot
-      ? createSkillExecutor(config.projectRoot)
-      : null;
+    this.skillExecutor = config.projectRoot ? createSkillExecutor(config.projectRoot) : null;
   }
 
   // ============================================================================
@@ -406,10 +399,7 @@ export class OpenCLAWIntegrationAdapter {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketErrorClass(
-          'TASK_CREATE_FAILED',
-          `Failed to create task: ${errorMessage}`
-        ),
+        error: new EketErrorClass('TASK_CREATE_FAILED', `Failed to create task: ${errorMessage}`),
       };
     }
   }
@@ -465,7 +455,7 @@ export class OpenCLAWIntegrationAdapter {
       const instance: Instance = {
         id: spec.id,
         type: 'ai',
-        agent_type: spec.role as any,
+        agent_type: (spec.role || 'backend_dev') as AgentRole,
         skills: spec.skills || [],
         status: 'idle',
         currentLoad: 0,
@@ -492,10 +482,7 @@ export class OpenCLAWIntegrationAdapter {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketErrorClass(
-          'AGENT_START_FAILED',
-          `Failed to start agent: ${errorMessage}`
-        ),
+        error: new EketErrorClass('AGENT_START_FAILED', `Failed to start agent: ${errorMessage}`),
       };
     }
   }
@@ -575,7 +562,7 @@ export class OpenCLAWIntegrationAdapter {
         priority: 'normal',
         tags: msg.skills_required || [],
         status: 'ready',
-        required_role: msg.assignee_role as any,
+        required_role: msg.assignee_role ? (msg.assignee_role as AgentRole) : undefined,
       };
 
       // 3. 使用 TaskAssigner 分配
@@ -600,11 +587,7 @@ export class OpenCLAWIntegrationAdapter {
       };
 
       // 5. 更新 Instance 状态
-      await this.instanceRegistry.updateInstanceStatus(
-        assignResult.instance.id,
-        'busy',
-        ticket.id
-      );
+      await this.instanceRegistry.updateInstanceStatus(assignResult.instance.id, 'busy', ticket.id);
 
       return {
         success: true,
@@ -614,10 +597,7 @@ export class OpenCLAWIntegrationAdapter {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketErrorClass(
-          'ASSIGNMENT_FAILED',
-          `Failed to assign task: ${errorMessage}`
-        ),
+        error: new EketErrorClass('ASSIGNMENT_FAILED', `Failed to assign task: ${errorMessage}`),
       };
     }
   }
@@ -634,7 +614,10 @@ export class OpenCLAWIntegrationAdapter {
       if (!this.skillExecutor) {
         return {
           success: false,
-          error: new EketErrorClass('SKILL_EXECUTOR_NOT_AVAILABLE', 'Skill executor not initialized'),
+          error: new EketErrorClass(
+            'SKILL_EXECUTOR_NOT_AVAILABLE',
+            'Skill executor not initialized'
+          ),
         };
       }
 
@@ -768,7 +751,9 @@ export class OpenCLAWIntegrationAdapter {
       const result = await this.messageQueue.publish('openclaw:agents:lifecycle', message);
       return result;
     } catch (error) {
-      console.warn(`[OpenCLAW Adapter] Failed to send agent lifecycle event: ${error instanceof Error ? error.message : 'Unknown'}`);
+      console.warn(
+        `[OpenCLAW Adapter] Failed to send agent lifecycle event: ${error instanceof Error ? error.message : 'Unknown'}`
+      );
       return {
         success: false,
         error: new EketErrorClass('LIFECYCLE_EVENT_FAILED', 'Failed to send lifecycle event'),

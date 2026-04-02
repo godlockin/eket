@@ -13,6 +13,16 @@
  * - 最大重试次数限制
  */
 
+import {
+  CIRCUIT_BREAKER_FAILURE_THRESHOLD,
+  CIRCUIT_BREAKER_SUCCESS_THRESHOLD,
+  CIRCUIT_BREAKER_TIMEOUT,
+  CIRCUIT_BREAKER_MONITOR_TIMEOUT,
+  RETRY_MAX_ATTEMPTS,
+  RETRY_INITIAL_DELAY,
+  RETRY_MAX_DELAY,
+  RETRY_DELAY_MULTIPLIER,
+} from '../constants.js';
 import type { Result } from '../types/index.js';
 import { EketError, isEketError } from '../types/index.js';
 
@@ -25,10 +35,10 @@ export type CircuitState = 'closed' | 'open' | 'half_open';
  * 断路器配置
  */
 export interface CircuitBreakerConfig {
-  failureThreshold: number;    // 失败阈值
-  successThreshold: number;    // 成功阈值（半开状态）
-  timeout: number;             // 断路器超时（毫秒）
-  monitorTimeout: number;      // 监控窗口（毫秒）
+  failureThreshold: number; // 失败阈值
+  successThreshold: number; // 成功阈值（半开状态）
+  timeout: number; // 断路器超时（毫秒）
+  monitorTimeout: number; // 监控窗口（毫秒）
 }
 
 /**
@@ -59,11 +69,11 @@ export interface CircuitBreakerState {
  * 重试配置
  */
 export interface RetryConfig {
-  maxRetries: number;          // 最大重试次数
-  initialDelay: number;        // 初始延迟（毫秒）
-  maxDelay: number;            // 最大延迟（毫秒）
-  multiplier: number;          // 延迟倍乘因子
-  retryableErrors?: string[];  // 可重试的错误码
+  maxRetries: number; // 最大重试次数
+  initialDelay: number; // 初始延迟（毫秒）
+  maxDelay: number; // 最大延迟（毫秒）
+  multiplier: number; // 延迟倍乘因子
+  retryableErrors?: string[]; // 可重试的错误码
 }
 
 /**
@@ -81,10 +91,10 @@ export class CircuitBreaker {
 
   constructor(config: Partial<CircuitBreakerConfig> = {}) {
     this.config = {
-      failureThreshold: config.failureThreshold || 5,
-      successThreshold: config.successThreshold || 3,
-      timeout: config.timeout || 30000,
-      monitorTimeout: config.monitorTimeout || 60000,
+      failureThreshold: config.failureThreshold ?? CIRCUIT_BREAKER_FAILURE_THRESHOLD,
+      successThreshold: config.successThreshold ?? CIRCUIT_BREAKER_SUCCESS_THRESHOLD,
+      timeout: config.timeout ?? CIRCUIT_BREAKER_TIMEOUT,
+      monitorTimeout: config.monitorTimeout ?? CIRCUIT_BREAKER_MONITOR_TIMEOUT,
     };
   }
 
@@ -96,10 +106,7 @@ export class CircuitBreaker {
     if (!this.canExecute()) {
       return {
         success: false,
-        error: new EketError(
-          'CIRCUIT_OPEN',
-          `Circuit breaker is open, failing fast`
-        ),
+        error: new EketError('CIRCUIT_OPEN', `Circuit breaker is open, failing fast`),
       };
     }
 
@@ -117,7 +124,10 @@ export class CircuitBreaker {
       this.onFailure();
       return {
         success: false,
-        error: err instanceof Error ? new EketError('EXECUTION_ERROR', err.message) : new EketError('UNKNOWN_ERROR', 'Unknown error'),
+        error:
+          err instanceof Error
+            ? new EketError('EXECUTION_ERROR', err.message)
+            : new EketError('UNKNOWN_ERROR', 'Unknown error'),
       };
     }
   }
@@ -285,10 +295,10 @@ export class RetryExecutor {
     circuitConfig: Partial<CircuitBreakerConfig> = {}
   ) {
     this.config = {
-      maxRetries: retryConfig.maxRetries || 3,
-      initialDelay: retryConfig.initialDelay || 1000,
-      maxDelay: retryConfig.maxDelay || 30000,
-      multiplier: retryConfig.multiplier || 2,
+      maxRetries: retryConfig.maxRetries ?? RETRY_MAX_ATTEMPTS,
+      initialDelay: retryConfig.initialDelay ?? RETRY_INITIAL_DELAY,
+      maxDelay: retryConfig.maxDelay ?? RETRY_MAX_DELAY,
+      multiplier: retryConfig.multiplier ?? RETRY_DELAY_MULTIPLIER,
       retryableErrors: retryConfig.retryableErrors || [
         'REDIS_CONNECTION_FAILED',
         'REDIS_OPERATION_FAILED',
@@ -303,10 +313,7 @@ export class RetryExecutor {
   /**
    * 执行带重试和断路器的操作
    */
-  async execute<T>(
-    operation: () => Promise<Result<T>>,
-    context?: string
-  ): Promise<Result<T>> {
+  async execute<T>(operation: () => Promise<Result<T>>, context?: string): Promise<Result<T>> {
     let lastError: Error | null = null;
     let delay = this.config.initialDelay;
 
@@ -328,7 +335,7 @@ export class RetryExecutor {
       // 使用类型守卫转换错误类型
       lastError = isEketError(circuitResult.error)
         ? new Error(`${circuitResult.error.code}: ${circuitResult.error.message}`)
-        : circuitResult.error as Error;
+        : (circuitResult.error as Error);
 
       if (attempt < this.config.maxRetries) {
         // 等待后重试（指数退避）
@@ -337,7 +344,7 @@ export class RetryExecutor {
 
         console.warn(
           `[RetryExecutor] Attempt ${attempt + 1} failed (${errorCode}), ` +
-          `retrying in ${Math.round(waitTime)}ms${context ? `: ${context}` : ''}`
+            `retrying in ${Math.round(waitTime)}ms${context ? `: ${context}` : ''}`
         );
 
         await this.sleep(waitTime);

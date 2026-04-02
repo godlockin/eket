@@ -1,0 +1,139 @@
+# ==============================================================================
+# EKET Framework - Kubernetes ConfigMap
+# 配置中心：Redis/SQLite/日志配置
+# ==============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eket-config
+  labels:
+    app: eket
+    version: "2.0.0"
+data:
+  # --------------------------------------------------------------------------
+  # Redis 配置
+  # --------------------------------------------------------------------------
+  EKET_REDIS_HOST: "redis-master.redis.svc.cluster.local"
+  EKET_REDIS_PORT: "6379"
+  EKET_REDIS_DB: "0"
+
+  # 远程 Redis（可选，用于多实例共享）
+  EKET_REMOTE_REDIS_HOST: "redis-cluster.redis.svc.cluster.local"
+  EKET_REMOTE_REDIS_PORT: "6380"
+
+  # 本地 Redis（用于单实例降级）
+  EKET_LOCAL_REDIS_HOST: "localhost"
+  EKET_LOCAL_REDIS_PORT: "6379"
+
+  # --------------------------------------------------------------------------
+  # SQLite 配置
+  # --------------------------------------------------------------------------
+  EKET_SQLITE_PATH: "/app/data/sqlite/eket.db"
+
+  # --------------------------------------------------------------------------
+  # 文件队列配置
+  # --------------------------------------------------------------------------
+  EKET_FILE_QUEUE_DIR: "/app/data/queue"
+  EKET_DATA_DIR: "/app/data"
+
+  # --------------------------------------------------------------------------
+  # 日志配置
+  # --------------------------------------------------------------------------
+  EKET_LOG_LEVEL: "info"
+  EKET_LOG_DIR: "/app/logs"
+  EKET_LOG_FORMAT: "json"
+  EKET_LOG_CONSOLE: "true"
+  EKET_LOG_FILE: "true"
+
+  # --------------------------------------------------------------------------
+  # 服务配置
+  # --------------------------------------------------------------------------
+  # HTTP Hook Server
+  EKET_HOOK_SERVER_PORT: "8899"
+  EKET_HOOK_SERVER_HOST: "0.0.0.0"
+
+  # Web Dashboard
+  EKET_DASHBOARD_PORT: "3000"
+  EKET_DASHBOARD_HOST: "0.0.0.0"
+
+  # OpenCLAW Gateway
+  EKET_GATEWAY_PORT: "8080"
+  EKET_GATEWAY_HOST: "0.0.0.0"
+
+  # --------------------------------------------------------------------------
+  # 运行配置
+  # --------------------------------------------------------------------------
+  NODE_ENV: "production"
+  NODE_OPTIONS: "--max-old-space-size=512"
+
+  # --------------------------------------------------------------------------
+  # 连接管理配置
+  # --------------------------------------------------------------------------
+  EKET_DRIVER_MODE: "js"
+
+  # --------------------------------------------------------------------------
+  # 内存监控配置
+  # --------------------------------------------------------------------------
+  EKET_MEMORY_WARNING_THRESHOLD: "0.75"
+  EKET_MEMORY_CRITICAL_THRESHOLD: "0.90"
+  EKET_MEMORY_CHECK_INTERVAL: "60000"
+  EKET_MEMORY_ENABLE_GC: "true"
+
+  # --------------------------------------------------------------------------
+  # 健康检查配置
+  # --------------------------------------------------------------------------
+  EKET_HEALTH_CHECK_INTERVAL: "30000"
+  EKET_HEALTH_CHECK_TIMEOUT: "10000"
+
+---
+# ==============================================================================
+# EKET Framework - Kubernetes Secret
+# 敏感配置：Hook Secret、API Key、数据库密码
+# ==============================================================================
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: eket-secret
+  labels:
+    app: eket
+    version: "2.0.0"
+type: Opaque
+stringData:
+  # HTTP Hook Server 认证密钥
+  EKET_HOOK_SECRET: "change-me-to-a-secure-random-string"
+
+  # OpenCLAW Gateway API Key
+  OPENCLAW_API_KEY: "change-me-to-a-secure-random-string"
+
+  # Redis 密码（如果需要）
+  EKET_REDIS_PASSWORD: ""
+  EKET_REMOTE_REDIS_PASSWORD: ""
+
+  # 数据库加密密钥（用于敏感数据加密）
+  EKET_DB_ENCRYPTION_KEY: ""
+
+---
+# ==============================================================================
+# EKET Framework - Kubernetes PVC (Persistent Volume Claim)
+# 用于 Master 实例的数据持久化
+# ==============================================================================
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: eket-data-pvc
+  labels:
+    app: eket
+    version: "2.0.0"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  # 根据集群环境选择合适的 StorageClass
+  # storageClassName: "standard"
+  # storageClassName: "gp2"
+  # storageClassName: "premium-rwo"

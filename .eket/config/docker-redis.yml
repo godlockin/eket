@@ -1,0 +1,17 @@
+# EKET Docker Redis 配置
+# 自动生成于 2026-04-02T11:48:40+08:00
+
+redis:
+  container_name: eket-redis
+  image: redis:7-alpine
+  port: 6380
+  password: eket_redis_2026
+  data_dir: /Users/chenchen/working/sourcecode/tools/dev-tools/eket/.eket/data/redis
+  config_file: /Users/chenchen/working/sourcecode/tools/dev-tools/eket/.eket/data/redis/redis.conf
+  status: running
+
+connection:
+  host: localhost
+  port: 6380
+  password: eket_redis_2026
+  url: redis://:eket_redis_2026@localhost:6380

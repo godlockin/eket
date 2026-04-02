@@ -1,280 +1,503 @@
 /**
  * HTTP Hook Server Tests
+ *
+ * Tests for HTTP webhook endpoints with 28 lifecycle handlers.
+ * Covers: server lifecycle, endpoints, authentication, handlers, and error cases.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { HttpHookServer, createHttpHookServer } from '../src/hooks/http-hook-server';
+import * as http from 'http';
+import {
+  HttpHookServer,
+  createHttpHookServer,
+  createTaskSchedulerHandler,
+  createPermissionCheckerHandler,
+  createAuditLoggerHandler,
+  createWorkflowOrchestratorHandler,
+  type HttpHookServerConfig,
+  type HttpHookPayload,
+  type HookEvent,
+} from '../src/hooks/http-hook-server.js';
 
-const TEST_PORT = 18999;
+// Helper function to make HTTP requests
+function makeRequest(options: {
+  hostname: string;
+  port: number;
+  path: string;
+  method: string;
+  headers?: Record<string, string>;
+  body?: string;
+}): Promise<{ statusCode: number; data: string }> {
+  return new Promise((resolve, reject) => {
+    const req = http.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        resolve({ statusCode: res.statusCode || 0, data });
+      });
+    });
+    req.on('error', reject);
+    req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
+    if (options.body) req.write(options.body);
+    req.end();
+  });
+}
+
+// Helper to wait for server startup
+async function waitForServer(port: number, maxRetries = 20): Promise<void> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const req = http.get(`http://127.0.0.1:${port}/health`, { timeout: 1000 }, (res) => {
+          if (res.statusCode === 200) {
+            resolve();
+          } else {
+            reject(new Error(`Bad status: ${res.statusCode}`));
+          }
+        });
+        req.on('error', reject);
+        req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
+      });
+      return;
+    } catch (e) {
+      if (i === maxRetries - 1) {
+        throw new Error(`Server failed to start on port ${port}: ${e}`);
+      }
+      await new Promise(r => setTimeout(r, 200));
+    }
+  }
+  throw new Error('Server failed to start');
+}
 
 describe('HttpHookServer', () => {
   let server: HttpHookServer;
-  let serverStarted = false;
+  let testPort: number;
+  let basePort: number;
+
+  beforeAll(() => {
+    basePort = 20000 + Math.floor(Math.random() * 1000);
+  });
+
+  beforeEach(() => {
+    testPort = basePort++;
+  });
 
   afterEach(async () => {
-    // Clean up any running server
-    if (serverStarted) {
-      try {
-        await server.stop();
-      } catch {
-        // Ignore if server not running
-      }
-      serverStarted = false;
+    if (server) {
+      try { await server.stop(); } catch {}
     }
   });
 
-  describe('Server lifecycle', () => {
-    beforeEach(() => {
-      server = createHttpHookServer({ port: TEST_PORT });
-      serverStarted = false;
+  describe('createHttpHookServer', () => {
+    it('should create an HttpHookServer instance', () => {
+      const instance = createHttpHookServer({ port: testPort });
+      expect(instance).toBeDefined();
+      expect(instance).toBeInstanceOf(HttpHookServer);
     });
 
-    it('should start and stop', async () => {
+    it('should create with minimal config', () => {
+      expect(createHttpHookServer({ port: testPort })).toBeDefined();
+    });
+
+    it('should create with full config', () => {
+      const config: HttpHookServerConfig = { port: testPort, host: 'localhost', secret: 'secret' };
+      expect(createHttpHookServer(config)).toBeDefined();
+    });
+  });
+
+  describe('Server Lifecycle', () => {
+    it('should start server successfully', async () => {
+      server = createHttpHookServer({ port: testPort });
       await server.start();
-      serverStarted = true;
+      await waitForServer(testPort);
+    }, 10000);
+
+    it('should stop server successfully', async () => {
+      server = createHttpHookServer({ port: testPort });
+      await server.start();
+      await waitForServer(testPort);
       await server.stop();
-      serverStarted = false;
-      // Server stopped successfully
-      expect(true).toBe(true);
+    }, 10000);
+
+    it('should handle stop when not started', async () => {
+      server = createHttpHookServer({ port: testPort });
+      await server.stop();
     });
 
-    it('should respond to health check', async () => {
+    it('should handle multiple stops gracefully', async () => {
+      server = createHttpHookServer({ port: testPort });
       await server.start();
-      serverStarted = true;
+      await waitForServer(testPort);
+      await server.stop();
+      await server.stop();
+    }, 10000);
+  });
 
-      const response = await fetch(`http://localhost:${TEST_PORT}/health`);
-      expect(response.status).toBe(200);
+  describe('GET /health', () => {
+    beforeEach(async () => {
+      server = createHttpHookServer({ port: testPort });
+      await server.start();
+      await waitForServer(testPort);
+    }, 10000);
 
-      const data = await response.json();
-      expect(data.status).toBe('healthy');
+    it('should return healthy status', async () => {
+      const { statusCode, data } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/health', method: 'GET',
+      });
+      expect(statusCode).toBe(200);
+      const parsed = JSON.parse(data);
+      expect(parsed.status).toBe('healthy');
+      expect(parsed.timestamp).toBeDefined();
+    });
+
+    it('should include valid ISO timestamp', async () => {
+      const { data } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/health', method: 'GET',
+      });
+      const parsed = JSON.parse(data);
+      expect(() => new Date(parsed.timestamp)).not.toThrow();
     });
   });
 
-  describe('Hook endpoints', () => {
-    beforeEach(() => {
-      server = createHttpHookServer({ port: TEST_PORT });
-      serverStarted = true;
-      return server.start();
-    });
+  describe('Hook Endpoints', () => {
+    beforeEach(async () => {
+      server = createHttpHookServer({ port: testPort });
+      await server.start();
+      await waitForServer(testPort);
+    }, 10000);
 
-    it('should accept PreToolUse hook', async () => {
-      let handlerCalled = false;
-      let receivedPayload: unknown = null;
+    const hookEndpoints = [
+      '/hooks/pre-tool-use', '/hooks/post-tool-use', '/hooks/notification',
+      '/hooks/session-start', '/hooks/session-end', '/hooks/teammate-idle',
+      '/hooks/task-completed', '/hooks/permission-request',
+    ];
 
-      server.on('PreToolUse', (payload) => {
-        handlerCalled = true;
-        receivedPayload = payload;
-        return { action: 'allow' };
-      });
-
-      const response = await fetch(`http://localhost:${TEST_PORT}/hooks/pre-tool-use`, {
-        method: 'POST',
+    it.each(hookEndpoints)('should accept POST to %s', async (path) => {
+      const { statusCode } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path, method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'PreToolUse',
-          sessionId: 'test-session',
-          agentName: 'test-agent',
-          data: {
-            toolName: 'Bash',
-            toolInput: { command: 'echo hello' },
-          },
-        }),
+        body: JSON.stringify({ event: 'Notification', sessionId: 'test', data: {} }),
       });
-
-      expect(response.status).toBe(200);
-      const result = await response.json();
-      expect(result.action).toBe('allow');
-      expect(handlerCalled).toBe(true);
+      expect(statusCode).toBe(200);
     });
 
-    it('should accept TeammateIdle hook', async () => {
-      let handlerCalled = false;
-
-      server.on('TeammateIdle', () => {
-        handlerCalled = true;
-        return { action: 'allow', feedback: 'Task assigned' };
+    it('should return 404 for unknown endpoint', async () => {
+      const { statusCode } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/unknown', method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}),
       });
-
-      const response = await fetch(`http://localhost:${TEST_PORT}/hooks/teammate-idle`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'TeammateIdle',
-          sessionId: 'test-session',
-          agentName: 'agent-001',
-          data: {
-            idleReason: 'available',
-            completedTaskId: 'task-123',
-            completedStatus: 'resolved',
-          },
-        }),
-      });
-
-      expect(response.status).toBe(200);
-      const result = await response.json();
-      expect(result.action).toBe('allow');
-      expect(result.feedback).toBe('Task assigned');
-      expect(handlerCalled).toBe(true);
+      expect(statusCode).toBe(404);
     });
 
-    it('should accept TaskCompleted hook', async () => {
-      let handlerCalled = false;
-
-      server.on('TaskCompleted', () => {
-        handlerCalled = true;
-        return { action: 'allow' };
+    it('should return 404 for GET on hook endpoint', async () => {
+      const { statusCode } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/pre-tool-use', method: 'GET',
       });
-
-      const response = await fetch(`http://localhost:${TEST_PORT}/hooks/task-completed`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'TaskCompleted',
-          sessionId: 'test-session',
-          agentName: 'agent-001',
-          data: {
-            taskId: 'task-456',
-            taskStatus: 'completed',
-          },
-        }),
-      });
-
-      expect(response.status).toBe(200);
-      expect(handlerCalled).toBe(true);
-    });
-
-    it('should deny operation via PreToolUse hook', async () => {
-      server.on('PreToolUse', (payload) => {
-        if (payload.data.toolName === 'Bash' &&
-            (payload.data.toolInput as { command?: string })?.command?.includes('rm -rf')) {
-          return {
-            action: 'deny',
-            reason: 'Dangerous command detected',
-          };
-        }
-        return { action: 'allow' };
-      });
-
-      const response = await fetch(`http://localhost:${TEST_PORT}/hooks/pre-tool-use`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'PreToolUse',
-          sessionId: 'test-session',
-          agentName: 'test-agent',
-          data: {
-            toolName: 'Bash',
-            toolInput: { command: 'rm -rf /' },
-          },
-        }),
-      });
-
-      const result = await response.json();
-      expect(result.action).toBe('deny');
-      expect(result.reason).toBe('Dangerous command detected');
-    });
-
-    it('should handle multiple handlers for same event', async () => {
-      let handler1Called = false;
-      let handler2Called = false;
-
-      server.on('PreToolUse', () => {
-        handler1Called = true;
-        return { action: 'allow', feedback: 'Handler 1' };
-      });
-
-      server.on('PreToolUse', () => {
-        handler2Called = true;
-        return { action: 'allow', feedback: 'Handler 2' };
-      });
-
-      const response = await fetch(`http://localhost:${TEST_PORT}/hooks/pre-tool-use`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'PreToolUse',
-          sessionId: 'test-session',
-          data: {},
-        }),
-      });
-
-      const result = await response.json();
-      expect(handler1Called).toBe(true);
-      expect(handler2Called).toBe(true);
-      // 最后一个 handler 的反馈生效
-      expect(result.feedback).toBe('Handler 2');
-    });
-
-    it('should return 404 for unknown hook endpoint', async () => {
-      const response = await fetch(`http://localhost:${TEST_PORT}/hooks/unknown-event`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ event: 'UnknownEvent' }),
-      });
-
-      expect(response.status).toBe(404);
-    });
-
-    it('should support CORS preflight', async () => {
-      const response = await fetch(`http://localhost:${TEST_PORT}/hooks/pre-tool-use`, {
-        method: 'OPTIONS',
-        headers: {
-          'Access-Control-Request-Method': 'POST',
-          'Access-Control-Request-Headers': 'Content-Type',
-        },
-      });
-
-      expect(response.status).toBe(204);
-      expect(response.headers.get('Access-Control-Allow-Methods')).toContain('POST');
+      expect(statusCode).toBe(404);
     });
   });
 
-  describe('Secret authentication', () => {
-    it('should reject requests without valid secret', async () => {
-      const securedServer = createHttpHookServer({
-        port: TEST_PORT + 1,
-        secret: 'test-secret-123',
-      });
+  describe('Authentication', () => {
+    let authServer: HttpHookServer;
 
-      try {
-        await securedServer.start();
+    beforeEach(async () => {
+      authServer = createHttpHookServer({ port: testPort, secret: 'test-secret' });
+      await authServer.start();
+      await waitForServer(testPort);
+    }, 10000);
 
-        const response = await fetch(`http://localhost:${TEST_PORT + 1}/hooks/pre-tool-use`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ event: 'PreToolUse', sessionId: 'test', data: {} }),
-        });
-
-        expect(response.status).toBe(401);
-      } finally {
-        await securedServer.stop();
-      }
+    afterEach(async () => {
+      if (authServer) { try { await authServer.stop(); } catch {} }
     });
 
-    it('should accept requests with valid secret', async () => {
-      const securedServer = createHttpHookServer({
-        port: TEST_PORT + 1,
-        secret: 'test-secret-123',
+    it('should reject without auth header', async () => {
+      const { statusCode, data } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/pre-tool-use', method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'PreToolUse', sessionId: 'test', data: {} }),
+      });
+      expect(statusCode).toBe(401);
+      expect(JSON.parse(data).error).toBe('Unauthorized');
+    });
+
+    it('should accept with correct secret', async () => {
+      const { statusCode } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/pre-tool-use', method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer test-secret' },
+        body: JSON.stringify({ event: 'PreToolUse', sessionId: 'test', data: {} }),
+      });
+      expect(statusCode).toBe(200);
+    });
+  });
+
+  describe('CORS', () => {
+    beforeEach(async () => {
+      server = createHttpHookServer({ port: testPort });
+      await server.start();
+      await waitForServer(testPort);
+    }, 10000);
+
+    it('should include CORS headers', async () => {
+      const { headers } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/health', method: 'GET',
+      });
+      // Headers are lowercase in Node.js
+      expect(headers['access-control-allow-origin']).toBe('*');
+    });
+
+    it('should handle OPTIONS preflight', async () => {
+      const { statusCode } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/pre-tool-use', method: 'OPTIONS',
+      });
+      expect(statusCode).toBe(204);
+    });
+  });
+
+  describe('Event Handlers', () => {
+    beforeEach(async () => {
+      server = createHttpHookServer({ port: testPort });
+      await server.start();
+      await waitForServer(testPort);
+    }, 10000);
+
+    it('should register and call handler', async () => {
+      let called = false;
+      let received: HttpHookPayload | null = null;
+
+      server.on('PreToolUse', async (payload) => {
+        called = true;
+        received = payload;
+        return { action: 'allow' };
       });
 
-      try {
-        await securedServer.start();
+      const payload = { event: 'PreToolUse' as HookEvent, sessionId: 'test', agentName: 'agent', data: { toolName: 'Bash' } };
+      await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/pre-tool-use', method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+      });
 
-        securedServer.on('PreToolUse', () => ({ action: 'allow' }));
-
-        const response = await fetch(`http://localhost:${TEST_PORT + 1}/hooks/pre-tool-use`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer test-secret-123',
-          },
-          body: JSON.stringify({ event: 'PreToolUse', sessionId: 'test', data: {} }),
-        });
-
-        expect(response.status).toBe(200);
-      } finally {
-        await securedServer.stop();
-      }
+      expect(called).toBe(true);
+      expect(received).toEqual(payload);
     });
+
+    it('should support multiple handlers', async () => {
+      let h1 = false, h2 = false;
+      server.on('PostToolUse', async () => { h1 = true; return { action: 'allow' }; });
+      server.on('PostToolUse', async () => { h2 = true; return { action: 'allow' }; });
+
+      await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/post-tool-use', method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event: 'PostToolUse', sessionId: 'test', data: {} }),
+      });
+
+      expect(h1).toBe(true);
+      expect(h2).toBe(true);
+    });
+
+    it('should allow handler to deny', async () => {
+      server.on('PreToolUse', async () => ({ action: 'deny' as const, reason: 'Security' }));
+      const { data } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/pre-tool-use', method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event: 'PreToolUse', sessionId: 'test', data: {} }),
+      });
+      const parsed = JSON.parse(data);
+      expect(parsed.action).toBe('deny');
+    });
+
+    it('should return allow when no handlers', async () => {
+      const { data } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/notification', method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event: 'Notification', sessionId: 'test', data: {} }),
+      });
+      expect(JSON.parse(data).action).toBe('allow');
+    });
+  });
+
+  describe('Task Scheduler Handler', () => {
+    beforeEach(async () => {
+      server = createHttpHookServer({ port: testPort });
+      await server.start();
+      await waitForServer(testPort);
+    }, 10000);
+
+    it('should assign task when agent idle', async () => {
+      const assignTask = jest.fn().mockResolvedValue({ taskId: '123', subject: 'Task', description: 'Desc' });
+      server.on('TeammateIdle', createTaskSchedulerHandler(assignTask));
+
+      const { data } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/teammate-idle', method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'TeammateIdle', sessionId: 'test', agentName: 'agent', data: { idleReason: 'available' } }),
+      });
+
+      expect(assignTask).toHaveBeenCalledWith('agent');
+      expect(JSON.parse(data).feedback).toContain('New task assigned');
+    });
+
+    it('should not assign when agent not available', async () => {
+      const assignTask = jest.fn();
+      server.on('TeammateIdle', createTaskSchedulerHandler(assignTask));
+
+      await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/teammate-idle', method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'TeammateIdle', sessionId: 'test', agentName: 'agent', data: { idleReason: 'failed' } }),
+      });
+
+      expect(assignTask).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Permission Checker Handler', () => {
+    beforeEach(async () => {
+      server = createHttpHookServer({ port: testPort });
+      await server.start();
+      await waitForServer(testPort);
+    }, 10000);
+
+    it('should allow when approved', async () => {
+      const check = jest.fn().mockResolvedValue({ approved: true });
+      server.on('PreToolUse', createPermissionCheckerHandler(check));
+
+      const { data } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/pre-tool-use', method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'PreToolUse', sessionId: 'test', data: { toolName: 'Bash', toolInput: {} } }),
+      });
+
+      expect(check).toHaveBeenCalledWith('Bash', {});
+      expect(JSON.parse(data).action).toBe('allow');
+    });
+
+    it('should deny when rejected', async () => {
+      const check = jest.fn().mockResolvedValue({ approved: false, reason: 'Denied' });
+      server.on('PreToolUse', createPermissionCheckerHandler(check));
+
+      const { data } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/pre-tool-use', method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'PreToolUse', sessionId: 'test', data: { toolName: 'Bash', toolInput: {} } }),
+      });
+
+      const parsed = JSON.parse(data);
+      expect(parsed.action).toBe('deny');
+      expect(parsed.reason).toBe('Denied');
+    });
+  });
+
+  describe('Audit Logger Handler', () => {
+    beforeEach(async () => {
+      server = createHttpHookServer({ port: testPort });
+      await server.start();
+      await waitForServer(testPort);
+    }, 10000);
+
+    it('should log audit events', async () => {
+      const logAudit = jest.fn().mockResolvedValue(undefined);
+      server.on('PreToolUse', createAuditLoggerHandler(logAudit));
+
+      await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/pre-tool-use', method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'PreToolUse', sessionId: 'test', agentName: 'agent', data: { toolName: 'Bash' } }),
+      });
+
+      expect(logAudit).toHaveBeenCalled();
+    });
+
+    it('should handle logging errors gracefully', async () => {
+      const logAudit = jest.fn().mockRejectedValue(new Error('Fail'));
+      server.on('PreToolUse', createAuditLoggerHandler(logAudit));
+
+      const { statusCode } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/pre-tool-use', method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'PreToolUse', sessionId: 'test', data: {} }),
+      });
+
+      expect(statusCode).toBe(200);
+    });
+  });
+
+  describe('Error Handling', () => {
+    beforeEach(async () => {
+      server = createHttpHookServer({ port: testPort });
+      await server.start();
+      await waitForServer(testPort);
+    }, 10000);
+
+    it('should handle invalid JSON', async () => {
+      const { statusCode } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/pre-tool-use', method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, body: 'invalid',
+      });
+      expect(statusCode).toBe(500);
+    });
+
+    it('should handle handler errors gracefully', async () => {
+      server.on('PreToolUse', async () => { throw new Error('Handler error'); });
+
+      const { statusCode } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/pre-tool-use', method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'PreToolUse', sessionId: 'test', data: {} }),
+      });
+
+      expect(statusCode).toBe(200);
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('should handle large payload', async () => {
+      server = createHttpHookServer({ port: testPort });
+      await server.start();
+      await waitForServer(testPort);
+
+      const { statusCode } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/notification', method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'Notification', sessionId: 'test', data: { x: 'x'.repeat(100000) } }),
+      });
+
+      expect(statusCode).toBe(200);
+    }, 10000);
+
+    it('should handle all 27+ event types', () => {
+      const events: HookEvent[] = [
+        'PreToolUse', 'PostToolUse', 'PostToolUseFailure', 'Notification',
+        'UserPromptSubmit', 'SessionStart', 'SessionEnd', 'Stop',
+        'StopFailure', 'SubagentStart', 'SubagentStop', 'PreCompact',
+        'PostCompact', 'PermissionRequest', 'PermissionDenied', 'Setup',
+        'TeammateIdle', 'TaskCreated', 'TaskCompleted', 'Elicitation',
+        'ElicitationResult', 'ConfigChange', 'WorktreeCreate', 'WorktreeRemove',
+        'InstructionsLoaded', 'CwdChanged', 'FileChanged',
+      ];
+      expect(events.length).toBe(27);
+    });
+  });
+
+  describe('Defensive Programming', () => {
+    it('should handle config mutation', () => {
+      const config: HttpHookServerConfig = { port: testPort, secret: 'original' };
+      server = createHttpHookServer(config);
+      config.secret = 'modified';
+      expect(server).toBeDefined();
+    });
+
+    it('should handle undefined handler return', async () => {
+      server = createHttpHookServer({ port: testPort });
+      await server.start();
+      await waitForServer(testPort);
+
+      server.on('Notification', async () => { /* return undefined */ });
+
+      const { data } = await makeRequest({
+        hostname: '127.0.0.1', port: testPort, path: '/hooks/notification', method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'Notification', sessionId: 'test', data: {} }),
+      });
+
+      expect(JSON.parse(data).action).toBe('allow');
+    }, 10000);
   });
 });

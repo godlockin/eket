@@ -17,7 +17,7 @@ export interface APIDesignInput {
   /** 资源名称 */
   resource: string;
   /** HTTP 方法列表（可选） */
-  methods?: ('GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH')[];
+  methods?: Array<'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'>;
   /** 是否需要认证 */
   requiresAuth?: boolean;
   /** 数据模型（可选） */
@@ -148,11 +148,11 @@ export interface APIDesignOutput {
   /** OpenAPI/Swagger 片段 */
   openApiSpec: Record<string, unknown>;
   /** 使用示例 */
-  examples: {
+  examples: Array<{
     endpoint: string;
     request: string;
     response: string;
-  }[];
+  }>;
 }
 
 /**
@@ -239,9 +239,7 @@ export const APIDesignSkill: Skill<APIDesignInput, APIDesignOutput> = {
     return true;
   },
 
-  async execute(
-    input: SkillInput<APIDesignInput>
-  ): Promise<SkillOutput<APIDesignOutput>> {
+  async execute(input: SkillInput<APIDesignInput>): Promise<SkillOutput<APIDesignOutput>> {
     const startTime = Date.now();
     const logs: string[] = [];
 
@@ -340,9 +338,9 @@ function generateBasePath(resource: string, version: string): string {
 /**
  * 根据描述确定 HTTP 方法
  */
-function determineMethods(description: string): ('GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH')[] {
+function determineMethods(description: string): Array<'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'> {
   const lowerDesc = description.toLowerCase();
-  const methods: ('GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH')[] = ['GET'];
+  const methods: Array<'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'> = ['GET'];
 
   // 创建/新增
   if (/\b(create|add|new|insert|生成 | 创建 | 新增)\b/i.test(lowerDesc)) {
@@ -777,11 +775,11 @@ function generateOpenApiSpec(
 /**
  * 生成使用示例
  */
-function generateExamples(endpoints: APIEndpoint[]): {
+function generateExamples(endpoints: APIEndpoint[]): Array<{
   endpoint: string;
   request: string;
   response: string;
-}[] {
+}> {
   return endpoints.slice(0, 3).map((endpoint) => ({
     endpoint: `${endpoint.method} ${endpoint.path}`,
     request: generateCurlRequest(endpoint),

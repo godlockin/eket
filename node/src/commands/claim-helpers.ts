@@ -4,6 +4,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { parseSimpleYAML } from '../utils/yaml-parser.js';
 
 /**
@@ -21,9 +22,7 @@ export async function loadConfig(projectRoot: string): Promise<Record<string, un
 /**
  * 获取任务列表
  */
-export async function getTickets(
-  projectRoot: string
-): Promise<
+export async function getTickets(projectRoot: string): Promise<
   Array<{
     id: string;
     title: string;
@@ -78,7 +77,10 @@ export async function getTickets(
 /**
  * 解析任务文件
  */
-export function parseTicket(filename: string, content: string): {
+export function parseTicket(
+  filename: string,
+  content: string
+): {
   id: string;
   title: string;
   priority: string;
@@ -108,9 +110,11 @@ export function parseTicket(filename: string, content: string): {
 /**
  * 匹配角色
  */
-export async function matchRole(
-  ticket: { id: string; title: string; tags: string[] }
-): Promise<string> {
+export async function matchRole(ticket: {
+  id: string;
+  title: string;
+  tags: string[];
+}): Promise<string> {
   // 根据标签匹配角色
   const roleMapping: Record<string, string> = {
     frontend: 'frontend_dev',

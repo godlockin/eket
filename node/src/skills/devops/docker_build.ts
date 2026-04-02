@@ -33,7 +33,7 @@ export interface DockerBuildInput {
   /** 需要挂载的卷 */
   volumes?: string[];
   /** 依赖服务 */
-  services?: ('postgres' | 'mysql' | 'redis' | 'mongodb' | 'nginx')[];
+  services?: Array<'postgres' | 'mysql' | 'redis' | 'mongodb' | 'nginx'>;
 }
 
 /**
@@ -129,7 +129,12 @@ export const DockerBuildSkill: Skill<DockerBuildInput, DockerBuildOutput> = {
       return false;
     }
 
-    if (!req.appType || !['nodejs', 'python', 'java', 'go', 'rust', 'static', 'custom'].includes(req.appType as string)) {
+    if (
+      !req.appType ||
+      !['nodejs', 'python', 'java', 'go', 'rust', 'static', 'custom'].includes(
+        req.appType as string
+      )
+    ) {
       return false;
     }
 
@@ -140,9 +145,7 @@ export const DockerBuildSkill: Skill<DockerBuildInput, DockerBuildOutput> = {
     return true;
   },
 
-  async execute(
-    input: SkillInput<DockerBuildInput>
-  ): Promise<SkillOutput<DockerBuildOutput>> {
+  async execute(input: SkillInput<DockerBuildInput>): Promise<SkillOutput<DockerBuildOutput>> {
     const startTime = Date.now();
     const logs: string[] = [];
 
@@ -262,10 +265,10 @@ function generateDockerfile(config: {
  */
 function generateNodejsDockerfile(
   baseImage?: string,
-  port: number = 3000,
-  workDir: string = '/app',
+  port = 3000,
+  workDir = '/app',
   entryPoint?: string,
-  multiStage: boolean = true,
+  multiStage = true,
   envVars?: Record<string, string>
 ): string {
   const fromImage = baseImage || 'node:20-alpine';
@@ -373,10 +376,10 @@ CMD ["${entryPoint || 'index.js'}"]
  */
 function generatePythonDockerfile(
   baseImage?: string,
-  port: number = 8000,
-  workDir: string = '/app',
+  port = 8000,
+  workDir = '/app',
   entryPoint?: string,
-  multiStage: boolean = true,
+  multiStage = true,
   envVars?: Record<string, string>
 ): string {
   const fromImage = baseImage || 'python:3.11-slim';
@@ -481,14 +484,15 @@ CMD ["${entryPoint || 'main.py'}"]
  */
 function generateJavaDockerfile(
   baseImage?: string,
-  port: number = 8080,
-  workDir: string = '/app',
+  port = 8080,
+  workDir = '/app',
   _entryPoint?: string,
-  multiStage: boolean = true,
+  multiStage = true,
   envVars?: Record<string, string>
 ): string {
   const buildImage = baseImage || 'maven:3.9-eclipse-temurin-17';
-  const runImage = baseImage?.replace('maven', 'eclipse-temurin') || 'eclipse-temurin:17-jre-alpine';
+  const runImage =
+    baseImage?.replace('maven', 'eclipse-temurin') || 'eclipse-temurin:17-jre-alpine';
 
   if (multiStage) {
     return `# Build stage
@@ -576,10 +580,10 @@ ENTRYPOINT ["sh", "-c", "java \$JAVA_OPTS -jar target/*.jar"]
  */
 function generateGoDockerfile(
   baseImage?: string,
-  port: number = 8080,
-  workDir: string = '/app',
+  port = 8080,
+  workDir = '/app',
   _entryPoint?: string,
-  multiStage: boolean = true,
+  multiStage = true,
   envVars?: Record<string, string>
 ): string {
   const buildImage = baseImage || 'golang:1.21-alpine';
@@ -671,8 +675,8 @@ ENTRYPOINT ["./main"]
  */
 function generateGenericDockerfile(
   baseImage?: string,
-  port: number = 3000,
-  workDir: string = '/app',
+  port = 3000,
+  workDir = '/app',
   entryPoint?: string,
   envVars?: Record<string, string>
 ): string {

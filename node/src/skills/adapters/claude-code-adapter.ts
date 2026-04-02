@@ -6,11 +6,13 @@
  */
 
 import * as fs from 'fs';
-import * as path from 'path';
 import { mkdir, writeFile, readFile, readdir, access } from 'fs/promises';
-import type { SkillAdapter, ClaudeCodeConfig } from './types.js';
+import * as path from 'path';
+
 import type { SkillDefinition, SkillExecutionResult } from '../../types/index.js';
-import { EketErrorClass } from '../../types/index.js';
+import { EketErrorClass, isEketError } from '../../types/index.js';
+
+import type { SkillAdapter, ClaudeCodeConfig } from './types.js';
 
 /**
  * Claude Code Inbox 消息格式
@@ -57,16 +59,19 @@ interface ClaudeCodeOutboxResponse {
  */
 export class ClaudeCodeSkillAdapter implements SkillAdapter {
   readonly source = 'claude-code' as const;
-  connected: boolean = false;
+  connected = false;
 
   private config: ClaudeCodeConfig;
   private inboxDir: string;
   private outboxDir: string;
-  private pendingRequests: Map<string, {
-    resolve: (value: ClaudeCodeOutboxResponse) => void;
-    reject: (error: Error) => void;
-    timeout: NodeJS.Timeout;
-  }>;
+  private pendingRequests: Map<
+    string,
+    {
+      resolve: (value: ClaudeCodeOutboxResponse) => void;
+      reject: (error: Error) => void;
+      timeout: NodeJS.Timeout;
+    }
+  >;
   private pollInterval?: NodeJS.Timeout;
 
   constructor(config: ClaudeCodeConfig) {
@@ -157,11 +162,9 @@ export class ClaudeCodeSkillAdapter implements SkillAdapter {
       if (err.code === 'ENOENT') {
         return null;
       }
-      throw new EketErrorClass(
-        'EXECUTION_ERROR',
-        `Failed to read from inbox: ${err.message}`,
-        { inboxDir: this.inboxDir }
-      );
+      throw new EketErrorClass('EXECUTION_ERROR', `Failed to read from inbox: ${err.message}`, {
+        inboxDir: this.inboxDir,
+      });
     }
   }
 
@@ -179,11 +182,9 @@ export class ClaudeCodeSkillAdapter implements SkillAdapter {
       await fs.promises.rename(tempPath, filePath);
     } catch (error) {
       const err = error as Error;
-      throw new EketErrorClass(
-        'EXECUTION_ERROR',
-        `Failed to write to outbox: ${err.message}`,
-        { outboxDir: this.outboxDir }
-      );
+      throw new EketErrorClass('EXECUTION_ERROR', `Failed to write to outbox: ${err.message}`, {
+        outboxDir: this.outboxDir,
+      });
     }
   }
 
@@ -214,7 +215,7 @@ export class ClaudeCodeSkillAdapter implements SkillAdapter {
       return response.skill;
     } catch (error) {
       const err = error as EketErrorClass;
-      if ((err as any).code === 'TIMEOUT') {
+      if (isEketError(err) && err.code === 'TIMEOUT') {
         return null;
       }
       throw err;
@@ -248,7 +249,7 @@ export class ClaudeCodeSkillAdapter implements SkillAdapter {
       return response.skills;
     } catch (error) {
       const err = error as EketErrorClass;
-      if ((err as any).code === 'TIMEOUT') {
+      if (isEketError(err) && err.code === 'TIMEOUT') {
         return [];
       }
       throw err;
@@ -258,10 +259,7 @@ export class ClaudeCodeSkillAdapter implements SkillAdapter {
   /**
    * 执行 Skill
    */
-  async execute(
-    skillName: string,
-    params: Record<string, unknown>
-  ): Promise<SkillExecutionResult> {
+  async execute(skillName: string, params: Record<string, unknown>): Promise<SkillExecutionResult> {
     const startTime = Date.now();
     const requestId = this.generateRequestId();
 
@@ -325,7 +323,9 @@ export class ClaudeCodeSkillAdapter implements SkillAdapter {
 
       const timeout = setTimeout(() => {
         this.pendingRequests.delete(requestId);
-        reject(new EketErrorClass('TIMEOUT', `Request ${requestId} timed out after ${timeoutMs}ms`));
+        reject(
+          new EketErrorClass('TIMEOUT', `Request ${requestId} timed out after ${timeoutMs}ms`)
+        );
       }, timeoutMs);
 
       this.pendingRequests.set(requestId, {

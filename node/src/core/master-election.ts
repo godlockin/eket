@@ -14,12 +14,24 @@
  * 3. 等待期内检测是否有其他 Master 声明
  * 4. 无冲突则正式成为 Master
  * 5. 创建 Master marker 文件
+ *
+ * Warm Standby 模式（v2.0.0 新增）：
+ * - Backup Master 定期同步状态
+ * - Master 故障时自动切换（<30 秒）
+ * - 支持多个 Backup 节点
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
+
+import {
+  MASTER_ELECTION_TIMEOUT,
+  MASTER_DECLARATION_PERIOD,
+  MASTER_LEASE_TIME,
+} from '../constants.js';
 import type { Result } from '../types/index.js';
 import { EketError } from '../types/index.js';
+
 import { RedisClient } from './redis-client.js';
 import { SQLiteClient } from './sqlite-client.js';
 
@@ -55,6 +67,45 @@ export interface MasterElectionResult {
   conflictDetected: boolean;
 }
 
+/**
+ * Master 角色类型
+ */
+export type MasterRole = 'master' | 'backup' | 'slaver';
+
+/**
+ * Master 状态信息
+ */
+export interface MasterState {
+  role: MasterRole;
+  instanceId: string;
+  electedAt: number;
+  lastHeartbeat: number;
+  leaseExpiresAt: number;
+  stateVersion: number; // 状态版本号，用于同步
+}
+
+/**
+ * Warm Standby 配置
+ */
+export interface WarmStandbyConfig {
+  enabled: boolean;
+  heartbeatInterval: number; // 心跳间隔（毫秒）
+  heartbeatTimeout: number; // 心跳超时（毫秒）
+  maxBackups: number; // 最大 Backup 数量
+  stateSyncInterval: number; // 状态同步间隔（毫秒）
+}
+
+/**
+ * Default Warm Standby 配置
+ */
+const DEFAULT_WARM_STANDBY_CONFIG: WarmStandbyConfig = {
+  enabled: true,
+  heartbeatInterval: 5000, // 5 秒
+  heartbeatTimeout: 15000, // 15 秒（3 次心跳间隔）
+  maxBackups: 2, // 最多 2 个 Backup
+  stateSyncInterval: 10000, // 10 秒
+};
+
 // ============================================================================
 // Constants
 // ============================================================================
@@ -62,9 +113,6 @@ export interface MasterElectionResult {
 const MASTER_LOCK_KEY = 'eket:master:lock';
 const MASTER_DECLARATION_KEY = 'eket:master:declaration';
 const MASTER_MARKER_FILE = '.eket_master_marker';
-const DEFAULT_ELECTION_TIMEOUT = 5000; // 5 秒
-const DEFAULT_DECLARATION_PERIOD = 2000; // 2 秒
-const DEFAULT_LEASE_TIME = 30000; // 30 秒
 
 // ============================================================================
 // Master Election Class
@@ -76,21 +124,34 @@ export class MasterElection {
     declarationPeriod: number;
     leaseTime: number;
   };
+  private warmStandbyConfig: WarmStandbyConfig;
   private redisClient: RedisClient | null = null;
   private sqliteClient: SQLiteClient | null = null;
   private instanceId: string;
   private isMaster = false;
+  private role: MasterRole = 'slaver';
   private leaseTimer?: NodeJS.Timeout;
+  private heartbeatTimer?: NodeJS.Timeout;
+  private stateSyncTimer?: NodeJS.Timeout;
+  private stateVersion = 0;
+  private masterState: MasterState | null = null;
+  private backupMasters: string[] = []; // Backup Master IDs
 
-  constructor(config: MasterElectionConfig) {
+  constructor(config: MasterElectionConfig, warmStandbyConfig?: Partial<WarmStandbyConfig>) {
     // Defensive copy with defaults
     this.config = {
-      electionTimeout: config.electionTimeout || DEFAULT_ELECTION_TIMEOUT,
-      declarationPeriod: config.declarationPeriod || DEFAULT_DECLARATION_PERIOD,
-      leaseTime: config.leaseTime || DEFAULT_LEASE_TIME,
+      electionTimeout: config.electionTimeout ?? MASTER_ELECTION_TIMEOUT,
+      declarationPeriod: config.declarationPeriod ?? MASTER_DECLARATION_PERIOD,
+      leaseTime: config.leaseTime ?? MASTER_LEASE_TIME,
       projectRoot: config.projectRoot,
       redis: config.redis ? { ...config.redis } : undefined,
       sqlitePath: config.sqlitePath,
+    };
+
+    // Warm Standby 配置合并
+    this.warmStandbyConfig = {
+      ...DEFAULT_WARM_STANDBY_CONFIG,
+      ...warmStandbyConfig,
     };
 
     // 生成唯一 instance ID
@@ -154,13 +215,13 @@ export class MasterElection {
         };
       }
 
-      // SETNX 尝试获取锁
+      // SETNX 尝试获取锁（使用 ioredis 的 set 方法）
       const acquired = await redis.set(
-        MASTER_LOCK_KEY,
+        `${MASTER_LOCK_KEY}`,
         this.instanceId,
-        'NX',
         'PX',
-        this.config.electionTimeout
+        this.config.electionTimeout,
+        'NX'
       );
 
       if (!acquired) {
@@ -224,7 +285,10 @@ export class MasterElection {
     } catch (error) {
       return {
         success: false,
-        error: new EketError('REDIS_ELECTION_FAILED', `Redis election error: ${error instanceof Error ? error.message : 'Unknown'}`),
+        error: new EketError(
+          'REDIS_ELECTION_FAILED',
+          `Redis election error: ${error instanceof Error ? error.message : 'Unknown'}`
+        ),
       };
     }
   }
@@ -267,7 +331,9 @@ export class MasterElection {
         db.exec(`DELETE FROM master_lock WHERE expires_at < ${now}`);
 
         // 检查是否已有 Master
-        const existing = db.prepare('SELECT master_id, expires_at FROM master_lock WHERE id = 1').get() as { master_id: string; expires_at: number } | undefined;
+        const existing = db
+          .prepare('SELECT master_id, expires_at FROM master_lock WHERE id = 1')
+          .get() as { master_id: string; expires_at: number } | undefined;
 
         if (existing) {
           // 已有 Master，检查是否过期
@@ -277,10 +343,12 @@ export class MasterElection {
         }
 
         // 获取锁
-        db.prepare(`
+        db.prepare(
+          `
           INSERT OR REPLACE INTO master_lock (id, master_id, acquired_at, expires_at)
           VALUES (1, ?, ${now}, ${now + this.config.electionTimeout})
-        `).run(this.instanceId);
+        `
+        ).run(this.instanceId);
 
         return this.instanceId;
       });
@@ -289,7 +357,9 @@ export class MasterElection {
         transaction();
       } catch {
         // 锁已被其他 instance 获取
-        const currentMaster = db.prepare('SELECT master_id FROM master_lock WHERE id = 1').get() as { master_id: string } | undefined;
+        const currentMaster = db.prepare('SELECT master_id FROM master_lock WHERE id = 1').get() as
+          | { master_id: string }
+          | undefined;
         return {
           success: true,
           data: {
@@ -307,7 +377,9 @@ export class MasterElection {
       await this.declarationPeriod('sqlite');
 
       // 再次检查是否仍是 Master
-      const currentMaster = db.prepare('SELECT master_id FROM master_lock WHERE id = 1').get() as { master_id: string } | undefined;
+      const currentMaster = db.prepare('SELECT master_id FROM master_lock WHERE id = 1').get() as
+        | { master_id: string }
+        | undefined;
       if (currentMaster?.master_id !== this.instanceId) {
         return {
           success: true,
@@ -321,11 +393,13 @@ export class MasterElection {
       }
 
       // 更新为正式 Master（延长租约）
-      db.prepare(`
+      db.prepare(
+        `
         UPDATE master_lock
         SET expires_at = ?
         WHERE id = 1 AND master_id = ?
-      `).run(now + this.config.leaseTime, this.instanceId);
+      `
+      ).run(now + this.config.leaseTime, this.instanceId);
 
       // 创建 Master marker 文件
       const markerResult = this.createMasterMarker();
@@ -348,7 +422,10 @@ export class MasterElection {
     } catch (error) {
       return {
         success: false,
-        error: new EketError('SQLITE_ELECTION_FAILED', `SQLite election error: ${error instanceof Error ? error.message : 'Unknown'}`),
+        error: new EketError(
+          'SQLITE_ELECTION_FAILED',
+          `SQLite election error: ${error instanceof Error ? error.message : 'Unknown'}`
+        ),
       };
     }
   }
@@ -432,7 +509,7 @@ export class MasterElection {
           }
         }
         // 等待一小段时间
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
       // 创建 Master 声明
@@ -464,7 +541,10 @@ export class MasterElection {
     } catch (error) {
       return {
         success: false,
-        error: new EketError('FILE_ELECTION_FAILED', `File election error: ${error instanceof Error ? error.message : 'Unknown'}`),
+        error: new EketError(
+          'FILE_ELECTION_FAILED',
+          `File election error: ${error instanceof Error ? error.message : 'Unknown'}`
+        ),
       };
     }
   }
@@ -475,7 +555,7 @@ export class MasterElection {
   private async declarationPeriod(level: ElectionLevel): Promise<void> {
     const startTime = Date.now();
     while (Date.now() - startTime < this.config.declarationPeriod) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // 检查是否有其他 Master 声明
       if (level === 'redis' && this.redisClient) {
@@ -486,7 +566,9 @@ export class MasterElection {
       } else if (level === 'sqlite' && this.sqliteClient) {
         const db = this.sqliteClient.getDB();
         if (db) {
-          const row = db.prepare('SELECT value FROM master_declaration WHERE id = 1').get() as { value: string } | undefined;
+          const row = db.prepare('SELECT value FROM master_declaration WHERE id = 1').get() as
+            | { value: string }
+            | undefined;
           if (row && row.value !== this.instanceId) {
             throw new Error(`Other master detected: ${row.value}`);
           }
@@ -520,7 +602,10 @@ export class MasterElection {
     } catch (error) {
       return {
         success: false,
-        error: new EketError('CREATE_MASTER_MARKER_FAILED', `Failed to create master marker: ${error instanceof Error ? error.message : 'Unknown'}`),
+        error: new EketError(
+          'CREATE_MASTER_MARKER_FAILED',
+          `Failed to create master marker: ${error instanceof Error ? error.message : 'Unknown'}`
+        ),
       };
     }
   }
@@ -538,25 +623,25 @@ export class MasterElection {
     const renewInterval = this.config.leaseTime / 2;
 
     const renew = async () => {
-      if (!this.isMaster) return;
+      if (!this.isMaster) {
+        return;
+      }
 
       try {
         if (level === 'redis' && this.redisClient) {
-          await this.redisClient.getClient()?.set(
-            MASTER_LOCK_KEY,
-            this.instanceId,
-            'XX',
-            'PX',
-            this.config.leaseTime
-          );
+          await this.redisClient
+            .getClient()
+            ?.set(MASTER_LOCK_KEY, this.instanceId, 'PX', this.config.leaseTime, 'XX');
         } else if (level === 'sqlite' && this.sqliteClient) {
           const db = this.sqliteClient.getDB();
           if (db) {
-            db.prepare(`
+            db.prepare(
+              `
               UPDATE master_lock
               SET expires_at = ?
               WHERE id = 1 AND master_id = ?
-            `).run(Date.now() + this.config.leaseTime, this.instanceId);
+            `
+            ).run(Date.now() + this.config.leaseTime, this.instanceId);
           }
         } else if (level === 'file' && lockFile) {
           const lockInfo = {
@@ -578,6 +663,239 @@ export class MasterElection {
     };
 
     this.leaseTimer = setInterval(renew, renewInterval);
+
+    // 启动 Warm Standby 心跳和状态同步
+    if (this.warmStandbyConfig.enabled) {
+      this.startWarmStandbyHeartbeat();
+      this.startStateSync();
+    }
+  }
+
+  /**
+   * 启动 Warm Standby 心跳
+   */
+  private startWarmStandbyHeartbeat(): void {
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+    }
+
+    const heartbeat = async () => {
+      if (!this.isMaster) {
+        return;
+      }
+
+      try {
+        this.stateVersion++;
+        this.masterState = {
+          role: 'master',
+          instanceId: this.instanceId,
+          electedAt: Date.now(),
+          lastHeartbeat: Date.now(),
+          leaseExpiresAt: Date.now() + this.config.leaseTime,
+          stateVersion: this.stateVersion,
+        };
+
+        // 发布心跳到 Redis
+        if (this.redisClient) {
+          await this.redisClient
+            .getClient()
+            ?.setex(
+              'eket:master:heartbeat',
+              Math.floor(this.warmStandbyConfig.heartbeatTimeout / 1000),
+              JSON.stringify(this.masterState)
+            );
+        }
+      } catch (error) {
+        console.error('[MasterElection] Warm Standby heartbeat failed:', error);
+      }
+    };
+
+    this.heartbeatTimer = setInterval(heartbeat, this.warmStandbyConfig.heartbeatInterval);
+  }
+
+  /**
+   * 启动状态同步（Backup Master 使用）
+   */
+  private startStateSync(): void {
+    if (this.stateSyncTimer) {
+      clearInterval(this.stateSyncTimer);
+    }
+
+    const syncState = async () => {
+      if (!this.isMaster) {
+        return;
+      }
+
+      try {
+        // Master 定期同步状态到共享存储
+        if (this.redisClient) {
+          await this.redisClient.getClient()?.setex(
+            'eket:master:state',
+            this.warmStandbyConfig.stateSyncInterval / 1000 + 60,
+            JSON.stringify({
+              ...this.masterState,
+              backupMasters: this.backupMasters,
+            })
+          );
+        }
+      } catch (error) {
+        console.error('[MasterElection] State sync failed:', error);
+      }
+    };
+
+    this.stateSyncTimer = setInterval(syncState, this.warmStandbyConfig.stateSyncInterval);
+  }
+
+  /**
+   * 注册为 Backup Master
+   */
+  async registerAsBackup(): Promise<Result<void>> {
+    if (!this.warmStandbyConfig.enabled) {
+      return {
+        success: false,
+        error: new EketError('WARM_STANDBY_NOT_ENABLED', 'Warm Standby not enabled'),
+      };
+    }
+
+    try {
+      this.role = 'backup';
+
+      // 添加到 Backup Master 列表
+      if (this.redisClient) {
+        await this.redisClient.getClient()?.sadd('eket:master:backups', this.instanceId);
+
+        // 定期发送 Backup 心跳
+        const backupHeartbeat = async () => {
+          if (this.role !== 'backup') {
+            return;
+          }
+
+          await this.redisClient?.getClient()?.setex(
+            `eket:master:backup:${this.instanceId}`,
+            Math.floor(this.warmStandbyConfig.heartbeatTimeout / 1000),
+            JSON.stringify({
+              instanceId: this.instanceId,
+              role: 'backup',
+              lastHeartbeat: Date.now(),
+            })
+          );
+        };
+
+        this.heartbeatTimer = setInterval(
+          backupHeartbeat,
+          this.warmStandbyConfig.heartbeatInterval
+        );
+      }
+
+      return { success: true, data: undefined };
+    } catch (error) {
+      return {
+        success: false,
+        error: new EketError(
+          'BACKUP_REGISTRATION_FAILED',
+          `Failed to register as backup: ${error instanceof Error ? error.message : 'Unknown'}`
+        ),
+      };
+    }
+  }
+
+  /**
+   * 检测 Master 是否存活
+   */
+  async isMasterAlive(): Promise<boolean> {
+    if (!this.redisClient) {
+      return false;
+    }
+
+    try {
+      const heartbeat = await this.redisClient.getClient()?.get('eket:master:heartbeat');
+      if (!heartbeat) {
+        return false;
+      }
+
+      const state = JSON.parse(heartbeat) as MasterState;
+      const now = Date.now();
+
+      return now - state.lastHeartbeat < this.warmStandbyConfig.heartbeatTimeout;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * 从 Backup 提升为 Master（故障切换）
+   */
+  async promoteToMaster(): Promise<Result<MasterElectionResult>> {
+    if (this.role !== 'backup') {
+      return {
+        success: false,
+        error: new EketError('NOT_BACKUP', 'Only backup can promote to master'),
+      };
+    }
+
+    // 检查当前 Master 是否存活
+    const masterAlive = await this.isMasterAlive();
+    if (masterAlive) {
+      return {
+        success: false,
+        error: new EketError('MASTER_STILL_ALIVE', 'Current master is still alive'),
+      };
+    }
+
+    console.log('[MasterElection] Master not responding, starting failover election...');
+
+    // 重新参与选举
+    const result = await this.elect();
+    if (result.success && result.data.isMaster) {
+      this.role = 'master';
+      this.isMaster = true;
+      console.log('[MasterElection] Backup promoted to master after failover');
+    }
+
+    return result;
+  }
+
+  /**
+   * 获取当前 Master 状态
+   */
+  async getMasterState(): Promise<MasterState | null> {
+    if (!this.redisClient) {
+      return null;
+    }
+
+    try {
+      const heartbeat = await this.redisClient.getClient()?.get('eket:master:heartbeat');
+      if (!heartbeat) {
+        return null;
+      }
+
+      return JSON.parse(heartbeat) as MasterState;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 获取所有 Backup Master 列表
+   */
+  async getBackupMasters(): Promise<string[]> {
+    if (!this.redisClient) {
+      return [];
+    }
+
+    try {
+      const backups = await this.redisClient.getClient()?.smembers('eket:master:backups');
+      return backups || [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * 获取当前角色
+   */
+  getRole(): MasterRole {
+    return this.role;
   }
 
   /**
@@ -599,15 +917,27 @@ export class MasterElection {
    */
   async relinquish(): Promise<void> {
     this.isMaster = false;
+    this.role = 'slaver';
 
+    // 清理所有定时器
     if (this.leaseTimer) {
       clearInterval(this.leaseTimer);
       this.leaseTimer = undefined;
+    }
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = undefined;
+    }
+    if (this.stateSyncTimer) {
+      clearInterval(this.stateSyncTimer);
+      this.stateSyncTimer = undefined;
     }
 
     // 清理锁
     if (this.redisClient) {
       await this.redisClient.getClient()?.del(MASTER_LOCK_KEY);
+      await this.redisClient.getClient()?.del('eket:master:heartbeat');
+      await this.redisClient.getClient()?.del('eket:master:state');
       await this.redisClient.disconnect();
     }
 
@@ -633,6 +963,19 @@ export class MasterElection {
    */
   async close(): Promise<void> {
     await this.relinquish();
+
+    // 清理客户端
+    if (this.redisClient) {
+      await this.redisClient.disconnect();
+      this.redisClient = null;
+    }
+    if (this.sqliteClient) {
+      this.sqliteClient.close();
+      this.sqliteClient = null;
+    }
+
+    this.masterState = null;
+    this.backupMasters = [];
   }
 }
 
@@ -662,6 +1005,9 @@ function readLockFile(lockFile: string): LockFileData | null {
 // Factory Function
 // ============================================================================
 
-export function createMasterElection(config: MasterElectionConfig): MasterElection {
-  return new MasterElection(config);
+export function createMasterElection(
+  config: MasterElectionConfig,
+  warmStandbyConfig?: Partial<WarmStandbyConfig>
+): MasterElection {
+  return new MasterElection(config, warmStandbyConfig);
 }

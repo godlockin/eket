@@ -11,11 +11,9 @@
  * - 配置信息：环境配置、部署参数
  */
 
-import type {
-  KnowledgeEntry,
-  Result,
-} from '../types/index.js';
+import type { KnowledgeEntry, Result } from '../types/index.js';
 import { EketError } from '../types/index.js';
+
 import { createSQLiteClient, type SQLiteClient } from './sqlite-client.js';
 
 /**
@@ -246,7 +244,7 @@ export class KnowledgeBase {
 
     try {
       let query = 'SELECT * FROM knowledge_base WHERE 1=1';
-      const params: (string | number)[] = [];
+      const params: Array<string | number> = [];
 
       if (options.type) {
         query += ' AND type = ?';
@@ -284,7 +282,7 @@ export class KnowledgeBase {
       params.push(limit, offset);
 
       const stmt = db.prepare(query);
-      const rows = stmt.all(...params) as Record<string, unknown>[];
+      const rows = stmt.all(...params) as Array<Record<string, unknown>>;
 
       const entries = rows.map((row) => this.rowToEntry(row));
       return { success: true, data: entries };
@@ -407,11 +405,17 @@ export class KnowledgeBase {
     }
 
     try {
-      const totalRow = db.prepare(`SELECT COUNT(*) as count FROM knowledge_base`).get() as { count: number };
+      const totalRow = db.prepare(`SELECT COUNT(*) as count FROM knowledge_base`).get() as {
+        count: number;
+      };
 
-      const typeRows = db.prepare(`
+      const typeRows = db
+        .prepare(
+          `
         SELECT type, COUNT(*) as count FROM knowledge_base GROUP BY type
-      `).all() as { type: string; count: number }[];
+      `
+        )
+        .all() as Array<{ type: string; count: number }>;
 
       const byType: Record<KnowledgeEntry['type'], number> = {
         artifact: 0,
@@ -425,7 +429,9 @@ export class KnowledgeBase {
         byType[row.type as KnowledgeEntry['type']] = row.count;
       }
 
-      const allRows = db.prepare(`SELECT tags FROM knowledge_base`).all() as { tags: string }[];
+      const allRows = db.prepare(`SELECT tags FROM knowledge_base`).all() as Array<{
+        tags: string;
+      }>;
       const byTag = new Map<string, number>();
       for (const row of allRows) {
         try {
@@ -438,9 +444,13 @@ export class KnowledgeBase {
         }
       }
 
-      const recentRows = db.prepare(`
+      const recentRows = db
+        .prepare(
+          `
         SELECT * FROM knowledge_base ORDER BY createdAt DESC LIMIT 10
-      `).all() as Record<string, unknown>[];
+      `
+        )
+        .all() as Array<Record<string, unknown>>;
       const recentEntries = recentRows.map((row) => this.rowToEntry(row));
 
       const stats: KnowledgeStats = {
@@ -470,21 +480,21 @@ export class KnowledgeBase {
   /**
    * 通过关键字搜索
    */
-  async search(keyword: string, limit: number = 20): Promise<Result<KnowledgeEntry[]>> {
+  async search(keyword: string, limit = 20): Promise<Result<KnowledgeEntry[]>> {
     return this.queryEntries({ keyword, limit });
   }
 
   /**
    * 获取特定类型的条目
    */
-  async getByType(type: KnowledgeEntry['type'], limit: number = 50): Promise<Result<KnowledgeEntry[]>> {
+  async getByType(type: KnowledgeEntry['type'], limit = 50): Promise<Result<KnowledgeEntry[]>> {
     return this.queryEntries({ type, limit });
   }
 
   /**
    * 获取特定创建者的条目
    */
-  async getByCreator(createdBy: string, limit: number = 50): Promise<Result<KnowledgeEntry[]>> {
+  async getByCreator(createdBy: string, limit = 50): Promise<Result<KnowledgeEntry[]>> {
     return this.queryEntries({ createdBy, limit });
   }
 
@@ -511,7 +521,9 @@ export class KnowledgeBase {
    * 解析 JSON 字符串
    */
   private parseJson<T>(str: string | null | undefined, defaultValue: T): T {
-    if (!str) return defaultValue;
+    if (!str) {
+      return defaultValue;
+    }
     try {
       return JSON.parse(str) as T;
     } catch {

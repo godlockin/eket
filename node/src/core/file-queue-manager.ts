@@ -5,9 +5,54 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import type { Message } from '../types/index.js';
-import type { Result } from '../types/index.js';
+
+import type { AuditLogger } from '../api/audit-logger.js';
+import type { Message, Result } from '../types/index.js';
 import { EketError } from '../types/index.js';
+
+// ============================================================================
+// 审计日志全局配置
+// ============================================================================
+
+/**
+ * 全局审计日志实例（可选）
+ */
+let globalAuditLogger: AuditLogger | null = null;
+
+/**
+ * 设置全局审计日志实例
+ */
+export function setQueueAuditLogger(auditLogger: AuditLogger): void {
+  globalAuditLogger = auditLogger;
+}
+
+/**
+ * 记录数据访问审计日志
+ */
+async function logAccessAudit(
+  action: 'READ' | 'WRITE' | 'DELETE',
+  actor: string,
+  channel: string,
+  details?: Record<string, unknown>
+): Promise<void> {
+  if (!globalAuditLogger) {
+    return;
+  }
+
+  try {
+    await globalAuditLogger.log(
+      `QUEUE_${action}`,
+      actor,
+      {
+        channel,
+        ...details,
+      },
+      `queue:${channel}`
+    );
+  } catch (error) {
+    console.error('[FileQueue] Audit log error:', error);
+  }
+}
 
 export interface FileQueueConfig {
   queueDir: string;
@@ -56,38 +101,137 @@ export class FileQueueManager {
   }
 
   /**
-   * 加载已处理消息 ID
+   * 加载已处理消息 ID（支持备份恢复）
    */
   private loadProcessedIds(): Result<void> {
-    const indexPath = path.join(this.config.queueDir, 'processed.json');
-    if (fs.existsSync(indexPath)) {
-      try {
-        const data = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
-        this.processedIds = new Set(data.ids || []);
-        return { success: true, data: undefined };
-      } catch {
-        console.warn('[FileQueue] 加载 processed.json 失败，使用空集合');
-        this.processedIds = new Set();
-        return { success: true, data: undefined }; // 非致命错误
-      }
+    const result = this.restoreFromBackup();
+    if (result.success) {
+      return result;
     }
+    // restoreFromBackup 已经将 processedIds 设为空集合
     return { success: true, data: undefined };
   }
 
   /**
-   * 保存已处理消息 ID
+   * 保存已处理消息 ID（双备份 + 原子写入）
+   * 使用临时文件 + rename 模式确保原子性
+   * 主备份：queue/processed.json
+   * 冗余备份：queue/processed.json.bak
    */
   private saveProcessedIds(): Result<void> {
+    const indexPath = path.join(this.config.queueDir, 'processed.json');
+    const backupPath = path.join(this.config.queueDir, 'processed.json.bak');
+
     try {
-      const indexPath = path.join(this.config.queueDir, 'processed.json');
       // 只保留最近 10000 条
       const ids = Array.from(this.processedIds).slice(-10000);
-      fs.writeFileSync(indexPath, JSON.stringify({ ids, updated: new Date().toISOString() }));
+      const data = JSON.stringify({ ids, updated: new Date().toISOString() }, null, 2);
+
+      // 步骤 1: 写入临时文件（原子写入）
+      const tempPath = path.join(this.config.queueDir, `processed.json.tmp.${Date.now()}`);
+      fs.writeFileSync(tempPath, data, { encoding: 'utf-8', flag: 'w' });
+      fs.fsyncSync(fs.openSync(tempPath, 'r+')); // 确保数据落盘
+
+      // 步骤 2: 备份现有文件（如果存在）
+      if (fs.existsSync(indexPath)) {
+        fs.copyFileSync(indexPath, backupPath);
+      }
+
+      // 步骤 3: 原子重命名临时文件到目标文件
+      fs.renameSync(tempPath, indexPath);
+
+      // 步骤 4: 确保主文件落盘
+      const dirPath = path.dirname(indexPath);
+      const dirFd = fs.openSync(dirPath, 'r');
+      try {
+        fs.fsyncSync(dirFd);
+      } finally {
+        fs.closeSync(dirFd);
+      }
+
+      // 步骤 5: 同步冗余备份
+      if (fs.existsSync(backupPath)) {
+        fs.copyFileSync(indexPath, backupPath);
+      }
+
       return { success: true, data: undefined };
-    } catch {
-      console.error('[FileQueue] 保存 processed.json 失败');
-      return { success: false, error: new EketError('QUEUE_ERROR', '保存已处理 ID 失败') };
+    } catch (err) {
+      console.error('[FileQueue] 保存 processed.json 失败:', err);
+
+      // 清理临时文件
+      const tempPath = path.join(this.config.queueDir, `processed.json.tmp.${Date.now()}`);
+      try {
+        if (fs.existsSync(tempPath)) {
+          fs.unlinkSync(tempPath);
+        }
+      } catch {
+        // 忽略清理错误
+      }
+
+      // 尝试从备份恢复
+      const backupPath = path.join(this.config.queueDir, 'processed.json.bak');
+      if (fs.existsSync(backupPath)) {
+        try {
+          const backupData = fs.readFileSync(backupPath, 'utf-8');
+          const backupIds = JSON.parse(backupData).ids || [];
+          this.processedIds = new Set(backupIds);
+          console.log('[FileQueue] 从备份恢复 processed.json 成功');
+        } catch {
+          console.warn('[FileQueue] 从备份恢复失败');
+        }
+      }
+
+      return {
+        success: false,
+        error: new EketError('QUEUE_ERROR', '保存已处理 ID 失败'),
+      };
     }
+  }
+
+  /**
+   * 从备份恢复 processed.json
+   */
+  restoreFromBackup(): Result<void> {
+    const indexPath = path.join(this.config.queueDir, 'processed.json');
+    const backupPath = path.join(this.config.queueDir, 'processed.json.bak');
+
+    // 优先从主文件恢复
+    if (fs.existsSync(indexPath)) {
+      try {
+        const data = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
+        this.processedIds = new Set(data.ids || []);
+        console.log('[FileQueue] 从主文件加载 processed.json');
+        return { success: true, data: undefined };
+      } catch {
+        console.warn('[FileQueue] 主文件损坏，尝试从备份恢复');
+      }
+    }
+
+    // 从备份文件恢复
+    if (fs.existsSync(backupPath)) {
+      try {
+        const data = JSON.parse(fs.readFileSync(backupPath, 'utf-8'));
+        this.processedIds = new Set(data.ids || []);
+
+        // 尝试修复主文件
+        try {
+          fs.copyFileSync(backupPath, indexPath);
+          console.log('[FileQueue] 从备份恢复主文件成功');
+        } catch {
+          console.warn('[FileQueue] 修复主文件失败');
+        }
+
+        return { success: true, data: undefined };
+      } catch {
+        console.warn('[FileQueue] 备份文件也损坏，使用空集合');
+      }
+    }
+
+    this.processedIds = new Set();
+    return {
+      success: false,
+      error: new EketError('DATA_CORRUPTED', 'processed.json 和备份均损坏'),
+    };
   }
 
   /**
@@ -111,7 +255,7 @@ export class FileQueueManager {
   /**
    * 写入消息到队列
    */
-  enqueue(channel: string, message: Message): Result<string> {
+  async enqueue(channel: string, message: Message, actor?: string): Promise<Result<string>> {
     try {
       // 去重检查
       if (this.isProcessed(message.id)) {
@@ -129,6 +273,13 @@ export class FileQueueManager {
       };
 
       fs.writeFileSync(filepath, JSON.stringify(fileMessage, null, 2));
+
+      // 记录审计日志
+      await logAccessAudit('WRITE', actor || message.from || 'system', channel, {
+        messageId: message.id,
+        filepath,
+      });
+
       return { success: true, data: filepath };
     } catch {
       console.error('[FileQueue] Enqueue error');
@@ -298,7 +449,9 @@ export class FileQueueManager {
     // 统计归档
     try {
       if (fs.existsSync(this.config.archiveDir)) {
-        stats.archived = fs.readdirSync(this.config.archiveDir).filter((f) => f.endsWith('.json')).length;
+        stats.archived = fs
+          .readdirSync(this.config.archiveDir)
+          .filter((f) => f.endsWith('.json')).length;
       }
     } catch {
       // 忽略错误
@@ -340,11 +493,7 @@ export class FileQueueManager {
   /**
    * 导出消息历史
    */
-  exportHistory(options?: {
-    startDate?: Date;
-    endDate?: Date;
-    channel?: string;
-  }): Message[] {
+  exportHistory(options?: { startDate?: Date; endDate?: Date; channel?: string }): Message[] {
     const history: Message[] = [];
     const startDate = options?.startDate?.getTime() || 0;
     const endDate = options?.endDate?.getTime() || Date.now();
@@ -354,15 +503,22 @@ export class FileQueueManager {
       const files = fs.readdirSync(this.config.archiveDir);
 
       for (const file of files) {
-        if (!file.endsWith('.json')) continue;
+        if (!file.endsWith('.json')) {
+          continue;
+        }
 
         const filepath = path.join(this.config.archiveDir, file);
 
         try {
           const content = fs.readFileSync(filepath, 'utf-8');
-          const message = JSON.parse(content) as Message & { _channel?: string; _enqueue_time?: number };
+          const message = JSON.parse(content) as Message & {
+            _channel?: string;
+            _enqueue_time?: number;
+          };
 
-          const time = message._enqueue_time || (message.timestamp ? new Date(message.timestamp).getTime() : 0);
+          const time =
+            message._enqueue_time ||
+            (message.timestamp ? new Date(message.timestamp).getTime() : 0);
           if (time >= startDate && time <= endDate) {
             if (!options?.channel || message._channel === options.channel) {
               history.push(message);

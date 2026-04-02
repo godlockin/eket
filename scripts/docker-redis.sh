@@ -60,9 +60,12 @@ check_docker() {
 
 # 获取容器状态
 get_container_status() {
-    if docker ps -q --filter "name=$CONTAINER_NAME" &>/dev/null; then
+    local running_count=$(docker ps -q --filter "name=$CONTAINER_NAME" 2>/dev/null | wc -l | tr -d ' ')
+    local stopped_count=$(docker ps -aq --filter "name=$CONTAINER_NAME" --filter "status=exited" 2>/dev/null | wc -l | tr -d ' ')
+
+    if [ "$running_count" -gt 0 ]; then
         echo "running"
-    elif docker ps -aq --filter "name=$CONTAINER_NAME" &>/dev/null; then
+    elif [ "$stopped_count" -gt 0 ]; then
         echo "stopped"
     else
         echo "not_found"
@@ -72,8 +75,9 @@ get_container_status() {
 # 创建 Redis 配置文件
 create_redis_config() {
     cat > "$REDIS_CONFIG" << EOF
-# EKET Redis 配置文件
+# EKET Redis 配置文件 v2.0.0
 # 自动生成于 $(date -Iseconds)
+# 持久化策略：RDB + AOF 双持久化
 
 # 网络配置
 port 6379
@@ -82,19 +86,71 @@ bind 0.0.0.0
 # 安全配置
 requirepass $PASSWORD
 
-# 持久化配置
+# ================================
+# RDB 快照持久化配置
+# ================================
+# 快照频率：每 15 分钟至少保存一次（满足 RPO < 1 小时）
+# 格式：save <seconds> <changes>
+save 900 1
+save 300 10
+save 60 10000
+
+# RDB 文件名
+dbfilename dump.rdb
+
+# 工作目录（数据持久化目录）
+dir /data
+
+# RDB 压缩
+rdbcompression yes
+
+# RDB 校验和
+rdbchecksum yes
+
+# 最后一写入失败时是否停止
+stop-writes-on-bgsave-error no
+
+# ================================
+# AOF 持久化配置
+# ================================
+# 启用 AOF
 appendonly yes
+
+# AOF 文件名
+appendfilename "appendonly.aof"
+
+# AOF 同步策略：每秒同步一次（性能和安全性平衡）
 appendfsync everysec
 
+# 重写 AOF 时是否继续接受写入
+no-appendfsync-on-rewrite no
+
+# AOF 自动重写触发条件
+auto-aof-rewrite-percentage 100
+auto-aof-rewrite-min-size 64mb
+
+# 加载 truncated AOF 文件
+aof-load-truncated yes
+
+# 使用 RDB 前缀加速 AOF 重写
+aof-use-rdb-preamble yes
+
+# ================================
 # 内存配置
+# ================================
 maxmemory 256mb
 maxmemory-policy allkeys-lru
 
+# ================================
 # 日志配置
+# ================================
 loglevel notice
 EOF
 
     log INFO "Redis 配置文件已创建：$REDIS_CONFIG"
+    log INFO "持久化策略：RDB + AOF 双持久化"
+    log INFO "RDB 快照：每 15 分钟自动保存"
+    log INFO "AOF 同步：每秒同步一次"
 }
 
 # 启动 Redis 容器

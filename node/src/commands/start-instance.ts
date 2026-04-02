@@ -10,9 +10,10 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { EketError, Result } from '../types/index.js';
+
+import { createMasterElection, type MasterElection } from '../core/master-election.js';
 import { createRedisClient } from '../core/redis-client.js';
-import { createMasterElection } from '../core/master-election.js';
+import { EketError, Result } from '../types/index.js';
 
 // ============================================================================
 // Types
@@ -135,7 +136,9 @@ export function checkThreeReposState(projectRoot: string): Result<ThreeReposStat
         try {
           const files = fs.readdirSync(repoPath, { withFileTypes: true });
           hasContent = files.some(
-            (f) => f.isFile() && (f.name.endsWith('.md') || f.name.endsWith('.ts') || f.name.endsWith('.js'))
+            (f) =>
+              f.isFile() &&
+              (f.name.endsWith('.md') || f.name.endsWith('.ts') || f.name.endsWith('.js'))
           );
         } catch {
           hasContent = false;
@@ -178,7 +181,10 @@ export function decideInstanceRole(
   }
 
   // 没有 Master 且仓库未初始化 → Master
-  if (!masterExists && (!reposState.confluence.exists || !reposState.jira.exists || !reposState.codeRepo.exists)) {
+  if (
+    !masterExists &&
+    (!reposState.confluence.exists || !reposState.jira.exists || !reposState.codeRepo.exists)
+  ) {
     return { success: true, data: 'master' };
   }
 
@@ -203,7 +209,10 @@ export function decideInstanceRole(
 /**
  * 创建 Master 标记
  */
-export function createMasterMarker(projectRoot: string, instanceType: InstanceType): Result<string> {
+export function createMasterMarker(
+  projectRoot: string,
+  instanceType: InstanceType
+): Result<string> {
   try {
     const timestamp = new Date().toISOString();
     const markerContent = `initialized_by: ${instanceType}\nmaster_instance: true\ninitialized_at: ${timestamp}\n`;
@@ -420,7 +429,9 @@ export interface StartInstanceOptions {
 /**
  * 启动 Instance 主函数（v0.9.1 - 使用 Master 选举机制）
  */
-export async function startInstance(options: StartInstanceOptions = {}): Promise<Result<InstanceConfig>> {
+export async function startInstance(
+  options: StartInstanceOptions = {}
+): Promise<Result<InstanceConfig>> {
   const projectRoot = options.projectRoot || process.cwd();
 
   console.log('========================================');
@@ -431,11 +442,13 @@ export async function startInstance(options: StartInstanceOptions = {}): Promise
   console.log('## Step 1: Running Master election...');
 
   // 从环境变量读取 Redis 配置
-  const redisConfig = process.env.EKET_REDIS_HOST ? {
-    host: process.env.EKET_REDIS_HOST,
-    port: parseInt(process.env.EKET_REDIS_PORT || '6379', 10),
-    password: process.env.EKET_REDIS_PASSWORD,
-  } : undefined;
+  const redisConfig = process.env.EKET_REDIS_HOST
+    ? {
+        host: process.env.EKET_REDIS_HOST,
+        port: parseInt(process.env.EKET_REDIS_PORT || '6379', 10),
+        password: process.env.EKET_REDIS_PASSWORD,
+      }
+    : undefined;
 
   const election = createMasterElection({
     redis: redisConfig,
@@ -453,7 +466,9 @@ export async function startInstance(options: StartInstanceOptions = {}): Promise
   }
 
   const result = electionResult.data;
-  console.log(`Election result: ${result.isMaster ? 'MASTER' : 'SLAVER'} (level: ${result.electionLevel})`);
+  console.log(
+    `Election result: ${result.isMaster ? 'MASTER' : 'SLAVER'} (level: ${result.electionLevel})`
+  );
 
   if (result.conflictDetected) {
     console.log(`Another master detected: ${result.masterId}`);
@@ -501,12 +516,8 @@ export async function startInstance(options: StartInstanceOptions = {}): Promise
     console.log('  - Merge to main branch');
   } else {
     // Slaver 初始化
-    const slaverMode: SlaverMode = options.human ? 'human' : (options.auto ? 'ai-auto' : 'ai-manual');
-    const slaverResult = await initializeSlaverInstance(
-      projectRoot,
-      slaverMode,
-      options.role
-    );
+    const slaverMode: SlaverMode = options.human ? 'human' : options.auto ? 'ai-auto' : 'ai-manual';
+    const slaverResult = await initializeSlaverInstance(projectRoot, slaverMode, options.role);
 
     if (!slaverResult.success) {
       console.error(`Slaver initialization failed: ${slaverResult.error.message}`);
@@ -528,7 +539,14 @@ export async function startInstance(options: StartInstanceOptions = {}): Promise
   // Build final config
   const config: InstanceConfig = {
     instanceType,
-    slaverMode: instanceType === 'slaver' ? (options.human ? 'human' : (options.auto ? 'ai-auto' : 'ai-manual')) : undefined,
+    slaverMode:
+      instanceType === 'slaver'
+        ? options.human
+          ? 'human'
+          : options.auto
+            ? 'ai-auto'
+            : 'ai-manual'
+        : undefined,
     role: options.role,
     autoMode: options.auto || false,
     projectRoot,
@@ -540,7 +558,10 @@ export async function startInstance(options: StartInstanceOptions = {}): Promise
 /**
  * 初始化 Master 实例
  */
-async function initializeMasterInstance(projectRoot: string, election: any): Promise<Result<void>> {
+async function initializeMasterInstance(
+  projectRoot: string,
+  election: MasterElection
+): Promise<Result<void>> {
   // 创建目录结构
   const dirsResult = initializeMasterDirectories(projectRoot);
   if (!dirsResult.success) {

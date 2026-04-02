@@ -14,9 +14,58 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import lockfile from 'proper-lockfile';
-import { EketError } from '../types/index.js';
+
+import type { AuditLogger } from '../api/audit-logger.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 import type { Result } from '../types/index.js';
+import { encrypt, decrypt, isEncryptionEnabled, getEncryptionKey } from '../utils/encryption.js';
+
+// ============================================================================
+// 审计日志全局配置
+// ============================================================================
+
+/**
+ * 全局审计日志实例（可选）
+ * 如果设置了此实例，所有数据访问操作都会被记录
+ */
+let globalAuditLogger: AuditLogger | null = null;
+
+/**
+ * 设置全局审计日志实例
+ */
+export function setMailboxAuditLogger(auditLogger: AuditLogger): void {
+  globalAuditLogger = auditLogger;
+}
+
+/**
+ * 记录数据访问审计日志
+ */
+async function logAccessAudit(
+  action: 'READ' | 'WRITE' | 'DELETE',
+  actor: string,
+  targetAgentId: string,
+  details?: Record<string, unknown>
+): Promise<void> {
+  if (!globalAuditLogger) {
+    return;
+  }
+
+  try {
+    await globalAuditLogger.log(
+      `MAILBOX_${action}`,
+      actor,
+      {
+        targetAgent: targetAgentId,
+        ...details,
+      },
+      `mailbox:${targetAgentId}`
+    );
+  } catch (error) {
+    console.error('[Agent Mailbox] Audit log error:', error);
+  }
+}
 
 // ============================================================================
 // 文件锁工具（proper-lockfile 封装）
@@ -36,6 +85,11 @@ type LockOptions = {
 };
 
 /**
+ * 文件锁最大重试次数
+ */
+const MAX_LOCK_RETRIES = 10;
+
+/**
  * 文件锁配置
  * proper-lockfile 自动处理锁文件，不需要手动指定 lockfilePath
  */
@@ -43,7 +97,7 @@ const LOCK_OPTIONS: LockOptions = {
   stale: 5000, // 5 秒后认为锁已过期
   update: 2000, // 每 2 秒更新锁
   retries: {
-    retries: 10,
+    retries: MAX_LOCK_RETRIES,
     minTimeout: 5,
     maxTimeout: 100,
   },
@@ -82,8 +136,8 @@ export interface AgentMessage {
   text: string;
   timestamp: string;
   read: boolean;
-  color?: string;      // 发送方颜色标识
-  summary?: string;    // 5-10 词摘要，用于 UI 预览
+  color?: string; // 发送方颜色标识
+  summary?: string; // 5-10 词摘要，用于 UI 预览
 }
 
 /**
@@ -94,7 +148,7 @@ export interface IdleNotificationMessage {
   from: string;
   timestamp: string;
   idleReason?: 'available' | 'interrupted' | 'failed';
-  summary?: string;             // 最后一次任务的简短摘要
+  summary?: string; // 最后一次任务的简短摘要
   completedTaskId?: string;
   completedStatus?: 'resolved' | 'blocked' | 'failed';
   failureReason?: string;
@@ -203,12 +257,97 @@ function sanitizePathComponent(name: string): string {
 }
 
 /**
+ * 加密消息内容
+ * 如果未配置加密密钥，则返回原文
+ */
+function encryptContent(content: string): string {
+  if (!isEncryptionEnabled()) {
+    return content;
+  }
+  try {
+    const key = getEncryptionKey();
+    if (!key) {
+      return content;
+    }
+    const encrypted = encrypt(content, key);
+    return JSON.stringify(encrypted);
+  } catch (error) {
+    console.error('[Agent Mailbox] Encryption error:', error);
+    return content; // 加密失败时降级为明文
+  }
+}
+
+/**
+ * 解密消息内容
+ * 如果内容未加密或无法解密，返回原文
+ */
+function decryptContent(content: string): string {
+  if (!isEncryptionEnabled()) {
+    return content;
+  }
+  try {
+    // 尝试解析为加密数据
+    const maybeEncrypted = JSON.parse(content) as {
+      salt?: string;
+      iv?: string;
+      encryptedData?: string;
+      authTag?: string;
+    };
+    if (
+      maybeEncrypted.salt &&
+      maybeEncrypted.iv &&
+      maybeEncrypted.encryptedData &&
+      maybeEncrypted.authTag
+    ) {
+      const key = getEncryptionKey();
+      if (!key) {
+        return content;
+      }
+      // 类型断言，因为上面已经检查了所有字段都存在
+      return decrypt(maybeEncrypted as import('../utils/encryption.js').EncryptedData, key);
+    }
+  } catch {
+    // 不是有效的加密数据，返回原文
+  }
+  return content;
+}
+
+/**
+ * 验证 Agent ID 是否合法，防止路径注入攻击
+ * 检查是否包含非法字符（路径分隔符、特殊字符等）
+ */
+function validateAgentId(agentId: string): boolean {
+  // 不允许为空
+  if (!agentId || agentId.trim().length === 0) {
+    return false;
+  }
+  // 不允许包含路径分隔符
+  if (/[\/\\]/.test(agentId)) {
+    return false;
+  }
+  // 不允许包含特殊字符（只允许字母、数字、下划线、连字符）
+  if (!/^[a-zA-Z0-9_-]+$/.test(agentId)) {
+    return false;
+  }
+  return true;
+}
+
+/**
  * 确保 inbox 目录存在
  */
 async function ensureInboxDir(): Promise<void> {
   const inboxDir = getInboxDir();
   if (!fs.existsSync(inboxDir)) {
-    fs.mkdirSync(inboxDir, { recursive: true });
+    try {
+      fs.mkdirSync(inboxDir, { recursive: true });
+    } catch (error) {
+      const err = error as NodeJS.ErrnoException;
+      throw new EketError(
+        EketErrorCode.FILE_CONNECT_FAILED,
+        `Failed to create inbox directory: ${err.message}`,
+        { code: err.code, inboxDir }
+      );
+    }
   }
 }
 
@@ -219,14 +358,31 @@ async function ensureInboxDir(): Promise<void> {
 /**
  * 读取所有消息（含已读）
  */
-export async function readMailbox(agentId: string): Promise<AgentMessage[]> {
+export async function readMailbox(agentId: string, actor?: string): Promise<AgentMessage[]> {
+  // 验证 agentId 防止路径注入
+  if (!validateAgentId(agentId)) {
+    console.error('[Agent Mailbox] Invalid agentId:', agentId);
+    return [];
+  }
+
   const inboxPath = getInboxPath(agentId);
   try {
     if (!fs.existsSync(inboxPath)) {
       return [];
     }
     const content = await fs.promises.readFile(inboxPath, 'utf-8');
-    return JSON.parse(content) as AgentMessage[];
+    const messages = JSON.parse(content) as AgentMessage[];
+
+    // 记录审计日志
+    await logAccessAudit('READ', actor || 'system', agentId, {
+      messageCount: messages.length,
+    });
+
+    // 解密消息内容
+    return messages.map((m) => ({
+      ...m,
+      text: decryptContent(m.text),
+    }));
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return [];
@@ -241,23 +397,36 @@ export async function readMailbox(agentId: string): Promise<AgentMessage[]> {
  */
 export async function readUnreadMessages(agentId: string): Promise<AgentMessage[]> {
   const messages = await readMailbox(agentId);
-  return messages.filter(m => !m.read);
+  return messages.filter((m) => !m.read);
 }
 
 /**
  * 向 inbox 写入消息（带文件锁，原子写入）
  *
  * 步骤：
- * 1. 确保 inbox 文件存在（wx flag 防止重复创建）
- * 2. 获取文件锁
- * 3. 重新读取最新消息（锁内读取避免丢失并发写入）
- * 4. 追加新消息并写回
- * 5. 释放锁
+ * 1. 验证 agentId 防止路径注入
+ * 2. 确保 inbox 文件存在（wx flag 防止重复创建）
+ * 3. 获取文件锁
+ * 4. 重新读取最新消息（锁内读取避免丢失并发写入）
+ * 5. 追加新消息并写回
+ * 6. 释放锁
  */
 export async function writeToMailbox(
   agentId: string,
   message: Omit<AgentMessage, 'read'>,
+  actor?: string
 ): Promise<Result<void>> {
+  // 验证 agentId 防止路径注入
+  if (!validateAgentId(agentId)) {
+    return {
+      success: false,
+      error: new EketError(
+        EketErrorCode.UNKNOWN_ERROR,
+        `Invalid agentId: ${agentId}. AgentId must contain only letters, numbers, underscores, or hyphens.`
+      ),
+    };
+  }
+
   try {
     await ensureInboxDir();
     const inboxPath = getInboxPath(agentId);
@@ -279,13 +448,26 @@ export async function writeToMailbox(
 
     try {
       // 锁内重读确保最新状态（防止并发写入丢失）
-      const messages = await readMailbox(agentId);
-      messages.push({ ...message, read: false });
-      await fs.promises.writeFile(
-        inboxPath,
-        JSON.stringify(messages, null, 2),
-        'utf-8',
-      );
+      // 注意：readMailbox 会解密，但我们要追加新消息，所以直接读取原始数据
+      const inboxContent = await fs.promises.readFile(inboxPath, 'utf-8');
+      const messages = JSON.parse(inboxContent) as AgentMessage[];
+
+      // 加密新消息的 text 字段
+      const encryptedMessage = {
+        ...message,
+        read: false,
+        text: encryptContent(message.text),
+      };
+
+      messages.push(encryptedMessage);
+      await fs.promises.writeFile(inboxPath, JSON.stringify(messages, null, 2), 'utf-8');
+
+      // 记录审计日志
+      await logAccessAudit('WRITE', actor || message.from, agentId, {
+        messageId: message.id,
+        from: message.from,
+      });
+
       return { success: true, data: undefined };
     } finally {
       await releaseLock(release);
@@ -296,7 +478,7 @@ export async function writeToMailbox(
       success: false,
       error: new EketError(
         'MAILBOX_WRITE_FAILED',
-        `Failed to write message: ${(error as Error).message}`,
+        `Failed to write message: ${(error as Error).message}`
       ),
     };
   }
@@ -307,8 +489,16 @@ export async function writeToMailbox(
  */
 export async function markMessageAsReadByIndex(
   agentId: string,
-  messageIndex: number,
+  messageIndex: number
 ): Promise<Result<void>> {
+  // 验证 agentId 防止路径注入
+  if (!validateAgentId(agentId)) {
+    return {
+      success: false,
+      error: new EketError(EketErrorCode.UNKNOWN_ERROR, `Invalid agentId: ${agentId}`),
+    };
+  }
+
   const inboxPath = getInboxPath(agentId);
 
   if (!fs.existsSync(inboxPath)) {
@@ -330,11 +520,7 @@ export async function markMessageAsReadByIndex(
     }
 
     messages[messageIndex] = { ...message, read: true };
-    await fs.promises.writeFile(
-      inboxPath,
-      JSON.stringify(messages, null, 2),
-      'utf-8',
-    );
+    await fs.promises.writeFile(inboxPath, JSON.stringify(messages, null, 2), 'utf-8');
 
     return { success: true, data: undefined };
   } catch (error) {
@@ -346,7 +532,7 @@ export async function markMessageAsReadByIndex(
       success: false,
       error: new EketError(
         'MAILBOX_MARK_READ_FAILED',
-        `Failed to mark message as read: ${(error as Error).message}`,
+        `Failed to mark message as read: ${(error as Error).message}`
       ),
     };
   } finally {
@@ -358,6 +544,14 @@ export async function markMessageAsReadByIndex(
  * 标记所有消息为已读（带文件锁）
  */
 export async function markMessagesAsRead(agentId: string): Promise<Result<void>> {
+  // 验证 agentId 防止路径注入
+  if (!validateAgentId(agentId)) {
+    return {
+      success: false,
+      error: new EketError(EketErrorCode.UNKNOWN_ERROR, `Invalid agentId: ${agentId}`),
+    };
+  }
+
   const inboxPath = getInboxPath(agentId);
 
   if (!fs.existsSync(inboxPath)) {
@@ -378,11 +572,7 @@ export async function markMessagesAsRead(agentId: string): Promise<Result<void>>
       m.read = true;
     }
 
-    await fs.promises.writeFile(
-      inboxPath,
-      JSON.stringify(messages, null, 2),
-      'utf-8',
-    );
+    await fs.promises.writeFile(inboxPath, JSON.stringify(messages, null, 2), 'utf-8');
 
     return { success: true, data: undefined };
   } catch (error) {
@@ -394,7 +584,7 @@ export async function markMessagesAsRead(agentId: string): Promise<Result<void>>
       success: false,
       error: new EketError(
         'MAILBOX_MARK_READ_FAILED',
-        `Failed to mark messages as read: ${(error as Error).message}`,
+        `Failed to mark messages as read: ${(error as Error).message}`
       ),
     };
   } finally {
@@ -406,6 +596,14 @@ export async function markMessagesAsRead(agentId: string): Promise<Result<void>>
  * 清空 inbox（保留文件，内容置为空数组）
  */
 export async function clearMailbox(agentId: string): Promise<Result<void>> {
+  // 验证 agentId 防止路径注入
+  if (!validateAgentId(agentId)) {
+    return {
+      success: false,
+      error: new EketError(EketErrorCode.UNKNOWN_ERROR, `Invalid agentId: ${agentId}`),
+    };
+  }
+
   const inboxPath = getInboxPath(agentId);
 
   try {
@@ -424,7 +622,7 @@ export async function clearMailbox(agentId: string): Promise<Result<void>> {
       success: false,
       error: new EketError(
         'MAILBOX_CLEAR_FAILED',
-        `Failed to clear mailbox: ${(error as Error).message}`,
+        `Failed to clear mailbox: ${(error as Error).message}`
       ),
     };
   }
@@ -452,7 +650,7 @@ export function createIdleNotification(
     completedTaskId?: string;
     completedStatus?: IdleNotificationMessage['completedStatus'];
     failureReason?: string;
-  },
+  }
 ): IdleNotificationMessage {
   return {
     type: 'idle_notification',
@@ -571,7 +769,7 @@ export function createShutdownRequestMessage(params: {
  * 判断消息是否为结构化协议消息
  */
 export function isStructuredProtocolMessage(
-  message: AgentMessage | StructuredMessage,
+  message: AgentMessage | StructuredMessage
 ): message is StructuredMessage {
   return 'type' in message;
 }
@@ -580,7 +778,7 @@ export function isStructuredProtocolMessage(
  * 判断消息是否为空闲通知
  */
 export function isIdleNotification(
-  message: AgentMessage | StructuredMessage,
+  message: AgentMessage | StructuredMessage
 ): message is IdleNotificationMessage {
   return (message as StructuredMessage)?.type === 'idle_notification';
 }
@@ -589,7 +787,7 @@ export function isIdleNotification(
  * 判断消息是否为任务分配消息
  */
 export function isTaskAssignmentMessage(
-  message: AgentMessage | StructuredMessage,
+  message: AgentMessage | StructuredMessage
 ): message is TaskAssignmentMessage {
   return (message as StructuredMessage)?.type === 'task_assignment';
 }
@@ -598,7 +796,7 @@ export function isTaskAssignmentMessage(
  * 判断消息是否为任务完成通知
  */
 export function isTaskCompletedNotification(
-  message: AgentMessage | StructuredMessage,
+  message: AgentMessage | StructuredMessage
 ): message is TaskCompletedNotification {
   return (message as StructuredMessage)?.type === 'task_completed_notification';
 }
@@ -607,7 +805,7 @@ export function isTaskCompletedNotification(
  * 判断消息是否为权限请求
  */
 export function isPermissionRequest(
-  message: AgentMessage | StructuredMessage,
+  message: AgentMessage | StructuredMessage
 ): message is PermissionRequestMessage {
   return (message as StructuredMessage)?.type === 'permission_request';
 }
@@ -616,7 +814,7 @@ export function isPermissionRequest(
  * 判断消息是否为关机请求
  */
 export function isShutdownRequest(
-  message: AgentMessage | StructuredMessage,
+  message: AgentMessage | StructuredMessage
 ): message is ShutdownRequestMessage {
   return (message as StructuredMessage)?.type === 'shutdown_request';
 }
@@ -637,8 +835,17 @@ export async function sendIdleNotification(
     completedTaskId?: string;
     completedStatus?: IdleNotificationMessage['completedStatus'];
     failureReason?: string;
-  },
+  }
 ): Promise<Result<void>> {
+  // 验证 agentId 和 masterId 防止路径注入
+  if (!validateAgentId(agentId) || !validateAgentId(masterId)) {
+    const invalidId = !validateAgentId(agentId) ? agentId : masterId;
+    return {
+      success: false,
+      error: new EketError(EketErrorCode.UNKNOWN_ERROR, `Invalid agentId: ${invalidId}`),
+    };
+  }
+
   const message = createIdleNotification(agentId, options);
   return await writeToMailbox(masterId, {
     id: generateMessageId(),
@@ -661,8 +868,17 @@ export async function sendTaskAssignment(
     assignedBy: string;
     priority?: TaskAssignmentMessage['priority'];
     tags?: string[];
-  },
+  }
 ): Promise<Result<void>> {
+  // 验证 agentId 和 assignedBy 防止路径注入
+  if (!validateAgentId(agentId) || !validateAgentId(params.assignedBy)) {
+    const invalidId = !validateAgentId(agentId) ? agentId : params.assignedBy;
+    return {
+      success: false,
+      error: new EketError(EketErrorCode.UNKNOWN_ERROR, `Invalid agentId: ${invalidId}`),
+    };
+  }
+
   const message = createTaskAssignmentMessage(params);
   return await writeToMailbox(agentId, {
     id: generateMessageId(),
@@ -685,8 +901,17 @@ export async function sendTaskCompletedNotification(
     result?: Record<string, unknown>;
     error?: string;
     durationMs?: number;
-  },
+  }
 ): Promise<Result<void>> {
+  // 验证 masterId 和 from 防止路径注入
+  if (!validateAgentId(masterId) || !validateAgentId(params.from)) {
+    const invalidId = !validateAgentId(masterId) ? masterId : params.from;
+    return {
+      success: false,
+      error: new EketError(EketErrorCode.UNKNOWN_ERROR, `Invalid agentId: ${invalidId}`),
+    };
+  }
+
   const message = createTaskCompletedNotification(params);
   return await writeToMailbox(masterId, {
     id: generateMessageId(),
@@ -707,8 +932,17 @@ export async function sendPermissionRequest(
     toolName: string;
     toolInput: Record<string, unknown>;
     description: string;
-  },
+  }
 ): Promise<Result<PermissionRequestMessage>> {
+  // 验证 masterId 和 agentId 防止路径注入
+  if (!validateAgentId(masterId) || !validateAgentId(params.agentId)) {
+    const invalidId = !validateAgentId(masterId) ? masterId : params.agentId;
+    return {
+      success: false,
+      error: new EketError(EketErrorCode.UNKNOWN_ERROR, `Invalid agentId: ${invalidId}`),
+    };
+  }
+
   const message = createPermissionRequestMessage(params);
   const result = await writeToMailbox(masterId, {
     id: generateMessageId(),
@@ -730,8 +964,17 @@ export async function sendPermissionRequest(
 export async function sendShutdownRequest(
   targetId: string,
   from: string,
-  reason?: string,
+  reason?: string
 ): Promise<Result<ShutdownRequestMessage>> {
+  // 验证 targetId 和 from 防止路径注入
+  if (!validateAgentId(targetId) || !validateAgentId(from)) {
+    const invalidId = !validateAgentId(targetId) ? targetId : from;
+    return {
+      success: false,
+      error: new EketError(EketErrorCode.UNKNOWN_ERROR, `Invalid agentId: ${invalidId}`),
+    };
+  }
+
   const message = createShutdownRequestMessage({ from, reason });
   const result = await writeToMailbox(targetId, {
     id: generateMessageId(),
@@ -750,9 +993,13 @@ export async function sendShutdownRequest(
 /**
  * 获取未读的结构化消息
  */
-export async function getUnreadStructuredMessages(
-  agentId: string,
-): Promise<StructuredMessage[]> {
+export async function getUnreadStructuredMessages(agentId: string): Promise<StructuredMessage[]> {
+  // 验证 agentId 防止路径注入
+  if (!validateAgentId(agentId)) {
+    console.error('[Agent Mailbox] Invalid agentId:', agentId);
+    return [];
+  }
+
   const messages = await readUnreadMessages(agentId);
   const structured: StructuredMessage[] = [];
 

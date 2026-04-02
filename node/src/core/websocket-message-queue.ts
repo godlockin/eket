@@ -9,8 +9,13 @@
  * - Claude Code `sessions-websocket.ts` (WebSocket 通信层)
  */
 
+import * as crypto from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
+
 import type { Result } from '../types/index.js';
 import { EketError } from '../types/index.js';
+
 import {
   SessionsWebSocket,
   createSessionsWebSocket,
@@ -28,11 +33,11 @@ import {
  * 消息队列配置
  */
 export interface WebSocketMessageQueueConfig {
-  webSocket?: SessionsWebSocketConfig;  // WebSocket 配置（可选）
-  fallbackToFile?: boolean;              // 是否启用文件降级（默认 true）
-  fileQueueDir?: string;                 // 文件队列目录（fallback 使用）
-  pingIntervalMs?: number;               // Ping 间隔（默认 30000）
-  maxRetries?: number;                   // 最大重试次数（默认 3）
+  webSocket?: SessionsWebSocketConfig; // WebSocket 配置（可选）
+  fallbackToFile?: boolean; // 是否启用文件降级（默认 true）
+  fileQueueDir?: string; // 文件队列目录（fallback 使用）
+  pingIntervalMs?: number; // Ping 间隔（默认 30000）
+  maxRetries?: number; // 最大重试次数（默认 3）
 }
 
 /**
@@ -68,6 +73,54 @@ const DEFAULT_CONFIG: Partial<WebSocketMessageQueueConfig> = {
   maxRetries: 3,
   pingIntervalMs: 30000,
 };
+
+// ============================================================================
+// Type Guards
+// ============================================================================
+
+/**
+ * Type guard to validate QueuedMessage structure
+ */
+function isQueuedMessage(data: unknown): data is QueuedMessage {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+
+  const msg = data as Record<string, unknown>;
+
+  // Required fields validation
+  if (typeof msg['id'] !== 'string') {
+    return false;
+  }
+  if (typeof msg['type'] !== 'string') {
+    return false;
+  }
+  if (typeof msg['payload'] !== 'object' || msg['payload'] === null) {
+    return false;
+  }
+  if (typeof msg['timestamp'] !== 'number') {
+    return false;
+  }
+
+  // Optional fields validation
+  if (msg['from'] !== undefined && typeof msg['from'] !== 'string') {
+    return false;
+  }
+  if (msg['to'] !== undefined && typeof msg['to'] !== 'string') {
+    return false;
+  }
+
+  // Priority validation
+  const priority = msg['priority'];
+  if (
+    priority !== undefined &&
+    !['low', 'normal', 'high', 'critical'].includes(priority as string)
+  ) {
+    return false;
+  }
+
+  return true;
+}
 
 // ============================================================================
 // WebSocket Message Queue Class
@@ -109,10 +162,7 @@ export class WebSocketMessageQueue {
     // 尝试 WebSocket 连接
     if (this.config.webSocket) {
       try {
-        this.webSocket = createSessionsWebSocket(
-          this.config.webSocket,
-          this.createCallbacks()
-        );
+        this.webSocket = createSessionsWebSocket(this.config.webSocket, this.createCallbacks());
 
         const result = await this.webSocket.connect();
         if (result.success) {
@@ -120,7 +170,9 @@ export class WebSocketMessageQueue {
           console.log('[WebSocketMessageQueue] Connected via WebSocket');
           return { success: true, data: undefined };
         }
-        console.warn('[WebSocketMessageQueue] WebSocket connection failed, falling back to file queue');
+        console.warn(
+          '[WebSocketMessageQueue] WebSocket connection failed, falling back to file queue'
+        );
       } catch (error) {
         console.warn('[WebSocketMessageQueue] WebSocket connection error:', error);
       }
@@ -179,8 +231,14 @@ export class WebSocketMessageQueue {
    */
   private handleIncomingMessage(data: RawData): void {
     try {
-      const message = JSON.parse(data.toString()) as QueuedMessage;
-      this.dispatchMessage(message);
+      const parsed = JSON.parse(data.toString());
+
+      if (!isQueuedMessage(parsed)) {
+        console.error('[WebSocketMessageQueue] Invalid message format');
+        return;
+      }
+
+      this.dispatchMessage(parsed);
     } catch (error) {
       console.error('[WebSocketMessageQueue] Failed to parse message:', error);
     }
@@ -213,7 +271,9 @@ export class WebSocketMessageQueue {
   /**
    * 发送消息
    */
-  async sendMessage(message: Omit<QueuedMessage, 'id' | 'timestamp' | 'retryCount'>): Promise<Result<string>> {
+  async sendMessage(
+    message: Omit<QueuedMessage, 'id' | 'timestamp' | 'retryCount'>
+  ): Promise<Result<string>> {
     const queuedMessage: QueuedMessage = {
       ...message,
       id: this.generateMessageId(),
@@ -272,9 +332,6 @@ export class WebSocketMessageQueue {
     const fileQueueDir = this.config.fileQueueDir || './.eket/data/queue';
 
     try {
-      const fs = await import('fs');
-      const path = await import('path');
-
       await fs.promises.mkdir(fileQueueDir, { recursive: true });
 
       const filePath = path.join(fileQueueDir, `${message.id}.json`);
@@ -283,8 +340,10 @@ export class WebSocketMessageQueue {
       console.log(`[WebSocketMessageQueue] Message written to file: ${filePath}`);
       return { success: true, data: message.id };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to write message to file';
-      const errorContext = error instanceof Error ? { message: error.message, stack: error.stack } : undefined;
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to write message to file';
+      const errorContext =
+        error instanceof Error ? { message: error.message, stack: error.stack } : undefined;
       return {
         success: false,
         error: new EketError('FILE_QUEUE_WRITE_FAILED', errorMessage, errorContext),
@@ -372,10 +431,11 @@ export class WebSocketMessageQueue {
   }
 
   /**
-   * 生成消息 ID
+   * 生成消息 ID (使用加密安全的随机数生成器)
    */
   private generateMessageId(): string {
-    return `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const randomBytes = crypto.randomBytes(6).toString('hex');
+    return `msg_${Date.now()}_${randomBytes}`;
   }
 }
 

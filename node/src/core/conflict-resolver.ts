@@ -16,15 +16,16 @@ import type {
   ResourceLock,
 } from '../types/index.js';
 import { EketError } from '../types/index.js';
+
 import { createRedisClient, type RedisClient } from './redis-client.js';
 
 /**
  * 冲突类型
  */
 export type ConflictType =
-  | 'task_conflict'       // 多个 Instance claim 同一任务
-  | 'resource_conflict'   // 多个 Instance 访问同一资源
-  | 'priority_conflict';  // 任务优先级变化
+  | 'task_conflict' // 多个 Instance claim 同一任务
+  | 'resource_conflict' // 多个 Instance 访问同一资源
+  | 'priority_conflict'; // 任务优先级变化
 
 /**
  * 冲突事件
@@ -34,9 +35,9 @@ export interface ConflictEvent {
   type: ConflictType;
   description: string;
   participants: string[]; // Instance IDs
-  resource?: string;      // 资源 ID（资源冲突时）
-  taskId?: string;        // 任务 ID（任务冲突时）
-  ticketId?: string;      // 票务 ID
+  resource?: string; // 资源 ID（资源冲突时）
+  taskId?: string; // 任务 ID（任务冲突时）
+  ticketId?: string; // 票务 ID
   detectedAt: number;
   resolvedAt?: number;
   resolution?: ConflictResolution;
@@ -48,8 +49,8 @@ export interface ConflictEvent {
  */
 export interface ConflictResolution {
   strategy: string;
-  winner?: string;      // 获胜的 Instance ID
-  losers?: string[];    // 失败的 Instance IDs
+  winner?: string; // 获胜的 Instance ID
+  losers?: string[]; // 失败的 Instance IDs
   reason: string;
   metadata?: Record<string, unknown>;
 }
@@ -91,10 +92,7 @@ export class ConflictResolver {
   private conflicts: Map<string, ConflictEvent> = new Map();
   private lockManager: LockManager;
 
-  constructor(
-    config: ConflictResolutionConfig,
-    lockManagerConfig?: LockManagerConfig
-  ) {
+  constructor(config: ConflictResolutionConfig, lockManagerConfig?: LockManagerConfig) {
     // Defensive copy
     this.config = { ...config };
     this.redis = createRedisClient();
@@ -377,13 +375,13 @@ export class ConflictResolver {
   ): Promise<ConflictResolution> {
     // 简化处理：所有请求者共享资源（读锁）
     // 实际实现需要区分读写请求
-    void await this.lockManager.acquireLock({
+    void (await this.lockManager.acquireLock({
       resourceId,
       instanceId: requestors[0],
       purpose: 'shared_access',
       ttl_ms: 30000,
       exclusive: false,
-    });
+    }));
 
     return {
       strategy: 'read_write_lock',
@@ -470,7 +468,10 @@ export class ConflictResolver {
         ticketId: ticket.id,
         newPriority,
         currentAssignee: ticket.assignee,
-        suggestion: newPriority === 'urgent' ? 'Reassign to most available instance' : 'Keep current assignee',
+        suggestion:
+          newPriority === 'urgent'
+            ? 'Reassign to most available instance'
+            : 'Keep current assignee',
       },
     };
   }
@@ -668,11 +669,15 @@ export class LockManager {
     const now = Date.now();
 
     // 添加到等待队列（按时间戳排序）
-    await client.zadd(queueKey, now, JSON.stringify({
-      instanceId: request.instanceId,
-      purpose: request.purpose,
-      timestamp: now,
-    }));
+    await client.zadd(
+      queueKey,
+      now,
+      JSON.stringify({
+        instanceId: request.instanceId,
+        purpose: request.purpose,
+        timestamp: now,
+      })
+    );
 
     // 设置队列过期时间
     await client.expire(queueKey, Math.ceil(this.maxWaitTime / 1000));
@@ -692,13 +697,19 @@ export class LockManager {
    */
   async addToWaitQueue(resourceId: string, instanceId: string): Promise<void> {
     const client = this.redis.getClient();
-    if (!client) return;
+    if (!client) {
+      return;
+    }
 
     const queueKey = `${this.redisPrefix}${resourceId}:queue`;
-    await client.zadd(queueKey, Date.now(), JSON.stringify({
-      instanceId,
-      timestamp: Date.now(),
-    }));
+    await client.zadd(
+      queueKey,
+      Date.now(),
+      JSON.stringify({
+        instanceId,
+        timestamp: Date.now(),
+      })
+    );
   }
 
   /**
@@ -767,7 +778,9 @@ export class LockManager {
    */
   private async notifyNextInQueue(resourceId: string): Promise<void> {
     const client = this.redis.getClient();
-    if (!client) return;
+    if (!client) {
+      return;
+    }
 
     const queueKey = `${this.redisPrefix}${resourceId}:queue`;
     const nextRequest = await client.zpopmin(queueKey, 1);
@@ -839,8 +852,6 @@ export class LockManager {
 /**
  * 创建冲突解决器实例
  */
-export function createConflictResolver(
-  config: ConflictResolutionConfig
-): ConflictResolver {
+export function createConflictResolver(config: ConflictResolutionConfig): ConflictResolver {
   return new ConflictResolver(config);
 }

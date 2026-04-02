@@ -34,24 +34,24 @@ export type InstanceStatus = 'initializing' | 'idle' | 'busy' | 'offline';
 export interface InstanceConfig {
   controller: InstanceController;
   role: InstanceRole;
-  agent_type: string;  // product_manager, frontend_dev, backend_dev, etc.
+  agent_type: string; // product_manager, frontend_dev, backend_dev, etc.
   skills: string[];
-  auto_mode?: boolean;  // 是否启用自动模式
+  auto_mode?: boolean; // 是否启用自动模式
 }
 
 /**
  * Instance 完整信息（注册表存储）
  */
 export interface InstanceInfo {
-  id: string;              // 唯一标识符，如 agent_frontend_dev_001
+  id: string; // 唯一标识符，如 agent_frontend_dev_001
   controller: InstanceController;
   role: InstanceRole;
-  agent_type: string;      // 具体代理类型
-  skills: string[];        // 技能列表
+  agent_type: string; // 具体代理类型
+  skills: string[]; // 技能列表
   status: InstanceStatus;
-  currentTask?: string;    // 当前任务 ID
-  startedAt: number;       // 启动时间戳
-  lastHeartbeat: number;   // 最后心跳时间戳
+  currentTask?: string; // 当前任务 ID
+  startedAt: number; // 启动时间戳
+  lastHeartbeat: number; // 最后心跳时间戳
 }
 
 /**

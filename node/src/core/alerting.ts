@@ -5,6 +5,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import type { Result } from '../types/index.js';
 import { EketErrorCode, EketErrorClass } from '../types/index.js';
 
@@ -31,9 +32,9 @@ export interface AlertRule {
   name: string;
   description?: string;
   level: AlertLevel;
-  condition: string;  // 条件表达式
+  condition: string; // 条件表达式
   channels: NotificationChannel[];
-  cooldown?: number;  // 冷却时间（毫秒）
+  cooldown?: number; // 冷却时间（毫秒）
   enabled: boolean;
 }
 
@@ -132,10 +133,7 @@ export class AlertingSystem {
     if (!rule.enabled) {
       return {
         success: false,
-        error: new EketErrorClass(
-          EketErrorCode.ALERT_RULE_DISABLED,
-          `告警规则已禁用：${ruleId}`
-        ),
+        error: new EketErrorClass(EketErrorCode.ALERT_RULE_DISABLED, `告警规则已禁用：${ruleId}`),
       };
     }
 
@@ -145,10 +143,7 @@ export class AlertingSystem {
       if (lastAlert && Date.now() - lastAlert < rule.cooldown) {
         return {
           success: false,
-          error: new EketErrorClass(
-            EketErrorCode.ALERT_IN_COOLDOWN,
-            `告警正在冷却期：${ruleId}`
-          ),
+          error: new EketErrorClass(EketErrorCode.ALERT_IN_COOLDOWN, `告警正在冷却期：${ruleId}`),
         };
       }
     }
@@ -186,14 +181,11 @@ export class AlertingSystem {
    * 确认告警
    */
   acknowledge(alertId: string, userId: string): Result<void> {
-    const alert = this.alerts.find(a => a.id === alertId);
+    const alert = this.alerts.find((a) => a.id === alertId);
     if (!alert) {
       return {
         success: false,
-        error: new EketErrorClass(
-          EketErrorCode.ALERT_NOT_FOUND,
-          `告警不存在：${alertId}`
-        ),
+        error: new EketErrorClass(EketErrorCode.ALERT_NOT_FOUND, `告警不存在：${alertId}`),
       };
     }
 
@@ -208,14 +200,11 @@ export class AlertingSystem {
    * 解决告警
    */
   resolve(alertId: string, userId: string): Result<void> {
-    const alert = this.alerts.find(a => a.id === alertId);
+    const alert = this.alerts.find((a) => a.id === alertId);
     if (!alert) {
       return {
         success: false,
-        error: new EketErrorClass(
-          EketErrorCode.ALERT_NOT_FOUND,
-          `告警不存在：${alertId}`
-        ),
+        error: new EketErrorClass(EketErrorCode.ALERT_NOT_FOUND, `告警不存在：${alertId}`),
       };
     }
 
@@ -230,7 +219,7 @@ export class AlertingSystem {
    * 获取活跃告警
    */
   getActiveAlerts(): Alert[] {
-    return this.alerts.filter(a => a.status === 'new' || a.status === 'acknowledged');
+    return this.alerts.filter((a) => a.status === 'new' || a.status === 'acknowledged');
   }
 
   /**
@@ -269,7 +258,7 @@ export class AlertingSystem {
       level: 'warning',
       condition: 'heartbeat_timeout > 300000',
       channels: ['webhook'],
-      cooldown: 600000,  // 10 分钟冷却
+      cooldown: 600000, // 10 分钟冷却
       enabled: true,
     });
   }
@@ -285,7 +274,7 @@ export class AlertingSystem {
       level: 'warning',
       condition: 'blocked_duration > 3600000',
       channels: ['webhook'],
-      cooldown: 3600000,  // 1 小时冷却
+      cooldown: 3600000, // 1 小时冷却
       enabled: true,
     });
   }
@@ -353,22 +342,26 @@ export class AlertingSystem {
    */
   private async sendSlackNotification(alert: Alert): Promise<void> {
     const config = this.config.slack;
-    if (!config || !config.webhookUrl) return;
+    if (!config?.webhookUrl) {
+      return;
+    }
 
     const color = this.getSlackColor(alert.level);
     const payload = {
       channel: config.channel,
-      attachments: [{
-        color,
-        title: alert.title,
-        text: alert.message,
-        fields: Object.entries(alert.context).map(([key, value]) => ({
-          title: key,
-          value: String(value),
-          short: true,
-        })),
-        ts: Math.floor(alert.createdAt / 1000),
-      }],
+      attachments: [
+        {
+          color,
+          title: alert.title,
+          text: alert.message,
+          fields: Object.entries(alert.context).map(([key, value]) => ({
+            title: key,
+            value: String(value),
+            short: true,
+          })),
+          ts: Math.floor(alert.createdAt / 1000),
+        },
+      ],
     };
 
     await fetch(config.webhookUrl, {
@@ -383,7 +376,9 @@ export class AlertingSystem {
    */
   private async sendDingtalkNotification(alert: Alert): Promise<void> {
     const config = this.config.dingtalk;
-    if (!config || !config.webhookUrl) return;
+    if (!config?.webhookUrl) {
+      return;
+    }
 
     const payload = {
       msgtype: 'markdown',
@@ -405,7 +400,9 @@ export class AlertingSystem {
    */
   private async sendEmailNotification(alert: Alert): Promise<void> {
     const config = this.config.email;
-    if (!config) return;
+    if (!config) {
+      return;
+    }
 
     // 简单实现：将告警写入文件，由外部邮件服务处理
     const emailFile = path.join(this.alertsDir, `email_${alert.id}.json`);
@@ -422,7 +419,9 @@ export class AlertingSystem {
    */
   private async sendWebhookNotification(alert: Alert): Promise<void> {
     const config = this.config.webhook;
-    if (!config || !config.url) return;
+    if (!config?.url) {
+      return;
+    }
 
     await fetch(config.url, {
       method: 'POST',

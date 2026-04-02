@@ -8,9 +8,9 @@
  * - OpenCLAW 配置验证
  */
 
+import { createRedisClient } from '../core/redis-client.js';
 import type { Result } from '../types/index.js';
 import { EketErrorClass } from '../types/index.js';
-import { createRedisClient } from '../core/redis-client.js';
 
 /**
  * OpenCLAW 配置接口
@@ -162,9 +162,15 @@ export async function validateRedisConfig(
     const connectResult = await redisClient.connect();
 
     // 恢复原始配置
-    if (originalHost) process.env.EKET_REDIS_HOST = originalHost;
-    if (originalPort) process.env.EKET_REDIS_PORT = originalPort;
-    if (originalPassword) process.env.EKET_REDIS_PASSWORD = originalPassword;
+    if (originalHost) {
+      process.env.EKET_REDIS_HOST = originalHost;
+    }
+    if (originalPort) {
+      process.env.EKET_REDIS_PORT = originalPort;
+    }
+    if (originalPassword) {
+      process.env.EKET_REDIS_PASSWORD = originalPassword;
+    }
 
     if (connectResult.success) {
       await redisClient.disconnect();
@@ -228,10 +234,7 @@ export function validateApiKeyConfig(keyEnv: string): {
 /**
  * 验证端口是否可用
  */
-export async function validatePortAvailability(
-  host: string,
-  port: number
-): Promise<boolean> {
+export async function validatePortAvailability(host: string, port: number): Promise<boolean> {
   return new Promise((resolve) => {
     const http = require('http');
     const server = http.createServer();
@@ -258,8 +261,7 @@ export function validateHost(host: string): boolean {
   }
 
   // IPv4 地址验证
-  const ipv4Regex =
-    /^(\d{1,3}\.){3}\d{1,3}$/;
+  const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
   if (ipv4Regex.test(host)) {
     const parts = host.split('.');
     return parts.every((part) => {
@@ -269,7 +271,8 @@ export function validateHost(host: string): boolean {
   }
 
   // 简化的域名验证
-  const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)*$/;
+  const domainRegex =
+    /^[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)*$/;
   return domainRegex.test(host);
 }
 
@@ -309,7 +312,9 @@ export async function validateOpenCLAWConfig(
   details.apiKey = apiKeyResult;
 
   if (!apiKeyResult.configured) {
-    errors.push(`API Key not configured: Missing environment variable ${finalConfig.gateway.auth.keyEnv}`);
+    errors.push(
+      `API Key not configured: Missing environment variable ${finalConfig.gateway.auth.keyEnv}`
+    );
   } else if (!apiKeyResult.valid) {
     warnings.push('API Key format may be invalid (too short)');
   }

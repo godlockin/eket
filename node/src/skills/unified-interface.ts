@@ -5,6 +5,9 @@
  * 统一接口：提供一致的 Skill 执行入口，支持拦截器和事件
  */
 
+import { EketError } from '../types/index.js';
+
+import { SkillsRegistry, createSkillsRegistry } from './registry.js';
 import type {
   Skill,
   SkillInput,
@@ -16,8 +19,6 @@ import type {
   UnifiedSkillExecuteResult,
   SkillExecutionContext,
 } from './types.js';
-import { EketError } from '../types/index.js';
-import { SkillsRegistry, getGlobalSkillsRegistry } from './registry.js';
 
 /**
  * 统一 Skill 接口配置
@@ -58,7 +59,7 @@ export class UnifiedSkillInterface implements SkillInterceptor {
   private executionHistory: Map<string, number>;
 
   constructor(config?: Partial<UnifiedSkillInterfaceConfig>) {
-    this.registry = config?.registry || getGlobalSkillsRegistry();
+    this.registry = config?.registry || createSkillsRegistry();
 
     this.config = {
       registry: this.registry,

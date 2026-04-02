@@ -7,7 +7,10 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <div class="dashboard">
+  <!-- Skip Link for keyboard navigation -->
+  <a href="#main-content" class="skip-link">跳到主要内容</a>
+
+  <div class="dashboard" id="main-content">
     <!-- Header -->
     <header class="header">
       <div class="header-left">
@@ -15,19 +18,23 @@
         <span id="system-status" class="status-badge status-unknown">Loading...</span>
       </div>
       <div class="header-right">
-        <button id="refresh-btn" class="btn btn-primary">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <select id="language-selector" class="language-selector" aria-label="Select language">
+          <option value="zh-CN">中文</option>
+          <option value="en-US">English</option>
+        </select>
+        <button id="refresh-btn" class="btn btn-primary" aria-label="刷新数据">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M23 4v6h-6M1 20v-6h6"/>
             <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
           </svg>
-          刷新
+          <span class="refresh-text">刷新</span>
         </button>
         <span id="last-updated" class="updated-time">最后更新：--</span>
       </div>
     </header>
 
     <!-- System Status Panel -->
-    <section class="panel system-status-panel">
+    <section class="panel system-status-panel" aria-label="系统状态">
       <h2>System Status</h2>
       <div class="status-grid">
         <div class="status-item">
@@ -50,7 +57,7 @@
     </section>
 
     <!-- Stats Panel -->
-    <section class="panel stats-panel">
+    <section class="panel stats-panel" aria-label="统计数据">
       <h2>Statistics</h2>
       <div class="stats-grid">
         <div class="stat-card">
@@ -85,21 +92,21 @@
     </section>
 
     <!-- Instances Panel -->
-    <section class="panel instances-panel">
+    <section class="panel instances-panel" aria-label="实例列表">
       <div class="panel-header">
         <h2>Instances (<span id="instance-count">0</span>)</h2>
       </div>
       <div class="table-container">
-        <table class="data-table">
+        <table class="data-table" role="table" aria-label="实例列表">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>角色</th>
-              <th>类型</th>
-              <th>状态</th>
-              <th>当前任务</th>
-              <th>负载</th>
-              <th>心跳</th>
+              <th scope="col">ID</th>
+              <th scope="col">角色</th>
+              <th scope="col">类型</th>
+              <th scope="col">状态</th>
+              <th scope="col">当前任务</th>
+              <th scope="col">负载</th>
+              <th scope="col">心跳</th>
             </tr>
           </thead>
           <tbody id="instances-table-body">
@@ -112,7 +119,7 @@
     </section>
 
     <!-- Tasks Panel -->
-    <section class="panel tasks-panel">
+    <section class="panel tasks-panel" aria-label="任务列表">
       <div class="panel-header">
         <h2>Active Tasks (<span id="task-count">0</span>)</h2>
       </div>
@@ -122,11 +129,14 @@
     </section>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer" aria-label="页脚">
       <span>EKET Framework v0.7.2</span>
       <span>Phase 5.1 - Web Dashboard</span>
     </footer>
   </div>
+
+  <!-- aria-live region for screen reader announcements -->
+  <div id="live-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
   <script src="/app.js"></script>
 </body>

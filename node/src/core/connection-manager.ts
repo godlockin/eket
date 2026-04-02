@@ -14,8 +14,10 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import type { Result } from '../types/index.js';
 import { EketError } from '../types/index.js';
+
 import { RedisClient } from './redis-client.js';
 import { SQLiteClient } from './sqlite-client.js';
 
@@ -198,8 +200,8 @@ export class ConnectionManager {
    */
   private tryConnectFile(): Result<void> {
     try {
-      const queueDir = this.config.fileQueueDir ||
-        path.join(process.cwd(), '.eket', 'data', 'queue');
+      const queueDir =
+        this.config.fileQueueDir || path.join(process.cwd(), '.eket', 'data', 'queue');
       fs.mkdirSync(queueDir, { recursive: true });
       this.fileAvailable = true;
       return { success: true, data: undefined };
@@ -266,7 +268,9 @@ export class ConnectionManager {
    * 获取文件队列目录
    */
   getFileQueueDir(): string | null {
-    if (!this.fileAvailable) return null;
+    if (!this.fileAvailable) {
+      return null;
+    }
     return this.config.fileQueueDir || path.join(process.cwd(), '.eket', 'data', 'queue');
   }
 
@@ -343,18 +347,28 @@ export class ConnectionManager {
 // Factory Function
 // ============================================================================
 
-export function createConnectionManager(config?: Partial<ConnectionManagerConfig>): ConnectionManager {
+export function createConnectionManager(
+  config?: Partial<ConnectionManagerConfig>
+): ConnectionManager {
   return new ConnectionManager({
-    remoteRedis: config?.remoteRedis ? {
-      host: config.remoteRedis.host || process.env.EKET_REMOTE_REDIS_HOST || 'redis-cluster.example.com',
-      port: config.remoteRedis.port || parseInt(process.env.EKET_REMOTE_REDIS_PORT || '6380', 10),
-      password: config.remoteRedis.password || process.env.EKET_REMOTE_REDIS_PASSWORD,
-      db: config.remoteRedis.db,
-    } : undefined,
-    localRedis: config?.localRedis ? {
-      host: config.localRedis.host || process.env.EKET_LOCAL_REDIS_HOST || 'localhost',
-      port: config.localRedis.port || parseInt(process.env.EKET_LOCAL_REDIS_PORT || '6379', 10),
-    } : undefined,
+    remoteRedis: config?.remoteRedis
+      ? {
+          host:
+            config.remoteRedis.host ||
+            process.env.EKET_REMOTE_REDIS_HOST ||
+            'redis-cluster.example.com',
+          port:
+            config.remoteRedis.port || parseInt(process.env.EKET_REMOTE_REDIS_PORT || '6380', 10),
+          password: config.remoteRedis.password || process.env.EKET_REMOTE_REDIS_PASSWORD,
+          db: config.remoteRedis.db,
+        }
+      : undefined,
+    localRedis: config?.localRedis
+      ? {
+          host: config.localRedis.host || process.env.EKET_LOCAL_REDIS_HOST || 'localhost',
+          port: config.localRedis.port || parseInt(process.env.EKET_LOCAL_REDIS_PORT || '6379', 10),
+        }
+      : undefined,
     sqlitePath: config?.sqlitePath || process.env.EKET_SQLITE_PATH,
     fileQueueDir: config?.fileQueueDir || process.env.EKET_FILE_QUEUE_DIR,
     driverMode: config?.driverMode || 'js',

@@ -59,11 +59,11 @@ export interface FrontendDevelopmentOutput {
   /** TypeScript 类型定义 */
   typesCode?: string;
   /** 文件列表 */
-  files: {
+  files: Array<{
     path: string;
     content: string;
     description: string;
-  }[];
+  }>;
   /** 依赖项 */
   dependencies: string[];
   /** 使用示例 */
@@ -73,183 +73,181 @@ export interface FrontendDevelopmentOutput {
 /**
  * 前端开发 Skill 实例
  */
-export const FrontendDevelopmentSkill: Skill<
-  FrontendDevelopmentInput,
-  FrontendDevelopmentOutput
-> = {
-  name: 'frontend_development',
-  description: '生成 React/Vue 前端组件代码，包括类型定义、样式和测试',
-  category: SkillCategory.DEVELOPMENT,
-  tags: ['frontend', 'react', 'vue', 'component', 'typescript'],
-  version: '1.0.0',
+export const FrontendDevelopmentSkill: Skill<FrontendDevelopmentInput, FrontendDevelopmentOutput> =
+  {
+    name: 'frontend_development',
+    description: '生成 React/Vue 前端组件代码，包括类型定义、样式和测试',
+    category: SkillCategory.DEVELOPMENT,
+    tags: ['frontend', 'react', 'vue', 'component', 'typescript'],
+    version: '1.0.0',
 
-  inputSchema: {
-    type: 'object',
-    required: ['componentName'],
-    properties: {
-      componentName: {
-        type: 'string',
-        description: '组件名称',
-      },
-      componentType: {
-        type: 'string',
-        enum: ['functional', 'class'],
-        description: '组件类型',
-      },
-      framework: {
-        type: 'string',
-        enum: ['react', 'vue', 'angular'],
-        description: 'UI 框架',
-      },
-      description: {
-        type: 'string',
-        description: '组件描述',
-      },
-      useState: {
-        type: 'boolean',
-        description: '是否需要状态',
-      },
-      useStyle: {
-        type: 'boolean',
-        description: '是否需要样式',
-      },
-      useTest: {
-        type: 'boolean',
-        description: '是否需要测试',
+    inputSchema: {
+      type: 'object',
+      required: ['componentName'],
+      properties: {
+        componentName: {
+          type: 'string',
+          description: '组件名称',
+        },
+        componentType: {
+          type: 'string',
+          enum: ['functional', 'class'],
+          description: '组件类型',
+        },
+        framework: {
+          type: 'string',
+          enum: ['react', 'vue', 'angular'],
+          description: 'UI 框架',
+        },
+        description: {
+          type: 'string',
+          description: '组件描述',
+        },
+        useState: {
+          type: 'boolean',
+          description: '是否需要状态',
+        },
+        useStyle: {
+          type: 'boolean',
+          description: '是否需要样式',
+        },
+        useTest: {
+          type: 'boolean',
+          description: '是否需要测试',
+        },
       },
     },
-  },
 
-  outputSchema: {
-    type: 'object',
-    properties: {
-      componentCode: { type: 'string' },
-      styleCode: { type: 'string' },
-      testCode: { type: 'string' },
-      typesCode: { type: 'string' },
-      files: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            path: { type: 'string' },
-            content: { type: 'string' },
-            description: { type: 'string' },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        componentCode: { type: 'string' },
+        styleCode: { type: 'string' },
+        testCode: { type: 'string' },
+        typesCode: { type: 'string' },
+        files: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              path: { type: 'string' },
+              content: { type: 'string' },
+              description: { type: 'string' },
+            },
           },
         },
+        dependencies: { type: 'array', items: { type: 'string' } },
+        usageExample: { type: 'string' },
       },
-      dependencies: { type: 'array', items: { type: 'string' } },
-      usageExample: { type: 'string' },
     },
-  },
 
-  validateInput(input: unknown): boolean {
-    if (!input || typeof input !== 'object') {
-      return false;
-    }
-
-    const req = input as Record<string, unknown>;
-
-    if (!req.componentName || typeof req.componentName !== 'string') {
-      return false;
-    }
-
-    if (req.componentName.toString().trim().length === 0) {
-      return false;
-    }
-
-    return true;
-  },
-
-  async execute(
-    input: SkillInput<FrontendDevelopmentInput>
-  ): Promise<SkillOutput<FrontendDevelopmentOutput>> {
-    const startTime = Date.now();
-    const logs: string[] = [];
-
-    try {
-      const {
-        componentName,
-        componentType = 'functional',
-        framework = 'react',
-        description,
-        props,
-        useState = false,
-        useStyle = true,
-        styleType = 'css',
-        useTest = true,
-      } = input.data;
-
-      logs.push(`开始生成组件：${componentName}`);
-
-      // 1. 生成类型定义
-      const typesCode = generateTypes(componentName, props);
-      logs.push('生成 TypeScript 类型定义');
-
-      // 2. 生成组件代码
-      const componentCode = generateComponent({
-        componentName,
-        componentType,
-        framework,
-        description,
-        props,
-        useState,
-      });
-      logs.push('生成组件代码');
-
-      // 3. 生成样式代码
-      let styleCode: string | undefined;
-      if (useStyle) {
-        styleCode = generateStyle(componentName, styleType);
-        logs.push(`生成样式代码 (${styleType})`);
+    validateInput(input: unknown): boolean {
+      if (!input || typeof input !== 'object') {
+        return false;
       }
 
-      // 4. 生成测试代码
-      let testCode: string | undefined;
-      if (useTest) {
-        testCode = generateTest(componentName, framework, props);
-        logs.push('生成测试代码');
+      const req = input as Record<string, unknown>;
+
+      if (!req.componentName || typeof req.componentName !== 'string') {
+        return false;
       }
 
-      // 5. 生成文件列表
-      const files = generateFiles(componentName, componentCode, styleCode, testCode, typesCode);
+      if (req.componentName.toString().trim().length === 0) {
+        return false;
+      }
 
-      // 6. 生成依赖项
-      const dependencies = generateDependencies(framework, styleType, useTest);
+      return true;
+    },
 
-      // 7. 生成使用示例
-      const usageExample = generateUsageExample(componentName, props, framework);
+    async execute(
+      input: SkillInput<FrontendDevelopmentInput>
+    ): Promise<SkillOutput<FrontendDevelopmentOutput>> {
+      const startTime = Date.now();
+      const logs: string[] = [];
 
-      logs.push('组件生成完成');
+      try {
+        const {
+          componentName,
+          componentType = 'functional',
+          framework = 'react',
+          description,
+          props,
+          useState = false,
+          useStyle = true,
+          styleType = 'css',
+          useTest = true,
+        } = input.data;
 
-      return {
-        success: true,
-        data: {
-          componentCode,
-          styleCode,
-          testCode,
-          typesCode,
-          files,
-          dependencies,
-          usageExample,
-        },
-        duration: Date.now() - startTime,
-        logs,
-      };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      logs.push(`错误：${errorMessage}`);
+        logs.push(`开始生成组件：${componentName}`);
 
-      return {
-        success: false,
-        error: errorMessage,
-        errorCode: 'FRONTEND_GENERATION_FAILED',
-        duration: Date.now() - startTime,
-        logs,
-      };
-    }
-  },
-};
+        // 1. 生成类型定义
+        const typesCode = generateTypes(componentName, props);
+        logs.push('生成 TypeScript 类型定义');
+
+        // 2. 生成组件代码
+        const componentCode = generateComponent({
+          componentName,
+          componentType,
+          framework,
+          description,
+          props,
+          useState,
+        });
+        logs.push('生成组件代码');
+
+        // 3. 生成样式代码
+        let styleCode: string | undefined;
+        if (useStyle) {
+          styleCode = generateStyle(componentName, styleType);
+          logs.push(`生成样式代码 (${styleType})`);
+        }
+
+        // 4. 生成测试代码
+        let testCode: string | undefined;
+        if (useTest) {
+          testCode = generateTest(componentName, framework, props);
+          logs.push('生成测试代码');
+        }
+
+        // 5. 生成文件列表
+        const files = generateFiles(componentName, componentCode, styleCode, testCode, typesCode);
+
+        // 6. 生成依赖项
+        const dependencies = generateDependencies(framework, styleType, useTest);
+
+        // 7. 生成使用示例
+        const usageExample = generateUsageExample(componentName, props, framework);
+
+        logs.push('组件生成完成');
+
+        return {
+          success: true,
+          data: {
+            componentCode,
+            styleCode,
+            testCode,
+            typesCode,
+            files,
+            dependencies,
+            usageExample,
+          },
+          duration: Date.now() - startTime,
+          logs,
+        };
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        logs.push(`错误：${errorMessage}`);
+
+        return {
+          success: false,
+          error: errorMessage,
+          errorCode: 'FRONTEND_GENERATION_FAILED',
+          duration: Date.now() - startTime,
+          logs,
+        };
+      }
+    },
+  };
 
 /**
  * 生成 TypeScript 类型定义
@@ -514,9 +512,9 @@ function generateFiles(
   styleCode?: string,
   testCode?: string,
   typesCode?: string
-): { path: string; content: string; description: string }[] {
+): Array<{ path: string; content: string; description: string }> {
   const name = toPascalCase(componentName);
-  const files: { path: string; content: string; description: string }[] = [];
+  const files: Array<{ path: string; content: string; description: string }> = [];
 
   // 类型定义
   if (typesCode) {
@@ -594,7 +592,7 @@ function generateDependencies(framework: string, styleType: string, useTest: boo
 function generateUsageExample(
   componentName: string,
   props?: Record<string, PropDefinition>,
-  framework: string = 'react'
+  framework = 'react'
 ): string {
   const name = toPascalCase(componentName);
 
@@ -609,7 +607,12 @@ function generateUsageExample(
     if (props && Object.keys(props).length > 0) {
       example += `\n`;
       for (const [propName, propDef] of Object.entries(props)) {
-        const value = propDef.type === 'string' ? `"example"` : propDef.type === 'boolean' ? `{true}` : `{${propDef.default || 'undefined'}}`;
+        const value =
+          propDef.type === 'string'
+            ? `"example"`
+            : propDef.type === 'boolean'
+              ? `{true}`
+              : `{${propDef.default || 'undefined'}}`;
         example += `      ${propName}={${value}}\n`;
       }
       example += `    `;
@@ -698,7 +701,9 @@ function vuePropType(type: string): string {
  * 工具函数：生成 Props 默认值
  */
 function generatePropDefaults(props?: Record<string, PropDefinition>): string {
-  if (!props) return '';
+  if (!props) {
+    return '';
+  }
 
   const defaults: string[] = [];
 

@@ -1,6 +1,11 @@
 /**
  * Agent Pool Manager Module
- * Version: 1.3.0
+ * Version: 2.0.0
+ *
+ * v2.0.0 扩展性增强:
+ * - 分布式轮询索引（Redis 原子递增）
+ * - 按角色维护轮询计数器
+ * - TTL 防止键堆积
  *
  * 管理可用 Agent 实例的资源池，负责任务分配和负载均衡。
  *
@@ -14,9 +19,16 @@
  * @module AgentPool
  */
 
-import type { Result, Instance } from '../types/index.js';
+import { ROUND_ROBIN_TTL, ROUND_ROBIN_KEY_PREFIX } from '../constants.js';
+import type {
+  Result,
+  Instance,
+  DistributedRoundRobinConfig,
+  InstanceRegistryConfig,
+} from '../types/index.js';
+
 import { InstanceRegistry, createInstanceRegistry } from './instance-registry.js';
-import type { InstanceRegistryConfig } from '../types/index.js';
+import { RedisClient, createRedisClient } from './redis-client.js';
 
 // ============================================================================
 // Types
@@ -30,8 +42,8 @@ export interface AgentInstance {
   role: string;
   skills: string[];
   status: 'idle' | 'busy' | 'offline';
-  currentLoad: number;      // 当前任务数
-  maxLoad: number;          // 最大并发任务数
+  currentLoad: number; // 当前任务数
+  maxLoad: number; // 最大并发任务数
   lastHeartbeat: number;
   metadata?: Record<string, unknown>;
 }
@@ -64,29 +76,32 @@ export interface TaskAssignmentResult {
  */
 export interface AgentPoolConfig {
   registryConfig?: InstanceRegistryConfig;
-  heartbeatTimeout: number;     // 心跳超时（毫秒）
-  healthCheckInterval: number;  // 健康检查间隔（毫秒）
-  defaultMaxLoad: number;       // 默认最大并发任务数
+  heartbeatTimeout: number; // 心跳超时（毫秒）
+  healthCheckInterval: number; // 健康检查间隔（毫秒）
+  defaultMaxLoad: number; // 默认最大并发任务数
 }
 
 /**
  * Agent 选择策略
  */
 export type AgentSelectionStrategy =
-  | 'least_loaded'      // 选择负载最低的
-  | 'round_robin'       // 轮询
-  | 'random'            // 随机
-  | 'best_match'        // 最佳匹配（技能匹配度最高）
-  ;
+  | 'least_loaded' // 选择负载最低的
+  | 'round_robin' // 轮询
+  | 'random' // 随机
+  | 'best_match'; // 最佳匹配（技能匹配度最高）
 
 // ============================================================================
 // Constants
 // ============================================================================
 
+const DEFAULT_HEALTH_CHECK_INTERVAL = 10000; // 10 秒
+const DEFAULT_MAX_AGENTS = 5; // 默认最大 5 个并发任务
+const DEFAULT_HEARTBEAT_TIMEOUT = 30000; // 30 秒
+
 const DEFAULT_CONFIG: AgentPoolConfig = {
-  heartbeatTimeout: 30000,           // 30 秒
-  healthCheckInterval: 10000,        // 10 秒
-  defaultMaxLoad: 5,                 // 默认最大 5 个并发任务
+  heartbeatTimeout: DEFAULT_HEARTBEAT_TIMEOUT,
+  healthCheckInterval: DEFAULT_HEALTH_CHECK_INTERVAL,
+  defaultMaxLoad: DEFAULT_MAX_AGENTS,
 };
 
 // ============================================================================
@@ -97,7 +112,9 @@ export class AgentPoolManager {
   private registry: InstanceRegistry;
   private config: AgentPoolConfig;
   private healthCheckInterval?: NodeJS.Timeout;
-  private roundRobinIndex: Map<string, number> = new Map(); // 按角色的轮询索引
+  private roundRobinIndex: Map<string, number> = new Map(); // 按角色的本地轮询索引（fallback）
+  private redis?: RedisClient;
+  private roundRobinConfig: DistributedRoundRobinConfig;
 
   constructor(config: Partial<AgentPoolConfig> = {}) {
     this.config = {
@@ -105,6 +122,13 @@ export class AgentPoolManager {
       ...config,
     };
     this.registry = createInstanceRegistry(this.config.registryConfig);
+
+    // 分布式轮询索引配置
+    this.roundRobinConfig = {
+      enabled: true, // 默认启用分布式轮询
+      ttl: ROUND_ROBIN_TTL,
+      keyPrefix: ROUND_ROBIN_KEY_PREFIX,
+    };
   }
 
   /**
@@ -114,6 +138,14 @@ export class AgentPoolManager {
     const connectResult = await this.registry.connect();
     if (!connectResult.success) {
       return connectResult;
+    }
+
+    // 初始化 Redis 客户端用于分布式轮询
+    this.redis = createRedisClient();
+    const redisResult = await this.redis.connect();
+    if (!redisResult.success) {
+      console.warn('[Agent Pool] Redis connection failed, using local round-robin');
+      this.roundRobinConfig.enabled = false;
     }
 
     // 启动健康检查循环
@@ -128,6 +160,48 @@ export class AgentPoolManager {
   async stop(): Promise<void> {
     this.stopHealthCheckLoop();
     await this.registry.disconnect();
+    if (this.redis) {
+      await this.redis.disconnect();
+    }
+  }
+
+  /**
+   * 获取分布式轮询计数器（原子递增）
+   */
+  private async getNextRoundRobinIndex(role: string): Promise<number> {
+    const key = `${this.roundRobinConfig.keyPrefix}${role}`;
+
+    // 如果分布式轮询未启用或 Redis 不可用，使用本地轮询
+    if (!this.roundRobinConfig.enabled || !this.redis?.isReady()) {
+      return this.getLocalRoundRobinIndex(role);
+    }
+
+    try {
+      const client = this.redis.getClient();
+      if (!client) {
+        return this.getLocalRoundRobinIndex(role);
+      }
+
+      // 原子递增并设置 TTL
+      const newValue = await client.incr(key);
+      // 设置过期时间（防止键堆积）
+      await client.expire(key, this.roundRobinConfig.ttl);
+
+      return newValue;
+    } catch (err) {
+      console.warn('[Agent Pool] Redis INCR failed, using local round-robin');
+      return this.getLocalRoundRobinIndex(role);
+    }
+  }
+
+  /**
+   * 获取本地轮询索引（fallback）
+   */
+  private getLocalRoundRobinIndex(role: string): number {
+    const currentIndex = this.roundRobinIndex.get(role) || 0;
+    const nextIndex = (currentIndex + 1) % Number.MAX_SAFE_INTEGER; // 防止溢出
+    this.roundRobinIndex.set(role, nextIndex);
+    return currentIndex;
   }
 
   /**
@@ -139,7 +213,11 @@ export class AgentPoolManager {
     }
 
     this.healthCheckInterval = setInterval(async () => {
-      await this.performHealthCheck();
+      try {
+        await this.performHealthCheck();
+      } catch (error) {
+        console.error('[Agent Pool] Health check loop error:', error);
+      }
     }, this.config.healthCheckInterval);
   }
 
@@ -175,7 +253,7 @@ export class AgentPoolManager {
         if (timeSinceHeartbeat > this.config.heartbeatTimeout) {
           console.log(
             `[Agent Pool] Agent ${instance.id} heartbeat expired ` +
-            `(${Math.round(timeSinceHeartbeat / 1000)}s > ${this.config.heartbeatTimeout / 1000}s), marking as offline`
+              `(${Math.round(timeSinceHeartbeat / 1000)}s > ${this.config.heartbeatTimeout / 1000}s), marking as offline`
           );
           await this.registry.updateInstanceStatus(instance.id, 'offline');
         }
@@ -227,12 +305,17 @@ export class AgentPoolManager {
       return { success: true, data: null }; // 没有可用 Agent
     }
 
-    // 按技能匹配度过滤
+    // 按技能匹配度过滤（使用大小写不敏感匹配）
     let candidates = agents;
     if (requiredSkills && requiredSkills.length > 0) {
+      // Normalize required skills to lowercase for case-insensitive matching
+      const normalizedRequiredSkills = requiredSkills.map((skill) => skill.toLowerCase());
+
       candidates = agents.filter((agent) => {
-        const hasRequiredSkill = requiredSkills.every((skill) =>
-          agent.skills.includes(skill)
+        // Normalize agent skills to lowercase
+        const normalizedAgentSkills = agent.skills.map((skill) => skill.toLowerCase());
+        const hasRequiredSkill = normalizedRequiredSkills.every((skill) =>
+          normalizedAgentSkills.includes(skill)
         );
         return hasRequiredSkill;
       });
@@ -241,7 +324,7 @@ export class AgentPoolManager {
       if (candidates.length === 0) {
         console.log(
           `[Agent Pool] No agents with all required skills, ` +
-          `using ${agents.length} agents with role ${requiredRole}`
+            `using ${agents.length} agents with role ${requiredRole}`
         );
         candidates = agents;
       }
@@ -255,7 +338,7 @@ export class AgentPoolManager {
         selected = this.selectLeastLoaded(candidates);
         break;
       case 'round_robin':
-        selected = this.selectRoundRobin(requiredRole, candidates);
+        selected = await this.selectRoundRobin(requiredRole, candidates);
         break;
       case 'random':
         selected = this.selectRandom(candidates);
@@ -274,7 +357,9 @@ export class AgentPoolManager {
    * 选择负载最低的 Agent
    */
   private selectLeastLoaded(agents: AgentInstance[]): AgentInstance | null {
-    if (agents.length === 0) return null;
+    if (agents.length === 0) {
+      return null;
+    }
 
     return agents.reduce((least, current) => {
       const leastLoadRatio = least.currentLoad / least.maxLoad;
@@ -286,21 +371,28 @@ export class AgentPoolManager {
   /**
    * 轮询选择 Agent
    */
-  private selectRoundRobin(role: string, agents: AgentInstance[]): AgentInstance | null {
-    if (agents.length === 0) return null;
+  private async selectRoundRobin(
+    role: string,
+    agents: AgentInstance[]
+  ): Promise<AgentInstance | null> {
+    if (agents.length === 0) {
+      return null;
+    }
 
-    const currentIndex = this.roundRobinIndex.get(role) || 0;
-    const nextIndex = (currentIndex + 1) % agents.length;
-    this.roundRobinIndex.set(role, nextIndex);
+    // 使用分布式轮询索引
+    const index = await this.getNextRoundRobinIndex(role);
+    const selectedIndex = index % agents.length;
 
-    return agents[currentIndex] || null;
+    return agents[selectedIndex] || null;
   }
 
   /**
    * 随机选择 Agent
    */
   private selectRandom(agents: AgentInstance[]): AgentInstance | null {
-    if (agents.length === 0) return null;
+    if (agents.length === 0) {
+      return null;
+    }
     const randomIndex = Math.floor(Math.random() * agents.length);
     return agents[randomIndex] || null;
   }
@@ -308,18 +400,23 @@ export class AgentPoolManager {
   /**
    * 选择技能匹配度最高的 Agent
    */
-  private selectBestMatch(
-    agents: AgentInstance[],
-    requiredSkills: string[]
-  ): AgentInstance | null {
-    if (agents.length === 0) return null;
+  private selectBestMatch(agents: AgentInstance[], requiredSkills: string[]): AgentInstance | null {
+    if (agents.length === 0) {
+      return null;
+    }
+
+    // Normalize required skills to lowercase for case-insensitive matching
+    const normalizedRequiredSkills = requiredSkills.map((skill) => skill.toLowerCase());
 
     let bestMatch: AgentInstance | null = null;
     let bestMatchCount = -1;
 
     for (const agent of agents) {
-      const matchedCount = requiredSkills.filter((skill) =>
-        agent.skills.includes(skill)
+      // Normalize agent skills to lowercase
+      const normalizedAgentSkills = agent.skills.map((skill) => skill.toLowerCase());
+
+      const matchedCount = normalizedRequiredSkills.filter((skill) =>
+        normalizedAgentSkills.includes(skill)
       ).length;
 
       if (matchedCount > bestMatchCount) {
@@ -334,10 +431,7 @@ export class AgentPoolManager {
   /**
    * 分配任务给 Agent（标记为 busy）
    */
-  async assignTaskToAgent(
-    agentId: string,
-    taskId: string
-  ): Promise<Result<TaskAssignmentResult>> {
+  async assignTaskToAgent(agentId: string, taskId: string): Promise<Result<TaskAssignmentResult>> {
     // 获取 Agent 信息
     const agentResult = await this.registry.getInstance(agentId);
     if (!agentResult.success) {
@@ -386,11 +480,7 @@ export class AgentPoolManager {
     }
 
     // 更新 Agent 状态
-    const updateResult = await this.registry.updateInstanceStatus(
-      agentId,
-      'busy',
-      taskId
-    );
+    const updateResult = await this.registry.updateInstanceStatus(agentId, 'busy', taskId);
 
     if (!updateResult.success) {
       return {
@@ -527,15 +617,17 @@ export class AgentPoolManager {
   /**
    * 获取 Pool 统计信息
    */
-  async getStats(): Promise<Result<{
-    totalAgents: number;
-    idleAgents: number;
-    busyAgents: number;
-    offlineAgents: number;
-    totalCapacity: number;
-    usedCapacity: number;
-    utilizationRate: number;
-  }>> {
+  async getStats(): Promise<
+    Result<{
+      totalAgents: number;
+      idleAgents: number;
+      busyAgents: number;
+      offlineAgents: number;
+      totalCapacity: number;
+      usedCapacity: number;
+      utilizationRate: number;
+    }>
+  > {
     const result = await this.registry.getActiveInstances();
     if (!result.success) {
       return result;
@@ -571,8 +663,6 @@ export class AgentPoolManager {
 /**
  * 创建 Agent Pool Manager
  */
-export function createAgentPoolManager(
-  config?: Partial<AgentPoolConfig>
-): AgentPoolManager {
+export function createAgentPoolManager(config?: Partial<AgentPoolConfig>): AgentPoolManager {
   return new AgentPoolManager(config);
 }

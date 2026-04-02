@@ -3,9 +3,11 @@
  * 用于数据持久化（Retrospective、任务历史等）
  */
 
-import Database from 'better-sqlite3';
-import * as path from 'path';
 import * as fs from 'fs';
+import * as path from 'path';
+
+import Database from 'better-sqlite3';
+
 import type { Retrospective, RetroContent, Result } from '../types/index.js';
 import { EketError } from '../types/index.js';
 
@@ -144,7 +146,9 @@ export class SQLiteClient {
    * 初始化表结构
    */
   private initializeTables(): void {
-    if (!this.db) return;
+    if (!this.db) {
+      return;
+    }
 
     this.db.exec(`
       -- Retrospective 主表
@@ -311,7 +315,12 @@ export class SQLiteClient {
         VALUES (?, ?, ?, ?)
       `);
 
-      const result = stmt.run(content.retroId, content.category, content.content, content.createdBy);
+      const result = stmt.run(
+        content.retroId,
+        content.category,
+        content.content,
+        content.createdBy
+      );
       return { success: true, data: result.lastInsertRowid as number };
     } catch {
       return {
@@ -397,7 +406,7 @@ export class SQLiteClient {
     totalRetrospectives: number;
     totalSprints: number;
     totalItems: number;
-    byCategory: { category: string; count: number }[];
+    byCategory: Array<{ category: string; count: number }>;
   }> {
     if (!this.db) {
       return {
@@ -429,7 +438,7 @@ export class SQLiteClient {
         GROUP BY category
         ORDER BY count DESC
       `);
-      const byCategory = categoryStmt.all() as { category: string; count: number }[];
+      const byCategory = categoryStmt.all() as Array<{ category: string; count: number }>;
 
       return {
         success: true,

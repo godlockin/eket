@@ -75,6 +75,81 @@ body {
 }
 
 /* ============================================================================
+   Accessibility - Skip Link
+   ============================================================================ */
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-info);
+  color: white;
+  padding: var(--spacing-sm) var(--spacing-md);
+  z-index: 1000;
+  text-decoration: none;
+  font-weight: 500;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid var(--color-warning);
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   Accessibility - Screen Reader Only
+   ============================================================================ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================================
+   Accessibility - Focus Styles
+   ============================================================================ */
+
+/* Visible focus styles for keyboard navigation */
+*:focus {
+  outline: 2px solid var(--color-info);
+  outline-offset: 2px;
+}
+
+/* Use :focus-visible for modern browsers - only shows focus on keyboard navigation */
+*:focus-visible {
+  outline: 2px solid var(--color-info);
+  outline-offset: 2px;
+}
+
+/* Remove default focus for mouse users (modern browsers) */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Specific focus styles for buttons */
+.btn:focus,
+.btn:focus-visible {
+  outline: 2px solid var(--color-info);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Focus styles for table rows (interactive elements) */
+.data-table tbody tr:focus,
+.data-table tbody tr:focus-within {
+  outline: 2px solid var(--color-info);
+  outline-offset: -2px;
+}
+
+/* ============================================================================
    Dashboard Layout
    ============================================================================ */
 
@@ -117,6 +192,32 @@ body {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+}
+
+/* Language Selector */
+.language-selector {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.language-selector:hover {
+  border-color: var(--color-info);
+}
+
+.language-selector:focus {
+  outline: 2px solid var(--color-info);
+  outline-offset: 2px;
+}
+
+.language-selector option {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
 }
 
 .updated-time {

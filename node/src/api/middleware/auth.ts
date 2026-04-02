@@ -7,6 +7,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
+
 import type { ApiKeyManager } from './api-key-manager.js';
 
 export interface AuthMiddlewareOptions {
@@ -67,15 +68,15 @@ export function authMiddleware(options: AuthMiddlewareOptions = {}) {
             result.error === 'expired'
               ? 'API key has expired'
               : result.error === 'revoked'
-              ? 'API key has been revoked'
-              : 'Invalid API key',
+                ? 'API key has been revoked'
+                : 'Invalid API key',
           errorCode: result.error,
         });
         return;
       }
 
       // 附加 Key 信息到请求对象（可选）
-      (req as any).apiKeyInfo = result.keyInfo;
+      (req as Request & { apiKeyInfo?: unknown }).apiKeyInfo = result.keyInfo;
       next();
       return;
     }
@@ -108,9 +109,7 @@ export function authMiddleware(options: AuthMiddlewareOptions = {}) {
       const envApiKey = process.env[envVarName];
 
       if (!envApiKey) {
-        console.error(
-          `[Security] API key not configured. Set ${envVarName} environment variable.`
-        );
+        console.error(`[Security] API key not configured. Set ${envVarName} environment variable.`);
         res.status(500).json({
           error: 'misconfigured',
           message: 'API key not configured on server',

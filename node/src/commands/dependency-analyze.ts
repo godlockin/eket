@@ -4,6 +4,7 @@
  */
 
 import { Command } from 'commander';
+
 import { createDependencyAnalyzer, type CriticalPath } from '../core/dependency-analyzer.js';
 
 /**
@@ -75,7 +76,8 @@ export function registerDependencyAnalyze(program: Command): void {
         for (const [id, node] of graph.nodes) {
           // 根据优先级估算工时
           const priority = node.priority.toLowerCase();
-          const estimate = priority === 'urgent' ? 2 : priority === 'high' ? 4 : priority === 'low' ? 8 : 6;
+          const estimate =
+            priority === 'urgent' ? 2 : priority === 'high' ? 4 : priority === 'low' ? 8 : 6;
           estimates.set(id, estimate);
         }
 
@@ -111,7 +113,9 @@ export function registerDependencyAnalyze(program: Command): void {
             console.log(`任务 ${id} 被以下任务阻塞:`);
             blockingResult.data.forEach((blockingTaskId) => {
               const blockingNode = graph.nodes.get(blockingTaskId);
-              console.log(`  - ${blockingTaskId}: ${blockingNode?.title || 'Unknown'} (${blockingNode?.status || 'unknown'})`);
+              console.log(
+                `  - ${blockingTaskId}: ${blockingNode?.title || 'Unknown'} (${blockingNode?.status || 'unknown'})`
+              );
             });
           }
         }

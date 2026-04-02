@@ -5,14 +5,15 @@
  * Adapter for integrating with OpenCLAW AI system
  */
 
+import type { SkillDefinition, SkillExecutionResult } from '../../types/index.js';
+import { EketErrorClass } from '../../types/index.js';
+
 import type {
   SkillAdapter,
   OpenCLAWConfig,
   ProtocolMessage,
   SkillRequestPayload,
 } from './types.js';
-import type { SkillDefinition, SkillExecutionResult } from '../../types/index.js';
-import { EketErrorClass } from '../../types/index.js';
 
 /**
  * OpenCLAW API 响应类型
@@ -54,7 +55,7 @@ export class OpenCLAWSkillAdapter implements SkillAdapter {
   private config: OpenCLAWConfig;
   private baseUrl: string;
   private headers: Record<string, string>;
-  private requestIdCounter: number = 0;
+  private requestIdCounter = 0;
 
   constructor(config: OpenCLAWConfig) {
     this.config = config;
@@ -152,10 +153,7 @@ export class OpenCLAWSkillAdapter implements SkillAdapter {
   /**
    * 执行 Skill
    */
-  async execute(
-    skillName: string,
-    params: Record<string, unknown>
-  ): Promise<SkillExecutionResult> {
+  async execute(skillName: string, params: Record<string, unknown>): Promise<SkillExecutionResult> {
     const startTime = Date.now();
 
     try {
@@ -215,7 +213,7 @@ export class OpenCLAWSkillAdapter implements SkillAdapter {
         );
       }
 
-      const result: OpenCLAWResponse<T> = await response.json() as OpenCLAWResponse<T>;
+      const result: OpenCLAWResponse<T> = (await response.json()) as OpenCLAWResponse<T>;
 
       if (!result.success) {
         throw new EketErrorClass(
@@ -235,11 +233,10 @@ export class OpenCLAWSkillAdapter implements SkillAdapter {
         throw error;
       }
       const err = error as Error;
-      throw new EketErrorClass(
-        'EXECUTION_ERROR',
-        `Failed to call OpenCLAW API: ${err.message}`,
-        { method, url: this.baseUrl }
-      );
+      throw new EketErrorClass('EXECUTION_ERROR', `Failed to call OpenCLAW API: ${err.message}`, {
+        method,
+        url: this.baseUrl,
+      });
     }
   }
 

@@ -151,10 +151,10 @@ export interface APIDocumentationOutput {
   /** OpenAPI/Swagger 规格 */
   openApiSpec: Record<string, unknown>;
   /** 目录结构 */
-  tableOfContents: {
+  tableOfContents: Array<{
     title: string;
     anchor: string;
-  }[];
+  }>;
   /** 快速入门指南 */
   quickStart: string;
   /** 错误码参考 */
@@ -334,8 +334,8 @@ export const APIDocumentationSkill: Skill<APIDocumentationInput, APIDocumentatio
 function generateTableOfContents(
   endpoints: EndpointConfig[],
   models?: Record<string, ModelConfig>
-): { title: string; anchor: string }[] {
-  const toc: { title: string; anchor: string }[] = [
+): Array<{ title: string; anchor: string }> {
+  const toc: Array<{ title: string; anchor: string }> = [
     { title: '概述', anchor: '#overview' },
     { title: '快速入门', anchor: '#quick-start' },
     { title: '认证', anchor: '#authentication' },
@@ -421,7 +421,9 @@ function generateMarkdownDocumentation(config: {
 
   // 概述
   doc += `## 概述\n\n`;
-  doc += description || `${apiName} API 提供参考接口，用于访问和操作${apiName.toLowerCase()}相关的数据和功能。\n\n`;
+  doc +=
+    description ||
+    `${apiName} API 提供参考接口，用于访问和操作${apiName.toLowerCase()}相关的数据和功能。\n\n`;
 
   // 目录
   doc += `## 目录\n\n`;
@@ -591,7 +593,7 @@ function generateMarkdownDocumentation(config: {
  */
 function generateHTMLDocumentation(markdown: string): string {
   // 简单的 Markdown 转 HTML 转换
-  let html = markdown
+  const html = markdown
     .replace(/^# (.*$)/gm, '<h1>$1</h1>')
     .replace(/^## (.*$)/gm, '<h2>$1</h2>')
     .replace(/^### (.*$)/gm, '<h3>$1</h3>')
@@ -687,9 +689,7 @@ function generateOpenApiSpec(config: {
         description: '生产环境',
       },
     ],
-    security: authentication && authentication.type !== 'none'
-      ? [{ bearerAuth: [] }]
-      : [],
+    security: authentication && authentication.type !== 'none' ? [{ bearerAuth: [] }] : [],
     paths: Object.fromEntries(
       endpoints.map((endpoint) => [
         endpoint.path,
@@ -697,16 +697,17 @@ function generateOpenApiSpec(config: {
           [endpoint.method.toLowerCase()]: {
             summary: endpoint.description,
             operationId: `${endpoint.method.toLowerCase()}${endpoint.path.replace(/[^a-zA-Z0-9]/g, '_')}`,
-            parameters: endpoint.requestParams?.map((param) => ({
-              name: param.name,
-              in: param.in,
-              required: param.required,
-              schema: {
-                type: param.type,
-                ...(param.default !== undefined && { default: param.default }),
-              },
-              description: param.description,
-            })) || [],
+            parameters:
+              endpoint.requestParams?.map((param) => ({
+                name: param.name,
+                in: param.in,
+                required: param.required,
+                schema: {
+                  type: param.type,
+                  ...(param.default !== undefined && { default: param.default }),
+                },
+                description: param.description,
+              })) || [],
             requestBody: endpoint.requestBody
               ? {
                   content: {
@@ -776,7 +777,7 @@ function generateOpenApiSpec(config: {
               }
             : {},
       schemas: models
-        ? Object.fromEntries(
+        ? (Object.fromEntries(
             Object.entries(models).map(([modelName, model]) => [
               modelName,
               {
@@ -796,7 +797,7 @@ function generateOpenApiSpec(config: {
                 required: model.properties.filter((p) => p.required).map((p) => p.name),
               } as Record<string, unknown>,
             ])
-          ) as Record<string, unknown>
+          ) as Record<string, unknown>)
         : {},
     },
   };

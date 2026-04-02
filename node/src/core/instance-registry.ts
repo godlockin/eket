@@ -3,10 +3,21 @@
  * 用于管理所有 Instance（人类/AI）的注册、心跳和状态
  *
  * Phase 4.1 - Core component for task assignment
+ *
+ * v2.0.0 扩展性增强:
+ * - 批量心跳 API
+ * - Pipeline 减少网络往返
  */
 
-import type { Instance, InstanceRegistryConfig, Result } from '../types/index.js';
+import { BATCH_HEARTBEAT_SIZE, BATCH_HEARTBEAT_FLUSH_INTERVAL } from '../constants.js';
+import type {
+  Instance,
+  InstanceRegistryConfig,
+  Result,
+  BatchHeartbeatConfig,
+} from '../types/index.js';
 import { EketError } from '../types/index.js';
+
 import { RedisClient, createRedisClient } from './redis-client.js';
 
 /**
@@ -17,6 +28,9 @@ export class InstanceRegistry {
   private redis: RedisClient;
   private config: InstanceRegistryConfig;
   private heartbeatInterval?: NodeJS.Timeout;
+  private batchHeartbeatConfig: BatchHeartbeatConfig;
+  private batchHeartbeatQueue: Array<{ instanceId: string; timestamp: number }> = [];
+  private batchFlushTimer?: NodeJS.Timeout;
 
   constructor(config: InstanceRegistryConfig = {}) {
     // Defensive copy to prevent external mutation
@@ -25,6 +39,13 @@ export class InstanceRegistry {
       heartbeatTimeout: config.heartbeatTimeout || 30000,
     };
     this.redis = createRedisClient();
+
+    // 批量心跳配置
+    this.batchHeartbeatConfig = {
+      enabled: true,
+      batchSize: BATCH_HEARTBEAT_SIZE,
+      flushInterval: BATCH_HEARTBEAT_FLUSH_INTERVAL,
+    };
   }
 
   /**
@@ -87,7 +108,10 @@ export class InstanceRegistry {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('INSTANCE_REGISTRATION_FAILED', `Failed to register instance: ${errorMessage}`),
+        error: new EketError(
+          'INSTANCE_REGISTRATION_FAILED',
+          `Failed to register instance: ${errorMessage}`
+        ),
       };
     }
   }
@@ -149,7 +173,10 @@ export class InstanceRegistry {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('INSTANCE_UPDATE_FAILED', `Failed to update instance: ${errorMessage}`),
+        error: new EketError(
+          'INSTANCE_UPDATE_FAILED',
+          `Failed to update instance: ${errorMessage}`
+        ),
       };
     }
   }
@@ -255,7 +282,10 @@ export class InstanceRegistry {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('INSTANCE_FETCH_FAILED', `Failed to fetch active instances: ${errorMessage}`),
+        error: new EketError(
+          'INSTANCE_FETCH_FAILED',
+          `Failed to fetch active instances: ${errorMessage}`
+        ),
       };
     }
   }
@@ -297,7 +327,10 @@ export class InstanceRegistry {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('INSTANCE_FETCH_FAILED', `Failed to fetch available instances: ${errorMessage}`),
+        error: new EketError(
+          'INSTANCE_FETCH_FAILED',
+          `Failed to fetch available instances: ${errorMessage}`
+        ),
       };
     }
   }
@@ -340,7 +373,10 @@ export class InstanceRegistry {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('INSTANCE_UNREGISTER_FAILED', `Failed to unregister instance: ${errorMessage}`),
+        error: new EketError(
+          'INSTANCE_UNREGISTER_FAILED',
+          `Failed to unregister instance: ${errorMessage}`
+        ),
       };
     }
   }
@@ -380,7 +416,10 @@ export class InstanceRegistry {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('HEARTBEAT_UPDATE_FAILED', `Failed to update heartbeat: ${errorMessage}`),
+        error: new EketError(
+          'HEARTBEAT_UPDATE_FAILED',
+          `Failed to update heartbeat: ${errorMessage}`
+        ),
       };
     }
   }
@@ -388,7 +427,7 @@ export class InstanceRegistry {
   /**
    * 启动心跳循环
    */
-  startHeartbeatLoop(instanceId: string, intervalMs: number = 10000): void {
+  startHeartbeatLoop(instanceId: string, intervalMs = 10000): void {
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
     }
@@ -408,6 +447,104 @@ export class InstanceRegistry {
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = undefined;
+    }
+    if (this.batchFlushTimer) {
+      clearTimeout(this.batchFlushTimer);
+      this.batchFlushTimer = undefined;
+    }
+  }
+
+  /**
+   * 批量更新心跳（使用 Pipeline）
+   */
+  async updateHeartbeats(instanceIds: string[]): Promise<Result<void>> {
+    if (instanceIds.length === 0) {
+      return { success: true, data: undefined };
+    }
+
+    const client = this.redis.getClient();
+    if (!client) {
+      return {
+        success: false,
+        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+      };
+    }
+
+    try {
+      const now = Date.now();
+      const pipeline = client.pipeline();
+
+      // 批量获取和更新
+      for (const instanceId of instanceIds) {
+        const key = `${this.config.redisPrefix}${instanceId}`;
+
+        // 获取现有数据
+        const existingData = await client.get(key);
+        if (!existingData) {
+          continue; // Instance 不存在，跳过
+        }
+
+        const instance = JSON.parse(existingData) as Instance;
+        instance.lastHeartbeat = now;
+        instance.updatedAt = now;
+
+        // 添加到 pipeline
+        pipeline.set(key, JSON.stringify(instance));
+      }
+
+      // 执行 pipeline
+      await pipeline.exec();
+
+      return { success: true, data: undefined };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      return {
+        success: false,
+        error: new EketError(
+          'BATCH_HEARTBEAT_FAILED',
+          `Failed to update batch heartbeats: ${errorMessage}`
+        ),
+      };
+    }
+  }
+
+  /**
+   * 排队心跳（用于批量处理）
+   */
+  queueHeartbeat(instanceId: string): void {
+    this.batchHeartbeatQueue.push({ instanceId, timestamp: Date.now() });
+
+    // 如果队列达到批量大小，立即刷新
+    if (this.batchHeartbeatQueue.length >= this.batchHeartbeatConfig.batchSize) {
+      this.flushHeartbeats();
+    } else if (!this.batchFlushTimer) {
+      // 否则设置定时器
+      this.batchFlushTimer = setTimeout(() => {
+        this.flushHeartbeats();
+      }, this.batchHeartbeatConfig.flushInterval);
+    }
+  }
+
+  /**
+   * 刷新心跳队列
+   */
+  private async flushHeartbeats(): Promise<void> {
+    if (this.batchHeartbeatQueue.length === 0) {
+      return;
+    }
+
+    // 清空队列
+    const batch = [...this.batchHeartbeatQueue];
+    this.batchHeartbeatQueue = [];
+    this.batchFlushTimer = undefined;
+
+    // 去重
+    const uniqueInstanceIds = Array.from(new Set(batch.map((item) => item.instanceId)));
+
+    // 批量更新
+    const result = await this.updateHeartbeats(uniqueInstanceIds);
+    if (!result.success) {
+      console.error('[InstanceRegistry] Batch heartbeat flush failed:', result.error);
     }
   }
 
@@ -430,7 +567,8 @@ export class InstanceRegistry {
 
       const instances: Instance[] = [];
       for (const key of keys) {
-        if (!key.includes(':by_')) { // 跳过索引 key
+        if (!key.includes(':by_')) {
+          // 跳过索引 key
           const data = await client.get(key);
           if (data) {
             instances.push(JSON.parse(data) as Instance);
@@ -451,7 +589,7 @@ export class InstanceRegistry {
   /**
    * 扫描 Redis keys（支持大量数据）
    */
-  private async scanKeys(pattern: string, count: number = 100): Promise<string[]> {
+  private async scanKeys(pattern: string, count = 100): Promise<string[]> {
     const client = this.redis.getClient();
     if (!client) {
       return [];

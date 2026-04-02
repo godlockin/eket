@@ -279,6 +279,10 @@ export interface AdapterFactoryInterface {
    */
   createAdapter<T extends AdapterSource>(
     type: T,
-    config: T extends 'openclaw' ? OpenCLAWConfig : T extends 'claude-code' ? ClaudeCodeConfig : CodexConfig
+    config: T extends 'openclaw'
+      ? OpenCLAWConfig
+      : T extends 'claude-code'
+        ? ClaudeCodeConfig
+        : CodexConfig
   ): SkillAdapter;
 }

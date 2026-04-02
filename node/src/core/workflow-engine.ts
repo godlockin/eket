@@ -9,15 +9,16 @@
  * - 事件驱动的触发器
  */
 
+import { EketError } from '../types/index.js';
 import type {
   WorkflowDefinition,
   WorkflowInstance,
   WorkflowStep,
   Result,
+  CommunicationProtocolConfig,
 } from '../types/index.js';
-import { EketError } from '../types/index.js';
+
 import { CommunicationProtocol, createCommunicationProtocol } from './communication-protocol.js';
-import type { CommunicationProtocolConfig } from '../types/index.js';
 
 /**
  * 工作流引擎配置
@@ -167,10 +168,7 @@ export class WorkflowEngine {
     if (!definition) {
       return {
         success: false,
-        error: new EketError(
-          'WORKFLOW_NOT_FOUND',
-          `Workflow definition ${definitionId} not found`
-        ),
+        error: new EketError('WORKFLOW_NOT_FOUND', `Workflow definition ${definitionId} not found`),
       };
     }
 
@@ -213,10 +211,7 @@ export class WorkflowEngine {
   /**
    * 执行工作流步骤
    */
-  private async executeStep(
-    instanceId: string,
-    stepId: string
-  ): Promise<void> {
+  private async executeStep(instanceId: string, stepId: string): Promise<void> {
     const instance = this.instances.get(instanceId);
     if (!instance || instance.status !== 'running') {
       return;
@@ -344,7 +339,9 @@ export class WorkflowEngine {
 
     // 尝试错误处理步骤
     const instance = this.instances.get(instanceId);
-    if (!instance) return;
+    if (!instance) {
+      return;
+    }
 
     const definition = this.definitions.get(instance.definitionId);
     const step = definition?.steps.find((s) => s.id === stepId);
@@ -359,15 +356,13 @@ export class WorkflowEngine {
   /**
    * 处理步骤错误
    */
-  private async handleStepError(
-    instanceId: string,
-    stepId: string,
-    error?: string
-  ): Promise<void> {
+  private async handleStepError(instanceId: string, stepId: string, error?: string): Promise<void> {
     console.error(`[WorkflowEngine] Step error: ${stepId} in workflow ${instanceId}: ${error}`);
 
     const instance = this.instances.get(instanceId);
-    if (!instance) return;
+    if (!instance) {
+      return;
+    }
 
     const definition = this.definitions.get(instance.definitionId);
     const step = definition?.steps.find((s) => s.id === stepId);
@@ -398,7 +393,9 @@ export class WorkflowEngine {
     output?: Record<string, unknown>
   ): Promise<void> {
     const instance = this.instances.get(instanceId);
-    if (!instance) return;
+    if (!instance) {
+      return;
+    }
 
     instance.status = 'completed';
     instance.completedAt = Date.now();
@@ -419,7 +416,9 @@ export class WorkflowEngine {
    */
   private async failWorkflow(instanceId: string, reason: string): Promise<void> {
     const instance = this.instances.get(instanceId);
-    if (!instance) return;
+    if (!instance) {
+      return;
+    }
 
     instance.status = 'failed';
     instance.completedAt = Date.now();

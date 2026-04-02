@@ -5,6 +5,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import type { Result } from '../types/index.js';
 import { EketErrorCode, EketErrorClass } from '../types/index.js';
 
@@ -12,18 +13,18 @@ import { EketErrorCode, EketErrorClass } from '../types/index.js';
  * 依赖关系类型
  */
 export type DependencyType =
-  | 'blocks'          // 阻塞：A 完成前 B 不能开始
-  | 'relates'         // 关联：A 和 B 相关
-  | 'duplicates'      // 重复：A 和 B 是重复任务
-  | 'prerequisite'    // 前置：A 是 B 的前置条件
-  | 'successor';      // 后置：A 是 B 的后置任务
+  | 'blocks' // 阻塞：A 完成前 B 不能开始
+  | 'relates' // 关联：A 和 B 相关
+  | 'duplicates' // 重复：A 和 B 是重复任务
+  | 'prerequisite' // 前置：A 是 B 的前置条件
+  | 'successor'; // 后置：A 是 B 的后置任务
 
 /**
  * 依赖关系
  */
 export interface Dependency {
-  from: string;       // 源任务 ID
-  to: string;         // 目标任务 ID
+  from: string; // 源任务 ID
+  to: string; // 目标任务 ID
   type: DependencyType;
   createdAt: number;
   metadata?: Record<string, unknown>;
@@ -38,8 +39,8 @@ export interface TaskNode {
   status: string;
   priority: string;
   assignee?: string;
-  dependencies: string[];  // 依赖的任务 ID 列表
-  dependents: string[];    // 依赖此任务的 ID 列表
+  dependencies: string[]; // 依赖的任务 ID 列表
+  dependents: string[]; // 依赖此任务的 ID 列表
 }
 
 /**
@@ -54,7 +55,7 @@ export interface DependencyGraph {
  * 关键路径分析结果
  */
 export interface CriticalPath {
-  path: string[];       // 关键路径上的任务 ID
+  path: string[]; // 关键路径上的任务 ID
   totalDuration: number; // 总预计时长
   blockingTasks: string[]; // 阻塞任务
 }
@@ -139,11 +140,15 @@ export class DependencyAnalyzer {
         recursionStack.add(nodeId);
 
         const node = graph.nodes.get(nodeId);
-        if (!node) return false;
+        if (!node) {
+          return false;
+        }
 
         for (const depId of node.dependencies) {
           if (!visited.has(depId)) {
-            if (dfs(depId)) return true;
+            if (dfs(depId)) {
+              return true;
+            }
           } else if (recursionStack.has(depId)) {
             cycle.push(depId, nodeId);
             return true;
@@ -183,7 +188,10 @@ export class DependencyAnalyzer {
   /**
    * 分析关键路径
    */
-  analyzeCriticalPath(graph: DependencyGraph, estimates: Map<string, number>): Result<CriticalPath> {
+  analyzeCriticalPath(
+    graph: DependencyGraph,
+    estimates: Map<string, number>
+  ): Result<CriticalPath> {
     try {
       // 找到所有没有依赖的任务（起点）
       const startNodes: string[] = [];
@@ -199,7 +207,9 @@ export class DependencyAnalyzer {
 
       const dfs = (nodeId: string, path: string[], duration: number) => {
         const node = graph.nodes.get(nodeId);
-        if (!node) return;
+        if (!node) {
+          return;
+        }
 
         const nodeDuration = estimates.get(nodeId) || 4; // 默认 4 小时
         const newDuration = duration + nodeDuration;
@@ -225,7 +235,7 @@ export class DependencyAnalyzer {
       }
 
       // 识别阻塞任务（关键路径上的任务）
-      const blockingTasks = longestPath.filter(id => {
+      const blockingTasks = longestPath.filter((id) => {
         const node = graph.nodes.get(id);
         return node && node.dependents.length > 0;
       });
@@ -255,7 +265,9 @@ export class DependencyAnalyzer {
   async getBlockingTasks(taskId: string): Promise<Result<string[]>> {
     try {
       const graphResult = await this.buildDependencyGraph();
-      if (!graphResult.success) return graphResult;
+      if (!graphResult.success) {
+        return graphResult;
+      }
 
       const graph = graphResult.data;
       const node = graph.nodes.get(taskId);
@@ -263,10 +275,7 @@ export class DependencyAnalyzer {
       if (!node) {
         return {
           success: false,
-          error: new EketErrorClass(
-            EketErrorCode.TASK_NOT_FOUND,
-            `任务不存在：${taskId}`
-          ),
+          error: new EketErrorClass(EketErrorCode.TASK_NOT_FOUND, `任务不存在：${taskId}`),
         };
       }
 
@@ -299,7 +308,9 @@ export class DependencyAnalyzer {
   async generateMermaidDiagram(): Promise<Result<string>> {
     try {
       const graphResult = await this.buildDependencyGraph();
-      if (!graphResult.success) return graphResult;
+      if (!graphResult.success) {
+        return graphResult;
+      }
 
       const graph = graphResult.data;
 
@@ -342,10 +353,13 @@ export class DependencyAnalyzer {
 
     for (const category of categories) {
       const categoryDir = path.join(this.ticketsDir, category);
-      if (!fs.existsSync(categoryDir)) continue;
+      if (!fs.existsSync(categoryDir)) {
+        continue;
+      }
 
-      const files = fs.readdirSync(categoryDir)
-        .filter(f => f.endsWith('.yml') || f.endsWith('.yaml'));
+      const files = fs
+        .readdirSync(categoryDir)
+        .filter((f) => f.endsWith('.yml') || f.endsWith('.yaml'));
 
       for (const file of files) {
         const filePath = path.join(categoryDir, file);
@@ -371,7 +385,9 @@ export class DependencyAnalyzer {
 
     for (const line of lines) {
       const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#')) continue;
+      if (!trimmed || trimmed.startsWith('#')) {
+        continue;
+      }
 
       // 检查是否是数组项
       if (trimmed.startsWith('- ')) {
@@ -417,11 +433,11 @@ export class DependencyAnalyzer {
    */
   private getStatusIcon(status: string): string {
     const icons: Record<string, string> = {
-      'done': ' ✓',
-      'in_progress': ' ⏳',
-      'review': ' 🔍',
-      'ready': ' ✓',
-      'blocked': ' ⛔',
+      done: ' ✓',
+      in_progress: ' ⏳',
+      review: ' 🔍',
+      ready: ' ✓',
+      blocked: ' ⛔',
     };
     return icons[status] || '';
   }

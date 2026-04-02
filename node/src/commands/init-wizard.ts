@@ -3,9 +3,9 @@
  * 用于收集项目配置信息
  */
 
-import * as readline from 'readline';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as readline from 'readline';
 
 interface GitRepoConfig {
   url: string;
@@ -50,7 +50,11 @@ function createRL(): readline.Interface {
 /**
  * 提示用户输入
  */
-async function prompt(rl: readline.Interface, question: string, defaultValue?: string): Promise<string> {
+async function prompt(
+  rl: readline.Interface,
+  question: string,
+  defaultValue?: string
+): Promise<string> {
   const defaultText = defaultValue ? ` [${defaultValue}]` : '';
   return new Promise((resolve) => {
     rl.question(`${question}${defaultText}: `, (answer) => {
@@ -62,7 +66,11 @@ async function prompt(rl: readline.Interface, question: string, defaultValue?: s
 /**
  * 确认提示
  */
-async function confirm(rl: readline.Interface, question: string, defaultValue: boolean = true): Promise<boolean> {
+async function confirm(
+  rl: readline.Interface,
+  question: string,
+  defaultValue = true
+): Promise<boolean> {
   const defaultText = defaultValue ? 'Y/n' : 'y/N';
   return new Promise((resolve) => {
     rl.question(`${question} [${defaultText}]: `, (answer) => {
@@ -295,13 +303,23 @@ function generateGitignore(projectRoot: string): void {
 
 /**
  * 初始化向导主函数
+ *
+ * Phase 1: 最小配置（3 项）
+ *   - 项目名称
+ *   - 代码仓库 URL
+ *   - 默认分支
+ *
+ * Phase 2: 可选增强配置
+ *   - Confluence/Jira 仓库
+ *   - Redis 配置
+ *   - SQLite 配置
  */
 export async function runInitWizard(projectRoot?: string): Promise<ProjectConfig | null> {
   const rl = createRL();
 
   try {
     console.log('\n========================================');
-    console.log('  EKET 项目初始化向导');
+    console.log('  EKET 项目初始化向导 v2.0.0');
     console.log('========================================\n');
 
     // 确定项目根目录
@@ -309,20 +327,71 @@ export async function runInitWizard(projectRoot?: string): Promise<ProjectConfig
       projectRoot = process.cwd();
     }
 
-    // 1. 基本信息
-    console.log('=== 基本信息 ===');
+    // ========================================================================
+    // Phase 1: 最小配置（必需）
+    // ========================================================================
+    console.log('>>> Phase 1: 最小配置（必需）\n');
+    console.log('这些配置是项目运行的最基本要求。\n');
+
+    // 1.1 项目名称
+    console.log('--- 步骤 1/3: 项目基本信息 ---');
     const projectName = await prompt(rl, '项目名称', path.basename(projectRoot));
     const organization = await prompt(rl, '组织名称', 'my-org');
 
-    // 2. Git 仓库配置
-    const confluence = await configureGitRepo(rl, 'Confluence', '文档仓库');
-    const jira = await configureGitRepo(rl, 'Jira', '任务管理仓库');
-    const codeRepo = await configureGitRepo(rl, 'CodeRepo', '代码仓库');
+    // 1.2 代码仓库配置
+    console.log('\n--- 步骤 2/3: 代码仓库配置 ---');
+    console.log('代码仓库是项目的主要工作区。\n');
+    const codeRepoUrl = await prompt(rl, '代码仓库 Git URL');
+    const codeRepoBranch = await prompt(rl, '默认分支名', 'main');
 
-    // 3. Redis 配置
+    const codeRepo: GitRepoConfig = codeRepoUrl
+      ? {
+          url: codeRepoUrl,
+          branch: codeRepoBranch,
+        }
+      : { url: '', branch: 'main' };
+
+    // 1.3 确认是否继续
+    console.log('\n--- 步骤 3/3: 确认配置 ---');
+    console.log(`项目：${projectName}`);
+    console.log(`组织：${organization}`);
+    console.log(`代码仓库：${codeRepo.url || '未配置'}`);
+    console.log(`分支：${codeRepo.branch}`);
+
+    const continueConfig = await confirm(rl, '\n保存基本配置并继续增强配置吗？', true);
+    if (!continueConfig) {
+      console.log('配置已取消');
+      return null;
+    }
+
+    // ========================================================================
+    // Phase 2: 可选增强配置
+    // ========================================================================
+    console.log('\n>>> Phase 2: 可选增强配置\n');
+    console.log('这些配置用于增强功能，可以稍后配置。\n');
+
+    // 2.1 Confluence 仓库（可选）
+    console.log('--- Confluence 文档仓库（可选）---');
+    const setupConfluence = await confirm(rl, '配置 Confluence 文档仓库吗？', false);
+    const confluence = setupConfluence
+      ? await configureGitRepo(rl, 'Confluence', '文档仓库')
+      : { url: '', branch: 'main' };
+
+    // 2.2 Jira 仓库（可选）
+    console.log('\n--- Jira 任务管理仓库（可选）---');
+    const setupJira = await confirm(rl, '配置 Jira 任务管理仓库吗？', false);
+    const jira = setupJira
+      ? await configureGitRepo(rl, 'Jira', '任务管理仓库')
+      : { url: '', branch: 'main' };
+
+    // 2.3 Redis 配置（可选）
+    console.log('\n--- Redis 配置（可选）---');
+    console.log('Redis 用于 Slaver 心跳监控和消息队列。\n');
     const redis = await configureRedis(rl);
 
-    // 4. SQLite 配置
+    // 2.4 SQLite 配置（可选）
+    console.log('\n--- SQLite 配置（可选）---');
+    console.log('SQLite 用于 Retrospective 数据持久化。\n');
     const sqlite = await configureSQLite(rl, projectRoot);
 
     // 汇总配置

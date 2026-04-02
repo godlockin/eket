@@ -2,6 +2,10 @@
  * EKET Framework - Cache Layer & Connection Pool
  * Phase 7: 错误恢复和性能优化
  *
+ * v2.0.0 扩展性增强:
+ * - 支持 Redis Cluster 模式
+ * - 一致性哈希分片支持
+ *
  * 缓存层：
  * - LRU 缓存策略
  * - TTL 过期机制
@@ -14,8 +18,17 @@
  * - 自动健康检查
  */
 
+import {
+  CACHE_MAX_SIZE,
+  CACHE_DEFAULT_TTL,
+  CACHE_LOCK_TTL,
+  POOL_DEFAULT_SIZE,
+  POOL_MAX_IDLE_TIME,
+  POOL_ACQUIRE_TIMEOUT,
+} from '../constants.js';
 import type { Result } from '../types/index.js';
 import { EketError } from '../types/index.js';
+
 import { RedisClient, createRedisClient } from './redis-client.js';
 
 /**
@@ -33,10 +46,10 @@ interface CacheEntry<T> {
  * 缓存配置
  */
 export interface CacheConfig {
-  maxSize: number;           // 最大缓存条目数
-  defaultTTL: number;        // 默认 TTL（毫秒）
-  useRedis: boolean;         // 是否启用 Redis 缓存
-  redisPrefix: string;       // Redis key 前缀
+  maxSize: number; // 最大缓存条目数
+  defaultTTL: number; // 默认 TTL（毫秒）
+  useRedis: boolean; // 是否启用 Redis 缓存
+  redisPrefix: string; // Redis key 前缀
   redisClient?: RedisClient; // 可选的共享 Redis 客户端
 }
 
@@ -53,11 +66,26 @@ export interface CacheStats {
 }
 
 /**
+ * LRU 缓存节点（双向链表）
+ * 用于实现 O(1) 访问和驱逐
+ */
+interface LRUNode<T> {
+  key: string;
+  value: CacheEntry<T>;
+  prev: LRUNode<T> | null;
+  next: LRUNode<T> | null;
+}
+
+/**
  * LRU 缓存实现
+ * 使用 Map + 双向链表实现 O(1) 访问和驱逐
  */
 export class LRUCache<T = unknown> {
   private config: CacheConfig;
-  private cache: Map<string, CacheEntry<T>>;
+  private cache: Map<string, LRUNode<T>>;
+  private head: LRUNode<T> | null; // LRU 端（最久未使用）
+  private tail: LRUNode<T> | null; // MRU 端（最近使用）
+  private static redisClientInstance?: RedisClient; // 单例 Redis 客户端
   private redis?: RedisClient;
   private stats: { hits: number; misses: number; evictions: number; expirations: number } = {
     hits: 0,
@@ -68,38 +96,131 @@ export class LRUCache<T = unknown> {
 
   constructor(config: Partial<CacheConfig> = {}) {
     this.config = {
-      maxSize: config.maxSize || 1000,
-      defaultTTL: config.defaultTTL || 300000, // 5 分钟
+      maxSize: config.maxSize ?? CACHE_MAX_SIZE,
+      defaultTTL: config.defaultTTL ?? CACHE_DEFAULT_TTL,
       useRedis: config.useRedis || false,
       redisPrefix: config.redisPrefix || 'eket:cache:',
     };
     this.cache = new Map();
+    this.head = null;
+    this.tail = null;
 
-    // 支持传入现有 Redis 客户端或创建新客户端
+    // 支持传入现有 Redis 客户端或创建新客户端（单例模式复用连接）
     if (this.config.useRedis) {
-      this.redis = config.redisClient || createRedisClient();
+      if (config.redisClient) {
+        // 使用传入的共享 Redis 客户端
+        this.redis = config.redisClient;
+      } else if (LRUCache.redisClientInstance) {
+        // 复用现有单例 Redis 客户端
+        this.redis = LRUCache.redisClientInstance;
+      } else {
+        // 创建新的单例 Redis 客户端
+        LRUCache.redisClientInstance = createRedisClient();
+        this.redis = LRUCache.redisClientInstance;
+      }
+    }
+  }
+
+  /**
+   * 将节点移动到链表尾部（MRU 端）
+   * O(1) 操作
+   */
+  private moveToTail(node: LRUNode<T>): void {
+    if (node === this.tail) {
+      return;
+    } // 已在尾部
+
+    // 从原位置断开
+    if (node.prev) {
+      node.prev.next = node.next;
+    }
+    if (node.next) {
+      node.next.prev = node.prev;
+    }
+
+    // 如果是头节点，更新头
+    if (node === this.head) {
+      this.head = node.next;
+    }
+
+    // 移动到尾部
+    node.prev = this.tail;
+    node.next = null;
+
+    if (this.tail) {
+      this.tail.next = node;
+    }
+    this.tail = node;
+
+    // 如果只有一个节点，头也指向它
+    if (!this.head) {
+      this.head = node;
+    }
+  }
+
+  /**
+   * 从链表中移除节点
+   * O(1) 操作
+   */
+  private removeNode(node: LRUNode<T>): void {
+    if (node.prev) {
+      node.prev.next = node.next;
+    }
+    if (node.next) {
+      node.next.prev = node.prev;
+    }
+
+    // 如果是头节点，更新头
+    if (node === this.head) {
+      this.head = node.next;
+    }
+
+    // 如果是尾节点，更新尾
+    if (node === this.tail) {
+      this.tail = node.prev;
+    }
+
+    node.prev = null;
+    node.next = null;
+  }
+
+  /**
+   * 在链表尾部添加节点
+   * O(1) 操作
+   */
+  private addNodeToTail(node: LRUNode<T>): void {
+    node.prev = this.tail;
+    node.next = null;
+
+    if (this.tail) {
+      this.tail.next = node;
+    }
+    this.tail = node;
+
+    if (!this.head) {
+      this.head = node;
     }
   }
 
   /**
    * 获取缓存值（同步版本，仅内存缓存）
-   * O(1) LRU: 更新迭代顺序，将访问的键移到末尾
+   * O(1) LRU: 移动节点到尾部更新访问顺序
    */
   get(key: string): T | undefined {
-    // 先从内存缓存获取
-    const entry = this.cache.get(key);
-    if (entry) {
+    const node = this.cache.get(key);
+    if (node) {
+      const entry = node.value;
       // expiresAt 为 0 或 Infinity 表示永不过期
       if (entry.expiresAt === 0 || entry.expiresAt === Infinity || entry.expiresAt > Date.now()) {
-        entry.lastAccessAt = Date.now();  // 更新最后访问时间
+        entry.lastAccessAt = Date.now();
         entry.hits++;
         this.stats.hits++;
-        // O(1) LRU 优化：删除后重新添加到末尾，更新迭代顺序
-        this.cache.delete(key);
-        this.cache.set(key, entry);
+        // O(1): 移动到尾部（最近使用）
+        this.moveToTail(node);
         return entry.value as T;
       } else {
         // 过期，删除
+        this.removeNode(node);
         this.cache.delete(key);
         this.stats.expirations++;
       }
@@ -111,18 +232,23 @@ export class LRUCache<T = unknown> {
 
   /**
    * 获取缓存值（异步版本，包含 Redis 回源）
+   * O(1) LRU: 移动节点到尾部更新访问顺序
    */
   async getAsync(key: string): Promise<T | null> {
     // 先从内存缓存获取
-    const entry = this.cache.get(key);
-    if (entry) {
+    const node = this.cache.get(key);
+    if (node) {
+      const entry = node.value;
       if (entry.expiresAt > Date.now()) {
-        entry.lastAccessAt = Date.now();  // 更新最后访问时间
+        entry.lastAccessAt = Date.now();
         entry.hits++;
         this.stats.hits++;
+        // O(1): 移动到尾部（最近使用）
+        this.moveToTail(node);
         return entry.value as T;
       } else {
         // 过期，删除
+        this.removeNode(node);
         this.cache.delete(key);
         this.stats.expirations++;
       }
@@ -131,7 +257,7 @@ export class LRUCache<T = unknown> {
     this.stats.misses++;
 
     // 内存未命中，尝试 Redis
-    if (this.redis && this.redis.isReady()) {
+    if (this.redis?.isReady()) {
       try {
         const client = this.redis.getClient();
         if (client) {
@@ -153,64 +279,92 @@ export class LRUCache<T = unknown> {
 
   /**
    * 设置缓存值（同步版本，仅内存缓存）
-   * O(1) LRU: 更新迭代顺序，将新键移到末尾
+   * O(1) LRU: 在尾部添加节点
    */
   set(key: string, value: T, ttl?: number): void {
     const now = Date.now();
     // TTL 为 0 或 -1 表示永不过期
-    const expiresAt = (ttl === 0 || ttl === -1) ? Infinity : now + (ttl ?? this.config.defaultTTL);
+    const expiresAt = ttl === 0 || ttl === -1 ? Infinity : now + (ttl ?? this.config.defaultTTL);
 
     const entry: CacheEntry<T> = {
       value,
       expiresAt,
       hits: 0,
       createdAt: now,
-      lastAccessAt: now,  // 初始化最后访问时间
+      lastAccessAt: now,
     };
 
-    // 如果键已存在，先删除以更新迭代顺序
-    if (this.cache.has(key)) {
-      this.cache.delete(key);
+    // 如果键已存在，更新值并移动到尾部
+    const existingNode = this.cache.get(key);
+    if (existingNode) {
+      existingNode.value = entry;
+      this.moveToTail(existingNode);
+      return;
     }
 
-    // LRU 驱逐
+    // LRU 驱逐 - O(1)
     if (this.cache.size >= this.config.maxSize) {
       this.evictLRU();
     }
 
-    this.cache.set(key, entry);
+    // 创建新节点并添加到尾部
+    const newNode: LRUNode<T> = {
+      key,
+      value: entry,
+      prev: null,
+      next: null,
+    };
+    this.cache.set(key, newNode);
+    this.addNodeToTail(newNode);
   }
 
   /**
    * 设置缓存值（异步版本，同时写入 Redis）
+   * O(1) LRU: 在尾部添加节点
    */
   async setAsync(key: string, value: T, ttl?: number): Promise<void> {
     const now = Date.now();
     // TTL 为 0 或 -1 表示永不过期
-    const expiresAt = (ttl === 0 || ttl === -1) ? Infinity : now + (ttl ?? this.config.defaultTTL);
+    const expiresAt = ttl === 0 || ttl === -1 ? Infinity : now + (ttl ?? this.config.defaultTTL);
 
     const entry: CacheEntry<T> = {
       value,
       expiresAt,
       hits: 0,
       createdAt: now,
-      lastAccessAt: now,  // 初始化最后访问时间
+      lastAccessAt: now,
     };
 
-    // LRU 驱逐
-    if (this.cache.size >= this.config.maxSize) {
-      this.evictLRU();
+    // 如果键已存在，更新值并移动到尾部
+    const existingNode = this.cache.get(key);
+    if (existingNode) {
+      existingNode.value = entry;
+      this.moveToTail(existingNode);
+    } else {
+      // LRU 驱逐 - O(1)
+      if (this.cache.size >= this.config.maxSize) {
+        this.evictLRU();
+      }
+
+      // 创建新节点并添加到尾部
+      const newNode: LRUNode<T> = {
+        key,
+        value: entry,
+        prev: null,
+        next: null,
+      };
+      this.cache.set(key, newNode);
+      this.addNodeToTail(newNode);
     }
 
-    this.cache.set(key, entry);
-
     // 同时写入 Redis（如果启用）
-    if (this.redis && this.redis.isReady()) {
+    if (this.redis?.isReady()) {
       try {
         const client = this.redis.getClient();
         if (client) {
           // Redis 中 TTL 为 0 表示永不过期
-          const ttlSeconds = (ttl === 0 || ttl === -1) ? 0 : Math.ceil((ttl ?? this.config.defaultTTL) / 1000);
+          const ttlSeconds =
+            ttl === 0 || ttl === -1 ? 0 : Math.ceil((ttl ?? this.config.defaultTTL) / 1000);
           if (ttlSeconds === 0) {
             await client.set(`${this.config.redisPrefix}${key}`, JSON.stringify(value));
           } else {
@@ -238,12 +392,14 @@ export class LRUCache<T = unknown> {
    * 检查键是否存在（同步版本）
    */
   has(key: string): boolean {
-    const entry = this.cache.get(key);
-    if (entry) {
+    const node = this.cache.get(key);
+    if (node) {
+      const entry = node.value;
       if (entry.expiresAt > Date.now()) {
         return true;
       } else {
         // 过期，删除
+        this.removeNode(node);
         this.cache.delete(key);
         this.stats.expirations++;
       }
@@ -257,7 +413,7 @@ export class LRUCache<T = unknown> {
   async deleteAsync(key: string): Promise<void> {
     this.cache.delete(key);
 
-    if (this.redis && this.redis.isReady()) {
+    if (this.redis?.isReady()) {
       try {
         const client = this.redis.getClient();
         if (client) {
@@ -274,6 +430,8 @@ export class LRUCache<T = unknown> {
    */
   clear(): void {
     this.cache.clear();
+    this.head = null;
+    this.tail = null;
   }
 
   /**
@@ -281,8 +439,10 @@ export class LRUCache<T = unknown> {
    */
   async clearAsync(): Promise<void> {
     this.cache.clear();
+    this.head = null;
+    this.tail = null;
 
-    if (this.redis && this.redis.isReady()) {
+    if (this.redis?.isReady()) {
       try {
         const client = this.redis.getClient();
         if (client) {
@@ -330,12 +490,8 @@ export class LRUCache<T = unknown> {
   /**
    * 获取或计算（防止缓存穿透，迭代实现避免栈溢出）
    */
-  async getOrCompute(
-    key: string,
-    compute: () => Promise<T>,
-    ttl?: number
-  ): Promise<T> {
-    const maxRetries = 50;  // 防止无限循环
+  async getOrCompute(key: string, compute: () => Promise<T>, ttl?: number): Promise<T> {
+    const maxRetries = 50; // 防止无限循环
     let retries = 0;
 
     while (retries < maxRetries) {
@@ -358,7 +514,7 @@ export class LRUCache<T = unknown> {
 
       if (lockValue) {
         // 正在计算中，等待后重试（迭代而非递归）
-        await new Promise(r => setTimeout(r, 100));
+        await new Promise((r) => setTimeout(r, 100));
         retries++;
         continue;
       }
@@ -367,7 +523,7 @@ export class LRUCache<T = unknown> {
       const acquired = await this.tryAcquireLock(lockKey);
       if (!acquired) {
         // 获取锁失败，等待后重试
-        await new Promise(r => setTimeout(r, 100));
+        await new Promise((r) => setTimeout(r, 100));
         retries++;
         continue;
       }
@@ -406,9 +562,9 @@ export class LRUCache<T = unknown> {
    */
   private async tryAcquireLock(lockKey: string): Promise<boolean> {
     const lockValue = 'locked:' + Date.now();
-    const lockTtl = 5000; // 5 秒锁超时
+    const lockTtl = CACHE_LOCK_TTL; // 5 秒锁超时
 
-    if (this.redis && this.redis.isReady()) {
+    if (this.redis?.isReady()) {
       try {
         const client = this.redis.getClient();
         if (client) {
@@ -428,7 +584,7 @@ export class LRUCache<T = unknown> {
 
     // Fallback: 内存锁（单实例场景）
     const existingLock = this.cache.get(lockKey);
-    if (!existingLock || existingLock.expiresAt <= Date.now()) {
+    if (!existingLock || existingLock.value.expiresAt <= Date.now()) {
       this.set(lockKey, lockValue as unknown as T, lockTtl);
       return true;
     }
@@ -440,7 +596,7 @@ export class LRUCache<T = unknown> {
    * 释放分布式锁
    */
   private async releaseLock(lockKey: string): Promise<void> {
-    if (this.redis && this.redis.isReady()) {
+    if (this.redis?.isReady()) {
       try {
         const client = this.redis.getClient();
         if (client) {
@@ -457,14 +613,12 @@ export class LRUCache<T = unknown> {
 
   /**
    * LRU 驱逐 - O(1) 实现
-   * 利用 Map 的迭代顺序：第一个条目就是最久未使用的
+   * 利用双向链表的头节点就是最久未使用的节点
    */
   private evictLRU(): void {
-    // Map.entries() 返回的迭代器按插入顺序遍历
-    // 第一个条目就是最久未使用的（LRU）
-    const firstEntry = this.cache.entries().next();
-    if (!firstEntry.done) {
-      const [lruKey] = firstEntry.value;
+    if (this.head) {
+      const lruKey = this.head.key;
+      this.removeNode(this.head);
       this.cache.delete(lruKey);
       this.stats.evictions++;
     }
@@ -500,6 +654,7 @@ export class RedisConnectionPool {
     password?: string;
     poolSize: number;
     maxIdleTime: number;
+    maxQueueSize: number; // 等待队列最大长度
   };
   private clients: Array<{ client: RedisClient; lastUsed: number; busy: boolean }> = [];
   private waitQueue: Array<{
@@ -514,13 +669,15 @@ export class RedisConnectionPool {
     password?: string;
     poolSize?: number;
     maxIdleTime?: number;
+    maxQueueSize?: number; // 等待队列最大长度（默认 1000）
   }) {
     this.config = {
       host: config.host || 'localhost',
       port: config.port || 6379,
       password: config.password,
-      poolSize: config.poolSize || 10,
-      maxIdleTime: config.maxIdleTime || 300000,
+      poolSize: config.poolSize ?? POOL_DEFAULT_SIZE,
+      maxIdleTime: config.maxIdleTime ?? POOL_MAX_IDLE_TIME,
+      maxQueueSize: config.maxQueueSize ?? 1000, // 默认限制 1000
     };
   }
 
@@ -559,7 +716,7 @@ export class RedisConnectionPool {
   /**
    * 获取连接
    */
-  async acquire(timeout = 30000): Promise<RedisClient> {
+  async acquire(timeout = POOL_ACQUIRE_TIMEOUT): Promise<RedisClient> {
     // 查找空闲连接
     for (const item of this.clients) {
       if (!item.busy) {
@@ -576,8 +733,8 @@ export class RedisConnectionPool {
       }
     }
 
-    // 检查队列是否已满（限制为 poolSize 的 2 倍）
-    if (this.waitQueue.length >= this.config.poolSize * 2) {
+    // 检查队列是否已满（使用配置的 maxQueueSize 限制）
+    if (this.waitQueue.length >= this.config.maxQueueSize) {
       throw new Error('Connection pool wait queue full');
     }
 
@@ -636,9 +793,11 @@ export class RedisConnectionPool {
   /**
    * 替换失效的连接
    */
-  private async replaceConnection(
-    item: { client: RedisClient; lastUsed: number; busy: boolean }
-  ): Promise<void> {
+  private async replaceConnection(item: {
+    client: RedisClient;
+    lastUsed: number;
+    busy: boolean;
+  }): Promise<void> {
     try {
       // 断开旧连接
       await item.client.disconnect();

@@ -4,6 +4,7 @@
  */
 
 import { Command } from 'commander';
+
 import { createInstanceRegistry } from '../core/instance-registry.js';
 import type { Instance } from '../types/index.js';
 
@@ -50,14 +51,22 @@ function getLoadBar(load: number): string {
  * 格式化时间戳
  */
 function formatTimestamp(timestamp?: number): string {
-  if (!timestamp) return '从未';
+  if (!timestamp) {
+    return '从未';
+  }
   const date = new Date(timestamp);
   const now = Date.now();
   const diff = now - timestamp;
 
-  if (diff < 60000) return '刚刚';
-  if (diff < 3600000) return `${Math.floor(diff / 60000)} 分钟前`;
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`;
+  if (diff < 60000) {
+    return '刚刚';
+  }
+  if (diff < 3600000) {
+    return `${Math.floor(diff / 60000)} 分钟前`;
+  }
+  if (diff < 86400000) {
+    return `${Math.floor(diff / 3600000)} 小时前`;
+  }
   return date.toLocaleString();
 }
 
@@ -148,7 +157,6 @@ export function registerTeamStatus(program: Command): void {
         console.log(`平均负载：${avgLoad}`);
         console.log(`空闲实例：${instances.filter((i) => i.status === 'idle').length}`);
         console.log(`忙碌实例：${instances.filter((i) => i.status === 'busy').length}`);
-
       } finally {
         await registry.disconnect();
       }

@@ -52,14 +52,14 @@ export function createSecurityHeadersMiddleware(
       const csp =
         headers.csp ||
         "default-src 'none'; " +
-        "script-src 'self'; " +
-        "style-src 'self' 'unsafe-inline'; " +
-        "img-src 'self' data:; " +
-        "font-src 'self'; " +
-        "connect-src 'self'; " +
-        "frame-ancestors 'none'; " +
-        "base-uri 'self'; " +
-        "form-action 'self'";
+          "script-src 'self'; " +
+          "style-src 'self' 'unsafe-inline'; " +
+          "img-src 'self' data:; " +
+          "font-src 'self'; " +
+          "connect-src 'self'; " +
+          "frame-ancestors 'none'; " +
+          "base-uri 'self'; " +
+          "form-action 'self'";
       res.setHeader('Content-Security-Policy', csp);
     }
 

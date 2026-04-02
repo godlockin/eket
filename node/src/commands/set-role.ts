@@ -3,12 +3,14 @@
  * 人类用户设置自己的角色，加载对应技能的 Agent Profile
  */
 
-import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { Command } from 'commander';
+
 import { createInstanceRegistry } from '../core/instance-registry.js';
-import type { InstanceConfig } from '../types/instance.js';
 import type { AgentRole } from '../types/index.js';
+import type { InstanceConfig } from '../types/instance.js';
 
 /**
  * Agent 角色技能映射
@@ -20,12 +22,7 @@ const ROLE_SKILLS: Record<string, string[]> = {
     'acceptance_criteria_definition',
     'stakeholder_communication',
   ],
-  architect: [
-    'architecture_design',
-    'system_design',
-    'technology_selection',
-    'api_design',
-  ],
+  architect: ['architecture_design', 'system_design', 'technology_selection', 'api_design'],
   frontend_dev: [
     'react_development',
     'typescript',
@@ -33,13 +30,7 @@ const ROLE_SKILLS: Record<string, string[]> = {
     'component_design',
     'state_management',
   ],
-  backend_dev: [
-    'api_development',
-    'database_design',
-    'authentication',
-    'caching',
-    'microservices',
-  ],
+  backend_dev: ['api_development', 'database_design', 'authentication', 'caching', 'microservices'],
   qa_engineer: [
     'unit_testing',
     'integration_testing',
@@ -47,31 +38,15 @@ const ROLE_SKILLS: Record<string, string[]> = {
     'test_automation',
     'quality_assurance',
   ],
-  devops_engineer: [
-    'docker',
-    'kubernetes',
-    'ci_cd',
-    'monitoring',
-    'infrastructure_as_code',
-  ],
-  reviewer: [
-    'code_review',
-    'security_review',
-    'performance_review',
-    'architecture_review',
-  ],
+  devops_engineer: ['docker', 'kubernetes', 'ci_cd', 'monitoring', 'infrastructure_as_code'],
+  reviewer: ['code_review', 'security_review', 'performance_review', 'architecture_review'],
   business_analyst: [
     'process_analysis',
     'data_analysis',
     'documentation',
     'requirements_gathering',
   ],
-  ux_designer: [
-    'user_research',
-    'wireframing',
-    'prototyping',
-    'usability_testing',
-  ],
+  ux_designer: ['user_research', 'wireframing', 'prototyping', 'usability_testing'],
   security_expert: [
     'security_audit',
     'vulnerability_assessment',
@@ -84,12 +59,7 @@ const ROLE_SKILLS: Record<string, string[]> = {
     'statistical_modeling',
     'data_visualization',
   ],
-  doc_monitor: [
-    'technical_writing',
-    'documentation_review',
-    'api_documentation',
-    'user_guides',
-  ],
+  doc_monitor: ['technical_writing', 'documentation_review', 'api_documentation', 'user_guides'],
 };
 
 /**
@@ -119,11 +89,7 @@ async function loadAgentProfile(projectRoot: string, role: string): Promise<void
 /**
  * 保存 Instance 配置
  */
-function saveInstanceConfig(
-  projectRoot: string,
-  instanceId: string,
-  config: InstanceConfig
-): void {
+function saveInstanceConfig(projectRoot: string, instanceId: string, config: InstanceConfig): void {
   const configDir = path.join(projectRoot, '.eket', 'state');
   fs.mkdirSync(configDir, { recursive: true });
 
@@ -226,7 +192,6 @@ export function registerSetRole(program: Command): void {
         console.log(`  技能：${skills.join(', ')}`);
         console.log(`  自动模式：${config.auto_mode ? '启用' : '禁用'}`);
         console.log('\n下一步：/eket-start 开始任务');
-
       } finally {
         await registry.disconnect();
       }

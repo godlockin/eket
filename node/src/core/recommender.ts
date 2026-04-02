@@ -5,6 +5,10 @@
  * Phase 5.2 - Intelligent Task Recommendation System
  */
 
+import { createHistoryTracker } from '../core/history-tracker.js';
+import { createInstanceRegistry } from '../core/instance-registry.js';
+import type { Instance, Ticket, Result } from '../types/index.js';
+import { EketError } from '../types/index.js';
 import type {
   Recommendation,
   RecommenderConfig,
@@ -15,14 +19,7 @@ import type {
   RecommendationResponse,
   RecommendationRequest,
 } from '../types/recommender.js';
-import {
-  DEFAULT_RECOMMENDER_CONFIG,
-  DEFAULT_ALGORITHM_PARAMS,
-} from '../types/recommender.js';
-import type { Instance, Ticket, Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
-import { createInstanceRegistry } from '../core/instance-registry.js';
-import { createHistoryTracker } from '../core/history-tracker.js';
+import { DEFAULT_RECOMMENDER_CONFIG, DEFAULT_ALGORITHM_PARAMS } from '../types/recommender.js';
 
 /**
  * Recommender
@@ -64,7 +61,10 @@ export class Recommender {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('RECOMMENDER_INIT_FAILED', `Failed to initialize recommender: ${errorMessage}`),
+        error: new EketError(
+          'RECOMMENDER_INIT_FAILED',
+          `Failed to initialize recommender: ${errorMessage}`
+        ),
       };
     }
   }
@@ -157,7 +157,10 @@ export class Recommender {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('RECOMMENDATION_FAILED', `Failed to generate recommendations: ${errorMessage}`),
+        error: new EketError(
+          'RECOMMENDATION_FAILED',
+          `Failed to generate recommendations: ${errorMessage}`
+        ),
       };
     }
   }
@@ -233,7 +236,10 @@ export class Recommender {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('RECOMMENDATION_FAILED', `Failed to generate recommendations: ${errorMessage}`),
+        error: new EketError(
+          'RECOMMENDATION_FAILED',
+          `Failed to generate recommendations: ${errorMessage}`
+        ),
       };
     }
   }
@@ -241,10 +247,7 @@ export class Recommender {
   /**
    * 批量推荐（为所有 Instance 推荐任务）
    */
-  async recommendAll(
-    tasks: Ticket[],
-    instances: Instance[]
-  ): Promise<Result<Recommendation[]>> {
+  async recommendAll(tasks: Ticket[], instances: Instance[]): Promise<Result<Recommendation[]>> {
     const allRecommendations: Recommendation[] = [];
 
     for (const instance of instances) {
@@ -313,7 +316,9 @@ export class Recommender {
     // 2. 历史表现分数
     const historicalPerformance = performance.compositeScore;
     if (performance.totalTasks > 0) {
-      reasons.push(`历史表现：${performance.averageQuality.toFixed(1)}/5 (${performance.totalTasks} 任务)`);
+      reasons.push(
+        `历史表现：${performance.averageQuality.toFixed(1)}/5 (${performance.totalTasks} 任务)`
+      );
     } else {
       reasons.push('无历史记录，使用默认分数');
     }
@@ -370,9 +375,12 @@ export class Recommender {
     }
 
     // 计算匹配分数
-    const matchScore = taskTags.length > 0
-      ? matchedSkills.length / taskTags.length
-      : (instanceSkills.length > 0 ? 0.5 : 0); // 无标签时，有技能的 Instance 给中等分数
+    const matchScore =
+      taskTags.length > 0
+        ? matchedSkills.length / taskTags.length
+        : instanceSkills.length > 0
+          ? 0.5
+          : 0; // 无标签时，有技能的 Instance 给中等分数
 
     return {
       requiredSkills: taskTags,
@@ -512,7 +520,10 @@ export class Recommender {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('REPORT_GENERATION_FAILED', `Failed to generate report: ${errorMessage}`),
+        error: new EketError(
+          'REPORT_GENERATION_FAILED',
+          `Failed to generate report: ${errorMessage}`
+        ),
       };
     }
   }

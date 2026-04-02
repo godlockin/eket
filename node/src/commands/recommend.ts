@@ -5,14 +5,16 @@
  * Phase 5.2 - Intelligent Task Recommendation System
  */
 
-import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
-import { findProjectRoot } from '../utils/process-cleanup.js';
+
+import { Command } from 'commander';
+
 import { createInstanceRegistry } from '../core/instance-registry.js';
 import { createRecommender } from '../core/recommender.js';
 import type { Ticket, Instance } from '../types/index.js';
 import type { Recommendation } from '../types/recommender.js';
+import { findProjectRoot } from '../utils/process-cleanup.js';
 
 interface RecommendOptions {
   instance?: string;
@@ -91,7 +93,10 @@ function parseTicketFile(filePath: string): Ticket | null {
       if (line.toLowerCase().includes('标签:') || line.toLowerCase().includes('tags:')) {
         const tagsPart = line.split(/标签:|tags:/i)[1];
         if (tagsPart) {
-          ticket.tags = tagsPart.split(',').map((t) => t.trim()).filter(Boolean);
+          ticket.tags = tagsPart
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean);
         }
       }
 
@@ -222,11 +227,7 @@ export function registerRecommend(program: Command): void {
         if (options.instance) {
           // 为指定 Instance 推荐
           console.log(`\n为 Instance "${options.instance}" 推荐任务...`);
-          const result = await recommender.recommendForInstance(
-            options.instance,
-            tasks,
-            limit
-          );
+          const result = await recommender.recommendForInstance(options.instance, tasks, limit);
 
           if (!result.success) {
             console.error('推荐失败:', result.error.message);
@@ -237,11 +238,7 @@ export function registerRecommend(program: Command): void {
         } else if (options.task) {
           // 为指定任务推荐 Instance
           console.log(`\n为任务 "${options.task}" 推荐 Instance...`);
-          const result = await recommender.recommendForTask(
-            options.task,
-            instances,
-            limit
-          );
+          const result = await recommender.recommendForTask(options.task, instances, limit);
 
           if (!result.success) {
             console.error('推荐失败:', result.error.message);
@@ -269,7 +266,9 @@ export function registerRecommend(program: Command): void {
 
           for (const [instanceId, recs] of byInstance) {
             const instance = instances.find((i) => i.id === instanceId);
-            console.log(`\n[${instanceId}] ${instance?.agent_type || 'unknown'} (负载：${instance?.currentLoad || 0})`);
+            console.log(
+              `\n[${instanceId}] ${instance?.agent_type || 'unknown'} (负载：${instance?.currentLoad || 0})`
+            );
             const topRecs = recs.slice(0, 5);
             console.log(formatRecommendations(topRecs, tasks, instances, showDetail));
           }

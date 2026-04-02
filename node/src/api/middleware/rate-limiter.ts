@@ -6,6 +6,8 @@
  * @module rate-limiter
  */
 
+import type { Request, Response, NextFunction } from 'express';
+
 export interface RateLimiterConfig {
   // 时间窗口（毫秒）
   windowMs: number;
@@ -46,7 +48,7 @@ export class RateLimiter {
    * Express 中间件
    */
   middleware() {
-    return (req: any, res: any, next: () => void): void => {
+    return (req: Request, res: Response, _next: NextFunction): void => {
       const clientId = this.getClientId(req);
       const info = this.getOrCreateInfo(clientId);
       const now = Date.now();
@@ -62,7 +64,10 @@ export class RateLimiter {
       // 添加响应头
       if (this.config.headers) {
         res.setHeader('X-RateLimit-Limit', String(this.config.maxRequests));
-        res.setHeader('X-RateLimit-Remaining', String(Math.max(0, this.config.maxRequests - info.count)));
+        res.setHeader(
+          'X-RateLimit-Remaining',
+          String(Math.max(0, this.config.maxRequests - info.count))
+        );
         res.setHeader('X-RateLimit-Reset', String(info.resetAt));
       }
 
@@ -76,18 +81,18 @@ export class RateLimiter {
         return;
       }
 
-      next();
+      _next();
     };
   }
 
   /**
    * 获取客户端标识（IP 地址）
    */
-  private getClientId(req: any): string {
+  private getClientId(req: Request): string {
     // 信任代理的情况下，使用 X-Forwarded-For
     if (this.config.trustProxy) {
       const forwarded = req.headers['x-forwarded-for'];
-      if (forwarded) {
+      if (typeof forwarded === 'string' && forwarded) {
         const ips = forwarded.split(',');
         return ips[0].trim();
       }
@@ -162,10 +167,12 @@ export class RateLimiter {
  * 创建速率限制器实例
  */
 export function createRateLimiter(config?: RateLimiterConfig): RateLimiter {
-  return new RateLimiter(config || {
-    windowMs: 15 * 60 * 1000,
-    maxRequests: 100,
-  });
+  return new RateLimiter(
+    config || {
+      windowMs: 15 * 60 * 1000,
+      maxRequests: 100,
+    }
+  );
 }
 
 /**

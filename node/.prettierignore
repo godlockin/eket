@@ -1,0 +1,35 @@
+# EKET Framework - Prettier Ignore File
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Coverage
+coverage/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# EKET specific
+.eket/state/
+.eket/data/
+shared/
+
+# Test fixtures
+tests/fixtures/

@@ -5,11 +5,14 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { RedisConnectionPool } from '../core/cache-layer.js';
 import { RedisClient } from '../core/redis-client.js';
 import type { Message, Result } from '../types/index.js';
 import { EketError } from '../types/index.js';
-import { createRetryExecutor, type RetryExecutor } from './circuit-breaker.js';
+
 import { writeToMailbox as writeAgentMailbox } from './agent-mailbox.js';
+import { createRetryExecutor, type RetryExecutor } from './circuit-breaker.js';
 
 export interface MessageQueueConfig {
   mode: 'redis' | 'file' | 'auto';
@@ -17,6 +20,7 @@ export interface MessageQueueConfig {
   redisPort?: number;
   redisPassword?: string;
   queueDir?: string;
+  filePollingInterval?: number; // 文件队列轮询间隔（毫秒）
 }
 
 export type MessageHandler = (message: Message) => Promise<void>;
@@ -34,31 +38,58 @@ export interface MessageQueue {
 }
 
 /**
- * Redis 消息队列实现
+ * Redis 消息队列实现（使用连接池）
  */
 export class RedisMessageQueue implements MessageQueue {
-  private client: RedisClient;
+  private pool: RedisConnectionPool;
   private subscribedChannels: Map<string, MessageHandler> = new Map();
+  private config: { host: string; port: number; password?: string };
 
   constructor(config: MessageQueueConfig) {
-    this.client = new RedisClient({
+    this.config = {
       host: config.redisHost || 'localhost',
       port: config.redisPort || 6379,
       password: config.redisPassword,
+    };
+    this.pool = new RedisConnectionPool({
+      host: this.config.host,
+      port: this.config.port,
+      password: this.config.password,
+      poolSize: 5, // 消息队列使用较小的连接池
     });
   }
 
   async connect(): Promise<Result<void>> {
-    return await this.client.connect();
+    return await this.pool.initialize();
   }
 
   async disconnect(): Promise<void> {
-    await this.client.disconnect();
+    await this.pool.close();
     this.subscribedChannels.clear();
   }
 
   async publish(channel: string, message: Message): Promise<Result<void>> {
-    return await this.client.publishMessage(channel, JSON.stringify(message));
+    try {
+      const client = (await this.pool.acquire()) as RedisClient;
+      try {
+        const redisClient = client.getClient();
+        if (redisClient) {
+          await redisClient.publish(channel, JSON.stringify(message));
+          return { success: true, data: undefined };
+        }
+        return {
+          success: false,
+          error: new EketError('REDIS_CLIENT_NOT_AVAILABLE', 'Redis client not available'),
+        };
+      } finally {
+        this.pool.release(client);
+      }
+    } catch (err) {
+      return {
+        success: false,
+        error: new EketError('REDIS_PUBLISH_FAILED', `Failed to publish: ${err}`),
+      };
+    }
   }
 
   async subscribe(channel: string, handler: MessageHandler): Promise<Result<void>> {
@@ -71,7 +102,19 @@ export class RedisMessageQueue implements MessageQueue {
 
     this.subscribedChannels.set(channel, handler);
 
-    return await this.client.subscribeMessage(channel, (data) => {
+    // 使用独立的订阅连接（不通过连接池）
+    const subscriber = new RedisClient({
+      host: this.config.host,
+      port: this.config.port,
+      password: this.config.password,
+    });
+
+    const result = await subscriber.connect();
+    if (!result.success) {
+      return result;
+    }
+
+    return await subscriber.subscribeMessage(channel, (data) => {
       try {
         const message = JSON.parse(data) as Message;
         handler(message);
@@ -98,10 +141,12 @@ export class FileMessageQueue implements MessageQueue {
   private queueDir: string;
   private handlers: Map<string, MessageHandler> = new Map();
   private pollInterval: NodeJS.Timeout | null = null;
-  private readonly POLL_INTERVAL_MS = 5000; // 5 秒轮询
+  private readonly pollIntervalMs: number; // 可配置的轮询间隔
 
   constructor(config: MessageQueueConfig) {
     this.queueDir = config.queueDir || path.join(process.cwd(), '.eket', 'data', 'queue');
+    // 默认 500ms，可通过配置覆盖
+    this.pollIntervalMs = config.filePollingInterval ?? 500;
     fs.mkdirSync(this.queueDir, { recursive: true });
   }
 
@@ -160,7 +205,7 @@ export class FileMessageQueue implements MessageQueue {
   private startPolling(): void {
     this.pollInterval = setInterval(async () => {
       await this.processQueue();
-    }, this.POLL_INTERVAL_MS);
+    }, this.pollIntervalMs);
   }
 
   private async processQueue(): Promise<void> {
@@ -329,6 +374,7 @@ export function createMessageQueue(config?: Partial<MessageQueueConfig>): Hybrid
     redisPort: config?.redisPort || parseInt(process.env.EKET_REDIS_PORT || '6379', 10),
     redisPassword: config?.redisPassword || process.env.EKET_REDIS_PASSWORD,
     queueDir: config?.queueDir,
+    filePollingInterval: config?.filePollingInterval,
   });
 }
 

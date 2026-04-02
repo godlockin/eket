@@ -76,10 +76,12 @@ export async function execFileNoThrow(
  * Type guard for AbortError
  */
 function isAbortError(err: unknown): boolean {
-  return err !== null &&
+  return (
+    err !== null &&
     typeof err === 'object' &&
     'code' in err &&
-    (err as { code: unknown }).code === 'ABORT_ERR';
+    (err as { code: unknown }).code === 'ABORT_ERR'
+  );
 }
 
 /**

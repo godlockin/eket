@@ -1,13 +1,17 @@
 /**
  * EKET Framework - Skills Registry
- * Version: 0.9.2
+ * Version: 2.0.0
  *
  * Skills 注册表：管理所有已注册的 Skills 和外部 AI 适配器
+ *
+ * @deprecated 直接使用 SkillsRegistry 类，不再使用全局单例。
+ *             推荐使用依赖注入容器管理 SkillsRegistry 实例。
  */
 
-import type { Skill, SkillRegistry, SkillRegistryConfig } from './types.js';
-import type { SkillAdapter, AnyAdapterConfig } from './adapters/types.js';
 import { EketError } from '../types/index.js';
+
+import type { SkillAdapter, AnyAdapterConfig } from './adapters/types.js';
+import type { Skill, SkillRegistry, SkillRegistryConfig } from './types.js';
 
 /**
  * Skills 注册表实现
@@ -68,10 +72,7 @@ export class SkillsRegistry implements SkillRegistry {
 
     // 验证 Skill
     if (!this.validateSkill(skill)) {
-      throw new EketError(
-        'INVALID_SKILL',
-        `Skill "${name}" does not implement required methods`
-      );
+      throw new EketError('INVALID_SKILL', `Skill "${name}" does not implement required methods`);
     }
 
     // 注册到主索引
@@ -182,7 +183,9 @@ export class SkillsRegistry implements SkillRegistry {
       try {
         await adapter.disconnect();
       } catch (error) {
-        disconnectErrors.push(`${adapterName}: ${error instanceof Error ? error.message : 'Unknown'}`);
+        disconnectErrors.push(
+          `${adapterName}: ${error instanceof Error ? error.message : 'Unknown'}`
+        );
       }
     }
 
@@ -359,41 +362,6 @@ export function createSkillsRegistry(config?: Partial<SkillRegistryConfig>): Ski
   return new SkillsRegistry(config);
 }
 
-/**
- * 全局单例（延迟初始化）
- */
-let globalRegistry: SkillsRegistry | null = null;
-
-/**
- * 获取全局 Skills 注册表
- *
- * @deprecated Use dependency injection instead. Will be removed in v1.1.0.
- *
- * @example
- * ```typescript
- * // Old way (deprecated)
- * const registry = getGlobalSkillsRegistry();
- *
- * // New way (recommended)
- * const registry = new SkillsRegistry(config);
- * const adapter = new OpenCLAWAdapter(config);
- * registry.registerAdapter(adapter);
- * ```
- */
-export function getGlobalSkillsRegistry(): SkillsRegistry {
-  if (!globalRegistry) {
-    globalRegistry = createSkillsRegistry();
-  }
-  return globalRegistry;
-}
-
-/**
- * 重置全局注册表（用于测试）
- */
-export function resetGlobalSkillsRegistry(): void {
-  globalRegistry = null;
-}
-
 // ============================================================================
 // 适配器相关导出
 // ============================================================================
@@ -408,15 +376,9 @@ export type {
   CodexConfig,
 } from './adapters/types.js';
 
-export {
-  OpenCLAWSkillAdapter,
-  createOpenCLAWAdapter,
-} from './adapters/openclaw-adapter.js';
+export { OpenCLAWSkillAdapter, createOpenCLAWAdapter } from './adapters/openclaw-adapter.js';
 
-export {
-  ClaudeCodeSkillAdapter,
-  createClaudeCodeAdapter,
-} from './adapters/claude-code-adapter.js';
+export { ClaudeCodeSkillAdapter, createClaudeCodeAdapter } from './adapters/claude-code-adapter.js';
 
 export { CodexSkillAdapter, createCodexAdapter } from './adapters/codex-adapter.js';
 

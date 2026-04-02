@@ -177,10 +177,7 @@ export function buildOrderBy(
  * @param offset - 偏移量
  * @returns 安全的 LIMIT/OFFSET 子句
  */
-export function buildLimitOffset(
-  limit: number,
-  offset: number = 0
-): { sql: string; params: number[] } {
+export function buildLimitOffset(limit: number, offset = 0): { sql: string; params: number[] } {
   // 验证数值范围
   if (!Number.isInteger(limit) || limit < 1 || limit > 10000) {
     throw new Error('LIMIT must be an integer between 1 and 10000');
