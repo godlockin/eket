@@ -24,6 +24,19 @@ NC='\033[0m'
 MODE="setup"
 
 # ==========================================
+# 前置依赖检查
+# ==========================================
+check_dependency() {
+    if ! command -v "$1" &> /dev/null; then
+        echo -e "${RED}❌ 错误：未找到 $1，请先安装${NC}"
+        exit 1
+    fi
+}
+
+check_dependency "git"
+check_dependency "node"
+
+# ==========================================
 # 步骤 1: 检查项目结构
 # ==========================================
 echo -e "${BLUE}## 步骤 1: 检查项目结构${NC}"
@@ -184,7 +197,14 @@ if [ -f "CLAUDE.md" ]; then
 else
     echo -e "${YELLOW}⚠${NC} CLAUDE.md 不存在"
     echo "从模板复制 CLAUDE.md..."
-    cp "$(dirname "$0")/../../template/CLAUDE.md" "CLAUDE.md" 2>/dev/null || true
+    TMPL_CLAUDE="$(dirname "$0")/../../template/CLAUDE.md"
+    if [ -f "$TMPL_CLAUDE" ]; then
+        cp "$TMPL_CLAUDE" "CLAUDE.md"
+        echo -e "${GREEN}✓${NC} 已从模板复制 CLAUDE.md"
+    else
+        echo -e "${YELLOW}⚠${NC} 模板文件不存在（$TMPL_CLAUDE），跳过复制"
+        echo "   请手动创建 CLAUDE.md 或从 EKET 框架目录复制模板"
+    fi
 fi
 
 echo ""
@@ -226,9 +246,29 @@ if [ "$HAS_DEPENDENCY_INFO" = false ]; then
     echo ""
 
     # 复制追问模板
-    if [ -f "$(dirname "$0")/../../template/inbox/dependency-clarification.md" ]; then
-        cp "$(dirname "$0")/../../template/inbox/dependency-clarification.md" "inbox/dependency-clarification.md"
+    TMPL_SRC="$(dirname "$0")/../../template/inbox/dependency-clarification.md"
+    if [ -f "$TMPL_SRC" ]; then
+        cp "$TMPL_SRC" "inbox/dependency-clarification.md"
         echo -e "${GREEN}✓${NC} 已创建追问文件：inbox/dependency-clarification.md"
+    else
+        # 内联创建默认文件
+        cat > "inbox/dependency-clarification.md" << 'EOF'
+# 依赖追问
+
+请在此填写项目所需的外部依赖信息：
+
+## 数据源
+- [ ] 数据库类型：
+- [ ] 连接字符串：
+
+## API 配置
+- [ ] 第三方 API：
+- [ ] 认证方式：
+
+## 其他依赖
+- [ ] 其他：
+EOF
+        echo -e "${GREEN}✓${NC} 已内联创建追问文件：inbox/dependency-clarification.md"
     fi
 
     echo ""

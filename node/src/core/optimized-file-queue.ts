@@ -15,7 +15,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import type { Message, Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 export interface OptimizedFileQueueConfig {
   queueDir: string;
@@ -181,7 +181,7 @@ export class OptimizedFileQueueManager {
       console.error('[OptimizedFileQueue] 保存 processed.json 失败:', err);
       return {
         success: false,
-        error: new EketError('QUEUE_ERROR', '保存已处理 ID 失败'),
+        error: new EketError(EketErrorCode.QUEUE_ERROR, '保存已处理 ID 失败'),
       };
     }
   }
@@ -222,7 +222,7 @@ export class OptimizedFileQueueManager {
         if (this.isProcessed(message.id)) {
           return {
             success: false,
-            error: new EketError('DUPLICATE_MESSAGE', '消息已处理'),
+            error: new EketError(EketErrorCode.DUPLICATE_MESSAGE, '消息已处理'),
           };
         }
 
@@ -253,7 +253,7 @@ export class OptimizedFileQueueManager {
         console.error('[OptimizedFileQueue] Enqueue error:', err);
         return {
           success: false,
-          error: new EketError('QUEUE_ERROR', '写入队列失败'),
+          error: new EketError(EketErrorCode.QUEUE_ERROR, '写入队列失败'),
         };
       } finally {
         // 清理临时文件（如果仍然存在）
@@ -309,10 +309,10 @@ export class OptimizedFileQueueManager {
             continue;
           }
 
-          // 校验和验证
-          const expectedChecksum = message._write_checksum;
+          // 校验和验证：先从消息中提取校验和字段，再用剩余对象重算
+          const { _write_checksum: expectedChecksum, ...messageWithoutChecksum } = message;
           if (expectedChecksum) {
-            const actualChecksum = this.calculateChecksum(message);
+            const actualChecksum = this.calculateChecksum(messageWithoutChecksum as Message);
             if (expectedChecksum !== actualChecksum) {
               console.warn('[OptimizedFileQueue] 消息校验和失败，跳过:', file);
               this.stats.readErrors++;

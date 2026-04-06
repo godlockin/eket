@@ -340,8 +340,8 @@ if [ "$INSTANCE_ROLE" = "master" ]; then
     }
 
     # 启动心跳监控守护进程
-    if [ -f "$SCRIPTS_DIR/heartbeatmonitor.sh" ]; then
-        start_daemon "$SCRIPTS_DIR/heartbeatmonitor.sh" "heartbeat-monitor"
+    if [ -f "$SCRIPTS_DIR/heartbeat-monitor.sh" ]; then
+        start_daemon "$SCRIPTS_DIR/heartbeat-monitor.sh" "heartbeat-monitor"
     else
         echo -e "${YELLOW}⚠${NC} 心跳监控脚本未找到"
     fi

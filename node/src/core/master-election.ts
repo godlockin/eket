@@ -29,43 +29,20 @@ import {
   MASTER_DECLARATION_PERIOD,
   MASTER_LEASE_TIME,
 } from '../constants.js';
-import type { Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import type { Result, ElectionLevel, MasterElectionConfig, MasterElectionResult } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
+// Re-export for backwards compatibility with importers that reference these from master-election.js
+export type { ElectionLevel, MasterElectionConfig, MasterElectionResult } from '../types/index.js';
+
+import { MasterContextManager } from './master-context.js';
+import type { MasterContext } from './master-context.js';
 import { RedisClient } from './redis-client.js';
 import { SQLiteClient } from './sqlite-client.js';
 
 // ============================================================================
-// Types
+// Types (ElectionLevel, MasterElectionConfig, MasterElectionResult imported from types/index.js)
 // ============================================================================
-
-export type ElectionLevel = 'redis' | 'sqlite' | 'file';
-
-export interface MasterElectionConfig {
-  // Redis 配置
-  redis?: {
-    host: string;
-    port: number;
-    password?: string;
-  };
-  // SQLite 配置
-  sqlitePath?: string;
-  // 文件配置
-  projectRoot: string;
-  // 选举超时（毫秒）
-  electionTimeout?: number;
-  // 声明等待期（毫秒）
-  declarationPeriod?: number;
-  // Master 租约时间（毫秒）
-  leaseTime?: number;
-}
-
-export interface MasterElectionResult {
-  isMaster: boolean;
-  electionLevel: ElectionLevel;
-  masterId?: string;
-  conflictDetected: boolean;
-}
 
 /**
  * Master 角色类型
@@ -136,6 +113,7 @@ export class MasterElection {
   private stateVersion = 0;
   private masterState: MasterState | null = null;
   private backupMasters: string[] = []; // Backup Master IDs
+  private previousMasterContext: MasterContext | null = null;
 
   constructor(config: MasterElectionConfig, warmStandbyConfig?: Partial<WarmStandbyConfig>) {
     // Defensive copy with defaults
@@ -167,26 +145,37 @@ export class MasterElection {
   async elect(): Promise<Result<MasterElectionResult>> {
     console.log(`[MasterElection] ${this.instanceId} starting election...`);
 
+    let electionResult: Result<MasterElectionResult>;
+
     // 1. 尝试 Redis 分布式锁
     if (this.config.redis) {
       const redisResult = await this.electWithRedis();
       if (redisResult.success) {
-        return redisResult;
+        electionResult = redisResult;
+      } else {
+        console.log('[MasterElection] Redis election failed, trying SQLite...');
+        electionResult = { success: false, error: redisResult.error };
       }
-      console.log('[MasterElection] Redis election failed, trying SQLite...');
+
+      if (electionResult.success) {
+        await this._loadPreviousContextIfMaster(electionResult);
+        return electionResult;
+      }
     }
 
     // 2. 尝试 SQLite 锁
     if (this.config.sqlitePath) {
       const sqliteResult = await this.electWithSqlite();
       if (sqliteResult.success) {
+        await this._loadPreviousContextIfMaster(sqliteResult);
         return sqliteResult;
       }
       console.log('[MasterElection] SQLite election failed, trying file system...');
     }
 
     // 3. 文件系统原子操作
-    const fileResult = this.electWithFile();
+    const fileResult = await this.electWithFile();
+    await this._loadPreviousContextIfMaster(fileResult);
     return fileResult;
   }
 
@@ -211,7 +200,7 @@ export class MasterElection {
       if (!redis) {
         return {
           success: false,
-          error: new EketError('REDIS_CLIENT_NOT_AVAILABLE', 'Redis client not available'),
+          error: new EketError(EketErrorCode.REDIS_CLIENT_NOT_AVAILABLE, 'Redis client not available'),
         };
       }
 
@@ -309,7 +298,7 @@ export class MasterElection {
       if (!db) {
         return {
           success: false,
-          error: new EketError('SQLITE_CLIENT_NOT_AVAILABLE', 'SQLite client not available'),
+          error: new EketError(EketErrorCode.SQLITE_CLIENT_NOT_AVAILABLE, 'SQLite client not available'),
         };
       }
 
@@ -590,7 +579,7 @@ export class MasterElection {
       if (fs.existsSync(markerPath)) {
         return {
           success: false,
-          error: new EketError('MASTER_ALREADY_EXISTS', 'Master marker already exists'),
+          error: new EketError(EketErrorCode.MASTER_ALREADY_EXISTS, 'Master marker already exists'),
         };
       }
 
@@ -753,7 +742,7 @@ export class MasterElection {
     if (!this.warmStandbyConfig.enabled) {
       return {
         success: false,
-        error: new EketError('WARM_STANDBY_NOT_ENABLED', 'Warm Standby not enabled'),
+        error: new EketError(EketErrorCode.WARM_STANDBY_NOT_ENABLED, 'Warm Standby not enabled'),
       };
     }
 
@@ -829,7 +818,7 @@ export class MasterElection {
     if (this.role !== 'backup') {
       return {
         success: false,
-        error: new EketError('NOT_BACKUP', 'Only backup can promote to master'),
+        error: new EketError(EketErrorCode.NOT_BACKUP, 'Only backup can promote to master'),
       };
     }
 
@@ -838,7 +827,7 @@ export class MasterElection {
     if (masterAlive) {
       return {
         success: false,
-        error: new EketError('MASTER_STILL_ALIVE', 'Current master is still alive'),
+        error: new EketError(EketErrorCode.MASTER_STILL_ALIVE, 'Current master is still alive'),
       };
     }
 
@@ -976,6 +965,44 @@ export class MasterElection {
 
     this.masterState = null;
     this.backupMasters = [];
+  }
+
+  // ============================================================================
+  // Master Cognitive Continuity
+  // ============================================================================
+
+  /**
+   * 获取前任 Master 的 context（选举成功后可用）
+   */
+  getPreviousMasterContext(): MasterContext | null {
+    return this.previousMasterContext;
+  }
+
+  /**
+   * 在成功成为 Master 时，尝试加载前任 Master 的 context
+   */
+  private async _loadPreviousContextIfMaster(
+    result: Result<MasterElectionResult>
+  ): Promise<void> {
+    if (!result.success || !result.data.isMaster) {
+      return;
+    }
+
+    try {
+      const contextManager = new MasterContextManager(this.config.projectRoot);
+      const previousContext = await contextManager.loadContext();
+      if (previousContext.success && previousContext.data !== null) {
+        console.log('[MasterElection] Previous master context found, handover available');
+        this.previousMasterContext = previousContext.data;
+      }
+    } catch (e: unknown) {
+      // 不阻断选举流程，仅记录警告
+      const err = e as { message?: string };
+      console.warn(
+        '[MasterElection] Failed to load previous master context:',
+        err.message ?? 'unknown'
+      );
+    }
   }
 }
 

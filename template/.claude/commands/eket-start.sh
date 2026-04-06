@@ -40,9 +40,8 @@ while getopts "afr:h" opt; do
             echo -e "${BLUE}✓${NC} 强制模式：Master 角色"
             ;;
         r)
-            FORCE_ROLE="$2"
+            FORCE_ROLE="$OPTARG"
             echo -e "${BLUE}✓${NC} 强制角色：$FORCE_ROLE"
-            shift
             ;;
         h)
             echo "用法：/eket-start [-a] [-f] [-r <role>] [-h]"
@@ -679,9 +678,9 @@ EOF
         echo ""
         echo "┌──────────────────────────────────────────────────────────────┐"
         echo "│  自动模式流程：                                              │"
-        echo "│  1. 分析 Jira tickets 优先级                                  │"
+        echo "│  1. 分析 Jira tickets 优先级 (P0 紧急→P1 高→P2 中→P3 低)    │"
         echo "│  2. 初始化 Profile (根据任务类型匹配角色)                     │"
-        echo "│  3. 领取最高优先级任务                                       │"
+        echo "│  3. 领取最高优先级任务 (P0 优先)                              │"
         echo "│  4. 更新任务状态为 in_progress                               │"
         echo "│  5. 启动任务计时器 (v0.5)                                   │"
         echo "│  6. 自主规划 → 开发 → 测试 → 迭代                            │"

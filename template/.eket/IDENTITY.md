@@ -2,15 +2,17 @@
 
 > **重要**: 本文件必须在每次启动时读取，用于确认当前实例的身份和职责。
 
+> 注意：以下 [方括号] 中的动态字段由 eket-start.sh 在启动时写入 .eket/state/instance_config.yml，请读取该文件获取实际值。
+
 ---
 
 ## 当前实例身份
 
-**角色**: `${ROLE}` (请根据实际配置确认)
+**角色**: [读取 .eket/state/instance_config.yml 中的 role 字段]
 
-**启动时间**: $(date -Iseconds)
+**启动时间**: [由 eket-start.sh 写入 .eket/state/instance_config.yml]
 
-**实例 ID**: agent_${ROLE}_$(date +%s)
+**实例 ID**: [读取 .eket/state/instance_config.yml 中的 instanceId 字段]
 
 ---
 
@@ -114,7 +116,7 @@
 ## Slaver 启动检查
 
 - [ ] 已确认身份：我是 Slaver (执行实例)
-- [ ] 已确认角色：${AGENT_TYPE} (如：frontend_dev)
+- [ ] 已确认角色：[读取 .eket/state/instance_config.yml 中的 agent_type 字段] (如：frontend_dev)
 - [ ] 已检查 jira/tickets/ 中 ready 状态的任务
 - [ ] 已检查 outbox/review_requests/ 中自己的 PR 状态
 - [ ] 已准备执行 Slaver 职责
@@ -193,6 +195,6 @@ cat .eket/state/instance_config.yml | grep role
 
 ---
 
-**版本**: 0.9.3
-**最后更新**: 2026-03-27
+**版本**: v2.0.0
+**最后更新**: 2026-04-06
 **维护者**: EKET Framework Team

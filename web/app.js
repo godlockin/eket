@@ -56,19 +56,120 @@ function detectLocale() {
 }
 
 /**
- * Load translations for locale
+ * Inline translations (replaces /locales/ fetch - path does not exist on server)
+ */
+const INLINE_TRANSLATIONS = {
+  'zh-CN': {
+    'dashboard_title': 'EKET 系统监控面板',
+    'system_status': '系统状态',
+    'statistics': '统计数据',
+    'instances': '实例列表',
+    'tasks': '任务列表',
+    'refresh': '刷新',
+    'last_updated': '最后更新',
+    'total_instances': '总实例数',
+    'active_instances': '活跃',
+    'idle_instances': '空闲',
+    'offline_instances': '离线',
+    'total_tasks': '总任务数',
+    'in_progress_tasks': '进行中',
+    'success_rate': '成功率',
+    'degradation_level': '降级级别',
+    'redis_status': 'Redis 状态',
+    'sqlite_status': 'SQLite 状态',
+    'mq_status': '消息队列',
+    'just_now': '刚刚',
+    'seconds_ago': ' 秒前',
+    'minutes_ago': ' 分钟前',
+    'hours_ago': ' 小时前',
+    'days_ago': ' 天前',
+    'status_in_progress': '进行中',
+    'status_pending': '等待中',
+    'status_completed': '已完成',
+    'status_review': '审核中',
+    'status_assigned': '已分配',
+    'status_accepted': '已接受',
+    'status_failed': '失败',
+    'status_idle': '空闲',
+    'status_busy': '忙碌',
+    'status_offline': '离线',
+    'unknown': '未知',
+    'level': '级别',
+    'connected': '已连接',
+    'disconnected': '未连接',
+    'no_instances': '暂无实例',
+    'no_tasks': '暂无任务',
+    'task_status': '状态',
+    'type_human': '人类',
+    'type_ai': 'AI',
+    'instance_id': '实例 ID',
+    'instance_role': '角色',
+    'instance_type': '类型',
+    'instance_status': '状态',
+    'current_task': '当前任务',
+    'current_load': '负载',
+    'last_heartbeat': '最后心跳',
+  },
+  'en-US': {
+    'dashboard_title': 'EKET Monitor Dashboard',
+    'system_status': 'System Status',
+    'statistics': 'Statistics',
+    'instances': 'Instances',
+    'tasks': 'Tasks',
+    'refresh': 'Refresh',
+    'last_updated': 'Last Updated',
+    'total_instances': 'Total Instances',
+    'active_instances': 'Active',
+    'idle_instances': 'Idle',
+    'offline_instances': 'Offline',
+    'total_tasks': 'Total Tasks',
+    'in_progress_tasks': 'In Progress',
+    'success_rate': 'Success Rate',
+    'degradation_level': 'Degradation Level',
+    'redis_status': 'Redis Status',
+    'sqlite_status': 'SQLite Status',
+    'mq_status': 'Message Queue',
+    'just_now': 'just now',
+    'seconds_ago': 's ago',
+    'minutes_ago': 'm ago',
+    'hours_ago': 'h ago',
+    'days_ago': 'd ago',
+    'status_in_progress': 'In Progress',
+    'status_pending': 'Pending',
+    'status_completed': 'Completed',
+    'status_review': 'In Review',
+    'status_assigned': 'Assigned',
+    'status_accepted': 'Accepted',
+    'status_failed': 'Failed',
+    'status_idle': 'Idle',
+    'status_busy': 'Busy',
+    'status_offline': 'Offline',
+    'unknown': 'Unknown',
+    'level': 'Level',
+    'connected': 'Connected',
+    'disconnected': 'Disconnected',
+    'no_instances': 'No instances found',
+    'no_tasks': 'No tasks found',
+    'task_status': 'Status',
+    'type_human': 'Human',
+    'type_ai': 'AI',
+    'instance_id': 'Instance ID',
+    'instance_role': 'Role',
+    'instance_type': 'Type',
+    'instance_status': 'Status',
+    'current_task': 'Current Task',
+    'current_load': 'Load',
+    'last_heartbeat': 'Last Heartbeat',
+  },
+};
+
+/**
+ * Load translations for locale (inline, no network request)
  */
 async function loadTranslations(locale) {
-  try {
-    const response = await fetch(`/locales/${locale}/translation.json`);
-    if (!response.ok) {
-      throw new Error(`Failed to load translations for ${locale}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error('[i18n] Failed to load translations:', error);
-    return {};
-  }
+  const translations = INLINE_TRANSLATIONS[locale] || INLINE_TRANSLATIONS[CONFIG.DEFAULT_LOCALE] || {};
+  console.log('[i18n] Loaded inline translations for locale:', locale);
+  return translations;
 }
 
 /**

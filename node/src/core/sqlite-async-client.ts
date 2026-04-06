@@ -7,12 +7,12 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { Worker, isMainThread, parentPort, MessagePort } from 'worker_threads';
+import { Worker, isMainThread, parentPort, workerData, MessagePort } from 'worker_threads';
 
 import Database from 'better-sqlite3';
 
-import type { Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import type { ISQLiteClient, Result } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 interface WorkerRequest {
   id: number;
@@ -266,7 +266,7 @@ function escapeLikePattern(str: string): string {
   return str.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
 }
 
-export class AsyncSQLiteClient {
+export class AsyncSQLiteClient implements ISQLiteClient {
   private worker: Worker | null = null;
   private dbPath: string;
   private requestId = 0;
@@ -280,13 +280,18 @@ export class AsyncSQLiteClient {
   async connect(): Promise<Result<void>> {
     return new Promise((resolve) => {
       const workerUrl = new URL(import.meta.url);
-      this.worker = new Worker(workerUrl.toString());
+      this.worker = new Worker(workerUrl.toString(), { workerData: { dbPath: this.dbPath } });
 
       this.worker.on('message', (response: WorkerResponse & { type?: string }) => {
         if (response.type === 'ready') {
-          this.ready = true;
-          console.log(`[AsyncSQLite] Connected to ${this.dbPath}`);
-          resolve({ success: true, data: undefined });
+          // Worker is ready; now send the connect request
+          this.sendRequest('connect', undefined).then(() => {
+            this.ready = true;
+            console.log(`[AsyncSQLite] Connected to ${this.dbPath}`);
+            resolve({ success: true, data: undefined });
+          }).catch((err: Error) => {
+            resolve({ success: false, error: new EketError(EketErrorCode.SQLITE_CONNECTION_FAILED, err.message) });
+          });
           return;
         }
         const pending = this.pendingRequests.get(response.id);
@@ -299,19 +304,13 @@ export class AsyncSQLiteClient {
 
       this.worker.on('error', (err) => {
         console.error('[AsyncSQLite] Worker error:', err);
-        resolve({ success: false, error: new EketError('SQLITE_CONNECTION_FAILED', err.message) });
+        resolve({ success: false, error: new EketError(EketErrorCode.SQLITE_CONNECTION_FAILED, err.message) });
       });
 
       this.worker.on('exit', (code) => {
         console.log(`[AsyncSQLite] Worker exited with code: ${code}`);
         this.ready = false;
       });
-
-      setTimeout(() => {
-        this.sendRequest('connect', undefined).catch((err) => {
-          resolve({ success: false, error: new EketError('SQLITE_CONNECTION_FAILED', err.message) });
-        });
-      }, 100);
     });
   }
 
@@ -341,83 +340,83 @@ export class AsyncSQLiteClient {
   isReady(): boolean { return this.ready && this.worker !== null; }
 
   async execute(sql: string, params: unknown[] = []): Promise<Result<void>> {
-    if (!this.isReady()) { return { success: false, error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected') }; }
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
     try {
       await this.sendRequest('execute', { sql, params });
       return { success: true, data: undefined };
-    } catch { return { success: false, error: new EketError('SQLITE_OPERATION_FAILED', 'Operation failed') }; }
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
 
   async get(sql: string, params: unknown[] = []): Promise<Result<unknown>> {
-    if (!this.isReady()) { return { success: false, error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected') }; }
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
     try {
       const row = await this.sendRequest('get', { sql, params });
       return { success: true, data: row };
-    } catch { return { success: false, error: new EketError('SQLITE_OPERATION_FAILED', 'Operation failed') }; }
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
 
   async all(sql: string, params: unknown[] = []): Promise<Result<unknown[]>> {
-    if (!this.isReady()) { return { success: false, error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected') }; }
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
     try {
       const rows = await this.sendRequest('all', { sql, params });
       return { success: true, data: rows as unknown[] };
-    } catch { return { success: false, error: new EketError('SQLITE_OPERATION_FAILED', 'Operation failed') }; }
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
 
   async insertRetrospective(retro: { sprintId: string; fileName: string; title: string; date: string }): Promise<Result<number>> {
-    if (!this.isReady()) { return { success: false, error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected') }; }
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
     try {
       const id = (await this.sendRequest('insertRetrospective', retro)) as number;
       return { success: true, data: id };
-    } catch { return { success: false, error: new EketError('SQLITE_OPERATION_FAILED', 'Operation failed') }; }
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
 
   async getRetrospective(sprintId: string): Promise<Result<unknown>> {
-    if (!this.isReady()) { return { success: false, error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected') }; }
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
     try {
       const retro = await this.sendRequest('getRetrospective', { sprintId });
       return { success: true, data: retro };
-    } catch { return { success: false, error: new EketError('SQLITE_OPERATION_FAILED', 'Operation failed') }; }
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
 
   async listRetrospectives(): Promise<Result<unknown[]>> {
-    if (!this.isReady()) { return { success: false, error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected') }; }
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
     try {
       const retros = (await this.sendRequest('listRetrospectives', undefined)) as unknown[];
       return { success: true, data: retros };
-    } catch { return { success: false, error: new EketError('SQLITE_OPERATION_FAILED', 'Operation failed') }; }
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
 
   async insertRetroContent(content: { retroId: number; category: string; content: string; createdBy?: string }): Promise<Result<number>> {
-    if (!this.isReady()) { return { success: false, error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected') }; }
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
     try {
       const id = (await this.sendRequest('insertRetroContent', content)) as number;
       return { success: true, data: id };
-    } catch { return { success: false, error: new EketError('SQLITE_OPERATION_FAILED', 'Operation failed') }; }
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
 
   async getRetroContentByCategory(retroId: number, category: string): Promise<Result<unknown[]>> {
-    if (!this.isReady()) { return { success: false, error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected') }; }
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
     try {
       const contents = (await this.sendRequest('getRetroContentByCategory', { retroId, category })) as unknown[];
       return { success: true, data: contents };
-    } catch { return { success: false, error: new EketError('SQLITE_OPERATION_FAILED', 'Operation failed') }; }
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
 
   async searchRetrospectives(keyword: string): Promise<Result<unknown[]>> {
-    if (!this.isReady()) { return { success: false, error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected') }; }
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
     try {
       const retros = (await this.sendRequest('searchRetrospectives', { keyword })) as unknown[];
       return { success: true, data: retros };
-    } catch { return { success: false, error: new EketError('SQLITE_OPERATION_FAILED', 'Operation failed') }; }
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
 
   async generateReport(): Promise<Result<{ totalRetrospectives: number; totalSprints: number; totalItems: number; byCategory: Array<{ category: string; count: number }> }>> {
-    if (!this.isReady()) { return { success: false, error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected') }; }
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
     try {
       const report = (await this.sendRequest('generateReport', undefined)) as { totalRetrospectives: number; totalSprints: number; totalItems: number; byCategory: Array<{ category: string; count: number }> };
       return { success: true, data: report };
-    } catch { return { success: false, error: new EketError('SQLITE_OPERATION_FAILED', 'Operation failed') }; }
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
 }
 
@@ -427,5 +426,6 @@ export function createAsyncSQLiteClient(dbPath?: string): AsyncSQLiteClient {
 
 // 如果不是主线程，运行 Worker
 if (!isMainThread) {
-  runWorker(process.env.EKET_SQLITE_PATH || path.join(process.cwd(), '.eket', 'data', 'sqlite', 'eket.db'));
+  const dbPathFromWorkerData = (workerData as { dbPath?: string })?.dbPath;
+  runWorker(dbPathFromWorkerData || path.join(process.cwd(), '.eket', 'data', 'sqlite', 'eket.db'));
 }

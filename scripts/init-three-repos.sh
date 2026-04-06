@@ -22,7 +22,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo -e "${RED}✗${NC} 错误：未找到配置文件 $CONFIG_FILE"
     echo ""
     echo "请先运行项目初始化向导："
-    echo "  node node/dist/index.js init"
+    echo "  node node/dist/index.js project:init"
     echo ""
     echo "或手动创建配置文件"
     exit 1

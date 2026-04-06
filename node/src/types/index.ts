@@ -43,6 +43,59 @@ export interface SlaverHeartbeat {
 // SQLite Types
 // ============================================================================
 
+/**
+ * SQLite 客户端统一接口
+ * 两个实现：
+ *   - SQLiteClient      (sqlite-client.ts)       同步实现，方法返回 Result<T>（不符合此接口）
+ *   - AsyncSQLiteClient (sqlite-async-client.ts)  异步实现，方法返回 Promise<Result<T>>，implements 此接口
+ *
+ * 接口以异步签名为准（Promise<Result<T>>），以便上层代码面向接口编程。
+ * SQLiteClient 因方法签名不同（同步）不能直接 implements，需要通过包装器转换。
+ */
+export interface ISQLiteClient {
+  /** 连接数据库并初始化表 */
+  connect(): Promise<Result<void>>;
+  /** 关闭数据库连接 */
+  close(): Promise<void>;
+  /** 检查连接是否就绪 */
+  isReady(): boolean;
+  /** 执行 SQL 语句（DDL / DML，无返回行） */
+  execute(sql: string, params?: unknown[]): Promise<Result<void>>;
+  /** 查询单行数据 */
+  get(sql: string, params?: unknown[]): Promise<Result<unknown>>;
+  /** 查询多行数据 */
+  all(sql: string, params?: unknown[]): Promise<Result<unknown[]>>;
+  /** 插入 Retrospective */
+  insertRetrospective(retro: {
+    sprintId: string;
+    fileName: string;
+    title: string;
+    date: string;
+  }): Promise<Result<number>>;
+  /** 查询单条 Retrospective */
+  getRetrospective(sprintId: string): Promise<Result<unknown>>;
+  /** 列出所有 Retrospective */
+  listRetrospectives(): Promise<Result<unknown[]>>;
+  /** 插入 Retrospective 内容 */
+  insertRetroContent(content: {
+    retroId: number;
+    category: string;
+    content: string;
+    createdBy?: string;
+  }): Promise<Result<number>>;
+  /** 按类别查询内容 */
+  getRetroContentByCategory(retroId: number, category: string): Promise<Result<unknown[]>>;
+  /** 按关键词搜索 Retrospective */
+  searchRetrospectives(keyword: string): Promise<Result<unknown[]>>;
+  /** 生成统计报告 */
+  generateReport(): Promise<Result<{
+    totalRetrospectives: number;
+    totalSprints: number;
+    totalItems: number;
+    byCategory: Array<{ category: string; count: number }>;
+  }>>;
+}
+
 export interface Retrospective {
   id: number;
   sprintId: string;
@@ -386,6 +439,102 @@ export enum EketErrorCode {
   CONFLICT_DETECTED = 'CONFLICT_DETECTED',
   LEASE_RENEWAL_FAILED = 'LEASE_RENEWAL_FAILED',
   NOT_MASTER = 'NOT_MASTER',
+
+  // Master Context
+  MASTER_CONTEXT_SAVE_FAILED = 'MASTER_CONTEXT_SAVE_FAILED',
+  MASTER_CONTEXT_NOT_FOUND = 'MASTER_CONTEXT_NOT_FOUND',
+  REDIS_CLIENT_NOT_AVAILABLE = 'REDIS_CLIENT_NOT_AVAILABLE',
+  REDIS_WRITE_FAILED = 'REDIS_WRITE_FAILED',
+  REDIS_READ_FAILED = 'REDIS_READ_FAILED',
+  FILE_WRITE_FAILED = 'FILE_WRITE_FAILED',
+  FILE_READ_FAILED = 'FILE_READ_FAILED',
+
+  // Redis 连接
+  REDIS_CONNECTION_FAILED = 'REDIS_CONNECTION_FAILED',
+  REDIS_PUBLISH_FAILED = 'REDIS_PUBLISH_FAILED',
+  ALREADY_SUBSCRIBED = 'ALREADY_SUBSCRIBED',
+  REDIS_NOT_CONFIGURED = 'REDIS_NOT_CONFIGURED',
+
+  // SQLite 连接
+  SQLITE_CONNECTION_FAILED = 'SQLITE_CONNECTION_FAILED',
+  SQLITE_CLIENT_NOT_AVAILABLE = 'SQLITE_CLIENT_NOT_AVAILABLE',
+
+  // 消息队列
+  MQ_CONNECT_FAILED = 'MQ_CONNECT_FAILED',
+  MQ_NOT_AVAILABLE = 'MQ_NOT_AVAILABLE',
+  MESSAGE_QUEUE_OFFLINE = 'MESSAGE_QUEUE_OFFLINE',
+  FILE_QUEUE_WRITE_FAILED = 'FILE_QUEUE_WRITE_FAILED',
+
+  // WebSocket
+  WEBSOCKET_ALREADY_CONNECTING = 'WEBSOCKET_ALREADY_CONNECTING',
+  WEBSOCKET_CONNECTION_FAILED = 'WEBSOCKET_CONNECTION_FAILED',
+  WEBSOCKET_NOT_CONNECTED = 'WEBSOCKET_NOT_CONNECTED',
+  WEBSOCKET_SEND_FAILED = 'WEBSOCKET_SEND_FAILED',
+  WEBSOCKET_NOT_AVAILABLE = 'WEBSOCKET_NOT_AVAILABLE',
+
+  // Instance 管理
+  INSTANCE_NOT_FOUND = 'INSTANCE_NOT_FOUND',
+  INSTANCE_FETCH_FAILED = 'INSTANCE_FETCH_FAILED',
+  INSTANCE_LIST_FAILED = 'INSTANCE_LIST_FAILED',
+
+  // 推荐系统
+  RECOMMENDER_INIT_FAILED = 'RECOMMENDER_INIT_FAILED',
+  RECOMMENDER_NOT_INITIALIZED = 'RECOMMENDER_NOT_INITIALIZED',
+
+  // 冲突/锁
+  LOCK_ACQUISITION_FAILED = 'LOCK_ACQUISITION_FAILED',
+
+  // 知识库
+  STATS_FETCH_FAILED = 'STATS_FETCH_FAILED',
+
+  // 文件队列
+  QUEUE_ERROR = 'QUEUE_ERROR',
+  DATA_CORRUPTED = 'DATA_CORRUPTED',
+
+  // Skill 系统
+  SKILL_NOT_FOUND = 'SKILL_NOT_FOUND',
+  INVALID_SKILL_FORMAT = 'INVALID_SKILL_FORMAT',
+  SKILL_LOAD_FAILED = 'SKILL_LOAD_FAILED',
+  SKILL_TIMEOUT = 'SKILL_TIMEOUT',
+  INVALID_INPUT = 'INVALID_INPUT',
+  INVALID_SKILL = 'INVALID_SKILL',
+  SKILL_ALREADY_REGISTERED = 'SKILL_ALREADY_REGISTERED',
+
+  // 分片
+  SHARD_ALREADY_EXISTS = 'SHARD_ALREADY_EXISTS',
+
+  // 依赖注入
+  DI_SERVICE_NOT_FOUND = 'DI_SERVICE_NOT_FOUND',
+  DI_CIRCULAR_DEPENDENCY = 'DI_CIRCULAR_DEPENDENCY',
+  DI_FACTORY_REQUIRED = 'DI_FACTORY_REQUIRED',
+  DI_RESOLUTION_FAILED = 'DI_RESOLUTION_FAILED',
+
+  // 事件总线
+  EVENT_BUS_MAX_LISTENERS_EXCEEDED = 'EVENT_BUS_MAX_LISTENERS_EXCEEDED',
+
+  // Agent Mailbox
+  MAILBOX_WRITE_FAILED = 'MAILBOX_WRITE_FAILED',
+  MAILBOX_MARK_READ_FAILED = 'MAILBOX_MARK_READ_FAILED',
+  MAILBOX_CLEAR_FAILED = 'MAILBOX_CLEAR_FAILED',
+
+  // Master 选举扩展
+  WARM_STANDBY_NOT_ENABLED = 'WARM_STANDBY_NOT_ENABLED',
+  NOT_BACKUP = 'NOT_BACKUP',
+  MASTER_STILL_ALIVE = 'MASTER_STILL_ALIVE',
+
+  // Git 操作
+  GIT_BRANCH_FAILED = 'GIT_BRANCH_FAILED',
+  GIT_PUSH_FAILED = 'GIT_PUSH_FAILED',
+  URL_PARSE_ERROR = 'URL_PARSE_ERROR',
+  UNSUPPORTED_PLATFORM = 'UNSUPPORTED_PLATFORM',
+  PR_CREATE_FAILED = 'PR_CREATE_FAILED',
+
+  // 配置
+  CONFIG_ERROR = 'CONFIG_ERROR',
+  CONFIG_VALIDATION_FAILED = 'CONFIG_VALIDATION_FAILED',
+
+  // Web 服务器
+  SERVER_START_FAILED = 'SERVER_START_FAILED',
 }
 
 export interface EketError {
@@ -682,7 +831,7 @@ export interface RedisClusterConfig {
  */
 export interface ConsistentHashConfig {
   replicas?: number; // 虚拟节点数（默认 150）
-  hashFunction?: 'murmer3' | 'sha1' | 'md5'; // 哈希函数
+  hashFunction?: 'murmur3' | 'sha1' | 'md5'; // 哈希函数
 }
 
 /**
@@ -856,3 +1005,113 @@ export type EventInterceptor<T = unknown> = (
   event: T,
   next: () => void | Promise<void>
 ) => void | Promise<void>;
+
+// ============================================================================
+// Context Snapshot Types (Tacit Knowledge Externalization)
+// ============================================================================
+
+export interface ContextSnapshot {
+  id: string;
+  ticketId: string;
+  agentId: string;
+  agentType: string;
+  createdAt: number;
+  whatSurprisedMe: string[];
+  whatIWouldDoDifferently: string[];
+  whatNextPersonNeedsToKnow: string[];
+  implicitDependencies: string[];
+  technicalPitfalls?: string[];
+  keyDecisions?: string[];
+  openQuestions?: string[];
+}
+
+export interface ContextSnapshotQuery {
+  ticketId?: string;
+  agentId?: string;
+  keyword?: string;
+  limit?: number;
+  offset?: number;
+}
+
+// ============================================================================
+// Knowledge Base Extended Types (Tacit Knowledge Support)
+// ============================================================================
+
+/**
+ * 扩展的知识条目类型（含默会知识分类）
+ * intuition: 直觉性知识，需要被体验而非仅被读到
+ * warning:   必须被主动检查的警示
+ */
+export type ExtendedKnowledgeType =
+  | 'artifact'   // 产物（代码、文档、配置）
+  | 'pattern'    // 模式（可以被遵循）
+  | 'decision'   // 决策（可以被参考）
+  | 'lesson'     // 教训（可以被读到）
+  | 'api'        // API 信息
+  | 'config'     // 配置信息
+  | 'intuition'  // 直觉（需要被体验，仅读到不算掌握）
+  | 'warning';   // 警示（必须被主动核查）
+
+/**
+ * 知识条目的使用指导
+ */
+export interface KnowledgeUsageGuidance {
+  /** 何时应该检索这条知识 */
+  whenToConsult: string;
+  /** 如何验证自己真正理解了（而不只是读了） */
+  howToVerifyUnderstanding?: string;
+  /** 对于 intuition/warning 类型，需要主动完成的检查项 */
+  requiredChecklist?: string[];
+  /** 这条知识失效的条件（什么时候它不再适用） */
+  expirationCondition?: string;
+}
+
+/**
+ * 扩展版知识条目（在 KnowledgeEntry 基础上增加使用指导）
+ */
+export interface ExtendedKnowledgeEntry {
+  id: string;
+  type: ExtendedKnowledgeType;
+  title: string;
+  description: string;
+  content: string;
+  tags: string[];
+  createdBy: string;
+  createdAt: number;
+  updatedAt: number;
+  relatedTickets: string[];
+  metadata?: Record<string, unknown>;
+  /** 使用指导：让读到条目的 Agent 知道应如何对待这条知识 */
+  usageGuidance?: KnowledgeUsageGuidance;
+  /** 默会程度：explicit（可编码）/ semi-tacit（半默会）/ tacit（纯默会） */
+  tacitLevel: 'explicit' | 'semi-tacit' | 'tacit';
+}
+
+
+// ============================================================================
+// Workflow Judgment Point Types
+// ============================================================================
+
+/**
+ * 工作流判断点状态
+ */
+export type JudgmentStatus = 'pending' | 'resolved' | 'escalated' | 'timed_out';
+
+/**
+ * 工作流判断请求
+ */
+export interface WorkflowJudgmentRequest {
+  id: string;
+  workflowInstanceId: string;
+  stepId: string;
+  judgmentPrompt: string; // 需要判断的问题
+  context: Record<string, unknown>;
+  options?: string[]; // 可选答案（可选）
+  fallbackOnTimeout: 'escalate_to_master' | 'skip' | 'fail_workflow';
+  timeoutMs: number;
+  createdAt: number;
+  status: JudgmentStatus;
+  resolution?: string; // 判断结果
+  resolvedBy?: string; // 谁做了判断
+  resolvedAt?: number;
+}

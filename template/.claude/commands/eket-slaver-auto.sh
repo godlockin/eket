@@ -54,6 +54,37 @@ fi
 cd "$PROJECT_ROOT"
 
 # ==========================================
+# 优先级工具函数
+# ==========================================
+
+# 优先级权重（数字越小优先级越高）
+get_priority_weight() {
+    local priority="$1"
+    case "$priority" in
+        P0) echo 0 ;;
+        P1) echo 1 ;;
+        P2) echo 2 ;;
+        P3) echo 3 ;;
+        High|high) echo 1 ;;
+        Medium|medium) echo 2 ;;
+        Low|low) echo 3 ;;
+        *) echo 4 ;;
+    esac
+}
+
+# 优先级数字转 P0-P3 显示标签
+get_priority_label() {
+    local weight="$1"
+    case "$weight" in
+        0) echo "P0 (紧急)" ;;
+        1) echo "P1 (高)" ;;
+        2) echo "P2 (中)" ;;
+        3) echo "P3 (低)" ;;
+        *) echo "Unknown" ;;
+    esac
+}
+
+# ==========================================
 # 步骤 1: 获取 Jira tickets 并按优先级排序
 # ==========================================
 echo -e "${BLUE}## 步骤 1: 获取 Jira tickets 并排序${NC}"
@@ -77,23 +108,18 @@ find "$TICKETS_DIR" -name "*.md" -type f 2>/dev/null | while read -r ticket_file
     TICKET_ID=$(basename "$ticket_file" .md)
 
     # 提取状态
-    STATUS=$(grep -E "^(\*\*)?状态 (\*\*)?:" "$ticket_file" | head -1 | sed 's/.*: *//' | tr -d ' *')
+    STATUS=$(grep -E "^\*\*状态\*\*:|^状态\s*:" "$ticket_file" | head -1 | sed 's/.*: *//' | tr -d ' *')
 
     # 提取优先级
-    PRIORITY=$(grep -E "^(\*\*)?优先级 (\*\*)?:" "$ticket_file" | head -1 | sed 's/.*: *//' | tr -d ' *')
+    PRIORITY=$(grep -E "^\*\*优先级\*\*:|^优先级\s*:" "$ticket_file" | head -1 | sed 's/.*: *//' | tr -d ' *')
 
     # 提取标签
-    TAGS=$(grep -E "^(\*\*)?标签 (\*\*)?:" "$ticket_file" | head -1 | sed 's/.*: *//')
+    TAGS=$(grep -E "^\*\*标签\*\*:|^标签\s*:" "$ticket_file" | head -1 | sed 's/.*: *//')
 
     # 只处理 ready 状态的 tickets
     if [ "$STATUS" = "ready" ]; then
-        # 优先级转换为数字 (High=1, Medium=2, Low=3)
-        case "$PRIORITY" in
-            High|Critical) PRIORITY_NUM=1 ;;
-            Medium|Normal) PRIORITY_NUM=2 ;;
-            Low) PRIORITY_NUM=3 ;;
-            *) PRIORITY_NUM=2 ;;
-        esac
+        # 使用统一的优先级权重函数 (P0=0, P1=1, P2=2, P3=3; 兼容 High/Medium/Low)
+        PRIORITY_NUM=$(get_priority_weight "$PRIORITY")
 
         echo "$PRIORITY_NUM|$TICKET_ID|$ticket_file|$TAGS"
     fi
@@ -108,12 +134,7 @@ echo ""
 echo "待处理 Tickets (按优先级排序):"
 echo "----------------------------------------"
 echo "$SORTED_TICKETS" | while IFS='|' read -r prio id file tags; do
-    case "$prio" in
-        1) PRIO_DISPLAY="High" ;;
-        2) PRIO_DISPLAY="Medium" ;;
-        3) PRIO_DISPLAY="Low" ;;
-        *) PRIO_DISPLAY="Unknown" ;;
-    esac
+    PRIO_DISPLAY=$(get_priority_label "$prio")
     echo -e "  ${MAGENTA}$id${NC} - 优先级：$PRIO_DISPLAY - 标签：$tags"
 done
 echo "----------------------------------------"
@@ -139,7 +160,7 @@ SELECTED_FILE=$(echo "$FIRST_TICKET" | cut -d'|' -f3)
 SELECTED_TAGS=$(echo "$FIRST_TICKET" | cut -d'|' -f4)
 
 echo -e "选择 Ticket: ${MAGENTA}$SELECTED_ID${NC}"
-echo "  优先级：$([ "$SELECTED_PRIO" = "1" ] && echo "High" || ([ "$SELECTED_PRIO" = "2" ] && echo "Medium" || echo "Low"))"
+echo "  优先级：$(get_priority_label "$SELECTED_PRIO")"
 echo "  文件：$SELECTED_FILE"
 echo "  标签：$SELECTED_TAGS"
 echo ""
