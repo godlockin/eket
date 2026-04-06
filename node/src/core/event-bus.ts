@@ -10,7 +10,7 @@
  * - 死信队列（失败事件）
  */
 
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 // ============================================================================
 // Types
@@ -91,8 +91,6 @@ export interface EventBusStats {
 // Constants
 // ============================================================================
 
-const MAX_LISTENERS_EXCEEDED = 'EVENT_BUS_MAX_LISTENERS_EXCEEDED';
-
 // ============================================================================
 // Event Bus Class
 // ============================================================================
@@ -164,7 +162,7 @@ export class EventBus {
     // 检查最大监听器数量
     if (handlers.length >= this.config.maxListeners) {
       throw new EketError(
-        MAX_LISTENERS_EXCEEDED,
+        EketErrorCode.EVENT_BUS_MAX_LISTENERS_EXCEEDED,
         `Maximum listeners (${this.config.maxListeners}) exceeded for event "${eventType}"`
       );
     }

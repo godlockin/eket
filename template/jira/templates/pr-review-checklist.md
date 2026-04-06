@@ -1,10 +1,10 @@
 # PR Review Checklist
 
-**PR**: `${PR_NUMBER}` - ${PR_TITLE}
-**Ticket**: ${TICKET_ID}
-**提交者**: ${SUBMITTER_ID}
-**Reviewer**: ${REVIEWER_ID}
-**Review 时间**: ${REVIEW_DATE}
+**PR**: `{{PR_NUMBER}}` - {{PR_TITLE}}
+**Ticket**: {{TICKET_ID}}
+**提交者**: {{SUBMITTER_ID}}
+**Reviewer**: {{REVIEWER_ID}}
+**Review 时间**: {{REVIEW_DATE}}
 
 ---
 
@@ -242,7 +242,7 @@ npm run test:coverage  # 报告：见 coverage/ 目录
 - [ ] 提交粒度合理
 
 ### 7.2 分支管理
-- [ ] 分支命名正确 (`feature/${TICKET_ID}-desc`)
+- [ ] 分支命名正确 (`feature/{{TICKET_ID}}-desc`)
 - [ ] 提交历史清晰
 - [ ] 无不必要的合并提交
 - [ ] 分支已 rebase 到最新 main
@@ -315,9 +315,9 @@ ${详细的修改意见和建议，包括代码示例}
 
 ## 10. Review 元数据
 
-**Review 时长**: ${DURATION}
+**Review 时长**: {{DURATION}}
 
-**Review 者**: ${REVIEWER_ID}
+**Review 者**: {{REVIEWER_ID}}
 
 **Review 完成时间**: $(date -Iseconds)
 
@@ -331,4 +331,4 @@ ${详细的修改意见和建议，包括代码示例}
 
 ---
 
-**Reviewer 签名**: ${REVIEWER_ID}
+**Reviewer 签名**: {{REVIEWER_ID}}

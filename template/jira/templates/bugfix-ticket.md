@@ -1,10 +1,10 @@
-# Bugfix Ticket: FIX-${SEQUENCE_NUMBER} - ${BUG_TITLE}
+# Bugfix Ticket: FIX-{{SEQUENCE_NUMBER}} - {{BUG_TITLE}}
 
-**创建时间**: ${CREATE_DATE}
+**创建时间**: {{CREATE_DATE}}
 **创建者**: Master Agent / Slaver Agent
 **优先级**: Critical/High/Medium/Low
 **状态**: backlog
-**标签**: `bug`, `${MODULE_TAG}`, `${SEVERITY}`
+**标签**: `bug`, `{{MODULE_TAG}}`, `{{SEVERITY}}`
 
 ---
 
@@ -12,12 +12,12 @@
 
 | 时间 | 状态变更 | 操作者 | 备注 |
 |------|----------|--------|------|
-| ${CREATE_DATE} | backlog → analysis | Master | 初始创建 |
-| ${ANALYSIS_DATE} | analysis → ready | Master | 根因分析完成 |
-| ${CLAIM_DATE} | ready → in_progress | ${Slaver_ID} | **已领取** |
-| ${FIX_DATE} | in_progress → testing | ${Slaver_ID} | 修复完成 |
-| ${TEST_DATE} | testing → review | ${Slaver_ID} | 验证通过，PR 提交 |
-| ${APPROVE_DATE} | review → done | Master | Review 通过 |
+| {{CREATE_DATE}} | backlog → analysis | Master | 初始创建 |
+| {{ANALYSIS_DATE}} | analysis → ready | Master | 根因分析完成 |
+| {{CLAIM_DATE}} | ready → in_progress | ${Slaver_ID} | **已领取** |
+| {{FIX_DATE}} | in_progress → testing | ${Slaver_ID} | 修复完成 |
+| {{TEST_DATE}} | testing → review | ${Slaver_ID} | 验证通过，PR 提交 |
+| {{APPROVE_DATE}} | review → done | Master | Review 通过 |
 
 > **重要**: Slaver 领取任务后必须按顺序更新状态，不可跳过任何阶段！
 
@@ -70,7 +70,7 @@ ${计划的修复方案}
 
 ### 3.1 领取信息
 - **领取者**: ${Slaver_ID}
-- **领取时间**: ${CLAIM_DATE}
+- **领取时间**: {{CLAIM_DATE}}
 - **状态已更新**: [ ] 是（必须勾选）
 
 ### 3.2 必需执行流程（Slaver 职责）
@@ -83,7 +83,7 @@ ${计划的修复方案}
 
 #### 步骤 2: 实施修复
 - [ ] 已实施修复
-- [ ] 修复说明：${FIX_DESCRIPTION}
+- [ ] 修复说明：{{FIX_DESCRIPTION}}
 - [ ] 已更新状态：`in_progress` → `testing`
 
 #### 步骤 3: 验证修复
@@ -92,8 +92,8 @@ ${计划的修复方案}
 - [ ] 已更新状态：`testing` → `review`
 
 #### 步骤 4: 提交 PR
-- [ ] 代码已提交到分支：`${BRANCH_NAME}`
-- [ ] PR 已创建：`${PR_URL}`
+- [ ] 代码已提交到分支：`{{BRANCH_NAME}}`
+- [ ] PR 已创建：`{{PR_URL}}`
 - [ ] 已更新状态：`testing` → `review`
 - [ ] 已通知 Master Review
 
@@ -121,8 +121,8 @@ ${计划的修复方案}
 - [ ] **需要修改** - 见验证意见
 - [ ] **无法修复** - ${原因}
 
-**验证者**: ${REVIEWER_ID}
-**验证时间**: ${VERIFICATION_DATE}
+**验证者**: {{REVIEWER_ID}}
+**验证时间**: {{VERIFICATION_DATE}}
 
 ---
 

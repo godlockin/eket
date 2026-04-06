@@ -7,7 +7,7 @@
 
 import { createSQLiteClient, type SQLiteClient } from '../core/sqlite-client.js';
 import type { Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 import type { TaskHistory, InstancePerformance } from '../types/recommender.js';
 
 /**
@@ -111,7 +111,7 @@ export class HistoryTracker {
     if (!db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -162,7 +162,7 @@ export class HistoryTracker {
     if (!db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -283,7 +283,7 @@ export class HistoryTracker {
     if (!db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -374,7 +374,7 @@ export class HistoryTracker {
     if (!db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -422,7 +422,7 @@ export class HistoryTracker {
     if (!db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 

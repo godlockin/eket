@@ -8,7 +8,7 @@
  *             推荐使用依赖注入容器管理 SkillsRegistry 实例。
  */
 
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 import type { SkillAdapter, AnyAdapterConfig } from './adapters/types.js';
 import type { Skill, SkillRegistry, SkillRegistryConfig } from './types.js';
@@ -62,7 +62,7 @@ export class SkillsRegistry implements SkillRegistry {
     if (this.registry.has(name)) {
       if (!this.config.allowOverwrite) {
         throw new EketError(
-          'SKILL_ALREADY_REGISTERED',
+          EketErrorCode.SKILL_ALREADY_REGISTERED,
           `Skill "${name}" is already registered. Set allowOverwrite=true to force.`
         );
       }
@@ -72,7 +72,7 @@ export class SkillsRegistry implements SkillRegistry {
 
     // 验证 Skill
     if (!this.validateSkill(skill)) {
-      throw new EketError('INVALID_SKILL', `Skill "${name}" does not implement required methods`);
+      throw new EketError(EketErrorCode.INVALID_SKILL, `Skill "${name}" does not implement required methods`);
     }
 
     // 注册到主索引

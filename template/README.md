@@ -1,5 +1,8 @@
 # {{PROJECT_NAME}} - AI 智能体协作项目
 
+**版本**: v2.0.0
+**初始化**: EKET Agent Framework
+
 > 本项目由 EKET Agent Framework 初始化
 
 ## 快速开始
@@ -59,10 +62,13 @@ priority: "normal"
 │   ├── state/
 │   └── memory/
 ├── inbox/                    # 人类输入
-│   └── human_input.md
+│   ├── human_input.md
+│   └── human_feedback/       # Review 反馈
 ├── outbox/                   # 智能体输出
-│   └── review_requests/
-├── tasks/                    # 任务列表
+│   ├── tasks/                # 任务相关输出（分析报告、PR 请求等）
+│   └── review_requests/      # Review 请求（遗留兼容）
+├── skills/                   # Skills 库
+├── tasks/                    # 任务定义
 ├── src/                      # 源代码
 └── ...
 ```

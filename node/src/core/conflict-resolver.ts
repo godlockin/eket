@@ -15,7 +15,7 @@ import type {
   ConflictResolutionConfig,
   ResourceLock,
 } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 import { createRedisClient, type RedisClient } from './redis-client.js';
 
@@ -559,7 +559,7 @@ export class LockManager {
     if (!this.redis.isReady()) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis not connected'),
       };
     }
 
@@ -567,7 +567,7 @@ export class LockManager {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not available'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not available'),
       };
     }
 
@@ -614,7 +614,7 @@ export class LockManager {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('LOCK_ACQUISITION_FAILED', `Failed to acquire lock: ${errorMessage}`),
+        error: new EketError(EketErrorCode.LOCK_ACQUISITION_FAILED, `Failed to acquire lock: ${errorMessage}`),
       };
     }
   }
@@ -627,7 +627,7 @@ export class LockManager {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not available'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not available'),
       };
     }
 
@@ -661,7 +661,7 @@ export class LockManager {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not available'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not available'),
       };
     }
 
@@ -720,7 +720,7 @@ export class LockManager {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not available'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not available'),
       };
     }
 
@@ -744,7 +744,7 @@ export class LockManager {
         } else {
           return {
             success: false,
-            error: new EketError('NOT_LOCK_HOLDER', 'Cannot release lock held by another instance'),
+            error: new EketError(EketErrorCode.NOT_LOCK_HOLDER, 'Cannot release lock held by another instance'),
           };
         }
       } else {
@@ -768,7 +768,7 @@ export class LockManager {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('LOCK_RELEASE_FAILED', `Failed to release lock: ${errorMessage}`),
+        error: new EketError(EketErrorCode.LOCK_RELEASE_FAILED, `Failed to release lock: ${errorMessage}`),
       };
     }
   }
@@ -800,7 +800,7 @@ export class LockManager {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not available'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not available'),
       };
     }
 
@@ -818,7 +818,7 @@ export class LockManager {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('LOCK_STATUS_FAILED', `Failed to get lock status: ${errorMessage}`),
+        error: new EketError(EketErrorCode.LOCK_STATUS_FAILED, `Failed to get lock status: ${errorMessage}`),
       };
     }
   }
@@ -831,7 +831,7 @@ export class LockManager {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not available'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not available'),
       };
     }
 
@@ -843,7 +843,7 @@ export class LockManager {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('QUEUE_LENGTH_FAILED', `Failed to get queue length: ${errorMessage}`),
+        error: new EketError(EketErrorCode.QUEUE_LENGTH_FAILED, `Failed to get queue length: ${errorMessage}`),
       };
     }
   }

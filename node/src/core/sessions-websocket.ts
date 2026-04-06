@@ -11,7 +11,7 @@
 import WebSocket, { type RawData } from 'ws';
 
 import type { Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 // 导出 RawData 类型供其他模块使用
 export type { RawData };
@@ -170,7 +170,7 @@ export class SessionsWebSocket {
     if (this.state === 'connecting') {
       return {
         success: false,
-        error: new EketError('WEBSOCKET_ALREADY_CONNECTING', 'WebSocket is already connecting'),
+        error: new EketError(EketErrorCode.WEBSOCKET_ALREADY_CONNECTING, 'WebSocket is already connecting'),
       };
     }
 
@@ -233,7 +233,7 @@ export class SessionsWebSocket {
         const errorMessage = error instanceof Error ? error.message : 'Unknown connection error';
         const errorContext =
           error instanceof Error ? { message: error.message, stack: error.stack } : undefined;
-        const eketError = new EketError('WEBSOCKET_CONNECTION_FAILED', errorMessage, errorContext);
+        const eketError = new EketError(EketErrorCode.WEBSOCKET_CONNECTION_FAILED, errorMessage, errorContext);
         resolve({ success: false, error: eketError });
       }
     });
@@ -417,7 +417,7 @@ export class SessionsWebSocket {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return {
         success: false,
-        error: new EketError('WEBSOCKET_NOT_CONNECTED', 'WebSocket is not connected'),
+        error: new EketError(EketErrorCode.WEBSOCKET_NOT_CONNECTED, 'WebSocket is not connected'),
       };
     }
 
@@ -432,7 +432,7 @@ export class SessionsWebSocket {
       const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
       const errorContext =
         error instanceof Error ? { message: error.message, stack: error.stack } : undefined;
-      const eketError = new EketError('WEBSOCKET_SEND_FAILED', errorMessage, errorContext);
+      const eketError = new EketError(EketErrorCode.WEBSOCKET_SEND_FAILED, errorMessage, errorContext);
       return { success: false, error: eketError };
     }
   }

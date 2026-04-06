@@ -2,6 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working in this repository.
 
+**版本**: v2.0.0
+**最后更新**: 2026-04-06
+
 ## 重要：身份确认
 
 **每次启动 Claude Code 时，请首先读取 `.eket/IDENTITY.md` 确认你的身份！**
@@ -215,6 +218,57 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 **等待 Master 审核**
 ```
 
+### 分析报告流程（领取任务后必须先执行）
+
+**Slaver 领取任务后，不可直接开发，必须先提交分析报告给 Master 审批。**
+
+流程如下：
+
+1. **领取任务** → Ticket 状态变为 `in_progress`
+2. **进行任务分析** → 理解需求、设计技术方案、拆解子任务、评估风险
+3. **创建分析报告** → `jira/tickets/<ticket-id>/analysis-report.md`（模板见下方）
+4. **更新 Ticket 状态** → 改为 `analysis_review`
+5. **发送审批请求消息** → 类型为 `analysis_review_request`，发送到 `shared/message_queue/inbox/`
+6. **等待 Master 审批**：
+   - **批准** → 状态变为 `approved`，Slaver 开始开发
+   - **驳回** → Slaver 重新分析，更新报告后再次提交
+   - **需升级** → Slaver 拆分任务或调整方案后重新提交
+
+#### 分析报告模板
+
+创建 `jira/tickets/<ticket-id>/analysis-report.md`：
+
+```markdown
+# 任务分析报告：<ticket-id>
+
+**Slaver**: <slaver_id>
+**分析时间**: YYYY-MM-DD HH:MM
+**预计工时**: X 小时
+
+## 1. 需求理解
+<简述任务的核心目标和验收标准>
+
+## 2. 技术方案
+<描述实现方案>
+
+## 3. 影响面分析
+| 影响模块 | 影响程度 | 说明 |
+|----------|----------|------|
+| <module> | 高/中/低 | <具体影响> |
+
+## 4. 任务拆解
+| 子任务 | 预估工时 | 优先级 |
+|--------|----------|--------|
+| <子任务 1> | 2h | P0 |
+
+## 5. 风险评估
+| 风险项 | 可能性 | 影响 | 缓解措施 |
+|--------|--------|------|----------|
+| <风险> | 高/中/低 | 高/中/低 | <方案> |
+```
+
+---
+
 ### PR 提交流程
 
 运行 `/eket-submit-pr` 后，脚本会自动：
@@ -292,7 +346,7 @@ Master 收到请求后会：
 ## 项目结构
 
 ```
-${PROJECT_NAME}/
+{{PROJECT_NAME}}/
 ├── .claude/                  # Claude Code 配置
 │   ├── commands/             # 自定义命令
 │   └── settings.json         # 权限配置
@@ -320,3 +374,33 @@ ${PROJECT_NAME}/
 - 任务并发限制
 - Git 和 PR 自动化设置
 - Review 工作流配置
+
+---
+
+## Agent 快速决策树
+
+遇到问题时，按以下流程快速决策：
+
+```
+我是谁？
+├── Master → 查看 docs/MASTER-WORKFLOW.md
+└── Slaver → 继续往下
+
+当前状态？
+├── 刚启动 → 运行 /eket-start，读取 .eket/IDENTITY.md
+├── 有任务 → 查看 jira/tickets/<id>/，执行当前状态对应操作
+└── 无任务 → 运行 /eket-status，查看可领取任务
+
+任务执行中遇到问题？
+├── 技术问题（<30分钟） → 自行解决
+├── 技术问题（>30分钟） → 写入 outbox/tasks/<id>/blocker-report.md，通知 Master
+├── 需求不清晰 → 运行 /eket-ask，追问相关方
+└── 发现冲突/矛盾 → 上报 Master
+
+完成当前阶段？
+├── 完成分析 → 写分析报告 → 更新状态为 analysis_review → 等待 Master
+├── 完成开发 → 提交 PR → 写 pr-request.md → 更新状态为 review → 等待 Master
+└── 任务完成 → 写 completion-notice.md → 更新状态为 done → 领取下一个任务
+```
+
+> **参考**：完整工作流见 `docs/SLAVER-AUTO-EXEC-GUIDE.md` 和 `docs/MASTER-WORKFLOW.md`

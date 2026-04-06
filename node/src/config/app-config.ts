@@ -12,7 +12,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { EketError, Result } from '../types/index.js';
+import { EketError, EketErrorCode, Result } from '../types/index.js';
 
 // ============================================================================
 // Types
@@ -537,7 +537,7 @@ export class ConfigManager {
       return {
         success: false,
         error: new EketError(
-          'CONFIG_VALIDATION_FAILED',
+          EketErrorCode.CONFIG_VALIDATION_FAILED,
           `Configuration validation failed:\n${errors.join('\n')}`
         ),
       };

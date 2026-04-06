@@ -8,7 +8,7 @@ import * as path from 'path';
 
 import type { AuditLogger } from '../api/audit-logger.js';
 import type { Message, Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 // ============================================================================
 // 审计日志全局配置
@@ -183,7 +183,7 @@ export class FileQueueManager {
 
       return {
         success: false,
-        error: new EketError('QUEUE_ERROR', '保存已处理 ID 失败'),
+        error: new EketError(EketErrorCode.QUEUE_ERROR, '保存已处理 ID 失败'),
       };
     }
   }
@@ -230,7 +230,7 @@ export class FileQueueManager {
     this.processedIds = new Set();
     return {
       success: false,
-      error: new EketError('DATA_CORRUPTED', 'processed.json 和备份均损坏'),
+      error: new EketError(EketErrorCode.DATA_CORRUPTED, 'processed.json 和备份均损坏'),
     };
   }
 
@@ -260,7 +260,7 @@ export class FileQueueManager {
       // 去重检查
       if (this.isProcessed(message.id)) {
         console.log(`[FileQueue] 跳过已处理消息：${message.id}`);
-        return { success: false, error: new EketError('DUPLICATE_MESSAGE', '消息已处理') };
+        return { success: false, error: new EketError(EketErrorCode.DUPLICATE_MESSAGE, '消息已处理') };
       }
 
       const filename = `${channel}_${message.id}_${Date.now()}.json`;
@@ -283,7 +283,7 @@ export class FileQueueManager {
       return { success: true, data: filepath };
     } catch {
       console.error('[FileQueue] Enqueue error');
-      return { success: false, error: new EketError('QUEUE_ERROR', '写入队列失败') };
+      return { success: false, error: new EketError(EketErrorCode.QUEUE_ERROR, '写入队列失败') };
     }
   }
 

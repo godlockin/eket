@@ -8,7 +8,7 @@
  */
 
 import type { SlaverHeartbeat, Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 // Type for ioredis client (lazy loaded)
 type IORedis = typeof import('ioredis').default;
@@ -80,7 +80,7 @@ export class RedisClient {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('REDIS_CONNECTION_FAILED', `Failed to connect Redis: ${errorMessage}`),
+        error: new EketError(EketErrorCode.REDIS_CONNECTION_FAILED, `Failed to connect Redis: ${errorMessage}`),
       };
     }
   }
@@ -92,7 +92,7 @@ export class RedisClient {
     if (!RedisClusterConstructor) {
       return {
         success: false,
-        error: new EketError('REDIS_CONNECTION_FAILED', 'Redis Cluster constructor not loaded'),
+        error: new EketError(EketErrorCode.REDIS_CONNECTION_FAILED, 'Redis Cluster constructor not loaded'),
       };
     }
 
@@ -137,7 +137,7 @@ export class RedisClient {
     if (!RedisConstructor) {
       return {
         success: false,
-        error: new EketError('REDIS_CONNECTION_FAILED', 'Redis constructor not loaded'),
+        error: new EketError(EketErrorCode.REDIS_CONNECTION_FAILED, 'Redis constructor not loaded'),
       };
     }
 
@@ -264,7 +264,7 @@ export class RedisClient {
     if (!this.client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -288,7 +288,7 @@ export class RedisClient {
     } catch {
       return {
         success: false,
-        error: new EketError('REDIS_OPERATION_FAILED', 'Failed to register slaver'),
+        error: new EketError(EketErrorCode.REDIS_OPERATION_FAILED, 'Failed to register slaver'),
       };
     }
   }
@@ -300,7 +300,7 @@ export class RedisClient {
     if (!this.client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -332,7 +332,7 @@ export class RedisClient {
     } catch {
       return {
         success: false,
-        error: new EketError('REDIS_OPERATION_FAILED', 'Failed to get active slavers'),
+        error: new EketError(EketErrorCode.REDIS_OPERATION_FAILED, 'Failed to get active slavers'),
       };
     }
   }
@@ -344,7 +344,7 @@ export class RedisClient {
     if (!this.client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -354,7 +354,7 @@ export class RedisClient {
     } catch {
       return {
         success: false,
-        error: new EketError('REDIS_OPERATION_FAILED', 'Failed to publish message'),
+        error: new EketError(EketErrorCode.REDIS_OPERATION_FAILED, 'Failed to publish message'),
       };
     }
   }
@@ -369,7 +369,7 @@ export class RedisClient {
     if (!this.client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -400,7 +400,7 @@ export class RedisClient {
     } catch {
       return {
         success: false,
-        error: new EketError('REDIS_OPERATION_FAILED', 'Failed to subscribe'),
+        error: new EketError(EketErrorCode.REDIS_OPERATION_FAILED, 'Failed to subscribe'),
       };
     }
   }

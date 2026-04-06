@@ -1,10 +1,10 @@
-# Documentation Ticket: DOC-${SEQUENCE_NUMBER} - ${DOC_TITLE}
+# Documentation Ticket: DOC-{{SEQUENCE_NUMBER}} - {{DOC_TITLE}}
 
-**创建时间**: ${CREATE_DATE}
+**创建时间**: {{CREATE_DATE}}
 **创建者**: Master Agent
 **优先级**: P0 | P1 | P2 | P3
 **状态**: backlog
-**标签**: `documentation`, `${DOC_TYPE}`, `${MODULE_TAG}`
+**标签**: `documentation`, `{{DOC_TYPE}}`, `{{MODULE_TAG}}`
 **关联 Feature**: ${FEATURE_ID:-N/A}
 **关联 Ticket**: ${RELATED_TICKET:-N/A}
 **分配给**: null
@@ -52,11 +52,11 @@ external: []  # 外部依赖
 
 | 时间 | 状态变更 | 操作者 | 备注 |
 |------|----------|--------|------|
-| ${CREATE_DATE} | backlog → ready | Master | 初始创建 |
-| ${CLAIM_DATE} | ready → in_progress | ${Slaver_ID} | **已领取** |
-| ${DRAFT_DATE} | in_progress → drafting | ${Slaver_ID} | 文档初稿完成 |
-| ${REVIEW_DATE} | drafting → review | ${Slaver_ID} | Review 提交 |
-| ${APPROVE_DATE} | review → done | Master | Review 通过 |
+| {{CREATE_DATE}} | backlog → ready | Master | 初始创建 |
+| {{CLAIM_DATE}} | ready → in_progress | ${Slaver_ID} | **已领取** |
+| {{DRAFT_DATE}} | in_progress → drafting | ${Slaver_ID} | 文档初稿完成 |
+| {{REVIEW_DATE}} | drafting → review | ${Slaver_ID} | Review 提交 |
+| {{APPROVE_DATE}} | review → done | Master | Review 通过 |
 
 > **重要**: Slaver 领取任务后必须按顺序更新状态，不可跳过任何阶段！
 
@@ -87,9 +87,9 @@ ${清晰描述文档要达成的目标和预期读者}
 | ${读者 2} | 高/中/低 | ${目的} | ${重点} |
 
 ### 2.4 文档范围
-- **包含内容**: ${IN_SCOPE}
-- **不包含**: ${OUT_OF_SCOPE}
-- **文档位置**: `${DOC_PATH}`
+- **包含内容**: {{IN_SCOPE}}
+- **不包含**: {{OUT_OF_SCOPE}}
+- **文档位置**: `{{DOC_PATH}}`
 
 ---
 
@@ -117,8 +117,8 @@ ${清晰描述文档要达成的目标和预期读者}
 ### 3.3 参考文档
 | 文档名称 | 链接 | 用途 |
 |----------|------|------|
-| ${文档 1} | ${LINK} | ${用途} |
-| ${文档 2} | ${LINK} | ${用途} |
+| ${文档 1} | {{LINK}} | ${用途} |
+| ${文档 2} | {{LINK}} | ${用途} |
 
 ---
 
@@ -126,8 +126,8 @@ ${清晰描述文档要达成的目标和预期读者}
 
 ### 4.1 领取信息
 - **领取者**: ${Slaver_ID}
-- **领取时间**: ${CLAIM_DATE}
-- **预计工时**: ${ESTIMATED_HOURS}h
+- **领取时间**: {{CLAIM_DATE}}
+- **预计工时**: {{ESTIMATED_HOURS}}h
 - **状态已更新**: [ ] 是
 
 ### 4.2 必需执行流程
@@ -139,7 +139,7 @@ ${清晰描述文档要达成的目标和预期读者}
 
 #### 步骤 2: 文档撰写
 - [ ] 已完成文档初稿
-- [ ] 文档字数：约 ${WORD_COUNT} 字
+- [ ] 文档字数：约 {{WORD_COUNT}} 字
 - [ ] 已更新状态：`in_progress` → `drafting`
 
 #### 步骤 3: 文档审查
@@ -148,24 +148,24 @@ ${清晰描述文档要达成的目标和预期读者}
 - [ ] 已更新状态：`drafting` → `review`
 
 #### 步骤 4: 提交 Review
-- [ ] 文档链接：${DOC_URL}
+- [ ] 文档链接：{{DOC_URL}}
 - [ ] 已通知 Master Review
 - [ ] 已更新状态：`review` → `done`
 
 ### 4.3 执行状态
 | 阶段 | 状态 | 完成时间 | 备注 |
 |------|------|----------|------|
-| 领取 | ✓/✗ | ${CLAIM_DATE} | ${Slaver_ID} |
-| 资料收集 | ✓/✗ | ${RESEARCH_DATE} | - |
-| 文档撰写 | ✓/✗ | ${DRAFT_DATE} | ${WORD_COUNT} 字 |
-| Review | ✓/✗ | ${REVIEW_DATE} | - |
+| 领取 | ✓/✗ | {{CLAIM_DATE}} | ${Slaver_ID} |
+| 资料收集 | ✓/✗ | {{RESEARCH_DATE}} | - |
+| 文档撰写 | ✓/✗ | {{DRAFT_DATE}} | {{WORD_COUNT}} 字 |
+| Review | ✓/✗ | {{REVIEW_DATE}} | - |
 
 ### 4.4 文档交付物
 | 交付物 | 位置 | 状态 |
 |--------|------|------|
-| 主文档 | `${DOC_PATH}` | ✓/✗ |
-| 示例代码 | `${CODE_PATH}` | ✓/✗ |
-| 截图/图表 | `${ASSETS_PATH}` | ✓/✗ |
+| 主文档 | `{{DOC_PATH}}` | ✓/✗ |
+| 示例代码 | `{{CODE_PATH}}` | ✓/✗ |
+| 截图/图表 | `{{ASSETS_PATH}}` | ✓/✗ |
 
 ---
 
@@ -188,8 +188,8 @@ ${清晰描述文档要达成的目标和预期读者}
 - [ ] **需要修改** - 见修改意见
 - [ ] **拒绝** - ${原因}
 
-**验证者**: ${REVIEWER_ID}
-**验证时间**: ${REVIEW_DATE}
+**验证者**: {{REVIEWER_ID}}
+**验证时间**: {{REVIEW_DATE}}
 
 ---
 

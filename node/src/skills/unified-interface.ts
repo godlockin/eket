@@ -5,7 +5,7 @@
  * 统一接口：提供一致的 Skill 执行入口，支持拦截器和事件
  */
 
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 import { SkillsRegistry, createSkillsRegistry } from './registry.js';
 import type {
@@ -290,7 +290,7 @@ export class UnifiedSkillInterface implements SkillInterceptor {
   ): Promise<SkillOutput<R>> {
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => {
-        reject(new EketError('SKILL_TIMEOUT', `Skill "${skill.name}" execution timeout`));
+        reject(new EketError(EketErrorCode.SKILL_TIMEOUT, `Skill "${skill.name}" execution timeout`));
       }, this.config.timeout);
     });
 
@@ -373,7 +373,7 @@ export class ValidationInterceptor implements SkillInterceptor {
     if (skill.validateInput) {
       const isValid = skill.validateInput(input.data);
       if (!isValid) {
-        throw new EketError('INVALID_INPUT', `Invalid input for skill: ${skill.name}`);
+        throw new EketError(EketErrorCode.INVALID_INPUT, `Invalid input for skill: ${skill.name}`);
       }
     }
   }

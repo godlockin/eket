@@ -1,12 +1,12 @@
-# Technical Design Ticket: T-DESIGN-${SEQUENCE_NUMBER} - ${DESIGN_TITLE}
+# Technical Design Ticket: T-DESIGN-{{SEQUENCE_NUMBER}} - {{DESIGN_TITLE}}
 
-**创建时间**: ${CREATE_DATE}
+**创建时间**: {{CREATE_DATE}}
 **创建者**: Master Agent
 **优先级**: P0 | P1 | P2 | P3
 **状态**: backlog
-**标签**: `design`, `architecture`, `${TECH_AREA}`
-**关联 Feature**: ${FEATURE_ID}
-**关联 PRD**: PRD-${SEQUENCE_NUMBER}
+**标签**: `design`, `architecture`, `{{TECH_AREA}}`
+**关联 Feature**: {{FEATURE_ID}}
+**关联 PRD**: PRD-{{SEQUENCE_NUMBER}}
 **分配给**: null
 
 ---
@@ -52,11 +52,11 @@ external: []  # 外部依赖（如：技术选型评估、PoC）
 
 | 时间 | 状态变更 | 操作者 | 备注 |
 |------|----------|--------|------|
-| ${CREATE_DATE} | backlog → analysis | Master | 初始创建 |
-| ${ANALYSIS_DATE} | analysis → draft | Master | 技术调研完成 |
-| ${DRAFT_DATE} | draft → review | Master | 设计初稿完成 |
-| ${REVIEW_DATE} | review → approved | Tech Lead | 设计批准 |
-| ${HANDOFF_DATE} | approved → done | Master | 已移交开发团队 |
+| {{CREATE_DATE}} | backlog → analysis | Master | 初始创建 |
+| {{ANALYSIS_DATE}} | analysis → draft | Master | 技术调研完成 |
+| {{DRAFT_DATE}} | draft → review | Master | 设计初稿完成 |
+| {{REVIEW_DATE}} | review → approved | Tech Lead | 设计批准 |
+| {{HANDOFF_DATE}} | approved → done | Master | 已移交开发团队 |
 
 > **重要**: 技术设计需要 Tech Lead 批准后才能移交开发！
 
@@ -79,10 +79,10 @@ external: []  # 外部依赖（如：技术选型评估、PoC）
 ${清晰描述技术设计要达成的目标和预期效果}
 
 ### 2.3 设计范围
-- **涉及系统**: `${SYSTEM_LIST}`
-- **涉及模块**: `${MODULE_LIST}`
-- **技术栈**: `${TECH_STACK}`
-- **不包括**: `${OUT_OF_SCOPE}`
+- **涉及系统**: `{{SYSTEM_LIST}}`
+- **涉及模块**: `{{MODULE_LIST}}`
+- **技术栈**: `{{TECH_STACK}}`
+- **不包括**: `{{OUT_OF_SCOPE}}`
 
 ### 2.4 设计约束
 - **性能要求**: ${QPS, 延迟，吞吐量}
@@ -162,14 +162,14 @@ ${实现伪代码或流程图}
 ### 5.1 API 列表
 | API | 方法 | 路径 | 描述 | 认证 |
 |-----|------|------|------|------|
-| ${API1} | GET/POST | ${PATH} | ${描述} | Required |
+| {{API1}} | GET/POST | {{PATH}} | ${描述} | Required |
 
 ### 5.2 API 详细设计
 
-#### ${API_NAME}
+#### {{API_NAME}}
 ```yaml
 Method: ${GET/POST/PUT/DELETE}
-Path: ${API_PATH}
+Path: {{API_PATH}}
 Auth: ${Required/Optional}
 Rate Limit: ${Limit}
 ```
@@ -215,8 +215,8 @@ ${ER  Diagram}
 | 字段 | 类型 | 约束 | 描述 |
 |------|------|------|------|
 | id | BIGINT | PRIMARY KEY | 主键 |
-| ${field1} | ${TYPE} | ${CONSTRAINT} | ${描述} |
-| ${field2} | ${TYPE} | ${CONSTRAINT} | ${描述} |
+| ${field1} | {{TYPE}} | {{CONSTRAINT}} | ${描述} |
+| ${field2} | {{TYPE}} | {{CONSTRAINT}} | ${描述} |
 
 **索引设计**:
 ```sql
@@ -248,8 +248,8 @@ CREATE INDEX idx_${name} ON ${table} (${columns});
 
 ### 8.1 领取信息
 - **领取者**: ${Slaver_ID}
-- **领取时间**: ${CLAIM_DATE}
-- **预计工时**: ${ESTIMATED_HOURS}h
+- **领取时间**: {{CLAIM_DATE}}
+- **预计工时**: {{ESTIMATED_HOURS}}h
 - **状态已更新**: [ ] 是
 
 ### 8.2 必需执行流程
@@ -272,7 +272,7 @@ CREATE INDEX idx_${name} ON ${table} (${columns});
 
 #### 步骤 4: 人类批准
 - [ ] Tech Lead 已批准
-- [ ] 批准时间：${APPROVE_DATE}
+- [ ] 批准时间：{{APPROVE_DATE}}
 - [ ] 已更新状态：`review` → `approved`
 
 #### 步骤 5: 开发交接
@@ -283,11 +283,11 @@ CREATE INDEX idx_${name} ON ${table} (${columns});
 ### 8.3 执行状态
 | 阶段 | 状态 | 完成时间 | 备注 |
 |------|------|----------|------|
-| 技术调研 | ✓/✗ | ${ANALYSIS_DATE} | - |
-| 设计撰写 | ✓/✗ | ${DRAFT_DATE} | - |
-| Review | ✓/✗ | ${REVIEW_DATE} | - |
-| 人类批准 | ✓/✗ | ${APPROVE_DATE} | TL: ${TL_NAME} |
-| 开发交接 | ✓/✗ | ${HANDOFF_DATE} | - |
+| 技术调研 | ✓/✗ | {{ANALYSIS_DATE}} | - |
+| 设计撰写 | ✓/✗ | {{DRAFT_DATE}} | - |
+| Review | ✓/✗ | {{REVIEW_DATE}} | - |
+| 人类批准 | ✓/✗ | {{APPROVE_DATE}} | TL: {{TL_NAME}} |
+| 开发交接 | ✓/✗ | {{HANDOFF_DATE}} | - |
 
 ---
 
@@ -302,8 +302,8 @@ ${技术设计批准意见和注意事项}
 - [ ] **暂缓** - ${原因}
 - [ ] **拒绝** - ${原因}
 
-**批准者**: ${TECH_LEAD}
-**批准时间**: ${APPROVE_DATE}
+**批准者**: {{TECH_LEAD}}
+**批准时间**: {{APPROVE_DATE}}
 
 ---
 

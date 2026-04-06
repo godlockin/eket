@@ -24,7 +24,7 @@ import {
   RETRY_DELAY_MULTIPLIER,
 } from '../constants.js';
 import type { Result } from '../types/index.js';
-import { EketError, isEketError } from '../types/index.js';
+import { EketError, EketErrorCode, isEketError } from '../types/index.js';
 
 /**
  * 断路器状态
@@ -106,7 +106,7 @@ export class CircuitBreaker {
     if (!this.canExecute()) {
       return {
         success: false,
-        error: new EketError('CIRCUIT_OPEN', `Circuit breaker is open, failing fast`),
+        error: new EketError(EketErrorCode.CIRCUIT_OPEN, `Circuit breaker is open, failing fast`),
       };
     }
 
@@ -126,8 +126,8 @@ export class CircuitBreaker {
         success: false,
         error:
           err instanceof Error
-            ? new EketError('EXECUTION_ERROR', err.message)
-            : new EketError('UNKNOWN_ERROR', 'Unknown error'),
+            ? new EketError(EketErrorCode.EXECUTION_ERROR, err.message)
+            : new EketError(EketErrorCode.UNKNOWN_ERROR, 'Unknown error'),
       };
     }
   }

@@ -14,7 +14,7 @@ import {
   MQ_DEFAULT_SHARD_COUNT,
 } from '../constants.js';
 import type { Result, ConsistentHashConfig, MessageQueueShardingConfig } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 /**
  * 哈希环节点
@@ -100,7 +100,7 @@ export class ConsistentHashRing {
       if (this.ring.has(hash)) {
         return {
           success: false,
-          error: new EketError('SHARD_ALREADY_EXISTS', `Shard ${shardId} already exists`),
+          error: new EketError(EketErrorCode.SHARD_ALREADY_EXISTS, `Shard ${shardId} already exists`),
         };
       }
     }

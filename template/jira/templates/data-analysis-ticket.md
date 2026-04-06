@@ -1,10 +1,10 @@
-# Data Analysis Ticket: DATA-ANALYSIS-${SEQUENCE_NUMBER} - ${ANALYSIS_TITLE}
+# Data Analysis Ticket: DATA-ANALYSIS-{{SEQUENCE_NUMBER}} - {{ANALYSIS_TITLE}}
 
-**创建时间**: ${CREATE_DATE}
+**创建时间**: {{CREATE_DATE}}
 **创建者**: Master Agent
 **优先级**: P0 | P1 | P2 | P3
 **状态**: backlog
-**标签**: `data`, `analysis`, `${ANALYSIS_TYPE}`
+**标签**: `data`, `analysis`, `{{ANALYSIS_TYPE}}`
 **关联 Feature**: ${FEATURE_ID:-N/A}
 **关联 PRD**: PRD-${SEQUENCE_NUMBER:-N/A}
 **分配给**: null
@@ -52,13 +52,13 @@ external: []  # 外部依赖（如：数据接入、权限审批）
 
 | 时间 | 状态变更 | 操作者 | 备注 |
 |------|----------|--------|------|
-| ${CREATE_DATE} | backlog → ready | Master | 初始创建 |
-| ${CLAIM_DATE} | ready → in_progress | ${Slaver_ID} | **已领取** |
-| ${EXTRACT_DATE} | in_progress → extracting | ${Slaver_ID} | 数据提取完成 |
-| ${CLEAN_DATE} | extracting → cleaning | ${Slaver_ID} | 数据清洗完成 |
-| ${ANALYZE_DATE} | cleaning → analyzing | ${Slaver_ID} | 数据分析完成 |
-| ${REPORT_DATE} | analyzing → review | ${Slaver_ID} | 报告完成 |
-| ${APPROVE_DATE} | review → done | Master | 报告批准 |
+| {{CREATE_DATE}} | backlog → ready | Master | 初始创建 |
+| {{CLAIM_DATE}} | ready → in_progress | ${Slaver_ID} | **已领取** |
+| {{EXTRACT_DATE}} | in_progress → extracting | ${Slaver_ID} | 数据提取完成 |
+| {{CLEAN_DATE}} | extracting → cleaning | ${Slaver_ID} | 数据清洗完成 |
+| {{ANALYZE_DATE}} | cleaning → analyzing | ${Slaver_ID} | 数据分析完成 |
+| {{REPORT_DATE}} | analyzing → review | ${Slaver_ID} | 报告完成 |
+| {{APPROVE_DATE}} | review → done | Master | 报告批准 |
 
 ---
 
@@ -124,8 +124,8 @@ ${清晰描述分析要解决的业务问题}
 
 ### 4.1 领取信息
 - **领取者**: ${Slaver_ID}
-- **领取时间**: ${CLAIM_DATE}
-- **预计工时**: ${ESTIMATED_HOURS}h
+- **领取时间**: {{CLAIM_DATE}}
+- **预计工时**: {{ESTIMATED_HOURS}}h
 - **状态已更新**: [ ] 是
 
 ### 4.2 必需执行流程
@@ -137,7 +137,7 @@ ${清晰描述分析要解决的业务问题}
 
 #### 步骤 2: 数据提取
 - [ ] 已编写 SQL/脚本
-- [ ] 已提取 ${N} 条数据
+- [ ] 已提取 {{N}} 条数据
 - [ ] 已更新状态：`in_progress` → `extracting`
 
 #### 步骤 3: 数据清洗
@@ -154,7 +154,7 @@ ${清晰描述分析要解决的业务问题}
 
 #### 步骤 5: 报告撰写
 - [ ] 已完成分析报告
-- [ ] 报告位置：`${REPORT_PATH}`
+- [ ] 报告位置：`{{REPORT_PATH}}`
 - [ ] 已更新状态：`analyzing` → `review`
 
 #### 步骤 6: 报告审批
@@ -164,11 +164,11 @@ ${清晰描述分析要解决的业务问题}
 ### 4.3 执行状态
 | 阶段 | 状态 | 完成时间 | 备注 |
 |------|------|----------|------|
-| 数据准备 | ✓/✗ | ${PREPARE_DATE} | - |
-| 数据提取 | ✓/✗ | ${EXTRACT_DATE} | ${N}条 |
-| 数据清洗 | ✓/✗ | ${CLEAN_DATE} | - |
-| 数据分析 | ✓/✗ | ${ANALYZE_DATE} | ${N}个图表 |
-| 报告撰写 | ✓/✗ | ${REPORT_DATE} | - |
+| 数据准备 | ✓/✗ | {{PREPARE_DATE}} | - |
+| 数据提取 | ✓/✗ | {{EXTRACT_DATE}} | {{N}}条 |
+| 数据清洗 | ✓/✗ | {{CLEAN_DATE}} | - |
+| 数据分析 | ✓/✗ | {{ANALYZE_DATE}} | {{N}}个图表 |
+| 报告撰写 | ✓/✗ | {{REPORT_DATE}} | - |
 
 ### 4.4 数据质量
 | 质量维度 | 状态 | 说明 |
@@ -191,8 +191,8 @@ ${清晰描述分析要解决的业务问题}
 ### 5.2 数据可视化
 | 图表编号 | 图表类型 | 展示内容 | 位置 |
 |----------|----------|----------|------|
-| V1 | ${类型} | ${内容} | ${PATH} |
-| V2 | ${类型} | ${内容} | ${PATH} |
+| V1 | ${类型} | ${内容} | {{PATH}} |
+| V2 | ${类型} | ${内容} | {{PATH}} |
 
 ### 5.3 统计分析
 ```
@@ -226,8 +226,8 @@ ${清晰描述分析要解决的业务问题}
 - [ ] **需要补充** - 见补充意见
 - [ ] **拒绝** - ${原因}
 
-**验证者**: ${REVIEWER_ID}
-**验证时间**: ${REVIEW_DATE}
+**验证者**: {{REVIEWER_ID}}
+**验证时间**: {{REVIEW_DATE}}
 
 ---
 

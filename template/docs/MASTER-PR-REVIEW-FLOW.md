@@ -1,7 +1,7 @@
 # Master PR Review 流程规范
 
-**版本**: 0.9.3
-**最后更新**: 2026-03-27
+**版本**: v2.0.0
+**最后更新**: 2026-04-06
 
 ---
 
@@ -305,11 +305,11 @@ npm run build
 **PR Review 报告格式**:
 
 ```markdown
-# PR Review 报告：${TICKET_ID}
+# PR Review 报告：{{TICKET_ID}}
 
 **Reviewer**: Master Agent
 **Review 时间**: $(date -Iseconds)
-**PR**: feature/${TICKET_ID}-${description} → testing
+**PR**: feature/{{TICKET_ID}}-{{description}} → testing
 
 ---
 
@@ -572,4 +572,4 @@ cat jira/templates/pr-review-checklist.md
 ---
 
 **维护者**: EKET Framework Team
-**版本**: 0.9.3
+**版本**: v2.0.0

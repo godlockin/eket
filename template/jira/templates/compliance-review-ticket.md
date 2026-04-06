@@ -1,10 +1,10 @@
-# Compliance Review Ticket: COMPLIANCE-${SEQUENCE_NUMBER} - ${REVIEW_TITLE}
+# Compliance Review Ticket: COMPLIANCE-{{SEQUENCE_NUMBER}} - {{REVIEW_TITLE}}
 
-**创建时间**: ${CREATE_DATE}
+**创建时间**: {{CREATE_DATE}}
 **创建者**: Master Agent / Legal Team
 **优先级**: P0 | P1 | P2 | P3
 **状态**: backlog
-**标签**: `compliance`, `legal`, `${REGULATION_TYPE}`
+**标签**: `compliance`, `legal`, `{{REGULATION_TYPE}}`
 **关联 Feature**: ${FEATURE_ID:-N/A}
 **关联 PRD**: PRD-${SEQUENCE_NUMBER:-N/A}
 **分配给**: null
@@ -52,13 +52,13 @@ external: []  # 外部依赖（如：法律顾问审批、第三方审计）
 
 | 时间 | 状态变更 | 操作者 | 备注 |
 |------|----------|--------|------|
-| ${CREATE_DATE} | backlog → ready | Master | 初始创建 |
-| ${CLAIM_DATE} | ready → in_progress | ${Slaver_ID} | **已领取** |
-| ${ASSESS_DATE} | in_progress → assessing | ${Slaver_ID} | 合规评估完成 |
-| ${AUDIT_DATE} | assessing → auditing | ${Slaver_ID} | 合规审计完成 |
-| ${REMEDIATE_DATE} | auditing → remediating | ${Slaver_ID} | 整改完成（如需要） |
-| ${REPORT_DATE} | remediating → review | ${Slaver_ID} | 报告完成 |
-| ${APPROVE_DATE} | review → done | Legal/Compliance Officer | 审查批准 |
+| {{CREATE_DATE}} | backlog → ready | Master | 初始创建 |
+| {{CLAIM_DATE}} | ready → in_progress | ${Slaver_ID} | **已领取** |
+| {{ASSESS_DATE}} | in_progress → assessing | ${Slaver_ID} | 合规评估完成 |
+| {{AUDIT_DATE}} | assessing → auditing | ${Slaver_ID} | 合规审计完成 |
+| {{REMEDIATE_DATE}} | auditing → remediating | ${Slaver_ID} | 整改完成（如需要） |
+| {{REPORT_DATE}} | remediating → review | ${Slaver_ID} | 报告完成 |
+| {{APPROVE_DATE}} | review → done | Legal/Compliance Officer | 审查批准 |
 
 ---
 
@@ -83,10 +83,10 @@ external: []  # 外部依赖（如：法律顾问审批、第三方审计）
 ${清晰描述合规审查要验证的内容和预期产出}
 
 ### 2.4 审查范围
-- **涉及系统**: `${SYSTEM_LIST}`
-- **涉及数据**: `${DATA_TYPES}`
-- **涉及地区**: `${REGIONS}`
-- **不包括**: `${OUT_OF_SCOPE}`
+- **涉及系统**: `{{SYSTEM_LIST}}`
+- **涉及数据**: `{{DATA_TYPES}}`
+- **涉及地区**: `{{REGIONS}}`
+- **不包括**: `{{OUT_OF_SCOPE}}`
 
 ---
 
@@ -144,8 +144,8 @@ ${清晰描述合规审查要验证的内容和预期产出}
 
 ### 4.1 领取信息
 - **领取者**: ${Slaver_ID}
-- **领取时间**: ${CLAIM_DATE}
-- **预计工时**: ${ESTIMATED_HOURS}h
+- **领取时间**: {{CLAIM_DATE}}
+- **预计工时**: {{ESTIMATED_HOURS}}h
 - **状态已更新**: [ ] 是
 
 ### 4.2 必需执行流程
@@ -173,7 +173,7 @@ ${清晰描述合规审查要验证的内容和预期产出}
 
 #### 步骤 5: 报告撰写
 - [ ] 已完成合规报告
-- [ ] 报告位置：`${REPORT_PATH}`
+- [ ] 报告位置：`{{REPORT_PATH}}`
 - [ ] 已更新状态：`remediating` → `review`
 
 #### 步骤 6: 人类审批
@@ -184,12 +184,12 @@ ${清晰描述合规审查要验证的内容和预期产出}
 ### 4.3 执行状态
 | 阶段 | 状态 | 完成时间 | 备注 |
 |------|------|----------|------|
-| 合规准备 | ✓/✗ | ${PREPARE_DATE} | - |
-| 合规评估 | ✓/✗ | ${ASSESS_DATE} | - |
-| 合规审计 | ✓/✗ | ${AUDIT_DATE} | - |
-| 整改实施 | ✓/✗ | ${REMEDIATE_DATE} | ${N}项整改 |
-| 报告撰写 | ✓/✗ | ${REPORT_DATE} | - |
-| 人类审批 | ✓/✗ | ${APPROVE_DATE} | ${APPROVER} |
+| 合规准备 | ✓/✗ | {{PREPARE_DATE}} | - |
+| 合规评估 | ✓/✗ | {{ASSESS_DATE}} | - |
+| 合规审计 | ✓/✗ | {{AUDIT_DATE}} | - |
+| 整改实施 | ✓/✗ | {{REMEDIATE_DATE}} | {{N}}项整改 |
+| 报告撰写 | ✓/✗ | {{REPORT_DATE}} | - |
+| 人类审批 | ✓/✗ | {{APPROVE_DATE}} | {{APPROVER}} |
 
 ---
 
@@ -239,9 +239,9 @@ ${清晰描述合规审查要验证的内容和预期产出}
 ### 6.3 审批意见
 ${审批意见和后续要求}
 
-**审批者**: ${LEGAL_COMPLIANCE_OFFICER}
-**审批时间**: ${APPROVE_DATE}
-**审批有效期**: ${VALID_UNTIL_DATE}
+**审批者**: {{LEGAL_COMPLIANCE_OFFICER}}
+**审批时间**: {{APPROVE_DATE}}
+**审批有效期**: {{VALID_UNTIL_DATE}}
 
 ---
 
@@ -256,8 +256,8 @@ ${沉淀到合规风险知识库的内容}
 ### 7.3 合规证书/报告
 | 证书/报告名称 | 颁发机构 | 有效期 | 位置 |
 |--------------|----------|--------|------|
-| ${证书 1} | ${机构} | ${有效期} | ${PATH} |
-| ${报告 1} | ${机构} | ${有效期} | ${PATH} |
+| ${证书 1} | ${机构} | ${有效期} | {{PATH}} |
+| ${报告 1} | ${机构} | ${有效期} | {{PATH}} |
 
 ---
 

@@ -21,7 +21,7 @@ import type {
   DashboardStats,
   Result,
 } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 // ES module compatibility
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -109,7 +109,7 @@ export class WebDashboardServer {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('SERVER_START_FAILED', `Failed to start web server: ${errorMessage}`),
+        error: new EketError(EketErrorCode.SERVER_START_FAILED, `Failed to start web server: ${errorMessage}`),
       };
     }
   }
@@ -216,6 +216,15 @@ export class WebDashboardServer {
     req: http.IncomingMessage,
     res: http.ServerResponse
   ): Promise<void> {
+    // Check if static directory exists; if not, skip static serving gracefully
+    if (!fs.existsSync(this.config.staticPath)) {
+      console.warn(`[WebServer] Static directory not found: ${this.config.staticPath}. Static serving disabled.`);
+      res.setHeader('Content-Type', 'text/plain');
+      res.writeHead(404);
+      res.end('Static files not available');
+      return;
+    }
+
     const url = req.url === '/' ? '/index.html' : req.url;
     if (!url) {
       res.writeHead(400);

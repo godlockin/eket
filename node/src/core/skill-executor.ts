@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import type { SkillDefinition, SkillExecutionResult, Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 import { execFileNoThrow, type ExecResult } from '../utils/execFileNoThrow.js';
 import { parseSimpleYAML } from '../utils/yaml-parser.js';
 
@@ -53,7 +53,7 @@ export class SkillExecutor {
       if (!skillFile) {
         return {
           success: false,
-          error: new EketError('SKILL_NOT_FOUND', `Skill "${skillName}" not found`),
+          error: new EketError(EketErrorCode.SKILL_NOT_FOUND, `Skill "${skillName}" not found`),
         };
       }
 
@@ -67,7 +67,7 @@ export class SkillExecutor {
       if (!skill) {
         return {
           success: false,
-          error: new EketError('INVALID_SKILL_FORMAT', `Invalid skill format: ${skillName}`),
+          error: new EketError(EketErrorCode.INVALID_SKILL_FORMAT, `Invalid skill format: ${skillName}`),
         };
       }
 
@@ -79,7 +79,7 @@ export class SkillExecutor {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('SKILL_LOAD_FAILED', `Failed to load skill: ${errorMessage}`),
+        error: new EketError(EketErrorCode.SKILL_LOAD_FAILED, `Failed to load skill: ${errorMessage}`),
       };
     }
   }

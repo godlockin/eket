@@ -14,7 +14,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import type { Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 import {
   SessionsWebSocket,
@@ -60,9 +60,11 @@ export interface QueuedMessage {
 export type MessageHandler = (message: QueuedMessage) => Promise<void>;
 
 /**
- * 连接级别（用于降级策略）
+ * WebSocket 连接级别（用于降级策略）
+ * 注意：与 types/index.ts 中的 ConnectionLevel（四级降级）语义不同，
+ * 此处仅适用于 WebSocket 消息队列自身的连接状态。
  */
-export type ConnectionLevel = 'websocket' | 'file_fallback' | 'offline';
+export type WebSocketConnectionLevel = 'websocket' | 'file_fallback' | 'offline';
 
 // ============================================================================
 // Constants
@@ -129,7 +131,7 @@ function isQueuedMessage(data: unknown): data is QueuedMessage {
 export class WebSocketMessageQueue {
   private config: WebSocketMessageQueueConfig;
   private webSocket: SessionsWebSocket | null = null;
-  private connectionLevel: ConnectionLevel = 'offline';
+  private connectionLevel: WebSocketConnectionLevel = 'offline';
   private messageHandlers: Map<string, MessageHandler[]> = new Map();
   private pendingMessages: QueuedMessage[] = [];
   private isProcessing = false;
@@ -144,7 +146,7 @@ export class WebSocketMessageQueue {
   /**
    * 获取当前连接级别
    */
-  getConnectionLevel(): ConnectionLevel {
+  getConnectionLevel(): WebSocketConnectionLevel {
     return this.connectionLevel;
   }
 
@@ -188,7 +190,7 @@ export class WebSocketMessageQueue {
     this.connectionLevel = 'offline';
     return {
       success: false,
-      error: new EketError('MESSAGE_QUEUE_OFFLINE', 'No available connection method'),
+      error: new EketError(EketErrorCode.MESSAGE_QUEUE_OFFLINE, 'No available connection method'),
     };
   }
 
@@ -301,7 +303,7 @@ export class WebSocketMessageQueue {
     this.pendingMessages.push(queuedMessage);
     return {
       success: false,
-      error: new EketError('MESSAGE_QUEUE_OFFLINE', 'Message queued for later delivery'),
+      error: new EketError(EketErrorCode.MESSAGE_QUEUE_OFFLINE, 'Message queued for later delivery'),
     };
   }
 
@@ -312,7 +314,7 @@ export class WebSocketMessageQueue {
     if (!this.webSocket) {
       return {
         success: false,
-        error: new EketError('WEBSOCKET_NOT_AVAILABLE', 'WebSocket not available'),
+        error: new EketError(EketErrorCode.WEBSOCKET_NOT_AVAILABLE, 'WebSocket not available'),
       };
     }
 
@@ -346,7 +348,7 @@ export class WebSocketMessageQueue {
         error instanceof Error ? { message: error.message, stack: error.stack } : undefined;
       return {
         success: false,
-        error: new EketError('FILE_QUEUE_WRITE_FAILED', errorMessage, errorContext),
+        error: new EketError(EketErrorCode.FILE_QUEUE_WRITE_FAILED, errorMessage, errorContext),
       };
     }
   }
@@ -412,7 +414,7 @@ export class WebSocketMessageQueue {
    * 获取统计信息
    */
   getStats(): {
-    connectionLevel: ConnectionLevel;
+    connectionLevel: WebSocketConnectionLevel;
     pendingMessages: number;
     isProcessing: boolean;
     handlerCount: number;

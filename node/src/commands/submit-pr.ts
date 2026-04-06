@@ -9,7 +9,7 @@ import * as path from 'path';
 import { Command } from 'commander';
 
 import type { Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 import { parseSimpleYAML } from '../utils/yaml-parser.js';
@@ -168,7 +168,7 @@ async function getBranchInfo(projectRoot: string): Promise<Result<BranchInfo>> {
     });
 
     if (branchResult.status !== 0) {
-      return { success: false, error: new EketError('GIT_BRANCH_FAILED', '无法获取当前分支') };
+      return { success: false, error: new EketError(EketErrorCode.GIT_BRANCH_FAILED, '无法获取当前分支') };
     }
 
     const currentBranch = branchResult.stdout.trim();
@@ -197,7 +197,7 @@ async function getBranchInfo(projectRoot: string): Promise<Result<BranchInfo>> {
       },
     };
   } catch {
-    return { success: false, error: new EketError('GIT_BRANCH_FAILED', '获取分支信息失败') };
+    return { success: false, error: new EketError(EketErrorCode.GIT_BRANCH_FAILED, '获取分支信息失败') };
   }
 }
 
@@ -214,11 +214,11 @@ async function pushBranch(projectRoot: string, branch: string): Promise<Result<v
     } else {
       return {
         success: false,
-        error: new EketError('GIT_PUSH_FAILED', `推送失败：${result.stderr}`),
+        error: new EketError(EketErrorCode.GIT_PUSH_FAILED, `推送失败：${result.stderr}`),
       };
     }
   } catch {
-    return { success: false, error: new EketError('GIT_PUSH_FAILED', '推送异常') };
+    return { success: false, error: new EketError(EketErrorCode.GIT_PUSH_FAILED, '推送异常') };
   }
 }
 
@@ -230,17 +230,17 @@ async function getPRConfig(config: Record<string, unknown>): Promise<Result<PRCo
     // 从 code_repo URL 解析
     const repos = config.repositories as Record<string, unknown> | undefined;
     if (!repos) {
-      return { success: false, error: new EketError('CONFIG_ERROR', '未配置 repositories') };
+      return { success: false, error: new EketError(EketErrorCode.CONFIG_ERROR, '未配置 repositories') };
     }
 
     const codeRepo = repos.code_repo as Record<string, unknown> | undefined;
     if (!codeRepo) {
-      return { success: false, error: new EketError('CONFIG_ERROR', '未配置 code_repo') };
+      return { success: false, error: new EketError(EketErrorCode.CONFIG_ERROR, '未配置 code_repo') };
     }
 
     const url = codeRepo.url as string;
     if (!url) {
-      return { success: false, error: new EketError('CONFIG_ERROR', '未配置 code_repo.url') };
+      return { success: false, error: new EketError(EketErrorCode.CONFIG_ERROR, '未配置 code_repo.url') };
     }
 
     // 解析 URL
@@ -274,7 +274,7 @@ async function getPRConfig(config: Record<string, unknown>): Promise<Result<PRCo
     if (!owner || !repo) {
       return {
         success: false,
-        error: new EketError('URL_PARSE_ERROR', '无法从 URL 解析 owner/repo'),
+        error: new EketError(EketErrorCode.URL_PARSE_ERROR, '无法从 URL 解析 owner/repo'),
       };
     }
 
@@ -289,7 +289,7 @@ async function getPRConfig(config: Record<string, unknown>): Promise<Result<PRCo
       },
     };
   } catch {
-    return { success: false, error: new EketError('CONFIG_ERROR', '解析 PR 配置失败') };
+    return { success: false, error: new EketError(EketErrorCode.CONFIG_ERROR, '解析 PR 配置失败') };
   }
 }
 
@@ -325,7 +325,7 @@ async function createPR(
   const { platform, owner, repo, apiToken, baseUrl } = config;
 
   if (!apiToken) {
-    return { success: false, error: new EketError('CONFIG_ERROR', '未配置 API Token') };
+    return { success: false, error: new EketError(EketErrorCode.CONFIG_ERROR, '未配置 API Token') };
   }
 
   let apiUrl: string;
@@ -377,7 +377,7 @@ async function createPR(
     default:
       return {
         success: false,
-        error: new EketError('UNSUPPORTED_PLATFORM', `不支持的平台：${platform}`),
+        error: new EketError(EketErrorCode.UNSUPPORTED_PLATFORM, `不支持的平台：${platform}`),
       };
   }
 
@@ -397,7 +397,7 @@ async function createPR(
     if (result.status !== 0) {
       return {
         success: false,
-        error: new EketError('PR_CREATE_FAILED', `创建 PR 失败：${result.stderr}`),
+        error: new EketError(EketErrorCode.PR_CREATE_FAILED, `创建 PR 失败：${result.stderr}`),
       };
     }
 
@@ -412,7 +412,7 @@ async function createPR(
       },
     };
   } catch {
-    return { success: false, error: new EketError('PR_CREATE_FAILED', '创建 PR 异常') };
+    return { success: false, error: new EketError(EketErrorCode.PR_CREATE_FAILED, '创建 PR 异常') };
   }
 }
 

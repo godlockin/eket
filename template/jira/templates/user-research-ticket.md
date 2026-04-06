@@ -1,12 +1,12 @@
-# User Research Ticket: USER-RES-${SEQUENCE_NUMBER} - ${RESEARCH_TITLE}
+# User Research Ticket: USER-RES-{{SEQUENCE_NUMBER}} - {{RESEARCH_TITLE}}
 
-**创建时间**: ${CREATE_DATE}
+**创建时间**: {{CREATE_DATE}}
 **创建者**: Master Agent / Product Owner
 **优先级**: P0 | P1 | P2 | P3
 **状态**: backlog
-**标签**: `research`, `user`, `${RESEARCH_TYPE}`
-**关联 PRD**: PRD-${SEQUENCE_NUMBER}
-**关联 Epic**: ${EPIC_ID}
+**标签**: `research`, `user`, `{{RESEARCH_TYPE}}`
+**关联 PRD**: PRD-{{SEQUENCE_NUMBER}}
+**关联 Epic**: {{EPIC_ID}}
 **分配给**: null
 
 ---
@@ -52,12 +52,12 @@ external: []  # 外部依赖（如：用户招募、第三方调研）
 
 | 时间 | 状态变更 | 操作者 | 备注 |
 |------|----------|--------|------|
-| ${CREATE_DATE} | backlog → ready | Master | 初始创建 |
-| ${CLAIM_DATE} | ready → in_progress | ${Slaver_ID} | **已领取** |
-| ${PLAN_DATE} | in_progress → planning | ${Slaver_ID} | 调研方案完成 |
-| ${EXECUTE_DATE} | planning → analyzing | ${Slaver_ID} | 调研执行完成 |
-| ${ANALYSIS_DATE} | analyzing → report | ${Slaver_ID} | 数据分析完成 |
-| ${REVIEW_DATE} | report → done | Master | 报告批准 |
+| {{CREATE_DATE}} | backlog → ready | Master | 初始创建 |
+| {{CLAIM_DATE}} | ready → in_progress | ${Slaver_ID} | **已领取** |
+| {{PLAN_DATE}} | in_progress → planning | ${Slaver_ID} | 调研方案完成 |
+| {{EXECUTE_DATE}} | planning → analyzing | ${Slaver_ID} | 调研执行完成 |
+| {{ANALYSIS_DATE}} | analyzing → report | ${Slaver_ID} | 数据分析完成 |
+| {{REVIEW_DATE}} | report → done | Master | 报告批准 |
 
 ---
 
@@ -84,8 +84,8 @@ ${清晰描述调研要解决的问题和预期产出}
 ### 2.4 目标用户
 | 用户类型 | 特征描述 | 招募数量 | 筛选条件 |
 |----------|----------|----------|----------|
-| ${类型 1} | ${特征} | ${N}人 | ${条件} |
-| ${类型 2} | ${特征} | ${N}人 | ${条件} |
+| ${类型 1} | ${特征} | {{N}}人 | ${条件} |
+| ${类型 2} | ${特征} | {{N}}人 | ${条件} |
 
 ---
 
@@ -94,7 +94,7 @@ ${清晰描述调研要解决的问题和预期产出}
 ### 3.1 调研方法
 ```
 调研方法说明：
-- 访谈时长：${X}分钟/人
+- 访谈时长：{{X}}分钟/人
 - 访谈方式：线上/线下
 - 记录方式：录音/录像/笔记
 ```
@@ -121,19 +121,19 @@ ${清晰描述调研要解决的问题和预期产出}
 ### 3.3 问卷设计（如适用）
 | 问题类型 | 问题数量 | 预计时长 |
 |----------|----------|----------|
-| 筛选题 | ${N}题 | ${X}分钟 |
-| 基本信息 | ${N}题 | ${X}分钟 |
-| 核心问题 | ${N}题 | ${X}分钟 |
-| 开放问题 | ${N}题 | ${X}分钟 |
+| 筛选题 | {{N}}题 | {{X}}分钟 |
+| 基本信息 | {{N}}题 | {{X}}分钟 |
+| 核心问题 | {{N}}题 | {{X}}分钟 |
+| 开放问题 | {{N}}题 | {{X}}分钟 |
 
 ### 3.4 时间安排
 | 阶段 | 时间 | 负责人 |
 |------|------|--------|
-| 方案设计 | ${DATE} | ${OWNER} |
-| 用户招募 | ${DATE} | ${OWNER} |
-| 调研执行 | ${DATE} | ${OWNER} |
-| 数据分析 | ${DATE} | ${OWNER} |
-| 报告撰写 | ${DATE} | ${OWNER} |
+| 方案设计 | {{DATE}} | {{OWNER}} |
+| 用户招募 | {{DATE}} | {{OWNER}} |
+| 调研执行 | {{DATE}} | {{OWNER}} |
+| 数据分析 | {{DATE}} | {{OWNER}} |
+| 报告撰写 | {{DATE}} | {{OWNER}} |
 
 ---
 
@@ -141,8 +141,8 @@ ${清晰描述调研要解决的问题和预期产出}
 
 ### 4.1 领取信息
 - **领取者**: ${Slaver_ID}
-- **领取时间**: ${CLAIM_DATE}
-- **预计工时**: ${ESTIMATED_HOURS}h
+- **领取时间**: {{CLAIM_DATE}}
+- **预计工时**: {{ESTIMATED_HOURS}}h
 - **状态已更新**: [ ] 是
 
 ### 4.2 必需执行流程
@@ -154,12 +154,12 @@ ${清晰描述调研要解决的问题和预期产出}
 
 #### 步骤 2: 用户招募
 - [ ] 已确定招募渠道
-- [ ] 已招募 ${N} 名用户
+- [ ] 已招募 {{N}} 名用户
 - [ ] 已安排调研时间
 - [ ] 已更新状态：`in_progress` → `planning`
 
 #### 步骤 3: 调研执行
-- [ ] 已完成 ${N} 场访谈/回收 ${N} 份问卷
+- [ ] 已完成 {{N}} 场访谈/回收 {{N}} 份问卷
 - [ ] 已整理原始数据
 - [ ] 已更新状态：`planning` → `analyzing`
 
@@ -170,25 +170,25 @@ ${清晰描述调研要解决的问题和预期产出}
 
 #### 步骤 5: 报告撰写
 - [ ] 已完成调研报告
-- [ ] 报告位置：`${REPORT_PATH}`
+- [ ] 报告位置：`{{REPORT_PATH}}`
 - [ ] 已更新状态：`report` → `done`
 
 ### 4.3 执行状态
 | 阶段 | 状态 | 完成时间 | 备注 |
 |------|------|----------|------|
-| 调研准备 | ✓/✗ | ${PLAN_DATE} | - |
-| 用户招募 | ✓/✗ | ${RECRUIT_DATE} | ${N}人 |
-| 调研执行 | ✓/✗ | ${EXECUTE_DATE} | ${N}场/${N}份 |
-| 数据分析 | ✓/✗ | ${ANALYSIS_DATE} | - |
-| 报告撰写 | ✓/✗ | ${REPORT_DATE} | - |
+| 调研准备 | ✓/✗ | {{PLAN_DATE}} | - |
+| 用户招募 | ✓/✗ | {{RECRUIT_DATE}} | {{N}}人 |
+| 调研执行 | ✓/✗ | {{EXECUTE_DATE}} | {{N}}场/{{N}}份 |
+| 数据分析 | ✓/✗ | {{ANALYSIS_DATE}} | - |
+| 报告撰写 | ✓/✗ | {{REPORT_DATE}} | - |
 
 ### 4.4 调研数据
 | 数据类型 | 数量 | 质量 |
 |----------|------|------|
-| 访谈记录 | ${N}份 | 完整/部分 |
-| 问卷回收 | ${N}份 | 有效${N}份 |
-| 录音/录像 | ${N}份 | - |
-| 笔记 | ${N}份 | - |
+| 访谈记录 | {{N}}份 | 完整/部分 |
+| 问卷回收 | {{N}}份 | 有效{{N}}份 |
+| 录音/录像 | {{N}}份 | - |
+| 笔记 | {{N}}份 | - |
 
 ---
 
@@ -235,8 +235,8 @@ ${清晰描述调研要解决的问题和预期产出}
 - [ ] **需要补充** - 见补充意见
 - [ ] **拒绝** - ${原因}
 
-**验证者**: ${REVIEWER_ID}
-**验证时间**: ${REVIEW_DATE}
+**验证者**: {{REVIEWER_ID}}
+**验证时间**: {{REVIEW_DATE}}
 
 ---
 

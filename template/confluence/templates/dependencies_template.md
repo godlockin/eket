@@ -1,6 +1,6 @@
 # 系统依赖定义 (Dependencies)
 
-**版本**: 1.0.0
+**版本**: v2.0.0
 **最后更新**: YYYY-MM-DD
 
 ---
@@ -34,8 +34,8 @@ storage:
   provider: aws_s3  # or aliyun_oss
   bucket: your-bucket-name
   region: us-east-1
-  access_key: ${AWS_ACCESS_KEY}
-  secret_key: ${AWS_SECRET_KEY}
+  access_key: {{AWS_ACCESS_KEY}}
+  secret_key: {{AWS_SECRET_KEY}}
 ```
 
 #### 1.2 AI 推理服务
@@ -56,7 +56,7 @@ storage:
 ai:
   provider: external_api  # or self_hosted
   endpoint: https://api.example.com/inference
-  api_key: ${AI_API_KEY}
+  api_key: {{AI_API_KEY}}
   timeout: 30s
   retry: 3
 ```
@@ -136,11 +136,11 @@ ai:
 **连接配置**:
 ```yaml
 database:
-  host: ${DB_HOST}
+  host: {{DB_HOST}}
   port: 5432
-  name: ${DB_NAME}
-  user: ${DB_USER}
-  password: ${DB_PASSWORD}
+  name: {{DB_NAME}}
+  user: {{DB_USER}}
+  password: {{DB_PASSWORD}}
   ssl: true
 ```
 

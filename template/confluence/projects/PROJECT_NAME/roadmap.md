@@ -1,9 +1,9 @@
-# ${PROJECT_NAME} 产品路线图
+# {{PROJECT_NAME}} 产品路线图
 
-**版本**: 1.0.0
-**创建时间**: ${CREATE_DATE}
-**最后更新**: ${UPDATE_DATE}
-**负责人**: ${OWNER}
+**版本**: v2.0.0
+**创建时间**: {{CREATE_DATE}}
+**最后更新**: {{UPDATE_DATE}}
+**负责人**: {{OWNER}}
 
 ---
 
@@ -195,8 +195,8 @@
 
 | 版本 | 日期 | 变更内容 | 作者 |
 |------|------|----------|------|
-| 1.0.0 | ${CREATE_DATE} | 初始版本 | ${OWNER} |
-| | ${UPDATE_DATE} | [变更说明] | |
+| 1.0.0 | {{CREATE_DATE}} | 初始版本 | {{OWNER}} |
+| | {{UPDATE_DATE}} | [变更说明] | |
 
 ---
 
@@ -212,4 +212,4 @@
 
 **文档维护**: 本 Roadmap 由项目负责人维护，每季度 Review 一次
 
-**最后更新**: ${UPDATE_DATE}
+**最后更新**: {{UPDATE_DATE}}

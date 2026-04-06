@@ -27,7 +27,7 @@ import {
   POOL_ACQUIRE_TIMEOUT,
 } from '../constants.js';
 import type { Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 import { RedisClient, createRedisClient } from './redis-client.js';
 
@@ -708,7 +708,7 @@ export class RedisConnectionPool {
     } catch (err) {
       return {
         success: false,
-        error: new EketError('REDIS_POOL_INIT_FAILED', `Failed to initialize pool: ${err}`),
+        error: new EketError(EketErrorCode.REDIS_POOL_INIT_FAILED, `Failed to initialize pool: ${err}`),
       };
     }
   }

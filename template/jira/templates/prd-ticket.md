@@ -1,11 +1,11 @@
-# PRD Ticket: PRD-${SEQUENCE_NUMBER} - ${PRD_TITLE}
+# PRD Ticket: PRD-{{SEQUENCE_NUMBER}} - {{PRD_TITLE}}
 
-**创建时间**: ${CREATE_DATE}
+**创建时间**: {{CREATE_DATE}}
 **创建者**: Master Agent / Product Owner
 **优先级**: P0 | P1 | P2 | P3
 **状态**: backlog
-**标签**: `product`, `requirements`, `${PRODUCT_AREA}`
-**关联 Epic**: ${EPIC_ID}
+**标签**: `product`, `requirements`, `{{PRODUCT_AREA}}`
+**关联 Epic**: {{EPIC_ID}}
 **分配给**: null
 
 ---
@@ -51,11 +51,11 @@ external: []  # 外部依赖（如：市场调研数据）
 
 | 时间 | 状态变更 | 操作者 | 备注 |
 |------|----------|--------|------|
-| ${CREATE_DATE} | backlog → analysis | Master | 初始创建 |
-| ${RESEARCH_DATE} | analysis → drafting | Master | 用户调研完成 |
-| ${DRAFT_DATE} | drafting → review | Master | PRD 初稿完成 |
-| ${APPROVE_DATE} | review → approved | Product Owner | PRD 批准 |
-| ${HANDOFF_DATE} | approved → done | Master | 已移交技术团队 |
+| {{CREATE_DATE}} | backlog → analysis | Master | 初始创建 |
+| {{RESEARCH_DATE}} | analysis → drafting | Master | 用户调研完成 |
+| {{DRAFT_DATE}} | drafting → review | Master | PRD 初稿完成 |
+| {{APPROVE_DATE}} | review → approved | Product Owner | PRD 批准 |
+| {{HANDOFF_DATE}} | approved → done | Master | 已移交技术团队 |
 
 > **重要**: 产品需求需要人类 Product Owner 批准后才能进入开发流程！
 
@@ -171,8 +171,8 @@ ${详细功能描述}
 
 ### 6.1 领取信息
 - **领取者**: ${Slaver_ID}
-- **领取时间**: ${CLAIM_DATE}
-- **预计工时**: ${ESTIMATED_HOURS}h
+- **领取时间**: {{CLAIM_DATE}}
+- **预计工时**: {{ESTIMATED_HOURS}}h
 - **状态已更新**: [ ] 是
 
 ### 6.2 必需执行流程
@@ -184,7 +184,7 @@ ${详细功能描述}
 
 #### 步骤 2: PRD 撰写
 - [ ] 已完成 PRD 初稿
-- [ ] PRD 位置：`${PRD_DOC_PATH}`
+- [ ] PRD 位置：`{{PRD_DOC_PATH}}`
 - [ ] 已更新状态：`drafting` → `review`
 
 #### 步骤 3: Review 流程
@@ -194,7 +194,7 @@ ${详细功能描述}
 
 #### 步骤 4: 人类批准
 - [ ] Product Owner 已批准
-- [ ] 批准时间：${APPROVE_DATE}
+- [ ] 批准时间：{{APPROVE_DATE}}
 - [ ] 已更新状态：`review` → `approved`
 
 #### 步骤 5: 技术交接
@@ -205,11 +205,11 @@ ${详细功能描述}
 ### 6.3 执行状态
 | 阶段 | 状态 | 完成时间 | 备注 |
 |------|------|----------|------|
-| 用户调研 | ✓/✗ | ${RESEARCH_DATE} | - |
-| PRD 撰写 | ✓/✗ | ${DRAFT_DATE} | - |
-| Review | ✓/✗ | ${REVIEW_DATE} | - |
-| 人类批准 | ✓/✗ | ${APPROVE_DATE} | PO: ${PO_NAME} |
-| 技术交接 | ✓/✗ | ${HANDOFF_DATE} | - |
+| 用户调研 | ✓/✗ | {{RESEARCH_DATE}} | - |
+| PRD 撰写 | ✓/✗ | {{DRAFT_DATE}} | - |
+| Review | ✓/✗ | {{REVIEW_DATE}} | - |
+| 人类批准 | ✓/✗ | {{APPROVE_DATE}} | PO: {{PO_NAME}} |
+| 技术交接 | ✓/✗ | {{HANDOFF_DATE}} | - |
 
 ---
 
@@ -224,8 +224,8 @@ ${批准意见和注意事项}
 - [ ] **暂缓** - ${原因}
 - [ ] **拒绝** - ${原因}
 
-**批准者**: ${PRODUCT_OWNER}
-**批准时间**: ${APPROVE_DATE}
+**批准者**: {{PRODUCT_OWNER}}
+**批准时间**: {{APPROVE_DATE}}
 
 ---
 

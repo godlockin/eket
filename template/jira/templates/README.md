@@ -1,7 +1,7 @@
 # Jira Ticket 模板使用规范
 
-**版本**: 1.1
-**更新时间**: 2026-03-28
+**版本**: v2.0.0
+**更新时间**: 2026-04-06
 
 ---
 
@@ -24,18 +24,18 @@
 
 | Ticket 类型 | 编号前缀 | 编号格式 | 示例 |
 |------------|---------|---------|------|
-| 功能需求卡 | `FEAT` | `FEAT-${SEQ}` | `FEAT-001` |
-| 任务卡 | `TASK` | `TASK-${SEQ}` | `TASK-001` |
-| 缺陷修复卡 | `FIX` | `FIX-${SEQ}` | `FIX-001` |
-| 测试卡 | `TEST` | `TEST-${SEQ}` | `TEST-001` |
-| 产品需求卡 | `PRD` | `PRD-${SEQ}` | `PRD-001` |
-| UI/UX设计卡 | `U-DESIGN` | `U-DESIGN-${SEQ}` | `U-DESIGN-001` |
-| 技术设计卡 | `T-DESIGN` | `T-DESIGN-${SEQ}` | `T-DESIGN-001` |
-| 部署卡 | `DEPL` | `DEPL-${SEQ}` | `DEPL-001` |
-| 文档卡 | `DOC` | `DOC-${SEQ}` | `DOC-001` |
-| 用户调研卡 | `USER-RES` | `USER-RES-${SEQ}` | `USER-RES-001` |
-| 数据分析卡 | `DATA-ANALYSIS` | `DATA-ANALYSIS-${SEQ}` | `DATA-ANALYSIS-001` |
-| 合规审查卡 | `COMPLIANCE` | `COMPLIANCE-${SEQ}` | `COMPLIANCE-001` |
+| 功能需求卡 | `FEAT` | `FEAT-{{SEQ}}` | `FEAT-001` |
+| 任务卡 | `TASK` | `TASK-{{SEQ}}` | `TASK-001` |
+| 缺陷修复卡 | `FIX` | `FIX-{{SEQ}}` | `FIX-001` |
+| 测试卡 | `TEST` | `TEST-{{SEQ}}` | `TEST-001` |
+| 产品需求卡 | `PRD` | `PRD-{{SEQ}}` | `PRD-001` |
+| UI/UX设计卡 | `U-DESIGN` | `U-DESIGN-{{SEQ}}` | `U-DESIGN-001` |
+| 技术设计卡 | `T-DESIGN` | `T-DESIGN-{{SEQ}}` | `T-DESIGN-001` |
+| 部署卡 | `DEPL` | `DEPL-{{SEQ}}` | `DEPL-001` |
+| 文档卡 | `DOC` | `DOC-{{SEQ}}` | `DOC-001` |
+| 用户调研卡 | `USER-RES` | `USER-RES-{{SEQ}}` | `USER-RES-001` |
+| 数据分析卡 | `DATA-ANALYSIS` | `DATA-ANALYSIS-{{SEQ}}` | `DATA-ANALYSIS-001` |
+| 合规审查卡 | `COMPLIANCE` | `COMPLIANCE-{{SEQ}}` | `COMPLIANCE-001` |
 
 ### 2.2 模板列表
 

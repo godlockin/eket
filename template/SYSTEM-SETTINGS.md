@@ -1,11 +1,11 @@
-# ${PROJECT_NAME} 系统设定文档
+# {{PROJECT_NAME}} 系统设定文档
 
-> **说明**: 本文档是 EKET 框架新项目的系统设定模板。请根据实际项目情况替换所有 `${VARIABLE}` 占位符，并删改不适用的章节。
+> **说明**: 本文档是 EKET 框架新项目的系统设定模板。请根据实际项目情况替换所有 `{{VARIABLE}}` 占位符，并删改不适用的章节。
 
-**版本**: 0.6.2
-**创建时间**: ${CREATE_DATE}
-**项目**: ${PROJECT_NAME}
-**维护者**: ${MAINTAINER}
+**版本**: v2.0.0
+**创建时间**: {{CREATE_DATE}}
+**项目**: {{PROJECT_NAME}}
+**维护者**: {{MAINTAINER}}
 
 ---
 
@@ -13,15 +13,15 @@
 
 ### 1.1 项目简介
 
-${PROJECT_NAME} 是一个基于 EKET Agent Framework 的 AI 驱动项目。
+{{PROJECT_NAME}} 是一个基于 EKET Agent Framework 的 AI 驱动项目。
 
 **项目愿景**:
-> ${填写项目愿景，例如：通过 AI 技术解决 XX 问题，为用户提供 XX 价值}
+> {{填写项目愿景，例如：通过 AI 技术解决 XX 问题，为用户提供 XX 价值}}
 
 **核心功能**:
-- ${功能 1}
-- ${功能 2}
-- ${功能 3}
+- {{功能 1}}
+- {{功能 2}}
+- {{功能 3}}
 
 ### 1.2 EKET 框架集成
 
@@ -54,7 +54,7 @@ ${PROJECT_NAME} 是一个基于 EKET Agent Framework 的 AI 驱动项目。
 本项目采用 EKET "三合一"项目结构：
 
 ```
-${PROJECT_NAME}/                      # 统一项目目录
+{{PROJECT_NAME}}/                      # 统一项目目录
 ├── .git/                         # 主仓库 Git 元数据
 ├── .gitmodules                   # Submodule 配置（如使用）
 │
@@ -64,7 +64,7 @@ ${PROJECT_NAME}/                      # 统一项目目录
 │   │   ├── best-practices/       # 最佳实践
 │   │   └── lessons-learned/      # 经验总结
 │   ├── projects/                 # 项目文档
-│   │   └── ${PROJECT_NAME}/      # 当前项目
+│   │   └── {{PROJECT_NAME}}/      # 当前项目
 │   │       ├── requirements/     # 需求文档
 │   │       ├── design/           # 设计文档（含分析报告）
 │   │       └── meetings/         # 会议记录
@@ -82,8 +82,8 @@ ${PROJECT_NAME}/                      # 统一项目目录
 ├── code_repo/                    # 代码仓库
 │   ├── .git/                     # 独立 Git 仓库
 │   ├── src/                      # 源代码
-│   │   ├── ${MODULE1}/          # 模块 1
-│   │   ├── ${MODULE2}/          # 模块 2
+│   │   ├── {{MODULE1}}/          # 模块 1
+│   │   ├── {{MODULE2}}/          # 模块 2
 │   │   └── utils/               # 工具函数
 │   ├── tests/                    # 测试代码
 │   │   ├── unit/                 # 单元测试
@@ -117,6 +117,26 @@ ${PROJECT_NAME}/                      # 统一项目目录
 │   │   ├── inbox/                # 接收消息
 │   │   └── outbox/               # 发送消息
 │   └── .state/                   # 共享状态
+│
+├── inbox/                        # 人类输入区
+│   ├── human_input.md            # 人类需求输入
+│   ├── human_feedback/           # Review 反馈
+│   └── dependency-clarification.md  # 依赖追问（可选）
+│
+├── outbox/                       # Agent 输出区
+│   ├── README.md                 # 输出箱说明
+│   ├── tasks/                    # 任务相关输出
+│   │   ├── README.md             # 任务输出说明
+│   │   └── <ticket-id>/          # 每个任务的输出
+│   │       ├── analysis-report.md   # 分析报告
+│   │       ├── pr-request.md        # PR 请求
+│   │       ├── completion-notice.md # 完成通知
+│   │       └── blocker-report.md    # 阻塞报告
+│   ├── review_requests/          # Review 请求（遗留兼容）
+│   └── messages/                 # 跨实例消息
+│
+├── agents/                       # Agent Profile（可选）
+│   └── <agent-type>/             # 各角色 Agent 配置
 │
 ├── scripts/                      # 工具脚本
 │   ├── init-project.sh           # 项目初始化
@@ -155,22 +175,22 @@ ${PROJECT_NAME}/                      # 统一项目目录
 
 | 组件 | 版本要求 | 用途 |
 |------|----------|------|
-| ${RUNTIME_NAME} | >= ${RUNTIME_VERSION} | 运行时环境（如：Python 3.11+, Node.js 20+, Java 17+） |
+| {{RUNTIME_NAME}} | >= {{RUNTIME_VERSION}} | 运行时环境（如：Python 3.11+, Node.js 20+, Java 17+） |
 | Git | >= 2.30 | 版本控制 |
-| ${PACKAGE_MANAGER} | >= ${PM_VERSION} | 包管理（如：pip, npm, maven） |
+| {{PACKAGE_MANAGER}} | >= {{PM_VERSION}} | 包管理（如：pip, npm, maven） |
 | Docker | >= 24.0 (可选) | 容器化部署 |
 
 #### 技术栈
 
-**核心依赖** (`code_repo/${DEPENDENCY_FILE}`):
+**核心依赖** (`code_repo/{{DEPENDENCY_FILE}}`):
 
-```${DEPENDENCY_FORMAT}
-# ${DEPENDENCY_SECTION_1}
-${DEPENDENCY_1}>=${VERSION_1}
-${DEPENDENCY_2}>=${VERSION_2}
+```{{DEPENDENCY_FORMAT}}
+# {{DEPENDENCY_SECTION_1}}
+{{DEPENDENCY_1}}>=={{VERSION_1}}
+{{DEPENDENCY_2}}>=={{VERSION_2}}
 
-# ${DEPENDENCY_SECTION_2}
-${DEPENDENCY_3}>=${VERSION_3}
+# {{DEPENDENCY_SECTION_2}}
+{{DEPENDENCY_3}}>=={{VERSION_3}}
 ```
 
 > **提示**: 请根据项目实际使用的技术栈替换以上内容。例如：
@@ -229,6 +249,17 @@ Master 节点是系统的核心协调者，负责：
 - 任务优先级维护
 - 超时 Slaver 和 Worktree 清理
 
+### 审批触发机制
+
+Master 在以下情况需要主动审批：
+1. **分析报告审批**：Slaver 提交分析报告后（ticket 状态变为 `analysis_review`），Master 需在 30 分钟内审查
+2. **PR 审批**：Slaver 提交 PR 后（ticket 状态变为 `review`），Master 需在 60 分钟内审查
+3. **超时处理**：若 Master 未在规定时间响应，Slaver 可重新提醒或上报人类
+
+**自动触发条件**（通过消息队列）：
+- 状态文件 `jira/tickets/<id>/status.yml` 中 `status` 变为 `analysis_review` 或 `review`
+- Master 收到 `pr_review_request` 或 `analysis_review_request` 消息类型
+
 ### 4.2 Master 启动命令
 
 ```bash
@@ -266,9 +297,9 @@ code_repo/.eket_master_marker
 
 | 角色 | 职责 | 处理任务标签 | 专业领域 |
 |------|------|-------------|----------|
-| `${ROLE_1}` | ${职责描述 1} | `${TAGS_1}` | ${EXPERTISE_1} |
-| `${ROLE_2}` | ${职责描述 2} | `${TAGS_2}` | ${EXPERTISE_2} |
-| `${ROLE_3}` | ${职责描述 3} | `${TAGS_3}` | ${EXPERTISE_3} |
+| `{{ROLE_1}}` | {{职责描述 1}} | `{{TAGS_1}}` | {{EXPERTISE_1}} |
+| `{{ROLE_2}}` | {{职责描述 2}} | `{{TAGS_2}}` | {{EXPERTISE_2}} |
+| `{{ROLE_3}}` | {{职责描述 3}} | `{{TAGS_3}}` | {{EXPERTISE_3}} |
 
 #### 示例角色（仅供参考）
 
@@ -306,19 +337,19 @@ code_repo/.eket_master_marker
 
 ```yaml
 role: "slaver"
-agent_type: "${YOUR_ROLE}"  # 根据项目需要定义
+agent_type: "{{YOUR_ROLE}}"  # 根据项目需要定义
 status: "ready"
 auto_mode: false
 
 # 专家 Agent 特定配置
 expert_config:
-  domain: "${EXPERTISE_DOMAIN}"
+  domain: "{{EXPERTISE_DOMAIN}}"
   skills:
-    - ${SKILL_1}
-    - ${SKILL_2}
+    - {{SKILL_1}}
+    - {{SKILL_2}}
   tools:
-    - ${TOOL_1}
-    - ${TOOL_2}
+    - {{TOOL_1}}
+    - {{TOOL_2}}
 ```
 
 ### 5.3 Slaver 启动命令
@@ -357,7 +388,7 @@ expert_config:
 6. Master 审查分析报告 → 通过/驳回/需升级
    │
    ▼
-7. 执行任务 → ${EXECUTION_STEP_1} → ${EXECUTION_STEP_2} → 迭代优化
+7. 执行任务 → {{EXECUTION_STEP_1}} → {{EXECUTION_STEP_2}} → 迭代优化
    │
    ▼
 8. 提交成果 PR → feature/{task-id} 分支
@@ -506,6 +537,19 @@ done ←── review ←── [执行状态] ←──────────
 |------|------|------|--------|
 | **重要性** | enum | 业务重要性级别 | `critical`, `high`, `medium`, `low` |
 | **优先级** | enum | 处理优先级 | `P0`, `P1`, `P2`, `P3` |
+
+#### 任务优先级体系（P0-P3）
+
+系统使用统一的四级优先级体系，Slaver 自动领取任务时按此顺序排序：
+
+| 优先级 | 名称 | 典型场景 | 响应要求 |
+|--------|------|----------|----------|
+| **P0** | 紧急（Urgent） | 生产故障、安全漏洞、系统不可用 | 立即处理，优先于一切 |
+| **P1** | 高（High） | 重要功能、里程碑阻塞、关键缺陷 | 当日内开始处理 |
+| **P2** | 中（Medium） | 常规功能开发、一般优化 | 当前 Sprint 内处理 |
+| **P3** | 低（Low） | 优化改进、文档、技术债 | 有空时处理 |
+
+> **排序规则**: P0 > P1 > P2 > P3，Slaver 自动模式下始终领取当前最高优先级的 `ready` 任务。
 | **背景** | text | 任务背景和业务价值 | 描述文字 |
 | **依赖关系** | object | 任务依赖配置 | 见下方 YAML 示例 |
 | **标签** | array | 任务分类标签 | `frontend`, `backend`, `api` |
@@ -622,7 +666,7 @@ task_types:
 | 缺陷修复 | `bugfix/{task-id}-{short-desc}` | `bugfix/BUG-001-login-error` |
 | 紧急修复 | `hotfix/{task-id}-{short-desc}` | `hotfix/HOTFIX-001-security` |
 | 文档更新 | `docs/{task-id}-{short-desc}` | `docs/DOC-001-api-guide` |
-| ${CUSTOM_BRANCH_TYPE} | `${CUSTOM_BRANCH_FORMAT}` | `${CUSTOM_BRANCH_EXAMPLE}` |
+| {{CUSTOM_BRANCH_TYPE}} | `{{CUSTOM_BRANCH_FORMAT}}` | `{{CUSTOM_BRANCH_EXAMPLE}}` |
 
 > **提示**: 请根据项目需要添加自定义分支类型。
 
@@ -667,7 +711,7 @@ task_types:
 | `pr_rejected` | Master → Slaver | PR 审核驳回 |
 | `task_assigned` | Master → Slaver | 任务分配 |
 | `task_completed` | Slaver → Master | 任务完成通知 |
-| `${CUSTOM_MSG_TYPE}` | ${FROM} → ${TO} | ${CUSTOM_MSG_DESC} |
+| `{{CUSTOM_MSG_TYPE}}` | {{FROM}} → {{TO}} | {{CUSTOM_MSG_DESC}} |
 
 > **提示**: 请根据项目需要添加自定义消息类型。
 
@@ -694,7 +738,7 @@ task_types:
 
 ### 7.5.2 PR 描述文件格式
 
-PR 描述文件创建在 `outbox/review_requests/` 目录：
+PR 描述文件创建在 `outbox/tasks/<ticket-id>/` 目录（优先）或 `outbox/review_requests/`（遗留）：
 
 ```markdown
 # PR 请求：FEAT-001
@@ -758,7 +802,7 @@ PR 描述文件创建在 `outbox/review_requests/` 目录：
     "ticket_id": "FEAT-001",
     "branch": "feature/FEAT-001-user-login",
     "target": "testing",
-    "pr_file": "outbox/review_requests/pr_FEAT-001_20260327_103000.md",
+    "pr_file": "outbox/tasks/FEAT-001/pr-request.md",
     "summary": "请求审核 FEAT-001 的实现"
   }
 }
@@ -818,7 +862,7 @@ Master 审核:
 | `/eket-review-pr <id>` | 审核 PR |
 | `/eket-merge-pr <id>` | 合并 PR |
 | `/eket-help` | 显示帮助 |
-| `${CUSTOM_COMMAND}` | ${CUSTOM_COMMAND_DESC} |
+| `{{CUSTOM_COMMAND}}` | {{CUSTOM_COMMAND_DESC}} |
 
 > **提示**: 可在 `.claude/commands/` 目录中添加自定义命令。
 
@@ -836,7 +880,7 @@ Master 审核:
 | 测试验证 | `skills/testing/` | `unit_test`, `e2e_test` |
 | 运维部署 | `skills/devops/` | `docker_build`, `kubernetes_deploy` |
 | 文档 | `skills/documentation/` | `api_documentation`, `user_guide` |
-| ${CUSTOM_SKILL_CATEGORY} | `skills/${CUSTOM_SKILL_PATH}/` | `${CUSTOM_SKILL_1}`, `${CUSTOM_SKILL_2}` |
+| {{CUSTOM_SKILL_CATEGORY}} | `skills/{{CUSTOM_SKILL_PATH}}/` | `{{CUSTOM_SKILL_1}}`, `{{CUSTOM_SKILL_2}}` |
 
 > **提示**: 请根据项目需要添加自定义 Skill 分类。Skills 是 EKET 框架的核心能力单元，可在 `skills/` 目录中创建新的 Skill。
 
@@ -862,7 +906,7 @@ Master 审核:
 
 ```yaml
 role: "slaver"              # master | slaver
-agent_type: "${YOUR_ROLE}"  # 根据项目需要定义
+agent_type: "{{YOUR_ROLE}}"  # 根据项目需要定义
 status: "ready"             # ready | busy | offline
 auto_mode: false            # 自动领取任务
 
@@ -873,10 +917,10 @@ workspace:
 
 # 专家 Agent 特定配置（可选）
 expert_config:
-  domain: "${EXPERTISE_DOMAIN}"
+  domain: "{{EXPERTISE_DOMAIN}}"
   skills:
-    - ${SKILL_1}
-    - ${SKILL_2}
+    - {{SKILL_1}}
+    - {{SKILL_2}}
 ```
 
 ### 11.2 Worktree 状态文件
@@ -884,10 +928,10 @@ expert_config:
 `.eket/state/current_worktree.yml`:
 
 ```yaml
-task_id: ${TASK_ID}
-slaver_id: ${SLAVER_ID}
-worktree_path: .eket/worktrees/${WORKTREE_NAME}
-claimed_at: ${CLAIMED_AT}
+task_id: {{TASK_ID}}
+slaver_id: {{SLAVER_ID}}
+worktree_path: .eket/worktrees/{{WORKTREE_NAME}}
+claimed_at: {{CLAIMED_AT}}
 status: active
 ```
 
@@ -908,7 +952,7 @@ status: active
 | Worktree 创建失败 | 分支冲突 | 清理旧 worktree，重试 |
 | PR 合并冲突 | 代码冲突 | 手动解决冲突后重新提交 |
 | 分析报告被驳回 | 分析不充分 | 重新分析并提交 |
-| ${CUSTOM_ISSUE} | ${CUSTOM_CAUSE} | ${CUSTOM_SOLUTION} |
+| {{CUSTOM_ISSUE}} | {{CUSTOM_CAUSE}} | {{CUSTOM_SOLUTION}} |
 
 ### 12.2 日志位置
 
@@ -917,7 +961,7 @@ status: active
 | Master 日志 | `.eket/logs/master.log` |
 | Slaver 日志 | `.eket/logs/slaver_*.log` |
 | 心跳日志 | `.eket/logs/heartbeat.log` |
-| ${CUSTOM_LOG} | `${CUSTOM_LOG_PATH}` |
+| {{CUSTOM_LOG}} | `{{CUSTOM_LOG_PATH}}` |
 
 ---
 
@@ -925,11 +969,11 @@ status: active
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
-| 0.1.0 | ${CREATE_DATE} | 初始版本，基于 EKET Framework ${EKET_VERSION} |
-| ${CUSTOM_VERSION} | ${CUSTOM_DATE} | ${CUSTOM_CHANGE} |
+| 0.1.0 | {{CREATE_DATE}} | 初始版本，基于 EKET Framework v2.0.0 |
+| {{CUSTOM_VERSION}} | {{CUSTOM_DATE}} | {{CUSTOM_CHANGE}} |
 
 ---
 
 **文档维护**: 请在每次系统升级后更新本文档
-**最后更新**: ${UPDATE_DATE}
+**最后更新**: {{UPDATE_DATE}}
 **文档生成**: 本文档基于 EKET Framework template/SYSTEM-SETTINGS.md 模板生成

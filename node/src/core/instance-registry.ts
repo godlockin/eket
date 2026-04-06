@@ -16,7 +16,7 @@ import type {
   Result,
   BatchHeartbeatConfig,
 } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 import { RedisClient, createRedisClient } from './redis-client.js';
 
@@ -73,7 +73,7 @@ export class InstanceRegistry {
     if (!this.redis.isReady()) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -82,7 +82,7 @@ export class InstanceRegistry {
       if (!client) {
         return {
           success: false,
-          error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not initialized'),
+          error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not initialized'),
         };
       }
 
@@ -128,7 +128,7 @@ export class InstanceRegistry {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -139,7 +139,7 @@ export class InstanceRegistry {
       if (!existingData) {
         return {
           success: false,
-          error: new EketError('INSTANCE_NOT_FOUND', `Instance ${instanceId} not found`),
+          error: new EketError(EketErrorCode.INSTANCE_NOT_FOUND, `Instance ${instanceId} not found`),
         };
       }
 
@@ -189,7 +189,7 @@ export class InstanceRegistry {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -207,7 +207,7 @@ export class InstanceRegistry {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('INSTANCE_FETCH_FAILED', `Failed to fetch instance: ${errorMessage}`),
+        error: new EketError(EketErrorCode.INSTANCE_FETCH_FAILED, `Failed to fetch instance: ${errorMessage}`),
       };
     }
   }
@@ -220,7 +220,7 @@ export class InstanceRegistry {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -241,7 +241,7 @@ export class InstanceRegistry {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('INSTANCE_FETCH_FAILED', `Failed to fetch instances: ${errorMessage}`),
+        error: new EketError(EketErrorCode.INSTANCE_FETCH_FAILED, `Failed to fetch instances: ${errorMessage}`),
       };
     }
   }
@@ -254,7 +254,7 @@ export class InstanceRegistry {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -298,7 +298,7 @@ export class InstanceRegistry {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -343,7 +343,7 @@ export class InstanceRegistry {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -393,7 +393,7 @@ export class InstanceRegistry {
     if (!result.data) {
       return {
         success: false,
-        error: new EketError('INSTANCE_NOT_FOUND', `Instance ${instanceId} not found`),
+        error: new EketError(EketErrorCode.INSTANCE_NOT_FOUND, `Instance ${instanceId} not found`),
       };
     }
 
@@ -405,7 +405,7 @@ export class InstanceRegistry {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -466,7 +466,7 @@ export class InstanceRegistry {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -556,7 +556,7 @@ export class InstanceRegistry {
     if (!client) {
       return {
         success: false,
-        error: new EketError('REDIS_NOT_CONNECTED', 'Redis client not connected'),
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
       };
     }
 
@@ -581,7 +581,7 @@ export class InstanceRegistry {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('INSTANCE_LIST_FAILED', `Failed to list instances: ${errorMessage}`),
+        error: new EketError(EketErrorCode.INSTANCE_LIST_FAILED, `Failed to list instances: ${errorMessage}`),
       };
     }
   }

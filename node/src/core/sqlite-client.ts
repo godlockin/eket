@@ -9,7 +9,7 @@ import * as path from 'path';
 import Database from 'better-sqlite3';
 
 import type { Retrospective, RetroContent, Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 export class SQLiteClient {
   private db: Database.Database | null = null;
@@ -47,7 +47,7 @@ export class SQLiteClient {
     } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_CONNECTION_FAILED', 'Failed to connect SQLite'),
+        error: new EketError(EketErrorCode.SQLITE_CONNECTION_FAILED, 'Failed to connect SQLite'),
       };
     }
   }
@@ -83,7 +83,7 @@ export class SQLiteClient {
     if (!this.db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -93,7 +93,7 @@ export class SQLiteClient {
     } catch (e) {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', (e as Error).message),
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
       };
     }
   }
@@ -105,7 +105,7 @@ export class SQLiteClient {
     if (!this.db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -115,7 +115,7 @@ export class SQLiteClient {
     } catch (e) {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', (e as Error).message),
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
       };
     }
   }
@@ -127,7 +127,7 @@ export class SQLiteClient {
     if (!this.db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -137,7 +137,7 @@ export class SQLiteClient {
     } catch (e) {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', (e as Error).message),
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
       };
     }
   }
@@ -227,7 +227,7 @@ export class SQLiteClient {
     if (!this.db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -242,7 +242,7 @@ export class SQLiteClient {
     } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to insert retrospective'),
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Failed to insert retrospective'),
       };
     }
   }
@@ -254,7 +254,7 @@ export class SQLiteClient {
     if (!this.db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -265,7 +265,7 @@ export class SQLiteClient {
     } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to get retrospective'),
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Failed to get retrospective'),
       };
     }
   }
@@ -277,7 +277,7 @@ export class SQLiteClient {
     if (!this.db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -288,7 +288,7 @@ export class SQLiteClient {
     } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to list retrospectives'),
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Failed to list retrospectives'),
       };
     }
   }
@@ -305,7 +305,7 @@ export class SQLiteClient {
     if (!this.db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -325,7 +325,7 @@ export class SQLiteClient {
     } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to insert retro content'),
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Failed to insert retro content'),
       };
     }
   }
@@ -337,7 +337,7 @@ export class SQLiteClient {
     if (!this.db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -350,7 +350,7 @@ export class SQLiteClient {
     } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to get retro content'),
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Failed to get retro content'),
       };
     }
   }
@@ -362,7 +362,7 @@ export class SQLiteClient {
     if (!this.db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -385,7 +385,7 @@ export class SQLiteClient {
     } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to search retrospectives'),
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Failed to search retrospectives'),
       };
     }
   }
@@ -411,7 +411,7 @@ export class SQLiteClient {
     if (!this.db) {
       return {
         success: false,
-        error: new EketError('SQLITE_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -450,7 +450,7 @@ export class SQLiteClient {
     } catch {
       return {
         success: false,
-        error: new EketError('SQLITE_OPERATION_FAILED', 'Failed to generate report'),
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Failed to generate report'),
       };
     }
   }

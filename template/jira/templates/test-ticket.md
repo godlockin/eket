@@ -1,11 +1,11 @@
-# Test Ticket: TEST-${SEQUENCE_NUMBER} - ${TEST_TITLE}
+# Test Ticket: TEST-{{SEQUENCE_NUMBER}} - {{TEST_TITLE}}
 
-**创建时间**: ${CREATE_DATE}
+**创建时间**: {{CREATE_DATE}}
 **创建者**: Master Agent
 **优先级**: P0 | P1 | P2 | P3
 **状态**: backlog
-**标签**: `test`, `${MODULE_TAG}`, `${TEST_TYPE}`
-**关联 Feature**: ${FEATURE_ID}
+**标签**: `test`, `{{MODULE_TAG}}`, `{{TEST_TYPE}}`
+**关联 Feature**: {{FEATURE_ID}}
 **分配给**: null
 
 ---
@@ -51,11 +51,11 @@ external: []  # 外部依赖
 
 | 时间 | 状态变更 | 操作者 | 备注 |
 |------|----------|--------|------|
-| ${CREATE_DATE} | backlog → ready | Master | 初始创建 |
-| ${CLAIM_DATE} | ready → in_progress | ${Slaver_ID} | **已领取** |
-| ${IMPLEMENT_DATE} | in_progress → testing | ${Slaver_ID} | 测试实现完成 |
-| ${VERIFY_DATE} | testing → review | ${Slaver_ID} | 自测通过，PR 提交 |
-| ${APPROVE_DATE} | review → done | Master | Review 通过 |
+| {{CREATE_DATE}} | backlog → ready | Master | 初始创建 |
+| {{CLAIM_DATE}} | ready → in_progress | ${Slaver_ID} | **已领取** |
+| {{IMPLEMENT_DATE}} | in_progress → testing | ${Slaver_ID} | 测试实现完成 |
+| {{VERIFY_DATE}} | testing → review | ${Slaver_ID} | 自测通过，PR 提交 |
+| {{APPROVE_DATE}} | review → done | Master | Review 通过 |
 
 > **重要**: Slaver 领取任务后必须按顺序更新状态，不可跳过任何阶段！
 
@@ -78,8 +78,8 @@ ${清晰描述测试要验证的功能或场景}
 
 ### 2.3 测试范围
 - **被测模块**: `${module1}`, `${module2}`
-- **被测接口**: `${API_ENDPOINTS}`
-- **不包括**: `${OUT_OF_SCOPE}`
+- **被测接口**: `{{API_ENDPOINTS}}`
+- **不包括**: `{{OUT_OF_SCOPE}}`
 
 ### 2.4 测试场景
 | 场景 ID | 场景描述 | 输入 | 预期输出 | 优先级 |
@@ -121,9 +121,9 @@ describe('${feature}', () => {
 - [ ] 资源不足处理
 
 ### 3.4 性能测试要求（如适用）
-- **响应时间**: < ${X}ms
-- **并发用户**: ${N} users
-- **吞吐量**: ${X} req/s
+- **响应时间**: < {{X}}ms
+- **并发用户**: {{N}} users
+- **吞吐量**: {{X}} req/s
 
 ---
 
@@ -131,8 +131,8 @@ describe('${feature}', () => {
 
 ### 4.1 领取信息
 - **领取者**: ${Slaver_ID}
-- **领取时间**: ${CLAIM_DATE}
-- **预计工时**: ${ESTIMATED_HOURS}h
+- **领取时间**: {{CLAIM_DATE}}
+- **预计工时**: {{ESTIMATED_HOURS}}h
 - **状态已更新**: [ ] 是（必须勾选）
 
 ### 4.2 必需执行流程（Slaver 职责）
@@ -145,34 +145,34 @@ describe('${feature}', () => {
 
 #### 步骤 2: 编写测试代码
 - [ ] 已编写测试用例
-- [ ] 测试用例数：${TEST_COUNT} 个
+- [ ] 测试用例数：{{TEST_COUNT}} 个
 - [ ] 已更新状态：`in_progress` → `testing`
 
 #### 步骤 3: 运行测试验证
 - [ ] 所有测试通过
-- [ ] 测试覆盖率：${COVERAGE}%
+- [ ] 测试覆盖率：{{COVERAGE}}%
 - [ ] 已更新状态：`testing` → `review`
 
 #### 步骤 4: 提交 PR
-- [ ] 代码已提交到分支：`${BRANCH_NAME}`
-- [ ] PR 已创建：`${PR_URL}`
+- [ ] 代码已提交到分支：`{{BRANCH_NAME}}`
+- [ ] PR 已创建：`{{PR_URL}}`
 - [ ] 已更新状态：`review` → `done`（测试任务通常直接合并）
 - [ ] 已通知 Master Review
 
 ### 4.3 执行状态
 | 阶段 | 状态 | 完成时间 | 备注 |
 |------|------|----------|------|
-| 领取 | ✓/✗ | ${CLAIM_DATE} | ${Slaver_ID} |
-| 测试编写 | ✓/✗ | ${IMPLEMENT_DATE} | ${TEST_COUNT} 个用例 |
-| 测试运行 | ✓/✗ | ${VERIFY_DATE} | 通过率 ${PASS_RATE}% |
-| PR 提交 | ✓/✗ | ${SUBMIT_DATE} | ${PR_NUMBER} |
+| 领取 | ✓/✗ | {{CLAIM_DATE}} | ${Slaver_ID} |
+| 测试编写 | ✓/✗ | {{IMPLEMENT_DATE}} | {{TEST_COUNT}} 个用例 |
+| 测试运行 | ✓/✗ | {{VERIFY_DATE}} | 通过率 {{PASS_RATE}}% |
+| PR 提交 | ✓/✗ | {{SUBMIT_DATE}} | {{PR_NUMBER}} |
 
 ### 4.4 测试结果
 ```bash
 # 测试运行结果
-Tests:       ${PASS_COUNT} passed, ${FAIL_COUNT} failed
-Coverage:    ${COVERAGE}%
-Time:        ${DURATION}s
+Tests:       {{PASS_COUNT}} passed, {{FAIL_COUNT}} failed
+Coverage:    {{COVERAGE}}%
+Time:        {{DURATION}}s
 ```
 
 ---
@@ -187,8 +187,8 @@ Time:        ${DURATION}s
 - [ ] 有适当的断言
 
 ### 5.2 覆盖率检查
-- [ ] 行覆盖率 >= ${X}%
-- [ ] 分支覆盖率 >= ${Y}%
+- [ ] 行覆盖率 >= {{X}}%
+- [ ] 分支覆盖率 >= {{Y}}%
 - [ ] 关键路径已覆盖
 
 ### 5.3 验证结果
@@ -196,8 +196,8 @@ Time:        ${DURATION}s
 - [ ] **需要补充** - 见验证意见
 - [ ] **拒绝** - ${原因}
 
-**验证者**: ${REVIEWER_ID}
-**验证时间**: ${REVIEW_DATE}
+**验证者**: {{REVIEWER_ID}}
+**验证时间**: {{REVIEW_DATE}}
 
 ---
 

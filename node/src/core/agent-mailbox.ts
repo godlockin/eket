@@ -477,7 +477,7 @@ export async function writeToMailbox(
     return {
       success: false,
       error: new EketError(
-        'MAILBOX_WRITE_FAILED',
+        EketErrorCode.MAILBOX_WRITE_FAILED,
         `Failed to write message: ${(error as Error).message}`
       ),
     };
@@ -531,7 +531,7 @@ export async function markMessageAsReadByIndex(
     return {
       success: false,
       error: new EketError(
-        'MAILBOX_MARK_READ_FAILED',
+        EketErrorCode.MAILBOX_MARK_READ_FAILED,
         `Failed to mark message as read: ${(error as Error).message}`
       ),
     };
@@ -583,7 +583,7 @@ export async function markMessagesAsRead(agentId: string): Promise<Result<void>>
     return {
       success: false,
       error: new EketError(
-        'MAILBOX_MARK_READ_FAILED',
+        EketErrorCode.MAILBOX_MARK_READ_FAILED,
         `Failed to mark messages as read: ${(error as Error).message}`
       ),
     };
@@ -621,7 +621,7 @@ export async function clearMailbox(agentId: string): Promise<Result<void>> {
     return {
       success: false,
       error: new EketError(
-        'MAILBOX_CLEAR_FAILED',
+        EketErrorCode.MAILBOX_CLEAR_FAILED,
         `Failed to clear mailbox: ${(error as Error).message}`
       ),
     };

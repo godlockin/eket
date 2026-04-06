@@ -21,7 +21,7 @@ import type {
   CommunicationProtocolConfig,
   MessageQueueShardingConfig,
 } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 import { createMessageQueue, type MessageQueue } from './message-queue.js';
 import { createShardingManager, type ShardingManager } from './sharding.js';
@@ -413,7 +413,7 @@ export class CommunicationProtocol {
     if (!this.isConnected) {
       return {
         success: false,
-        error: new EketError('PROTOCOL_NOT_CONNECTED', 'Communication protocol not connected'),
+        error: new EketError(EketErrorCode.PROTOCOL_NOT_CONNECTED, 'Communication protocol not connected'),
       };
     }
 
@@ -466,7 +466,7 @@ export class CommunicationProtocol {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('MESSAGE_SEND_ERROR', `Error sending message: ${errorMessage}`),
+        error: new EketError(EketErrorCode.MESSAGE_SEND_ERROR, `Error sending message: ${errorMessage}`),
       };
     }
   }

@@ -9,11 +9,13 @@
  * - 事件驱动的触发器
  */
 
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 import type {
   WorkflowDefinition,
   WorkflowInstance,
   WorkflowStep,
+  WorkflowJudgmentRequest,
+  JudgmentStatus,
   Result,
   CommunicationProtocolConfig,
 } from '../types/index.js';
@@ -82,6 +84,45 @@ export interface WorkflowEvent {
  */
 export type WorkflowEventHandler = (event: WorkflowEvent) => Promise<void>;
 
+// ============================================================================
+// Judgment Point Local Types
+// ============================================================================
+
+/**
+ * 扩展 WorkflowStep，增加判断点支持（本地扩展，不改 types/index.ts）
+ */
+export interface JudgmentAwareStep extends WorkflowStep {
+  judgment_required?: boolean; // 是否需要判断
+  judgment_prompt?: string; // 判断提示
+  judgment_timeout_ms?: number; // 判断超时（覆盖 timeout_ms）
+  fallback_on_timeout?: 'escalate_to_master' | 'skip' | 'fail_workflow';
+}
+
+/**
+ * 扩展事件类型，包含判断点事件
+ */
+export type ExtendedWorkflowEventType =
+  | WorkflowEventType
+  | 'judgment_required'
+  | 'judgment_resolved'
+  | 'judgment_escalated';
+
+/**
+ * 扩展工作流事件（携带判断请求数据）
+ */
+export interface ExtendedWorkflowEvent {
+  type: ExtendedWorkflowEventType;
+  workflowId: string;
+  stepId?: string;
+  timestamp: number;
+  data?: Record<string, unknown>;
+}
+
+/**
+ * 扩展事件处理器（支持判断点事件）
+ */
+export type ExtendedWorkflowEventHandler = (event: ExtendedWorkflowEvent) => Promise<void>;
+
 /**
  * 工作流引擎类
  */
@@ -91,9 +132,12 @@ export class WorkflowEngine {
   private definitions: Map<string, WorkflowDefinition> = new Map();
   private instances: Map<string, WorkflowInstance> = new Map();
   private stepExecutors: Map<string, StepExecutor> = new Map();
-  private eventHandlers: Map<WorkflowEventType, Set<WorkflowEventHandler>> = new Map();
+  private eventHandlers: Map<ExtendedWorkflowEventType, Set<ExtendedWorkflowEventHandler>> =
+    new Map();
   private readonly defaultTimeout: number;
   private runningTimers: Map<string, NodeJS.Timeout> = new Map();
+  /** 待判断的判断点请求（key: judgmentId） */
+  private pendingJudgments: Map<string, WorkflowJudgmentRequest> = new Map();
 
   constructor(config: WorkflowEngineConfig) {
     this.config = {
@@ -148,9 +192,12 @@ export class WorkflowEngine {
   }
 
   /**
-   * 注册事件处理器
+   * 注册事件处理器（支持标准事件类型和判断点扩展事件类型）
    */
-  onEvent(eventType: WorkflowEventType, handler: WorkflowEventHandler): void {
+  onEvent(
+    eventType: WorkflowEventType | ExtendedWorkflowEventType,
+    handler: ExtendedWorkflowEventHandler
+  ): void {
     if (!this.eventHandlers.has(eventType)) {
       this.eventHandlers.set(eventType, new Set());
     }
@@ -168,14 +215,14 @@ export class WorkflowEngine {
     if (!definition) {
       return {
         success: false,
-        error: new EketError('WORKFLOW_NOT_FOUND', `Workflow definition ${definitionId} not found`),
+        error: new EketError(EketErrorCode.WORKFLOW_NOT_FOUND, `Workflow definition ${definitionId} not found`),
       };
     }
 
     if (!this.protocol.isReady()) {
       return {
         success: false,
-        error: new EketError('PROTOCOL_NOT_CONNECTED', 'Communication protocol not connected'),
+        error: new EketError(EketErrorCode.PROTOCOL_NOT_CONNECTED, 'Communication protocol not connected'),
       };
     }
 
@@ -241,6 +288,13 @@ export class WorkflowEngine {
       stepId,
       timestamp: Date.now(),
     });
+
+    // 判断点检查：如果步骤标记为 judgment_required，挂起工作流等待判断
+    const stepAsJudgment = step as JudgmentAwareStep;
+    if (stepAsJudgment.judgment_required) {
+      await this.handleJudgmentPoint(instanceId, stepAsJudgment, instance.context);
+      return; // 挂起，等待外部调用 resolveJudgment
+    }
 
     // 设置超时
     const timeout = step.timeout_ms || this.defaultTimeout;
@@ -443,14 +497,14 @@ export class WorkflowEngine {
     if (!instance) {
       return {
         success: false,
-        error: new EketError('WORKFLOW_NOT_FOUND', `Workflow instance ${instanceId} not found`),
+        error: new EketError(EketErrorCode.WORKFLOW_NOT_FOUND, `Workflow instance ${instanceId} not found`),
       };
     }
 
     if (instance.status !== 'running') {
       return {
         success: false,
-        error: new EketError('WORKFLOW_NOT_RUNNING', `Workflow ${instanceId} is not running`),
+        error: new EketError(EketErrorCode.WORKFLOW_NOT_RUNNING, `Workflow ${instanceId} is not running`),
       };
     }
 
@@ -474,14 +528,14 @@ export class WorkflowEngine {
     if (!instance) {
       return {
         success: false,
-        error: new EketError('WORKFLOW_NOT_FOUND', `Workflow instance ${instanceId} not found`),
+        error: new EketError(EketErrorCode.WORKFLOW_NOT_FOUND, `Workflow instance ${instanceId} not found`),
       };
     }
 
     if (instance.status !== 'paused') {
       return {
         success: false,
-        error: new EketError('WORKFLOW_NOT_PAUSED', `Workflow ${instanceId} is not paused`),
+        error: new EketError(EketErrorCode.WORKFLOW_NOT_PAUSED, `Workflow ${instanceId} is not paused`),
       };
     }
 
@@ -510,7 +564,7 @@ export class WorkflowEngine {
     if (!instance) {
       return {
         success: false,
-        error: new EketError('WORKFLOW_NOT_FOUND', `Workflow instance ${instanceId} not found`),
+        error: new EketError(EketErrorCode.WORKFLOW_NOT_FOUND, `Workflow instance ${instanceId} not found`),
       };
     }
 
@@ -525,9 +579,9 @@ export class WorkflowEngine {
   }
 
   /**
-   * 触发事件
+   * 触发事件（支持标准事件和判断点扩展事件）
    */
-  private async emitEvent(event: WorkflowEvent): Promise<void> {
+  private async emitEvent(event: ExtendedWorkflowEvent): Promise<void> {
     const handlers = this.eventHandlers.get(event.type);
     if (handlers) {
       for (const handler of handlers) {
@@ -552,6 +606,257 @@ export class WorkflowEngine {
    */
   private generateInstanceId(): string {
     return `wf_${this.config.instanceId}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  }
+
+  // ============================================================================
+  // Judgment Point Methods
+  // ============================================================================
+
+  /**
+   * 处理判断点——挂起工作流等待判断
+   *
+   * 流程：
+   * 1. 创建 WorkflowJudgmentRequest 并存入 pendingJudgments
+   * 2. 将工作流实例状态设为 'paused'
+   * 3. 触发 'judgment_required' 事件
+   * 4. 设置超时定时器
+   */
+  private async handleJudgmentPoint(
+    instanceId: string,
+    step: JudgmentAwareStep,
+    context: WorkflowContext
+  ): Promise<void> {
+    const judgmentId = `jdg_${instanceId}_${step.id}_${Date.now()}`;
+    const timeoutMs = step.judgment_timeout_ms ?? step.timeout_ms ?? this.defaultTimeout;
+    const fallback = step.fallback_on_timeout ?? 'escalate_to_master';
+
+    const judgmentRequest: WorkflowJudgmentRequest = {
+      id: judgmentId,
+      workflowInstanceId: instanceId,
+      stepId: step.id,
+      judgmentPrompt: step.judgment_prompt ?? `步骤 "${step.name}" 需要人工判断，请提供决策。`,
+      context: { ...context },
+      fallbackOnTimeout: fallback,
+      timeoutMs,
+      createdAt: Date.now(),
+      status: 'pending' as JudgmentStatus,
+    };
+
+    this.pendingJudgments.set(judgmentId, judgmentRequest);
+
+    // 暂停工作流
+    const instance = this.instances.get(instanceId);
+    if (instance) {
+      instance.status = 'paused';
+      instance.updatedAt = Date.now();
+    }
+
+    console.log(
+      `[WorkflowEngine] Judgment required for step "${step.id}" in workflow ${instanceId} (judgmentId: ${judgmentId})`
+    );
+
+    // 触发 judgment_required 事件
+    await this.emitEvent({
+      type: 'judgment_required',
+      workflowId: instanceId,
+      stepId: step.id,
+      timestamp: Date.now(),
+      data: { judgmentRequest },
+    });
+
+    // 设置超时定时器
+    const timerKey = `judgment:${judgmentId}`;
+    const timer = setTimeout(async () => {
+      await this.handleJudgmentTimeout(instanceId, judgmentId, fallback);
+    }, timeoutMs);
+    this.runningTimers.set(timerKey, timer);
+  }
+
+  /**
+   * 提交判断结果，恢复工作流
+   *
+   * @param judgmentId - 判断请求 ID
+   * @param resolution - 判断结果
+   * @param resolvedBy - 做出判断的主体（Instance ID 或 'master'）
+   */
+  async resolveJudgment(
+    judgmentId: string,
+    resolution: string,
+    resolvedBy: string
+  ): Promise<Result<void>> {
+    const judgment = this.pendingJudgments.get(judgmentId);
+    if (!judgment) {
+      return {
+        success: false,
+        error: new EketError(
+          'WORKFLOW_NOT_FOUND',
+          `Judgment request ${judgmentId} not found or already resolved`
+        ),
+      };
+    }
+
+    if (judgment.status !== 'pending') {
+      return {
+        success: false,
+        error: new EketError(
+          'WORKFLOW_NOT_FOUND',
+          `Judgment request ${judgmentId} is not in pending state (current: ${judgment.status})`
+        ),
+      };
+    }
+
+    // 清理超时定时器
+    const timerKey = `judgment:${judgmentId}`;
+    const timer = this.runningTimers.get(timerKey);
+    if (timer) {
+      clearTimeout(timer);
+      this.runningTimers.delete(timerKey);
+    }
+
+    // 更新判断请求状态
+    judgment.status = 'resolved';
+    judgment.resolution = resolution;
+    judgment.resolvedBy = resolvedBy;
+    judgment.resolvedAt = Date.now();
+
+    // 将判断结果写入工作流上下文
+    const instance = this.instances.get(judgment.workflowInstanceId);
+    if (!instance) {
+      return {
+        success: false,
+        error: new EketError(
+          'WORKFLOW_NOT_FOUND',
+          `Workflow instance ${judgment.workflowInstanceId} not found`
+        ),
+      };
+    }
+
+    // 将结果存入 context.judgments[stepId]
+    if (!instance.context.judgments) {
+      instance.context.judgments = {};
+    }
+    (instance.context.judgments as Record<string, string>)[judgment.stepId] = resolution;
+
+    console.log(
+      `[WorkflowEngine] Judgment resolved for step "${judgment.stepId}" in workflow ${judgment.workflowInstanceId}: "${resolution}" by ${resolvedBy}`
+    );
+
+    // 触发 judgment_resolved 事件
+    await this.emitEvent({
+      type: 'judgment_resolved',
+      workflowId: judgment.workflowInstanceId,
+      stepId: judgment.stepId,
+      timestamp: Date.now(),
+      data: { judgmentId, resolution, resolvedBy },
+    });
+
+    // 恢复工作流：将状态改回 running，然后执行步骤的 on_complete
+    instance.status = 'running';
+    instance.updatedAt = Date.now();
+
+    await this.emitEvent({
+      type: 'workflow_resumed',
+      workflowId: judgment.workflowInstanceId,
+      timestamp: Date.now(),
+      data: { reason: 'judgment_resolved' },
+    });
+
+    // 获取步骤定义，执行后续步骤
+    const definition = this.definitions.get(instance.definitionId);
+    const step = definition?.steps.find((s) => s.id === judgment.stepId) as
+      | JudgmentAwareStep
+      | undefined;
+
+    if (step?.on_complete) {
+      instance.currentStepId = step.on_complete;
+      await this.executeStep(judgment.workflowInstanceId, step.on_complete);
+    } else {
+      // 没有下一步，工作流完成
+      await this.completeWorkflow(judgment.workflowInstanceId, {
+        lastJudgment: resolution,
+        resolvedBy,
+      });
+    }
+
+    return { success: true, data: undefined };
+  }
+
+  /**
+   * 获取所有待判断的请求
+   *
+   * @param workflowInstanceId - 可选，按工作流实例 ID 过滤
+   */
+  getPendingJudgments(workflowInstanceId?: string): WorkflowJudgmentRequest[] {
+    const all = Array.from(this.pendingJudgments.values()).filter(
+      (j) => j.status === 'pending'
+    );
+    if (workflowInstanceId) {
+      return all.filter((j) => j.workflowInstanceId === workflowInstanceId);
+    }
+    return all;
+  }
+
+  /**
+   * 处理判断点超时
+   *
+   * - escalate_to_master: 触发 judgment_escalated 事件，工作流继续 paused 状态
+   * - skip: 用 'skipped' 作为 resolution，继续执行工作流
+   * - fail_workflow: 令工作流失败
+   */
+  private async handleJudgmentTimeout(
+    instanceId: string,
+    judgmentId: string,
+    fallback: 'escalate_to_master' | 'skip' | 'fail_workflow'
+  ): Promise<void> {
+    const judgment = this.pendingJudgments.get(judgmentId);
+    if (!judgment || judgment.status !== 'pending') {
+      return; // 已被处理（resolved 或 escalated）
+    }
+
+    console.warn(
+      `[WorkflowEngine] Judgment timed out: ${judgmentId} (fallback: ${fallback})`
+    );
+
+    switch (fallback) {
+      case 'escalate_to_master': {
+        judgment.status = 'escalated';
+        judgment.resolvedAt = Date.now();
+
+        // 触发 judgment_escalated 事件，工作流保持 paused
+        await this.emitEvent({
+          type: 'judgment_escalated',
+          workflowId: instanceId,
+          stepId: judgment.stepId,
+          timestamp: Date.now(),
+          data: {
+            judgmentId,
+            reason: 'timeout',
+            prompt: judgment.judgmentPrompt,
+            workflowInstanceId: instanceId,
+          },
+        });
+
+        console.warn(
+          `[WorkflowEngine] Judgment escalated to master: workflow ${instanceId} remains paused`
+        );
+        break;
+      }
+
+      case 'skip': {
+        // 以 'skipped' 作为 resolution 继续工作流
+        // 注意：此处不预先修改 status，让 resolveJudgment 完成正常的恢复流程
+        await this.resolveJudgment(judgmentId, 'skipped', 'system:timeout');
+        // resolveJudgment 成功后，更新最终状态为 timed_out 而非 resolved
+        judgment.status = 'timed_out';
+        break;
+      }
+
+      case 'fail_workflow': {
+        judgment.status = 'timed_out';
+        await this.failWorkflow(instanceId, `Judgment timed out for step "${judgment.stepId}"`);
+        break;
+      }
+    }
   }
 }
 
@@ -592,10 +897,13 @@ export function createDependencyCollaborationWorkflow(): WorkflowDefinition {
         id: 'wait_for_dependency',
         name: 'Wait for Dependency',
         action: 'wait',
-        timeout_ms: 600000, // 10 分钟超时
+        judgment_required: true, // 需要人工/Master 确认依赖已就绪
+        judgment_prompt: '依赖任务是否已完成并可以继续？请确认前序任务输出满足当前任务需求。',
+        judgment_timeout_ms: 600000, // 10 分钟
+        fallback_on_timeout: 'escalate_to_master',
         on_complete: 'process_dependency_output',
         on_error: 'handle_dependency_timeout',
-      },
+      } as JudgmentAwareStep,
       {
         id: 'process_dependency_output',
         name: 'Process Dependency Output',

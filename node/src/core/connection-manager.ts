@@ -15,50 +15,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import type { Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import type { Result, ConnectionLevel, DriverMode, ConnectionManagerConfig, ConnectionStats } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 import { RedisClient } from './redis-client.js';
 import { SQLiteClient } from './sqlite-client.js';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export type ConnectionLevel = 'remote_redis' | 'local_redis' | 'sqlite' | 'file';
-
-export type DriverMode = 'js' | 'shell';
-
-export interface ConnectionManagerConfig {
-  // Redis 配置
-  remoteRedis?: {
-    host: string;
-    port: number;
-    password?: string;
-    db?: number;
-  };
-  localRedis?: {
-    host: string;
-    port: number;
-  };
-  // SQLite 配置
-  sqlitePath?: string;
-  // 文件队列配置
-  fileQueueDir?: string;
-  // 驱动模式
-  driverMode?: DriverMode;
-}
-
-export interface ConnectionStats {
-  currentLevel: ConnectionLevel;
-  driverMode: DriverMode;
-  remoteRedisAvailable: boolean;
-  localRedisAvailable: boolean;
-  sqliteAvailable: boolean;
-  fileAvailable: boolean;
-  lastFallbackTime?: number;
-  fallbackCount: number;
-}
 
 // ============================================================================
 // Connection Manager Class
@@ -141,7 +102,7 @@ export class ConnectionManager {
 
     return {
       success: false,
-      error: new EketError('CONNECTION_FAILED', 'All connection levels failed'),
+      error: new EketError(EketErrorCode.CONNECTION_FAILED, 'All connection levels failed'),
     };
   }
 
@@ -152,7 +113,7 @@ export class ConnectionManager {
     if (!this.config.remoteRedis) {
       return {
         success: false,
-        error: new EketError('REMOTE_REDIS_NOT_CONFIGURED', 'Remote Redis not configured'),
+        error: new EketError(EketErrorCode.REMOTE_REDIS_NOT_CONFIGURED, 'Remote Redis not configured'),
       };
     }
 
@@ -174,7 +135,7 @@ export class ConnectionManager {
     if (!this.config.localRedis) {
       return {
         success: false,
-        error: new EketError('LOCAL_REDIS_NOT_CONFIGURED', 'Local Redis not configured'),
+        error: new EketError(EketErrorCode.LOCAL_REDIS_NOT_CONFIGURED, 'Local Redis not configured'),
       };
     }
 
@@ -208,7 +169,7 @@ export class ConnectionManager {
     } catch (error) {
       return {
         success: false,
-        error: new EketError('FILE_CONNECT_FAILED', 'Failed to connect file system'),
+        error: new EketError(EketErrorCode.FILE_CONNECT_FAILED, 'Failed to connect file system'),
       };
     }
   }
@@ -322,7 +283,7 @@ export class ConnectionManager {
 
     return {
       success: false,
-      error: new EketError('UPGRADE_FAILED', 'No higher connection level available'),
+      error: new EketError(EketErrorCode.UPGRADE_FAILED, 'No higher connection level available'),
     };
   }
 

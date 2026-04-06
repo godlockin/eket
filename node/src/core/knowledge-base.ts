@@ -11,8 +11,8 @@
  * - 配置信息：环境配置、部署参数
  */
 
-import type { KnowledgeEntry, Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import type { KnowledgeEntry, Result, ExtendedKnowledgeEntry, KnowledgeUsageGuidance } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 import { createSQLiteClient, type SQLiteClient } from './sqlite-client.js';
 
@@ -71,8 +71,11 @@ export interface KnowledgeStats {
 export class KnowledgeBase {
   private sqlite: SQLiteClient;
 
-  constructor() {
-    this.sqlite = createSQLiteClient();
+  /**
+   * @param dbPath - 可选 SQLite 路径，传 ':memory:' 使用内存模式（用于测试）
+   */
+  constructor(dbPath?: string) {
+    this.sqlite = createSQLiteClient(dbPath);
   }
 
   /**
@@ -134,6 +137,32 @@ export class KnowledgeBase {
       CREATE INDEX IF NOT EXISTS idx_knowledge_createdAt ON ${tableName}(createdAt DESC)
     `);
 
+    // Extended knowledge entries table (tacit knowledge support)
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS extended_knowledge_entries (
+        id TEXT PRIMARY KEY,
+        type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        content TEXT NOT NULL,
+        tags TEXT NOT NULL,
+        created_by TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        related_tickets TEXT NOT NULL,
+        metadata TEXT,
+        usage_guidance TEXT,
+        tacit_level TEXT NOT NULL DEFAULT 'explicit'
+      )
+    `);
+
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_ext_knowledge_type ON extended_knowledge_entries(type)
+    `);
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_ext_knowledge_tacit_level ON extended_knowledge_entries(tacit_level)
+    `);
+
     console.log('[KnowledgeBase] Tables initialized');
   }
 
@@ -145,7 +174,7 @@ export class KnowledgeBase {
     if (!db) {
       return {
         success: false,
-        error: new EketError('DB_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.DB_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -194,7 +223,7 @@ export class KnowledgeBase {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('ENTRY_CREATE_FAILED', `Failed to create entry: ${errorMessage}`),
+        error: new EketError(EketErrorCode.ENTRY_CREATE_FAILED, `Failed to create entry: ${errorMessage}`),
       };
     }
   }
@@ -207,7 +236,7 @@ export class KnowledgeBase {
     if (!db) {
       return {
         success: false,
-        error: new EketError('DB_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.DB_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -225,7 +254,7 @@ export class KnowledgeBase {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('ENTRY_FETCH_FAILED', `Failed to fetch entry: ${errorMessage}`),
+        error: new EketError(EketErrorCode.ENTRY_FETCH_FAILED, `Failed to fetch entry: ${errorMessage}`),
       };
     }
   }
@@ -238,7 +267,7 @@ export class KnowledgeBase {
     if (!db) {
       return {
         success: false,
-        error: new EketError('DB_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.DB_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -290,7 +319,7 @@ export class KnowledgeBase {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('ENTRY_QUERY_FAILED', `Failed to query entries: ${errorMessage}`),
+        error: new EketError(EketErrorCode.ENTRY_QUERY_FAILED, `Failed to query entries: ${errorMessage}`),
       };
     }
   }
@@ -303,7 +332,7 @@ export class KnowledgeBase {
     if (!db) {
       return {
         success: false,
-        error: new EketError('DB_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.DB_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -314,7 +343,7 @@ export class KnowledgeBase {
     if (!existingResult.data) {
       return {
         success: false,
-        error: new EketError('ENTRY_NOT_FOUND', `Entry ${request.id} not found`),
+        error: new EketError(EketErrorCode.ENTRY_NOT_FOUND, `Entry ${request.id} not found`),
       };
     }
 
@@ -353,7 +382,7 @@ export class KnowledgeBase {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('ENTRY_UPDATE_FAILED', `Failed to update entry: ${errorMessage}`),
+        error: new EketError(EketErrorCode.ENTRY_UPDATE_FAILED, `Failed to update entry: ${errorMessage}`),
       };
     }
   }
@@ -366,7 +395,7 @@ export class KnowledgeBase {
     if (!db) {
       return {
         success: false,
-        error: new EketError('DB_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.DB_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -377,7 +406,7 @@ export class KnowledgeBase {
       if (result.changes === 0) {
         return {
           success: false,
-          error: new EketError('ENTRY_NOT_FOUND', `Entry ${id} not found`),
+          error: new EketError(EketErrorCode.ENTRY_NOT_FOUND, `Entry ${id} not found`),
         };
       }
 
@@ -387,7 +416,7 @@ export class KnowledgeBase {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('ENTRY_DELETE_FAILED', `Failed to delete entry: ${errorMessage}`),
+        error: new EketError(EketErrorCode.ENTRY_DELETE_FAILED, `Failed to delete entry: ${errorMessage}`),
       };
     }
   }
@@ -400,7 +429,7 @@ export class KnowledgeBase {
     if (!db) {
       return {
         success: false,
-        error: new EketError('DB_NOT_CONNECTED', 'Database not connected'),
+        error: new EketError(EketErrorCode.DB_NOT_CONNECTED, 'Database not connected'),
       };
     }
 
@@ -465,7 +494,7 @@ export class KnowledgeBase {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       return {
         success: false,
-        error: new EketError('STATS_FETCH_FAILED', `Failed to fetch stats: ${errorMessage}`),
+        error: new EketError(EketErrorCode.STATS_FETCH_FAILED, `Failed to fetch stats: ${errorMessage}`),
       };
     }
   }
@@ -537,13 +566,192 @@ export class KnowledgeBase {
   private generateEntryId(): string {
     return `kb_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
   }
+
+  // --------------------------------------------------------------------------
+  // Extended Knowledge Entry Methods (Tacit Knowledge Support)
+  // --------------------------------------------------------------------------
+
+  /**
+   * 将数据库行转换为 ExtendedKnowledgeEntry
+   */
+  private rowToExtendedEntry(row: Record<string, unknown>): ExtendedKnowledgeEntry {
+    return {
+      id: row.id as string,
+      type: row.type as ExtendedKnowledgeEntry['type'],
+      title: row.title as string,
+      description: row.description as string,
+      content: row.content as string,
+      tags: this.parseJson<string[]>(row.tags as string, []),
+      createdBy: row.created_by as string,
+      createdAt: row.created_at as number,
+      updatedAt: row.updated_at as number,
+      relatedTickets: this.parseJson<string[]>(row.related_tickets as string, []),
+      metadata: this.parseJson<Record<string, unknown> | undefined>(
+        row.metadata as string,
+        undefined
+      ),
+      usageGuidance: this.parseJson<KnowledgeUsageGuidance | undefined>(
+        row.usage_guidance as string,
+        undefined
+      ),
+      tacitLevel: (row.tacit_level as ExtendedKnowledgeEntry['tacitLevel']) ?? 'explicit',
+    };
+  }
+
+  /**
+   * 保存扩展知识条目（含默会知识分类）
+   */
+  async saveExtendedEntry(
+    entry: Omit<ExtendedKnowledgeEntry, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<Result<ExtendedKnowledgeEntry>> {
+    const db = this.sqlite.getDB();
+    if (!db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.DB_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+
+    const now = Date.now();
+    const id = this.generateEntryId();
+
+    const fullEntry: ExtendedKnowledgeEntry = {
+      ...entry,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO extended_knowledge_entries (
+          id, type, title, description, content, tags,
+          created_by, created_at, updated_at, related_tickets,
+          metadata, usage_guidance, tacit_level
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      stmt.run(
+        fullEntry.id,
+        fullEntry.type,
+        fullEntry.title,
+        fullEntry.description,
+        fullEntry.content,
+        JSON.stringify(fullEntry.tags),
+        fullEntry.createdBy,
+        fullEntry.createdAt,
+        fullEntry.updatedAt,
+        JSON.stringify(fullEntry.relatedTickets),
+        fullEntry.metadata ? JSON.stringify(fullEntry.metadata) : null,
+        fullEntry.usageGuidance ? JSON.stringify(fullEntry.usageGuidance) : null,
+        fullEntry.tacitLevel
+      );
+
+      console.log(
+        `[KnowledgeBase] Saved extended entry: ${id} (${fullEntry.title}) [${fullEntry.type}/${fullEntry.tacitLevel}]`
+      );
+      return { success: true, data: fullEntry };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      return {
+        success: false,
+        error: new EketError(
+          'ENTRY_CREATE_FAILED',
+          `Failed to save extended entry: ${errorMessage}`
+        ),
+      };
+    }
+  }
+
+  /**
+   * 查询需要主动核查的 warning 和 intuition 类型条目
+   * 用于 Agent 启动时的必读清单
+   */
+  async getRequiredChecklist(tags?: string[]): Promise<Result<ExtendedKnowledgeEntry[]>> {
+    const db = this.sqlite.getDB();
+    if (!db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.DB_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+
+    try {
+      let query = `
+        SELECT * FROM extended_knowledge_entries
+        WHERE type IN ('warning', 'intuition')
+      `;
+      const params: Array<string | number> = [];
+
+      if (tags && tags.length > 0) {
+        for (const tag of tags) {
+          query += ' AND tags LIKE ?';
+          params.push(`%"${tag}"%`);
+        }
+      }
+
+      query += ' ORDER BY type ASC, updated_at DESC';
+
+      const stmt = db.prepare(query);
+      const rows = stmt.all(...params) as Array<Record<string, unknown>>;
+      const entries = rows.map((row) => this.rowToExtendedEntry(row));
+
+      return { success: true, data: entries };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      return {
+        success: false,
+        error: new EketError(
+          'ENTRY_QUERY_FAILED',
+          `Failed to get required checklist: ${errorMessage}`
+        ),
+      };
+    }
+  }
+
+  /**
+   * 按默会程度查询
+   */
+  async getEntriesByTacitLevel(
+    level: 'explicit' | 'semi-tacit' | 'tacit'
+  ): Promise<Result<ExtendedKnowledgeEntry[]>> {
+    const db = this.sqlite.getDB();
+    if (!db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.DB_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+
+    try {
+      const stmt = db.prepare(`
+        SELECT * FROM extended_knowledge_entries
+        WHERE tacit_level = ?
+        ORDER BY updated_at DESC
+      `);
+
+      const rows = stmt.all(level) as Array<Record<string, unknown>>;
+      const entries = rows.map((row) => this.rowToExtendedEntry(row));
+
+      return { success: true, data: entries };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      return {
+        success: false,
+        error: new EketError(
+          'ENTRY_QUERY_FAILED',
+          `Failed to get entries by tacit level: ${errorMessage}`
+        ),
+      };
+    }
+  }
 }
 
 /**
  * 创建知识库实例
  */
-export function createKnowledgeBase(): KnowledgeBase {
-  return new KnowledgeBase();
+export function createKnowledgeBase(dbPath?: string): KnowledgeBase {
+  return new KnowledgeBase(dbPath);
 }
 
 /**

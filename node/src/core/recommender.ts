@@ -8,7 +8,7 @@
 import { createHistoryTracker } from '../core/history-tracker.js';
 import { createInstanceRegistry } from '../core/instance-registry.js';
 import type { Instance, Ticket, Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 import type {
   Recommendation,
   RecommenderConfig,
@@ -62,7 +62,7 @@ export class Recommender {
       return {
         success: false,
         error: new EketError(
-          'RECOMMENDER_INIT_FAILED',
+          EketErrorCode.RECOMMENDER_INIT_FAILED,
           `Failed to initialize recommender: ${errorMessage}`
         ),
       };
@@ -92,7 +92,7 @@ export class Recommender {
     if (!this.registry || !this.historyTracker) {
       return {
         success: false,
-        error: new EketError('RECOMMENDER_NOT_INITIALIZED', 'Recommender not initialized'),
+        error: new EketError(EketErrorCode.RECOMMENDER_NOT_INITIALIZED, 'Recommender not initialized'),
       };
     }
 
@@ -107,7 +107,7 @@ export class Recommender {
       if (!instance) {
         return {
           success: false,
-          error: new EketError('INSTANCE_NOT_FOUND', `Instance ${instanceId} not found`),
+          error: new EketError(EketErrorCode.INSTANCE_NOT_FOUND, `Instance ${instanceId} not found`),
         };
       }
 
@@ -176,7 +176,7 @@ export class Recommender {
     if (!this.historyTracker) {
       return {
         success: false,
-        error: new EketError('RECOMMENDER_NOT_INITIALIZED', 'Recommender not initialized'),
+        error: new EketError(EketErrorCode.RECOMMENDER_NOT_INITIALIZED, 'Recommender not initialized'),
       };
     }
 
@@ -436,7 +436,7 @@ export class Recommender {
     if (!this.historyTracker) {
       return {
         success: false,
-        error: new EketError('RECOMMENDER_NOT_INITIALIZED', 'Recommender not initialized'),
+        error: new EketError(EketErrorCode.RECOMMENDER_NOT_INITIALIZED, 'Recommender not initialized'),
       };
     }
 
@@ -462,7 +462,7 @@ export class Recommender {
     if (!this.registry || !this.historyTracker) {
       return {
         success: false,
-        error: new EketError('RECOMMENDER_NOT_INITIALIZED', 'Recommender not initialized'),
+        error: new EketError(EketErrorCode.RECOMMENDER_NOT_INITIALIZED, 'Recommender not initialized'),
       };
     }
 

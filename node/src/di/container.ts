@@ -9,7 +9,7 @@
  * - 服务作用域管理
  */
 
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 // ============================================================================
 // Types
@@ -62,11 +62,6 @@ export interface ContainerStats {
 // Constants
 // ============================================================================
 
-const SERVICE_NOT_FOUND = 'DI_SERVICE_NOT_FOUND';
-const CIRCULAR_DEPENDENCY = 'DI_CIRCULAR_DEPENDENCY';
-const FACTORY_REQUIRED = 'DI_FACTORY_REQUIRED';
-const RESOLUTION_FAILED = 'DI_RESOLUTION_FAILED';
-
 // ============================================================================
 // Dependency Injection Container Class
 // ============================================================================
@@ -98,7 +93,7 @@ export class DIContainer {
     dependencies: string[] = []
   ): this {
     if (typeof factory !== 'function') {
-      throw new EketError(FACTORY_REQUIRED, `Factory function required for service "${name}"`);
+      throw new EketError(EketErrorCode.DI_FACTORY_REQUIRED, `Factory function required for service "${name}"`);
     }
 
     this.services.set(name, {
@@ -165,17 +160,17 @@ export class DIContainer {
     if (!descriptor) {
       if (this.config.strict) {
         throw new EketError(
-          SERVICE_NOT_FOUND,
+          EketErrorCode.DI_SERVICE_NOT_FOUND,
           `Service "${name}" not registered. Available services: ${Array.from(this.services.keys()).join(', ')}`
         );
       }
-      throw new EketError(SERVICE_NOT_FOUND, `Service "${name}" not registered`);
+      throw new EketError(EketErrorCode.DI_SERVICE_NOT_FOUND, `Service "${name}" not registered`);
     }
 
     // 检测循环依赖
     if (this.resolutionStack.includes(name)) {
       throw new EketError(
-        CIRCULAR_DEPENDENCY,
+        EketErrorCode.DI_CIRCULAR_DEPENDENCY,
         `Circular dependency detected: ${this.resolutionStack.join(' -> ')} -> ${name}`
       );
     }
@@ -211,7 +206,7 @@ export class DIContainer {
       return instance;
     } catch (error) {
       throw new EketError(
-        RESOLUTION_FAILED,
+        EketErrorCode.DI_RESOLUTION_FAILED,
         `Failed to resolve service "${name}": ${error instanceof Error ? error.message : 'Unknown'}`,
         { service: name }
       );

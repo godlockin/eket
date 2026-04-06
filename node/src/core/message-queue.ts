@@ -3,13 +3,13 @@
  * 支持 Redis 和文件队列两种模式，自动降级
  */
 
-import * as fs from 'fs';
 import * as path from 'path';
 
 import { RedisConnectionPool } from '../core/cache-layer.js';
+import { OptimizedFileQueueManager } from '../core/optimized-file-queue.js';
 import { RedisClient } from '../core/redis-client.js';
 import type { Message, Result } from '../types/index.js';
-import { EketError } from '../types/index.js';
+import { EketError, EketErrorCode } from '../types/index.js';
 
 import { writeToMailbox as writeAgentMailbox } from './agent-mailbox.js';
 import { createRetryExecutor, type RetryExecutor } from './circuit-breaker.js';
@@ -79,7 +79,7 @@ export class RedisMessageQueue implements MessageQueue {
         }
         return {
           success: false,
-          error: new EketError('REDIS_CLIENT_NOT_AVAILABLE', 'Redis client not available'),
+          error: new EketError(EketErrorCode.REDIS_CLIENT_NOT_AVAILABLE, 'Redis client not available'),
         };
       } finally {
         this.pool.release(client);
@@ -87,7 +87,7 @@ export class RedisMessageQueue implements MessageQueue {
     } catch (err) {
       return {
         success: false,
-        error: new EketError('REDIS_PUBLISH_FAILED', `Failed to publish: ${err}`),
+        error: new EketError(EketErrorCode.REDIS_PUBLISH_FAILED, `Failed to publish: ${err}`),
       };
     }
   }
@@ -96,7 +96,7 @@ export class RedisMessageQueue implements MessageQueue {
     if (this.subscribedChannels.has(channel)) {
       return {
         success: false,
-        error: new EketError('ALREADY_SUBSCRIBED', `Already subscribed to channel: ${channel}`),
+        error: new EketError(EketErrorCode.ALREADY_SUBSCRIBED, `Already subscribed to channel: ${channel}`),
       };
     }
 
@@ -136,22 +136,31 @@ export class RedisMessageQueue implements MessageQueue {
 
 /**
  * 文件消息队列实现（降级模式）
+ * Level 4 降级路径，使用 OptimizedFileQueueManager 实现原子写入、
+ * 校验和验证、去重和批量操作。
  */
 export class FileMessageQueue implements MessageQueue {
   private queueDir: string;
   private handlers: Map<string, MessageHandler> = new Map();
   private pollInterval: NodeJS.Timeout | null = null;
   private readonly pollIntervalMs: number; // 可配置的轮询间隔
+  private optimizedQueue: OptimizedFileQueueManager;
 
   constructor(config: MessageQueueConfig) {
     this.queueDir = config.queueDir || path.join(process.cwd(), '.eket', 'data', 'queue');
     // 默认 500ms，可通过配置覆盖
     this.pollIntervalMs = config.filePollingInterval ?? 500;
-    fs.mkdirSync(this.queueDir, { recursive: true });
+
+    // 使用 OptimizedFileQueueManager 替代直接文件操作
+    this.optimizedQueue = new OptimizedFileQueueManager({
+      queueDir: this.queueDir,
+      archiveDir: path.join(this.queueDir, '..', 'queue-archive'),
+      atomicWrites: true,
+    });
   }
 
   async connect(): Promise<Result<void>> {
-    console.log(`[File MQ] Connected to ${this.queueDir}`);
+    console.log(`[File MQ] Connected to ${this.queueDir} (via OptimizedFileQueueManager)`);
     return { success: true, data: undefined };
   }
 
@@ -164,23 +173,15 @@ export class FileMessageQueue implements MessageQueue {
   }
 
   async publish(channel: string, message: Message): Promise<Result<void>> {
-    try {
-      const filename = `${channel}_${message.id}_${Date.now()}.json`;
-      const filepath = path.join(this.queueDir, filename);
-
-      const fileMessage = {
-        ...message,
-        _channel: channel,
-      };
-
-      fs.writeFileSync(filepath, JSON.stringify(fileMessage, null, 2));
-      return { success: true, data: undefined };
-    } catch {
+    // 委托给 OptimizedFileQueueManager：原子写入 + 校验和 + 去重
+    const result = this.optimizedQueue.enqueue(channel, message);
+    if (!result.success) {
       return {
         success: false,
-        error: new EketError('FILE_WRITE_FAILED', 'Failed to write message'),
+        error: new EketError(EketErrorCode.FILE_WRITE_FAILED, result.error?.message || 'Failed to write message'),
       };
     }
+    return { success: true, data: undefined };
   }
 
   async subscribe(channel: string, handler: MessageHandler): Promise<Result<void>> {
@@ -209,30 +210,21 @@ export class FileMessageQueue implements MessageQueue {
   }
 
   private async processQueue(): Promise<void> {
-    try {
-      const files = fs.readdirSync(this.queueDir);
-      const messageFiles = files.filter((f) => f.endsWith('.json'));
-
-      for (const file of messageFiles) {
-        const filepath = path.join(this.queueDir, file);
-
-        try {
-          const content = fs.readFileSync(filepath, 'utf-8');
-          const message = JSON.parse(content) as Message & { _channel?: string };
-
-          if (message._channel && this.handlers.has(message._channel)) {
-            const handler = this.handlers.get(message._channel)!;
+    // 对每个已订阅的 channel 调用 OptimizedFileQueueManager.processQueue
+    for (const [channel, handler] of this.handlers.entries()) {
+      try {
+        await this.optimizedQueue.processQueue(
+          async (fileMessage) => {
+            // fileMessage 已经是 Message 超集，直接交给 handler
+            const message = fileMessage as unknown as Message;
             await handler(message);
-
-            // 处理后删除文件
-            fs.unlinkSync(filepath);
-          }
-        } catch {
-          console.error('[File MQ] Process file error');
-        }
+          },
+          channel,
+          1 // 串行处理，与原行为一致
+        );
+      } catch {
+        console.error(`[File MQ] Process queue error for channel: ${channel}`);
       }
-    } catch {
-      console.error('[File MQ] Process queue error');
     }
   }
 }
@@ -283,7 +275,7 @@ export class HybridMessageQueue implements MessageQueue {
 
     return {
       success: false,
-      error: new EketError('MQ_CONNECT_FAILED', 'Failed to connect any message queue'),
+      error: new EketError(EketErrorCode.MQ_CONNECT_FAILED, 'Failed to connect any message queue'),
     };
   }
 
@@ -315,7 +307,7 @@ export class HybridMessageQueue implements MessageQueue {
     }
     return {
       success: false,
-      error: new EketError('MQ_NOT_AVAILABLE', 'No message queue available'),
+      error: new EketError(EketErrorCode.MQ_NOT_AVAILABLE, 'No message queue available'),
     };
   }
 
@@ -328,7 +320,7 @@ export class HybridMessageQueue implements MessageQueue {
     }
     return {
       success: false,
-      error: new EketError('MQ_NOT_AVAILABLE', 'No message queue available'),
+      error: new EketError(EketErrorCode.MQ_NOT_AVAILABLE, 'No message queue available'),
     };
   }
 
