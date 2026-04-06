@@ -1,7 +1,7 @@
 # 前端开发 Agent
 
 **类型**: 执行 Agent (按需)
-**版本**: 1.0.0
+**版本**: 2.0.0
 
 ---
 
@@ -10,7 +10,7 @@
 ```yaml
 name: frontend_dev
 type: executor
-version: 1.0.0
+version: 2.0.0
 description: 前端开发 - 实现前端功能
 
 responsibilities:

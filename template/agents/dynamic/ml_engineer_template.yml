@@ -1,6 +1,6 @@
 # 机器学习工程师 Agent 模板
 
-**版本**: 1.0.0
+**版本**: 2.0.0
 **领域**: ml, model-training, ai
 
 ---
@@ -8,7 +8,7 @@
 ```yaml
 name: ml_engineer
 type: executor
-version: 1.0.0
+version: 2.0.0
 description: 机器学习工程师 - 负责模型训练和部署
 
 personality:

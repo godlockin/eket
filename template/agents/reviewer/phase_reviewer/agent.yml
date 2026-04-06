@@ -1,6 +1,6 @@
 # Phase Reviewer - 阶段回溯评审员
 
-**版本**: 1.0.0
+**版本**: 2.0.0
 **类型**: executor (独立线程/进程)
 **触发条件**: 阶段完成率 >= 90%
 
@@ -11,7 +11,7 @@
 ```yaml
 name: phase_reviewer
 type: executor
-version: 1.0.0
+version: 2.0.0
 description: 阶段回溯评审员 - 对完成的阶段进行全量回溯和 Review
 
 responsibilities:

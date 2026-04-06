@@ -1,6 +1,6 @@
 # Agent 基础模板
 
-**版本**: 0.2.0
+**版本**: 2.0.0
 
 ---
 
@@ -11,7 +11,7 @@
 
 name: agent_name
 type: coordinator|executor
-version: 1.0.0
+version: 2.0.0
 description: 简短描述
 
 # 职责范围
@@ -80,7 +80,7 @@ lifecycle:
 
 name: requirement_analyst
 type: coordinator
-version: 1.0.0
+version: 2.0.0
 description: 需求分析师 - 分析人类需求并拆解为 Jira 任务
 
 responsibilities:
@@ -145,7 +145,7 @@ lifecycle:
 
 name: frontend_dev
 type: executor
-version: 1.0.0
+version: 2.0.0
 description: 前端开发 - 实现前端功能
 
 responsibilities:
