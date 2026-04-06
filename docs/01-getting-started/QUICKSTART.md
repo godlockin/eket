@@ -1,7 +1,7 @@
 # EKET 快速开始指南
 
-**版本**: 0.7.2
-**最后更新**: 2026-03-25
+**版本**: 2.0.0
+**最后更新**: 2026-04-06
 
 ---
 
@@ -56,18 +56,18 @@ node node/dist/index.js init
 
 ## 核心命令速查
 
-### Node.js CLI (v0.7 新增)
+### Node.js CLI
 
 | 命令 | 功能 |
 |------|------|
-| `node node/dist/index.js check` | 检查模块可用性 |
-| `node node/dist/index.js doctor` | 系统诊断 |
+| `node node/dist/index.js system:check` | 检查模块可用性 |
+| `node node/dist/index.js system:doctor` | 系统诊断 |
 | `node node/dist/index.js redis:check` | 检查 Redis |
 | `node node/dist/index.js sqlite:check` | 检查 SQLite |
-| `node node/dist/index.js init` | 初始化向导 |
-| `node node/dist/index.js claim [id]` | 领取任务 |
-| `node node/dist/index.js submit-pr` | 提交 PR |
+| `node node/dist/index.js project:init` | 项目初始化向导 |
+| `node node/dist/index.js instance:start` | 启动实例 |
 | `node node/dist/index.js heartbeat:start <id>` | 启动心跳 |
+| `node node/dist/index.js web:dashboard` | 启动 Web 监控面板 |
 
 ### Claude Code 命令
 
@@ -198,10 +198,10 @@ git push -u origin feature/<task-id>
 
 ## 下一步
 
-- 阅读 [INSTANCE_INITIALIZATION.md](docs/INSTANCE_INITIALIZATION.md) 了解初始化流程
-- 阅读 [AGENTS_CONFIG.md](docs/AGENTS_CONFIG.md) 了解 Agent 配置
-- 阅读 [SKILLS_SYSTEM.md](docs/SKILLS_SYSTEM.md) 了解 Skills 系统
-- 阅读 [BRANCH_STRATEGY.md](docs/BRANCH_STRATEGY.md) 了解分支策略
+- 阅读 [docs/02-architecture/FRAMEWORK.md](../02-architecture/FRAMEWORK.md) 了解框架设计
+- 阅读 [docs/02-architecture/AGENTS_CONFIG.md](../02-architecture/AGENTS_CONFIG.md) 了解 Agent 配置
+- 阅读 [docs/02-architecture/SKILLS_SYSTEM.md](../02-architecture/SKILLS_SYSTEM.md) 了解 Skills 系统
+- 阅读 [docs/03-implementation/BRANCH_STRATEGY.md](../03-implementation/BRANCH_STRATEGY.md) 了解分支策略
 
 ---
 

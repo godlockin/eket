@@ -1,7 +1,7 @@
 # EKET Framework
 
-**AI 智能体协作框架 | Version 0.7.2**
-**最后更新**: 2026-03-25
+**AI 智能体协作框架 | Version 2.0.0**
+**最后更新**: 2026-04-06
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-green.svg)](https://nodejs.org/)
@@ -69,27 +69,17 @@ node node/dist/index.js init
 
 ## 核心特性
 
-### Node.js 混合架构 (v0.7 新增)
+### Node.js 混合架构
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                   混合适配器层                            │
+│                   连接管理层（四级降级）                    │
 ├─────────────────────────────────────────────────────────┤
-│  Level 1: Node.js + Redis (完整功能)                     │
-│  - Redis Pub/Sub 消息队列                                │
-│  - Redis Hash 心跳存储                                   │
-│  - SQLite 数据持久化                                     │
-│                                                         │
-│  ↓ (Redis 不可用)                                        │
-│                                                         │
-│  Level 2: Node.js + 文件队列 (降级模式)                   │
-│  - .eket/data/queue/*.json                              │
-│  - 去重机制 (processed.json)                            │
-│  - 过期清理 + 自动归档                                   │
-│                                                         │
-│  ↓ (Node.js 不可用)                                      │
-│                                                         │
-│  Level 3: Shell 脚本 (基础模式)                          │
+│  Level 1: Remote Redis (完整分布式功能)                   │
+│  Level 2: Local Redis (本地实时功能)                      │
+│  Level 3: SQLite (持久化降级)                             │
+│  Level 4: File Queue (离线模式)                           │
+│           .eket/data/queue/*.json                        │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -115,7 +105,7 @@ node node/dist/index.js init
 
 ### 专家 Agent 角色
 
-EKET v0.6.1 起，Slaver 角色扩展为**专家 Agent**，可根据项目需要配置为任意领域的专家：
+Slaver 角色可根据项目需要配置为任意领域的专家：
 
 | 领域 | 示例角色 |
 |------|----------|
@@ -205,39 +195,36 @@ my-project/
 
 ## 核心命令
 
-### Node.js CLI 命令 (v0.7 新增)
+### Node.js CLI 命令
 
 #### 系统命令
 
 ```bash
-node node/dist/index.js check          # 检查 Node.js 模块可用性
-node node/dist/index.js doctor         # 诊断系统状态
-```
+# 系统诊断
+node node/dist/index.js system:check     # 检查 Node.js 模块可用性
+node node/dist/index.js system:doctor    # 诊断系统状态
 
-#### Redis 命令
-
-```bash
+# Redis 命令
 node node/dist/index.js redis:check          # 检查 Redis 连接
 node node/dist/index.js redis:list-slavers   # 列出活跃 Slaver
-```
 
-#### SQLite 命令
-
-```bash
+# SQLite 命令
 node node/dist/index.js sqlite:check          # 检查 SQLite 数据库
 node node/dist/index.js sqlite:list-retros    # 列出 Retrospective
 node node/dist/index.js sqlite:search "<kw>"  # 搜索 Retrospective
 node node/dist/index.js sqlite:report         # 生成统计报告
-```
 
-#### 任务管理
-
-```bash
-node node/dist/index.js init                  # 项目初始化向导
-node node/dist/index.js claim [id]            # 领取任务
-node node/dist/index.js submit-pr             # 提交 PR
+# 项目与实例
+node node/dist/index.js project:init          # 项目初始化向导
+node node/dist/index.js instance:start        # 启动实例
 node node/dist/index.js heartbeat:start <id>  # 启动心跳
 node node/dist/index.js heartbeat:status      # 查看心跳状态
+
+# 高级功能
+node node/dist/index.js web:dashboard         # 启动 Web 监控面板
+node node/dist/index.js hooks:start           # 启动 HTTP Hook 服务器
+node node/dist/index.js pool:status           # 查看 Agent Pool 状态
+node node/dist/index.js gateway:start         # 启动 API Gateway
 ```
 
 ### Claude Code 命令
@@ -286,14 +273,6 @@ node node/dist/index.js heartbeat:status      # 查看心跳状态
 
 ## 文档导航
 
-### v0.7 文档
-
-- [RELEASE-v0.7.md](docs/RELEASE-v0.7.md) - v0.7 发布说明
-- [IMPLEMENTATION_SUMMARY.md](docs/IMPLEMENTATION_SUMMARY.md) - v0.7 实施总结
-- [IMPLEMENTATION-v0.7-phase2.md](docs/IMPLEMENTATION-v0.7-phase2.md) - Phase 2 实施文档
-- [IMPLEMENTATION-v0.7-phase3.md](docs/IMPLEMENTATION-v0.7-phase3.md) - Phase 3 实施文档
-- [v0.7-upgrade-guide.md](docs/v0.7-upgrade-guide.md) - v0.7 升级指南
-
 ### 框架文档
 
 - [docs/README.md](docs/README.md) - 文档索引
@@ -317,6 +296,7 @@ node node/dist/index.js heartbeat:status      # 查看心跳状态
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| **2.0.0** | 2026-04-02 | 全面 code review 修复 (132 个 P0/P1 问题)、安全加固、WebSocket、Agent Pool、HTTP Hooks |
 | **0.7.2** | 2026-03-25 | 代码质量提升：类型安全、错误处理、DRY 优化 |
 | **0.7.1** | 2026-03-25 | Phase 3 完整实现：PR 提交、三仓库克隆、文件队列 |
 | **0.7.0** | 2026-03-24 | Node.js 混合架构实现 |
