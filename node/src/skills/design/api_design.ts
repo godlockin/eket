@@ -186,6 +186,10 @@ export const APIDesignSkill: Skill<APIDesignInput, APIDesignOutput> = {
         type: 'boolean',
         description: '是否需要认证',
       },
+      models: {
+        type: 'object',
+        description: '数据模型定义',
+      },
       version: {
         type: 'string',
         description: 'API 版本',

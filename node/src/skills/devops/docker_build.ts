@@ -86,6 +86,10 @@ export const DockerBuildSkill: Skill<DockerBuildInput, DockerBuildOutput> = {
         enum: ['nodejs', 'python', 'java', 'go', 'rust', 'static', 'custom'],
         description: '应用类型',
       },
+      appVersion: {
+        type: 'string',
+        description: '应用版本',
+      },
       baseImage: {
         type: 'string',
         description: '基础镜像',
@@ -94,9 +98,31 @@ export const DockerBuildSkill: Skill<DockerBuildInput, DockerBuildOutput> = {
         type: 'number',
         description: '应用端口',
       },
+      workDir: {
+        type: 'string',
+        description: '工作目录',
+      },
+      entryPoint: {
+        type: 'string',
+        description: '入口文件',
+      },
       multiStage: {
         type: 'boolean',
         description: '是否需要多阶段构建',
+      },
+      envVars: {
+        type: 'object',
+        description: '环境变量',
+      },
+      volumes: {
+        type: 'array',
+        items: { type: 'string' },
+        description: '需要挂载的卷',
+      },
+      services: {
+        type: 'array',
+        items: { type: 'string', enum: ['postgres', 'mysql', 'redis', 'mongodb', 'nginx'] },
+        description: '依赖服务',
       },
     },
   },
