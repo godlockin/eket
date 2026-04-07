@@ -6,6 +6,7 @@
  * unregister, clear, registerAdapter, getAdapter, getStats
  */
 
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { SkillsRegistry, createSkillsRegistry, getGlobalSkillsRegistry, resetGlobalSkillsRegistry } from '@/skills/registry.js';
 import { SkillCategory } from '@/skills/types.js';
 import type { Skill } from '@/skills/types.js';

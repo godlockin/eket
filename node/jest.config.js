@@ -3,6 +3,10 @@ export default {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
   testMatch: ['**/tests/**/*.test.ts'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    'i18n-integration\\.test\\.ts', // 使用自定义测试框架，非 Jest 测试
+  ],
   rootDir: '.',
   roots: ['<rootDir>/src', '<rootDir>/tests'],
   moduleDirectories: ['node_modules'],

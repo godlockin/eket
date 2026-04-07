@@ -363,6 +363,30 @@ export function createSkillsRegistry(config?: Partial<SkillRegistryConfig>): Ski
 }
 
 // ============================================================================
+// 全局单例（用于测试和简化使用）
+// ============================================================================
+
+let globalSkillsRegistry: SkillsRegistry | null = null;
+
+/**
+ * 获取全局 Skills Registry 单例
+ * @returns 全局 SkillsRegistry 实例
+ */
+export function getGlobalSkillsRegistry(): SkillsRegistry {
+  if (!globalSkillsRegistry) {
+    globalSkillsRegistry = createSkillsRegistry();
+  }
+  return globalSkillsRegistry;
+}
+
+/**
+ * 重置全局 Skills Registry（主要用于测试清理）
+ */
+export function resetGlobalSkillsRegistry(): void {
+  globalSkillsRegistry = null;
+}
+
+// ============================================================================
 // 适配器相关导出
 // ============================================================================
 
