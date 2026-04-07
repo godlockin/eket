@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # Redis 测试服务
+  redis:
+    image: redis:7-alpine
+    container_name: eket-test-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - eket-test
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    command: redis-server --appendonly no --save ""
+
+  # SQLite 测试不需要容器（使用内存数据库）
+
+  # 测试运行器
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: eket-test-runner
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      # Redis 配置
+      - EKET_REDIS_HOST=redis
+      - EKET_REDIS_PORT=6379
+      # 使用内存 SQLite
+      - EKET_SQLITE_PATH=:memory:
+      # 测试环境标记
+      - NODE_ENV=test
+      - EKET_LOG_LEVEL=error
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./node_modules:/app/node_modules:ro
+      - ./jest.config.js:/app/jest.config.js:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./package.json:/app/package.json:ro
+    networks:
+      - eket-test
+    command: npm test
+
+  # 测试覆盖率报告
+  test-coverage:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: eket-test-coverage
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - EKET_REDIS_HOST=redis
+      - EKET_REDIS_PORT=6379
+      - EKET_SQLITE_PATH=:memory:
+      - NODE_ENV=test
+      - EKET_LOG_LEVEL=error
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./node_modules:/app/node_modules:ro
+      - ./jest.config.js:/app/jest.config.js:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./package.json:/app/package.json:ro
+      - ./coverage:/app/coverage
+    networks:
+      - eket-test
+    command: npm test -- --coverage
+
+networks:
+  eket-test:
+    driver: bridge

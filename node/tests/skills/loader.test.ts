@@ -6,6 +6,7 @@
  * cache logic, TTL expiration, hot reload
  */
 
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { Volume, fs } from 'memfs';
 import { SkillLoader, createSkillLoader, loadSkillsFromDirectory, loadSkill } from '@/skills/loader.js';
 import type { Skill } from '@/skills/types.js';

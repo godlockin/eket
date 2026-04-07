@@ -1,0 +1,22 @@
+{
+  "name": "eket-e2e-master-agent",
+  "version": "1.0.0",
+  "description": "EKET Master Agent for E2E Collaboration Demo",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/main.js",
+    "dev": "ts-node src/main.ts"
+  },
+  "dependencies": {
+    "eket-sdk": "file:../../../sdk/javascript"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "typescript": "^5.x",
+    "ts-node": "^10.x"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -6,6 +6,7 @@
  * decomposition logic, output format, boundary conditions
  */
 
+import { describe, it, expect } from '@jest/globals';
 import {
   RequirementDecompositionSkill,
   RequirementDecompositionInput,

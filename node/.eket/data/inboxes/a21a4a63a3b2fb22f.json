@@ -1,0 +1,11 @@
+[
+  {
+    "id": "msg_1775556953151_s21i8im",
+    "from": "master",
+    "text": "The test still fails with EADDRINUSE. Two issues found:\n\n1. **100ms port release delay is too short** - Increase to 500ms in afterEach\n2. **Untracked server instances** - Tests in \"createHttpHookServer\" describe block (lines 99-113) create servers but don't assign to `server` variable, so afterEach can't clean them up\n\n**Required changes** in `node/tests/http-hook-server.test.ts`:\n\n```typescript\n// Change afterEach delay from 100ms to 500ms:\nafterEach(async () => {\n  if (server) {\n    try {\n      await server.stop();\n      server = null as any;\n    } catch (err) {\n      console.warn('Failed to stop server:', err);\n    }\n  }\n  // Increased delay for port release (100ms → 500ms)\n  await new Promise(resolve => setTimeout(resolve, 500));\n});\n```\n\nAlso add cleanup for createHttpHookServer tests:\n```typescript\ndescribe('createHttpHookServer', () => {\n  let tempServer: HttpHookServer | null = null;\n  \n  afterEach(async () => {\n    if (tempServer) {\n      try {\n        await tempServer.stop();\n      } catch {}\n      tempServer = null;\n    }\n  });\n  \n  it('should create an HttpHookServer instance', () => {\n    tempServer = createHttpHookServer({ port: testPort });\n    expect(tempServer).toBeDefined();\n    expect(tempServer).toBeInstanceOf(HttpHookServer);\n  });\n  \n  // Similar for other tests in this block...\n});\n```\n\nPlease apply these fixes and re-run tests.\n\n**Priority**: P0 (blocking other tasks)",
+    "timestamp": "2026-04-07T10:15:53.151Z",
+    "summary": "TASK-001 - Additional fix required for http-hook-server tests",
+    "color": "blue",
+    "read": false
+  }
+]

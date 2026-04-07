@@ -8,6 +8,7 @@
  * - 知识库
  */
 
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import {
   CommunicationProtocol,
   createCommunicationProtocol,

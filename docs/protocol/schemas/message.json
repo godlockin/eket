@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://eket.dev/schemas/message.json",
+  "title": "EKET Message",
+  "description": "Schema for inter-agent messages",
+  "type": "object",
+  "required": ["from", "to", "type", "timestamp", "payload"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique message identifier",
+      "pattern": "^msg_\\d+_\\d+(_\\d+)?$",
+      "examples": ["msg_20260407_143045_12345"]
+    },
+    "from": {
+      "type": "string",
+      "description": "Sender instance ID",
+      "examples": ["slaver_frontend_001", "master"]
+    },
+    "to": {
+      "type": "string",
+      "description": "Recipient instance ID or broadcast",
+      "examples": ["master", "all_slavers", "slaver_backend_001"]
+    },
+    "type": {
+      "type": "string",
+      "description": "Message type",
+      "enum": [
+        "pr_review_request",
+        "task_claimed",
+        "help_request",
+        "status_update",
+        "task_assigned",
+        "pr_approved",
+        "pr_rejected",
+        "blocker_alert"
+      ]
+    },
+    "priority": {
+      "type": "string",
+      "description": "Message priority",
+      "enum": ["low", "normal", "high", "critical"],
+      "default": "normal"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Message creation timestamp (ISO 8601)"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Type-specific message data"
+    },
+    "correlation_id": {
+      "type": "string",
+      "description": "ID of the message this is replying to",
+      "pattern": "^msg_\\d+_\\d+(_\\d+)?$"
+    },
+    "ttl": {
+      "type": "integer",
+      "description": "Time to live in seconds",
+      "minimum": 0,
+      "maximum": 86400,
+      "default": 3600
+    }
+  }
+}
