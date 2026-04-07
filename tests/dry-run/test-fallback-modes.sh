@@ -117,12 +117,12 @@ test_level2_file_mode() {
 test_level3_shell_mode() {
     log TEST "测试 4: Level 3 - Shell 模式"
 
-    # 检查 Shell 脚本是否存在
-    if [ -f "$PROJECT_ROOT/scripts/start.sh" ]; then
-        assert "Shell 脚本存在" "true"
+    # 检查 Node.js CLI 是否存在
+    if [ -f "$PROJECT_ROOT/node/dist/index.js" ]; then
+        assert "Node.js CLI 存在" "true"
     else
-        log WARN "Shell 脚本不存在，跳过"
-        assert "Shell 模式跳过" "true"
+        log WARN "Node.js CLI 未构建，跳过"
+        assert "CLI 模式跳过" "true"
     fi
 }
 

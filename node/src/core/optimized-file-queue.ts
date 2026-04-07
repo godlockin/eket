@@ -40,7 +40,14 @@ export interface OptimizedQueueStats {
 interface FileMessage extends Message {
   _channel?: string;
   _enqueue_time?: number;
-  _write_checksum?: string;
+}
+
+interface FileMessageWrapper {
+  message: FileMessage;
+  metadata: {
+    checksum: string;
+    version: number; // 版本号，用于处理旧格式数据
+  };
 }
 
 /**
@@ -236,10 +243,21 @@ export class OptimizedFileQueueManager {
           ...message,
           _channel: channel,
           _enqueue_time: Date.now(),
-          _write_checksum: this.calculateChecksum(message),
         };
 
-        const content = JSON.stringify(fileMessage, null, 2);
+        // 计算校验和（只基于原始消息，不包括私有字段）
+        const checksum = this.calculateChecksum(message);
+
+        // 使用包装器格式，将校验和与数据分离
+        const wrapper: FileMessageWrapper = {
+          message: fileMessage,
+          metadata: {
+            checksum,
+            version: 2, // 新格式版本号
+          },
+        };
+
+        const content = JSON.stringify(wrapper, null, 2);
         tempPath = `${filepath}.tmp.${process.pid}`;
 
         // 原子写入：先写临时文件，再重命名
@@ -287,6 +305,7 @@ export class OptimizedFileQueueManager {
 
   /**
    * 从队列获取消息（支持批量）
+   * 兼容新格式（v2 wrapper）和旧格式（v1 with _write_checksum）
    */
   dequeue(channel?: string, batchSize = 100): Array<{ filepath: string; message: FileMessage }> {
     const startTime = Date.now();
@@ -306,7 +325,26 @@ export class OptimizedFileQueueManager {
 
         try {
           const content = fs.readFileSync(filepath, 'utf-8');
-          const message = JSON.parse(content) as FileMessage;
+          const parsed = JSON.parse(content);
+
+          let message: FileMessage;
+          let expectedChecksum: string | undefined;
+
+          // 检测格式版本
+          if (parsed.metadata && parsed.metadata.version === 2) {
+            // 新格式（v2 wrapper）
+            const wrapper = parsed as FileMessageWrapper;
+            message = wrapper.message;
+            expectedChecksum = wrapper.metadata.checksum;
+          } else if (parsed._write_checksum) {
+            // 旧格式（v1 with _write_checksum）
+            message = parsed as FileMessage;
+            expectedChecksum = (parsed as { _write_checksum?: string })._write_checksum;
+          } else {
+            // 非常旧的格式（无校验和）
+            message = parsed as FileMessage;
+            expectedChecksum = undefined;
+          }
 
           // 跳过已处理
           if (this.isProcessed(message.id)) {
@@ -314,14 +352,14 @@ export class OptimizedFileQueueManager {
             continue;
           }
 
-          // 校验和验证：提取私有字段后，对原始消息字段重算
-          const {
-            _write_checksum: expectedChecksum,
-            _channel: _ch,
-            _enqueue_time: _et,
-            ...originalMessage
-          } = message;
+          // 校验和验证（如果有）
           if (expectedChecksum) {
+            // 提取原始消息（移除私有字段）
+            const {
+              _channel: _ch,
+              _enqueue_time: _et,
+              ...originalMessage
+            } = message;
             const actualChecksum = this.calculateChecksum(originalMessage as Message);
             if (expectedChecksum !== actualChecksum) {
               console.warn('[OptimizedFileQueue] 消息校验和失败，跳过:', file);
@@ -424,10 +462,18 @@ export class OptimizedFileQueueManager {
 
         try {
           const content = fs.readFileSync(filepath, 'utf-8');
-          const message = JSON.parse(content) as FileMessage & { _enqueue_time?: number };
+          const parsed = JSON.parse(content);
 
-          // 以消息创建时间（timestamp）或入队时间（_enqueue_time）中较早者为准
-          const messageTime = message.timestamp || message._enqueue_time || now;
+          // 支持新旧格式
+          const message: FileMessage = parsed.metadata && parsed.metadata.version === 2
+            ? (parsed as FileMessageWrapper).message
+            : parsed as FileMessage;
+
+          // 以消息创建时间（timestamp转数值）或入队时间（_enqueue_time）中较早者为准
+          const timestampNum = typeof message.timestamp === 'string'
+            ? new Date(message.timestamp).getTime()
+            : message.timestamp;
+          const messageTime = timestampNum || message._enqueue_time || now;
           const enqueueTime = message._enqueue_time || now;
           const age = now - Math.min(messageTime, enqueueTime);
 

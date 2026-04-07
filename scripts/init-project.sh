@@ -166,6 +166,16 @@ copy_templates() {
             chmod +x ".eket/health_check.sh"
             echo -e "${GREEN}✓${NC} .eket/health_check.sh"
         fi
+
+        # 复制 IDENTITY.md 并替换动态变量
+        if [ -f "$EKET_TEMPLATE_DIR/.eket/IDENTITY.md" ]; then
+            mkdir -p ".eket"
+            cp "$EKET_TEMPLATE_DIR/.eket/IDENTITY.md" ".eket/IDENTITY.md"
+            # 注意：IDENTITY.md 中的动态字段由 eket-start.sh 在运行时写入 instance_config.yml
+            # 这里不需要替换，因为模板已经指导用户读取 instance_config.yml
+            echo -e "${GREEN}✓${NC} .eket/IDENTITY.md"
+        fi
+
         if [ -f "$EKET_TEMPLATE_DIR/.eket/version.yml" ]; then
             mkdir -p ".eket"
             cp "$EKET_TEMPLATE_DIR/.eket/version.yml" ".eket/version.yml"
