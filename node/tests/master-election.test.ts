@@ -11,6 +11,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import * as fs from 'fs';
+import * as path from 'path';
 import { MasterElection, createMasterElection } from '../core/master-election';
 import type { MasterElectionConfig } from '../types/index';
 
@@ -20,8 +22,6 @@ const TEST_PROJECT_ROOT = '/tmp/test-eket-master-election';
 describe('MasterElection', () => {
   beforeEach(() => {
     // 创建测试目录
-    const fs = require('fs');
-    const path = require('path');
     fs.mkdirSync(path.join(TEST_PROJECT_ROOT, '.eket', 'state', 'master_lock'), {
       recursive: true,
       force: true,
@@ -30,7 +30,6 @@ describe('MasterElection', () => {
 
   afterEach(() => {
     // 清理测试目录
-    const fs = require('fs');
     try {
       fs.rmSync(TEST_PROJECT_ROOT, { recursive: true, force: true });
     } catch {
@@ -237,8 +236,6 @@ describe('Election Levels', () => {
 
 describe('Race Condition Prevention', () => {
   beforeEach(() => {
-    const fs = require('fs');
-    const path = require('path');
     fs.mkdirSync(path.join(TEST_PROJECT_ROOT, '.eket', 'state', 'master_lock'), {
       recursive: true,
       force: true,
@@ -246,7 +243,6 @@ describe('Race Condition Prevention', () => {
   });
 
   afterEach(() => {
-    const fs = require('fs');
     try {
       fs.rmSync(TEST_PROJECT_ROOT, { recursive: true, force: true });
     } catch {
@@ -288,8 +284,6 @@ describe('Race Condition Prevention', () => {
 
 describe('Lease Renewal', () => {
   beforeEach(() => {
-    const fs = require('fs');
-    const path = require('path');
     fs.mkdirSync(path.join(TEST_PROJECT_ROOT, '.eket', 'state', 'master_lock'), {
       recursive: true,
       force: true,
@@ -297,7 +291,6 @@ describe('Lease Renewal', () => {
   });
 
   afterEach(() => {
-    const fs = require('fs');
     try {
       fs.rmSync(TEST_PROJECT_ROOT, { recursive: true, force: true });
     } catch {

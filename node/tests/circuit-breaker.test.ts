@@ -9,7 +9,7 @@
  * - 半开状态探测
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { CircuitBreaker, createCircuitBreaker } from '../core/circuit-breaker';
 import type { CircuitBreakerConfig } from '../types/index';
 

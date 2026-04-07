@@ -15,8 +15,28 @@ module.exports = function resolver(request, options) {
 
   // Let node_modules resolve normally
   if (!request.startsWith('.') && !request.startsWith('/') && !request.startsWith('@')) {
-    return defaultResolver(request, options);
+    const result = defaultResolver(request, options);
+    if (typeof result === 'string' && result.includes('/src/')) {
+      process.stderr.write(`[RESOLVER DEBUG] bare "${request}" from "${basedir}" → "${result}"\n`);
+    }
+    return result;
   }
+
+  // Log ALL resolutions to help debug
+  let _result;
+  try {
+    _result = _resolveInner(request, options, basedir, defaultResolver);
+  } catch(e) {
+    process.stderr.write(`[RESOLVER ERROR] "${request}" from "${basedir}" threw: ${e.message}\n`);
+    throw e;
+  }
+  if (typeof _result === 'string' && _result.includes('constants')) {
+    process.stderr.write(`[RESOLVER DEBUG] "${request}" from "${basedir}" → "${_result}"\n`);
+  }
+  return _result;
+};
+
+function _resolveInner(request, options, basedir, defaultResolver) {
 
   // Handle @/ alias - map to project root src/ directory
   if (request.startsWith('@/')) {
@@ -32,6 +52,30 @@ module.exports = function resolver(request, options) {
 
     // Fall back to default resolution (will fail with proper error)
     return defaultResolver(request, options);
+  }
+
+  // Handle extension-less relative imports (e.g. '../core/circuit-breaker') -> try .ts
+  if (!path.extname(request) && (request.startsWith('./') || request.startsWith('../'))) {
+    // First: resolve relative to basedir (works for same-level imports)
+    const tsPath = path.resolve(basedir, request + '.ts');
+    if (fs.existsSync(tsPath)) {
+      return tsPath;
+    }
+    // Second: ONLY for '../'-prefixed imports from tests/ dir:
+    // '../core/X' from tests/ = src/core/X.ts
+    // Do NOT apply this to './' imports - those should stay within their own package
+    if (request.startsWith('../')) {
+      const srcRelative = request.replace(/^\.\.\//, '');
+      const srcPath = path.join(projectRoot, 'src', srcRelative + '.ts');
+      if (fs.existsSync(srcPath)) {
+        return srcPath;
+      }
+    }
+    // Also try index.ts for directory imports
+    const indexPath = path.resolve(basedir, request, 'index.ts');
+    if (fs.existsSync(indexPath)) {
+      return indexPath;
+    }
   }
 
   // Handle .js -> .ts mapping for relative imports
@@ -57,4 +101,4 @@ module.exports = function resolver(request, options) {
 
   // Fall back to default resolution
   return defaultResolver(request, options);
-};
+}

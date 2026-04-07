@@ -48,7 +48,8 @@ interface FileMessage extends Message {
  */
 export class OptimizedFileQueueManager {
   private config: OptimizedFileQueueConfig;
-  private processedIds: Map<string, number>; // messageId -> timestamp
+  private processedIds: Map<string, number>; // messageId -> timestamp (consumed messages)
+  private enqueuedIds: Set<string>;           // messageId (in-queue, not yet consumed)
   private stats: OptimizedQueueStats;
   private writeTimes: number[] = [];
   private readTimes: number[] = [];
@@ -65,6 +66,7 @@ export class OptimizedFileQueueManager {
 
     this.config = { ...defaultConfig, ...config };
     this.processedIds = new Map();
+    this.enqueuedIds = new Set();
     this.stats = {
       pending: 0,
       processing: 0,
@@ -202,6 +204,7 @@ export class OptimizedFileQueueManager {
    */
   markProcessed(messageId: string): void {
     this.processedIds.set(messageId, Date.now());
+    this.enqueuedIds.delete(messageId); // 消息已消费，从 in-queue 集合移除
 
     // 每 100 条保存一次
     if (this.processedIds.size % 100 === 0) {
@@ -218,8 +221,8 @@ export class OptimizedFileQueueManager {
 
     const executeWrite = (): Result<string> => {
       try {
-        // 去重检查
-        if (this.isProcessed(message.id)) {
+        // 去重检查：已消费或已在队列中的消息不再入队
+        if (this.isProcessed(message.id) || this.enqueuedIds.has(message.id)) {
           return {
             success: false,
             error: new EketError(EketErrorCode.DUPLICATE_MESSAGE, '消息已处理'),
@@ -244,6 +247,8 @@ export class OptimizedFileQueueManager {
         fs.renameSync(tempPath, filepath);
         tempPath = null; // 重命名成功，临时文件已删除
 
+        // 标记为已入队（防止重复入队同一消息 ID）
+        this.enqueuedIds.add(message.id);
         this.stats.pending++;
         this.recordWriteTime(Date.now() - startTime);
 
@@ -309,10 +314,15 @@ export class OptimizedFileQueueManager {
             continue;
           }
 
-          // 校验和验证：先从消息中提取校验和字段，再用剩余对象重算
-          const { _write_checksum: expectedChecksum, ...messageWithoutChecksum } = message;
+          // 校验和验证：提取私有字段后，对原始消息字段重算
+          const {
+            _write_checksum: expectedChecksum,
+            _channel: _ch,
+            _enqueue_time: _et,
+            ...originalMessage
+          } = message;
           if (expectedChecksum) {
-            const actualChecksum = this.calculateChecksum(messageWithoutChecksum as Message);
+            const actualChecksum = this.calculateChecksum(originalMessage as Message);
             if (expectedChecksum !== actualChecksum) {
               console.warn('[OptimizedFileQueue] 消息校验和失败，跳过:', file);
               this.stats.readErrors++;
@@ -416,8 +426,10 @@ export class OptimizedFileQueueManager {
           const content = fs.readFileSync(filepath, 'utf-8');
           const message = JSON.parse(content) as FileMessage & { _enqueue_time?: number };
 
+          // 以消息创建时间（timestamp）或入队时间（_enqueue_time）中较早者为准
+          const messageTime = message.timestamp || message._enqueue_time || now;
           const enqueueTime = message._enqueue_time || now;
-          const age = now - enqueueTime;
+          const age = now - Math.min(messageTime, enqueueTime);
 
           if (age > this.config.maxAge) {
             fs.unlinkSync(filepath);

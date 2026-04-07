@@ -9,7 +9,7 @@
  * - TTL 过期清理
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import * as fs from 'fs';
 import * as path from 'path';
 import { OptimizedFileQueueManager } from '../src/core/optimized-file-queue.js';
