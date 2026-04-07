@@ -12,6 +12,7 @@
     "dashboard": "node dist/index.js web:dashboard",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "bench": "ts-node --esm benchmarks/performance-benchmark.ts",
+    "bench:comprehensive": "ts-node --esm benchmarks/comprehensive-benchmark.ts",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
