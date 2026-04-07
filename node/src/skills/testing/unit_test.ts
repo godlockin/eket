@@ -119,9 +119,25 @@ export const UnitTestSkill: Skill<UnitTestInput, UnitTestOutput> = {
         enum: ['jest', 'vitest', 'pytest', 'junit'],
         description: '测试框架',
       },
+      signature: {
+        type: 'string',
+        description: '函数签名/类定义',
+      },
       description: {
         type: 'string',
         description: '功能描述',
+      },
+      testCases: {
+        type: 'array',
+        description: '测试场景列表',
+      },
+      needsMock: {
+        type: 'boolean',
+        description: '是否需要 Mock',
+      },
+      mockConfig: {
+        type: 'object',
+        description: 'Mock 配置',
       },
     },
   },

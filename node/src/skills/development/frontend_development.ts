@@ -103,6 +103,10 @@ export const FrontendDevelopmentSkill: Skill<FrontendDevelopmentInput, FrontendD
           type: 'string',
           description: '组件描述',
         },
+        props: {
+          type: 'object',
+          description: 'Props 定义',
+        },
         useState: {
           type: 'boolean',
           description: '是否需要状态',
@@ -110,6 +114,11 @@ export const FrontendDevelopmentSkill: Skill<FrontendDevelopmentInput, FrontendD
         useStyle: {
           type: 'boolean',
           description: '是否需要样式',
+        },
+        styleType: {
+          type: 'string',
+          enum: ['css', 'scss', 'styled-components', 'tailwind'],
+          description: '样式方案',
         },
         useTest: {
           type: 'boolean',
@@ -364,7 +373,7 @@ function generateReactComponent(
     if (hasProps) {
       code += `export class ${name} extends Component<${name}Props> {\n`;
     } else {
-      code += `export class ${name} extends React.Component {\n`;
+      code += `export class ${name} extends Component {\n`;
     }
 
     if (useState) {
@@ -477,7 +486,7 @@ function generateStyle(componentName: string, styleType: string): string {
       return `// ${componentName} Styled Components\n\nimport styled from 'styled-components';\n\nexport const Container = styled.div\`\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  padding: 1rem;\n\n  h1 {\n    font-size: 2rem;\n    margin-bottom: 1rem;\n  }\n\`;\n`;
 
     case 'tailwind':
-      return `// ${componentName} Tailwind Classes\n// Usage: className="flex flex-col items-center justify-center p-4"\n`;
+      return `// ${componentName} tailwind Classes\n// Usage: className="flex flex-col items-center justify-center p-4"\n`;
 
     default: // css
       return `/* ${componentName} Styles */\n\n.${name}-container {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  padding: 1rem;\n}\n\n.${name}-container h1 {\n  font-size: 2rem;\n  margin-bottom: 1rem;\n}\n`;
@@ -710,7 +719,7 @@ function generatePropDefaults(props?: Record<string, PropDefinition>): string {
   for (const [propName, propDef] of Object.entries(props)) {
     if (propDef.default !== undefined && !propDef.required) {
       defaults.push(`${propName} = ${JSON.stringify(propDef.default)}`);
-    } else if (!propDef.required) {
+    } else {
       defaults.push(propName);
     }
   }

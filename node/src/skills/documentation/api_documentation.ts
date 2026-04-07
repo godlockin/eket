@@ -187,6 +187,22 @@ export const APIDocumentationSkill: Skill<APIDocumentationInput, APIDocumentatio
         type: 'string',
         description: 'API 描述',
       },
+      baseUrl: {
+        type: 'string',
+        description: '基础 URL',
+      },
+      endpoints: {
+        type: 'array',
+        description: '端点列表',
+      },
+      authentication: {
+        type: 'object',
+        description: '认证方式',
+      },
+      models: {
+        type: 'object',
+        description: '数据模型',
+      },
       format: {
         type: 'string',
         enum: ['markdown', 'html', 'openapi'],
