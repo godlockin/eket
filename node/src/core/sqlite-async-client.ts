@@ -7,7 +7,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { Worker, isMainThread, parentPort, workerData, MessagePort } from 'worker_threads';
+import { Worker, isMainThread, parentPort, MessagePort } from 'worker_threads';
 
 import Database from 'better-sqlite3';
 
@@ -18,6 +18,11 @@ interface WorkerRequest {
   id: number;
   type: WorkerOperationType;
   payload: unknown;
+}
+
+interface WorkerInitMessage {
+  type: 'init';
+  dbPath: string;
 }
 
 interface WorkerResponse {
@@ -41,8 +46,9 @@ type WorkerOperationType =
   | 'searchRetrospectives'
   | 'generateReport';
 
-function runWorker(dbPath: string) {
+function runWorker() {
   let db: Database.Database | null = null;
+  let dbPath: string | null = null;
 
   function sendResponse(port: MessagePort, requestId: number, response: Omit<WorkerResponse, 'id'>) {
     port.postMessage({ id: requestId, ...response });
@@ -51,11 +57,26 @@ function runWorker(dbPath: string) {
   if (!parentPort) return;
   const port = parentPort;
 
-  port.on('message', (request: WorkerRequest) => {
+  port.on('message', (message: WorkerRequest | WorkerInitMessage) => {
+      // Handle initialization message
+      if ('type' in message && message.type === 'init') {
+        dbPath = (message as WorkerInitMessage).dbPath;
+        port.postMessage({ type: 'init_ack' });
+        return;
+      }
+
+      const request = message as WorkerRequest;
       try {
         switch (request.type) {
           case 'connect': {
             try {
+              if (!dbPath) {
+                sendResponse(port, request.id, {
+                  success: false,
+                  error: { code: EketErrorCode.SQLITE_DBPATH_NOT_SET, message: 'Database path not initialized' },
+                });
+                break;
+              }
               const dir = path.dirname(dbPath);
               fs.mkdirSync(dir, { recursive: true });
               db = new Database(dbPath);
@@ -280,11 +301,15 @@ export class AsyncSQLiteClient implements ISQLiteClient {
   async connect(): Promise<Result<void>> {
     return new Promise((resolve) => {
       const workerUrl = new URL(import.meta.url);
-      this.worker = new Worker(workerUrl.toString(), { workerData: { dbPath: this.dbPath } });
+      this.worker = new Worker(workerUrl.toString());
+
+      let initAcknowledged = false;
 
       this.worker.on('message', (response: WorkerResponse & { type?: string }) => {
-        if (response.type === 'ready') {
-          // Worker is ready; now send the connect request
+        // Handle init acknowledgment
+        if (response.type === 'init_ack') {
+          initAcknowledged = true;
+          // After init is acknowledged, send connect request
           this.sendRequest('connect', undefined).then(() => {
             this.ready = true;
             console.log(`[AsyncSQLite] Connected to ${this.dbPath}`);
@@ -294,6 +319,15 @@ export class AsyncSQLiteClient implements ISQLiteClient {
           });
           return;
         }
+
+        if (response.type === 'ready') {
+          // Worker is ready; send init message with dbPath
+          if (!initAcknowledged) {
+            this.worker!.postMessage({ type: 'init', dbPath: this.dbPath } as WorkerInitMessage);
+          }
+          return;
+        }
+
         const pending = this.pendingRequests.get(response.id);
         if (pending) {
           this.pendingRequests.delete(response.id);
@@ -426,6 +460,5 @@ export function createAsyncSQLiteClient(dbPath?: string): AsyncSQLiteClient {
 
 // 如果不是主线程，运行 Worker
 if (!isMainThread) {
-  const dbPathFromWorkerData = (workerData as { dbPath?: string })?.dbPath;
-  runWorker(dbPathFromWorkerData || path.join(process.cwd(), '.eket', 'data', 'sqlite', 'eket.db'));
+  runWorker();
 }
