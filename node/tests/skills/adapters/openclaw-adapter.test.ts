@@ -6,12 +6,13 @@
  * protocol conversion, error handling
  */
 
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { OpenCLAWSkillAdapter, createOpenCLAWAdapter } from '@/skills/adapters/openclaw-adapter.js';
 import { EketErrorClass } from '@/types/index.js';
 
 // Mock fetch globally
 const mockFetch = jest.fn();
-global.fetch = mockFetch;
+global.fetch = mockFetch as any;
 
 describe('OpenCLAWSkillAdapter', () => {
   let adapter: OpenCLAWSkillAdapter;

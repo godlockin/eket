@@ -6,6 +6,7 @@
  * readSkillFromInbox, writeSkillResult, atomic file operations
  */
 
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { Volume } from 'memfs';
 import { ClaudeCodeSkillAdapter, createClaudeCodeAdapter } from '@/skills/adapters/claude-code-adapter.js';
 import { EketErrorClass } from '@/types/index.js';

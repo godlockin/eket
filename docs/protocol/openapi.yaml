@@ -1,0 +1,752 @@
+openapi: 3.0.3
+info:
+  title: EKET Agent Collaboration API
+  description: |
+    HTTP API for EKET Framework - Universal AI Agent Collaboration Protocol
+    
+    This API enables AI agents (Claude Code, OpenCLAW, Cursor, etc.) to collaborate
+    on software development projects through a standardized interface.
+  version: 1.0.0
+  contact:
+    name: EKET Framework Team
+    url: https://eket.dev
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+  - url: https://api.eket.dev/v1
+    description: Production server (example)
+
+tags:
+  - name: agents
+    description: Agent registration and management
+  - name: tasks
+    description: Task management operations
+  - name: messages
+    description: Inter-agent messaging
+  - name: prs
+    description: Pull request operations
+  - name: health
+    description: Health check endpoints
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      tags: [health]
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  version:
+                    type: string
+                    example: 1.0.0
+                  uptime:
+                    type: integer
+                    description: Server uptime in seconds
+
+  /agents/register:
+    post:
+      summary: Register a new agent
+      tags: [agents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRegistration'
+      responses:
+        '201':
+          description: Agent registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  instance_id:
+                    type: string
+                    example: slaver_frontend_20260407_143045_12345
+                  server_url:
+                    type: string
+                    example: http://localhost:8080
+                  websocket_url:
+                    type: string
+                    example: ws://localhost:8080/ws
+                  heartbeat_interval:
+                    type: integer
+                    example: 60
+                  token:
+                    type: string
+                    description: JWT authentication token
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /agents/{instance_id}:
+    get:
+      summary: Get agent details
+      tags: [agents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/InstanceId'
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDetails'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    delete:
+      summary: Deregister an agent
+      tags: [agents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/InstanceId'
+      responses:
+        '200':
+          description: Agent deregistered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Agent deregistered successfully
+
+  /agents/{instance_id}/heartbeat:
+    post:
+      summary: Send agent heartbeat
+      tags: [agents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/InstanceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [active, idle, busy]
+                current_task:
+                  type: string
+                  example: FEAT-001
+                progress:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  example: 0.75
+      responses:
+        '200':
+          description: Heartbeat acknowledged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  server_time:
+                    type: string
+                    format: date-time
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+
+  /agents:
+    get:
+      summary: List all registered agents
+      tags: [agents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [master, slaver]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, idle, stale]
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  agents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentDetails'
+
+  /tasks:
+    get:
+      summary: List tasks
+      tags: [tasks]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [backlog, ready, in_progress, review, done]
+        - name: assigned_to
+          in: query
+          schema:
+            type: string
+        - name: specialty
+          in: query
+          schema:
+            type: string
+        - name: tags
+          in: query
+          schema:
+            type: string
+            description: Comma-separated list of tags
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+
+  /tasks/{task_id}:
+    get:
+      summary: Get task details
+      tags: [tasks]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    patch:
+      summary: Update task
+      tags: [tasks]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [backlog, ready, in_progress, review, done]
+                progress:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  task:
+                    $ref: '#/components/schemas/Task'
+
+  /tasks/{task_id}/claim:
+    post:
+      summary: Claim a task
+      tags: [tasks]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [instance_id]
+              properties:
+                instance_id:
+                  type: string
+                  example: slaver_frontend_001
+      responses:
+        '200':
+          description: Task claimed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /messages:
+    post:
+      summary: Send a message
+      tags: [messages]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+      responses:
+        '201':
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message_id:
+                    type: string
+                  delivered_at:
+                    type: string
+                    format: date-time
+
+  /agents/{instance_id}/messages:
+    get:
+      summary: Get messages for an agent
+      tags: [messages]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/InstanceId'
+        - name: since
+          in: query
+          schema:
+            type: integer
+            description: Unix timestamp
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+      responses:
+        '200':
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+                  has_more:
+                    type: boolean
+
+  /prs:
+    post:
+      summary: Submit a pull request
+      tags: [prs]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [instance_id, task_id, branch, description]
+              properties:
+                instance_id:
+                  type: string
+                task_id:
+                  type: string
+                branch:
+                  type: string
+                description:
+                  type: string
+                test_status:
+                  type: string
+                  enum: [passed, failed, skipped]
+      responses:
+        '201':
+          description: PR submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  pr_id:
+                    type: string
+                  status:
+                    type: string
+
+  /prs/{task_id}/review:
+    post:
+      summary: Review a pull request
+      tags: [prs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reviewer, status]
+              properties:
+                reviewer:
+                  type: string
+                status:
+                  type: string
+                  enum: [approved, changes_requested, rejected]
+                comments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      file:
+                        type: string
+                      line:
+                        type: integer
+                      comment:
+                        type: string
+                summary:
+                  type: string
+      responses:
+        '200':
+          description: Review submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  pr:
+                    type: object
+
+  /prs/{task_id}/merge:
+    post:
+      summary: Merge a pull request
+      tags: [prs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [merger, target_branch]
+              properties:
+                merger:
+                  type: string
+                target_branch:
+                  type: string
+                  example: main
+                squash:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: PR merged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  merge_commit:
+                    type: string
+                  merged_at:
+                    type: string
+                    format: date-time
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    InstanceId:
+      name: instance_id
+      in: path
+      required: true
+      schema:
+        type: string
+      example: slaver_frontend_001
+    
+    TaskId:
+      name: task_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[A-Z]+-\d+$'
+      example: FEAT-001
+
+  schemas:
+    AgentRegistration:
+      type: object
+      required: [agent_type, role]
+      properties:
+        agent_type:
+          type: string
+          enum: [claude_code, openclaw, cursor, windsurf, gemini, custom]
+        agent_version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+        role:
+          type: string
+          enum: [master, slaver]
+        specialty:
+          type: string
+          enum: [frontend, backend, fullstack, qa, devops, designer, general]
+        capabilities:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          properties:
+            user:
+              type: string
+            machine:
+              type: string
+            timezone:
+              type: string
+        protocol_version:
+          type: string
+          default: "1.0.0"
+
+    AgentDetails:
+      type: object
+      properties:
+        instance_id:
+          type: string
+        agent_type:
+          type: string
+        role:
+          type: string
+        specialty:
+          type: string
+        status:
+          type: string
+          enum: [active, idle, stale]
+        current_task:
+          type: string
+        registered_at:
+          type: string
+          format: date-time
+        last_heartbeat:
+          type: string
+          format: date-time
+
+    Task:
+      type: object
+      required: [id, title, type, status]
+      properties:
+        id:
+          type: string
+          pattern: '^[A-Z]+-\d+$'
+        title:
+          type: string
+        type:
+          type: string
+          enum: [feature, bugfix, task, test, doc, refactor]
+        priority:
+          type: string
+          enum: [P0, P1, P2, P3]
+        status:
+          type: string
+          enum: [backlog, ready, in_progress, review, done]
+        assigned_to:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        description:
+          type: string
+        acceptance_criteria:
+          type: array
+          items:
+            type: object
+            properties:
+              description:
+                type: string
+              completed:
+                type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        estimate:
+          type: string
+          pattern: '^\d+[hdw]$'
+
+    Message:
+      type: object
+      required: [from, to, type, timestamp, payload]
+      properties:
+        id:
+          type: string
+        from:
+          type: string
+        to:
+          type: string
+        type:
+          type: string
+          enum: [pr_review_request, task_claimed, help_request, status_update, task_assigned, pr_approved, pr_rejected, blocker_alert]
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+          default: normal
+        timestamp:
+          type: string
+          format: date-time
+        payload:
+          type: object
+        correlation_id:
+          type: string
+        ttl:
+          type: integer
+          minimum: 0
+          maximum: 86400
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  message:
+                    type: string
+                  details:
+                    type: object
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: NOT_FOUND
+                  message:
+                    type: string
+
+    Conflict:
+      description: Resource conflict
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: CONFLICT
+                  message:
+                    type: string
+                  details:
+                    type: object

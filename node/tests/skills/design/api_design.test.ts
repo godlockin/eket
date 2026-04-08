@@ -6,6 +6,7 @@
  * resource identification, method mapping
  */
 
+import { describe, it, expect } from '@jest/globals';
 import {
   APIDesignSkill,
   APIDesignInput,

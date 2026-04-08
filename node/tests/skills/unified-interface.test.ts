@@ -6,6 +6,7 @@
  * beforeExecute/afterExecute hooks, onError, timeout control
  */
 
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import {
   UnifiedSkillInterface,
   createUnifiedSkillInterface,

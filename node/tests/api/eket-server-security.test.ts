@@ -9,6 +9,7 @@
  * - Request Logging
  */
 
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
 import { EketServer } from '../../src/api/eket-server.js';
 import type { EketServerConfig } from '../../src/api/eket-server.js';

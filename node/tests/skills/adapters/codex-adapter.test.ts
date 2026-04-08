@@ -6,12 +6,13 @@
  * error handling
  */
 
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { CodexSkillAdapter, createCodexAdapter } from '@/skills/adapters/codex-adapter.js';
 import { EketErrorClass } from '@/types/index.js';
 
 // Mock fetch globally
 const mockFetch = jest.fn();
-global.fetch = mockFetch;
+global.fetch = mockFetch as any;
 
 describe('CodexSkillAdapter', () => {
   let adapter: CodexSkillAdapter;
