@@ -13,7 +13,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目简介
 
-**EKET** 是一个 AI 智能体协作框架（v2.0.0），通过 Master-Slaver 架构和三仓库（confluence/jira/code_repo）分离实现多智能体协作开发。
+**EKET** 是一个 AI 智能体协作框架（v2.3.0），通过 Master-Slaver 架构和三仓库（confluence/jira/code_repo）分离实现多智能体协作开发。
+
+**核心设计理念**：渐进式三级架构
+
+```
+Level 1: Shell + 文档 (基础版)     ← 优先保证 100% 可用 ⭐⭐⭐⭐⭐
+  ↓ 渐进增强 (文档从上往下写)
+Level 2: Node.js + 文件队列 (增强版) ← 更高效专业 ⭐⭐⭐⭐
+  ↓ 完整功能 (文档从上往下写)
+Level 3: Redis + SQLite (满血版)   ← 生产级高并发 ⭐⭐⭐
+
+运行时降级: Level 3 → Level 2 → Level 1 (优雅降级)
+```
+
+**最新进展**（2026-04-08）:
+- ✅ Round 3 自举完成 - 测试通过率 75% → 87%
+- ✅ Round 4 性能验证 - Docker Redis 环境全部通过
+- ✅ 三级架构文档完善 - Level 1 优先策略确立
+- 🔄 SQLite Manager 统一迁移中
 
 ---
 

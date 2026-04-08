@@ -1,342 +1,419 @@
 # EKET Framework
 
-**AI 智能体协作框架 | Version 2.0.0**
-**最后更新**: 2026-04-06
+**AI 智能体协作框架 | Version 2.3.0**
+**最后更新**: 2026-04-08
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-green.svg)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
+[![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)](https://www.gnu.org/software/bash/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-blue.svg)](https://nodejs.org/)
 
-> **EKET** 是一个基于 AI 智能体协作的开发框架，通过 Master-Slaver 架构和三仓库（Confluence/Jira/Code Repo）分离实现自动化软件生产和跨领域任务处理。
+> **EKET** 是一个基于 AI 智能体协作的开发框架，通过 Master-Slaver 架构实现自动化软件生产和多领域协作。
+>
+> **设计理念**：渐进式三级架构 - 从 Shell + 文档 到 满血版，确保任何环境都能使用。
 
 ---
 
-## 核心理念
+## 🚀 30 秒快速启动 (Level 1 - Shell 模式)
 
-> **一切皆 Task** —— 从需求收集、分析、拆解，到研发、迭代、Review、Merge，所有工作都是 Task，只是难度和持续时间不同。
+**零依赖，纯 Bash，立即可用！**
+
+```bash
+# 1. 克隆仓库
+git clone https://github.com/godlockin/eket.git
+cd eket
+
+# 2. 启动 Master
+./scripts/eket-start.sh --role master
+
+# 3. (新终端) 启动 Slaver
+./scripts/eket-start.sh --role slaver --profile backend_dev
+
+# 完成！开始协作 🎉
+```
+
+**前置要求**：
+- ✅ Bash >= 4.0
+- ✅ Git >= 2.30
+- ❌ 不需要 Node.js
+- ❌ 不需要 Redis
+- ❌ 不需要任何安装
+
+---
+
+## 📚 三级架构 - 渐进增强设计
+
+EKET 采用**渐进式三级架构**，确保在不同环境下都能稳定运行：
+
+### Level 1: Shell + 文档 (基础版) ⭐⭐⭐⭐⭐
+
+**目标**：所有核心功能可用，零配置启动
+
+```bash
+# 30 秒启动，无需安装任何依赖
+./scripts/eket-start.sh --role master
+```
+
+**功能**：
+- ✅ Master-Slaver 协作
+- ✅ 任务分配和认领
+- ✅ 文件队列消息传递
+- ✅ 心跳监控
+- ✅ 状态跟踪
+
+**依赖**：Bash 4.0+, Git 2.30+
+
+**适用场景**：快速试用、最小化部署、纯 Shell 环境
+
+---
+
+### Level 2: Node.js + 文件队列 (增强版) ⭐⭐⭐⭐
+
+**目标**：更高效、更专业、更丰富
+
+```bash
+# 安装和构建
+cd node && npm install && npm run build
+
+# 启动 (自动使用 Node.js 模式)
+node dist/index.js instance:start --role master
+
+# Web Dashboard
+node dist/index.js web:dashboard --port 3000
+```
+
+**相比 Level 1 增加**：
+- ✅ TypeScript 类型安全
+- ✅ 丰富的 CLI 命令
+- ✅ 优化的文件队列（去重、归档、校验）
+- ✅ 断路器和重试机制
+- ✅ LRU 内存缓存
+- ✅ Web Dashboard
+- ✅ OpenCLAW Gateway
+
+**依赖**：Node.js 18+, npm 9+
+
+**适用场景**：本地开发、团队协作、需要更好性能
+
+---
+
+### Level 3: Redis + SQLite (满血版) ⭐⭐⭐
+
+**目标**：生产级、高并发、分布式
+
+```bash
+# 启动 Redis (Docker 推荐)
+docker run -d --name eket-redis -p 6379:6379 redis:7-alpine
+
+# 启动 (自动检测 Redis，使用满血模式)
+node dist/index.js instance:start --role master
+```
+
+**相比 Level 2 增加**：
+- ✅ Redis Pub/Sub 实时消息
+- ✅ Redis 连接池和主从切换
+- ✅ SQLite 持久化存储 (WAL 模式)
+- ✅ 三级 Master 选举
+- ✅ 分布式缓存 (LRU + Redis)
+- ✅ 知识库系统
+- ✅ 事务支持
+
+**依赖**：Level 2 + Redis 6.0+, SQLite 3.35+, Docker (可选)
+
+**适用场景**：生产环境、高并发、分布式部署
+
+---
+
+## 🔄 运行时自动降级
+
+系统在运行时根据依赖可用性自动降级，确保稳定运行：
+
+```
+Level 3 (Redis + SQLite)
+  ↓ Redis 不可用
+Level 2 (Node.js + 文件队列)
+  ↓ Node.js 不可用
+Level 1 (Shell + 文件队列)
+  ↓ 所有失败
+优雅退出 + 错误日志
+```
+
+**检查当前运行级别**：
+```bash
+./lib/adapters/hybrid-adapter.sh check
+
+# 输出示例：
+# [INFO] Node.js: ✅ 可用
+# [INFO] Redis: ❌ 不可用
+# [INFO] Shell: ✅ 可用
+# [INFO] 当前运行级别: Level 2 (Node.js + 文件队列)
+```
+
+---
+
+## 🎯 核心理念
+
+> **一切皆 Task** —— 从需求分析到代码合并，所有工作都是 Task，只是难度和持续时间不同。
 
 每个 Agent 是独立的 Instance，主动承接符合自己角色的任务。
 
 ---
 
-## 快速开始
-
-### 1. 前置要求
-
-- Node.js >= 18.0.0
-- npm >= 9.0.0
-- Git >= 2.30.0
-- （可选）Redis >= 6.0
-
-### 2. 安装
-
-```bash
-# 克隆模板
-git clone https://github.com/godlockin/eket.git my-project
-cd my-project
-
-# 安装 Node.js 依赖
-cd node && npm install && cd ..
-
-# 启用高级功能
-./scripts/enable-advanced.sh
-```
-
-### 3. 初始化项目
-
-```bash
-# 运行初始化向导
-node node/dist/index.js init
-
-# 初始化三仓库
-./scripts/init-three-repos.sh
-```
-
-### 4. 启动 Agent
-
-```bash
-# 查看帮助
-/eket-help
-
-# 启动实例（自动检测 Master/Slaver 模式）
-/eket-start
-
-# 或启用自动模式（Slaver 自动领取任务）
-/eket-start -a
-```
-
----
-
-## 核心特性
-
-### Node.js 混合架构
+## 🏗️ Master-Slaver 架构
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                   连接管理层（四级降级）                    │
-├─────────────────────────────────────────────────────────┤
-│  Level 1: Remote Redis (完整分布式功能)                   │
-│  Level 2: Local Redis (本地实时功能)                      │
-│  Level 3: SQLite (持久化降级)                             │
-│  Level 4: File Queue (离线模式)                           │
-│           .eket/data/queue/*.json                        │
+│                    Master Node (长期存活)                 │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
+│  │ 监控服务    │  │ PR 审核     │  │ 任务调度    │     │
+│  └─────────────┘  └─────────────┘  └─────────────┘     │
 └─────────────────────────────────────────────────────────┘
-```
-
-### Master-Slaver 架构
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Master Node (长期存活)                     │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
-│  │ 监控服务    │  │ PR 审核服务  │  │ 任务调度器  │         │
-│  │ (Monitor)   │  │ (Reviewer)  │  │ (Scheduler) │         │
-│  └─────────────┘  └─────────────┘  └─────────────┘         │
-└─────────────────────────────────────────────────────────────┘
-                            │
-            ┌───────────────┼───────────────┐
-            │               │               │
-            ▼               ▼               ▼
-    ┌────────────┐  ┌────────────┐  ┌────────────┐
-    │  Slaver 1  │  │  Slaver 2  │  │  Slaver N  │
-    │ (Frontend) │  │ (Backend)  │  │  (QA)      │
-    └────────────┘  └────────────┘  └────────────┘
-```
-
-### 专家 Agent 角色
-
-Slaver 角色可根据项目需要配置为任意领域的专家：
-
-| 领域 | 示例角色 |
-|------|----------|
-| **研发团队** | frontend_dev, backend_dev, qa_engineer |
-| **业务团队** | business_analyst, compliance_expert, ux_designer |
-| **运维团队** | devops_engineer, security_expert, sre |
-| **其他领域** | data_scientist, content_creator, product_owner |
-
-### 可配置的任务状态机
-
-任务执行状态根据任务类型自动匹配：
-
-| 任务类型 | 执行状态 |
-|----------|----------|
-| 软件研发 | dev → test → review |
-| 部署运维 | dry_run → verification → production |
-| 安全审查 | security_setting → attack_simulation → remediation |
-| 数据分析 | data_collection → model_training → model_validation |
-| 内容创作 | drafting → editing → publishing |
-
----
-
-## 项目结构
-
-### 框架目录
-
-```
-eket/
-├── CLAUDE.md                 # 框架使用指南
-├── README.md                 # 本文件
-├── docs/                     # 框架文档
-│   ├── 01-getting-started/   # 入门文档
-│   ├── 02-architecture/      # 架构设计
-│   ├── 03-implementation/    # 实现细节
-│   ├── 04-testing/           # 测试验证
-│   ├── 05-reference/         # 参考资料
-│   └── 06-sop/               # 标准操作流程
-├── template/                 # 项目模板
-│   ├── CLAUDE.md             # 项目 CLAUDE.md 模板
-│   ├── README.md             # 项目 README 模板
-│   ├── SYSTEM-SETTINGS.md    # 系统设定模板
-│   ├── SECURITY.md           # 安全指南
-│   ├── .claude/commands/     # Claude Code 命令
-│   ├── .eket/                # EKET 配置
-│   ├── inbox/                # 输入模板
-│   ├── skills/               # Skills 定义
-│   └── examples/             # 快速开始示例
-├── scripts/                  # 工具脚本
-│   ├── init-project.sh       # 项目初始化
-│   ├── init-three-repos.sh   # 三仓库初始化
-│   ├── start.sh              # 启动实例
-│   ├── prioritize-tasks.sh   # 任务优先级排序
-│   └── recommend-tasks.sh    # 任务推荐
-└── tests/                    # 框架测试
-```
-
-### 新项目结构（三合一架构）
-
-使用 `init-project.sh` 初始化的新项目包含：
-
-```
-my-project/
-├── confluence/               # 文档仓库
-│   ├── memory/               # 共享记忆
-│   ├── projects/             # 项目文档
-│   └── templates/            # 文档模板
-├── jira/                     # 任务仓库
-│   ├── epics/                # Epic 文档
-│   ├── tickets/              # 任务票
-│   └── state/                # 任务状态
-├── code_repo/                # 代码仓库
-│   ├── src/                  # 源代码
-│   ├── tests/                # 测试代码
-│   ├── configs/              # 配置文件
-│   └── deployments/          # 部署配置
-├── .claude/commands/         # Claude Code 命令
-├── .eket/                    # EKET 运行时数据
-├── shared/                   # 共享数据
-├── scripts/                  # 工具脚本
-├── skills/                   # Skills 库
-├── CLAUDE.md                 # 项目指南
-├── SYSTEM-SETTINGS.md        # 系统设定
-└── README.md                 # 项目说明
+                         │
+         ┌───────────────┼───────────────┐
+         │               │               │
+         ▼               ▼               ▼
+  ┌────────────┐  ┌────────────┐  ┌────────────┐
+  │  Slaver 1  │  │  Slaver 2  │  │  Slaver N  │
+  │ (Frontend) │  │ (Backend)  │  │  (QA)      │
+  └────────────┘  └────────────┘  └────────────┘
 ```
 
 ---
 
-## 核心命令
+## 📋 常用命令
 
-### Node.js CLI 命令
-
-#### 系统命令
+### Level 1 (Shell)
 
 ```bash
+# 启动 Master/Slaver
+./scripts/eket-start.sh --role master
+./scripts/eket-start.sh --role slaver --profile backend_dev
+
+# 心跳监控
+./scripts/heartbeat-monitor.sh
+
+# 生成统计报告
+./scripts/generate-stats.sh
+
+# Docker 服务管理
+./scripts/docker-redis.sh      # 启动/停止 Redis
+./scripts/docker-sqlite.sh     # SQLite 管理
+
+# 查看帮助
+./lib/adapters/hybrid-adapter.sh --help
+```
+
+### Level 2/3 (Node.js)
+
+```bash
+# 构建
+cd node && npm run build
+
 # 系统诊断
-node node/dist/index.js system:check     # 检查 Node.js 模块可用性
-node node/dist/index.js system:doctor    # 诊断系统状态
+node dist/index.js system:doctor
 
-# Redis 命令
-node node/dist/index.js redis:check          # 检查 Redis 连接
-node node/dist/index.js redis:list-slavers   # 列出活跃 Slaver
+# 实例管理
+node dist/index.js instance:start --auto
+node dist/index.js instance:start --human --role frontend_dev
 
-# SQLite 命令
-node node/dist/index.js sqlite:check          # 检查 SQLite 数据库
-node node/dist/index.js sqlite:list-retros    # 列出 Retrospective
-node node/dist/index.js sqlite:search "<kw>"  # 搜索 Retrospective
-node node/dist/index.js sqlite:report         # 生成统计报告
+# Redis 操作 (Level 3)
+node dist/index.js redis:check
+node dist/index.js redis:list-slavers
 
-# 项目与实例
-node node/dist/index.js project:init          # 项目初始化向导
-node node/dist/index.js instance:start        # 启动实例
-node node/dist/index.js heartbeat:start <id>  # 启动心跳
-node node/dist/index.js heartbeat:status      # 查看心跳状态
+# SQLite 操作 (Level 3)
+node dist/index.js sqlite:check
+node dist/index.js sqlite:list-retros
+node dist/index.js sqlite:search "<keyword>"
 
-# 高级功能
-node node/dist/index.js web:dashboard         # 启动 Web 监控面板
-node node/dist/index.js hooks:start           # 启动 HTTP Hook 服务器
-node node/dist/index.js pool:status           # 查看 Agent Pool 状态
-node node/dist/index.js gateway:start         # 启动 API Gateway
-```
+# Web 服务
+node dist/index.js web:dashboard --port 3000
+node dist/index.js hooks:start --port 8899
+node dist/index.js gateway:start --port 8080  # OpenCLAW Gateway
 
-### Claude Code 命令
-
-| 命令 | 功能 |
-|------|------|
-| `/eket-init` | 初始化向导（首次启动） |
-| `/eket-start` | 启动实例（自动检测 Master/Slaver） |
-| `/eket-start -a` | 自动模式启动（Slaver 自动领取任务） |
-| `/eket-status` | 查看状态和任务列表 |
-| `/eket-claim <id>` | 领取任务 |
-| `/eket-review <id>` | 请求 Review |
-| `/eket-help` | 显示帮助 |
-| `/eket-ask` | 依赖追问（缺少配置时） |
-
-### Master 专用命令
-
-| 命令 | 功能 |
-|------|------|
-| `/eket-analyze` | 分析需求并拆解任务 |
-| `/eket-review-pr` | 审核 Slaver 提交的 PR |
-| `/eket-merge` | 合并 PR 到 main 分支 |
-| `/eket-check-progress` | 检查 Slaver 任务进度 |
-
----
-
-## 工作流程
-
-```
-1. 人类输入需求 → inbox/human_input.md
-       ↓
-2. Master 分析需求 → 拆解为 Jira tickets
-       ↓
-3. Slaver 领取任务 → 创建 worktree → 分析报告
-       ↓
-4. Master 审查分析报告 → 通过/驳回
-       ↓
-5. Slaver 执行任务 → 开发/测试 → 提交 PR
-       ↓
-6. Master 审核 PR → 合并或要求修改
-       ↓
-7. 任务完成 → 更新状态 → 清理 worktree
+# 性能测试 (Level 3)
+node benchmarks/simple-benchmark.js
 ```
 
 ---
 
-## 文档导航
+## 📊 功能对比
 
-### 框架文档
-
-- [docs/README.md](docs/README.md) - 文档索引
-- [docs/01-getting-started/](docs/01-getting-started/) - 入门指南
-- [docs/02-architecture/](docs/02-architecture/) - 架构设计
-- [docs/03-implementation/](docs/03-implementation/) - 实现细节
-- [docs/04-testing/](docs/04-testing/) - 测试验证
-- [docs/05-reference/](docs/05-reference/) - 参考资料
-- [docs/06-sop/](docs/06-sop/) - 标准操作流程
-
-### 模板文件
-
-- [template/CLAUDE.md](template/CLAUDE.md) - 项目 CLAUDE.md 模板
-- [template/SYSTEM-SETTINGS.md](template/SYSTEM-SETTINGS.md) - 系统设定模板
-- [template/README.md](template/README.md) - 项目 README 模板
-- [template/skills/](template/skills/) - Skills 定义模板
-
----
-
-## 版本历史
-
-| 版本 | 日期 | 变更 |
-|------|------|------|
-| **2.0.0** | 2026-04-02 | 全面 code review 修复 (132 个 P0/P1 问题)、安全加固、WebSocket、Agent Pool、HTTP Hooks |
-| **0.7.2** | 2026-03-25 | 代码质量提升：类型安全、错误处理、DRY 优化 |
-| **0.7.1** | 2026-03-25 | Phase 3 完整实现：PR 提交、三仓库克隆、文件队列 |
-| **0.7.0** | 2026-03-24 | Node.js 混合架构实现 |
-| 0.6.2 | 2026-03-24 | PR 审查机制增强、Roadmap 对齐检查 |
-| 0.6.1 | 2026-03-24 | SYSTEM-SETTINGS.md 模板升级：专家 Agent 可定制 |
-| 0.6.0 | 2026-03-24 | Docker 集成和 Slaver 心跳监控 |
-| 0.5.x | 2026-03-23 | Merge 流程升级、路径标准化 |
+| 功能 | Level 1 | Level 2 | Level 3 |
+|------|:-------:|:-------:|:-------:|
+| **Master-Slaver 协作** | ✅ | ✅ | ✅ |
+| **任务分配认领** | ✅ | ✅ | ✅ |
+| **心跳监控** | ✅ | ✅ | ✅ |
+| **消息传递** | 文件队列 | 优化文件队列 | Redis Pub/Sub |
+| **消息去重归档** | ❌ | ✅ | ✅ |
+| **断路器重试** | ❌ | ✅ | ✅ |
+| **LRU 缓存** | ❌ | 内存 | 内存 + Redis |
+| **Master 选举** | 文件锁 | 文件锁 | Redis + SQLite + 文件 |
+| **知识库** | ❌ | ❌ | ✅ |
+| **Web Dashboard** | ❌ | ✅ | ✅ |
+| **OpenCLAW 集成** | ❌ | ✅ | ✅ |
+| **分布式部署** | ❌ | ❌ | ✅ |
+| **启动时间** | 30秒 | 1-2分钟 | 2-3分钟 |
+| **内存占用** | <10MB | 50-100MB | 100-200MB |
 
 ---
 
-## 技术栈
+## 📖 文档导航
 
-### 运行时
+### 快速入门
+- **[30秒启动](docs/guides/QUICK-START.md)** - Level 1 Shell 模式快速启动
+- **[三级架构详解](docs/architecture/THREE-LEVEL-ARCHITECTURE.md)** - 架构设计和选择指南
+- **[降级策略](docs/architecture/DEGRADATION-STRATEGY.md)** - 自动降级机制
 
-- **Node.js**: >= 18.0.0
-- **TypeScript**: 5.x (Target: ES2022)
+### Level 1 文档 (Shell + 文档)
+- **[Shell 模式指南](docs/guides/SHELL-MODE.md)** - 纯 Shell 使用指南
+- **[文件队列详解](docs/architecture/FILE-QUEUE.md)** - 文件队列消息机制
+- **[Shell 脚本参考](docs/guides/SHELL-SCRIPTS.md)** - 所有 Shell 脚本说明
 
-### 核心依赖
+### Level 2 文档 (Node.js)
+- **[Node.js 模式指南](docs/guides/NODEJS-MODE.md)** - Node.js 功能和 CLI
+- **[CLI 命令参考](docs/guides/CLI-COMMANDS.md)** - 完整命令列表
+- **[Web Dashboard](docs/api/WEB-DASHBOARD.md)** - 仪表板使用
 
-| 依赖 | 用途 |
-|------|------|
-| `ioredis` | Redis 客户端（消息队列、心跳） |
-| `better-sqlite3` | SQLite 客户端（数据持久化） |
-| `commander` | CLI 框架 |
+### Level 3 文档 (满血版)
+- **[满血模式指南](docs/guides/FULL-STACK-MODE.md)** - Redis + SQLite 配置
+- **[性能优化](docs/performance/OPTIMIZATION.md)** - 性能调优指南
+- **[分布式部署](docs/guides/DISTRIBUTED-DEPLOYMENT.md)** - 多节点部署
 
-### 开发依赖
+### 架构设计
+- **[Master-Slaver 架构](docs/architecture/MASTER-SLAVER.md)** - 核心架构设计
+- **[连接管理器](docs/architecture/CONNECTION-MANAGER.md)** - 四级降级逻辑
+- **[消息队列](docs/architecture/MESSAGE-QUEUE.md)** - Redis Pub/Sub + 文件队列
 
-| 工具 | 用途 |
-|------|------|
-| `typescript` | 类型检查 |
-| `eslint` | 代码风格 |
-| `@types/node` | Node.js 类型定义 |
+### 开发指南
+- **[贡献指南](CONTRIBUTING.md)** - 如何贡献代码
+- **[测试指南](docs/guides/TESTING.md)** - 测试框架和用例
+- **[开发流程](docs/guides/DEVELOPMENT.md)** - 开发最佳实践
 
 ---
 
-## 许可证
+## 🎓 使用场景推荐
 
-MIT License
+### 场景 1: 快速试用 EKET
+**推荐**: **Level 1** (Shell)
+```bash
+git clone https://github.com/godlockin/eket.git && cd eket
+./scripts/eket-start.sh --role master
+```
+**为什么**: 零配置，30 秒体验完整功能
 
 ---
 
-**维护者**: EKET Framework Team
-**问题反馈**: 查看 [docs/](docs/) 目录或运行 `/eket-help`
+### 场景 2: 本地开发项目
+**推荐**: **Level 2** (Node.js + 文件队列)
+```bash
+cd node && npm install && npm run build
+node dist/index.js instance:start --role master
+node dist/index.js web:dashboard --port 3000
+```
+**为什么**: 丰富功能，无需外部依赖，有 Web 界面
+
+---
+
+### 场景 3: 团队协作
+**推荐**: **Level 3** (Redis + SQLite)
+```bash
+docker run -d --name eket-redis -p 6379:6379 redis:7-alpine
+node dist/index.js instance:start --role master
+```
+**为什么**: 实时消息，支持多 Slaver 并发
+
+---
+
+### 场景 4: 生产环境
+**推荐**: **Level 3** + 高可用
+```bash
+# Redis 主从配置
+# SQLite 定期备份
+# 多 Master 选举
+# 完整监控告警
+```
+**为什么**: 分布式支持，高可用保障
+
+---
+
+## 🛠️ 环境变量
+
+```bash
+# 通用配置
+export EKET_LOG_LEVEL=info          # debug | info | warn | error
+export EKET_LOG_DIR=./logs
+
+# Level 3 Redis 配置
+export EKET_REDIS_HOST=localhost
+export EKET_REDIS_PORT=6379
+export EKET_REMOTE_REDIS_HOST=      # 远程 Redis (主从)
+
+# Level 3 SQLite 配置
+export EKET_SQLITE_PATH=~/.eket/data/sqlite/eket.db
+
+# Level 3 性能配置
+export EKET_MEMORY_WARNING_THRESHOLD=0.75
+export EKET_MEMORY_CRITICAL_THRESHOLD=0.9
+```
+
+---
+
+## 📊 性能基准 (Level 3)
+
+**Round 4 验证数据** (2026-04-08, Docker Redis):
+
+| 操作 | P95 延迟 | 目标 | 结果 |
+|------|----------|------|------|
+| Redis Write | 0.96ms | <5ms | ✅ |
+| Redis Read | 0.53ms | <5ms | ✅ |
+| SQLite Insert (WAL) | 0.04ms | <10ms | ✅ |
+| SQLite Select | 0.00ms | <10ms | ✅ |
+| File Queue Enqueue | 1.30ms | <20ms | ✅ |
+| File Queue Dequeue | 1.09ms | <20ms | ✅ |
+
+**运行基准测试**:
+```bash
+node node/benchmarks/simple-benchmark.js
+```
+
+详细报告：[性能测试报告](docs/performance/TASK-015-completion-report.md)
+
+---
+
+## 🤝 贡献
+
+欢迎贡献代码、文档或 Issue！请阅读 [贡献指南](CONTRIBUTING.md)。
+
+---
+
+## 📜 许可证
+
+[MIT License](LICENSE)
+
+---
+
+## 🔗 相关链接
+
+- **GitHub**: https://github.com/godlockin/eket
+- **文档**: [docs/](docs/)
+- **Issues**: https://github.com/godlockin/eket/issues
+- **Discord**: (待建立)
+
+---
+
+## 🎯 版本历史
+
+- **v2.3.0** (2026-04-08) - Round 3 自举完成，测试通过率 87%，性能验证
+- **v2.2.0** (2026-04-07) - Round 2 大规模优化，35,775+ 行代码
+- **v2.1.1** (2026-04-06) - Round 1 自举系统首次运行
+- **v2.0.0** (2026-04-05) - Node.js 混合架构，三级降级
+
+详见：[CHANGELOG.md](CHANGELOG.md)
+
+---
+
+**开始你的 EKET 之旅吧！** 🚀
+
+```bash
+git clone https://github.com/godlockin/eket.git && cd eket
+./scripts/eket-start.sh --role master
+```
