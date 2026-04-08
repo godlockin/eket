@@ -8,7 +8,7 @@
  * - 类型映射验证
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import request from 'supertest';
 import express from 'express';
 import { TaskRouter } from '../../../src/api/routes/task';
