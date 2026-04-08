@@ -58,13 +58,28 @@ describe('MasterContextManager', () => {
   let manager: MasterContextManager;
   let stateFilePath: string;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // 使用唯一临时目录，隔离每个测试
     const uniqueRoot = `${TEST_PROJECT_ROOT}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     manager = new MasterContextManager(uniqueRoot);
     stateFilePath = path.join(uniqueRoot, '.eket', 'state', 'master-context.json');
 
     fs.mkdirSync(path.join(uniqueRoot, '.eket', 'state'), { recursive: true });
+
+    // 清理 Redis 中的 context，确保测试隔离性
+    // 因为 Redis 是共享资源，之前的测试可能留下残留数据
+    try {
+      await manager.connectRedis();
+      const redisClient = (manager as any).redisClient;
+      if (redisClient) {
+        const client = redisClient.getClient();
+        if (client) {
+          await client.del('eket:master:context');
+        }
+      }
+    } catch {
+      // Redis 不可用时忽略，测试会降级到文件模式
+    }
   });
 
   afterEach(() => {
