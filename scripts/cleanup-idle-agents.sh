@@ -23,7 +23,7 @@ echo ""
 
 # 动态 Agent 目录
 DYNAMIC_AGENTS_DIR="$PROJECT_ROOT/.eket/state/dynamic_agents"
-REGISTRY_FILE="$PROJECT_ROOT/.ەک/state/agent_registry.yml"
+REGISTRY_FILE="$PROJECT_ROOT/.eket/state/agent_registry.yml"
 
 if [ ! -d "$DYNAMIC_AGENTS_DIR" ]; then
     echo "动态 Agent 目录不存在，跳过清理"
