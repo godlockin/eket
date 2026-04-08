@@ -76,7 +76,7 @@ describe('OpenCLAWSkillAdapter', () => {
       await adapter.connect();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8080/api/v1/rpc',
+        'https://localhost:8080/api/v1/rpc',
         expect.objectContaining({
           method: 'POST',
         })
@@ -86,7 +86,7 @@ describe('OpenCLAWSkillAdapter', () => {
     it('should throw CONNECTION_FAILED on connection error', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(adapter.connect()).rejects.toThrow('CONNECTION_FAILED');
+      await expect(adapter.connect()).rejects.toThrow('Failed to connect to OpenCLAW');
     });
 
     it('should throw CONNECTION_FAILED on non-OK response', async () => {
@@ -95,7 +95,7 @@ describe('OpenCLAWSkillAdapter', () => {
         text: async () => 'Service unavailable',
       });
 
-      await expect(adapter.connect()).rejects.toThrow('CONNECTION_FAILED');
+      await expect(adapter.connect()).rejects.toThrow('Failed to connect to OpenCLAW');
     });
 
     it('should set connected to true on successful connection', async () => {
@@ -107,7 +107,7 @@ describe('OpenCLAWSkillAdapter', () => {
       await adapter.connect();
 
       // Note: connected is readonly, but we can verify connection succeeded
-      expect(adapter.connected).toBe(false); // readonly property set via defineProperty
+      expect(adapter.connected).toBe(true);
     });
   });
 

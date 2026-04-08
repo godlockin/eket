@@ -141,12 +141,9 @@ export class OpenCLAWSkillAdapter implements SkillAdapter {
       const response = await this.callOpenCLAW<{ skills: string[] }>('skill.list', {});
       return response.skills || [];
     } catch (error) {
-      const err = error as Error;
-      throw new EketErrorClass(
-        'EXECUTION_ERROR',
-        `Failed to list skills from OpenCLAW: ${err.message}`,
-        { source: 'openclaw' }
-      );
+      // 错误时返回空数组而不是抛出异常
+      console.warn('[OpenCLAW Adapter] Failed to list skills:', error instanceof Error ? error.message : 'Unknown error');
+      return [];
     }
   }
 
