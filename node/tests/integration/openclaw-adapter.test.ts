@@ -19,8 +19,8 @@ import {
   type OpenCLAWTask,
   type OpenCLAWAgentSpec,
   type EKETEpic,
-} from '../../../src/integration/openclaw-adapter';
-import type { Ticket } from '../../../src/types/index';
+} from '../../src/integration/openclaw-adapter.js';
+import type { Ticket } from '../../src/types/index.js';
 
 describe('openclaw-adapter', () => {
   describe('openCLAWToEKET', () => {

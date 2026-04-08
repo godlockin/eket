@@ -54,6 +54,10 @@ describe('CommunicationProtocol', () => {
   beforeEach(() => {
     protocolA = createCommunicationProtocol(configA);
     protocolB = createCommunicationProtocol(configB);
+
+    // Mock connect to avoid Redis dependency in tests
+    protocolA.connect = jest.fn().mockResolvedValue({ success: true, data: undefined }) as any;
+    protocolB.connect = jest.fn().mockResolvedValue({ success: true, data: undefined }) as any;
   });
 
   afterEach(async () => {
@@ -110,6 +114,9 @@ describe('WorkflowEngine', () => {
       instanceId: 'test_instance',
       defaultStepTimeout_ms: 5000,
     });
+
+    // Mock disconnect to avoid async issues
+    engine.disconnect = jest.fn().mockResolvedValue(undefined) as any;
   });
 
   afterEach(async () => {
