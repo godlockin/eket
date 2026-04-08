@@ -30,7 +30,7 @@ import { createAgentPoolManager } from './core/agent-pool.js';
 import { createHeartbeatManager, createSlaverMonitor } from './core/heartbeat-monitor.js';
 import { createMessageQueue, createMessage } from './core/message-queue.js';
 import { createRedisClient } from './core/redis-client.js';
-import { createSQLiteClient } from './core/sqlite-client.js';
+import { createSQLiteManager } from './core/sqlite-manager.js';
 import { createHttpHookServer } from './hooks/http-hook-server.js';
 import { printError, logSuccess, logWarning } from './utils/error-handler.js';
 
@@ -293,20 +293,23 @@ Related Commands:
   $ eket-cli sqlite:list-retros                 # List all Retrospectives
 `
     )
-    .action((options) => {
+    .action(async (options) => {
       const spinner = ora('Connecting to SQLite...').start();
-      const client = createSQLiteClient(options.database);
-      const result = client.connect();
+      const manager = await createSQLiteManager({
+        useWorker: false,
+        dbPath: options.database
+      });
+      const result = await manager.connect();
 
       if (result.success) {
         spinner.succeed('SQLite connection established');
-        const report = client.generateReport();
+        const report = await manager.generateReport();
         if (report.success) {
           console.log(`\nRetrospectives: ${report.data.totalRetrospectives}`);
           console.log(`Sprints: ${report.data.totalSprints}`);
           console.log(`Total Items: ${report.data.totalItems}`);
         }
-        client.close();
+        await manager.close();
       } else {
         spinner.fail('SQLite connection failed');
         printError({
@@ -336,12 +339,12 @@ Related Commands:
   $ eket-cli sqlite:report                      # Generate statistics report
 `
     )
-    .action(() => {
+    .action(async () => {
       const spinner = ora('Fetching Retrospectives...').start();
-      const client = createSQLiteClient();
-      client.connect();
+      const manager = await createSQLiteManager({ useWorker: false });
+      await manager.connect();
 
-      const result = client.listRetrospectives();
+      const result = await manager.listRetrospectives();
       if (result.success) {
         spinner.succeed('Retrospectives fetched');
         if (result.data.length === 0) {
@@ -349,24 +352,25 @@ Related Commands:
         } else {
           console.log('');
           console.table(
-            result.data.map(
-              (r: {
+            result.data.map((r) => {
+              const retro = r as {
                 id: number;
                 sprintId: string;
                 title: string;
                 date: string;
                 fileName: string;
-              }) => ({
-                ID: r.id,
-                Sprint: r.sprintId,
-                Title: r.title,
-                Date: r.date,
-                File: r.fileName,
-              })
-            )
+              };
+              return {
+                ID: retro.id,
+                Sprint: retro.sprintId,
+                Title: retro.title,
+                Date: retro.date,
+                File: retro.fileName,
+              };
+            })
           );
         }
-        client.close();
+        await manager.close();
       } else {
         spinner.fail('Failed to fetch Retrospectives');
         printError({
@@ -392,12 +396,12 @@ Related Commands:
   $ eket-cli sqlite:report                      # Generate statistics report
 `
     )
-    .action((keyword) => {
+    .action(async (keyword) => {
       const spinner = ora(`Searching for "${keyword}"...`).start();
-      const client = createSQLiteClient();
-      client.connect();
+      const manager = await createSQLiteManager({ useWorker: false });
+      await manager.connect();
 
-      const result = client.searchRetrospectives(keyword);
+      const result = await manager.searchRetrospectives(keyword);
       if (result.success) {
         if (result.data.length === 0) {
           spinner.info(`No results found for "${keyword}"`);
@@ -405,14 +409,17 @@ Related Commands:
           spinner.succeed(`Found ${result.data.length} results`);
           console.log('');
           console.table(
-            result.data.map((r: { sprintId: string; title: string; date: string }) => ({
-              Sprint: r.sprintId,
-              Title: r.title,
-              Date: r.date,
-            }))
+            result.data.map((r) => {
+              const retro = r as { sprintId: string; title: string; date: string };
+              return {
+                Sprint: retro.sprintId,
+                Title: retro.title,
+                Date: retro.date,
+              };
+            })
           );
         }
-        client.close();
+        await manager.close();
       } else {
         spinner.fail('Search failed');
         printError({
@@ -437,12 +444,12 @@ Related Commands:
   $ eket-cli sqlite:search <keyword>            # Search Retrospectives
 `
     )
-    .action(() => {
+    .action(async () => {
       const spinner = ora('Generating report...').start();
-      const client = createSQLiteClient();
-      client.connect();
+      const manager = await createSQLiteManager({ useWorker: false });
+      await manager.connect();
 
-      const report = client.generateReport();
+      const report = await manager.generateReport();
       if (report.success) {
         spinner.succeed('Report generated');
         console.log('\n=== Retrospective Statistics Report ===\n');
@@ -454,7 +461,7 @@ Related Commands:
           console.log(`  ${c.category}: ${c.count}`);
         });
         console.log('');
-        client.close();
+        await manager.close();
       } else {
         spinner.fail('Failed to generate report');
         printError({
@@ -538,11 +545,11 @@ Related Commands:
 
       // Check SQLite
       console.log('\n[SQLite]');
-      const sqliteClient = createSQLiteClient();
-      const sqliteResult = sqliteClient.connect();
+      const sqliteManager = await createSQLiteManager({ useWorker: false });
+      const sqliteResult = await sqliteManager.connect();
       if (sqliteResult.success) {
         console.log('  ✓ Connection: OK');
-        sqliteClient.close();
+        await sqliteManager.close();
       } else {
         console.log('  ✗ Connection: FAILED');
         console.log(`     Error: ${sqliteResult.error.message}`);
