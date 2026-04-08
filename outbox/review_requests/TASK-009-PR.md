@@ -121,6 +121,8 @@ describe('getAgentStatus', () => {
 
 ### 修改文件
 - `node/tests/integration/openclaw-adapter.test.ts` - 修复测试期望，简化结构
+- `node/tests/skills/adapters/openclaw-adapter.test.ts` - 修复 3 个测试期望问题
+- `node/src/skills/adapters/openclaw-adapter.ts` - listSkills() 错误时返回空数组
 
 ### 新增文件
 - `docs/test-reports/TASK-009-openclaw-integration-report.md` - 测试报告
@@ -131,30 +133,46 @@ describe('getAgentStatus', () => {
 
 | 标准 | 状态 |
 |------|------|
-| 集成测试通过率 100% | ✅ 37/37 通过 |
+| 集成测试通过率 100% | ✅ 66/66 通过 |
 | 无外部依赖运行 | ✅ 无需 Redis/SQLite |
 | 测试文档完整 | ✅ 详细报告 |
+| 蓝队审查问题已解决 | ✅ 已修复 |
 
 ---
 
 ## 测试结果
 
 ```bash
-npm test -- --testPathPattern=integration/openclaw
+npm test -- --testPathPattern=openclaw-adapter
 
-Test Suites: 1 passed, 1 total
-Tests:       37 passed, 37 total
+Test Suites: 2 passed, 2 total
+Tests:       66 passed, 66 total
 Snapshots:   0 total
-Time:        0.782 s
+Time:        5.77 s
 ```
 
 **详细结果：**
+
+### Integration Tests (37 用例)
 - ✅ openCLAWToEKET: 9 个用例全部通过
 - ✅ eketToOpenCLAW: 5 个用例全部通过
 - ✅ workflowToEpic: 5 个用例全部通过
 - ✅ OpenCLAWIntegrationAdapter: 11 个用例全部通过
 - ✅ createOpenCLAWAdapter: 3 个用例全部通过
 - ✅ Edge Cases: 2 个用例全部通过
+
+### Skills Adapter Tests (29 用例)
+- ✅ constructor: 4 个用例全部通过
+- ✅ connect(): 4 个用例全部通过
+- ✅ disconnect(): 1 个用例全部通过
+- ✅ fetchSkill(): 4 个用例全部通过
+- ✅ listSkills(): 3 个用例全部通过
+- ✅ execute(): 4 个用例全部通过
+- ✅ Protocol Message Format: 2 个用例全部通过
+- ✅ Error Handling: 3 个用例全部通过
+- ✅ Request ID Generation: 1 个用例全部通过
+- ✅ HTTPS Configuration: 1 个用例全部通过
+- ✅ API Key Authentication: 1 个用例全部通过
 
 ---
 
