@@ -18,7 +18,7 @@
 import * as crypto from 'crypto';
 import * as path from 'path';
 
-import { createSQLiteClient } from '../core/sqlite-client.js';
+import { createSQLiteManager } from '../core/sqlite-manager.js';
 import type { Result } from '../types/index.js';
 import { EketErrorClass } from '../types/index.js';
 
@@ -131,7 +131,7 @@ function isValidHash(hash: string): boolean {
 export class AuditLogger {
   private config: AuditLoggerConfig;
   private hmacSecretKey: string;
-  private sqliteClient: ReturnType<typeof createSQLiteClient>;
+  private sqliteClient: ReturnType<typeof createSQLiteManager>;
   private lastHash: string | null = null;
   private initialized = false;
 
@@ -156,7 +156,7 @@ export class AuditLogger {
       this.hmacSecretKey = envKey;
     }
 
-    this.sqliteClient = createSQLiteClient(this.config.dbPath);
+    this.sqliteClient = createSQLiteManager({ dbPath: this.config.dbPath, useWorker: false });
   }
 
   /**
@@ -164,13 +164,13 @@ export class AuditLogger {
    */
   async initialize(): Promise<Result<void>> {
     try {
-      const result = this.sqliteClient.connect();
+      const result = await await this.sqliteClient.connect();
       if (!result.success) {
         return result;
       }
 
       // 创建审计日志表
-      this.sqliteClient.execute(`
+      await this.sqliteClient.execute(`
         CREATE TABLE IF NOT EXISTS audit_logs (
           id TEXT PRIMARY KEY,
           timestamp TEXT NOT NULL,
@@ -189,7 +189,7 @@ export class AuditLogger {
       `);
 
       // 创建索引
-      this.sqliteClient.execute(`
+      await this.sqliteClient.execute(`
         CREATE INDEX IF NOT EXISTS idx_audit_logs_actor ON audit_logs(actor);
         CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
         CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp);
@@ -197,7 +197,7 @@ export class AuditLogger {
       `);
 
       // 获取最后一个有效日志条目的哈希
-      const lastResult = this.sqliteClient.get(
+      const lastResult = await this.sqliteClient.get(
         'SELECT hash FROM audit_logs WHERE deleted = 0 ORDER BY timestamp DESC LIMIT 1'
       );
       const lastRow = lastResult.success ? (lastResult.data as { hash: string }) : null;
@@ -325,7 +325,7 @@ export class AuditLogger {
    *
    * @returns 验证结果
    */
-  verifyIntegrity(): VerificationResult {
+  async verifyIntegrity(): Promise<VerificationResult> {
     const result: VerificationResult = {
       valid: true,
       entriesCount: 0,
@@ -335,7 +335,7 @@ export class AuditLogger {
 
     try {
       if (!this.sqliteClient.isReady()) {
-        const connectResult = this.sqliteClient.connect();
+        const connectResult = await await this.sqliteClient.connect();
         if (!connectResult.success) {
           result.valid = false;
           result.details.failureReason = 'signature_mismatch';
@@ -344,7 +344,7 @@ export class AuditLogger {
       }
 
       // 获取所有审计日志
-      const rowsResult = this.sqliteClient.all('SELECT * FROM audit_logs ORDER BY timestamp ASC');
+      const rowsResult = await this.sqliteClient.all('SELECT * FROM audit_logs ORDER BY timestamp ASC');
       const rows = rowsResult.success ? (rowsResult.data as Array<Record<string, unknown>>) : [];
 
       result.entriesCount = rows.length;
@@ -485,15 +485,15 @@ export class AuditLogger {
   /**
    * 查询审计日志
    */
-  query(options?: {
+  async query(options?: {
     actor?: string;
     action?: string;
     startDate?: Date;
     endDate?: Date;
     limit?: number;
-  }): AuditLogEntry[] {
+  }): Promise<AuditLogEntry[]> {
     if (!this.sqliteClient.isReady()) {
-      this.sqliteClient.connect();
+      await this.sqliteClient.connect();
     }
 
     const conditions: string[] = [];
@@ -524,7 +524,7 @@ export class AuditLogger {
 
     const sql = `SELECT * FROM audit_logs ${whereClause} ORDER BY timestamp DESC ${limitClause}`;
 
-    const rowsResult = this.sqliteClient.all(sql, params);
+    const rowsResult = await this.sqliteClient.all(sql, params);
     const rows = rowsResult.success ? (rowsResult.data as Array<Record<string, unknown>>) : [];
 
     return rows.map((row) => ({
@@ -546,21 +546,21 @@ export class AuditLogger {
   /**
    * 获取统计信息
    */
-  getStats(): {
+  async getStats(): Promise<{
     totalEntries: number;
     deletedEntries: number;
     lastEntryAt?: string;
     integrityValid: boolean;
-  } {
+  }> {
     if (!this.sqliteClient.isReady()) {
-      this.sqliteClient.connect();
+      await this.sqliteClient.connect();
     }
 
-    const totalResult = this.sqliteClient.get('SELECT COUNT(*) as count FROM audit_logs');
-    const deletedResult = this.sqliteClient.get(
+    const totalResult = await this.sqliteClient.get('SELECT COUNT(*) as count FROM audit_logs');
+    const deletedResult = await this.sqliteClient.get(
       'SELECT COUNT(*) as count FROM audit_logs WHERE deleted = 1'
     );
-    const lastResult = this.sqliteClient.get(
+    const lastResult = await this.sqliteClient.get(
       'SELECT timestamp FROM audit_logs ORDER BY timestamp DESC LIMIT 1'
     );
 
@@ -568,7 +568,7 @@ export class AuditLogger {
     const deletedRow = deletedResult.success ? (deletedResult.data as { count: number }) : null;
     const lastRow = lastResult.success ? (lastResult.data as { timestamp: string }) : null;
 
-    const verification = this.verifyIntegrity();
+    const verification = await this.verifyIntegrity();
 
     return {
       totalEntries: totalRow?.count || 0,
@@ -623,7 +623,7 @@ export class AuditLogger {
    * 清理资源
    */
   async destroy(): Promise<void> {
-    this.sqliteClient.close();
+    await this.sqliteClient.close();
   }
 }
 

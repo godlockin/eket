@@ -6,6 +6,7 @@
  */
 
 import type { ISQLiteClient, Result } from '../types/index.js';
+
 import { SQLiteClient } from './sqlite-client.js';
 
 /**

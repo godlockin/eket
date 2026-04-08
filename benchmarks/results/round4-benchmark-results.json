@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-04-08T08:34:05.716Z",
+  "testConfig": {
+    "warmupCount": 100,
+    "testCount": 1000,
+    "channel": "benchmark"
+  },
+  "enqueue": {
+    "p50": 0.425792,
+    "p95": 0.77125,
+    "p99": 1.883208,
+    "avg": 0.4892557030000008,
+    "unit": "ms"
+  },
+  "dequeue": {
+    "p50": 0.81977625,
+    "p95": 1.53507875,
+    "p99": 1.53507875,
+    "avg": 0.890568665999994,
+    "unit": "ms"
+  },
+  "stats": {
+    "pending": 100,
+    "processing": 0,
+    "archived": 0,
+    "expired": 0,
+    "writeErrors": 0,
+    "readErrors": 0,
+    "lockContentions": 0,
+    "avgWriteTime": 0.78,
+    "avgReadTime": 82.9090909090909
+  }
+}

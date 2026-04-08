@@ -15,8 +15,9 @@
  */
 
 import type { ISQLiteClient, Result } from '../types/index.js';
-import { SyncSQLiteAdapter } from './sqlite-sync-adapter.js';
+
 import { AsyncSQLiteClient } from './sqlite-async-client.js';
+import { SyncSQLiteAdapter } from './sqlite-sync-adapter.js';
 
 /**
  * SQLite Manager 配置

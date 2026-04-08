@@ -12,6 +12,7 @@
 
 import type { ContextSnapshot, ContextSnapshotQuery, Result } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
+
 import { createSQLiteManager, type SQLiteManager } from './sqlite-manager.js';
 
 // ============================================================================
@@ -395,7 +396,7 @@ export class ContextSnapshotManager {
    */
   private rowToSnapshot(row: SnapshotRow): ContextSnapshot {
     const parseArr = (raw: string | null): string[] => {
-      if (!raw) return [];
+      if (!raw) {return [];}
       try {
         const parsed = JSON.parse(raw);
         return Array.isArray(parsed) ? (parsed as string[]) : [];
@@ -405,7 +406,7 @@ export class ContextSnapshotManager {
     };
 
     const parseOptArr = (raw: string | null): string[] | undefined => {
-      if (raw == null) return undefined;
+      if (raw == null) {return undefined;}
       return parseArr(raw);
     };
 
