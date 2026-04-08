@@ -5,7 +5,7 @@
  * Phase 5.2 - Intelligent Task Recommendation System
  */
 
-import { createSQLiteClient, type SQLiteClient } from '../core/sqlite-client.js';
+import { createSQLiteManager, type SQLiteManager } from '../core/sqlite-manager.js';
 import type { Result } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
 import type { TaskHistory, InstancePerformance } from '../types/recommender.js';
@@ -32,20 +32,20 @@ const DEFAULT_STATS_CONFIG: PerformanceStatsConfig = {
  * 负责记录和分析 Instance 的历史表现
  */
 export class HistoryTracker {
-  private sqlite: SQLiteClient;
+  private sqlite: SQLiteManager;
   private config: PerformanceStatsConfig;
 
   constructor(config?: PerformanceStatsConfig) {
     // Defensive copy to prevent external mutation
     this.config = { ...DEFAULT_STATS_CONFIG, ...config };
-    this.sqlite = createSQLiteClient();
+    this.sqlite = createSQLiteManager({ useWorker: false });
   }
 
   /**
    * 连接数据库并初始化表
    */
   async connect(): Promise<Result<void>> {
-    const result = this.sqlite.connect();
+    const result = await this.sqlite.connect();
     if (!result.success) {
       return result;
     }
@@ -59,14 +59,14 @@ export class HistoryTracker {
    * 关闭数据库连接
    */
   async close(): Promise<void> {
-    this.sqlite.close();
+    await this.sqlite.close();
   }
 
   /**
    * 初始化表结构
    */
   private initializeTables(): void {
-    const db = (this.sqlite as unknown as { db: { exec: (sql: string) => void } }).db;
+    const db = this.sqlite.getDB();
     if (!db) {
       return;
     }
@@ -99,14 +99,7 @@ export class HistoryTracker {
    * 记录任务完成历史
    */
   async recordTaskCompletion(history: TaskHistory): Promise<Result<number>> {
-    const db = (
-      this.sqlite as unknown as {
-        db: {
-          prepare: (sql: string) => { run: (...args: unknown[]) => { lastInsertRowid: number } };
-          close: () => void;
-        } | null;
-      }
-    ).db;
+    const db = this.sqlite.getDB();
 
     if (!db) {
       return {
@@ -150,14 +143,7 @@ export class HistoryTracker {
    * 获取 Instance 的历史记录
    */
   async getInstanceHistory(instanceId: string, limit?: number): Promise<Result<TaskHistory[]>> {
-    const db = (
-      this.sqlite as unknown as {
-        db: {
-          prepare: (sql: string) => { all: (...args: unknown[]) => TaskHistory[] };
-          close: () => void;
-        } | null;
-      }
-    ).db;
+    const db = this.sqlite.getDB();
 
     if (!db) {
       return {
@@ -262,23 +248,7 @@ export class HistoryTracker {
    * 获取所有 Instance 的表现统计（按角色）
    */
   async getAllPerformanceStats(role?: string): Promise<Result<InstancePerformance[]>> {
-    const db = (
-      this.sqlite as unknown as {
-        db: {
-          prepare: (sql: string) => {
-            all: (...args: unknown[]) => Array<{
-              instance_id: string;
-              role: string;
-              total_tasks: number;
-              avg_quality: number;
-              avg_duration: number;
-              on_time_rate: number;
-            }>;
-          };
-          close: () => void;
-        } | null;
-      }
-    ).db;
+    const db = this.sqlite.getDB();
 
     if (!db) {
       return {
@@ -360,16 +330,7 @@ export class HistoryTracker {
   async getTaskAssignments(
     taskId: string
   ): Promise<Result<Array<{ instanceId: string; completedAt: number }>>> {
-    const db = (
-      this.sqlite as unknown as {
-        db: {
-          prepare: (sql: string) => {
-            all: (...args: unknown[]) => Array<{ instance_id: string; completed_at: number }>;
-          };
-          close: () => void;
-        } | null;
-      }
-    ).db;
+    const db = this.sqlite.getDB();
 
     if (!db) {
       return {
@@ -410,14 +371,7 @@ export class HistoryTracker {
    * 清理过期的历史记录
    */
   async cleanupHistory(olderThanDays = 90): Promise<Result<number>> {
-    const db = (
-      this.sqlite as unknown as {
-        db: {
-          prepare: (sql: string) => { run: (...args: unknown[]) => { changes: number } };
-          close: () => void;
-        } | null;
-      }
-    ).db;
+    const db = this.sqlite.getDB();
 
     if (!db) {
       return {
