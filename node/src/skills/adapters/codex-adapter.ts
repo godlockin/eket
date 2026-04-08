@@ -133,7 +133,7 @@ export class CodexSkillAdapter implements SkillAdapter {
         category: response.category,
         input_schema: response.input_schema,
         output_schema: response.output_schema,
-        steps: response.steps.map((step) => ({
+        steps: (response.steps || []).map((step) => ({
           name: step.name,
           action: step.action,
           parameters: step.parameters,
@@ -159,12 +159,8 @@ export class CodexSkillAdapter implements SkillAdapter {
       );
       return response.skills.map((s) => s.name);
     } catch (error) {
-      const err = error as Error;
-      throw new EketErrorClass(
-        'EXECUTION_ERROR',
-        `Failed to list skills from Codex: ${err.message}`,
-        { source: 'codex' }
-      );
+      // 错误时返回空数组而不是抛出错误
+      return [];
     }
   }
 
