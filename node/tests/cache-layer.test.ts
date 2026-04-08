@@ -593,7 +593,10 @@ describe('RedisConnectionPool', () => {
     });
 
     it('should timeout when waiting for connection', async () => {
-      if (!redisAvailable) return;
+      if (!redisAvailable) {
+        // Skip test when Redis is not available
+        return;
+      }
       // Create a pool with poolSize 1
       const singlePool = new RedisConnectionPool({
         host: 'localhost',
@@ -619,7 +622,7 @@ describe('RedisConnectionPool', () => {
       expect(conn2).toBeDefined();
 
       await singlePool.close();
-    }, 15000);
+    });
 
     it('should reject when wait queue is full', async () => {
       if (!redisAvailable) return;
@@ -655,7 +658,7 @@ describe('RedisConnectionPool', () => {
       await Promise.all(waitingPromises);
 
       await smallPool.close();
-    }, 15000);
+    });
   });
 
   describe('getStats', () => {

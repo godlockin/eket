@@ -1,6 +1,28 @@
 /**
  * SQLite Client Module
  * 用于数据持久化（Retrospective、任务历史等）
+ *
+ * @deprecated 已废弃，请使用 SQLiteManager 替代
+ *
+ * 迁移指南：
+ * ```typescript
+ * // 旧代码
+ * import { SQLiteClient } from './sqlite-client';
+ * const client = new SQLiteClient(dbPath);
+ *
+ * // 新代码
+ * import { createSQLiteManager } from './sqlite-manager';
+ * const manager = createSQLiteManager({ dbPath });
+ * ```
+ *
+ * 原因：
+ * - SQLiteManager 提供统一接口，支持同步/异步自动选择
+ * - 支持自动降级（Worker 失败时降级到同步）
+ * - 更好的可测试性和依赖注入支持
+ *
+ * @see SQLiteManager -  replacement
+ * @see SyncSQLiteAdapter - 同步适配器
+ * @see AsyncSQLiteClient - 异步 Worker 实现
  */
 
 import * as fs from 'fs';
@@ -11,6 +33,16 @@ import Database from 'better-sqlite3';
 import type { Retrospective, RetroContent, Result } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
 
+/**
+ * @deprecated 已废弃，请使用 SQLiteManager 替代
+ *
+ * 同步 SQLite 客户端实现。此类已被 SQLiteManager 替代，后者提供：
+ * - 统一接口支持同步/异步自动选择
+ * - 自动降级能力（Worker 失败时降级到同步）
+ * - 更好的可测试性
+ *
+ * @see createSQLiteManager - 新的工厂函数
+ */
 export class SQLiteClient {
   private db: Database.Database | null = null;
   private dbPath: string;
@@ -457,7 +489,23 @@ export class SQLiteClient {
 }
 
 /**
- * 创建默认 SQLite 客户端
+ * @deprecated 已废弃，请使用 createSQLiteManager 替代
+ *
+ * 创建默认 SQLite 客户端。此函数已被 createSQLiteManager 替代。
+ *
+ * @param dbPath - 数据库路径（可选）
+ * @returns SQLiteClient 实例
+ *
+ * @example
+ * ```typescript
+ * // 旧代码
+ * const client = createSQLiteClient(dbPath);
+ *
+ * // 新代码
+ * const manager = createSQLiteManager({ dbPath });
+ * ```
+ *
+ * @see createSQLiteManager - 新的工厂函数
  */
 export function createSQLiteClient(dbPath?: string): SQLiteClient {
   return new SQLiteClient(dbPath);

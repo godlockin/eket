@@ -581,8 +581,8 @@ export class AuditLogger {
   /**
    * 导出审计日志（用于备份或审计）
    */
-  export(options?: { format: 'json' | 'csv'; includeDeleted?: boolean }): string {
-    const entries = this.query({});
+  async export(options?: { format: 'json' | 'csv'; includeDeleted?: boolean }): Promise<string> {
+    const entries = await this.query({});
     const includeDeleted = options?.includeDeleted ?? false;
 
     const filteredEntries = includeDeleted ? entries : entries.filter((e) => !e.deleted);
