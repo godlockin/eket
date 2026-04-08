@@ -14,7 +14,7 @@
 import type { KnowledgeEntry, Result, ExtendedKnowledgeEntry, KnowledgeUsageGuidance } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
 
-import { createSQLiteClient, type SQLiteClient } from './sqlite-client.js';
+import { createSQLiteManager, type SQLiteManager } from './sqlite-manager.js';
 
 /**
  * 知识条目查询选项
@@ -69,20 +69,20 @@ export interface KnowledgeStats {
  * 知识库类
  */
 export class KnowledgeBase {
-  private sqlite: SQLiteClient;
+  private sqlite: SQLiteManager;
 
   /**
    * @param dbPath - 可选 SQLite 路径，传 ':memory:' 使用内存模式（用于测试）
    */
   constructor(dbPath?: string) {
-    this.sqlite = createSQLiteClient(dbPath);
+    this.sqlite = createSQLiteManager({ dbPath, useWorker: false });
   }
 
   /**
    * 连接数据库并初始化表结构
    */
   async connect(): Promise<Result<void>> {
-    const result = this.sqlite.connect();
+    const result = await this.sqlite.connect();
     if (!result.success) {
       return result;
     }
@@ -97,7 +97,7 @@ export class KnowledgeBase {
    * 断开连接
    */
   async disconnect(): Promise<void> {
-    this.sqlite.close();
+    await this.sqlite.close();
     console.log('[KnowledgeBase] Disconnected');
   }
 

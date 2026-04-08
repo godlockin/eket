@@ -54,7 +54,7 @@ function runWorker() {
     port.postMessage({ id: requestId, ...response });
   }
 
-  if (!parentPort) return;
+  if (!parentPort) {return;}
   const port = parentPort;
 
   port.on('message', (message: WorkerRequest | WorkerInitMessage) => {

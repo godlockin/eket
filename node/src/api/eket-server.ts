@@ -13,20 +13,23 @@
  * @module eket-server
  */
 
-import express, { Express, Request, Response, NextFunction } from 'express';
-import { createServer, Server as HTTPServer } from 'http';
-import { WebSocketServer, WebSocket } from 'ws';
-import jwt from 'jsonwebtoken';
-import rateLimit from 'express-rate-limit';
-import cors from 'cors';
-import Ajv from 'ajv';
-import morgan from 'morgan';
 import fs from 'fs';
+import { createServer, Server as HTTPServer } from 'http';
 import path from 'path';
 
+import Ajv from 'ajv';
+import cors from 'cors';
+import express, { Express, Request, Response, NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
+import jwt from 'jsonwebtoken';
+import morgan from 'morgan';
+import { WebSocketServer, WebSocket } from 'ws';
+
+
 import { createRedisClient, type RedisClient } from '../core/redis-client.js';
-import { logger } from '../utils/logger.js';
 import type { Message } from '../types/index.js';
+import { logger } from '../utils/logger.js';
+
 import { RedisHelper } from './redis-helper.js';
 
 // ============================================================================
@@ -240,9 +243,9 @@ export class EketServer {
     morgan.token('body', (req: Request) => {
       const body = { ...req.body };
       // Sanitize sensitive fields
-      if (body.token) body.token = '[REDACTED]';
-      if (body.password) body.password = '[REDACTED]';
-      if (body.secret) body.secret = '[REDACTED]';
+      if (body.token) {body.token = '[REDACTED]';}
+      if (body.password) {body.password = '[REDACTED]';}
+      if (body.secret) {body.secret = '[REDACTED]';}
       return JSON.stringify(body);
     });
 
@@ -594,13 +597,13 @@ export class EketServer {
             const instanceIds = await this.redisHelper!.smembers('agents:all');
             for (const id of instanceIds) {
               const agentData = (await this.redisHelper!.hgetall(`agent:${id}`)) as any;
-              if (Object.keys(agentData).length === 0) continue;
+              if (Object.keys(agentData).length === 0) {continue;}
 
               // Filter by role
-              if (role && agentData.role !== role) continue;
+              if (role && agentData.role !== role) {continue;}
 
               // Filter by status
-              if (status && agentData.status !== status) continue;
+              if (status && agentData.status !== status) {continue;}
 
               agents.push(agentData as AgentDetails);
             }
@@ -640,7 +643,7 @@ export class EketServer {
             const taskIds = await this.redisHelper!.smembers('tasks:all');
             for (const id of taskIds) {
               const taskData = (await this.redisHelper!.hgetall(`task:${id}`)) as any;
-              if (Object.keys(taskData).length === 0) continue;
+              if (Object.keys(taskData).length === 0) {continue;}
 
               // Parse JSON fields
               if (taskData.acceptance_criteria) {
@@ -651,12 +654,12 @@ export class EketServer {
               }
 
               // Apply filters
-              if (status && taskData.status !== status) continue;
-              if (assigned_to && taskData.assigned_to !== assigned_to) continue;
+              if (status && taskData.status !== status) {continue;}
+              if (assigned_to && taskData.assigned_to !== assigned_to) {continue;}
               if (tags) {
                 const requiredTags = tags.split(',');
                 const taskTags = taskData.tags || [];
-                if (!requiredTags.every((t: string) => taskTags.includes(t))) continue;
+                if (!requiredTags.every((t: string) => taskTags.includes(t))) {continue;}
               }
 
               tasks.push(taskData as Task);

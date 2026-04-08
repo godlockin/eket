@@ -62,6 +62,15 @@ export class OptimizedFileQueueManager {
   private readTimes: number[] = [];
   private readonly MAX_WRITE_TIMES = 100;
 
+  // 性能优化：文件列表缓存（减少 readdirSync 调用）
+  private fileListCache: { files: string[]; timestamp: number } | null = null;
+  private readonly FILE_LIST_CACHE_TTL = 100; // 缓存 100ms
+
+  // 性能优化：延迟保存 processedIds（减少磁盘写入）
+  private processedIdsDirty = false;
+  private lastProcessedIdsSave = 0;
+  private readonly PROCESSED_IDS_SAVE_INTERVAL = 5000; // 最多 5 秒保存一次
+
   constructor(config?: Partial<OptimizedFileQueueConfig>) {
     const defaultConfig: OptimizedFileQueueConfig = {
       queueDir: path.join(process.cwd(), '.eket', 'data', 'queue-v2'),
@@ -74,6 +83,9 @@ export class OptimizedFileQueueManager {
     this.config = { ...defaultConfig, ...config };
     this.processedIds = new Map();
     this.enqueuedIds = new Set();
+    this.fileListCache = null;
+    this.processedIdsDirty = false;
+    this.lastProcessedIdsSave = Date.now();
     this.stats = {
       pending: 0,
       processing: 0,
@@ -212,10 +224,23 @@ export class OptimizedFileQueueManager {
   markProcessed(messageId: string): void {
     this.processedIds.set(messageId, Date.now());
     this.enqueuedIds.delete(messageId); // 消息已消费，从 in-queue 集合移除
+    this.processedIdsDirty = true;
 
-    // 每 100 条保存一次
-    if (this.processedIds.size % 100 === 0) {
+    // 延迟保存：只在超过时间阈值时保存
+    const now = Date.now();
+    if (now - this.lastProcessedIdsSave > this.PROCESSED_IDS_SAVE_INTERVAL) {
+      this.flushProcessedIds();
+    }
+  }
+
+  /**
+   * 立即保存 processedIds（供外部调用）
+   */
+  private flushProcessedIds(): void {
+    if (this.processedIdsDirty) {
       this.saveProcessedIds();
+      this.processedIdsDirty = false;
+      this.lastProcessedIdsSave = Date.now();
     }
   }
 
@@ -268,6 +293,7 @@ export class OptimizedFileQueueManager {
         // 标记为已入队（防止重复入队同一消息 ID）
         this.enqueuedIds.add(message.id);
         this.stats.pending++;
+        this.invalidateFileListCache(); // 新文件入队，使缓存失效
         this.recordWriteTime(Date.now() - startTime);
 
         return { success: true, data: filepath };
@@ -304,6 +330,35 @@ export class OptimizedFileQueueManager {
   }
 
   /**
+   * 获取队列文件列表（带缓存）
+   */
+  private getQueueFiles(): string[] {
+    const now = Date.now();
+
+    // 检查缓存是否有效
+    if (this.fileListCache && now - this.fileListCache.timestamp < this.FILE_LIST_CACHE_TTL) {
+      return this.fileListCache.files;
+    }
+
+    // 读取文件列表并缓存
+    try {
+      const files = fs.readdirSync(this.config.queueDir);
+      const messageFiles = files.filter((f) => f.endsWith('.json') && f !== 'processed.json');
+      this.fileListCache = { files: messageFiles, timestamp: now };
+      return messageFiles;
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * 使文件列表缓存失效
+   */
+  private invalidateFileListCache(): void {
+    this.fileListCache = null;
+  }
+
+  /**
    * 从队列获取消息（支持批量）
    * 兼容新格式（v2 wrapper）和旧格式（v1 with _write_checksum）
    */
@@ -312,8 +367,7 @@ export class OptimizedFileQueueManager {
     const messages: Array<{ filepath: string; message: FileMessage }> = [];
 
     try {
-      const files = fs.readdirSync(this.config.queueDir);
-      const messageFiles = files.filter((f) => f.endsWith('.json') && f !== 'processed.json');
+      const messageFiles = this.getQueueFiles(); // 使用缓存的文件列表
 
       let processed = 0;
       for (const file of messageFiles) {
@@ -349,6 +403,7 @@ export class OptimizedFileQueueManager {
           // 跳过已处理
           if (this.isProcessed(message.id)) {
             fs.unlinkSync(filepath);
+            this.invalidateFileListCache(); // 文件被删除，使缓存失效
             continue;
           }
 
@@ -579,7 +634,7 @@ export class OptimizedFileQueueManager {
    */
   private startStatsCollection(): void {
     setInterval(() => {
-      this.saveProcessedIds();
+      this.flushProcessedIds(); // 定期保存（即使未达到时间阈值）
     }, 60000); // 每分钟保存一次
   }
 

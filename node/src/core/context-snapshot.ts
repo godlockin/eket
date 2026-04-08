@@ -12,7 +12,8 @@
 
 import type { ContextSnapshot, ContextSnapshotQuery, Result } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
-import { createSQLiteClient, type SQLiteClient } from './sqlite-client.js';
+
+import { createSQLiteManager, type SQLiteManager } from './sqlite-manager.js';
 
 // ============================================================================
 // Table DDL
@@ -71,14 +72,14 @@ interface SnapshotRow {
  * 所有公开方法返回 `Result<T>`，不抛出异常。
  */
 export class ContextSnapshotManager {
-  private sqlite: SQLiteClient;
+  private sqlite: SQLiteManager;
 
   /**
    * @param dbPath 自定义 SQLite 路径；留空则使用默认路径（~/.eket/data/sqlite/eket.db）
    *               传入 ':memory:' 可在测试中使用内存数据库
    */
   constructor(dbPath?: string) {
-    this.sqlite = createSQLiteClient(dbPath);
+    this.sqlite = createSQLiteManager({ dbPath, useWorker: false });
   }
 
   // --------------------------------------------------------------------------
@@ -89,7 +90,7 @@ export class ContextSnapshotManager {
    * 连接数据库并初始化表结构（必须在使用其他方法前调用）
    */
   async connect(): Promise<Result<void>> {
-    const connectResult = this.sqlite.connect();
+    const connectResult = await this.sqlite.connect();
     if (!connectResult.success) {
       return connectResult;
     }
@@ -111,8 +112,8 @@ export class ContextSnapshotManager {
   /**
    * 断开数据库连接
    */
-  disconnect(): void {
-    this.sqlite.close();
+  async disconnect(): Promise<void> {
+    await this.sqlite.close();
     console.log('[ContextSnapshotManager] Disconnected');
   }
 
@@ -395,7 +396,7 @@ export class ContextSnapshotManager {
    */
   private rowToSnapshot(row: SnapshotRow): ContextSnapshot {
     const parseArr = (raw: string | null): string[] => {
-      if (!raw) return [];
+      if (!raw) {return [];}
       try {
         const parsed = JSON.parse(raw);
         return Array.isArray(parsed) ? (parsed as string[]) : [];
@@ -405,7 +406,7 @@ export class ContextSnapshotManager {
     };
 
     const parseOptArr = (raw: string | null): string[] | undefined => {
-      if (raw == null) return undefined;
+      if (raw == null) {return undefined;}
       return parseArr(raw);
     };
 

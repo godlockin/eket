@@ -12,7 +12,7 @@
  */
 
 import { createRedisClient } from './core/redis-client.js';
-import { createSQLiteClient } from './core/sqlite-client.js';
+import { createSQLiteManager } from './core/sqlite-manager.js';
 
 // 服务启动时间
 const startTime = Date.now();
@@ -87,44 +87,41 @@ export async function checkRedis(): Promise<{
 /**
  * 检查 SQLite 连接
  */
-export function checkSqlite(): Promise<{
+export async function checkSqlite(): Promise<{
   healthy: boolean;
   message: string;
   latency?: number;
 }> {
-  return new Promise((resolve) => {
-    const start = Date.now();
-    const client = createSQLiteClient();
+  const start = Date.now();
+  const client = createSQLiteManager({ useWorker: false });
 
-    try {
-      const connectResult = client.connect();
+  try {
+    const connectResult = await client.connect();
 
-      if (!connectResult.success) {
-        resolve({
-          healthy: false,
-          message: `SQLite 连接失败：${connectResult.error?.message}`,
-        });
-        return;
-      }
-
-      // 简单查询测试
-      client.execute('SELECT 1');
-      const latency = Date.now() - start;
-
-      client.close();
-
-      resolve({
-        healthy: true,
-        message: 'SQLite 连接正常',
-        latency,
-      });
-    } catch (error) {
-      resolve({
+    if (!connectResult.success) {
+      return {
         healthy: false,
-        message: `SQLite 检查异常：${(error as Error).message}`,
-      });
+        message: `SQLite 连接失败：${connectResult.error?.message}`,
+      };
     }
-  });
+
+    // 简单查询测试
+    await client.execute('SELECT 1');
+    const latency = Date.now() - start;
+
+    await client.close();
+
+    return {
+      healthy: true,
+      message: 'SQLite 连接正常',
+      latency,
+    };
+  } catch (error) {
+    return {
+      healthy: false,
+      message: `SQLite 检查异常：${(error as Error).message}`,
+    };
+  }
 }
 
 /**

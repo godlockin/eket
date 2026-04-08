@@ -21,7 +21,7 @@ import * as http from 'http';
 import * as path from 'path';
 
 import { createRedisClient } from '../core/redis-client.js';
-import { createSQLiteClient } from '../core/sqlite-client.js';
+import { createSQLiteManager } from '../core/sqlite-manager.js';
 import type { Result } from '../types/index.js';
 import { EketErrorClass } from '../types/index.js';
 
@@ -153,7 +153,7 @@ async function safeDeleteFile(filePath: string): Promise<boolean> {
  */
 export class DataDeletionService {
   private redisClient: ReturnType<typeof createRedisClient>;
-  private sqliteClient: ReturnType<typeof createSQLiteClient>;
+  private sqliteClient: ReturnType<typeof createSQLiteManager>;
   private deletionStats: DeletionStats = {
     totalRequests: 0,
     successfulDeletions: 0,
@@ -162,7 +162,7 @@ export class DataDeletionService {
 
   constructor() {
     this.redisClient = createRedisClient();
-    this.sqliteClient = createSQLiteClient();
+    this.sqliteClient = createSQLiteManager({ useWorker: false });
   }
 
   /**
@@ -326,14 +326,14 @@ export class DataDeletionService {
   private async markAuditLogsAsDeleted(agentId: string, deletionId: string): Promise<number> {
     try {
       // 连接 SQLite
-      const result = this.sqliteClient.connect();
+      const result = await this.sqliteClient.connect();
       if (!result.success) {
         console.warn('[DataDeletion] SQLite not connected, skipping audit log marking');
         return 0;
       }
 
       // 检查审计日志表是否存在
-      const tableResult = this.sqliteClient.get(
+      const tableResult = await this.sqliteClient.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name='audit_logs'"
       );
 
@@ -422,7 +422,7 @@ export class DataDeletionService {
       };
 
       // 尝试写入 SQLite 审计表
-      const sqliteResult = this.sqliteClient.connect();
+      const sqliteResult = await this.sqliteClient.connect();
       if (sqliteResult.success) {
         try {
           const insertSql = `
@@ -462,7 +462,7 @@ export class DataDeletionService {
    */
   async destroy(): Promise<void> {
     await this.redisClient.disconnect();
-    this.sqliteClient.close();
+    await this.sqliteClient.close();
   }
 }
 
