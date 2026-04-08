@@ -8,7 +8,7 @@
  * - 错误认证类型
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import request from 'supertest';
 import express from 'express';
 import { authMiddleware, type AuthMiddlewareOptions } from '../../../src/api/middleware/auth';

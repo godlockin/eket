@@ -19,8 +19,8 @@ import {
   type OpenCLAWTask,
   type OpenCLAWAgentSpec,
   type EKETEpic,
-} from '../../../src/integration/openclaw-adapter';
-import type { Ticket } from '../../../src/types/index';
+} from '../../src/integration/openclaw-adapter.js';
+import type { Ticket } from '../../src/types/index.js';
 
 describe('openclaw-adapter', () => {
   describe('openCLAWToEKET', () => {
@@ -101,7 +101,8 @@ describe('openclaw-adapter', () => {
 
       const ticket = openCLAWToEKET(task);
 
-      expect(ticket.description).toBe('');
+      // description is optional, undefined when not provided
+      expect(ticket.description).toBeUndefined();
     });
 
     it('should handle missing skills_required', () => {

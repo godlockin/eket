@@ -14,11 +14,11 @@ import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { MasterContextManager } from 'core/master-context';
+import { MasterContextManager } from '../src/core/master-context.js';
 import type {
   MasterContext,
   ProjectPulse,
-} from 'core/master-context';
+} from '../src/core/master-context.js';
 
 // ============================================================================
 // Test Fixtures
