@@ -520,7 +520,7 @@ function identifyRisks(
   }
 
   // 技术风险关键词
-  const riskKeywords = ['migration', 'legacy', 'compatibility', '性能', '并发', '安全'];
+  const riskKeywords = ['migration', 'legacy', 'compatibility', '性能', '并发', '安全', 'security', 'performance', 'concurrency'];
   for (const keyword of riskKeywords) {
     if (requirement.toLowerCase().includes(keyword.toLowerCase())) {
       risks.push(`需求涉及"${keyword}"，存在技术风险`);

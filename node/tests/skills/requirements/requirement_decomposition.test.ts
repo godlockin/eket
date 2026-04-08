@@ -580,8 +580,15 @@ describe('RequirementDecompositionSkill', () => {
 
       const result = await RequirementDecompositionSkill.execute(input);
 
-      // Should have risk for high complexity
-      expect(result.data?.risks?.some(r => r.includes('复杂度') || r.includes('技术'))).toBe(true);
+      // Should have risk for high complexity or technical risk
+      // Expected risks: "需求复杂度较高，建议分阶段实施" or "需求涉及"security"，存在技术风险"
+      expect(result.data?.risks).toBeDefined();
+      expect(result.data?.risks?.length).toBeGreaterThan(0);
+      // Check for complexity or technical risk keywords
+      const hasRisk = result.data?.risks?.some(
+        r => r.includes('复杂度') || r.includes('技术') || r.includes('security') || r.includes('性能')
+      );
+      expect(hasRisk).toBe(true);
     });
   });
 });

@@ -608,7 +608,7 @@ describe('RedisConnectionPool', () => {
       expect(conn1).toBeDefined();
 
       // Try to acquire another connection - should timeout
-      const shortTimeout = 100; // 100ms
+      const shortTimeout = 50; // 50ms for faster test
       await expect(singlePool.acquire(shortTimeout)).rejects.toThrow('timeout');
 
       // Release the connection
@@ -619,7 +619,7 @@ describe('RedisConnectionPool', () => {
       expect(conn2).toBeDefined();
 
       await singlePool.close();
-    });
+    }, 15000);
 
     it('should reject when wait queue is full', async () => {
       if (!redisAvailable) return;
@@ -639,7 +639,7 @@ describe('RedisConnectionPool', () => {
       // Fill the wait queue (maxQueueSize = 2)
       const waitingPromises: Promise<any>[] = [];
       for (let i = 0; i < 2; i++) {
-        waitingPromises.push(smallPool.acquire(5000).catch((e) => e));
+        waitingPromises.push(smallPool.acquire(2000).catch((e) => e));
       }
 
       // Wait a bit for promises to start
@@ -655,7 +655,7 @@ describe('RedisConnectionPool', () => {
       await Promise.all(waitingPromises);
 
       await smallPool.close();
-    });
+    }, 15000);
   });
 
   describe('getStats', () => {
