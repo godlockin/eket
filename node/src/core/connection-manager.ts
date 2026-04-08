@@ -19,7 +19,7 @@ import type { Result, ConnectionLevel, DriverMode, ConnectionManagerConfig, Conn
 import { EketError, EketErrorCode } from '../types/index.js';
 
 import { RedisClient } from './redis-client.js';
-import { SQLiteClient } from './sqlite-client.js';
+import { SQLiteManager } from './sqlite-manager.js';
 
 // ============================================================================
 // Connection Manager Class
@@ -32,7 +32,7 @@ export class ConnectionManager {
 
   private remoteRedisClient: RedisClient | null = null;
   private localRedisClient: RedisClient | null = null;
-  private sqliteClient: SQLiteClient | null = null;
+  private sqliteClient: SQLiteManager | null = null;
 
   private remoteRedisAvailable = false;
   private localRedisAvailable = false;
@@ -152,8 +152,9 @@ export class ConnectionManager {
    * 尝试连接 SQLite
    */
   private async tryConnectSqlite(): Promise<Result<void>> {
-    this.sqliteClient = new SQLiteClient(this.config.sqlitePath);
-    return this.sqliteClient.connect();
+    const { createSQLiteManager } = await import('./sqlite-manager.js');
+    this.sqliteClient = createSQLiteManager({ dbPath: this.config.sqlitePath, useWorker: false });
+    return await this.sqliteClient.connect();
   }
 
   /**
@@ -221,7 +222,7 @@ export class ConnectionManager {
   /**
    * 获取 SQLite 客户端
    */
-  getSqliteClient(): SQLiteClient | null {
+  getSqliteClient(): SQLiteManager | null {
     return this.sqliteClient;
   }
 
@@ -298,7 +299,7 @@ export class ConnectionManager {
       await this.localRedisClient.disconnect();
     }
     if (this.sqliteClient) {
-      this.sqliteClient.close();
+      await this.sqliteClient.close();
     }
     console.log('[ConnectionManager] Shutdown complete');
   }
