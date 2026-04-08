@@ -6,7 +6,7 @@
  * @module api-key-storage
  */
 
-import { SQLiteClient } from '../../core/sqlite-client.js';
+import { SQLiteManager } from '../../core/sqlite-manager.js';
 
 export interface ApiKeyRecord {
   id: string;
@@ -37,7 +37,7 @@ export class ApiKeyStorage {
 
   private initialized = false;
 
-  constructor(private db: SQLiteClient) {}
+  constructor(private db: SQLiteManager) {}
 
   /**
    * 初始化表结构
@@ -47,7 +47,7 @@ export class ApiKeyStorage {
       return;
     }
 
-    const result = this.db.execute(ApiKeyStorage.TABLE_SQL);
+    const result = await this.db.execute(ApiKeyStorage.TABLE_SQL);
     if (!result.success) {
       throw new Error(`Failed to initialize api_keys table: ${result.error?.message}`);
     }
@@ -60,7 +60,7 @@ export class ApiKeyStorage {
    * 创建新的 API Key 记录
    */
   async create(key: ApiKeyRecord): Promise<void> {
-    const result = this.db.execute(
+    const result = await this.db.execute(
       `
       INSERT INTO api_keys (id, name, key_hash, user_id, created_at, expires_at, permissions)
       VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -85,7 +85,7 @@ export class ApiKeyStorage {
    * 通过哈希查询 API Key
    */
   async getByHash(keyHash: string): Promise<ApiKeyRecord | null> {
-    const result = this.db.get(
+    const result = await this.db.get(
       `
       SELECT * FROM api_keys
       WHERE key_hash = ? AND revoked_at IS NULL
@@ -105,7 +105,7 @@ export class ApiKeyStorage {
    * 通过 ID 查询 API Key
    */
   async getById(keyId: string): Promise<ApiKeyRecord | null> {
-    const result = this.db.get(
+    const result = await this.db.get(
       `
       SELECT * FROM api_keys WHERE id = ?
     `,
@@ -124,7 +124,7 @@ export class ApiKeyStorage {
    * 更新最后使用时间
    */
   async updateLastUsed(keyId: string): Promise<void> {
-    const result = this.db.execute(
+    const result = await this.db.execute(
       `
       UPDATE api_keys SET last_used_at = ? WHERE id = ?
     `,
@@ -140,7 +140,7 @@ export class ApiKeyStorage {
    * 吊销 API Key
    */
   async revoke(keyId: string): Promise<void> {
-    const result = this.db.execute(
+    const result = await this.db.execute(
       `
       UPDATE api_keys SET revoked_at = ? WHERE id = ?
     `,
@@ -162,7 +162,7 @@ export class ApiKeyStorage {
       : `SELECT * FROM api_keys ORDER BY created_at DESC`;
 
     const params = userId ? [userId] : [];
-    const result = this.db.all(sql, params);
+    const result = await this.db.all(sql, params);
 
     if (!result.success || !result.data) {
       return [];
@@ -175,7 +175,7 @@ export class ApiKeyStorage {
    * 删除 API Key 记录
    */
   async delete(keyId: string): Promise<void> {
-    const result = this.db.execute(`DELETE FROM api_keys WHERE id = ?`, [keyId]);
+    const result = await this.db.execute(`DELETE FROM api_keys WHERE id = ?`, [keyId]);
 
     if (!result.success) {
       throw new Error(`Failed to delete API key: ${result.error?.message}`);
