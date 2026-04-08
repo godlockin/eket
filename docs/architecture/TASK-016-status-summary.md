@@ -7,14 +7,30 @@
 
 ---
 
-## ✅ 阶段 1 已完成
+## ✅ 阶段 1 已完成 (蓝队审查后修复)
 
-### 代码迁移 (1/11 文件)
+### 代码迁移 (4/11 文件)
 - ✅ `node/src/health-check.ts`
   - Commit: `19baac0`
   - 模式: Pattern A (简单 async/await 转换)
-  - 测试: ✅ 通过 (基线稳定)
+  - 测试: ✅ 通过
   - 构建: ✅ 成功
+
+- ✅ `node/src/index.ts`
+  - Commit: `34adeab` (cherry-picked from e436a5a)
+  - 模式: Pattern A
+  - 修复: 🔴→✅ 蓝队发现分支问题，已修复
+  - 测试: ✅ 通过
+
+- ✅ `node/src/api/web-server.ts`
+  - Commit: `786d848`
+  - 模式: Pattern A
+  - 测试: ✅ 通过
+
+- ✅ `node/src/hooks/http-hook-server.ts`
+  - Commit: `786d848`
+  - 模式: Pattern A
+  - 测试: ✅ 39/39 passed
 
 ### 文档输出
 - ✅ `TASK-016-execution-report.md` (12.7KB)
