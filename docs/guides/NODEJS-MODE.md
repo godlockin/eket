@@ -171,19 +171,27 @@ node dist/index.js system:check
 #### instance:start - 启动实例
 
 ```bash
-# 自动检测角色
-node dist/index.js instance:start
-
-# 指定角色
-node dist/index.js instance:start --role master
-node dist/index.js instance:start --role slaver --profile backend_dev
-
-# 自动模式 (Slaver 自动领取任务)
+# AI 自动模式 (自动检测角色，自动领取任务)
 node dist/index.js instance:start --auto
+
+# 人工模式 (需要指定角色)
+node dist/index.js instance:start --human --role frontend_dev
+node dist/index.js instance:start --human --role backend_dev
 
 # 列出可用角色
 node dist/index.js instance:start --list-roles
+
+# 输出示例 (--list-roles):
+# Available Roles:
+#   Coordinators: product_manager, architect, tech_manager, doc_monitor
+#   Executors: frontend_dev, backend_dev, qa_engineer, devops_engineer
 ```
+
+**参数说明**:
+- `--auto`: AI 自动模式，自动检测角色并领取任务
+- `--human --role <role>`: 人工模式，需要明确指定角色
+- `--list-roles`: 列出所有可用角色（coordinators 和 executors）
+- `-p, --project-root <path>`: 指定项目根目录
 
 #### instance:set-role - 设置角色
 
@@ -205,26 +213,17 @@ node dist/index.js queue:test
 # [✓] 文件队列测试通过
 ```
 
-#### queue:status - 查看队列状态
+**注意**: Level 2 的队列管理通过文件系统直接操作，无需专门的 status/clear 命令。查看队列状态可以直接查看文件：
 
 ```bash
-node dist/index.js queue:status
+# 查看队列状态
+ls -l .eket/data/queue/pending/    # 待处理
+ls -l .eket/data/queue/processing/ # 处理中
+ls -l .eket/data/queue/processed/  # 已处理
 
-# 输出示例:
-# 待处理: 3 消息
-# 处理中: 1 消息
-# 已处理: 42 消息
-# 失败: 0 消息
-```
-
-#### queue:clear - 清空队列
-
-```bash
-# 清空待处理队列
-node dist/index.js queue:clear --type pending
-
-# 清空所有队列
-node dist/index.js queue:clear --all
+# 清空队列（Shell 操作）
+rm .eket/data/queue/pending/*.json    # 清空待处理
+rm .eket/data/queue/processing/*.json # 清空处理中
 ```
 
 ### SQLite 命令
@@ -434,50 +433,128 @@ node dist/index.js pool:select --strategy round-robin
 #### 1. 原子操作
 
 ```typescript
-// 原子写入 (临时文件 + rename)
-const tmpFile = `${filePath}.tmp`;
-fs.writeFileSync(tmpFile, JSON.stringify(message));
-fs.renameSync(tmpFile, filePath);  // 原子操作
+import fs from 'fs';
+
+// 原子写入消息（临时文件 + rename）
+function atomicWriteMessage(filePath: string, message: object): void {
+  const tmpFile = `${filePath}.tmp`;
+  fs.writeFileSync(tmpFile, JSON.stringify(message, null, 2));
+  fs.renameSync(tmpFile, filePath);  // 原子操作，避免并发问题
+}
 ```
+
+**为什么使用原子操作？**
+- ✅ 避免并发写入导致文件损坏
+- ✅ 确保消息完整性（要么完全写入，要么完全不写入）
+- ✅ 防止读取到部分写入的数据
 
 #### 2. 去重机制
 
 ```typescript
+import fs from 'fs';
+import path from 'path';
+
 // 基于消息 ID 去重
-const existingIds = new Set();
-for (const file of fs.readdirSync(queueDir)) {
-  const msg = JSON.parse(fs.readFileSync(file));
-  existingIds.add(msg.id);
+function checkDuplicate(queueDir: string, messageId: string): boolean {
+  const existingIds = new Set<string>();
+
+  try {
+    const files = fs.readdirSync(queueDir);
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue;
+
+      try {
+        const filePath = path.join(queueDir, file);
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const msg = JSON.parse(content);
+        existingIds.add(msg.id);
+      } catch (err) {
+        // 跳过损坏的文件
+        console.warn(`跳过无效文件: ${file}`);
+        continue;
+      }
+    }
+  } catch (err) {
+    console.error('读取队列目录失败:', err);
+    return false;
+  }
+
+  return existingIds.has(messageId);
 }
 
-if (existingIds.has(newMessage.id)) {
+// 使用示例
+if (checkDuplicate('.eket/data/queue/pending', 'msg_001')) {
   console.log('消息已存在，跳过');
-  return;
+} else {
+  // 写入新消息
 }
 ```
+
+**去重策略**:
+- ✅ 基于消息 ID 的 Set 查找（O(1) 时间复杂度）
+- ✅ 跳过损坏的 JSON 文件
+- ✅ 适用于中小规模队列（< 10,000 消息）
 
 #### 3. 归档机制
 
 ```bash
-# 自动归档 24 小时前的已处理消息
-node dist/index.js queue:archive --age 24h
+# 手动归档 24 小时前的已处理消息
+find .eket/data/queue/processed -name "*.json" -mtime +1 \
+  -exec mv {} .eket/data/archive/ \;
 
 # 输出示例:
 # [INFO] 归档 42 条消息到 .eket/data/archive/
 ```
 
+**归档策略**:
+- 定期将 `processed/` 目录中的旧消息移动到 `archive/`
+- 减少队列目录文件数量，提升性能
+- 归档文件可用于历史追溯和审计
+
 #### 4. 校验和验证
 
 ```typescript
-// 消息完整性验证
-const checksum = crypto.createHash('sha256')
-  .update(JSON.stringify(message.payload))
-  .digest('hex');
+import crypto from 'crypto';
 
-if (checksum !== message.checksum) {
-  throw new Error('消息校验失败');
+// 生成消息校验和
+function generateChecksum(message: object): string {
+  const content = JSON.stringify(message);
+  return crypto.createHash('sha256').update(content).digest('hex');
+}
+
+// 验证消息完整性
+function verifyMessage(message: any): boolean {
+  const { checksum, ...payload } = message;
+  const computed = generateChecksum(payload);
+
+  if (checksum !== computed) {
+    console.error('消息校验失败');
+    return false;
+  }
+
+  return true;
+}
+
+// 使用示例
+const message = {
+  id: 'msg_001',
+  type: 'assign_task',
+  payload: { task_id: 'TASK-042' }
+};
+
+const checksum = generateChecksum(message);
+const signedMessage = { ...message, checksum };
+
+// 验证
+if (verifyMessage(signedMessage)) {
+  console.log('消息校验通过');
 }
 ```
+
+**校验和用途**:
+- ✅ 检测消息在传输或存储过程中的损坏
+- ✅ 防止手动修改消息文件导致的不一致
+- ✅ 提供基本的完整性保证
 
 ---
 
