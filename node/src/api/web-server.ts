@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url';
 
 import { createInstanceRegistry } from '../core/instance-registry.js';
 import { createRedisClient } from '../core/redis-client.js';
-import { createSQLiteClient } from '../core/sqlite-client.js';
+import { createSQLiteManager } from '../core/sqlite-manager.js';
 import type {
   DashboardData,
   DashboardSystemStatus,
@@ -52,7 +52,7 @@ export class WebDashboardServer {
   private server: http.Server | null = null;
   private config: WebServerConfig;
   private redisClient: ReturnType<typeof createRedisClient>;
-  private sqliteClient: ReturnType<typeof createSQLiteClient>;
+  private sqliteManager: ReturnType<typeof createSQLiteManager>;
   private instanceRegistry: ReturnType<typeof createInstanceRegistry>;
 
   constructor(config: Partial<WebServerConfig> = {}) {
@@ -64,7 +64,7 @@ export class WebDashboardServer {
     };
 
     this.redisClient = createRedisClient();
-    this.sqliteClient = createSQLiteClient();
+    this.sqliteManager = createSQLiteManager({ useWorker: false });
     this.instanceRegistry = createInstanceRegistry();
   }
 
@@ -80,7 +80,7 @@ export class WebDashboardServer {
       }
 
       // 连接 SQLite
-      const sqliteResult = this.sqliteClient.connect();
+      const sqliteResult = await this.sqliteManager.connect();
       if (!sqliteResult.success) {
         console.warn('[WebServer] SQLite 连接失败，部分功能可能不可用');
       }
@@ -126,7 +126,7 @@ export class WebDashboardServer {
     }
 
     await this.redisClient.disconnect();
-    this.sqliteClient.close();
+    await this.sqliteManager.close();
     await this.instanceRegistry.disconnect();
   }
 
@@ -389,7 +389,7 @@ export class WebDashboardServer {
 
     // Check SQLite
     try {
-      const sqliteResult = this.sqliteClient.connect();
+      const sqliteResult = await this.sqliteManager.connect();
       status.sqliteConnected = sqliteResult.success;
     } catch {
       status.sqliteConnected = false;

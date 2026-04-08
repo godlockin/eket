@@ -852,7 +852,7 @@ export class HttpHookServer {
     // 检查 Redis
     const redisCheck = await this.checkRedis();
     // 检查 SQLite
-    const sqliteCheck = this.checkSqlite();
+    const sqliteCheck = await this.checkSqlite();
 
     const healthy = redisCheck.healthy && sqliteCheck.healthy;
 
@@ -929,20 +929,20 @@ export class HttpHookServer {
   /**
    * 检查 SQLite 连接
    */
-  private checkSqlite(): { healthy: boolean; message: string; latency?: string } {
+  private async checkSqlite(): Promise<{ healthy: boolean; message: string; latency?: string }> {
     try {
-      const { createSQLiteClient } = require('../core/sqlite-client.js');
-      const client = createSQLiteClient();
+      const { createSQLiteManager } = await import('../core/sqlite-manager.js');
+      const manager = await createSQLiteManager({ useWorker: false });
       const start = Date.now();
 
-      const result = client.connect();
+      const result = await manager.connect();
       if (!result.success) {
         return { healthy: false, message: `SQLite 连接失败：${result.error?.message}` };
       }
 
       // 简单查询测试
-      client.execute('SELECT 1');
-      client.close();
+      await manager.execute('SELECT 1');
+      await manager.close();
 
       return {
         healthy: true,
