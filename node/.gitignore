@@ -1,0 +1,12 @@
+# EKET Data Directory
+.eket/
+
+# Benchmark Results
+benchmarks/results/*.json
+
+# Logs
+logs/
+*.log
+
+# Test artifacts
+coverage/
