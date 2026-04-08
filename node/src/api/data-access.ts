@@ -24,7 +24,8 @@ import * as path from 'path';
 import * as zlib from 'zlib';
 
 import { createRedisClient } from '../core/redis-client.js';
-import { createSQLiteClient } from '../core/sqlite-client.js';
+import { createSQLiteManager } from '../core/sqlite-manager.js';
+import type { SQLiteManager } from '../core/sqlite-manager.js';
 import type { Result } from '../types/index.js';
 import { EketErrorClass } from '../types/index.js';
 import { decrypt, isEncryptionEnabled, getEncryptionKey } from '../utils/encryption.js';
@@ -222,7 +223,7 @@ function tryDecrypt(content: string): { text: string; decrypted: boolean } {
  */
 export class DataAccessService {
   private redisClient: ReturnType<typeof createRedisClient>;
-  private sqliteClient: ReturnType<typeof createSQLiteClient>;
+  private sqliteClient: SQLiteManager | null = null;
   private exportStats: {
     totalExports: number;
     successfulExports: number;
@@ -236,7 +237,16 @@ export class DataAccessService {
 
   constructor() {
     this.redisClient = createRedisClient();
-    this.sqliteClient = createSQLiteClient();
+  }
+
+  /**
+   * 初始化 SQLite 连接（懒加载）
+   */
+  private async _ensureSQLite(): Promise<SQLiteManager> {
+    if (!this.sqliteClient) {
+      this.sqliteClient = createSQLiteManager({ useWorker: false });
+    }
+    return this.sqliteClient;
   }
 
   /**
@@ -414,13 +424,14 @@ export class DataAccessService {
     const logs: ExportedAuditLog[] = [];
 
     try {
-      const result = this.sqliteClient.connect();
+      const sqlite = await this._ensureSQLite();
+      const result = await sqlite.connect();
       if (!result.success) {
         return logs;
       }
 
       // 检查审计日志表是否存在
-      const tableResult = this.sqliteClient.get(
+      const tableResult = await sqlite.get(
         "SELECT name FROM sqlite_master WHERE type='table' AND name='audit_logs'"
       );
       const tableExists = tableResult.success && tableResult.data;
@@ -431,7 +442,7 @@ export class DataAccessService {
 
       // 查询相关审计日志（使用参数化查询防止 SQL 注入）
       const safeAgentId = agentId.replace(/'/g, "''");
-      const rowsResult = this.sqliteClient.all(
+      const rowsResult = await sqlite.all(
         `SELECT id, timestamp, action, agent_id, requested_by, details, deleted, deletion_id
          FROM audit_logs
          WHERE agent_id = '${safeAgentId}' OR requested_by = '${safeAgentId}'
@@ -507,15 +518,16 @@ export class DataAccessService {
 
       // 从 SQLite 获取历史心跳
       try {
-        const sqliteResult = this.sqliteClient.connect();
+        const sqlite = await this._ensureSQLite();
+        const sqliteResult = await sqlite.connect();
         if (sqliteResult.success) {
-          const tableResult = this.sqliteClient.get(
+          const tableResult = await sqlite.get(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='heartbeats'"
           );
 
           if (tableResult.success && tableResult.data) {
             const safeAgentId = agentId.replace(/'/g, "''");
-            const rowsResult = this.sqliteClient.all(
+            const rowsResult = await sqlite.all(
               `SELECT slaver_id, timestamp, status, current_task_id
                FROM heartbeats
                WHERE slaver_id = '${safeAgentId}'
@@ -590,7 +602,9 @@ export class DataAccessService {
    */
   async destroy(): Promise<void> {
     await this.redisClient.disconnect();
-    this.sqliteClient.close();
+    if (this.sqliteClient) {
+      await this.sqliteClient.close();
+    }
   }
 }
 

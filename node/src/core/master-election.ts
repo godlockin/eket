@@ -38,7 +38,8 @@ export type { ElectionLevel, MasterElectionConfig, MasterElectionResult } from '
 import { MasterContextManager } from './master-context.js';
 import type { MasterContext } from './master-context.js';
 import { RedisClient } from './redis-client.js';
-import { SQLiteClient } from './sqlite-client.js';
+import { createSQLiteManager } from './sqlite-manager.js';
+import type { SQLiteManager } from './sqlite-manager.js';
 
 // ============================================================================
 // Types (ElectionLevel, MasterElectionConfig, MasterElectionResult imported from types/index.js)
@@ -103,7 +104,7 @@ export class MasterElection {
   };
   private warmStandbyConfig: WarmStandbyConfig;
   private redisClient: RedisClient | null = null;
-  private sqliteClient: SQLiteClient | null = null;
+  private sqliteClient: SQLiteManager | null = null;
   private instanceId: string;
   private isMaster = false;
   private role: MasterRole = 'slaver';
@@ -286,8 +287,8 @@ export class MasterElection {
    * SQLite 选举实现
    */
   private async electWithSqlite(): Promise<Result<MasterElectionResult>> {
-    this.sqliteClient = new SQLiteClient(this.config.sqlitePath);
-    const connectResult = this.sqliteClient.connect();
+    this.sqliteClient = createSQLiteManager({ useWorker: false });
+    const connectResult = await this.sqliteClient.connect();
 
     if (!connectResult.success) {
       return { success: false, error: connectResult.error };
