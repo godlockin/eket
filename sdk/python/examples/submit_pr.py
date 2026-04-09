@@ -5,7 +5,8 @@ Example: Submit a Pull Request
 This example shows how to submit a PR and send a review request message.
 """
 
-from eket_sdk import EketClient, AgentType, AgentRole, MessageType, TestStatus
+from eket_sdk import EketClient, AgentType, AgentRole, MessageType
+from eket_sdk.models import TestStatus
 
 # Initialize and register
 client = EketClient(server_url="http://localhost:8080")

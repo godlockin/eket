@@ -14,8 +14,8 @@ from eket_sdk import (
     AgentStatus,
     TaskStatus,
     MessageType,
-    TestStatus,
 )
+from eket_sdk.models import TestStatus
 
 
 def main():
