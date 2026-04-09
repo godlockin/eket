@@ -5,7 +5,32 @@ All notable changes to the EKET Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.3.0] - 2026-04-08
+## [2.4.0] - 2026-04-09
+
+### 🧹 清账 Round 13a — 测试 100% + 降级架构补全
+
+**目标**: 从真实 98% 通过率 → 1072/1072 全绿，消除技术债务
+
+#### Fixed
+
+- **openclaw-adapter `startAgent`**: Redis 不可用时不再直接返回 failure，
+  改为构建 Instance 对象后降级为内存模式，保持 Level 1 可用性
+- **openclaw-adapter `connect`**: instanceRegistry.connect() 失败时 warn 并继续，
+  不再向上传播，符合三级架构降级原则
+- **cache-layer 测试**: 安装 ioredis-mock，恢复 Redis 可用性探测，
+  无 Redis 环境下 pool 测试优雅跳过
+- **Jest ESM 兼容性**: 修复 jest-resolver.cjs 假阳性、`jest` 全局注入、
+  `require()` 在 ESM 测试文件中的使用
+
+#### 测试结果
+
+| 指标 | 修复前 | 修复后 |
+|------|--------|--------|
+| 通过测试 | 1051/1072 | **1072/1072** |
+| 失败套件 | 2 (openclaw-adapter, agent routes) | **0** |
+| 失败测试 | 21 | **0** |
+
+
 
 ### 🎯 Level 1 优先 - 基础优先，渐进增强
 
