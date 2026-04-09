@@ -16,10 +16,11 @@ const mindsetCache = new Map<'master' | 'slaver', string>();
 
 /**
  * 思维模板路径
+ * 相对于项目根目录（node/的父目录）
  */
 const MINDSET_PATHS = {
-  master: '.eket/templates/master-workflow.md',
-  slaver: '.eket/templates/slaver-workflow.md',
+  master: '../.eket/templates/master-workflow.md',
+  slaver: '../.eket/templates/slaver-workflow.md',
 };
 
 /**
