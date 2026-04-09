@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目简介
 
-**EKET** 是一个 AI 智能体协作框架（v2.3.0），通过 Master-Slaver 架构和三仓库（confluence/jira/code_repo）分离实现多智能体协作开发。
+**EKET** 是一个 AI 智能体协作框架（v2.4.0），通过 Master-Slaver 架构和三仓库（confluence/jira/code_repo）分离实现多智能体协作开发。
 
 **核心设计理念**：渐进式三级架构
 
