@@ -7,6 +7,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
 
+import { withProgress } from '../utils/progress.js';
+
 interface GitRepoConfig {
   url: string;
   username?: string;
@@ -429,37 +431,50 @@ export async function runInitWizard(projectRoot?: string): Promise<ProjectConfig
     fs.mkdirSync(configDir, { recursive: true });
 
     const configPath = path.join(configDir, 'config.yml');
-    fs.writeFileSync(configPath, generateConfigYaml(config));
-    console.log(`\n✓ 配置已保存：${configPath}`);
 
-    // 生成 .gitignore
-    generateGitignore(projectRoot);
-    console.log('✓ .gitignore 已更新');
+    // 使用进度条保存配置
+    await withProgress(
+      async (bar) => {
+        bar.increment();
+        fs.writeFileSync(configPath, generateConfigYaml(config));
+        console.log(`\n✓ 配置已保存：${configPath}`);
 
-    // 创建必要的目录
-    const dirs = [
-      '.eket/state',
-      '.eket/logs',
-      '.eket/data/queue',
-      '.eket/data/sqlite',
-      '.eket/worktrees',
-      'confluence',
-      'jira',
-      'code_repo',
-    ];
+        bar.increment();
+        if (projectRoot) {
+          generateGitignore(projectRoot);
+          console.log('✓ .gitignore 已更新');
 
-    for (const dir of dirs) {
-      const fullPath = path.join(projectRoot, dir);
-      if (!fs.existsSync(fullPath)) {
-        fs.mkdirSync(fullPath, { recursive: true });
-        // 创建 .gitkeep
-        const gitkeepPath = path.join(fullPath, '.gitkeep');
-        if (!fs.existsSync(gitkeepPath)) {
-          fs.writeFileSync(gitkeepPath, '');
+          // 创建必要的目录
+          const dirs = [
+            '.eket/state',
+            '.eket/logs',
+            '.eket/data/queue',
+            '.eket/data/sqlite',
+            '.eket/worktrees',
+            'confluence',
+            'jira',
+            'code_repo',
+          ];
+
+          let created = 0;
+          for (const dir of dirs) {
+            const fullPath = path.join(projectRoot, dir);
+            if (!fs.existsSync(fullPath)) {
+              fs.mkdirSync(fullPath, { recursive: true });
+              // 创建 .gitkeep
+              const gitkeepPath = path.join(fullPath, '.gitkeep');
+              if (!fs.existsSync(gitkeepPath)) {
+                fs.writeFileSync(gitkeepPath, '');
+              }
+              created++;
+            }
+            bar.increment();
+          }
+          console.log(`✓ 目录结构已创建 (${created} 个目录)`);
         }
-      }
-    }
-    console.log('✓ 目录结构已创建');
+      },
+      { total: 10, name: 'Initializing project' }
+    );
 
     console.log('\n========================================');
     console.log('  初始化完成！');

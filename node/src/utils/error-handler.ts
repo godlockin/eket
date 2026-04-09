@@ -20,6 +20,8 @@ export interface ErrorContext {
   causes?: string[];
   /** Suggested solutions */
   solutions?: string[];
+  /** Quick fix command (one-line solution) */
+  quickFix?: string;
   /** Related documentation URL */
   docLink?: string;
   /** Command that caused the error */
@@ -97,6 +99,12 @@ export function printError(context: ErrorContext): void {
     }
   }
 
+  // Quick Fix (one-line solution)
+  if (context.quickFix) {
+    console.error(`\n${COLORS.cyan}${COLORS.bold}⚡ Quick Fix:${COLORS.reset}`);
+    console.error(`  ${COLORS.bold}${context.quickFix}${COLORS.reset}`);
+  }
+
   // Documentation link
   if (context.docLink) {
     console.error(`\n${COLORS.blue}📖 Documentation: ${context.docLink}${COLORS.reset}`);
@@ -168,6 +176,9 @@ export const ErrorCodes = {
   VALIDATION_FAILED: 'VALIDATION_FAILED',
   INVALID_INPUT: 'INVALID_INPUT',
 
+  // Module errors
+  MODULES_NOT_INSTALLED: 'MODULES_NOT_INSTALLED',
+
   // Unknown
   UNKNOWN_ERROR: 'UNKNOWN_ERROR',
 } as const;
@@ -177,7 +188,7 @@ export const ErrorCodes = {
  */
 export const ErrorMessages: Record<
   string,
-  { causes: string[]; solutions: string[]; docLink?: string }
+  { causes: string[]; solutions: string[]; docLink?: string; quickFix?: string }
 > = {
   [ErrorCodes.REDIS_NOT_CONFIGURED]: {
     causes: [
@@ -190,6 +201,7 @@ export const ErrorMessages: Record<
       'Run `docker run -d -p 6379:6379 redis` to start a local Redis',
     ],
     docLink: 'https://github.com/eket-framework/docs/blob/main/redis-setup.md',
+    quickFix: 'export EKET_REDIS_HOST=localhost && eket-cli redis:check',
   },
   [ErrorCodes.REDIS_CONNECTION_FAILED]: {
     causes: [
@@ -203,6 +215,21 @@ export const ErrorMessages: Record<
       'Check firewall settings',
     ],
     docLink: 'https://github.com/eket-framework/docs/blob/main/redis-troubleshooting.md',
+    quickFix: 'redis-cli ping || docker run -d -p 6379:6379 redis',
+  },
+  [ErrorCodes.SQLITE_CONNECTION_FAILED]: {
+    causes: [
+      'SQLite database file does not exist',
+      'Database file is corrupted',
+      'Insufficient permissions to access database',
+    ],
+    solutions: [
+      'Run project initialization: eket-cli project:init',
+      'Check database path: echo $EKET_SQLITE_PATH',
+      'Verify file permissions: ls -la ~/.eket/data/sqlite/',
+    ],
+    docLink: 'https://github.com/eket-framework/docs/blob/main/sqlite-setup.md',
+    quickFix: 'eket-cli project:init',
   },
   [ErrorCodes.CONFIG_NOT_FOUND]: {
     causes: ['Project not initialized', '.eket/config.yml file is missing'],
@@ -211,6 +238,7 @@ export const ErrorMessages: Record<
       'Verify you are in the correct project directory',
     ],
     docLink: 'https://github.com/eket-framework/docs/blob/main/project-setup.md',
+    quickFix: 'eket-cli project:init',
   },
   [ErrorCodes.TASK_NOT_FOUND]: {
     causes: ['Task ID does not exist', 'Task was deleted or moved', 'Incorrect task ID format'],
@@ -219,6 +247,7 @@ export const ErrorMessages: Record<
       'Verify the task ID format (e.g., FEAT-123)',
       'Check jira/tickets directory for task files',
     ],
+    quickFix: 'eket-cli task:list',
   },
   [ErrorCodes.GIT_OPERATION_FAILED]: {
     causes: ['Git is not installed', 'Not in a git repository', 'Git credentials are invalid'],
@@ -227,6 +256,7 @@ export const ErrorMessages: Record<
       'Run `git init` to initialize a repository',
       'Configure Git credentials: git config --global user.name/email',
     ],
+    quickFix: 'git --version || echo "Git not installed"',
   },
   [ErrorCodes.PERMISSION_DENIED]: {
     causes: [
@@ -239,6 +269,45 @@ export const ErrorMessages: Record<
       'Close other applications using the file',
       'Run with appropriate permissions',
     ],
+    quickFix: 'ls -la && chmod +rw <file>',
+  },
+  [ErrorCodes.INSTANCE_ALREADY_EXISTS]: {
+    causes: [
+      'Instance already started in this directory',
+      'Previous instance did not clean up properly',
+    ],
+    solutions: [
+      'Check existing instances: eket-cli instance:list',
+      'Clean up stale state: rm -rf .eket/state/*',
+      'Use different project directory',
+    ],
+    quickFix: 'rm -rf .eket/state && eket-cli instance:start',
+  },
+  [ErrorCodes.MASTER_ELECTION_FAILED]: {
+    causes: [
+      'Another master already exists',
+      'Redis connection failed during election',
+      'Network partition detected',
+    ],
+    solutions: [
+      'Check if master already running: eket-cli redis:list-slavers',
+      'Verify Redis connectivity: eket-cli redis:check',
+      'Wait for lease expiration and retry',
+    ],
+    quickFix: 'eket-cli redis:check',
+  },
+  [ErrorCodes.MODULES_NOT_INSTALLED]: {
+    causes: [
+      'Node.js dependencies not installed',
+      'npm install was interrupted',
+      'Incompatible Node.js version',
+    ],
+    solutions: [
+      'Run npm install to install dependencies',
+      'Check Node.js version: node --version (requires >= 18.0.0)',
+      'Delete node_modules and reinstall: rm -rf node_modules && npm install',
+    ],
+    quickFix: 'npm install',
   },
 };
 
@@ -257,6 +326,7 @@ export function printKnownError(
     details,
     causes: predefined?.causes,
     solutions: predefined?.solutions,
+    quickFix: predefined?.quickFix,
     docLink: predefined?.docLink,
   });
 }

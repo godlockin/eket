@@ -13,6 +13,7 @@ import * as path from 'path';
 
 import { createMasterElection, type MasterElection } from '../core/master-election.js';
 import { createRedisClient } from '../core/redis-client.js';
+import { loadMindset, buildMasterContext, buildSlaverContext, injectSystemPrompt } from '../core/mindset-loader.js';
 import { EketError, EketErrorCode, Result } from '../types/index.js';
 
 // ============================================================================
@@ -598,6 +599,14 @@ auto_mode: false
 `;
   fs.writeFileSync(configPath, configContent, 'utf-8');
 
+  // 加载并注入 Master 思维模板 (新增)
+  const context = buildMasterContext();
+  const mindset = await loadMindset('master', context);
+  if (mindset) {
+    console.log('## Master mindset loaded');
+    injectSystemPrompt(mindset);
+  }
+
   return { success: true, data: undefined };
 }
 
@@ -627,6 +636,14 @@ async function initializeSlaverInstance(
     if (registerResult.success) {
       console.log(`Slaver registered with Redis: ${slaverId}`);
     }
+  }
+
+  // 加载并注入 Slaver 思维模板 (新增)
+  const context = buildSlaverContext(role);
+  const mindset = await loadMindset('slaver', context);
+  if (mindset) {
+    console.log('## Slaver mindset loaded');
+    injectSystemPrompt(mindset);
   }
 
   return { success: true, data: undefined };
