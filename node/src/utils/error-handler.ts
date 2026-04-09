@@ -126,6 +126,7 @@ export function createErrorContext(
     details: options.details,
     causes: options.causes,
     solutions: options.solutions,
+    quickFix: options.quickFix,
     docLink: options.docLink,
     command: options.command,
     severity: options.severity || 'error',
