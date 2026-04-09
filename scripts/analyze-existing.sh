@@ -27,8 +27,7 @@ detect_tech_stack() {
   local stack=""
 
   [ -f "$PROJECT_ROOT/package.json" ]      && stack="${stack:+$stack, }Node.js/TypeScript"
-  [ -f "$PROJECT_ROOT/requirements.txt" ] || [ -f "$PROJECT_ROOT/pyproject.toml" ] && \
-    stack="${stack:+$stack, }Python"
+  { [ -f "$PROJECT_ROOT/requirements.txt" ] || [ -f "$PROJECT_ROOT/pyproject.toml" ]; } && stack="$stack Python"
   [ -f "$PROJECT_ROOT/go.mod" ]            && stack="${stack:+$stack, }Go"
   [ -f "$PROJECT_ROOT/Cargo.toml" ]        && stack="${stack:+$stack, }Rust"
   [ -f "$PROJECT_ROOT/pom.xml" ]           && stack="${stack:+$stack, }Java/Maven"
@@ -93,21 +92,32 @@ build_subagent_prompt() {
   local tech_stack="$3"
   local git_log="$4"
   local dir_tree="$5"
+  local template_file="$EKET_ROOT/template/.eket/analysis-roles/${role}.md"
 
-  local template="$EKET_ROOT/template/.eket/analysis-roles/${role}.md"
-
-  if [ ! -f "$template" ]; then
-    err "模板不存在: $template"
+  if [ ! -f "$template_file" ]; then
+    err "模板不存在: $template_file"
     return 1
   fi
 
-  sed \
-    -e "s|{{OUTPUT_PATH}}|$output_path|g" \
-    -e "s|{{TECH_STACK}}|$tech_stack|g" \
-    -e "s|{{GIT_LOG}}|$git_log|g" \
-    -e "s|{{DIR_TREE}}|$dir_tree|g" \
-    -e "s|{{PROJECT_ROOT}}|$PROJECT_ROOT|g" \
-    "$template"
+  python3 - "$template_file" <<PYEOF
+import sys
+
+with open(sys.argv[1], 'r') as f:
+    content = f.read()
+
+replacements = {
+    '{{PROJECT_PATH}}': r"""$PROJECT_ROOT""",
+    '{{TECH_STACK}}':   r"""$tech_stack""",
+    '{{GIT_LOG}}':      r"""$git_log""",
+    '{{DIR_TREE}}':     r"""$dir_tree""",
+    '{{OUTPUT_PATH}}':  r"""$output_path""",
+}
+
+for placeholder, value in replacements.items():
+    content = content.replace(placeholder, value)
+
+print(content, end='')
+PYEOF
 }
 
 dispatch_subagents() {
