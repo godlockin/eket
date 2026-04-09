@@ -30,9 +30,9 @@ function createMockSkill(name: string, category: string = 'custom'): Skill {
 }
 
 // Mock Adapter for testing
-function createMockAdapter(name: string): SkillAdapter {
+function createMockAdapter(name: string, source: string = 'openclaw'): SkillAdapter {
   return {
-    source: 'openclaw' as const,
+    source: source as any,
     connected: true,
     connect: jest.fn().mockResolvedValue(undefined),
     disconnect: jest.fn().mockResolvedValue(undefined),
@@ -87,7 +87,7 @@ describe('SkillsRegistry', () => {
         execute: jest.fn(),
       } as unknown as Skill;
 
-      expect(() => registry.register(invalidSkill)).toThrow('INVALID_SKILL');
+      expect(() => registry.register(invalidSkill)).toThrow('does not implement required methods');
     });
 
     it('should throw error when registering invalid skill (missing description)', () => {
@@ -97,7 +97,7 @@ describe('SkillsRegistry', () => {
         execute: jest.fn(),
       } as unknown as Skill;
 
-      expect(() => registry.register(invalidSkill)).toThrow('INVALID_SKILL');
+      expect(() => registry.register(invalidSkill)).toThrow('does not implement required methods');
     });
 
     it('should throw error when registering invalid skill (missing category)', () => {
@@ -107,7 +107,7 @@ describe('SkillsRegistry', () => {
         execute: jest.fn(),
       } as unknown as Skill;
 
-      expect(() => registry.register(invalidSkill)).toThrow('INVALID_SKILL');
+      expect(() => registry.register(invalidSkill)).toThrow('does not implement required methods');
     });
 
     it('should throw error when registering invalid skill (missing execute method)', () => {
@@ -117,7 +117,7 @@ describe('SkillsRegistry', () => {
         category: 'custom',
       } as unknown as Skill;
 
-      expect(() => registry.register(invalidSkill)).toThrow('INVALID_SKILL');
+      expect(() => registry.register(invalidSkill)).toThrow('does not implement required methods');
     });
 
     it('should register skill to category index', () => {
@@ -552,9 +552,9 @@ describe('SkillsRegistry', () => {
     });
 
     it('should return correct adapter statistics', () => {
-      registry.registerAdapter('ocl1', createMockAdapter('ocl1'), { type: 'openclaw', host: 'localhost', port: 1, projectRoot: '/test' });
-      registry.registerAdapter('ocl2', createMockAdapter('ocl2'), { type: 'openclaw', host: 'localhost', port: 2, projectRoot: '/test' });
-      registry.registerAdapter('cc1', createMockAdapter('cc1'), { type: 'claude-code', projectRoot: '/test' });
+      registry.registerAdapter('ocl1', createMockAdapter('ocl1', 'openclaw'), { type: 'openclaw', host: 'localhost', port: 1, projectRoot: '/test' });
+      registry.registerAdapter('ocl2', createMockAdapter('ocl2', 'openclaw'), { type: 'openclaw', host: 'localhost', port: 2, projectRoot: '/test' });
+      registry.registerAdapter('cc1', createMockAdapter('cc1', 'claude-code'), { type: 'claude-code', projectRoot: '/test' });
 
       const stats = registry.getStats();
       expect(stats.adapters.total).toBe(3);

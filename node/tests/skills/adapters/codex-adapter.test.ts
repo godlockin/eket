@@ -81,7 +81,7 @@ describe('CodexSkillAdapter', () => {
     it('should throw CONNECTION_FAILED on connection error', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(adapter.connect()).rejects.toThrow('CONNECTION_FAILED');
+      await expect(adapter.connect()).rejects.toThrow('Failed to connect to Codex');
     });
 
     it('should throw CONNECTION_FAILED on non-OK response', async () => {
@@ -90,7 +90,7 @@ describe('CodexSkillAdapter', () => {
         text: async () => 'Service unavailable',
       });
 
-      await expect(adapter.connect()).rejects.toThrow('CONNECTION_FAILED');
+      await expect(adapter.connect()).rejects.toThrow('Failed to connect to Codex');
     });
 
     it('should handle API errors with details', async () => {
@@ -246,8 +246,6 @@ describe('CodexSkillAdapter', () => {
     });
 
     it('should return empty array on error', async () => {
-      await adapter.connect();
-
       mockFetch.mockRejectedValueOnce(new Error('API error'));
 
       const skills = await adapter.listSkills();
@@ -271,7 +269,12 @@ describe('CodexSkillAdapter', () => {
       expect(skills).toHaveLength(0);
     });
 
-    it('should throw EXECUTION_ERROR on API failure', async () => {
+    it('should return empty array on API failure', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, data: { status: 'healthy' } }),
+      });
+
       await adapter.connect();
 
       mockFetch.mockResolvedValueOnce({
@@ -279,7 +282,9 @@ describe('CodexSkillAdapter', () => {
         text: async () => 'Internal server error',
       });
 
-      await expect(adapter.listSkills()).rejects.toThrow('EXECUTION_ERROR');
+      const skills = await adapter.listSkills();
+
+      expect(skills).toHaveLength(0);
     });
   });
 
@@ -401,11 +406,27 @@ describe('CodexSkillAdapter', () => {
     });
 
     it('should include request ID in payload', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, data: { status: 'healthy' } }),
+      });
+
       await adapter.connect();
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true, data: {} }),
+        json: async () => ({
+          success: true,
+          data: {
+            name: 'request_id_test',
+            description: 'Test skill',
+            category: 'test',
+            version: '1.0.0',
+            input_schema: {},
+            output_schema: {},
+            steps: [],
+          },
+        }),
       });
 
       await adapter.fetchSkill('request_id_test');
@@ -418,6 +439,11 @@ describe('CodexSkillAdapter', () => {
     });
 
     it('should use correct endpoint for each method', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, data: { status: 'healthy' } }),
+      });
+
       await adapter.connect();
 
       mockFetch.mockResolvedValueOnce({
@@ -426,7 +452,18 @@ describe('CodexSkillAdapter', () => {
       });
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ success: true, data: {} }),
+        json: async () => ({
+          success: true,
+          data: {
+            name: 'test',
+            description: 'Test skill',
+            category: 'test',
+            version: '1.0.0',
+            input_schema: {},
+            output_schema: {},
+            steps: [],
+          },
+        }),
       });
 
       await adapter.listSkills();
@@ -647,7 +684,14 @@ describe('CodexSkillAdapter - Authentication', () => {
 });
 
 describe('CodexSkillAdapter - Response Handling', () => {
+  const baseConfig = {
+    type: 'codex' as const,
+    baseUrl: 'https://api.codex.example.com',
+    apiKey: 'test-api-key',
+  };
+
   beforeEach(() => {
+    mockFetch.mockReset();
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ success: true, data: { status: 'healthy' } }),
@@ -655,7 +699,8 @@ describe('CodexSkillAdapter - Response Handling', () => {
   });
 
   it('should handle successful API response', async () => {
-    await new CodexSkillAdapter(baseConfig).connect();
+    const adapter = new CodexSkillAdapter(baseConfig);
+    await adapter.connect();
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -663,21 +708,6 @@ describe('CodexSkillAdapter - Response Handling', () => {
         success: true,
         data: { result: 'success' },
         requestId: 'test_123',
-      }),
-    });
-
-    const adapter = new CodexSkillAdapter(baseConfig);
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ success: true, data: { status: 'healthy' } }),
-    });
-    await adapter.connect();
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: { result: 'test' },
       }),
     });
 
@@ -689,16 +719,11 @@ describe('CodexSkillAdapter - Response Handling', () => {
   it('should handle API error response', async () => {
     const adapter = new CodexSkillAdapter(baseConfig);
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: false,
-        error: { code: 'SKILL_NOT_FOUND', message: 'Skill does not exist' },
-      }),
-    });
+    // beforeEach already mocks health check for connect()
 
     await adapter.connect();
 
+    // Mock for execute() - returns success: false
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({

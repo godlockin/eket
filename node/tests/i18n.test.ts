@@ -8,8 +8,18 @@ import { detectLocale, initI18n, getLocale, changeLocale, t, translateError, tra
 describe('i18n', () => {
   describe('detectLocale', () => {
     it('should return zh-CN by default', () => {
+      // Save and clear env vars for testing
+      const originalLocale = process.env.EKET_LOCALE;
+      const originalLang = process.env.LANG;
+      delete process.env.EKET_LOCALE;
+      delete process.env.LANG;
+
       const locale = detectLocale();
       expect(locale).toBe('zh-CN');
+
+      // Restore env vars
+      if (originalLocale) process.env.EKET_LOCALE = originalLocale;
+      if (originalLang) process.env.LANG = originalLang;
     });
 
     it('should return locale from EKET_LOCALE env var', () => {
@@ -42,12 +52,12 @@ describe('i18n', () => {
       process.env.EKET_LOCALE = 'zh-CN';
     });
 
-    it('should initialize successfully', async () => {
-      await expect(initI18n()).resolves.not.toThrow();
+    it('should initialize successfully', () => {
+      expect(() => initI18n()).not.toThrow();
     });
 
-    it('should not reinitialize on second call', async () => {
-      await initI18n();
+    it('should not reinitialize on second call', () => {
+      initI18n();
       const locale = getLocale();
       expect(locale).toBe('zh-CN');
     });
@@ -98,8 +108,8 @@ describe('i18n', () => {
       expect(getLocale()).toBe('zh-CN');
     });
 
-    it('should throw error for unsupported locale', async () => {
-      await expect(changeLocale('ja-JP' as any)).rejects.toThrow('Unsupported locale');
+    it('should throw error for unsupported locale', () => {
+      expect(() => changeLocale('ja-JP' as any)).toThrow('Unsupported locale');
     });
   });
 });

@@ -70,9 +70,9 @@ TaskRouter.post('/', async (_req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 生成 Task ID（如果未提供）
+    // 生成 Task ID（如果未提供）- 使用时间戳 + 随机数确保唯一性
     const task: OpenCLAWTask = {
-      id: body.id || `task_${Date.now()}`,
+      id: body.id || `task_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       workflow_id: body.workflow_id,
       type: body.type,
       title: body.title,

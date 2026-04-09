@@ -56,8 +56,15 @@ describe('CommunicationProtocol', () => {
     protocolB = createCommunicationProtocol(configB);
 
     // Mock connect to avoid Redis dependency in tests
-    protocolA.connect = jest.fn().mockResolvedValue({ success: true, data: undefined }) as any;
-    protocolB.connect = jest.fn().mockResolvedValue({ success: true, data: undefined }) as any;
+    // Need to set isConnected flag as well as returning success
+    protocolA.connect = jest.fn().mockImplementation(async () => {
+      (protocolA as any).isConnected = true;
+      return { success: true, data: undefined };
+    }) as any;
+    protocolB.connect = jest.fn().mockImplementation(async () => {
+      (protocolB as any).isConnected = true;
+      return { success: true, data: undefined };
+    }) as any;
   });
 
   afterEach(async () => {
