@@ -1,0 +1,27 @@
+{
+  "id": "sop/slaver-workflow",
+  "title": "Slaver 工作流",
+  "description": "Slaver（执行者）的职责和工作流程。",
+  "source": "@site/docs/sop/slaver-workflow.md",
+  "sourceDirName": "sop",
+  "slug": "/sop/slaver-workflow",
+  "permalink": "/docs/sop/slaver-workflow",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/sop/slaver-workflow.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Master 工作流",
+    "permalink": "/docs/sop/master-workflow"
+  },
+  "next": {
+    "title": "PR Review 流程",
+    "permalink": "/docs/sop/pr-review"
+  }
+}

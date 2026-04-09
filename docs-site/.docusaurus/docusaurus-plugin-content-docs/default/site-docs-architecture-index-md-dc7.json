@@ -1,0 +1,27 @@
+{
+  "id": "architecture/index",
+  "title": "架构设计",
+  "description": "EKET 框架的架构设计和核心理念。",
+  "source": "@site/docs/architecture/index.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/",
+  "permalink": "/docs/architecture/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/architecture/index.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "配置说明",
+    "permalink": "/docs/getting-started/configuration"
+  },
+  "next": {
+    "title": "架构概览",
+    "permalink": "/docs/architecture/overview"
+  }
+}

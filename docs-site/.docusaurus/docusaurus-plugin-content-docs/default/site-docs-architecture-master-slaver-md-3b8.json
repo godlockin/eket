@@ -1,0 +1,27 @@
+{
+  "id": "architecture/master-slaver",
+  "title": "Master-Slaver 架构",
+  "description": "EKET 通过 Master-Slaver 架构实现 AI 智能体协作。",
+  "source": "@site/docs/architecture/master-slaver.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/master-slaver",
+  "permalink": "/docs/architecture/master-slaver",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/architecture/master-slaver.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "三级架构详解",
+    "permalink": "/docs/architecture/three-levels"
+  },
+  "next": {
+    "title": "组件概览",
+    "permalink": "/docs/architecture/components"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "releases/changelog",
+  "title": "变更日志",
+  "description": "所有重大变更都将记录在此文件中。",
+  "source": "@site/docs/releases/changelog.md",
+  "sourceDirName": "releases",
+  "slug": "/releases/changelog",
+  "permalink": "/docs/releases/changelog",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/releases/changelog.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "故障排除",
+    "permalink": "/docs/ops/troubleshooting"
+  },
+  "next": {
+    "title": "路线图",
+    "permalink": "/docs/releases/roadmap"
+  }
+}

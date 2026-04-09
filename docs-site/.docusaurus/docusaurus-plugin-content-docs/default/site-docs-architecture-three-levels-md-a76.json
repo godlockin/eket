@@ -1,0 +1,27 @@
+{
+  "id": "architecture/three-levels",
+  "title": "三级架构详解",
+  "description": "EKET 采用渐进式三级架构设计，确保在不同环境下都能稳定运行。",
+  "source": "@site/docs/architecture/three-levels.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/three-levels",
+  "permalink": "/docs/architecture/three-levels",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/architecture/three-levels.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "架构概览",
+    "permalink": "/docs/architecture/overview"
+  },
+  "next": {
+    "title": "Master-Slaver 架构",
+    "permalink": "/docs/architecture/master-slaver"
+  }
+}

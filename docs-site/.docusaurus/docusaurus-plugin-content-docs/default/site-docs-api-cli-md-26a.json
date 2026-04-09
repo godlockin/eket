@@ -1,0 +1,27 @@
+{
+  "id": "api/cli",
+  "title": "CLI API",
+  "description": "完整的 CLI 命令参考。",
+  "source": "@site/docs/api/cli.md",
+  "sourceDirName": "api",
+  "slug": "/api/cli",
+  "permalink": "/docs/api/cli",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/api/cli.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "API 参考",
+    "permalink": "/docs/api/"
+  },
+  "next": {
+    "title": "HTTP API",
+    "permalink": "/docs/api/http"
+  }
+}

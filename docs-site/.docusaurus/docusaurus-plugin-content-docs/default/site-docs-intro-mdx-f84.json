@@ -1,0 +1,23 @@
+{
+  "id": "intro",
+  "title": "EKET Framework",
+  "description": "AI 智能体协作框架 | Version 2.3.0",
+  "source": "@site/docs/intro.mdx",
+  "sourceDirName": ".",
+  "slug": "/intro",
+  "permalink": "/docs/intro",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/intro.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
+  "sidebar": "docsSidebar",
+  "next": {
+    "title": "快速开始",
+    "permalink": "/docs/getting-started/"
+  }
+}

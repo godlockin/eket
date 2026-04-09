@@ -1,0 +1,27 @@
+{
+  "id": "getting-started/configuration",
+  "title": "配置说明",
+  "description": "环境变量",
+  "source": "@site/docs/getting-started/configuration.md",
+  "sourceDirName": "getting-started",
+  "slug": "/getting-started/configuration",
+  "permalink": "/docs/getting-started/configuration",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/getting-started/configuration.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "5 分钟快速开始",
+    "permalink": "/docs/getting-started/quickstart"
+  },
+  "next": {
+    "title": "架构设计",
+    "permalink": "/docs/architecture/"
+  }
+}

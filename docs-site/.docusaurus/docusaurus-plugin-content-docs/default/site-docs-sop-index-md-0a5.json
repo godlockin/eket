@@ -1,0 +1,18 @@
+{
+  "id": "sop/index",
+  "title": "SOP 流程",
+  "description": "标准操作流程文档。",
+  "source": "@site/docs/sop/index.md",
+  "sourceDirName": "sop",
+  "slug": "/sop/",
+  "permalink": "/docs/sop/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/sop/index.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  }
+}

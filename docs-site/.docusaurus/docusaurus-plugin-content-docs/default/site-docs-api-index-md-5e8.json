@@ -1,0 +1,27 @@
+{
+  "id": "api/index",
+  "title": "API 参考",
+  "description": "EKET API 文档。",
+  "source": "@site/docs/api/index.md",
+  "sourceDirName": "api",
+  "slug": "/api/",
+  "permalink": "/docs/api/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/api/index.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "部署指南",
+    "permalink": "/docs/guides/deployment"
+  },
+  "next": {
+    "title": "CLI API",
+    "permalink": "/docs/api/cli"
+  }
+}

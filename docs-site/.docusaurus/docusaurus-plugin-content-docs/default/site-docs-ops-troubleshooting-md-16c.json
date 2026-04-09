@@ -1,0 +1,27 @@
+{
+  "id": "ops/troubleshooting",
+  "title": "故障排除",
+  "description": "常见问题和解决方案。",
+  "source": "@site/docs/ops/troubleshooting.md",
+  "sourceDirName": "ops",
+  "slug": "/ops/troubleshooting",
+  "permalink": "/docs/ops/troubleshooting",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/ops/troubleshooting.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "系统监控",
+    "permalink": "/docs/ops/monitoring"
+  },
+  "next": {
+    "title": "变更日志",
+    "permalink": "/docs/releases/changelog"
+  }
+}

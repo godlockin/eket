@@ -1,0 +1,23 @@
+{
+  "id": "releases/roadmap",
+  "title": "路线图",
+  "description": "EKET 未来发展规划。",
+  "source": "@site/docs/releases/roadmap.md",
+  "sourceDirName": "releases",
+  "slug": "/releases/roadmap",
+  "permalink": "/docs/releases/roadmap",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/releases/roadmap.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "变更日志",
+    "permalink": "/docs/releases/changelog"
+  }
+}

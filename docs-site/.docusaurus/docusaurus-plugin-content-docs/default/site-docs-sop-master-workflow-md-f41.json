@@ -1,0 +1,27 @@
+{
+  "id": "sop/master-workflow",
+  "title": "Master 工作流",
+  "description": "Master（协调者）的职责和工作流程。",
+  "source": "@site/docs/sop/master-workflow.md",
+  "sourceDirName": "sop",
+  "slug": "/sop/master-workflow",
+  "permalink": "/docs/sop/master-workflow",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/sop/master-workflow.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "HTTP Hooks",
+    "permalink": "/docs/api/hooks"
+  },
+  "next": {
+    "title": "Slaver 工作流",
+    "permalink": "/docs/sop/slaver-workflow"
+  }
+}

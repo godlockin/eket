@@ -1,0 +1,27 @@
+{
+  "id": "guides/commands",
+  "title": "CLI 命令参考",
+  "description": "完整的 EKET CLI 命令列表。",
+  "source": "@site/docs/guides/commands.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/commands",
+  "permalink": "/docs/guides/commands",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/guides/commands.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "使用指南",
+    "permalink": "/docs/guides/"
+  },
+  "next": {
+    "title": "Skills 系统",
+    "permalink": "/docs/guides/skills"
+  }
+}

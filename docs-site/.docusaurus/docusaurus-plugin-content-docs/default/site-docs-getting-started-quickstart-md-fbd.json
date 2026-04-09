@@ -1,0 +1,27 @@
+{
+  "id": "getting-started/quickstart",
+  "title": "5 分钟快速开始",
+  "description": "步骤 1: 启动 Master",
+  "source": "@site/docs/getting-started/quickstart.md",
+  "sourceDirName": "getting-started",
+  "slug": "/getting-started/quickstart",
+  "permalink": "/docs/getting-started/quickstart",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/getting-started/quickstart.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "安装指南",
+    "permalink": "/docs/getting-started/installation"
+  },
+  "next": {
+    "title": "配置说明",
+    "permalink": "/docs/getting-started/configuration"
+  }
+}

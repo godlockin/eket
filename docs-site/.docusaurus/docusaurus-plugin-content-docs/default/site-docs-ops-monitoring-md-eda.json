@@ -1,0 +1,27 @@
+{
+  "id": "ops/monitoring",
+  "title": "系统监控",
+  "description": "EKET 系统监控和告警。",
+  "source": "@site/docs/ops/monitoring.md",
+  "sourceDirName": "ops",
+  "slug": "/ops/monitoring",
+  "permalink": "/docs/ops/monitoring",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/ops/monitoring.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "备份恢复",
+    "permalink": "/docs/ops/backup-restore"
+  },
+  "next": {
+    "title": "故障排除",
+    "permalink": "/docs/ops/troubleshooting"
+  }
+}

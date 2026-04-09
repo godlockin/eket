@@ -21,7 +21,9 @@ import { registerAlerts } from './commands/alerts.js';
 import { registerClaim } from './commands/claim.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { runInitWizard } from './commands/init-wizard.js';
+import { runInteractiveStartCLI } from './commands/interactive-start.js';
 import { registerRecommend } from './commands/recommend.js';
+import { registerCompletion } from './utils/completion.js';
 import { registerSetRole } from './commands/set-role.js';
 import { startInstance, listAvailableRoles } from './commands/start-instance.js';
 import { registerSubmitPR } from './commands/submit-pr.js';
@@ -137,6 +139,21 @@ export {
   type MasterElectionResult,
   type ElectionLevel,
 } from './core/master-election.js';
+
+// ============================================================================
+// Utility Exports (TASK-004: Progress Bar)
+// ============================================================================
+
+export {
+  // Progress Bar Utilities
+  createProgressBar,
+  createMultiProgressBar,
+  withProgress,
+  MultiStepProgress,
+  formatDuration,
+  type ProgressBarConfig,
+  type ProgressStep,
+} from './utils/progress.js';
 
 const pkg = {
   name: 'eket-cli',
@@ -694,6 +711,32 @@ Available Roles:
         });
         process.exit(1);
       }
+    });
+
+  // 注册 interactive:start 命令 (TASK-001: CLI 体验优化)
+  program
+    .command('interactive:start')
+    .description('Start an instance with interactive wizard')
+    .addHelpText(
+      'after',
+      `
+Examples:
+  $ eket-cli interactive:start              # Start interactive wizard
+
+Related Commands:
+  $ eket-cli instance:start                 # Start instance with command-line options
+  $ eket-cli project:init                   # Initialize project first
+
+Description:
+  Interactive wizard guides you through:
+  - Selecting instance mode (AI auto / Human / AI manual)
+  - Choosing agent role
+  - Confirming configuration
+  - One-click startup
+`
+    )
+    .action(async () => {
+      await runInteractiveStartCLI();
     });
 
   // 注册 heartbeat 命令
@@ -1293,6 +1336,12 @@ Related Commands:
         process.exit(1);
       }
     });
+
+  // ============================================================================
+  // Shell Completion Command (TASK-002: CLI 体验优化)
+  // ============================================================================
+
+  registerCompletion(program);
 
   // 解析命令行
   await program.parseAsync(process.argv);

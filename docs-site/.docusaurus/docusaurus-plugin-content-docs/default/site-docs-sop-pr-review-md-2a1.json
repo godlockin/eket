@@ -1,0 +1,27 @@
+{
+  "id": "sop/pr-review",
+  "title": "PR Review 流程",
+  "description": "代码审查流程和标准。",
+  "source": "@site/docs/sop/pr-review.md",
+  "sourceDirName": "sop",
+  "slug": "/sop/pr-review",
+  "permalink": "/docs/sop/pr-review",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/sop/pr-review.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Slaver 工作流",
+    "permalink": "/docs/sop/slaver-workflow"
+  },
+  "next": {
+    "title": "备份恢复",
+    "permalink": "/docs/ops/backup-restore"
+  }
+}

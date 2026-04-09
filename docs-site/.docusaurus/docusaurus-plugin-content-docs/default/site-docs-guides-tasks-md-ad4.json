@@ -1,0 +1,27 @@
+{
+  "id": "guides/tasks",
+  "title": "任务管理",
+  "description": "任务创建和工作流管理。",
+  "source": "@site/docs/guides/tasks.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/tasks",
+  "permalink": "/docs/guides/tasks",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/guides/tasks.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Skills 系统",
+    "permalink": "/docs/guides/skills"
+  },
+  "next": {
+    "title": "部署指南",
+    "permalink": "/docs/guides/deployment"
+  }
+}

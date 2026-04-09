@@ -1,0 +1,27 @@
+{
+  "id": "architecture/components",
+  "title": "组件概览",
+  "description": "EKET 核心组件介绍。",
+  "source": "@site/docs/architecture/components.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/components",
+  "permalink": "/docs/architecture/components",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/architecture/components.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Master-Slaver 架构",
+    "permalink": "/docs/architecture/master-slaver"
+  },
+  "next": {
+    "title": "使用指南",
+    "permalink": "/docs/guides/"
+  }
+}

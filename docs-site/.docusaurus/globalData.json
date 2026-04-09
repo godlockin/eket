@@ -1,0 +1,175 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/docs",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/docs",
+          "mainDocId": "intro",
+          "docs": [
+            {
+              "id": "api/cli",
+              "path": "/docs/api/cli",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "api/hooks",
+              "path": "/docs/api/hooks",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "api/http",
+              "path": "/docs/api/http",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "api/index",
+              "path": "/docs/api/",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "architecture/components",
+              "path": "/docs/architecture/components",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "architecture/index",
+              "path": "/docs/architecture/",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "architecture/master-slaver",
+              "path": "/docs/architecture/master-slaver",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "architecture/overview",
+              "path": "/docs/architecture/overview",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "architecture/three-levels",
+              "path": "/docs/architecture/three-levels",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "getting-started/configuration",
+              "path": "/docs/getting-started/configuration",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "getting-started/index",
+              "path": "/docs/getting-started/",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "getting-started/installation",
+              "path": "/docs/getting-started/installation",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "getting-started/quickstart",
+              "path": "/docs/getting-started/quickstart",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "guides/commands",
+              "path": "/docs/guides/commands",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "guides/deployment",
+              "path": "/docs/guides/deployment",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "guides/index",
+              "path": "/docs/guides/",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "guides/skills",
+              "path": "/docs/guides/skills",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "guides/tasks",
+              "path": "/docs/guides/tasks",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "intro",
+              "path": "/docs/intro",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "ops/backup-restore",
+              "path": "/docs/ops/backup-restore",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "ops/index",
+              "path": "/docs/ops/"
+            },
+            {
+              "id": "ops/monitoring",
+              "path": "/docs/ops/monitoring",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "ops/troubleshooting",
+              "path": "/docs/ops/troubleshooting",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "releases/changelog",
+              "path": "/docs/releases/changelog",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "releases/index",
+              "path": "/docs/releases/"
+            },
+            {
+              "id": "releases/roadmap",
+              "path": "/docs/releases/roadmap",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "sop/index",
+              "path": "/docs/sop/"
+            },
+            {
+              "id": "sop/master-workflow",
+              "path": "/docs/sop/master-workflow",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "sop/pr-review",
+              "path": "/docs/sop/pr-review",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "sop/slaver-workflow",
+              "path": "/docs/sop/slaver-workflow",
+              "sidebar": "docsSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "docsSidebar": {
+              "link": {
+                "path": "/docs/intro",
+                "label": "简介"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

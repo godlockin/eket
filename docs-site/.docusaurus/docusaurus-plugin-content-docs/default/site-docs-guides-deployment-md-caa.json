@@ -1,0 +1,27 @@
+{
+  "id": "guides/deployment",
+  "title": "部署指南",
+  "description": "EKET 部署配置和最佳实践。",
+  "source": "@site/docs/guides/deployment.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/deployment",
+  "permalink": "/docs/guides/deployment",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/guides/deployment.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "任务管理",
+    "permalink": "/docs/guides/tasks"
+  },
+  "next": {
+    "title": "API 参考",
+    "permalink": "/docs/api/"
+  }
+}

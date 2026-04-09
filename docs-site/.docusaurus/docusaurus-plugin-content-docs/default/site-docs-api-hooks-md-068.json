@@ -1,0 +1,27 @@
+{
+  "id": "api/hooks",
+  "title": "HTTP Hooks",
+  "description": "HTTP Hook 服务器用于监听 Agent 生命周期事件。",
+  "source": "@site/docs/api/hooks.md",
+  "sourceDirName": "api",
+  "slug": "/api/hooks",
+  "permalink": "/docs/api/hooks",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/api/hooks.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "HTTP API",
+    "permalink": "/docs/api/http"
+  },
+  "next": {
+    "title": "Master 工作流",
+    "permalink": "/docs/sop/master-workflow"
+  }
+}

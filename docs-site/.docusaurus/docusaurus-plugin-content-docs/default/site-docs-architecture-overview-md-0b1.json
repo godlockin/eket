@@ -1,0 +1,27 @@
+{
+  "id": "architecture/overview",
+  "title": "架构概览",
+  "description": "EKET 框架的整体架构设计。",
+  "source": "@site/docs/architecture/overview.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/overview",
+  "permalink": "/docs/architecture/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/architecture/overview.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "架构设计",
+    "permalink": "/docs/architecture/"
+  },
+  "next": {
+    "title": "三级架构详解",
+    "permalink": "/docs/architecture/three-levels"
+  }
+}

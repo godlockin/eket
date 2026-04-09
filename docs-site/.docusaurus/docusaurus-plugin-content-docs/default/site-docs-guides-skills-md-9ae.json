@@ -1,0 +1,27 @@
+{
+  "id": "guides/skills",
+  "title": "Skills 系统",
+  "description": "Skills 是可复用的能力单元。",
+  "source": "@site/docs/guides/skills.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/skills",
+  "permalink": "/docs/guides/skills",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/guides/skills.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "CLI 命令参考",
+    "permalink": "/docs/guides/commands"
+  },
+  "next": {
+    "title": "任务管理",
+    "permalink": "/docs/guides/tasks"
+  }
+}

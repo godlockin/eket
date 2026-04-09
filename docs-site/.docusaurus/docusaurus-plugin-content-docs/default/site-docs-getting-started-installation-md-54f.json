@@ -1,0 +1,27 @@
+{
+  "id": "getting-started/installation",
+  "title": "安装指南",
+  "description": "前置要求",
+  "source": "@site/docs/getting-started/installation.md",
+  "sourceDirName": "getting-started",
+  "slug": "/getting-started/installation",
+  "permalink": "/docs/getting-started/installation",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/getting-started/installation.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "快速开始",
+    "permalink": "/docs/getting-started/"
+  },
+  "next": {
+    "title": "5 分钟快速开始",
+    "permalink": "/docs/getting-started/quickstart"
+  }
+}

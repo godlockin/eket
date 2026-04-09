@@ -1,0 +1,18 @@
+{
+  "id": "releases/index",
+  "title": "版本发布",
+  "description": "EKET 版本发布和变更记录。",
+  "source": "@site/docs/releases/index.md",
+  "sourceDirName": "releases",
+  "slug": "/releases/",
+  "permalink": "/docs/releases/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/77studio/eket/tree/main/docs-site/docs/releases/index.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  }
+}
