@@ -27,3 +27,7 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+
+# Keep dist in repo (local use only, not published)
+!dist/
+!dist/*
