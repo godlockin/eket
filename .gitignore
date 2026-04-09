@@ -27,6 +27,11 @@ sys_init/
 # 运行时数据
 confluence/memory/retrospectives/
 
+# 工具缓存 / 本地工具
+.serena/
+.coverage
+obsidian-plugins/
+
 # Node.js
 node/node_modules/
 node/dist/
