@@ -15,7 +15,8 @@
 | Docker 化 | ✅ 完成 | Dockerfile + docker-compose |
 | 文档站 | ✅ 完成 | Docusaurus, 8 篇核心文档 |
 | Mindset 注入 | ✅ 完成 | 实例启动时自动注入 |
-| Python SDK | ✅ 完成 | sdk/python/ 含 examples/tests |
+| Python SDK | ✅ 完成 | sdk/python/ 26/26 tests 通过 |
+| JS SDK | ✅ 完成 | sdk/javascript/ 12/12 tests 通过 |
 | GitHub Actions CI | ✅ 完成 | .github/workflows/ci.yml |
 | 健康检查端点 | ✅ 完成 | /health /ready /live |
 | 分支保护规则 | ⚪ 未开始 | Round 14 目标 |
@@ -43,4 +44,13 @@
 |------|--------|-----------|------|
 | 分支保护规则未配置 | P0 | 14 | ⚪ 待启动 |
 | SDK 版本策略未定义 | P2 | 14 | ⚪ 待启动 |
-| Roadmap 文档版本号与实际不同步 | P3 | 持续 | ✅ 完成 |
+| node/package.json 版本与 tag 不同步 | P3 | 持续 | ✅ 已修正（2.5.0） |
+
+---
+
+## Next Steps (Round 14)
+
+1. **分支保护规则**：为 main/miao 配置 PR + CI 强制检查
+2. **SDK 版本策略**：定义 semver + PyPI/npm 发布流程
+3. **SDK examples 完善**：Python/JS 各 5+ 可运行示例
+4. **目标版本**: v2.6.0
