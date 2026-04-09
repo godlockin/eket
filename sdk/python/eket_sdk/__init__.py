@@ -14,7 +14,7 @@ __version__ = "1.0.0"
 __protocol_version__ = "1.0.0"
 
 from .client import EketClient
-from .models import Agent, Task, Message, PR, AgentStatus, TaskStatus, MessageType, PRStatus
+from .models import Agent, Task, Message, PR, AgentType, AgentRole, AgentSpecialty, AgentStatus, TaskStatus, MessageType, PRStatus
 from .exceptions import (
     EketError,
     AuthenticationError,
@@ -33,6 +33,9 @@ __all__ = [
     "Message",
     "PR",
     # Enums
+    "AgentType",
+    "AgentRole",
+    "AgentSpecialty",
     "AgentStatus",
     "TaskStatus",
     "MessageType",

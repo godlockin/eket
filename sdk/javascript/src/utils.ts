@@ -131,11 +131,11 @@ export function buildUrl(base: string, path: string, params?: Record<string, str
 /**
  * Validate required fields in an object
  */
-export function validateRequired<T extends Record<string, unknown>>(
+export function validateRequired<T extends object>(
   obj: T,
   fields: Array<keyof T>
 ): void {
-  const missing = fields.filter((field) => obj[field] === undefined || obj[field] === null);
+  const missing = fields.filter((field) => (obj as Record<keyof T, unknown>)[field] === undefined || (obj as Record<keyof T, unknown>)[field] === null);
 
   if (missing.length > 0) {
     throw new Error(`Missing required fields: ${missing.join(', ')}`);
