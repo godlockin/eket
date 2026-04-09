@@ -1,0 +1,48 @@
+# EKET Docker Compose
+
+# Redis service
+redis:
+  image: redis:7-alpine
+  container_name: eket-redis
+  restart: unless-stopped
+  ports:
+    - "6379:6379"
+  volumes:
+    - redis_data:/data
+  command: redis-server --appendonly yes
+  healthcheck:
+    test: ["CMD", "redis-cli", "ping"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+
+# EKET service
+eket:
+  build:
+    context: .
+    dockerfile: Dockerfile
+  container_name: eket-instance
+  restart: unless-stopped
+  depends_on:
+    redis:
+      condition: service_healthy
+  environment:
+    - NODE_ENV=production
+    - EKET_REDIS_HOST=redis
+    - EKET_REDIS_PORT=6379
+    - EKET_LOG_LEVEL=info
+    - EKET_SQLITE_PATH=/app/data/eket.db
+  volumes:
+    - eket_data:/app/data
+    - ./node/.env:/app/node/.env:ro
+  ports:
+    - "3000:3000"   # Web Dashboard
+    - "8899:8899"   # Hook Server
+    - "8080:8080"   # OpenCLAW Gateway
+  command: ["node", "dist/index.js", "instance:start", "--auto"]
+
+volumes:
+  redis_data:
+    driver: local
+  eket_data:
+    driver: local
