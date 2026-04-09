@@ -27,7 +27,7 @@ detect_tech_stack() {
   local stack=""
 
   [ -f "$PROJECT_ROOT/package.json" ]      && stack="${stack:+$stack, }Node.js/TypeScript"
-  { [ -f "$PROJECT_ROOT/requirements.txt" ] || [ -f "$PROJECT_ROOT/pyproject.toml" ]; } && stack="$stack Python"
+  { [ -f "$PROJECT_ROOT/requirements.txt" ] || [ -f "$PROJECT_ROOT/pyproject.toml" ]; } && stack="${stack:+$stack, }Python"
   [ -f "$PROJECT_ROOT/go.mod" ]            && stack="${stack:+$stack, }Go"
   [ -f "$PROJECT_ROOT/Cargo.toml" ]        && stack="${stack:+$stack, }Rust"
   [ -f "$PROJECT_ROOT/pom.xml" ]           && stack="${stack:+$stack, }Java/Maven"
