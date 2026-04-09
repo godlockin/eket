@@ -30,7 +30,16 @@ confluence/memory/retrospectives/
 # 工具缓存 / 本地工具
 .serena/
 .coverage
+htmlcov/
 obsidian-plugins/
+
+# docs-site 构建产物（docs-site/.gitignore 已有，根目录兜底）
+docs-site/node_modules/
+docs-site/build/
+docs-site/.docusaurus/
+
+# 空目录占位
+.benchmarks/
 
 # Node.js
 node/node_modules/
