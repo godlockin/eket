@@ -1,0 +1,36 @@
+# Docker build artifacts
+dist/
+node_modules/
+
+# Dependencies
+package-lock.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# EKET runtime
+.eket/data/
+.eket/logs/
+.eket/state/
+.eket/memory/
+
+# Test results
+tests/results/

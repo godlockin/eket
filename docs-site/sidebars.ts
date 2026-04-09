@@ -12,7 +12,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: '使用指南',
-      items: ['cli-reference', 'configuration'],
+      items: ['cli-reference', 'configuration', 'deployment'],
     },
   ],
 };
