@@ -30,12 +30,11 @@ import type {
   WSMessage,
 } from './types.js';
 import {
-  EketError,
   NetworkError,
   WebSocketError,
   createErrorFromResponse,
 } from './errors.js';
-import { buildUrl, validateRequired, extractErrorMessage, retry } from './utils.js';
+import { buildUrl, validateRequired, extractErrorMessage } from './utils.js';
 
 /**
  * EKET Protocol Client
@@ -63,7 +62,7 @@ import { buildUrl, validateRequired, extractErrorMessage, retry } from './utils.
  * ```
  */
 export class EketClient {
-  private config: Required<EketClientConfig>;
+  private config: Required<Omit<EketClientConfig, 'jwtToken'>> & Pick<EketClientConfig, 'jwtToken'>;
   private http: AxiosInstance;
   private ws?: WebSocket;
   private wsReconnectAttempts = 0;
@@ -83,7 +82,6 @@ export class EketClient {
       timeout: 30000,
       enableWebSocket: true,
       ...config,
-      jwtToken: config.jwtToken,
     };
 
     // Initialize HTTP client
@@ -628,7 +626,7 @@ export class EketClient {
   /**
    * Get current configuration
    */
-  getConfig(): Readonly<Required<EketClientConfig>> {
+  getConfig(): Readonly<Required<Omit<EketClientConfig, 'jwtToken'>> & Pick<EketClientConfig, 'jwtToken'>> {
     return { ...this.config };
   }
 
