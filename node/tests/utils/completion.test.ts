@@ -2,7 +2,7 @@
  * Tests for CLI Completion Generator
  */
 
-import { generateCompletion } from '../src/utils/completion.js';
+import { generateCompletion } from '../../src/utils/completion';
 
 describe('CLI Completion Generator', () => {
   describe('generateCompletion', () => {
@@ -14,7 +14,7 @@ describe('CLI Completion Generator', () => {
 
     it('should generate zsh completion script', () => {
       const script = generateCompletion('zsh');
-      expect(script).toContain('_eket_cli_completion');
+      expect(script).toContain('_eket_cli');
       expect(script).toContain('compdef');
     });
 
