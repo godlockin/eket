@@ -387,6 +387,16 @@ export class EketServer {
       const statusCode = health.status === 'ok' ? 200 : health.status === 'degraded' ? 200 : 503;
       res.status(statusCode).json(health);
     });
+
+    // GET /ready — 就绪探针：文件系统可写即就绪
+    this.app.get('/ready', (_req: Request, res: Response) => {
+      res.status(200).json({ ready: true });
+    });
+
+    // GET /live — 存活探针：进程存活即返回 200
+    this.app.get('/live', (_req: Request, res: Response) => {
+      res.status(200).json({ alive: true });
+    });
   }
 
   // =========================================================================
