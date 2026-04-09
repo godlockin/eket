@@ -1,0 +1,10 @@
+# docs-site build artifacts
+node_modules/
+.docusaurus/
+build/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
