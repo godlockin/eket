@@ -129,8 +129,12 @@ init_master_identity() {
   local identity_target="$PROJECT_ROOT/.eket/IDENTITY.md"
 
   if [ -f "$identity_template" ]; then
-    cp "$identity_template" "$identity_target"
-    ok "复制 IDENTITY.md"
+    if [ ! -f "$identity_target" ]; then
+      cp "$identity_template" "$identity_target"
+      ok ".eket/IDENTITY.md"
+    else
+      warn ".eket/IDENTITY.md 已存在，跳过（保留现有内容）"
+    fi
   else
     warn "IDENTITY.md 模板不存在：$identity_template，跳过"
   fi
@@ -175,7 +179,7 @@ show_next_steps() {
   if [[ "$answer" =~ ^[Yy]$ ]]; then
     if [ -f "$analyze_script" ]; then
       info "启动深度分析..."
-      bash "$analyze_script" "$PROJECT_ROOT"
+      bash "$analyze_script" "$PROJECT_ROOT" || warn "深度分析退出异常，初始化已完成，可稍后手动运行分析"
     else
       warn "analyze-existing.sh 尚不存在，跳过"
       info "稍后可手动运行：bash $analyze_script $PROJECT_ROOT"
@@ -187,6 +191,8 @@ show_next_steps() {
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 main() {
+  [ -d "$PROJECT_ROOT" ] || { echo -e "${RED}ERROR${NC}: 路径不存在: $PROJECT_ROOT"; exit 1; }
+
   echo ""
   echo -e "${BLUE}EKET 已有项目初始化${NC}"
   echo -e "${BLUE}项目路径：$PROJECT_ROOT${NC}"
