@@ -54,6 +54,21 @@ function _resolveInner(request, options, basedir, defaultResolver) {
     return defaultResolver(request, options);
   }
 
+  // Handle tests/helpers/ alias - map to project root tests/helpers/ directory
+  // Supports both ../../helpers/ (from tests/skills/) and ../../../helpers/ (from tests/skills/adapters/)
+  if (request.startsWith('../../helpers/') || request.startsWith('../../../helpers/')) {
+    const requestWithoutPrefix = request.replace(/^(\.\.\/)+helpers\//, 'tests/helpers/');
+    const tsRequest = requestWithoutPrefix.replace(/\.js$/, '.ts');
+
+    const absolutePath = path.join(projectRoot, tsRequest);
+
+    if (fs.existsSync(absolutePath)) {
+      return absolutePath;
+    }
+
+    return defaultResolver(request, options);
+  }
+
   // Handle extension-less relative imports (e.g. '../core/circuit-breaker') -> try .ts
   if (!path.extname(request) && (request.startsWith('./') || request.startsWith('../'))) {
     // First: resolve relative to basedir (works for same-level imports)

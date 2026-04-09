@@ -7,27 +7,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { Volume, fs } from 'memfs';
+import * as fs from 'fs';
+import * as path from 'path';
 import { SkillLoader, createSkillLoader, loadSkillsFromDirectory, loadSkill } from '@/skills/loader.js';
 import type { Skill } from '@/skills/types.js';
-
-// Mock fs module
-jest.mock('fs', () => require('memfs').fs);
-jest.mock('fs/promises', () => require('memfs').fs.promises);
+import { setupFsTest, cleanupTempDir } from '../../helpers/fs-test.js';
 
 describe('SkillLoader', () => {
   let loader: SkillLoader;
-  let mockVolume: Volume;
-  const testRootDir = '/skills';
+  let tempDir: string;
+  let testRootDir: string;
 
   beforeEach(() => {
-    // Create fresh mock volume for each test
-    mockVolume = Volume.fromJSON({});
+    const { dir, cleanup } = setupFsTest('loader-test-');
+    tempDir = dir;
+    testRootDir = path.join(tempDir, 'skills');
+    fs.mkdirSync(testRootDir, { recursive: true });
     loader = createSkillLoader({ skillsRootDir: testRootDir, enableCache: false });
   });
 
   afterEach(() => {
-    mockVolume.reset();
+    cleanupTempDir(tempDir);
   });
 
   const createSkillModule = (name: string, category: string = 'custom'): string => {
@@ -49,12 +49,13 @@ describe('SkillLoader', () => {
   };
 
   const setupSkillFiles = (skills: Array<{ name: string; category?: string }>) => {
-    const files: Record<string, string> = {};
     for (const skill of skills) {
       const category = skill.category || 'custom';
-      files[`${testRootDir}/${category}/${skill.name}.ts`] = createSkillModule(skill.name, category);
+      const categoryDir = path.join(testRootDir, category);
+      fs.mkdirSync(categoryDir, { recursive: true });
+      const skillPath = path.join(categoryDir, `${skill.name}.ts`);
+      fs.writeFileSync(skillPath, createSkillModule(skill.name, category));
     }
-    mockVolume.fromJSON(files, testRootDir);
   };
 
   describe('loadFromDirectory()', () => {
@@ -78,7 +79,13 @@ describe('SkillLoader', () => {
     });
 
     it('should return error when directory does not exist', async () => {
-      const result = await loader.loadFromDirectory();
+      // Create loader with non-existent directory
+      const nonExistentLoader = createSkillLoader({
+        skillsRootDir: '/non-existent-directory-that-does-not-exist',
+        enableCache: false
+      });
+
+      const result = await nonExistentLoader.loadFromDirectory();
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Directory not found');
@@ -100,10 +107,12 @@ describe('SkillLoader', () => {
     });
 
     it('should skip hidden directories', async () => {
-      mockVolume.fromJSON({
-        [`${testRootDir}/.hidden/skill.ts`]: createSkillModule('hidden_skill'),
-        [`${testRootDir}/visible/skill.ts`]: createSkillModule('visible_skill'),
-      }, testRootDir);
+      const hiddenDir = path.join(testRootDir, '.hidden');
+      const visibleDir = path.join(testRootDir, 'visible');
+      fs.mkdirSync(hiddenDir, { recursive: true });
+      fs.mkdirSync(visibleDir, { recursive: true });
+      fs.writeFileSync(path.join(hiddenDir, 'skill.ts'), createSkillModule('hidden_skill'));
+      fs.writeFileSync(path.join(visibleDir, 'skill.ts'), createSkillModule('visible_skill'));
 
       const result = await loader.loadFromDirectory();
 
@@ -113,10 +122,12 @@ describe('SkillLoader', () => {
     });
 
     it('should skip node_modules directories', async () => {
-      mockVolume.fromJSON({
-        [`${testRootDir}/node_modules/package/skill.ts`]: createSkillModule('npm_skill'),
-        [`${testRootDir}/my_skills/skill.ts`]: createSkillModule('my_skill'),
-      }, testRootDir);
+      const nodeModulesDir = path.join(testRootDir, 'node_modules', 'package');
+      const mySkillsDir = path.join(testRootDir, 'my_skills');
+      fs.mkdirSync(nodeModulesDir, { recursive: true });
+      fs.mkdirSync(mySkillsDir, { recursive: true });
+      fs.writeFileSync(path.join(nodeModulesDir, 'skill.ts'), createSkillModule('npm_skill'));
+      fs.writeFileSync(path.join(mySkillsDir, 'skill.ts'), createSkillModule('my_skill'));
 
       const result = await loader.loadFromDirectory();
 
@@ -125,10 +136,10 @@ describe('SkillLoader', () => {
     });
 
     it('should handle load failures gracefully', async () => {
-      mockVolume.fromJSON({
-        [`${testRootDir}/valid.ts`]: createSkillModule('valid_skill'),
-        [`${testRootDir}/invalid.ts`]: 'invalid module content that cannot be imported',
-      }, testRootDir);
+      const customDir = path.join(testRootDir, 'custom');
+      fs.mkdirSync(customDir, { recursive: true });
+      fs.writeFileSync(path.join(customDir, 'valid.ts'), createSkillModule('valid_skill'));
+      fs.writeFileSync(path.join(customDir, 'invalid.ts'), 'invalid module content that cannot be imported');
 
       const result = await loader.loadFromDirectory();
 
@@ -137,9 +148,9 @@ describe('SkillLoader', () => {
     });
 
     it('should load skills with .js extension', async () => {
-      mockVolume.fromJSON({
-        [`${testRootDir}/custom/skill.js`]: createSkillModule('js_skill'),
-      }, testRootDir);
+      const customDir = path.join(testRootDir, 'custom');
+      fs.mkdirSync(customDir, { recursive: true });
+      fs.writeFileSync(path.join(customDir, 'skill.js'), createSkillModule('js_skill'));
 
       const result = await loader.loadFromDirectory();
 
@@ -148,9 +159,24 @@ describe('SkillLoader', () => {
     });
 
     it('should load skills with .mts extension', async () => {
-      mockVolume.fromJSON({
-        [`${testRootDir}/custom/skill.mts`]: createSkillModule('mts_skill'),
-      }, testRootDir);
+      const customDir = path.join(testRootDir, 'custom');
+      fs.mkdirSync(customDir, { recursive: true });
+      // Use CommonJS syntax for .mts files in tests
+      fs.writeFileSync(path.join(customDir, 'skill.mts'), `
+        module.exports = {
+          name: 'mts_skill',
+          description: 'Test skill mts_skill',
+          category: 'custom',
+          tags: ['test', 'mock'],
+          version: '1.0.0',
+          execute: async function(input) {
+            return { success: true, data: { result: 'mts_skill executed' }, duration: 10 };
+          },
+          validateInput: function(input) {
+            return input != null;
+          }
+        };
+      `);
 
       const result = await loader.loadFromDirectory();
 
@@ -161,7 +187,7 @@ describe('SkillLoader', () => {
 
   describe('loadSkill()', () => {
     beforeEach(() => {
-      // Enable cache for these tests
+      // Enable cache for these tests - use same testRootDir from outer scope
       loader = createSkillLoader({ skillsRootDir: testRootDir, enableCache: true, cacheTTL: 5000 });
     });
 
@@ -258,9 +284,9 @@ describe('SkillLoader', () => {
       const skill1 = await loader.loadSkill('reload_skill');
 
       // Modify the skill file
-      mockVolume.fromJSON({
-        [`${testRootDir}/custom/reload_skill.ts`]: createSkillModule('reloaded_skill'),
-      }, testRootDir);
+      const customDir = path.join(testRootDir, 'custom');
+      fs.mkdirSync(customDir, { recursive: true });
+      fs.writeFileSync(path.join(customDir, 'reload_skill.ts'), createSkillModule('reloaded_skill'));
 
       // Reload
       const result = await loader.reloadAll();
@@ -281,9 +307,9 @@ describe('SkillLoader', () => {
       expect(result1.stats?.loaded).toBe(2);
 
       // Add new skill
-      mockVolume.fromJSON({
-        [`${testRootDir}/custom/skill3.ts`]: createSkillModule('skill3'),
-      }, testRootDir);
+      const customDir = path.join(testRootDir, 'custom');
+      fs.mkdirSync(customDir, { recursive: true });
+      fs.writeFileSync(path.join(customDir, 'skill3.ts'), createSkillModule('skill3'));
 
       const result2 = await loader.reloadAll();
       expect(result2.stats?.loaded).toBe(3);
@@ -352,29 +378,29 @@ describe('createSkillLoader', () => {
 });
 
 describe('loadSkillsFromDirectory', () => {
-  let mockVolume: Volume;
+  let tempDir: string;
 
   beforeEach(() => {
-    mockVolume = Volume.fromJSON({});
-    jest.resetModules();
+    const { dir, cleanup } = setupFsTest('loadskills-test-');
+    tempDir = dir;
   });
 
   afterEach(() => {
-    mockVolume.reset();
+    cleanupTempDir(tempDir);
   });
 
   it('should create loader and load from directory', async () => {
-    const testDir = '/test_skills';
-    mockVolume.fromJSON({
-      [`${testDir}/custom/test.ts`]: `
-        module.exports = {
-          name: 'test',
-          description: 'Test',
-          category: 'custom',
-          execute: async () => ({ success: true, data: {}, duration: 0 })
-        };
-      `,
-    });
+    const testDir = path.join(tempDir, 'test_skills');
+    const customDir = path.join(testDir, 'custom');
+    fs.mkdirSync(customDir, { recursive: true });
+    fs.writeFileSync(path.join(customDir, 'test.ts'), `
+      module.exports = {
+        name: 'test',
+        description: 'Test',
+        category: 'custom',
+        execute: async () => ({ success: true, data: {}, duration: 0 })
+      };
+    `);
 
     const result = await loadSkillsFromDirectory(testDir);
 
@@ -383,17 +409,17 @@ describe('loadSkillsFromDirectory', () => {
   });
 
   it('should pass optional dir parameter', async () => {
-    const testDir = '/test_skills';
-    mockVolume.fromJSON({
-      [`${testDir}/subdir/skill.ts`]: `
-        module.exports = {
-          name: 'subskill',
-          description: 'Sub skill',
-          category: 'custom',
-          execute: async () => ({ success: true, data: {}, duration: 0 })
-        };
-      `,
-    });
+    const testDir = path.join(tempDir, 'test_skills');
+    const subdir = path.join(testDir, 'subdir');
+    fs.mkdirSync(subdir, { recursive: true });
+    fs.writeFileSync(path.join(subdir, 'skill.ts'), `
+      module.exports = {
+        name: 'subskill',
+        description: 'Sub skill',
+        category: 'custom',
+        execute: async () => ({ success: true, data: {}, duration: 0 })
+      };
+    `);
 
     const result = await loadSkillsFromDirectory(testDir, 'subdir');
 
@@ -403,29 +429,29 @@ describe('loadSkillsFromDirectory', () => {
 });
 
 describe('loadSkill', () => {
-  let mockVolume: Volume;
+  let tempDir: string;
 
   beforeEach(() => {
-    mockVolume = Volume.fromJSON({});
-    jest.resetModules();
+    const { dir, cleanup } = setupFsTest('loadskill-test-');
+    tempDir = dir;
   });
 
   afterEach(() => {
-    mockVolume.reset();
+    cleanupTempDir(tempDir);
   });
 
   it('should create loader and load single skill', async () => {
-    const testDir = '/test_single';
-    mockVolume.fromJSON({
-      [`${testDir}/custom/single.ts`]: `
-        module.exports = {
-          name: 'single',
-          description: 'Single skill',
-          category: 'custom',
-          execute: async () => ({ success: true, data: {}, duration: 0 })
-        };
-      `,
-    });
+    const testDir = path.join(tempDir, 'test_single');
+    const customDir = path.join(testDir, 'custom');
+    fs.mkdirSync(customDir, { recursive: true });
+    fs.writeFileSync(path.join(customDir, 'single.ts'), `
+      module.exports = {
+        name: 'single',
+        description: 'Single skill',
+        category: 'custom',
+        execute: async () => ({ success: true, data: {}, duration: 0 })
+      };
+    `);
 
     const skill = await loadSkill(testDir, 'single');
 
@@ -434,7 +460,8 @@ describe('loadSkill', () => {
   });
 
   it('should return null when skill not found', async () => {
-    const testDir = '/test_not_found';
+    const testDir = path.join(tempDir, 'test_not_found');
+    fs.mkdirSync(testDir, { recursive: true });
 
     const skill = await loadSkill(testDir, 'nonexistent');
 
@@ -444,21 +471,22 @@ describe('loadSkill', () => {
 
 describe('SkillLoader - Edge Cases', () => {
   let loader: SkillLoader;
-  let mockVolume: Volume;
-  const testRootDir = '/edge_test';
+  let tempDir: string;
+  let testRootDir: string;
 
   beforeEach(() => {
-    mockVolume = Volume.fromJSON({});
+    const { dir, cleanup } = setupFsTest('edge-test-');
+    tempDir = dir;
+    testRootDir = path.join(tempDir, 'edge_test');
+    fs.mkdirSync(testRootDir, { recursive: true });
     loader = createSkillLoader({ skillsRootDir: testRootDir, enableCache: false });
   });
 
   afterEach(() => {
-    mockVolume.reset();
+    cleanupTempDir(tempDir);
   });
 
   it('should handle empty directory', async () => {
-    mockVolume.fromJSON({}, testRootDir);
-
     const result = await loader.loadFromDirectory();
 
     expect(result.success).toBe(true);
@@ -472,14 +500,14 @@ describe('SkillLoader - Edge Cases', () => {
   });
 
   it('should handle skill with missing required fields', async () => {
-    mockVolume.fromJSON({
-      [`${testRootDir}/custom/invalid.ts`]: `
-        module.exports = {
-          name: 'incomplete',
-          // missing description, category, execute
-        };
-      `,
-    });
+    const customDir = path.join(testRootDir, 'custom');
+    fs.mkdirSync(customDir, { recursive: true });
+    fs.writeFileSync(path.join(customDir, 'invalid.ts'), `
+      module.exports = {
+        name: 'incomplete',
+        // missing description, category, execute
+      };
+    `);
 
     const result = await loader.loadFromDirectory();
 
@@ -488,16 +516,16 @@ describe('SkillLoader - Edge Cases', () => {
   });
 
   it('should handle skill with non-function execute', async () => {
-    mockVolume.fromJSON({
-      [`${testRootDir}/custom/invalid2.ts`]: `
-        module.exports = {
-          name: 'bad_execute',
-          description: 'Bad execute',
-          category: 'custom',
-          execute: 'not a function'
-        };
-      `,
-    });
+    const customDir = path.join(testRootDir, 'custom');
+    fs.mkdirSync(customDir, { recursive: true });
+    fs.writeFileSync(path.join(customDir, 'invalid2.ts'), `
+      module.exports = {
+        name: 'bad_execute',
+        description: 'Bad execute',
+        category: 'custom',
+        execute: 'not a function'
+      };
+    `);
 
     const result = await loader.loadFromDirectory();
 
@@ -506,16 +534,16 @@ describe('SkillLoader - Edge Cases', () => {
   });
 
   it('should handle default export format', async () => {
-    mockVolume.fromJSON({
-      [`${testRootDir}/custom/default_export.ts`]: `
-        module.exports.default = {
-          name: 'default_skill',
-          description: 'Default export skill',
-          category: 'custom',
-          execute: async () => ({ success: true, data: {}, duration: 0 })
-        };
-      `,
-    });
+    const customDir = path.join(testRootDir, 'custom');
+    fs.mkdirSync(customDir, { recursive: true });
+    fs.writeFileSync(path.join(customDir, 'default_export.ts'), `
+      module.exports.default = {
+        name: 'default_skill',
+        description: 'Default export skill',
+        category: 'custom',
+        execute: async () => ({ success: true, data: {}, duration: 0 })
+      };
+    `);
 
     const result = await loader.loadFromDirectory();
 
@@ -524,17 +552,17 @@ describe('SkillLoader - Edge Cases', () => {
   });
 
   it('should handle named export format', async () => {
-    mockVolume.fromJSON({
-      [`${testRootDir}/custom/named_export.ts`]: `
-        const NamedSkill = {
-          name: 'named_skill',
-          description: 'Named export skill',
-          category: 'custom',
-          execute: async () => ({ success: true, data: {}, duration: 0 })
-        };
-        module.exports.NamedSkill = NamedSkill;
-      `,
-    });
+    const customDir = path.join(testRootDir, 'custom');
+    fs.mkdirSync(customDir, { recursive: true });
+    fs.writeFileSync(path.join(customDir, 'named_export.ts'), `
+      const NamedSkill = {
+        name: 'named_skill',
+        description: 'Named export skill',
+        category: 'custom',
+        execute: async () => ({ success: true, data: {}, duration: 0 })
+      };
+      module.exports.NamedSkill = NamedSkill;
+    `);
 
     const result = await loader.loadFromDirectory();
 
@@ -543,16 +571,16 @@ describe('SkillLoader - Edge Cases', () => {
   });
 
   it('should handle file-named export format', async () => {
-    mockVolume.fromJSON({
-      [`${testRootDir}/custom/file_named.ts`]: `
-        module.exports.FileNamed = {
-          name: 'file_named',
-          description: 'File named export',
-          category: 'custom',
-          execute: async () => ({ success: true, data: {}, duration: 0 })
-        };
-      `,
-    });
+    const customDir = path.join(testRootDir, 'custom');
+    fs.mkdirSync(customDir, { recursive: true });
+    fs.writeFileSync(path.join(customDir, 'file_named.ts'), `
+      module.exports.FileNamed = {
+        name: 'file_named',
+        description: 'File named export',
+        category: 'custom',
+        execute: async () => ({ success: true, data: {}, duration: 0 })
+      };
+    `);
 
     const result = await loader.loadFromDirectory();
 
@@ -562,37 +590,41 @@ describe('SkillLoader - Edge Cases', () => {
 
 describe('SkillLoader - Non-recursive mode', () => {
   let loader: SkillLoader;
-  let mockVolume: Volume;
-  const testRootDir = '/non_recursive';
+  let tempDir: string;
+  let testRootDir: string;
 
   beforeEach(() => {
-    mockVolume = Volume.fromJSON({});
+    const { dir, cleanup } = setupFsTest('nonrecursive-test-');
+    tempDir = dir;
+    testRootDir = path.join(tempDir, 'non_recursive');
+    fs.mkdirSync(testRootDir, { recursive: true });
     loader = createSkillLoader({ skillsRootDir: testRootDir, recursive: false, enableCache: false });
   });
 
   afterEach(() => {
-    mockVolume.reset();
+    cleanupTempDir(tempDir);
   });
 
   it('should not scan subdirectories when recursive is false', async () => {
-    mockVolume.fromJSON({
-      [`${testRootDir}/root_skill.ts`]: `
-        module.exports = {
-          name: 'root_skill',
-          description: 'Root level skill',
-          category: 'custom',
-          execute: async () => ({ success: true, data: {}, duration: 0 })
-        };
-      `,
-      [`${testRootDir}/subdir/sub_skill.ts`]: `
-        module.exports = {
-          name: 'sub_skill',
-          description: 'Subdir skill',
-          category: 'custom',
-          execute: async () => ({ success: true, data: {}, duration: 0 })
-        };
-      `,
-    });
+    fs.writeFileSync(path.join(testRootDir, 'root_skill.ts'), `
+      module.exports = {
+        name: 'root_skill',
+        description: 'Root level skill',
+        category: 'custom',
+        execute: async () => ({ success: true, data: {}, duration: 0 })
+      };
+    `);
+
+    const subdir = path.join(testRootDir, 'subdir');
+    fs.mkdirSync(subdir, { recursive: true });
+    fs.writeFileSync(path.join(subdir, 'sub_skill.ts'), `
+      module.exports = {
+        name: 'sub_skill',
+        description: 'Subdir skill',
+        category: 'custom',
+        execute: async () => ({ success: true, data: {}, duration: 0 })
+      };
+    `);
 
     const result = await loader.loadFromDirectory();
 

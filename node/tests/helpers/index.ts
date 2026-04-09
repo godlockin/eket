@@ -8,3 +8,4 @@
 
 export * from './redis-mock.js';
 export * from './sqlite-test.js';
+export * from './fs-test.js';
