@@ -19,7 +19,7 @@
 | JS SDK | ✅ 完成 | sdk/javascript/ 12/12 tests 通过 |
 | GitHub Actions CI | ✅ 完成 | .github/workflows/ci.yml |
 | 健康检查端点 | ✅ 完成 | /health /ready /live |
-| 分支保护规则 | ⚪ 未开始 | Round 14 目标 |
+| 分支保护规则 | ✅ 完成 | miao: PR+CI 强制，1人 review |
 
 ---
 
@@ -34,7 +34,7 @@
 | 12 | Docker 化 | v2.3.0 | ✅ 完成 |
 | 13a | **清账**：测试 100% + 降级修复 | v2.4.0 | ✅ 完成 |
 | 13b | CI/CD + 健康检查 | v2.5.0 | ✅ 完成 |
-| 14 | SDK 正式化 | v2.6.0 | ⚪ 待启动 |
+| 14 | SDK 正式化 + 分支保护 | v2.6.0 | 🔄 进行中 |
 
 ---
 
@@ -42,15 +42,16 @@
 
 | 问题 | 优先级 | 目标 Round | 状态 |
 |------|--------|-----------|------|
-| 分支保护规则未配置 | P0 | 14 | ⚪ 待启动 |
-| SDK 版本策略未定义 | P2 | 14 | ⚪ 待启动 |
+| 分支保护规则未配置 | P0 | 14 | ✅ 完成（miao） |
+| SDK 版本策略未定义 | P2 | 14 | 🔄 进行中 |
 | node/package.json 版本与 tag 不同步 | P3 | 持续 | ✅ 已修正（2.5.0） |
 
 ---
 
-## Next Steps (Round 14)
+## Next Steps (Round 14 — 进行中)
 
-1. **分支保护规则**：为 main/miao 配置 PR + CI 强制检查
-2. **SDK 版本策略**：定义 semver + PyPI/npm 发布流程
-3. **SDK examples 完善**：Python/JS 各 5+ 可运行示例
-4. **目标版本**: v2.6.0
+1. ~~**分支保护规则**：miao 已配置~~ ✅
+2. **SDK 版本策略**：定义 semver + PyPI/npm 发布流程 (TASK-016)
+3. **Python SDK examples 完善**：5+ 可运行示例 (TASK-017)
+4. **JS SDK examples 完善**：5+ 可运行示例 (TASK-018)
+5. **目标版本**: v2.6.0
