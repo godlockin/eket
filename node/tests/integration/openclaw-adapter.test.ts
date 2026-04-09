@@ -438,13 +438,17 @@ describe('openclaw-adapter', () => {
     });
 
     describe('getAgentStatus', () => {
-      it('should return redis not connected when redis is unavailable', async () => {
-        // 当 Redis 不可用时，返回 REDIS_NOT_CONNECTED
+      it('should return mock data when agent is not found (graceful degradation)', async () => {
+        // 当 Redis 不可用或 agent 不存在时，返回模拟数据（降级模式）
         const result = await adapter.getAgentStatus('unknown_agent');
 
-        expect(result.success).toBe(false);
-        if (!result.success) {
-          expect(result.error?.code).toBe('REDIS_NOT_CONNECTED');
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data.agent_id).toBe('unknown_agent');
+          expect(result.data.instance_id).toBe('unknown_agent');
+          expect(result.data.status).toBe('idle');
+          expect(result.data.role).toBe('unknown');
+          expect(result.data.skills).toEqual([]);
         }
       });
     });

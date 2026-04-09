@@ -193,7 +193,16 @@ describe('UnifiedSkillInterface', () => {
     });
 
     it('should calculate average duration correctly', async () => {
-      const skill = createMockSkill('timing_skill');
+      const mockExecute = jest.fn().mockImplementation(async () => {
+        await new Promise(resolve => setTimeout(resolve, 5)); // Simulate 5ms execution
+        return {
+          success: true,
+          data: { result: 'timed result' },
+          duration: 5,
+        };
+      });
+
+      const skill = createMockSkill('timing_skill', mockExecute);
       registry.register(skill);
 
       await unifiedInterface.execute({ skillName: 'timing_skill', inputs: {} });

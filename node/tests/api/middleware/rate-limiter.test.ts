@@ -378,7 +378,8 @@ describe('RateLimiter', () => {
 
         await request(testApp).get('/test');
 
-        const status = rateLimiter.getStatus('127.0.0.1');
+        // supertest uses ::ffff:127.0.0.1 (IPv6 mapped IPv4)
+        const status = rateLimiter.getStatus('::ffff:127.0.0.1');
         expect(status).toBeDefined();
         expect(status?.count).toBeGreaterThanOrEqual(1);
       });

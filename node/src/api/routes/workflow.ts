@@ -53,9 +53,9 @@ WorkflowRouter.post('/', async (_req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    // 生成 Workflow ID（如果未提供）
+    // 生成 Workflow ID（如果未提供）- 使用时间戳 + 随机数确保唯一性
     const workflow: OpenCLAWWorkflow = {
-      id: body.id || `workflow_${Date.now()}`,
+      id: body.id || `workflow_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       name: body.name,
       description: body.description || '',
       priority: body.priority || 'medium',
