@@ -16,17 +16,25 @@ import { OpenCLAWGateway, type OpenCLAWGatewayConfig } from '../../src/api/openc
 describe('OpenCLAWGateway', () => {
   let gateway: OpenCLAWGateway;
   let app: express.Express;
-  let server: any;
+  let testPort: number;
 
-  const testConfig: OpenCLAWGatewayConfig = {
-    port: 3099,
+  // 为每个测试套件使用动态端口，避免端口冲突
+  const getTestConfig = (port?: number): OpenCLAWGatewayConfig => ({
+    port: port || Math.floor(Math.random() * 1000) + 30000,
     host: 'localhost',
     apiKey: 'test-api-key-12345',
     projectRoot: process.cwd(),
-  };
+  });
 
   beforeEach(async () => {
-    gateway = new OpenCLAWGateway(testConfig);
+    testPort = getTestConfig().port;
+    const config: OpenCLAWGatewayConfig = {
+      port: testPort,
+      host: 'localhost',
+      apiKey: 'test-api-key-12345',
+      projectRoot: process.cwd(),
+    };
+    gateway = new OpenCLAWGateway(config);
     app = express();
 
     // 启动服务器
@@ -35,8 +43,8 @@ describe('OpenCLAWGateway', () => {
 
   afterEach(async () => {
     // 关闭服务器
-    if (server) {
-      server.close();
+    if (gateway) {
+      await gateway.stop();
     }
   });
 
@@ -81,18 +89,23 @@ describe('OpenCLAWGateway', () => {
     });
 
     it('should reject binding to occupied port', async () => {
+      const port = 3004;
       const config: OpenCLAWGatewayConfig = {
-        port: 3004,
+        port,
         host: 'localhost',
         apiKey: 'test-key',
         projectRoot: process.cwd(),
       };
 
       const gateway1 = new OpenCLAWGateway(config);
-      const gateway2 = new OpenCLAWGateway(config);
-
       await gateway1.start();
-      await expect(gateway2.start()).rejects.toThrow();
+
+      const gateway2 = new OpenCLAWGateway(config);
+      try {
+        await expect(gateway2.start()).rejects.toThrow();
+      } finally {
+        await gateway1.stop();
+      }
     });
   });
 
@@ -100,9 +113,9 @@ describe('OpenCLAWGateway', () => {
     it('should return healthy status on /health endpoint', async () => {
       // 注意：由于网关内部创建服务器，我们需要通过 HTTP 请求测试
       // 这里测试健康检查端点的响应格式
-      const response = await request(`http://${testConfig.host}:${testConfig.port}`)
+      const response = await request(`http://localhost:${testPort}`)
         .get('/health')
-        .set('Authorization', `Bearer ${testConfig.apiKey}`);
+        .set('Authorization', `Bearer ${gateway['config'].apiKey}`);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('status', 'healthy');
@@ -111,7 +124,7 @@ describe('OpenCLAWGateway', () => {
     });
 
     it('should require authentication for health endpoint', async () => {
-      const response = await request(`http://${testConfig.host}:${testConfig.port}`)
+      const response = await request(`http://localhost:${testPort}`)
         .get('/health');
 
       expect(response.status).toBe(401);
@@ -122,7 +135,7 @@ describe('OpenCLAWGateway', () => {
   describe('Middleware Registration', () => {
     it('should have auth middleware registered', async () => {
       // 测试无认证头
-      const response = await request(`http://${testConfig.host}:${testConfig.port}`)
+      const response = await request(`http://localhost:${testPort}`)
         .get('/health');
 
       expect(response.status).toBe(401);
@@ -130,7 +143,7 @@ describe('OpenCLAWGateway', () => {
     });
 
     it('should reject invalid API keys', async () => {
-      const response = await request(`http://${testConfig.host}:${testConfig.port}`)
+      const response = await request(`http://localhost:${testPort}`)
         .get('/health')
         .set('Authorization', 'Bearer wrong-key');
 
@@ -139,15 +152,15 @@ describe('OpenCLAWGateway', () => {
     });
 
     it('should accept valid API keys', async () => {
-      const response = await request(`http://${testConfig.host}:${testConfig.port}`)
+      const response = await request(`http://localhost:${testPort}`)
         .get('/health')
-        .set('Authorization', `Bearer ${testConfig.apiKey}`);
+        .set('Authorization', `Bearer ${gateway['config'].apiKey}`);
 
       expect(response.status).toBe(200);
     });
 
     it('should reject non-Bearer authorization type', async () => {
-      const response = await request(`http://${testConfig.host}:${testConfig.port}`)
+      const response = await request(`http://localhost:${testPort}`)
         .get('/health')
         .set('Authorization', 'Basic some-token');
 
@@ -158,9 +171,9 @@ describe('OpenCLAWGateway', () => {
 
   describe('Route Registration', () => {
     it('should have /api/v1/workflow route registered', async () => {
-      const response = await request(`http://${testConfig.host}:${testConfig.port}`)
+      const response = await request(`http://localhost:${testPort}`)
         .post('/api/v1/workflow')
-        .set('Authorization', `Bearer ${testConfig.apiKey}`)
+        .set('Authorization', `Bearer ${gateway['config'].apiKey}`)
         .send({ name: 'Test Workflow' });
 
       // 应该返回 201 或 500（取决于内部实现）
@@ -168,9 +181,9 @@ describe('OpenCLAWGateway', () => {
     });
 
     it('should have /api/v1/task route registered', async () => {
-      const response = await request(`http://${testConfig.host}:${testConfig.port}`)
+      const response = await request(`http://localhost:${testPort}`)
         .post('/api/v1/task')
-        .set('Authorization', `Bearer ${testConfig.apiKey}`)
+        .set('Authorization', `Bearer ${gateway['config'].apiKey}`)
         .send({ workflow_id: 'wf-123', title: 'Test Task', type: 'feature' });
 
       // 应该返回 201 或 500（取决于内部实现）
@@ -178,9 +191,9 @@ describe('OpenCLAWGateway', () => {
     });
 
     it('should have /api/v1/agent route registered', async () => {
-      const response = await request(`http://${testConfig.host}:${testConfig.port}`)
+      const response = await request(`http://localhost:${testPort}`)
         .post('/api/v1/agent')
-        .set('Authorization', `Bearer ${testConfig.apiKey}`)
+        .set('Authorization', `Bearer ${gateway['config'].apiKey}`)
         .send({ role: 'developer' });
 
       // 应该返回 201 或 500（取决于内部实现）
@@ -188,9 +201,9 @@ describe('OpenCLAWGateway', () => {
     });
 
     it('should have /api/v1/memory route registered', async () => {
-      const response = await request(`http://${testConfig.host}:${testConfig.port}`)
+      const response = await request(`http://localhost:${testPort}`)
         .get('/api/v1/memory')
-        .set('Authorization', `Bearer ${testConfig.apiKey}`);
+        .set('Authorization', `Bearer ${gateway['config'].apiKey}`);
 
       // 应该返回 200（空列表）
       expect(response.status).toBe(200);
@@ -202,9 +215,9 @@ describe('OpenCLAWGateway', () => {
   describe('Error Handling', () => {
     it('should handle JSON parse errors gracefully', async () => {
       // 发送无效 JSON
-      const response = await request(`http://${testConfig.host}:${testConfig.port}`)
+      const response = await request(`http://localhost:${testPort}`)
         .post('/api/v1/workflow')
-        .set('Authorization', `Bearer ${testConfig.apiKey}`)
+        .set('Authorization', `Bearer ${gateway['config'].apiKey}`)
         .set('Content-Type', 'application/json')
         .send('invalid json');
 
@@ -212,9 +225,9 @@ describe('OpenCLAWGateway', () => {
     });
 
     it('should return error response for unknown routes', async () => {
-      const response = await request(`http://${testConfig.host}:${testConfig.port}`)
+      const response = await request(`http://localhost:${testPort}`)
         .get('/api/v1/unknown')
-        .set('Authorization', `Bearer ${testConfig.apiKey}`);
+        .set('Authorization', `Bearer ${gateway['config'].apiKey}`);
 
       expect(response.status).toBe(404);
     });

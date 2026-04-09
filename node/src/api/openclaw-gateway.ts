@@ -7,6 +7,7 @@
  */
 
 import express, { Express, Request, Response, NextFunction } from 'express';
+import http from 'http';
 
 import { authMiddleware } from './middleware/auth.js';
 import { AgentRouter } from './routes/agent.js';
@@ -36,6 +37,17 @@ export class OpenCLAWGateway {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
 
+    // JSON 解析错误处理 - 放在所有中间件之前
+    this.app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+      if (err instanceof SyntaxError || (err as any).type === 'entity.parse.failed') {
+        return res.status(400).json({
+          error: 'parse_error',
+          message: 'Invalid JSON in request body',
+        });
+      }
+      next(err);
+    });
+
     // 认证中间件
     this.app.use(authMiddleware({ apiKey: this.config.apiKey }));
 
@@ -54,8 +66,8 @@ export class OpenCLAWGateway {
       });
     });
 
-    // 错误处理
-    this.app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+    // 通用错误处理（兜底）
+    this.app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
       console.error('[OpenCLAW Gateway] Error:', err);
       res.status(500).json({
         error: 'internal_error',
@@ -64,9 +76,15 @@ export class OpenCLAWGateway {
     });
   }
 
+  private server: any = null;
+
   public start(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const server = this.app.listen(this.config.port, this.config.host, () => {
+      // 使用 createServer 并设置 reusePort: false 来禁止端口复用
+      const httpServer = http.createServer({ reusePort: false }, this.app);
+      this.server = httpServer;
+
+      httpServer.listen(this.config.port, this.config.host, () => {
         console.log(
           `[OpenCLAW Gateway] Server running on http://${this.config.host}:${this.config.port}`
         );
@@ -78,8 +96,24 @@ export class OpenCLAWGateway {
         resolve();
       });
 
-      server.on('error', (err: Error) => {
+      httpServer.on('error', (err: Error) => {
         reject(err);
+      });
+    });
+  }
+
+  public stop(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.server) {
+        return resolve();
+      }
+      this.server.close((err?: Error) => {
+        if (err) {
+          reject(err);
+        } else {
+          this.server = null;
+          resolve();
+        }
       });
     });
   }
