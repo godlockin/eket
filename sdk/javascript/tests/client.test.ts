@@ -3,10 +3,24 @@
  */
 
 import { EketClient } from '../src/client';
-import { ValidationError, NetworkError } from '../src/errors';
+import axios from 'axios';
 
 // Mock axios
 jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockInterceptors = {
+  request: { use: jest.fn(), eject: jest.fn() },
+  response: { use: jest.fn(), eject: jest.fn() },
+};
+mockedAxios.create.mockReturnValue({
+  interceptors: mockInterceptors,
+  defaults: { headers: { common: {} } },
+  get: jest.fn(),
+  post: jest.fn(),
+  put: jest.fn(),
+  delete: jest.fn(),
+  patch: jest.fn(),
+} as any);
 
 describe('EketClient', () => {
   let client: EketClient;
