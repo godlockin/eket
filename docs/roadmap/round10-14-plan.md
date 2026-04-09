@@ -1,7 +1,8 @@
 # Round 10-14 Sprint 计划 - v3.0 产品化之路
 
 **制定时间**: 2026-04-08
-**当前版本**: v2.6.0 (100% 测试通过率)
+**修订时间**: 2026-04-09 (Round 13b 进行中)
+**当前版本**: v2.4.0 (Round 13a 完成)
 **目标版本**: v3.0.0 (生产级 AI 协作框架)
 
 ---
@@ -10,11 +11,12 @@
 
 | Sprint | 主题 | Pillar | 周期 | 目标版本 |
 |--------|------|--------|------|---------|
-| Round 10 | CLI 体验改进 | Pillar 1 | 1 周 | v2.7.0 |
-| Round 11 | 文档站建设 | Pillar 1 | 1 周 | v2.7.0 |
-| Round 12 | Docker 化 | Pillar 2 | 1 周 | v2.8.0 |
-| Round 13 | 监控与告警 | Pillar 2 | 1 周 | v2.8.0 |
-| Round 14 | CI/CD 流水线 | Pillar 5 | 1 周 | v2.9.0 |
+| Round 10 | CLI 体验改进 | Pillar 1 | 1 周 | v2.3.0 | ✅ 完成 |
+| Round 11 | 文档站建设 | Pillar 1 | 1 周 | v2.3.0 | ✅ 完成 |
+| Round 12 | Docker 化 | Pillar 2 | 1 周 | v2.3.0 | ✅ 完成 |
+| Round 13a | 清账（测试100%+降级） | Pillar 2 | 1 周 | v2.4.0 | ✅ 完成 |
+| Round 13b | CI/CD + 健康检查 | Pillar 5 | 1 周 | v2.5.0 | 🔄 进行中 |
+| Round 14 | SDK 正式化 | Pillar 3 | 1 周 | v2.6.0 | ⚪ 待启动 |
 
 ---
 
@@ -36,10 +38,10 @@
 
 ### 交付物
 
-- [ ] 交互式启动向导
-- [ ] CLI 补全脚本
-- [ ] 错误消息优化文档
-- [ ] v2.7.0-alpha 发布
+- [x] 交互式启动向导
+- [x] CLI 补全脚本
+- [x] 错误消息优化文档
+- [x] v2.3.0 发布（含 Mindset 注入）
 
 ---
 
@@ -61,10 +63,9 @@
 
 ### 交付物
 
-- [ ] docusaurus/eket 仓库
-- [ ] 文档站上线 (eket.dev)
-- [ ] 内容迁移完成
-- [ ] v2.7.0 发布
+- [x] docusaurus 文档站源代码
+- [x] 8 篇核心文档迁移完成
+- [x] v2.3.0 发布
 
 ---
 
@@ -86,62 +87,84 @@
 
 ### 交付物
 
-- [ ] Dockerfile (多阶段)
-- [ ] docker-compose.yml
-- [ ] GitHub Actions 构建配置
-- [ ] Docker Hub 镜像
-- [ ] v2.8.0-alpha 发布
+- [x] Dockerfile（多阶段构建）
+- [x] docker-compose.yml
+- [x] 部署文档
+- [x] v2.3.0 发布（Docker 化）
 
 ---
 
-## 🎯 Round 13: 监控与告警
+## 🎯 Round 13a: 清账 ✅
 
 **周期**: 1 周
-**工作量**: 16-20 小时
-**负责人**: 待分配
+**工作量**: 8 小时
+**目标版本**: v2.4.0
+**状态**: ✅ 完成
 
 ### 任务清单
 
-| ID | 任务 | 描述 | 验收标准 |
-|----|------|------|---------|
-| MON-001 | Prometheus 指标 | /metrics 端点 | 标准指标格式 |
-| MON-002 | 核心指标暴露 | 请求数、延迟、错误率 | 关键指标完整 |
-| MON-003 | Grafana 仪表盘 | 可视化模板 | 可导入的 JSON |
-| MON-004 | 告警系统 | 四级告警 + 通知 | Slack/邮件集成 |
-| MON-005 | 健康检查 API | /health, /ready | K8s 兼容 |
+| ID | 任务 | 描述 | 状态 |
+|----|------|------|------|
+| FIX-001 | openclaw-adapter 降级修复 | Redis 不可用时优雅降级到内存模式 | ✅ |
+| FIX-002 | agent routes 测试修复 | 18 个测试修复，全部通过 | ✅ |
+| FIX-003 | 版本对齐 | package.json/CLAUDE.md/CHANGELOG 统一 v2.4.0 | ✅ |
+| FIX-004 | confluence 清理 | 移除错误数据，重建 progress-tracker.md | ✅ |
 
 ### 交付物
 
-- [ ] Prometheus 指标文档
-- [ ] Grafana 仪表盘模板
-- [ ] 告警配置示例
-- [ ] v2.8.0 发布
+- [x] openclaw-adapter.ts 优雅降级
+- [x] 1072/1072 tests 全部通过
+- [x] v2.4.0 发布
 
 ---
 
-## 🎯 Round 14: CI/CD 流水线
+## 🎯 Round 13b: CI/CD + 健康检查 🔄
+
+**周期**: 1 周
+**工作量**: 12 小时
+**目标版本**: v2.5.0
+**状态**: 🔄 进行中
+
+### 任务清单
+
+| ID | 任务 | 描述 | 状态 |
+|----|------|------|------|
+| TASK-013 | GitHub Actions CI | .github/workflows/ci.yml | 🔄 PR #1 open |
+| TASK-014 | 健康检查端点 | /health /ready /live (EketServer + WebDashboardServer) | ✅ PR #2 open |
+| TASK-015 | Roadmap 文档对齐 | 版本号与实际状态同步 | 🔄 本次 |
+
+### 交付物
+
+- [x] .github/workflows/ci.yml
+- [x] /health /ready /live 端点
+- [x] 1079/1079 tests 全部通过
+- [ ] 分支保护规则配置
+- [ ] v2.5.0 发布
+
+---
+
+## 🎯 Round 14: SDK 正式化 ⚪
 
 **周期**: 1 周
 **工作量**: 12-16 小时
-**负责人**: 待分配
+**目标版本**: v2.6.0
+**状态**: ⚪ 待启动
 
 ### 任务清单
 
 | ID | 任务 | 描述 | 验收标准 |
 |----|------|------|---------|
-| CI-001 | GitHub Actions 测试 | 自动运行所有测试 | 每次 PR 强制 |
-| CI-002 | 构建产物上传 | dist/ 和镜像 | Artifact 存储 |
-| CI-003 | 分支保护规则 | main/testing 保护 | 需要 review + CI |
-| CI-004 | semantic-release | 自动版本管理 | 自动发布 npm/Docker |
-| CI-005 | 发布流水线 | changelog 生成 | 自动 release note |
+| SDK-001 | Python SDK 版本策略 | semver + PyPI 发布流程 | RELEASING.md 完成 |
+| SDK-002 | SDK examples 完善 | 覆盖核心用例 | 5+ example 脚本可运行 |
+| SDK-003 | SDK tests 完善 | 单测覆盖率 >80% | pytest 通过 |
+| SDK-004 | SDK 文档 | API reference + quickstart | docs-site 集成 |
 
 ### 交付物
 
-- [ ] .github/workflows/ci.yml
-- [ ] 分支保护规则配置
-- [ ] semantic-release 配置
-- [ ] 发布文档
-- [ ] v2.9.0 发布
+- [ ] sdk/python/RELEASING.md
+- [ ] sdk/python/examples/ (5+ 脚本)
+- [ ] sdk/python/tests/ 完善
+- [ ] v2.6.0 发布
 
 ---
 
@@ -161,27 +184,29 @@ Round 11 (文档) ─────┘
 
 ## 🎯 验收标准汇总
 
-### v2.7.0 (Round 10-11 完成)
+### v2.3.0 (Round 10-12 完成) ✅
 
-- [ ] 交互式 CLI 向导可用
-- [ ] 命令补全工作
-- [ ] 文档站上线 (eket.dev 或类似)
-- [ ] 核心文档迁移完成
+- [x] 交互式 CLI 向导可用
+- [x] 文档站上线，核心文档完成
+- [x] Docker 镜像可用，docker-compose 一键启动
 
-### v2.8.0 (Round 12-13 完成)
+### v2.4.0 (Round 13a 完成) ✅
 
-- [ ] Docker 镜像发布
-- [ ] docker-compose 一键启动
-- [ ] Prometheus 指标暴露
-- [ ] Grafana 仪表盘可用
-- [ ] 告警系统可用
+- [x] 1072/1072 tests 全部通过
+- [x] openclaw-adapter 优雅降级
+- [x] 版本号统一
 
-### v2.9.0 (Round 14 完成)
+### v2.5.0 (Round 13b 进行中) 🔄
 
-- [ ] GitHub Actions CI 运行
+- [x] GitHub Actions CI 运行（PR #1）
+- [x] 健康检查端点 /health /ready /live（PR #2）
 - [ ] 分支保护启用
-- [ ] 自动版本发布
-- [ ] changelog 自动生成
+
+### v2.6.0 (Round 14) ⚪
+
+- [ ] Python SDK 正式发布
+- [ ] SDK 版本策略定义
+- [ ] SDK 文档完整
 
 ---
 
