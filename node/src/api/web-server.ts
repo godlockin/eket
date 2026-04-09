@@ -58,7 +58,7 @@ export class WebDashboardServer {
   constructor(config: Partial<WebServerConfig> = {}) {
     // Defensive copy
     this.config = {
-      port: config.port || 3000,
+      port: config.port ?? 3000,
       host: config.host || 'localhost',
       staticPath: config.staticPath || path.resolve(__dirname, '../../../web'),
     };
@@ -148,6 +148,28 @@ export class WebDashboardServer {
       res.writeHead(204);
       res.end();
       return;
+    }
+
+    // Health check routes (GET only)
+    if (method === 'GET') {
+      if (url === '/health') {
+        this.sendJson(res, 200, {
+          status: 'ok',
+          version: '2.4.0',
+          uptime: Math.floor(process.uptime()),
+          timestamp: new Date().toISOString(),
+          checks: { fileQueue: 'ok' },
+        });
+        return;
+      }
+      if (url === '/ready') {
+        this.sendJson(res, 200, { ready: true });
+        return;
+      }
+      if (url === '/live') {
+        this.sendJson(res, 200, { alive: true });
+        return;
+      }
     }
 
     // API routes
