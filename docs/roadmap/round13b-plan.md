@@ -21,7 +21,7 @@ Round 13b 目标：补齐 CI/CD 和生产可观测性基础设施。
 |------|------|------|------|-----|
 | TASK-013 | GitHub Actions CI 流水线 | Slaver-1 | 🔄 进行中 | #1 open |
 | TASK-014 | 健康检查端点 /health /ready /live | Master | ✅ 完成 | #2 open |
-| TASK-015 | Roadmap 文档对齐 | Master | ✅ 完成 | #3 open |
+| TASK-015 | Roadmap 文档对齐 | Slaver | 🔄 进行中 | #3 open |
 
 ---
 

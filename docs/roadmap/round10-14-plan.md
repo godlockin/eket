@@ -9,8 +9,8 @@
 
 ## 📊 总览
 
-| Sprint | 主题 | Pillar | 周期 | 目标版本 |
-|--------|------|--------|------|---------|
+| Sprint | 主题 | Pillar | 周期 | 目标版本 | 状态 |
+|--------|------|--------|------|---------|------|
 | Round 10 | CLI 体验改进 | Pillar 1 | 1 周 | v2.3.0 | ✅ 完成 |
 | Round 11 | 文档站建设 | Pillar 1 | 1 周 | v2.3.0 | ✅ 完成 |
 | Round 12 | Docker 化 | Pillar 2 | 1 周 | v2.3.0 | ✅ 完成 |
@@ -171,14 +171,15 @@
 ## 📊 依赖关系
 
 ```
-Round 10 (CLI) ─────┬────→ Round 12 (Docker) ──→ Round 13 (监控)
+Round 10 (CLI) ─────┬────→ Round 12 (Docker) ──→ Round 13a (清账)
                     │
-Round 11 (文档) ─────┘
-                              ↓
-                    Round 14 (CI/CD)
+Round 11 (文档) ─────┘                                    ↓
+                                               Round 13b (CI/CD+健康检查)
+                                                          ↓
+                                               Round 14 (SDK 正式化)
 ```
 
-**关键路径**: CLI → Docker → 监控 → CI/CD
+**关键路径**: CLI/文档 → Docker → 清账 → CI/CD → SDK
 
 ---
 
@@ -239,5 +240,5 @@ Round 11 (文档) ─────┘
 
 ---
 
-**状态**: 待启动
-**下一步**: 用户确认 Round 10 优先级，启动 Sprint
+**状态**: Round 13b 进行中
+**下一步**: 合并 PR #1（GitHub Actions CI），发布 v2.5.0，启动 Round 14
