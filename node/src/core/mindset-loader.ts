@@ -69,8 +69,9 @@ export async function loadMindset(
  * 渲染模板变量
  */
 function renderTemplate(template: string, context: MindsetContext): string {
+  const contextRecord: Record<string, unknown> = { ...context };
   return template.replace(/\{\{(\w+)\}\}/g, (_, key) => {
-    const value = (context as Record<string, unknown>)[key];
+    const value = contextRecord[key];
     return value !== undefined ? String(value) : `{{${key}}}`;
   });
 }
