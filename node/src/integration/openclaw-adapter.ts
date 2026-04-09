@@ -445,13 +445,7 @@ export class OpenCLAWIntegrationAdapter {
    */
   async startAgent(spec: OpenCLAWAgentSpec): Promise<Result<Instance>> {
     try {
-      // 连接 Instance Registry
-      const connectResult = await this.instanceRegistry.connect();
-      if (!connectResult.success) {
-        return connectResult;
-      }
-
-      // 创建 Instance
+      // 创建 Instance 对象
       const instance: Instance = {
         id: spec.id,
         type: 'ai',
@@ -463,10 +457,16 @@ export class OpenCLAWIntegrationAdapter {
         updatedAt: Date.now(),
       };
 
-      // 注册 Instance
-      const registerResult = await this.instanceRegistry.registerInstance(instance);
-      if (!registerResult.success) {
-        return registerResult;
+      // 尝试连接并注册到 Instance Registry（Redis 可用时持久化）
+      // Redis 不可用时降级为内存模式，直接返回 success
+      const connectResult = await this.instanceRegistry.connect();
+      if (connectResult.success) {
+        const registerResult = await this.instanceRegistry.registerInstance(instance);
+        if (!registerResult.success) {
+          console.warn('[OpenCLAW Adapter] Instance registration failed, continuing in memory mode');
+        }
+      } else {
+        console.warn('[OpenCLAW Adapter] Redis not available, starting agent in memory mode');
       }
 
       // 发送 Agent 上线通知
@@ -808,10 +808,10 @@ export class OpenCLAWIntegrationAdapter {
    */
   async connect(): Promise<Result<void>> {
     try {
-      // 连接 Instance Registry
+      // 尝试连接 Instance Registry（Redis 不可用时降级为内存模式）
       const registryResult = await this.instanceRegistry.connect();
       if (!registryResult.success) {
-        return registryResult;
+        console.warn('[OpenCLAW Adapter] Instance registry unavailable, running in memory mode');
       }
 
       // 连接 Message Queue
