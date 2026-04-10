@@ -148,6 +148,26 @@ Ticket 文件中的领取记录格式：
 | Review 通过 | master_20260410_143000_a1b2c3d4 | 2026-04-10T18:00:00+08:00 | review → done |
 ```
 
+---
+
+## PR 等待期间检查频率（v2.1.1）
+
+提交 PR 后等待 Master 反馈期间的检查频率：
+
+| Slaver 状态 | 检查频率 | 检查内容 |
+|------------|---------|----------|
+| 空闲等待 | 每 1 分钟 | `inbox/human_feedback/`、消息队列、Ticket 状态 |
+| 工作中 | 每 5 分钟 | `inbox/human_feedback/`、消息队列、Ticket 状态 |
+
+**判定标准**：
+- **空闲等待**：当前无其他 `in_progress` 任务
+- **工作中**：有 1 个或多个 `in_progress` 任务并行开发
+
+**检查内容**：
+1. `inbox/human_feedback/` - Master 是否有新反馈文件
+2. 消息队列 - 是否有 `pr_review_result` 类型消息
+3. Ticket 状态 - 是否从 `review` 变更为 `approved`/`changes_requested`/`rejected`
+
 ### 消息队列通知格式
 
 ```json
