@@ -1,6 +1,6 @@
 # Slaver 心跳检查清单
 
-**版本**: v2.9.0-alpha  
+**版本**: v2.1.0  
 **用途**: Slaver 实例的持续自我反思机制  
 **触发**: 每 15 分钟自动执行，或完成任何任务阶段后手动执行
 
@@ -99,6 +99,75 @@ Slaver 由 Master 通过 subagent 初始化，被赋予特定角色（如 `front
     ├── 是，影响架构 → 通知 Master → 等待确认
     └── 否 → 提交 PR
 ```
+
+---
+
+## Slaver 任务领取流程（v2.1.0）
+
+### 领取任务步骤
+
+**触发条件**: Slaver 检测到 `ready` 状态的任务，且匹配自己的角色
+
+**步骤**：
+
+1. **运行领取命令**
+   ```bash
+   /eket-claim <ticket-id>
+   ```
+
+2. **脚本自动执行以下操作**：
+   - ✅ 读取实例配置，获取 `instance_id`
+   - ✅ 检查 ticket 状态（必须是 `ready`/`backlog`/`analysis`）
+   - ✅ 检查依赖任务是否完成
+   - ✅ 更新状态：`ready` → `in_progress`
+   - ✅ 更新负责人：`**负责人**: <instance_id>`
+   - ✅ 更新执行 Agent：`**执行 Agent**: <instance_id>`
+   - ✅ 更新最后更新时间
+   - ✅ 添加领取记录到 `## 领取记录` 表格
+   - ✅ 更新开始时间
+   - ✅ 更新执行日志
+   - ✅ 发送消息到消息队列（通知 Master 和其他 Slaver）
+
+3. **领取后的行动**：
+   - [ ] 仔细阅读 ticket 描述和验收标准
+   - [ ] 创建任务分析报告：`jira/tickets/<type>/<ticket-id>/analysis-report.md`
+   - [ ] 提交分析报告给 Master 审批
+   - [ ] 审批通过后开始开发
+
+### 领取记录格式
+
+Ticket 文件中的领取记录格式：
+
+```markdown
+## 领取记录
+
+| 操作 | Slaver Instance ID | 时间 | 状态变更 |
+|------|-------------------|------|----------|
+| 领取 | slaver_20260410_150000_x9y8z7w6 | 2026-04-10T15:00:00+08:00 | ready → in_progress |
+| 提交 Review | slaver_20260410_150000_x9y8z7w6 | 2026-04-10T17:30:00+08:00 | in_progress → review |
+| Review 通过 | master_20260410_143000_a1b2c3d4 | 2026-04-10T18:00:00+08:00 | review → done |
+```
+
+### 消息队列通知格式
+
+```json
+{
+  "id": "msg_20260410150000",
+  "timestamp": "2026-04-10T15:00:00+08:00",
+  "from": "slaver_20260410_150000_x9y8z7w6",
+  "to": "broadcast",
+  "type": "task_claimed",
+  "priority": "normal",
+  "payload": {
+    "ticket_id": "FEAT-001",
+    "claimed_by": "slaver_20260410_150000_x9y8z7w6",
+    "previous_status": "ready",
+    "new_status": "in_progress"
+  }
+}
+```
+
+---
 
 **优化检查维度**：
 | 维度 | 检查点 | 工具 |
