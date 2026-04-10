@@ -410,8 +410,12 @@ react, typescript, jwt
 
 ## 相关文档
 
-- [Ticket 编号管理规范](./TICKET-NUMBERING.md) - 完整编号规则和管理规范
-- [Jira Ticket 模板使用规范](./templates/README.md) - 模板使用说明
+- [TICKET-RESPONSIBILITIES.md](./TICKET-RESPONSIBILITIES.md) — Ticket 职责边界规范
+- [MASTER-WORKFLOW.md](./MASTER-WORKFLOW.md) — Master 工作流程
+- [SLAVER-AUTO-EXEC-GUIDE.md](./SLAVER-AUTO-EXEC-GUIDE.md) — Slaver 自动执行指南
+- [MASTER-PR-REVIEW-FLOW.md](./MASTER-PR-REVIEW-FLOW.md) — PR 审核流程
+- [TICKET-NUMBERING.md](./jira/TICKET-NUMBERING.md) — Ticket 编号规则（jira/ 目录下）
+- [Jira Ticket 模板使用规范](./jira/templates/README.md) — 模板使用说明
 
 ---
 

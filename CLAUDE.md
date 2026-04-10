@@ -30,7 +30,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Master：不得写代码、测试、配置，不得修改 Slaver 的执行记录
 - Slaver：不得修改验收标准、优先级、依赖关系，不得审查自己的 PR
 
-📄 详细规范：[`template/jira/TICKET-RESPONSIBILITIES.md`](template/jira/TICKET-RESPONSIBILITIES.md)
+📄 详细规范：[`template/docs/TICKET-RESPONSIBILITIES.md`](template/docs/TICKET-RESPONSIBILITIES.md)
 
 > 使用其他大模型（Gemini、GPT、Cursor 等）时，请阅读 `AGENTS.md`，它是与本文件互补的通用大模型引导文件。
 

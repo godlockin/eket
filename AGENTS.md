@@ -138,7 +138,7 @@ Receive input
 
 ### Ticket Responsibility Boundary
 
-**Master creates and owns the ticket metadata**. See [`template/jira/TICKET-RESPONSIBILITIES.md`](template/jira/TICKET-RESPONSIBILITIES.md):
+**Master creates and owns the ticket metadata**. See [`template/docs/TICKET-RESPONSIBILITIES.md`](template/docs/TICKET-RESPONSIBILITIES.md):
 
 | Master Writes | Slaver Writes |
 |---------------|---------------|
