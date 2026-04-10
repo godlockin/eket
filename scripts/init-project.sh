@@ -75,8 +75,8 @@ copy_templates() {
         if [ ! -f "CLAUDE.md" ]; then
             cp "$EKET_TEMPLATE_DIR/CLAUDE.md" "CLAUDE.md"
             # 替换占位符
-            sed -i '' "s/\${PROJECT_NAME}/$PROJECT_NAME/g" "CLAUDE.md" 2>/dev/null || \
-            sed -i "s/\${PROJECT_NAME}/$PROJECT_NAME/g" "CLAUDE.md"
+            sed -i '' "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "CLAUDE.md" 2>/dev/null || \
+            sed -i "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "CLAUDE.md"
             echo -e "${GREEN}✓${NC} CLAUDE.md"
         fi
 
@@ -126,14 +126,14 @@ copy_templates() {
         if [ ! -f "SYSTEM-SETTINGS.md" ]; then
             cp "$EKET_TEMPLATE_DIR/SYSTEM-SETTINGS.md" "SYSTEM-SETTINGS.md"
             # 替换占位符
-            sed -i '' "s/\${PROJECT_NAME}/$PROJECT_NAME/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
-            sed -i "s/\${PROJECT_NAME}/$PROJECT_NAME/g" "SYSTEM-SETTINGS.md"
-            sed -i '' "s/\${CREATE_DATE}/$(date -I)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
-            sed -i "s/\${CREATE_DATE}/$(date -I)/g" "SYSTEM-SETTINGS.md"
-            sed -i '' "s/\${UPDATE_DATE}/$(date -I)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
-            sed -i "s/\${UPDATE_DATE}/$(date -I)/g" "SYSTEM-SETTINGS.md"
-            sed -i '' "s/\${MAINTAINER}/$(whoami)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
-            sed -i "s/\${MAINTAINER}/$(whoami)/g" "SYSTEM-SETTINGS.md"
+            sed -i '' "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
+            sed -i "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "SYSTEM-SETTINGS.md"
+            sed -i '' "s/{{CREATE_DATE}}/$(date -I)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
+            sed -i "s/{{CREATE_DATE}}/$(date -I)/g" "SYSTEM-SETTINGS.md"
+            sed -i '' "s/{{UPDATE_DATE}}/$(date -I)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
+            sed -i "s/{{UPDATE_DATE}}/$(date -I)/g" "SYSTEM-SETTINGS.md"
+            sed -i '' "s/{{MAINTAINER}}/$(whoami)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
+            sed -i "s/{{MAINTAINER}}/$(whoami)/g" "SYSTEM-SETTINGS.md"
             echo -e "${GREEN}✓${NC} SYSTEM-SETTINGS.md (系统设定模板)"
             echo -e "${YELLOW}  → 请编辑此文件，替换所有占位符和不适用的章节${NC}"
         fi
