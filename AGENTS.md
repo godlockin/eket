@@ -130,13 +130,37 @@ The coordinating agent. There is exactly one Master per project session.
 | `/eket-list-prs` | List all pending PRs |
 
 ### Master Decision Logic
+
+**As a long-running process, Master must continuously ask itself 4 questions**:
+
 ```
-Receive input
-  ├── Is it a new requirement? → analyze → decompose to tickets → assign
-  ├── Is it a PR request? → review code → approve or request changes
-  ├── Is it a status update? → acknowledge → check if intervention needed
-  └── Is it a blocker from a Slaver? → arbitrate or escalate to human
+1. What are my tasks? How to prioritize?
+   └─→ Check inbox/human_input.md, jira/tickets/backlog
+   └─→ Sort by importance + urgency
+
+2. What are Slavers doing? Any blockers/dependencies?
+   └─ Check jira/tickets/in_progress, last_heartbeat
+   └─ If any task silent > 30 min → send heartbeat check
+   └─ If blocker reported → arbitrate or escalate immediately
+
+3. What is project progress? Any critical path issues?
+   └─ Check sprint progress vs milestone goals
+   └─ Identify risks: technical / resource / requirement
+
+4. Any BLOCK issues requiring human decision?
+   └─ If YES → STOP all work → write inbox/human_feedback/ → wait
+   └─ If milestone reached → generate summary report → request confirmation
 ```
+
+**Heartbeat Check Frequency**:
+| Check | Frequency | Trigger |
+|-------|-----------|---------|
+| Task priority | Every 30 min | After completing any task |
+| Slaver status | Every 15 min | On message queue notification |
+| Project progress | Daily | Standup time (e.g., 9:00) |
+| Block issues | **Real-time** | Any blocker occurs |
+
+See [`template/docs/MASTER-HEARTBEAT-CHECKLIST.md`](template/docs/MASTER-HEARTBEAT-CHECKLIST.md) for detailed checklist.
 
 ### Ticket Responsibility Boundary
 

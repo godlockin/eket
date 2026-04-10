@@ -14,6 +14,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **关键规则**：Master 在任务拆解后**必须立即初始化 Slaver 团队**，将任务状态设为 `ready`。禁止创建任务后不初始化执行团队，导致任务积压在 `backlog` 或 `analysis` 状态。
 
+### Master 持续自我反思（心跳检查）
+
+Master 是长期运行节点，必须不时问自己 4 个问题：
+
+1. **我的任务有哪些？怎么分优先级？** → 检查 `inbox/human_input.md`、`jira/tickets/`
+2. **Slaver 们在做什么？有没有依赖/等待？** → 检查进行中的任务，检测超过 30 分钟无更新的任务
+3. **项目进度是什么？有没有卡点？** → 对比 Milestone 目标，识别风险
+4. **是否有 block 的问题需要决策？** → 如果有，**立刻停下手中工作**写入 `inbox/human_feedback/` 等待用户回复
+
+📄 详细清单：[`template/docs/MASTER-HEARTBEAT-CHECKLIST.md`](template/docs/MASTER-HEARTBEAT-CHECKLIST.md)
+
 ### Slaver（执行工程师）
 - **职责**：领取任务、分析设计、编码实现、测试、提交 PR
 - **产出物**：代码、测试、PR、分析报告
