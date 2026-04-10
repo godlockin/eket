@@ -318,6 +318,35 @@ EOF
 
     echo ""
 
+    # ==========================================
+    # 创建独立 Worktree (v2.1.0)
+    # ==========================================
+    echo -e "${BLUE}## 创建独立 Worktree${NC}"
+    echo ""
+
+    WORKTREE_NAME="${INSTANCE_ID}-${TASK_ID}"
+    WORKTREE_DIR=".eket/worktrees/${WORKTREE_NAME}"
+
+    # 检查是否已存在
+    if [ -d "$WORKTREE_DIR" ]; then
+        echo -e "${YELLOW}⚠${NC} Worktree 已存在：$WORKTREE_DIR"
+        echo "   可能是重复领取或之前的 worktree 未清理"
+    else
+        mkdir -p "$WORKTREE_DIR"
+        echo "创建工作tree: $WORKTREE_DIR"
+
+        # 保存 worktree 路径到任务文件
+        if grep -q "^\*\*分支\*\*:" "$TASK_FILE"; then
+            sed -i '' "s/^\*\*分支\*\*:.*/\*\*分支\*\*: $WORKTREE_NAME/" "$TASK_FILE" 2>/dev/null || \
+            sed -i "s/^\*\*分支\*\*:.*/\*\*分支\*\*: $WORKTREE_NAME/" "$TASK_FILE"
+        else
+            echo "**分支**: $WORKTREE_NAME" >> "$TASK_FILE"
+        fi
+        echo "✓ Worktree 已创建：$WORKTREE_NAME"
+    fi
+
+    echo ""
+
     # 加载 Agent Profile 和 Skills
     if [ -x "$SCRIPTS_DIR/load-agent-profile.sh" ]; then
         echo "加载 Agent Profile 和 Skills..."
