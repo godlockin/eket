@@ -405,6 +405,123 @@ EOF
     echo -e "${GREEN}✓${NC} 连接配置文件已创建"
 }
 
+# 检查和初始化高效通信后端
+check_and_start_backend() {
+    echo ""
+    echo "========================================"
+    echo "检查和启动高效通信后端"
+    echo "========================================"
+    echo ""
+
+    cd "$PROJECT_ROOT"
+
+    echo "EKET 支持四级降级通信方式："
+    echo "  1. 远程 Redis（分布式多实例）"
+    echo "  2. 本地 Redis（单机多实例）"
+    echo "  3. SQLite（单机单实例）"
+    echo "  4. 文件系统（降级模式，无依赖）"
+    echo ""
+
+    # 检测 Docker 是否可用
+    local docker_available=false
+    if command -v docker &> /dev/null && docker ps &> /dev/null; then
+        docker_available=true
+        echo -e "${GREEN}✓${NC} Docker 可用"
+    else
+        echo -e "${YELLOW}○${NC} Docker 不可用，跳过 Redis Docker 容器启动"
+    fi
+
+    # 检测 Redis 是否已运行
+    local redis_running=false
+    if command -v redis-cli &> /dev/null && redis-cli ping &> /dev/null; then
+        redis_running=true
+        echo -e "${GREEN}✓${NC} Redis 已在运行"
+    fi
+
+    # 检测 SQLite 是否可用
+    local sqlite_available=false
+    if command -v sqlite3 &> /dev/null; then
+        sqlite_available=true
+        echo -e "${GREEN}✓${NC} SQLite 可用"
+    else
+        echo -e "${YELLOW}⚠${NC} SQLite 不可用，将使用文件系统降级模式"
+    fi
+
+    echo ""
+    echo "请选择通信后端："
+    echo "  1) Redis (Docker)  ← 推荐，支持多实例分布式通信"
+    echo "  2) Redis (本地已运行)"
+    echo "  3) SQLite (本地文件数据库)"
+    echo "  4) 文件系统 (无依赖，仅测试用)"
+    echo ""
+    printf "选择 [1-4]，默认 3: "
+    read -r backend_choice
+
+    case "$backend_choice" in
+        1)
+            if [ "$docker_available" = true ]; then
+                echo "启动 Redis Docker 容器..."
+                docker run -d --name eket-redis -p 6379:6379 redis:latest 2>/dev/null || {
+                    echo -e "${YELLOW}⚠${NC} Redis 容器可能已在运行"
+                }
+                echo -e "${GREEN}✓${NC} Redis Docker 容器已启动"
+
+                # 更新配置文件
+                sed -i '' 's/local_redis:\n    enabled: false/local_redis:\n    enabled: true/' ".eket/config/connection.yml" 2>/dev/null || \
+                sed -i 's/local_redis:\n    enabled: false/local_redis:\n    enabled: true/' ".eket/config/connection.yml"
+
+                echo -e "${GREEN}✓${NC} 已配置使用 Redis 通信"
+            else
+                echo -e "${YELLOW}⚠${NC} Docker 不可用，降级到 SQLite"
+                backend_choice=3
+            fi
+            ;;
+        2)
+            if [ "$redis_running" = true ]; then
+                echo -e "${GREEN}✓${NC} 已配置使用本地 Redis"
+                # 更新配置文件
+                sed -i '' 's/local_redis:\n    enabled: false/local_redis:\n    enabled: true/' ".eket/config/connection.yml" 2>/dev/null || \
+                sed -i 's/local_redis:\n    enabled: false/local_redis:\n    enabled: true/' ".eket/config/connection.yml"
+            else
+                echo -e "${RED}✗${NC} Redis 未运行，降级到 SQLite"
+                backend_choice=3
+            fi
+            ;;
+        3)
+            if [ "$sqlite_available" = true ]; then
+                echo -e "${GREEN}✓${NC} 已配置使用 SQLite"
+                # 创建 SQLite 数据目录
+                mkdir -p ".eket/data/sqlite"
+                # 更新配置文件
+                sed -i '' 's/sqlite:\n    enabled: false/sqlite:\n    enabled: true/' ".eket/config/connection.yml" 2>/dev/null || \
+                sed -i 's/sqlite:\n    enabled: false/sqlite:\n    enabled: true/' ".eket/config/connection.yml"
+            else
+                echo -e "${RED}✗${NC} SQLite 不可用，降级到文件系统"
+                backend_choice=4
+            fi
+            ;;
+        4)
+            echo -e "${YELLOW}○${NC} 使用文件系统降级模式（仅测试用，性能较低）"
+            ;;
+        *)
+            echo "默认使用 SQLite"
+            ;;
+    esac
+
+    # 创建数据目录
+    mkdir -p ".eket/data"
+    mkdir -p ".eket/data/sqlite"
+    mkdir -p ".eket/data/fs"
+
+    echo ""
+    echo "通信后端配置完成。"
+    echo ""
+    echo "重要说明："
+    echo "  - 节点间通信优先使用高效后端（Redis/SQLite）"
+    echo "  - 文字记录（inbox/outbox/文件）仅用于需要被记录和追溯的内容"
+    echo "  - 如需修改配置，编辑 .eket/config/connection.yml"
+}
+
 # 配置 Slaver 模式和自动执行
 configure_slaver_mode() {
     echo ""
@@ -809,6 +926,7 @@ main() {
     create_directories
     copy_templates
     configure_git_repos
+    check_and_start_backend    # 新增：检查和启动高效通信后端
     configure_slaver_mode
     show_guide
 }
