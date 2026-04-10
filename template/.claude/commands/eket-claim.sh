@@ -145,7 +145,33 @@ else
 
     TIMESTAMP=$(date -Iseconds)
 
-    # 更新任务状态为 in_progress
+    # ==========================================
+    # v2.1.1: 索引文件优先原则
+    # ==========================================
+    # 先更新索引文件，再更新 ticket 文件
+    # 索引文件是唯一真相源 (single source of truth)
+
+    INDEX_FILE="jira/state/ticket-index.yml"
+    STATUS_FILE="jira/index/by-status.md"
+
+    # 步骤 1: 更新 ticket-index.yml
+    if [ -f "$INDEX_FILE" ]; then
+        echo -e "${BLUE}## 更新状态索引${NC}"
+
+        # 从 ready 移除，添加到 in_progress
+        if grep -q "  - { id: \"$TICKET_ID\"" "$INDEX_FILE"; then
+            # 更新 by_id 中的状态
+            sed -i '' "s/^  $TICKET_ID: { status: \"[^\"]*\"/  $TICKET_ID: { status: \"in_progress\"/" "$INDEX_FILE" 2>/dev/null || \
+            sed -i "s/^  $TICKET_ID: { status: \"[^\"]*\"/  $TICKET_ID: { status: \"in_progress\"/" "$INDEX_FILE"
+            echo "✓ 索引文件已更新：$TICKET_ID → in_progress"
+        fi
+
+        # 更新 last_updated
+        sed -i '' "s/^last_updated:.*/last_updated: \"$TIMESTAMP\"/" "$INDEX_FILE" 2>/dev/null || \
+        sed -i "s/^last_updated:.*/last_updated: \"$TIMESTAMP\"/" "$INDEX_FILE"
+    fi
+
+    # 步骤 2: 更新 ticket 文件（详情存储）
     if grep -q "^\*\*状态\*\*:" "$TASK_FILE" 2>/dev/null; then
         sed -i '' "s/^\*\*状态\*\*:.*/\*\*状态\*\*: in_progress/" "$TASK_FILE" 2>/dev/null || \
         sed -i "s/^\*\*状态\*\*:.*/\*\*状态\*\*: in_progress/" "$TASK_FILE"

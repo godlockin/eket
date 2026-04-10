@@ -181,9 +181,40 @@ Master Review 后有三种可能的结果：
 
 | 结果 | 状态变更 | Slaver 行动 |
 |------|----------|------------|
-| **批准** | `review` → `approved` | 准备 merge，领取新任务 |
+| **批准** | `review` → `approved` | **直接领取新任务**（无需等待 merge 完成） |
 | **需要修改** | `review` → `changes_requested` | 立即修改，重新提交 PR |
 | **驳回** | `review` → `rejected` | 重新分析需求，重新开发 |
+
+### 批准后直接领取（v2.1.1）
+
+**核心原则**：Master approve 后，Slaver **不需要等待 merge 完成**，可以直接领取新任务开始操作。
+
+**流程**：
+```
+Master 批准 (review → approved)
+    │
+    ▼
+Slaver 检测到状态变更
+    │
+    ▼
+检查索引文件：jira/state/ticket-index.yml
+    │
+    ▼
+状态 = approved → 可以领取新任务
+    │
+    ▼
+运行 /eket-claim <new-ticket-id>
+    │
+    ▼
+新任务状态：ready → in_progress
+    │
+    ▼
+开始新任务开发
+```
+
+**例外情况**：只有用户明确要求等待时，Slaver 才暂停领取新任务。
+- 用户指令：「这个 PR 批准后等我确认再开始新任务」
+- 用户指令：「merge 到 main 后再继续」
 
 ### 3.2 需要修改（changes_requested）
 
