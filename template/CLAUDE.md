@@ -2,8 +2,29 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working in this repository.
 
-**版本**: v2.9.0-alpha
+**版本**: v2.1.3  
 **最后更新**: 2026-04-10
+
+---
+
+## EKET 协作愿景（v2.1.3）
+
+**核心愿景**：所有 instance 都是 resource，无论其形态是：
+- Subagent（被初始化的执行节点）
+- 独立 Session（独立运行的实例）
+- 人类（项目所有者/决策者）
+
+所有 resource 在框架内**平等协作**，最大限度地发挥各自优势，实现自主协作。
+
+**核心原则**：
+1. **最大化自主性**：每个 resource 在其职责范围内拥有最大自主权
+2. **最小化阻塞**：只有在真正需要人类决策时才阻塞执行
+3. **异步通信优先**：通过消息队列和文件系统异步通信
+4. **状态透明**：所有 resource 的状态对所有其他 resource 透明可见
+
+📄 详细文档：[`docs/EKET-VISION.md`](docs/EKET-VISION.md)
+
+---
 
 ## 重要：身份确认
 
