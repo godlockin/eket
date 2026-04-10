@@ -185,6 +185,37 @@ See [`template/docs/MASTER-HEARTBEAT-CHECKLIST.md`](template/docs/MASTER-HEARTBE
 ### Who is Slaver?
 An executor agent. There can be multiple Slavers in one session, each with a specialty role.
 
+**Slaver is a passively awakened node**: Master initializes Slavers via subagent based on task requirements. After awakening, Slaver must continuously ask itself 3 questions.
+
+### Slaver Continuous Self-Reflection (Heartbeat Check)
+
+**As a long-running process, Slaver must continuously ask itself 3 questions**:
+
+```
+1. What task am I working on? Any dependencies to report to Master?
+   └─→ Check ticket blocked_by dependencies
+   └─→ If blocked > 30 min → write blocker report → notify Master
+
+2. What task can I pick up next after finishing this one?
+   └─→ Check jira/tickets/ for ready status tasks
+   └─→ Filter by my agent_type role tags
+   └─→ Pick highest priority matching task
+
+3. Is there any optimization possible for current task?
+   └─→ Before PR submission: self-check code quality
+   └─→ Check: readability, duplication, performance, security
+   └─→ If issue found → fix immediately or notify Master
+```
+
+**Heartbeat Check Frequency**:
+| Check | Frequency | Trigger |
+|-------|-----------|---------|
+| Dependencies/blockers | Every 15 min | When encountering difficulty |
+| Next task | On task completion | After submitting PR |
+| Optimization | Before PR submission | When ready to test |
+
+See [`template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`](template/docs/SLAVER-HEARTBEAT-CHECKLIST.md) for detailed checklist.
+
 ### Specialty Roles
 | `agent_type` | Specialization |
 |-------------|----------------|

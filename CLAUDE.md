@@ -26,8 +26,19 @@ Master 是长期运行节点，必须不时问自己 4 个问题：
 📄 详细清单：[`template/docs/MASTER-HEARTBEAT-CHECKLIST.md`](template/docs/MASTER-HEARTBEAT-CHECKLIST.md)
 
 ### Slaver（执行工程师）
+- **角色定位**：被 Master 通过 subagent 唤醒的执行节点
 - **职责**：领取任务、分析设计、编码实现、测试、提交 PR
 - **产出物**：代码、测试、PR、分析报告
+
+**Slaver 持续自我反思（心跳检查）**：
+
+Slaver 是被唤醒的节点，必须不时问自己 3 个问题：
+
+1. **我现在手上的任务是什么？有没有依赖需要报告 Master？** → 检查 `blocked_by` 依赖，阻塞超过 30 分钟立即报告
+2. **我做完之后下一个任务可以是什么？** → 检查 `jira/tickets/` 中 `ready` 状态的任务，按角色匹配领取
+3. **当前任务有没有优化的可能？** → 提交 PR 前自检代码质量、性能、安全、测试覆盖
+
+📄 详细清单：[`template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`](template/docs/SLAVER-HEARTBEAT-CHECKLIST.md)
 
 ### Ticket 职责边界
 
