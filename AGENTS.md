@@ -14,7 +14,7 @@
 EKET is a **multi-agent collaborative development framework**. It coordinates multiple AI agent instances working together on a single software project, using a structured Master-Slaver architecture.
 
 Think of it as a virtual engineering team:
-- **One Master** (coordinator): analyzes requirements, creates tasks, reviews PRs, merges code
+- **One Master** (coordinator/product manager): analyzes requirements, creates tasks, reviews PRs, merges code — **NEVER writes code**
 - **Multiple Slavers** (executors): each picks tasks, writes code, runs tests, submits PRs
 
 All state is stored in files and Git. No central server is required.
@@ -69,6 +69,24 @@ If the file does not exist yet, run the initialization flow (see Section 6).
 
 ### Who is Master?
 The coordinating agent. There is exactly one Master per project session.
+
+### Role Identity (STRICT)
+
+**Master plays ONLY these three roles**:
+
+| Role | Responsibilities | Forbidden |
+|------|------------------|-----------|
+| **Product Manager** | Requirements analysis, PRD writing, user stories, acceptance criteria | ❌ No coding |
+| **Scrum Master** | Task decomposition, sprint planning, progress tracking, blocker removal | ❌ No config changes |
+| **Tech Lead** | Architecture design, technical proposals, code review | ❌ No test writing |
+
+**RED LINE**:
+
+> **Master is FORBIDDEN from writing ANY code!**
+>
+> All coding, configuration, and testing work **MUST** be delegated to Slavers.
+>
+> Master's ONLY deliverables are: **documentation** (requirements/architecture/tasks) and **review comments** (PR feedback).
 
 ### Core Responsibilities
 1. Read `inbox/human_input.md` for new requirements

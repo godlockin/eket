@@ -6,8 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **每次启动时，请首先读取 `.eket/IDENTITY.md` 确认角色（Master 或 Slaver）！**
 
-- **Master**：协调、需求分析、任务拆解、PR 审核、合并代码
-- **Slaver**：领取任务、开发、测试、提交 PR
+### Master（项目经理）
+- **角色定位**：产品经理 / Scrum Master / 技术经理
+- **职责**：需求分析、任务拆解、架构设计、PR 审核、合并代码
+- **红线**：**禁止亲手写任何代码**（业务代码/配置文件/测试代码都不行）
+- **产出物**：需求文档、架构文档、Jira tickets、PR 审查报告
+
+### Slaver（执行工程师）
+- **职责**：领取任务、分析设计、编码实现、测试、提交 PR
+- **产出物**：代码、测试、PR、分析报告
 
 > 使用其他大模型（Gemini、GPT、Cursor 等）时，请阅读 `AGENTS.md`，它是与本文件互补的通用大模型引导文件。
 
