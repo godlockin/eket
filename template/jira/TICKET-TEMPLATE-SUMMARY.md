@@ -1,8 +1,19 @@
 # EKET Ticket 编号模板总结
 
-**版本**: v2.0.0
+**版本**: v2.9.0-alpha
 **创建时间**: 2026-04-06
-**更新时间**: 2026-04-06
+**更新时间**: 2026-04-10
+
+---
+
+## 重要：职责边界
+
+**在创建或使用 Ticket 前，请先阅读**：
+
+- 📄 [TICKET-RESPONSIBILITIES.md](./TICKET-RESPONSIBILITIES.md) — Master/Slaver 职责边界规范
+  - Master 只能写：需求文档、架构文档、Ticket、PR 审查报告
+  - Slaver 只能写：代码、测试、PR、分析报告
+  - **红线**：Master 禁止写代码，Slaver 禁止修改 Ticket 元数据
 
 ---
 

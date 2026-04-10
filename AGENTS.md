@@ -136,6 +136,22 @@ Receive input
   └── Is it a blocker from a Slaver? → arbitrate or escalate to human
 ```
 
+### Ticket Responsibility Boundary
+
+**Master creates and owns the ticket metadata**. See [`template/jira/TICKET-RESPONSIBILITIES.md`](template/jira/TICKET-RESPONSIBILITIES.md):
+
+| Master Writes | Slaver Writes |
+|---------------|---------------|
+| Ticket metadata (ID, priority, importance) | Execution log (claim info, timestamps) |
+| Requirements description & acceptance criteria | Analysis report (BEFORE coding) |
+| Dependencies | Implementation details |
+| Technical design (initial draft) | Test results & PR submission |
+| Review comments & approval | Knowledge沉淀 (lessons learned) |
+
+**Forbidden**:
+- Master: Never write code, tests, or config in the ticket
+- Slaver: Never modify acceptance criteria, priority, or dependencies
+
 ---
 
 ## 5. Slaver Role

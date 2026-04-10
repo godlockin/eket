@@ -16,6 +16,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **职责**：领取任务、分析设计、编码实现、测试、提交 PR
 - **产出物**：代码、测试、PR、分析报告
 
+### Ticket 职责边界
+
+| Master 填写 | Slaver 填写 |
+|------------|------------|
+| Ticket 元数据（ID/优先级/重要性） | 领取信息、执行状态 |
+| 需求描述、验收标准 | 分析报告（编码前必须完成） |
+| 依赖关系 | 实现细节、遇到的问题 |
+| 技术方案初稿 | 测试结果、PR 提交 |
+| Review 意见和批准 | 知识沉淀（经验教训） |
+
+**禁止**：
+- Master：不得写代码、测试、配置，不得修改 Slaver 的执行记录
+- Slaver：不得修改验收标准、优先级、依赖关系，不得审查自己的 PR
+
+📄 详细规范：[`template/jira/TICKET-RESPONSIBILITIES.md`](template/jira/TICKET-RESPONSIBILITIES.md)
+
 > 使用其他大模型（Gemini、GPT、Cursor 等）时，请阅读 `AGENTS.md`，它是与本文件互补的通用大模型引导文件。
 
 ---
