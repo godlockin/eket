@@ -537,15 +537,39 @@ configure_slaver_mode() {
     echo "  1) Master - 协调实例 (负责任务分析和 Review)"
     echo "  2) Slaver - 执行实例 (负责领取和执行任务)"
     echo ""
-    read -p "选择 [1/2]，默认 2: " ROLE_CHOICE
+    read -p "选择 [1/2]，默认 1 (Master): " ROLE_CHOICE
 
-    if [ "$ROLE_CHOICE" = "1" ]; then
-        INSTANCE_ROLE="master"
-        echo -e "${BLUE}✓${NC} 已选择：Master 模式"
-    else
+    if [ "$ROLE_CHOICE" = "2" ]; then
         INSTANCE_ROLE="slaver"
         echo -e "${BLUE}✓${NC} 已选择：Slaver 模式"
+    else
+        INSTANCE_ROLE="master"
+        echo -e "${BLUE}✓${NC} 已选择：Master 模式"
     fi
+
+    # 写入初始实例配置
+    mkdir -p ".eket/state"
+    cat > ".eket/state/instance_config.yml" << EOF
+# EKET 实例配置
+# 生成于：$(date -Iseconds)
+
+# 实例角色
+role: "${INSTANCE_ROLE}"
+
+# Slaver 角色类型（仅在 role=slaver 时有效，由 Slaver 启动时填写）
+agent_type: null
+
+# 实例状态
+status: "initialized"
+
+# 启动时间
+start_time: "$(date -Iseconds)"
+
+# 实例 ID（自动生成）
+instance_id: "$(echo $INSTANCE_ROLE)_$(date +%Y%m%d%H%M%S)"
+EOF
+    echo -e "${GREEN}✓${NC} 实例配置已写入 .eket/state/instance_config.yml"
+    echo ""
 
     # ==========================================
     # 配置存储后端（Git 模式或降级模式）

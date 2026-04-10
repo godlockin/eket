@@ -156,14 +156,45 @@
 1. **检查配置文件**: `.eket/state/instance_config.yml`
    ```yaml
    role: "master"  # 或 "slaver"
+   instance_id: "master_20260410_143000_a1b2c3d4"  # 全局唯一实例 ID
    ```
 
-2. **检查 Master 标记**:
+2. **检查 Master 标记** (每个仓库的标记文件包含 instance_id):
    - `confluence/.eket_master_marker`
    - `jira/.eket_master_marker`
    - `code_repo/.eket_master_marker`
 
-3. **运行启动命令**: `/eket-start`
+3. **检查 Slaver 标记** (活跃 Slaver 实例列表):
+   - `.eket/state/slavers/*.yml` - 每个文件对应一个活跃的 Slaver 实例
+
+4. **运行启动命令**: `/eket-start` - 自动检测并显示当前实例身份
+
+### Master 标记文件格式
+
+每个仓库的 Master 标记文件包含初始化时的 instance_id:
+
+```yaml
+# confluence/.eket_master_marker
+initialized_by: master
+instance_id: master_20260410_143000_a1b2c3d4
+```
+
+**重要**: 如果检测到 Master 标记存在，新启动的实例会自动成为 Slaver 角色。
+
+### Slaver 标记文件格式
+
+每个 Slaver 实例启动时会创建自己的标记文件:
+
+```yaml
+# .eket/state/slavers/{instance_id}.yml
+instance_id: slaver_20260410_150000_x9y8z7w6
+agent_type: frontend_dev
+started_at: 2026-04-10T15:00:00+08:00
+status: active
+worktree_dir: .eket/worktrees/slaver_20260410_150000
+```
+
+**重要**: Slaver 标记文件用于 Master 追踪活跃的 Slaver 实例，实现多实例协作。
 
 ### 身份混淆时的处理
 
