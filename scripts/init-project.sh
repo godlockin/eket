@@ -51,7 +51,10 @@ create_directories() {
         "outbox"
         "outbox/review_requests"
         "tasks"
-        "outbox"
+        "shared/message_queue/inbox"
+        "shared/message_queue/outbox"
+        "shared/message_queue/broadcast"
+        "shared/message_queue/dead_letter"
     )
 
     for dir in "${directories[@]}"; do
