@@ -238,18 +238,29 @@ skills:
   - related: [相关任务]
 - **标签**: [frontend], [backend], [api], [database], etc.
 - **Epic**: 所属 Epic
+- **Sprint**: 所属 Sprint
+- **Milestone**: 所属 Milestone
+- **适配角色**: frontend_dev | backend_dev | fullstack | tester | devops
 - **预估工时**: 2h | 4h | 8h | 1d | etc.
 - **技能要求**: [react], [nodejs], [typescript], etc.
 ```
 
 **产出物**:
+- `jira/milestones/{MILESTONE-ID}.md` - 里程碑文档
+- `jira/sprints/{SPRINT-ID}.md` - Sprint 文档
 - `jira/epics/{EPIC-ID}.md` - Epic 文档
 - `jira/tickets/feature/{TICKET-ID}.md` - 功能票
 - `jira/tickets/task/{TICKET-ID}.md` - 任务票
 - `jira/tickets/bugfix/{TICKET-ID}.md` - 缺陷票
-- `jira/index/by-feature/` - 按功能索引
-- `jira/index/by-status/` - 按状态索引
-- `jira/index/by-assignee/` - 按负责人索引
+- `jira/INDEX.md` - 主索引文件
+- `jira/index/by-milestone.md` - 按 Milestone 索引
+- `jira/index/by-sprint.md` - 按 Sprint 索引
+- `jira/index/by-epic.md` - 按 Epic 索引
+- `jira/index/by-status.md` - 按状态索引
+- `jira/index/by-assignee.md` - 按负责人索引
+- `jira/index/by-priority.md` - 按优先级索引
+- `jira/index/by-role.md` - 按角色索引
+- `jira/state/ticket-registry.yml` - Ticket 注册表（三方存储同步用）
 
 ---
 
@@ -301,6 +312,105 @@ skills:
 - `.eket/state/profiles/backend_dev.yml` - Slaver 角色配置
 - `jira/tickets/*/status: ready` - 任务就绪
 - `shared/message_queue/inbox/task_ready_*.json` - 任务就绪通知
+
+---
+
+### 阶段 4.6: 分层级 Ticket 管理（Master 核心职责）
+
+**触发条件**: 任务拆解完成
+
+**目的**: 建立清晰的层级结构，便于追踪进度、管理依赖、分配资源。
+
+**层级结构**:
+```
+Milestone (里程碑) → Sprint (迭代) → Epic (功能集) → Ticket (任务卡)
+```
+
+**Master 职责**:
+
+1. **创建 Milestone** (长期目标，月度/季度)
+   - 定义 Milestone 目标和关键指标
+   - 设置目标日期
+   - 关联相关 Sprint
+
+2. **创建 Sprint** (迭代周期，2-4 周)
+   - 定义 Sprint 主题和目标
+   - 规划迭代日期范围
+   - 关联到 Milestone
+
+3. **创建 Epic** (功能模块)
+   - 定义 Epic 范围和验收标准
+   - 关联到 Sprint
+   - 规划依赖关系
+
+4. **创建 Ticket** (具体任务)
+   - 填写完整元数据（优先级/角色/工时）
+   - 关联到 Epic
+   - 设置适配角色（frontend_dev/backend_dev 等）
+
+5. **维护索引文件**
+   - `INDEX.md` - 主索引，状态概览
+   - `by-milestone.md` - 按 Milestone 分组
+   - `by-sprint.md` - 按 Sprint 分组
+   - `by-epic.md` - 按 Epic 分组
+   - `by-status.md` - 按状态分组
+   - `by-role.md` - 按角色分组（重要！Slaver 据此领取）
+   - `by-priority.md` - 按优先级分组
+
+6. **同步三方存储**
+   - 更新 `ticket-registry.yml`
+   - 如 Redis/SQLite 可用，同步写入
+
+**Ticket 创建流程**:
+```
+1. 确定层级归属
+   ↓
+   - 所属 Milestone: MILESTONE-001
+   - 所属 Sprint: SPRINT-001
+   - 所属 Epic: EPIC-001
+   - 适配角色：frontend_dev
+
+2. 创建 Ticket 文件
+   ↓
+   jira/tickets/feature/FEAT-001.md
+
+3. 更新索引文件
+   ↓
+   - INDEX.md (更新总计和状态)
+   - by-milestone.md (添加到 MILESTONE-001)
+   - by-sprint.md (添加到 SPRINT-001)
+   - by-epic.md (添加到 EPIC-001)
+   - by-role.md (添加到 frontend_dev)
+   - by-status.md (添加到 ready)
+
+4. 同步三方存储
+   ↓
+   - 更新 ticket-registry.yml
+   - Redis: HSET eket:ticket:FEAT-001 ...
+   - SQLite: INSERT INTO tickets ...
+```
+
+**示例：创建 FEAT-001**
+```markdown
+# FEAT-001: 用户登录功能
+
+**类型**: feature
+**优先级**: P0
+**状态**: ready
+**所属 Milestone**: MILESTONE-001
+**所属 Sprint**: SPRINT-001
+**所属 Epic**: EPIC-001 (用户系统)
+**适配角色**: frontend_dev
+**预估工时**: 4h
+
+## 描述
+实现用户登录页面和认证流程
+
+## 验收标准
+- [ ] 支持邮箱密码登录
+- [ ] 支持 Remember Me
+- [ ] 错误提示清晰
+```
 
 ---
 
