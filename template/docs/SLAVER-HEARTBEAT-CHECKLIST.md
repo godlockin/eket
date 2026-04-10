@@ -102,6 +102,48 @@ Slaver 由 Master 通过 subagent 初始化，被赋予特定角色（如 `front
 
 ---
 
+## Slaver 自主执行权限（v2.1.2）
+
+**核心原则**：Slaver 在执行常规操作时**不需要等待确认，直接执行**。
+
+### Slaver 可直接执行的操作
+
+| 操作 | 说明 | 通知方式 |
+|------|------|---------|
+| 查看 Ticket | 读取任务详情、验收标准 | 无需通知 |
+| 领取任务 | `ready` → `in_progress` | 完成后发送消息到队列 |
+| 提交 PR | 创建 PR 描述文件，发送 Review 请求 | 自动通知 Master |
+| 更新状态 | 根据进度更新 Ticket 状态 | 无需通知 |
+| 创建/更新 worktree | 为任务创建独立开发环境 | 无需通知 |
+| 检查 PR 反馈 | 读取 Master Review 意见 | 无需通知 |
+| 根据反馈修改 | `changes_requested` → 修改代码 | 无需通知 |
+| 提交进度报告 | 写入 `inbox/human_feedback/` | 无需通知 |
+
+### 需要等待/上报的情况
+
+| 情况 | 行动 |
+|------|------|
+| 技术难点 > 30 分钟 | 写入 `inbox/blocker_report.md` → 等待 Master 仲裁 |
+| 需求不明确 | 写入 `inbox/dependency-clarification.md` → 等待 Master 处理 |
+| 资源缺失（API/数据/配置） | 写入 `inbox/dependency-clarification.md` → 等待 Master |
+| Scope 变更影响交付 | 通知 Master → 等待人类决策 |
+
+### 自主执行流程
+
+```
+Slaver 检测/行动
+    │
+    ▼
+是否常规操作？
+    ├── 是 → 直接执行 → 完成后发送通知到消息队列
+    └── 否（阻塞/需求不明/资源缺失）
+            │
+            ▼
+        写入对应文件 → 通知 Master → 等待处理
+```
+
+---
+
 ## Slaver 任务领取流程（v2.1.0）
 
 ### 领取任务步骤
