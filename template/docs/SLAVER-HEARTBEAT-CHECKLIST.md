@@ -156,7 +156,7 @@ Ticket 文件中的领取记录格式：
 
 | Slaver 状态 | 检查频率 | 检查内容 |
 |------------|---------|----------|
-| 空闲等待 | 每 1 分钟 | `inbox/human_feedback/`、消息队列、Ticket 状态 |
+| 空闲等待 | 每 10 秒 | `inbox/human_feedback/`、消息队列、Ticket 状态 |
 | 工作中 | 每 5 分钟 | `inbox/human_feedback/`、消息队列、Ticket 状态 |
 
 **判定标准**：
