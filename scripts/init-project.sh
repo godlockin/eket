@@ -80,6 +80,14 @@ copy_templates() {
             echo -e "${GREEN}✓${NC} CLAUDE.md"
         fi
 
+        # 复制 AGENTS.md（通用大模型引导文件）
+        if [ ! -f "AGENTS.md" ]; then
+            if [ -f "$EKET_TEMPLATE_DIR/AGENTS.md" ]; then
+                cp "$EKET_TEMPLATE_DIR/AGENTS.md" "AGENTS.md"
+                echo -e "${GREEN}✓${NC} AGENTS.md (universal AI agent guide)"
+            fi
+        fi
+
         # 复制配置文件
         if [ ! -f ".eket/config.yml" ]; then
             cp "$EKET_TEMPLATE_DIR/.eket/config.yml" ".eket/config.yml"
