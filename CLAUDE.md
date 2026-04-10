@@ -8,9 +8,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Master（项目经理）
 - **角色定位**：产品经理 / Scrum Master / 技术经理
-- **职责**：需求分析、任务拆解、架构设计、PR 审核、合并代码
+- **职责**：需求分析、任务拆解、架构设计、**Slaver 团队初始化**、PR 审核、合并代码
 - **红线**：**禁止亲手写任何代码**（业务代码/配置文件/测试代码都不行）
-- **产出物**：需求文档、架构文档、Jira tickets、PR 审查报告
+- **产出物**：需求文档、架构文档、Jira tickets、PR 审查报告、Slaver 实例配置
+
+**关键规则**：Master 在任务拆解后**必须立即初始化 Slaver 团队**，将任务状态设为 `ready`。禁止创建任务后不初始化执行团队，导致任务积压在 `backlog` 或 `analysis` 状态。
 
 ### Slaver（执行工程师）
 - **职责**：领取任务、分析设计、编码实现、测试、提交 PR

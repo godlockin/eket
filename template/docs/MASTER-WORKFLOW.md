@@ -47,8 +47,10 @@ Master 在工作的不同阶段会加载不同的 Skills，以确保专业性和
 │  3. 架构设计 → 加载【技术经理 Skills】                            │
 │       ↓                                                         │
 │  4. 任务拆解 → 加载【技术经理 + Scrum Master Skills】             │
-│       ↓                                                         │
-│  5. 分配任务 → 发布到 Jira Tickets                               │
+│       │                                                         │
+│       └──→ 同步初始化 Slaver 团队 → 任务自动落入 ready 状态        │
+│             ↓                                                   │
+│  5. Slaver 领取任务 → 开发 → 提交 PR                              │
 │       ↓                                                         │
 │  6. 审核 PR → 加载【代码审查 Skills】                            │
 │       ↓                                                         │
@@ -56,6 +58,8 @@ Master 在工作的不同阶段会加载不同的 Skills，以确保专业性和
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+**关键设计**：Master 在任务拆解阶段（步骤 4）**必须同步初始化 Slaver 团队**，任务创建后直接进入 `ready` 状态，Slaver 可立即领取。禁止 Master 创建任务后不初始化 Slaver，导致任务积压在 `backlog` 或 `analysis` 状态。
 
 ---
 
@@ -125,7 +129,7 @@ skills:
 
 ---
 
-### 3.4 阶段 4: 任务拆解
+### 3.4 阶段 4: 任务拆解 + Slaver 团队初始化
 
 **触发条件**: 架构设计完成
 
@@ -137,6 +141,9 @@ skills:
   - management/effort_estimation
   - management/priority_setting
   - management/risk_assessment
+  # ← 新增：Slaver 团队初始化
+  - management/slaver_team_init
+  - management/role_matching
 ```
 
 **任务信息结构**:
@@ -168,20 +175,64 @@ skills:
 
 ---
 
-### 3.5 阶段 5: 分配任务
+### 阶段 4.5: Slaver 团队初始化（必须与任务拆解同步执行）
 
-**触发条件**: 任务已创建并标记为 `ready`
+**触发条件**: 任务拆解完成，第一批 Ticket 已创建
 
-**加载 Skills**:
-```yaml
-skills:
-  - management/resource_allocation
-  - management/sprint_planning
-  - management/slaver_matching
-  - communication/task_assignment
+**目的**: Master 创建任务后，**必须立即初始化 Slaver 团队**，让任务可被立即领取执行。禁止创建任务后不初始化执行团队。
+
+**初始化流程**:
+
+```
+1. 分析任务技能需求
+   ↓
+   扫描所有 ready 状态的 ticket，汇总需要的技能标签
+   例：[react, typescript] + [nodejs, postgresql] + [docker, ci/cd]
+   
+2. 确定 Slaver 角色组合
+   ↓
+   根据技能需求确定需要的 Slaver 角色
+   例：frontend_dev × 1 + backend_dev × 1 + devops × 1
+   
+3. 初始化 Slaver 实例
+   ↓
+   为每个 Slaver 角色创建：
+   - .eket/state/profiles/{slaver_id}.yml
+   - .eket/state/instance_config.yml（Slaver 配置）
+   - inbox/human_input.md（任务通知）
+   
+4. 发送任务就绪通知
+   ↓
+   将新创建的 ticket 状态设为 ready
+   发送 message_queue 通知到各 Slaver inbox
 ```
 
-**分配策略**:
+**Master 职责**:
+- ✅ 分析任务技能需求，确定需要的 Slaver 角色类型和数量
+- ✅ 创建 Slaver 实例配置文件
+- ✅ 将所有新任务状态设置为 `ready`（可领取状态）
+- ✅ 发送任务就绪通知到消息队列
+
+**禁止操作**:
+- ❌ 创建任务后不初始化 Slaver 团队
+- ❌ 任务状态停留在 `analysis` 或 `backlog` 不释放
+- ❌ 等待人类确认后才初始化 Slaver（可先初始化，人类可调整）
+
+**产出物**:
+- `.eket/state/profiles/frontend_dev.yml` - Slaver 角色配置
+- `.eket/state/profiles/backend_dev.yml` - Slaver 角色配置
+- `jira/tickets/*/status: ready` - 任务就绪
+- `shared/message_queue/inbox/task_ready_*.json` - 任务就绪通知
+
+---
+
+### 3.6 阶段 6: Slaver 领取任务（自动模式）
+
+**触发条件**: 任务状态为 `ready`，Slaver 实例已初始化
+
+**说明**: 在自动模式下，Slaver 主动领取任务，Master 无需手动分配。Master 的职责是确保任务清晰、优先级正确、依赖关系明确。
+
+**Slaver 领取策略**:
 | 任务标签 | 匹配 Slaver 角色 |
 |----------|-----------------|
 | `frontend`, `ui`, `react` | frontend_dev |
@@ -192,11 +243,11 @@ skills:
 
 **产出物**:
 - `jira/state/active_tasks.json` - 活跃任务列表
-- `shared/message_queue/outbox/task_assigned_*.json` - 任务分配消息
+- `jira/tickets/{TICKET-ID}.md` 状态更新为 `in_progress`
 
 ---
 
-### 3.6 阶段 6: 审核 PR
+### 3.7 阶段 7: 审核 PR
 
 **触发条件**: 收到 `pr_review_request` 消息
 
@@ -258,7 +309,7 @@ skills:
 
 ---
 
-### 3.7 阶段 7: 合并代码
+### 3.8 阶段 8: 合并代码
 
 **触发条件**: PR 审核通过
 

@@ -91,11 +91,13 @@ The coordinating agent. There is exactly one Master per project session.
 ### Core Responsibilities
 1. Read `inbox/human_input.md` for new requirements
 2. Analyze and decompose requirements into Jira tickets
-3. Assign tickets to Slavers (or place them in `ready` state for auto-pickup)
+3. **Initialize Slaver team immediately after creating tickets** — tasks must be set to `ready` state for Slavers to pick up
 4. Monitor Slaver progress
 5. Review PRs in `outbox/review_requests/`
 6. Merge approved PRs to `main` branch
 7. Arbitrate conflicts between Slavers
+
+**Key Rule**: Master **MUST** initialize the Slaver team right after task decomposition. Creating tickets without initializing executors (leaving tasks stuck in `backlog` or `analysis`) is a violation of Master responsibility.
 
 ### Master Permitted Actions
 | Action | Permission |
