@@ -2,8 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working in this repository.
 
-**版本**: v2.0.0
-**最后更新**: 2026-04-06
+**版本**: v2.9.0-alpha
+**最后更新**: 2026-04-10
 
 ## 重要：身份确认
 
@@ -14,6 +14,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 - 核心职责和禁止操作
 - 启动检查清单
 - 可用命令
+
+> 如果使用其他大模型（Gemini、GPT、Cursor 等），请阅读 `AGENTS.md`，内容与本文件互补，覆盖通用行为规范。
 
 ---
 

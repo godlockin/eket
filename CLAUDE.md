@@ -9,11 +9,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Master**：协调、需求分析、任务拆解、PR 审核、合并代码
 - **Slaver**：领取任务、开发、测试、提交 PR
 
+> 使用其他大模型（Gemini、GPT、Cursor 等）时，请阅读 `AGENTS.md`，它是与本文件互补的通用大模型引导文件。
+
 ---
 
 ## 项目简介
 
-**EKET** 是一个 AI 智能体协作框架（v2.4.0），通过 Master-Slaver 架构和三仓库（confluence/jira/code_repo）分离实现多智能体协作开发。
+**EKET** 是一个 AI 智能体协作框架（v2.9.0-alpha），通过 Master-Slaver 架构和三仓库（confluence/jira/code_repo）分离实现多智能体协作开发。
 
 **核心设计理念**：渐进式三级架构
 
@@ -27,11 +29,12 @@ Level 3: Redis + SQLite (满血版)   ← 生产级高并发 ⭐⭐⭐
 运行时降级: Level 3 → Level 2 → Level 1 (优雅降级)
 ```
 
-**最新进展**（2026-04-08）:
-- ✅ Round 3 自举完成 - 测试通过率 75% → 87%
-- ✅ Round 4 性能验证 - Docker Redis 环境全部通过
-- ✅ 三级架构文档完善 - Level 1 优先策略确立
-- 🔄 SQLite Manager 统一迁移中
+**最新进展**（2026-04-10）:
+- ✅ Round 13 完成 - CI/CD 自动化、健康检查端点集成
+- ✅ 测试覆盖率 100% - 981/981 tests passing
+- ✅ Docker 化完成 - 多阶段构建，docker-compose 编排
+- ✅ 文档站完成 - Docusaurus + 8 篇核心文档
+- ✅ AGENTS.md 新增 - 通用大模型引导文件（支持 Claude/Gemini/GPT/Cursor）
 
 ---
 
