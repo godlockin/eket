@@ -195,6 +195,25 @@ copy_templates() {
             echo -e "${GREEN}✓${NC} .eket/version.yml"
         fi
 
+        # 复制 .eket/config/ 子配置目录（模块化配置）
+        if [ -d "$EKET_TEMPLATE_DIR/.eket/config" ]; then
+            mkdir -p ".eket/config"
+            # 幂等：只复制尚不存在的文件
+            for cfg in "$EKET_TEMPLATE_DIR/.eket/config/"*.yml; do
+                cfg_name="$(basename "$cfg")"
+                if [ ! -f ".eket/config/$cfg_name" ]; then
+                    cp "$cfg" ".eket/config/$cfg_name"
+                fi
+            done
+            echo -e "${GREEN}✓${NC} .eket/config/ (模块化子配置)"
+        fi
+
+        # 复制 .eket/analysis-roles/ 目录（分析角色定义）
+        if [ -d "$EKET_TEMPLATE_DIR/.eket/analysis-roles" ] && [ ! -d ".eket/analysis-roles" ]; then
+            cp -r "$EKET_TEMPLATE_DIR/.eket/analysis-roles" ".eket/analysis-roles"
+            echo -e "${GREEN}✓${NC} .eket/analysis-roles/ (分析角色定义)"
+        fi
+
         # 复制 examples 目录（快速开始示例）
         if [ -d "$EKET_TEMPLATE_DIR/examples" ]; then
             mkdir -p "examples"
