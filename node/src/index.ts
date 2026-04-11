@@ -22,9 +22,12 @@ import { registerClaim } from './commands/claim.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { runInitWizard } from './commands/init-wizard.js';
 import { runInteractiveStartCLI } from './commands/interactive-start.js';
+import { registerMasterPoll } from './commands/master-poll.js';
 import { registerRecommend } from './commands/recommend.js';
 import { registerCompletion } from './utils/completion.js';
 import { registerSetRole } from './commands/set-role.js';
+import { registerSlaverPoll } from './commands/slaver-poll.js';
+import { registerSlaverRegister } from './commands/slaver-register.js';
 import { startInstance, listAvailableRoles } from './commands/start-instance.js';
 import { registerSubmitPR } from './commands/submit-pr.js';
 import { registerTeamStatus } from './commands/team-status.js';
@@ -888,6 +891,15 @@ Related Commands:
 
   // 注册 alerts 命令
   registerAlerts(program);
+
+  // 注册 slaver:register 命令
+  registerSlaverRegister(program);
+
+  // 注册 master:poll 命令
+  registerMasterPoll(program);
+
+  // 注册 slaver:poll 命令
+  registerSlaverPoll(program);
 
   // ============================================================================
   // Web Dashboard 命令 (Phase 5.1)

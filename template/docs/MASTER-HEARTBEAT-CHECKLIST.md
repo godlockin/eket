@@ -1,6 +1,6 @@
 # Master 心跳检查清单
 
-**版本**: v2.1.1  
+**版本**: v2.1.2  
 **用途**: Master 实例的持续自我反思机制  
 **触发**: 根据 Master 状态动态调整检查频率
 
@@ -14,17 +14,27 @@
 | 工作中 | 每 5 分钟 | PR 队列、Slaver 状态、项目进度 |
 | 等待人类反馈 | 每 10 秒 | `inbox/human_feedback/` 回复 |
 | **定期任务** | **每 10 分钟** | **项目状态更新、Slaver 空闲检测、所有卡状态** |
+| **等待 PR Review 期间** | **每 5 分钟** | **同步 roadmap、规划下阶段任务、拆解新需求** |
 
 **状态判定**：
 - **空闲**：无进行中的 Review、无待处理仲裁、无等待人类决策
 - **工作中**：有 Review 进行中、或有 Slaver 等待仲裁、或有任务分析/拆解中
 - **等待人类反馈**：已发送决策请求，等待人类回复
+- **等待 PR Review 期间**：PR 已提交给人类/Master Review，等待反馈中
 
 **定期任务（每 10 分钟）**：
 无论 Master 处于什么状态，每 10 分钟执行一次项目状态更新：
 1. 更新 `jira/state/ticket-index.yml`
 2. 检查 Slaver 空闲状态
 3. 生成项目状态报告到 `jira/state/project-status.yml`
+
+**等待 PR Review 期间的主动工作（v2.1.4）**：
+Master 在等待 PR 反馈期间**不是被动等待**，而是主动执行以下工作：
+1. 同步/修正 roadmap（对齐当前进度）
+2. 规划下阶段任务（下一个 Sprint/Milestone）
+3. 拆解新需求到 ticket 级别
+4. 标记 ticket 优先级和依赖关系
+5. 预初始化 Slaver 团队（让新任务保持 ready 状态）
 
 ---
 
@@ -107,6 +117,217 @@ P3 (低):   优化类、技术债务
 **Slaver 阻塞报告**：
 - [ ] 检查 `inbox/blocker_reports/` 是否有新报告
 - [ ] 如果有，立即仲裁或升级到人类
+
+---
+
+## 等待 PR Review 期间的主动工作（v2.1.4）
+
+**核心原则**：Master 在等待 PR 反馈期间**不是被动等待**，而是主动执行项目管理和规划工作。
+
+### □ 任务 1：同步和修正 roadmap
+
+**检查位置**：
+- `confluence/projects/{project}/roadmap.md` — 产品路线图
+- `jira/state/project-status.yml` — 当前项目状态
+- `jira/tickets/*/status: done` — 已完成任务
+
+**行动清单**：
+- [ ] 检查已完成的任务，更新 roadmap 完成百分比
+- [ ] 识别延期的任务，调整里程碑日期
+- [ ] 标记风险项（可能影响交付的功能）
+- [ ] 更新 `roadmap.md` 的进度状态
+
+**Roadmap 同步模板**：
+```markdown
+## 当前进度（更新于：YYYY-MM-DD HH:mm）
+
+| Milestone | 计划完成 | 预计完成 | 完成率 | 状态 |
+|-----------|----------|----------|--------|------|
+| MILESTONE-001 | 2026-04-15 | 2026-04-15 | 80% | 🟢 正常 |
+| MILESTONE-002 | 2026-04-30 | 2026-05-05 | 30% | 🟡 风险 |
+
+## 本周完成
+- [x] FEAT-001: 用户登录功能
+- [x] FEAT-002: 用户注册功能
+- [ ] FEAT-003: 个人资料页 (进行中)
+
+## 下周计划
+- [ ] FEAT-004: 密码重置
+- [ ] FEAT-005: 邮箱验证
+```
+
+### □ 任务 2：规划下阶段任务
+
+**检查位置**：
+- `confluence/projects/{project}/requirements/prd.md` — 产品需求文档
+- `jira/sprints/` — 当前和下一 Sprint
+- `jira/tickets/backlog/` — 待拆解需求
+
+**行动清单**：
+- [ ] 识别下一个 Sprint 的主题和目标
+- [ ] 从 PRD 中提取未实现的功能
+- [ ] 创建下一 Sprint 的草案文档
+- [ ] 预估下阶段需要的 Slaver 角色和数量
+
+**下阶段规划模板**：
+```markdown
+## Sprint {N+1} 规划草案
+
+**主题**: {Sprint 主题}
+**日期**: YYYY-MM-DD ~ YYYY-MM-DD
+**目标**:
+1. 目标 1
+2. 目标 2
+
+**预估任务**:
+| 功能 | 优先级 | 预估工时 | 适配角色 |
+|------|--------|----------|----------|
+| 功能 A | P1 | 8h | frontend_dev |
+| 功能 B | P1 | 12h | backend_dev |
+| 功能 C | P2 | 4h | fullstack |
+
+**需要的 Slaver 角色**:
+- frontend_dev × 1
+- backend_dev × 1
+- tester × 1
+```
+
+### □ 任务 3：拆解新需求到 Ticket 级别
+
+**检查位置**：
+- `inbox/human_input.md` — 新需求
+- `confluence/projects/{project}/requirements/user_stories.md` — 用户故事
+- `jira/epics/` — Epic 列表
+
+**拆解流程**：
+```
+1. 阅读需求/用户故事
+   ↓
+2. 识别功能模块
+   ↓
+3. 创建 Epic（如需要）
+   ↓
+4. 拆解为 Ticket（每个 Ticket 4-16 小时）
+   ↓
+5. 定义验收标准
+   ↓
+6. 标记优先级和依赖关系
+   ↓
+7. 状态设为 ready（等待 Slaver 领取）
+```
+
+**Ticket 创建检查清单**：
+- [ ] Ticket 标题清晰描述任务
+- [ ] 优先级正确（P0/P1/P2/P3）
+- [ ] 适配角色明确（frontend_dev/backend_dev 等）
+- [ ] 预估工时合理（4-16 小时）
+- [ ] 验收标准可测试
+- [ ] 依赖关系标记正确
+- [ ] 关联到正确的 Epic/Sprint/Milestone
+
+### □ 任务 4：标记 Ticket 优先级和依赖
+
+**检查位置**：
+- `jira/tickets/` — 所有 Ticket
+- `jira/state/ticket-index.yml` — 索引文件
+
+**优先级判定标准**：
+| 优先级 | 判定标准 | 响应时间 |
+|--------|----------|----------|
+| P0 | 生产事故、阻塞关键路径 | 立即 |
+| P1 | 高优先级功能、影响核心体验 | 24 小时 |
+| P2 | 正常功能、按顺序开发 | 3 天 |
+| P3 | 优化类、技术债务 | 1 周 |
+
+**依赖关系标记**：
+```markdown
+## 依赖关系
+
+**blocks**: [本任务阻塞哪些任务]
+- TASK-002
+
+**blocked_by**: [本任务被哪些任务阻塞]
+- TASK-001
+
+**related**: [相关任务，可并行开发]
+- TASK-003, TASK-004
+```
+
+**行动清单**：
+- [ ] 扫描所有 `ready` 状态的 Ticket
+- [ ] 确认优先级是否合理
+- [ ] 标记依赖关系
+- [ ] 识别关键路径任务
+- [ ] 调整优先级确保关键路径优先
+
+### □ 任务 5：预初始化 Slaver 团队
+
+**检查位置**：
+- `jira/state/ticket-index.yml` - `ready` 状态任务列表
+- `.eket/state/profiles/` — Slaver 角色配置
+
+**预初始化流程**：
+```
+1. 分析 ready 任务的技能需求
+   ↓
+   扫描所有 ready tickets 的技能标签
+   例：[react, typescript] × 3 + [nodejs, postgresql] × 2
+
+2. 确定需要的 Slaver 角色组合
+   ↓
+   frontend_dev × 2 (处理 3 个前端任务)
+   backend_dev × 1 (处理 2 个后端任务)
+
+3. 检查现有 Slaver 工作负载
+   ↓
+   - 有空闲 Slaver → 通知领取任务
+   - 无空闲 Slaver → 预配置新 Slaver 角色
+
+4. 预初始化 Slaver 配置
+   ↓
+   创建 .eket/state/profiles/{new_slaver}.yml
+   写入角色配置和技能要求
+```
+
+**行动清单**：
+- [ ] 统计 `ready` 状态任务数量
+- [ ] 按角色分类汇总工时
+- [ ] 对比现有 Slaver 工作负载
+- [ ] 识别人力缺口
+- [ ] 预配置新 Slaver 角色（如需要）
+
+---
+
+## 等待期间的工作优先级决策树
+
+```
+等待 PR Review 反馈
+    │
+    ▼
+是否有新的 human_input？
+    ├── 是 → 启动需求分析流程（最高优先级）
+    └── 否 → 继续往下
+            │
+            ▼
+Roadmap 是否需要更新？
+    ├── 是（> 10 分钟未更新） → 同步 roadmap 进度
+    └── 否 → 继续往下
+            │
+            ▼
+下阶段规划是否清晰？
+    ├── 否 → 创建下一 Sprint 规划草案
+    └── 否 → 继续往下
+            │
+            ▼
+是否有未拆解的需求？
+    ├── 是 → 拆解需求到 Ticket 级别
+    └── 否 → 继续往下
+            │
+            ▼
+ready 任务是否充足？
+    ├── 否（< 2 个任务/Slaver） → 创建更多 ready 任务
+    └── 是 → 检查 Slaver 工作负载，预初始化团队
+```
 
 ---
 

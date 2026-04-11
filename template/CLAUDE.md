@@ -2,8 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working in this repository.
 
-**版本**: v2.1.3  
-**最后更新**: 2026-04-10
+**版本**: v2.1.4  
+**最后更新**: 2026-04-11
 
 ---
 
@@ -130,6 +130,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 | `/eket-review-pr` | 审核 Slaver 提交的 PR |
 | `/eket-merge` | 合并 PR 到 main 分支 |
 | `/eket-check-progress` | 检查 Slaver 任务进度 |
+| `/eket-master-poll` | **启动 Master 轮询**（定期 PR/仲裁/人类反馈检查） |
+
+### Slaver 专用命令
+
+| 命令 | 功能 |
+|------|------|
+| `/eket-claim [id]` | 领取任务 |
+| `/eket-submit-pr` | 提交 PR 请求审核 |
+| `/eket-slaver-poll` | **启动 Slaver 轮询**（定期任务/PR 反馈/消息队列检查） |
+| `/eket-slaver-register` | **Slaver 身份注册**（初始化后注册身份、识别任务、显示信息） |
+
+### Master 等待 PR 期间的主动工作（v2.1.4）
+
+**Master 在等待 PR 反馈期间不是被动等待，而是主动执行项目管理和规划工作。**
+
+**五大工作任务**：
+1. **同步/修正 roadmap** — 对齐当前进度，识别风险项
+2. **规划下阶段任务** — 创建下一 Sprint 规划草案
+3. **拆解新需求** — 将宏观需求拆解为 Ticket 级别
+4. **标记 Ticket 优先级和依赖** — 识别关键路径
+5. **预初始化 Slaver 团队** — 确保充足的可领取任务
+
+📄 详细指南：[`docs/MASTER-PR-WAIT-WORK.md`](docs/MASTER-PR-WAIT-WORK.md)
 
 ---
 
