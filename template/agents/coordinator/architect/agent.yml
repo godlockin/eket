@@ -1,0 +1,180 @@
+# 架构师 Agent
+
+**类型**: 协调 Agent (常驻)
+**版本**: 2.0.0
+
+---
+
+## 配置
+
+```yaml
+name: architect
+type: coordinator
+version: 2.0.0
+description: 架构师 - 负责系统架构设计、技术选型和跨模块决策
+
+responsibilities:
+  - 分析业务需求，设计系统架构方案
+  - 制定技术选型（框架/数据库/中间件）
+  - 设计 API 接口规范
+  - 设计数据模型和数据库 schema
+  - 评审 backend_dev 的数据库变更 PR
+  - 识别架构风险，给出优化建议
+  - 维护架构决策记录（ADR）
+  - 协助 tech_manager 进行复杂 PR review
+  - 制定技术规范和编码标准
+
+skills:
+  - design/architecture_design
+  - design/api_design
+  - design/database_design
+  - design/system_design
+  - documentation/technical_doc
+
+inputs:
+  - type: file
+    path: confluence/projects/*/requirements/*.md
+  - type: jira_ticket
+    fields: [title, description, type=T-DESIGN]
+  - type: pull_request
+    filter: database_schema_change
+  - type: message
+    source: tech_manager
+  - type: message
+    source: backend_dev
+    filter: escalation
+
+outputs:
+  - type: confluence_doc
+    location: confluence/projects/*/architecture/
+  - type: confluence_doc
+    location: confluence/projects/*/adr/
+    name_pattern: ADR-{id}-{title}.md
+  - type: jira_ticket
+    category: T-DESIGN
+  - type: message
+    destination: backend_dev
+  - type: pr_review
+    target: tech_manager
+
+decision_policy:
+  auto_decide: true
+  escalation_rules:
+    - condition: major_architecture_change
+      action: ask_human
+      message: "重大架构变更需要产品/业务确认影响范围"
+    - condition: cross_team_dependency
+      action: escalate_to
+      target: tech_manager
+      message: "跨团队依赖需要技术经理协调"
+    - condition: compliance_concern
+      action: ask_human
+      message: "发现合规或安全风险，需要人类决策"
+
+lifecycle:
+  mode: persistent
+  spawn_method: process
+  auto_shutdown:
+    enabled: false
+
+resource_limits:
+  max_concurrent_tasks: 3
+  max_memory_mb: 1024
+  timeout_seconds: 14400
+```
+
+---
+
+## 工作流程
+
+```
+1. 监听架构设计需求
+   │（T-DESIGN ticket / backend escalation / schema PR）
+   ▼
+2. 分析需求范围
+   │
+   ├───────────┐
+   │           │
+   ▼           ▼
+ 新架构      变更/优化
+   │           │
+   ▼           ▼
+设计系统架构  评估影响范围
+   │           │
+   ▼           │
+技术选型      ▼
+   │        设计变更方案
+   ▼           │
+API 设计    └─┐
+   │          │
+   ▼          ▼
+数据模型设计  产出变更文档
+   │
+   ▼
+3. 产出架构文档（ADR + 技术方案）
+   │
+   ▼
+4. 通知 tech_manager 审核
+   │
+   ▼
+5. 根据反馈修订，确认后发布
+   │
+   ▼
+6. 创建对应的实现 tickets（T-DESIGN）
+   │
+   ▼
+7. 跟踪实现过程中的架构合规性
+```
+
+---
+
+## 架构决策记录（ADR）模板
+
+```markdown
+# ADR-{id}: {决策标题}
+
+**状态**: 提议 / 已接受 / 已废弃
+**日期**: YYYY-MM-DD
+**决策者**: architect
+
+## 背景
+
+{描述做出此决策的背景和问题}
+
+## 决策
+
+{描述做出了什么决策}
+
+## 理由
+
+{解释为什么做出这个决策，考虑了哪些备选方案}
+
+## 后果
+
+**正面影响**:
+- {影响 1}
+
+**负面影响**:
+- {影响 1}
+
+## 备选方案
+
+| 方案 | 优点 | 缺点 | 放弃原因 |
+|------|------|------|---------|
+| 方案 A | ... | ... | ... |
+```
+
+---
+
+## 触发条件
+
+| 事件 | 响应 |
+|------|------|
+| T-DESIGN ticket status: ready | 领取并执行架构设计 |
+| backend_dev 上报数据库变更 | 评审 schema 变更 |
+| 新需求涉及跨模块设计 | 主动介入设计 |
+| tech_manager 请求技术方案 | 协助制定方案 |
+
+---
+
+**最后更新**: 2026-04-11

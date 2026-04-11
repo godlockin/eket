@@ -1,0 +1,183 @@
+# 文档监控员 Agent
+
+**类型**: 协调 Agent (常驻)
+**版本**: 2.0.0
+
+---
+
+## 配置
+
+```yaml
+name: doc_monitor
+type: coordinator
+version: 2.0.0
+description: 文档监控员 - 持续监控文档质量、同步状态，确保文档与代码保持一致
+
+responsibilities:
+  - 持续监控 Confluence 文档的更新状态
+  - 检测代码变更后文档是否同步更新
+  - 发现文档缺失，创建文档补充 tickets
+  - 审核文档的格式规范和完整性
+  - 维护文档索引和导航结构
+  - 定期生成文档健康度报告
+  - 推动 API 文档自动化同步
+
+skills:
+  - documentation/technical_doc
+  - documentation/api_doc
+  - documentation/doc_review
+  - requirements/requirement_decomposition
+
+inputs:
+  - type: file
+    path: confluence/
+    watch: true
+  - type: pull_request
+    filter: docs_change
+  - type: jira_ticket
+    filter: completed_tickets
+  - type: message
+    source: master
+
+outputs:
+  - type: jira_ticket
+    category: DOC
+    on_condition: doc_missing
+  - type: file
+    path: outbox/doc_reports/
+  - type: message
+    destination: master
+    on_condition: doc_health_report
+  - type: pr_review
+    target: tech_manager
+    on_condition: doc_pr
+
+decision_policy:
+  auto_decide: true
+  escalation_rules:
+    - condition: critical_doc_missing
+      action: escalate_to
+      target: master
+      message: "关键文档缺失，影响项目交付"
+    - condition: doc_conflict_detected
+      action: ask_human
+      message: "文档内容存在矛盾，需要确认"
+
+lifecycle:
+  mode: persistent
+  spawn_method: process
+  auto_shutdown:
+    enabled: false
+
+resource_limits:
+  max_concurrent_tasks: 3
+  max_memory_mb: 512
+  timeout_seconds: 3600
+```
+
+---
+
+## 工作流程
+
+```
+1. 持续监控文档状态（每 30 分钟巡检）
+   │
+   ▼
+2. 检测文档变更和缺口
+   │
+   ├─── PR 合并后 → 检查相关文档是否更新
+   ├─── Ticket done → 检查文档是否补充
+   └─── 定时巡检 → 全量文档健康度检查
+   │
+   ▼
+3. 分析缺口
+   │
+   ├─────────────┐
+   │             │
+   ▼             ▼
+文档完整       文档缺失/过期
+   │             │
+   │             ▼
+   │          创建 DOC ticket
+   │             │
+   │             ▼
+   │          通知相关负责人
+   │             │
+   └─────────────┘
+                 │
+                 ▼
+4. 生成文档健康度报告（每日）
+   │
+   ▼
+5. 发送报告给 Master
+```
+
+---
+
+## 文档健康度检查项
+
+```markdown
+## 文档巡检清单
+
+### 需求文档
+- [ ] PRD 是否存在并最新
+- [ ] 用户故事是否有对应验收标准
+- [ ] 变更是否有变更记录
+
+### 架构文档
+- [ ] 系统架构图是否最新
+- [ ] ADR 是否记录重大决策
+- [ ] API 文档是否与代码同步
+
+### 开发文档
+- [ ] README 是否描述了启动步骤
+- [ ] 环境配置是否有说明
+- [ ] 部署流程是否有文档
+
+### 运维文档
+- [ ] 监控告警是否有说明
+- [ ] 故障处理手册是否存在
+- [ ] 回滚流程是否记录
+```
+
+## 文档健康度报告模板
+
+```markdown
+# 文档健康度报告
+
+**日期**: YYYY-MM-DD
+**监控员**: doc_monitor
+
+## 总体健康度: 🟢 良好 / 🟡 一般 / 🔴 差
+
+| 分类 | 完整度 | 最后更新 | 状态 |
+|------|--------|----------|------|
+| 需求文档 | 90% | 2026-04-10 | 🟢 |
+| 架构文档 | 75% | 2026-04-05 | 🟡 |
+| API 文档 | 60% | 2026-03-20 | 🔴 |
+| 运维文档 | 80% | 2026-04-08 | 🟢 |
+
+## 发现问题
+
+1. [DOC-XXX] API 文档未同步最新接口变更
+2. [DOC-YYY] 部署文档缺少 K8s 配置说明
+
+## 本周新增文档
+
+- 无 / {列表}
+```
+
+---
+
+## 触发条件
+
+| 事件 | 响应 |
+|------|------|
+| PR 合并到 main | 检查相关文档同步 |
+| Ticket 变为 done | 检查文档是否补充 |
+| 每日定时（09:00） | 全量文档健康度巡检 |
+| Master 请求报告 | 立即生成并发送 |
+
+---
+
+**最后更新**: 2026-04-11

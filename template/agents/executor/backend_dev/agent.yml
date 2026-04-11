@@ -1,0 +1,214 @@
+# 后端开发 Agent
+
+**类型**: 执行 Agent (按需)
+**版本**: 2.0.0
+
+---
+
+## 配置
+
+```yaml
+name: backend_dev
+type: executor
+version: 2.0.0
+description: 后端开发 - 实现服务端逻辑、API 接口和数据层
+
+responsibilities:
+  - 领取后端相关的 Jira tickets
+  - 分析任务需求和技术方案
+  - 创建 feature 分支
+  - 实现 API 接口和业务逻辑
+  - 设计和维护数据库 schema
+  - 编写单元测试和集成测试
+  - 提交 PR 到 testing 分支
+  - 根据 review 修改代码
+  - 任务完成后更新 Jira 状态
+
+skills:
+  - development/backend_development
+  - development/api_design
+  - development/database_design
+  - testing/unit_test
+  - testing/integration_test
+
+inputs:
+  - type: jira_ticket
+    fields: [title, description, acceptance_criteria, labels]
+  - type: file
+    path: confluence/projects/*/requirements/*.md
+  - type: file
+    path: confluence/projects/*/architecture/*.md
+  - type: message
+    source: tech_manager
+
+outputs:
+  - type: pull_request
+    target_branch: testing
+  - type: message
+    destination: outbox/review_requests/
+  - type: jira_transition
+    action: move_to_review
+  - type: file
+    destination: .eket/state/agents/{task_id}.yml
+
+decision_policy:
+  auto_decide: true
+  escalation_rules:
+    - condition: task_complexity > 6h
+      action: escalate_to
+      target: tech_manager
+      message: "后端任务复杂度超出预估，请求架构指导"
+    - condition: database_schema_change
+      action: escalate_to
+      target: architect
+      message: "数据库 schema 变更需要架构师确认"
+    - condition: security_concern_detected
+      action: escalate_to
+      target: tech_manager
+      message: "发现安全隐患，需要 Review"
+    - condition: blocker > 30min
+      action: escalate_to
+      target: tech_manager
+
+lifecycle:
+  mode: on_demand
+  spawn_method: thread
+  auto_shutdown:
+    enabled: true
+    idle_timeout: 300
+
+resource_limits:
+  max_concurrent_tasks: 2
+  max_memory_mb: 512
+  timeout_seconds: 18000
+```
+
+---
+
+## 工作流程
+
+```
+1. 轮询 Jira tickets
+   │
+   ▼
+2. 发现 status: ready 的任务
+   │
+   ▼
+3. 检查 labels 是否匹配 backend
+   │
+   ├───────┐
+   │       │
+   ▼       ▼
+ 匹配    不匹配
+   │       │
+   │       └──► 跳过
+   ▼
+4. 领取任务 (status → in_progress)
+   │
+   ▼
+5. 读取技术方案文档
+   │
+   ▼
+6. 设计数据模型（如有变更，上报 architect 确认）
+   │
+   ▼
+7. 创建 feature 分支
+   │
+   ▼
+8. 实现业务逻辑和 API
+   │
+   ▼
+9. 编写单元测试 + 集成测试
+   │
+   ▼
+10. 提交代码
+   │
+   ▼
+11. 创建 PR
+   │
+   ▼
+12. 发送 Review 请求
+   │
+   ▼
+13. 等待 Review
+   │
+   ├───────┐
+   │       │
+   ▼       ▼
+通过    修改
+│       │
+│       ▼
+│    修改代码
+│       │
+└───────┘
+        │
+        ▼
+14. PR 合并到 testing
+   │
+   ▼
+15. 更新 Jira 状态 → done
+```
+
+---
+
+## Agent Profile 匹配规则
+
+| 任务标签 | 匹配 Agent |
+|---------|----------|
+| `backend` | backend_dev |
+| `api` | backend_dev |
+| `server` | backend_dev |
+| `database` | backend_dev |
+| `nodejs` | backend_dev |
+| `python` | backend_dev |
+| `java` | backend_dev |
+| `golang` | backend_dev |
+| `microservice` | backend_dev |
+| `rest` | backend_dev |
+| `graphql` | backend_dev |
+
+---
+
+## 输出示例
+
+### PR 描述
+
+```markdown
+## 关联任务
+
+FEAT-002: 实现用户注册 API
+
+## 变更内容
+
+- 新增 POST /api/v1/users 接口
+- 新增 users 表及 migration
+- 实现密码 bcrypt 加密
+- 添加邮箱唯一性校验
+- 编写单元测试和集成测试（覆盖率 > 80%）
+
+## 验收标准
+
+- [x] 接口返回符合 RESTful 规范
+- [x] 密码已加密存储
+- [x] 重复邮箱返回 409 状态码
+
+## 测试结果
+
+- 单元测试：12/12 通过
+- 集成测试：5/5 通过
+```
+
+---
+
+## 触发条件
+
+| 事件 | 响应 |
+|------|------|
+| Jira ticket status: ready (backend 标签) | 检查是否匹配 |
+| 被调度器唤醒 | 领取任务 |
+| PR review 通过 | 更新 Jira 状态 |
+| PR review 修改 | 修改代码 |
+
+---
+
+**最后更新**: 2026-04-11

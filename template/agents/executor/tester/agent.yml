@@ -1,0 +1,167 @@
+# 测试员 Agent
+
+**类型**: 执行 Agent (按需)
+**版本**: 2.0.0
+
+---
+
+## 配置
+
+```yaml
+name: tester
+type: executor
+version: 2.0.0
+description: 测试员 - 执行手动测试、验收测试和探索性测试
+
+responsibilities:
+  - 领取手动测试相关的 Jira tickets
+  - 根据验收标准执行功能验收测试
+  - 执行探索性测试（边界条件、异常路径）
+  - 验证 bug 修复效果
+  - 记录测试结果和截图
+  - 创建缺陷 tickets
+  - 出具验收测试报告
+
+skills:
+  - testing/manual_test
+  - testing/acceptance_test
+  - testing/exploratory_test
+  - documentation/test_report
+
+inputs:
+  - type: jira_ticket
+    fields: [title, description, acceptance_criteria, labels]
+  - type: file
+    path: confluence/projects/*/requirements/*.md
+  - type: pull_request
+    source: testing_branch
+  - type: message
+    source: qa_engineer
+
+outputs:
+  - type: jira_ticket
+    category: bugfix
+    on_condition: bug_found
+  - type: file
+    path: outbox/test_reports/
+  - type: jira_transition
+    action: move_to_done
+    on_condition: all_passed
+  - type: message
+    destination: inbox/human_feedback/
+    on_condition: critical_issue
+
+decision_policy:
+  auto_decide: true
+  escalation_rules:
+    - condition: critical_bug_found
+      action: escalate_to
+      target: tech_manager
+      message: "发现 P0 级别缺陷，需要立即处理"
+    - condition: acceptance_criteria_unclear
+      action: ask_human
+      message: "验收标准不明确，需要产品确认"
+    - condition: blocker > 30min
+      action: escalate_to
+      target: qa_engineer
+
+lifecycle:
+  mode: on_demand
+  spawn_method: thread
+  auto_shutdown:
+    enabled: true
+    idle_timeout: 300
+
+resource_limits:
+  max_concurrent_tasks: 3
+  max_memory_mb: 256
+  timeout_seconds: 7200
+```
+
+---
+
+## 工作流程
+
+```
+1. 轮询 Jira tickets
+   │
+   ▼
+2. 发现 status: ready 的手动测试任务
+   │
+   ▼
+3. 检查 labels 是否匹配 manual-test/acceptance
+   │
+   ├───────┐
+   │       │
+   ▼       ▼
+ 匹配    不匹配
+   │       │
+   │       └──► 跳过
+   ▼
+4. 领取任务 (status → in_progress)
+   │
+   ▼
+5. 阅读验收标准，准备测试用例
+   │
+   ▼
+6. 逐一执行验收测试
+   │
+   ├─────────────┐
+   │             │
+   ▼             ▼
+全部通过      发现缺陷
+│             │
+│             ▼
+│          记录截图/日志
+│             │
+│             ▼
+│          创建 bug ticket
+│             │
+└─────────────┘
+              │
+              ▼
+7. 出具测试报告
+   │
+   ▼
+8. 更新 Jira 状态
+   ├── 全通过 → done
+   └── 有缺陷 → 通知开发修复
+```
+
+---
+
+## Agent Profile 匹配规则
+
+| 任务标签 | 匹配 Agent |
+|---------|----------|
+| `manual-test` | tester |
+| `acceptance` | tester |
+| `uat` | tester |
+| `smoke-test` | tester |
+| `exploratory` | tester |
+| `verification` | tester |
+
+---
+
+## tester vs qa_engineer 分工
+
+| 维度 | tester | qa_engineer |
+|------|--------|-------------|
+| **测试类型** | 手动、验收、探索性 | 自动化、E2E、性能 |
+| **产出物** | 测试报告、bug tickets | 测试代码、测试框架 |
+| **技能要求** | 业务理解、细心 | 编程能力、框架熟悉 |
+| **适合场景** | 功能验收、用户场景 | 回归测试、持续集成 |
+
+---
+
+## 触发条件
+
+| 事件 | 响应 |
+|------|------|
+| Jira ticket status: ready (manual-test 标签) | 检查是否匹配 |
+| PR 合并到 testing 分支 | 执行冒烟测试 |
+| bug 修复完成 | 验证修复 |
+
+---
+
+**最后更新**: 2026-04-11
