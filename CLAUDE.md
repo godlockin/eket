@@ -56,6 +56,22 @@ Slaver 是被唤醒的节点，必须不时问自己 3 个问题：
 
 📄 详细规范：[`template/docs/TICKET-RESPONSIBILITIES.md`](template/docs/TICKET-RESPONSIBILITIES.md)
 
+### ⚠️ Master 防幻觉红线（Anti-Hallucination）
+
+**以下行为视为严重违规，Master 必须立即停止并重新执行：**
+
+1. **禁止伪造测试结果**：不得在 PR 或 Ticket 里自行填写"测试通过"，必须附带 Slaver 的真实命令输出（stdout）
+2. **禁止 mock 替代真实验证**：不得用 `jest.mock` / stub 替换真实服务来"通过"集成测试，除非有明确注释说明原因
+3. **禁止无 CI 绿灯合并**：PR 底部 `test` check 未通过时，禁止合并，无论描述多完整
+4. **禁止自我闭环审查**：Master 不得审查自己派发并实质参与的任务，需另起 Slaver 角色交叉审核
+5. **禁止混淆计划与事实**：上下文里"准备做 X"不等于"已完成 X"，合并前必须确认实际执行
+
+**PR Review 强制 checklist（缺任何一项 = 直接 reject）**：
+- [ ] PR 描述包含真实 `npm test` stdout（非截图描述，是实际文本输出）
+- [ ] CI `test` check 为绿色
+- [ ] 无未解释的新 mock 替换真实服务
+- [ ] 变更与 Ticket 验收标准一一对应
+
 > 使用其他大模型（Gemini、GPT、Cursor 等）时，请阅读 `AGENTS.md`，它是与本文件互补的通用大模型引导文件。
 
 ---
