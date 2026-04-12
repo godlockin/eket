@@ -5,6 +5,31 @@ description: EKET AI 智能体协作框架 - Master-Slaver 多智能体开发框
 
 # EKET Framework
 
+## Preamble
+
+当用户要求对**既存项目**进行深度分析时，在执行任何分析前，**必须**先用 AskUserQuestion 询问团队加载方式：
+
+```
+项目：[当前项目名]
+检测到既存项目，需要组建分析团队。请选择加载方式：
+```
+
+选项：
+- **A) 默认组合（推荐）** — Master + 3 Slaver（fullstack / frontend / backend），立即开始
+- **B) 引导式加载** — 逐步选择角色、专长、并发数
+
+**If A：** 直接用默认配置初始化团队，执行分析。
+
+**If B：** 依次用 AskUserQuestion 询问（每次一个问题）：
+1. 需要几个 Slaver？（1 / 2 / 3 / 自定义）
+2. 每个 Slaver 的角色？（从 `instance:start --list-roles` 列表选）
+3. 专长方向？（fullstack / frontend / backend / devops / qa / 自定义）
+4. 确认配置后初始化团队，开始分析。
+
+> 此 Preamble 仅在「深度分析既存项目」场景触发，普通命令查询跳过。
+
+---
+
 ## Trigger
 当用户提到以下内容时自动调用此 skill：
 - 启动 eket / 初始化框架 / 配置 Master
