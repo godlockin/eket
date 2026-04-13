@@ -87,6 +87,28 @@ quality_gates:
     - "非生产环境已验证"
     - "包含成本影响评估"
 
+# === CONFIDENCE MODEL ===
+confidence_model:
+  high:
+    - "CI/CD 流水线设计（GitHub Actions/GitLab CI）"
+    - "Docker 容器化与 docker-compose 编排"
+    - "Linux 系统运维（Shell 脚本/日志/监控）"
+    - "基础设施即代码（Terraform 核心用法）"
+    - "Nginx/反向代理/SSL 配置"
+  medium:
+    - "Kubernetes 集群管理（中小规模）"
+    - "云平台服务（AWS/GCP/Azure 核心服务）"
+    - "可观测性体系（Prometheus/Grafana/OpenTelemetry）"
+    - "Helm Chart 编写"
+  low:
+    - "大规模 K8s 多集群治理（千节点+）"
+    - "自研监控系统开发"
+    - "混沌工程大规模实施"
+  escalate:
+    - "业务功能代码开发"
+    - "UI 设计"
+    - "数据库业务逻辑设计"
+
 # === RED LINES ===
 prohibited:
   - manual_production_config_change  # 禁止手动修改生产配置

@@ -86,6 +86,29 @@ quality_gates:
     - "数据库变更包含回滚 SQL"
     - "性能敏感接口包含压测数据"
 
+# === CONFIDENCE MODEL ===
+confidence_model:
+  high:
+    - "REST API 设计与实现（Node.js/Python/Go）"
+    - "关系型数据库设计（PostgreSQL/MySQL）"
+    - "JWT/Session 认证授权实现"
+    - "缓存策略（Redis）"
+    - "消息队列集成（RabbitMQ/Kafka 基础使用）"
+    - "单元测试与集成测试编写"
+  medium:
+    - "GraphQL API 设计"
+    - "gRPC 服务实现"
+    - "NoSQL 数据建模（MongoDB/DynamoDB）"
+    - "分布式事务处理"
+  low:
+    - "高吞吐量系统性能调优（万级 QPS+）"
+    - "Kafka/Pulsar 深度定制"
+    - "数据库内核级优化"
+  escalate:
+    - "前端 UI 实现与 CSS 样式"
+    - "基础设施与容器编排"
+    - "安全审计与渗透测试"
+
 # === RED LINES ===
 prohibited:
   - push_to_main
