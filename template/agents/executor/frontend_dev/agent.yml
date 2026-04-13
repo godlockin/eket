@@ -37,6 +37,13 @@ constraints: >
   - 函数组件 + Hooks，禁用 Class Component
   - PR 必须附主流浏览器截图（Chrome/Firefox/Safari）
 
+# === ROUTING ===
+routing_description: >
+  前端开发专家。
+  最适合：React/Vue 组件开发与状态管理、响应式布局实现、
+  前端性能优化（Bundle/Lighthouse）、浏览器兼容性处理、前端可访问性适配。
+  不适合：Node.js 后端业务逻辑、数据库设计、CI/CD 流水线配置。
+
 # === CAPABILITIES ===
 tools:
   - code_editor       # 读写源文件
@@ -68,6 +75,42 @@ outputs:
     coverage_target: "> 70%"
   - type: jira_transition
     action: move_to_review
+
+quality_gates:
+  code:
+    - "TypeScript strict: 0 errors"
+    - "ESLint: 0 warnings"
+    - "单元测试覆盖率 >= 70%"
+    - "无 any 类型"
+    - "无硬编码颜色/间距（必须用 design token）"
+  pr_checklist:
+    - "附 Chrome/Firefox/Safari 三浏览器截图"
+    - "附 375px/768px/1280px 三断点截图"
+    - "键盘导航路径已测试"
+
+# === CONFIDENCE MODEL ===
+confidence_model:
+  high:
+    - "React 18 + TypeScript 组件开发"
+    - "Zustand/Redux 状态管理"
+    - "TailwindCSS / CSS Modules 样式实现"
+    - "响应式布局（移动优先，三断点适配）"
+    - "Lighthouse 性能优化（Core Web Vitals）"
+    - "无障碍适配（ARIA/键盘导航）"
+    - "Webpack/Vite 构建配置"
+  medium:
+    - "Vue 3 / Angular 应用开发"
+    - "WebGL / Canvas 动画"
+    - "PWA 与 Service Worker"
+    - "微前端架构（qiankun/Module Federation）"
+  low:
+    - "React Native 移动端"
+    - "WebAssembly 集成"
+    - "浏览器扩展开发"
+  escalate:
+    - "Node.js 后端业务逻辑"
+    - "数据库设计"
+    - "CI/CD 流水线配置"
 
 # === RED LINES ===
 prohibited:
