@@ -1,6 +1,6 @@
 # EKET Framework - 项目进度追踪
 
-**当前版本**: v2.9.0
+**当前版本**: v2.9.1
 **更新时间**: 2026-04-13
 **维护者**: Master Agent
 
@@ -11,6 +11,7 @@
 | Pillar | 状态 | 完成度 |
 |--------|------|--------|
 | 测试覆盖 | ✅ 完成 | 1079/1079 (100%) |
+| TypeScript 编译 | ✅ 完成 | 0 errors (25 → 0, v2.9.1) |
 | 三级架构 | ✅ 完成 | Level 1/2/3 全部实现 |
 | Docker 化 | ✅ 完成 | Dockerfile + docker-compose |
 | 文档站 | ✅ 完成 | Docusaurus, 8 篇核心文档 |
@@ -48,6 +49,7 @@
 | 15a | 安全加固 + 防幻觉 + Repo 清理 | v2.7.0 | ✅ 完成 |
 | 15b | Skill + Setup + 分支策略 + Agent 专家升级 | v2.8.0 | ✅ 完成 |
 | 16a | 三省六部制度借鉴：gate_reviewer + independent_auditor | v2.9.0 | ✅ 完成 |
+| 16b | **填平空洞**：TypeScript 编译错误清零（25 → 0）| v2.9.1 | ✅ 完成 |
 
 ---
 
@@ -65,15 +67,39 @@
 
 ---
 
-## Next Steps (Round 16b — 待规划)
+## Next Steps (Round 16c — 待规划)
 
 - PyPI 发布：`python3 -m build` + `twine upload` (sdk/python/RELEASING.md)
 - npm 发布：`npm pack` + `npm publish` (sdk/javascript/RELEASING.md)
 - GitHub Actions 自动发布 workflow（TASK-016 可选项）
 - SDK 对外文档整合至 Docusaurus 文档站
-- TS 编译错误清理（CI workflow build 步骤，预存技术债）
 - ticket-template.md 更新：加入 gate_review 阶段字段（gate_review_veto_count、veto_reason、resubmit_conditions）
-- Node.js 实现：gate_reviewer 进程自动触发逻辑（ticket 状态机 hook）
+- Node.js 实现：gate_reviewer 进程自动触发逻辑（ticket 状态机 hook），参考 `gate:review <ticket-id>` CLI 命令设计
+- master:heartbeat CLI 命令：将 Master 的 4 个自我检查问题形式化为可执行命令（结构化 JSON 输出）
+- ticket-template 字段验证：`scripts/validate-ticket-template.sh` 防止模板偏移
+
+## Round 16b 完成详情（2026-04-13）
+
+### TypeScript 编译错误清零
+
+消除积累的 25 个 TypeScript 严格编译错误，覆盖 6 个文件：
+
+| 文件 | 修复数 | 主要错误类型 |
+|------|--------|-------------|
+| `src/commands/ticket-index.ts` | ~10 | unused imports, wrong error type, unused params |
+| `src/api/openclaw-gateway.ts` | 4 | TS7030 不完整返回路径, unused params, reusePort 无效选项 |
+| `src/api/web-server.ts` | 4 | ApiResponse timestamp 类型不匹配, health 端点类型冲突 |
+| `src/integration/openclaw-adapter.ts` | 2 | unused variable in catch block |
+| `src/skills/loader.ts` | 1 | unused require parameter |
+| `src/skills/unified-interface.ts` | 4 | 重复字段声明, unused generic, unused loop key |
+
+**关键修复**：
+- `openclaw-gateway.ts`：移除 `http.createServer({ reusePort: false })` 无效选项，修复 TS7030（return in middleware）
+- `web-server.ts`：3 个健康端点（/health /ready /live）绕过 `sendJson<ApiResponse<T>>` 直写 raw JSON，避免 timestamp `string vs number` 冲突同时保持测试兼容
+- `ticket-index.ts`：引入 `makeError()` 辅助函数，用 `new EketErrorClass(code, message)` 替代 `{ code, message }` 对象直接量，满足 `Result<T, EketErrorClass>` 约束
+- `unified-interface.ts`：移除重复的 `executionStats` 字段声明
+
+**结果**：build 0 errors，tests 1079/1079 passing，tagged v2.9.1
 
 ## Round 16a 完成详情（2026-04-13）
 
