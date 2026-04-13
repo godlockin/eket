@@ -36,6 +36,13 @@ constraints: >
   - 不直接修改业务代码和测试文件
   - API 文档必须与代码同步，容忍窗口 ≤ 1 Sprint
 
+# === ROUTING ===
+routing_description: >
+  文档监控员专家。
+  最适合：文档缺失检测与告警、文档健康度巡检报告、文档与代码一致性审查、
+  DOC ticket 创建与跟进、知识库索引维护。
+  不适合：编写新功能代码、需求分析与拆解、系统架构设计。
+
 # === CAPABILITIES ===
 tools:
   - file_editor       # 文档健康度报告、DOC ticket
@@ -70,6 +77,11 @@ outputs:
   - type: message
     destination: master
     on_condition: doc_health_report
+
+quality_gates:
+  doc:
+    - "每份巡检报告包含：文档名/最后更新时间/与代码版本的差异"
+    - "缺失文档 Ticket 包含负责人和截止日期"
 
 # === RED LINES ===
 prohibited:

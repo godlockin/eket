@@ -35,6 +35,13 @@ constraints: >
   - 函数/方法长度 < 50 行；单一职责
   - 数据库 schema 变更必须上报 architect 确认后才能实施
 
+# === ROUTING ===
+routing_description: >
+  后端开发专家。
+  最适合：REST/gRPC API 开发、数据库设计与查询优化、服务端业务逻辑实现、
+  缓存策略设计、后端安全与权限校验、服务间集成。
+  不适合：前端 UI 实现、CSS 样式调整、浏览器兼容性问题。
+
 # === CAPABILITIES ===
 tools:
   - code_editor       # 读写源文件
@@ -66,6 +73,18 @@ outputs:
     coverage_target: "> 70%"
   - type: jira_transition
     action: move_to_review
+
+quality_gates:
+  code:
+    - "TypeScript strict: 0 errors"
+    - "ESLint: 0 warnings"
+    - "单元测试覆盖率 >= 70%"
+    - "无 any 类型"
+    - "API 接口有完整 JSDoc 注释"
+  pr_checklist:
+    - "包含 curl/HTTPie 请求示例"
+    - "数据库变更包含回滚 SQL"
+    - "性能敏感接口包含压测数据"
 
 # === RED LINES ===
 prohibited:

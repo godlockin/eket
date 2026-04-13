@@ -55,6 +55,13 @@ skills:
   - documentation/technical_writing
   - development/code_review
 
+# === ROUTING ===
+routing_description: >
+  阶段复盘评审员专家。
+  最适合：阶段完成后的全量回溯评审、跨 Sprint 质量评估与评分、
+  流程改进建议与经验教训沉淀、改进/修复任务创建。
+  不适合：日常 PR Review、功能代码开发、测试用例执行。
+
 inputs:
   - type: file
     path: master/reports/phase-*-completion-report.md
@@ -70,6 +77,11 @@ outputs:
     location: master/reports/phase-*-retrospective.md
   - type: lessons_learned
     location: confluence/projects/{project}/retrospective/
+
+quality_gates:
+  doc:
+    - "复盘报告包含：已完成/未完成/风险/改进项四个部分"
+    - "每个改进项指定负责人和截止日期"
 
 decision_policy:
   auto_decide: true
