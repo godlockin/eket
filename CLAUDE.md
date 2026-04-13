@@ -74,6 +74,21 @@ Slaver 是被唤醒的节点，必须不时问自己 3 个问题：
 
 > 使用其他大模型（Gemini、GPT、Cursor 等）时，请阅读 `AGENTS.md`，它是与本文件互补的通用大模型引导文件。
 
+### 📥 Inbox 优先级分级（人类指令分类）
+
+Master 处理 `inbox/human_input.md` 时，必须按以下优先级分级响应：
+
+| 级别 | 标识 | 含义 | 响应要求 |
+|------|------|------|---------|
+| **P0 旨意** | `[P0-旨意]` | 战略方向变更、项目终止、架构重构 | **立即停止当前所有工作，优先响应** |
+| **P1 谕令** | `[P1-谕令]` | 具体功能需求、bug 修复指令、优先级调整 | 完成当前 ticket 后立即处理 |
+| **P2 闲聊** | `[P2-闲聊]` | 进度询问、建议、讨论 | 正常响应，不打断执行流程 |
+
+**规则**：
+- 无标识的指令默认视为 P1-谕令
+- P0 指令收到后，必须在 `inbox/human_feedback/` 回复"已收到，正在执行"
+- 禁止将 P0 指令排在队列末尾执行
+
 ---
 
 ## 项目简介
@@ -312,6 +327,38 @@ Level 2: Node.js + 文件队列  # .eket/data/queue/*.json（去重+归档）
     ↓ Node.js 不可用
 Level 3: Shell 脚本          # lib/adapters/hybrid-adapter.sh 基础模式
 ```
+
+---
+
+## Ticket 状态机
+
+```
+backlog → analysis → ready → gate_review → in_progress → test → pr_review → done
+                               ↑                ↓（VETO）
+                               └────────── analysis（打回重新分析）
+```
+
+| 状态 | 含义 | 操作者 |
+|------|------|--------|
+| `backlog` | 已创建，待分析 | Master |
+| `analysis` | Slaver 分析设计中 | Slaver |
+| `ready` | 分析完成，等待执行 | Master 确认后推进 |
+| **`gate_review`** | **执行前关卡审查（gate_reviewer 介入）** | **gate_reviewer（自动触发）** |
+| `in_progress` | 编码执行中 | Slaver |
+| `test` | 测试验收中 | Slaver |
+| `pr_review` | PR 等待合并 | Master |
+| `done` | 完成合并 | Master |
+
+### Gate Review 规则
+
+1. 任务从 `ready` 推进时，**自动触发 gate_reviewer**，状态进入 `gate_review`
+2. gate_reviewer **APPROVE** → 状态进入 `in_progress`
+3. gate_reviewer **VETO** → 状态打回 `analysis`，Slaver 修复后重新推进到 `ready`
+4. **死锁防止**：同一 ticket 被否决 ≥ 2 次，第 3 次 gate_review 强制降级通过（防止永久卡死）
+5. gate_reviewer **超时 30 分钟无响应**，自动视为 APPROVE（防止审查员失联死锁）
+6. human 可标注 `override: true` 强制跳过 gate_review
+
+📄 详细协议：[`template/docs/GATE-REVIEW-PROTOCOL.md`](template/docs/GATE-REVIEW-PROTOCOL.md)
 
 ---
 
