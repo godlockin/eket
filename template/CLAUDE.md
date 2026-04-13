@@ -2,8 +2,29 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working in this repository.
 
-**版本**: v2.0.0
-**最后更新**: 2026-04-06
+**版本**: v2.1.4  
+**最后更新**: 2026-04-11
+
+---
+
+## EKET 协作愿景（v2.1.3）
+
+**核心愿景**：所有 instance 都是 resource，无论其形态是：
+- Subagent（被初始化的执行节点）
+- 独立 Session（独立运行的实例）
+- 人类（项目所有者/决策者）
+
+所有 resource 在框架内**平等协作**，最大限度地发挥各自优势，实现自主协作。
+
+**核心原则**：
+1. **最大化自主性**：每个 resource 在其职责范围内拥有最大自主权
+2. **最小化阻塞**：只有在真正需要人类决策时才阻塞执行
+3. **异步通信优先**：通过消息队列和文件系统异步通信
+4. **状态透明**：所有 resource 的状态对所有其他 resource 透明可见
+
+📄 详细文档：[`docs/EKET-VISION.md`](docs/EKET-VISION.md)
+
+---
 
 ## 重要：身份确认
 
@@ -14,6 +35,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 - 核心职责和禁止操作
 - 启动检查清单
 - 可用命令
+
+> 如果使用其他大模型（Gemini、GPT、Cursor 等），请阅读 `AGENTS.md`，内容与本文件互补，覆盖通用行为规范。
 
 ---
 
@@ -107,6 +130,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 | `/eket-review-pr` | 审核 Slaver 提交的 PR |
 | `/eket-merge` | 合并 PR 到 main 分支 |
 | `/eket-check-progress` | 检查 Slaver 任务进度 |
+| `/eket-master-poll` | **启动 Master 轮询**（定期 PR/仲裁/人类反馈检查） |
+
+### Slaver 专用命令
+
+| 命令 | 功能 |
+|------|------|
+| `/eket-claim [id]` | 领取任务 |
+| `/eket-submit-pr` | 提交 PR 请求审核 |
+| `/eket-slaver-poll` | **启动 Slaver 轮询**（定期任务/PR 反馈/消息队列检查） |
+| `/eket-slaver-register` | **Slaver 身份注册**（初始化后注册身份、识别任务、显示信息） |
+
+### Master 等待 PR 期间的主动工作（v2.1.4）
+
+**Master 在等待 PR 反馈期间不是被动等待，而是主动执行项目管理和规划工作。**
+
+**五大工作任务**：
+1. **同步/修正 roadmap** — 对齐当前进度，识别风险项
+2. **规划下阶段任务** — 创建下一 Sprint 规划草案
+3. **拆解新需求** — 将宏观需求拆解为 Ticket 级别
+4. **标记 Ticket 优先级和依赖** — 识别关键路径
+5. **预初始化 Slaver 团队** — 确保充足的可领取任务
+
+📄 详细指南：[`docs/MASTER-PR-WAIT-WORK.md`](docs/MASTER-PR-WAIT-WORK.md)
 
 ---
 

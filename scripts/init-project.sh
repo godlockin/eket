@@ -51,7 +51,10 @@ create_directories() {
         "outbox"
         "outbox/review_requests"
         "tasks"
-        "outbox"
+        "shared/message_queue/inbox"
+        "shared/message_queue/outbox"
+        "shared/message_queue/broadcast"
+        "shared/message_queue/dead_letter"
     )
 
     for dir in "${directories[@]}"; do
@@ -75,9 +78,17 @@ copy_templates() {
         if [ ! -f "CLAUDE.md" ]; then
             cp "$EKET_TEMPLATE_DIR/CLAUDE.md" "CLAUDE.md"
             # 替换占位符
-            sed -i '' "s/\${PROJECT_NAME}/$PROJECT_NAME/g" "CLAUDE.md" 2>/dev/null || \
-            sed -i "s/\${PROJECT_NAME}/$PROJECT_NAME/g" "CLAUDE.md"
+            sed -i '' "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "CLAUDE.md" 2>/dev/null || \
+            sed -i "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "CLAUDE.md"
             echo -e "${GREEN}✓${NC} CLAUDE.md"
+        fi
+
+        # 复制 AGENTS.md（通用大模型引导文件）
+        if [ ! -f "AGENTS.md" ]; then
+            if [ -f "$EKET_TEMPLATE_DIR/AGENTS.md" ]; then
+                cp "$EKET_TEMPLATE_DIR/AGENTS.md" "AGENTS.md"
+                echo -e "${GREEN}✓${NC} AGENTS.md (universal AI agent guide)"
+            fi
         fi
 
         # 复制配置文件
@@ -118,14 +129,14 @@ copy_templates() {
         if [ ! -f "SYSTEM-SETTINGS.md" ]; then
             cp "$EKET_TEMPLATE_DIR/SYSTEM-SETTINGS.md" "SYSTEM-SETTINGS.md"
             # 替换占位符
-            sed -i '' "s/\${PROJECT_NAME}/$PROJECT_NAME/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
-            sed -i "s/\${PROJECT_NAME}/$PROJECT_NAME/g" "SYSTEM-SETTINGS.md"
-            sed -i '' "s/\${CREATE_DATE}/$(date -I)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
-            sed -i "s/\${CREATE_DATE}/$(date -I)/g" "SYSTEM-SETTINGS.md"
-            sed -i '' "s/\${UPDATE_DATE}/$(date -I)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
-            sed -i "s/\${UPDATE_DATE}/$(date -I)/g" "SYSTEM-SETTINGS.md"
-            sed -i '' "s/\${MAINTAINER}/$(whoami)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
-            sed -i "s/\${MAINTAINER}/$(whoami)/g" "SYSTEM-SETTINGS.md"
+            sed -i '' "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
+            sed -i "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "SYSTEM-SETTINGS.md"
+            sed -i '' "s/{{CREATE_DATE}}/$(date -I)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
+            sed -i "s/{{CREATE_DATE}}/$(date -I)/g" "SYSTEM-SETTINGS.md"
+            sed -i '' "s/{{UPDATE_DATE}}/$(date -I)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
+            sed -i "s/{{UPDATE_DATE}}/$(date -I)/g" "SYSTEM-SETTINGS.md"
+            sed -i '' "s/{{MAINTAINER}}/$(whoami)/g" "SYSTEM-SETTINGS.md" 2>/dev/null || \
+            sed -i "s/{{MAINTAINER}}/$(whoami)/g" "SYSTEM-SETTINGS.md"
             echo -e "${GREEN}✓${NC} SYSTEM-SETTINGS.md (系统设定模板)"
             echo -e "${YELLOW}  → 请编辑此文件，替换所有占位符和不适用的章节${NC}"
         fi
@@ -185,6 +196,25 @@ copy_templates() {
             sed -i '' "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" ".eket/version.yml" 2>/dev/null || \
             sed -i "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" ".eket/version.yml"
             echo -e "${GREEN}✓${NC} .eket/version.yml"
+        fi
+
+        # 复制 .eket/config/ 子配置目录（模块化配置）
+        if [ -d "$EKET_TEMPLATE_DIR/.eket/config" ]; then
+            mkdir -p ".eket/config"
+            # 幂等：只复制尚不存在的文件
+            for cfg in "$EKET_TEMPLATE_DIR/.eket/config/"*.yml; do
+                cfg_name="$(basename "$cfg")"
+                if [ ! -f ".eket/config/$cfg_name" ]; then
+                    cp "$cfg" ".eket/config/$cfg_name"
+                fi
+            done
+            echo -e "${GREEN}✓${NC} .eket/config/ (模块化子配置)"
+        fi
+
+        # 复制 .eket/analysis-roles/ 目录（分析角色定义）
+        if [ -d "$EKET_TEMPLATE_DIR/.eket/analysis-roles" ] && [ ! -d ".eket/analysis-roles" ]; then
+            cp -r "$EKET_TEMPLATE_DIR/.eket/analysis-roles" ".eket/analysis-roles"
+            echo -e "${GREEN}✓${NC} .eket/analysis-roles/ (分析角色定义)"
         fi
 
         # 复制 examples 目录（快速开始示例）
@@ -375,6 +405,123 @@ EOF
     echo -e "${GREEN}✓${NC} 连接配置文件已创建"
 }
 
+# 检查和初始化高效通信后端
+check_and_start_backend() {
+    echo ""
+    echo "========================================"
+    echo "检查和启动高效通信后端"
+    echo "========================================"
+    echo ""
+
+    cd "$PROJECT_ROOT"
+
+    echo "EKET 支持四级降级通信方式："
+    echo "  1. 远程 Redis（分布式多实例）"
+    echo "  2. 本地 Redis（单机多实例）"
+    echo "  3. SQLite（单机单实例）"
+    echo "  4. 文件系统（降级模式，无依赖）"
+    echo ""
+
+    # 检测 Docker 是否可用
+    local docker_available=false
+    if command -v docker &> /dev/null && docker ps &> /dev/null; then
+        docker_available=true
+        echo -e "${GREEN}✓${NC} Docker 可用"
+    else
+        echo -e "${YELLOW}○${NC} Docker 不可用，跳过 Redis Docker 容器启动"
+    fi
+
+    # 检测 Redis 是否已运行
+    local redis_running=false
+    if command -v redis-cli &> /dev/null && redis-cli ping &> /dev/null; then
+        redis_running=true
+        echo -e "${GREEN}✓${NC} Redis 已在运行"
+    fi
+
+    # 检测 SQLite 是否可用
+    local sqlite_available=false
+    if command -v sqlite3 &> /dev/null; then
+        sqlite_available=true
+        echo -e "${GREEN}✓${NC} SQLite 可用"
+    else
+        echo -e "${YELLOW}⚠${NC} SQLite 不可用，将使用文件系统降级模式"
+    fi
+
+    echo ""
+    echo "请选择通信后端："
+    echo "  1) Redis (Docker)  ← 推荐，支持多实例分布式通信"
+    echo "  2) Redis (本地已运行)"
+    echo "  3) SQLite (本地文件数据库)"
+    echo "  4) 文件系统 (无依赖，仅测试用)"
+    echo ""
+    printf "选择 [1-4]，默认 3: "
+    read -r backend_choice
+
+    case "$backend_choice" in
+        1)
+            if [ "$docker_available" = true ]; then
+                echo "启动 Redis Docker 容器..."
+                docker run -d --name eket-redis -p 6379:6379 redis:latest 2>/dev/null || {
+                    echo -e "${YELLOW}⚠${NC} Redis 容器可能已在运行"
+                }
+                echo -e "${GREEN}✓${NC} Redis Docker 容器已启动"
+
+                # 更新配置文件
+                sed -i '' 's/local_redis:\n    enabled: false/local_redis:\n    enabled: true/' ".eket/config/connection.yml" 2>/dev/null || \
+                sed -i 's/local_redis:\n    enabled: false/local_redis:\n    enabled: true/' ".eket/config/connection.yml"
+
+                echo -e "${GREEN}✓${NC} 已配置使用 Redis 通信"
+            else
+                echo -e "${YELLOW}⚠${NC} Docker 不可用，降级到 SQLite"
+                backend_choice=3
+            fi
+            ;;
+        2)
+            if [ "$redis_running" = true ]; then
+                echo -e "${GREEN}✓${NC} 已配置使用本地 Redis"
+                # 更新配置文件
+                sed -i '' 's/local_redis:\n    enabled: false/local_redis:\n    enabled: true/' ".eket/config/connection.yml" 2>/dev/null || \
+                sed -i 's/local_redis:\n    enabled: false/local_redis:\n    enabled: true/' ".eket/config/connection.yml"
+            else
+                echo -e "${RED}✗${NC} Redis 未运行，降级到 SQLite"
+                backend_choice=3
+            fi
+            ;;
+        3)
+            if [ "$sqlite_available" = true ]; then
+                echo -e "${GREEN}✓${NC} 已配置使用 SQLite"
+                # 创建 SQLite 数据目录
+                mkdir -p ".eket/data/sqlite"
+                # 更新配置文件
+                sed -i '' 's/sqlite:\n    enabled: false/sqlite:\n    enabled: true/' ".eket/config/connection.yml" 2>/dev/null || \
+                sed -i 's/sqlite:\n    enabled: false/sqlite:\n    enabled: true/' ".eket/config/connection.yml"
+            else
+                echo -e "${RED}✗${NC} SQLite 不可用，降级到文件系统"
+                backend_choice=4
+            fi
+            ;;
+        4)
+            echo -e "${YELLOW}○${NC} 使用文件系统降级模式（仅测试用，性能较低）"
+            ;;
+        *)
+            echo "默认使用 SQLite"
+            ;;
+    esac
+
+    # 创建数据目录
+    mkdir -p ".eket/data"
+    mkdir -p ".eket/data/sqlite"
+    mkdir -p ".eket/data/fs"
+
+    echo ""
+    echo "通信后端配置完成。"
+    echo ""
+    echo "重要说明："
+    echo "  - 节点间通信优先使用高效后端（Redis/SQLite）"
+    echo "  - 文字记录（inbox/outbox/文件）仅用于需要被记录和追溯的内容"
+    echo "  - 如需修改配置，编辑 .eket/config/connection.yml"
+}
+
 # 配置 Slaver 模式和自动执行
 configure_slaver_mode() {
     echo ""
@@ -390,15 +537,39 @@ configure_slaver_mode() {
     echo "  1) Master - 协调实例 (负责任务分析和 Review)"
     echo "  2) Slaver - 执行实例 (负责领取和执行任务)"
     echo ""
-    read -p "选择 [1/2]，默认 2: " ROLE_CHOICE
+    read -p "选择 [1/2]，默认 1 (Master): " ROLE_CHOICE
 
-    if [ "$ROLE_CHOICE" = "1" ]; then
-        INSTANCE_ROLE="master"
-        echo -e "${BLUE}✓${NC} 已选择：Master 模式"
-    else
+    if [ "$ROLE_CHOICE" = "2" ]; then
         INSTANCE_ROLE="slaver"
         echo -e "${BLUE}✓${NC} 已选择：Slaver 模式"
+    else
+        INSTANCE_ROLE="master"
+        echo -e "${BLUE}✓${NC} 已选择：Master 模式"
     fi
+
+    # 写入初始实例配置
+    mkdir -p ".eket/state"
+    cat > ".eket/state/instance_config.yml" << EOF
+# EKET 实例配置
+# 生成于：$(date -Iseconds)
+
+# 实例角色
+role: "${INSTANCE_ROLE}"
+
+# Slaver 角色类型（仅在 role=slaver 时有效，由 Slaver 启动时填写）
+agent_type: null
+
+# 实例状态
+status: "initialized"
+
+# 启动时间
+start_time: "$(date -Iseconds)"
+
+# 实例 ID（自动生成）
+instance_id: "$(echo $INSTANCE_ROLE)_$(date +%Y%m%d%H%M%S)"
+EOF
+    echo -e "${GREEN}✓${NC} 实例配置已写入 .eket/state/instance_config.yml"
+    echo ""
 
     # ==========================================
     # 配置存储后端（Git 模式或降级模式）
@@ -779,6 +950,7 @@ main() {
     create_directories
     copy_templates
     configure_git_repos
+    check_and_start_backend    # 新增：检查和启动高效通信后端
     configure_slaver_mode
     show_guide
 }

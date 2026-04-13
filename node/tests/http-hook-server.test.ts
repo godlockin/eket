@@ -98,13 +98,13 @@ describe('HttpHookServer', () => {
 
   describe('createHttpHookServer', () => {
     it('should create an HttpHookServer instance', () => {
-      const instance = createHttpHookServer({ port: testPort });
+      const instance = createHttpHookServer({ port: testPort, requireAuth: false });
       expect(instance).toBeDefined();
       expect(instance).toBeInstanceOf(HttpHookServer);
     });
 
     it('should create with minimal config', () => {
-      expect(createHttpHookServer({ port: testPort })).toBeDefined();
+      expect(createHttpHookServer({ port: testPort, requireAuth: false })).toBeDefined();
     });
 
     it('should create with full config', () => {
@@ -115,25 +115,25 @@ describe('HttpHookServer', () => {
 
   describe('Server Lifecycle', () => {
     it('should start server successfully', async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.start();
       await waitForServer(testPort);
     }, 10000);
 
     it('should stop server successfully', async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.start();
       await waitForServer(testPort);
       await server.stop();
     }, 10000);
 
     it('should handle stop when not started', async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.stop();
     });
 
     it('should handle multiple stops gracefully', async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.start();
       await waitForServer(testPort);
       await server.stop();
@@ -143,7 +143,7 @@ describe('HttpHookServer', () => {
 
   describe('GET /health', () => {
     beforeEach(async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.start();
       await waitForServer(testPort);
     }, 10000);
@@ -170,7 +170,7 @@ describe('HttpHookServer', () => {
 
   describe('Hook Endpoints', () => {
     beforeEach(async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.start();
       await waitForServer(testPort);
     }, 10000);
@@ -250,7 +250,7 @@ describe('HttpHookServer', () => {
 
   describe('CORS', () => {
     beforeEach(async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.start();
       await waitForServer(testPort);
     }, 10000);
@@ -273,7 +273,7 @@ describe('HttpHookServer', () => {
 
   describe('Event Handlers', () => {
     beforeEach(async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.start();
       await waitForServer(testPort);
     }, 10000);
@@ -333,7 +333,7 @@ describe('HttpHookServer', () => {
 
   describe('Task Scheduler Handler', () => {
     beforeEach(async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.start();
       await waitForServer(testPort);
     }, 10000);
@@ -368,7 +368,7 @@ describe('HttpHookServer', () => {
 
   describe('Permission Checker Handler', () => {
     beforeEach(async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.start();
       await waitForServer(testPort);
     }, 10000);
@@ -405,7 +405,7 @@ describe('HttpHookServer', () => {
 
   describe('Audit Logger Handler', () => {
     beforeEach(async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.start();
       await waitForServer(testPort);
     }, 10000);
@@ -439,7 +439,7 @@ describe('HttpHookServer', () => {
 
   describe('Error Handling', () => {
     beforeEach(async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.start();
       await waitForServer(testPort);
     }, 10000);
@@ -467,7 +467,7 @@ describe('HttpHookServer', () => {
 
   describe('Edge Cases', () => {
     it('should handle large payload', async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.start();
       await waitForServer(testPort);
 
@@ -503,7 +503,7 @@ describe('HttpHookServer', () => {
     });
 
     it('should handle undefined handler return', async () => {
-      server = createHttpHookServer({ port: testPort });
+      server = createHttpHookServer({ port: testPort, requireAuth: false });
       await server.start();
       await waitForServer(testPort);
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# /eket-submit-pr - Slaver 提交 PR 请求 Master 审核
+# /eket-submit-pr - Slaver 提交 PR 请求 Master 审核 (v2.1.0)
 
 # 不使用 set -e，避免在可恢复错误处退出
 
@@ -9,7 +9,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SCRIPTS_DIR="$PROJECT_ROOT/scripts"
 
 echo "========================================"
-echo "EKET 提交 PR v0.5"
+echo "EKET 提交 PR v2.1.0"
 echo "========================================"
 echo ""
 
@@ -22,8 +22,15 @@ MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# 检查实例角色
+# 读取实例配置获取 instance_id
 CONFIG_FILE=".eket/state/instance_config.yml"
+INSTANCE_ID=""
+if [ -f "$CONFIG_FILE" ]; then
+    INSTANCE_ID=$(grep "^instance_id:" "$CONFIG_FILE" 2>/dev/null | sed 's/instance_id:\s*//' | tr -d '"' || echo "")
+fi
+if [ -z "$INSTANCE_ID" ]; then
+    INSTANCE_ID="slaver_$(hostname)_$$"
+fi
 
 if [ ! -f "$CONFIG_FILE" ]; then
     echo -e "${RED}✗${NC} 实例配置文件不存在"
@@ -157,7 +164,7 @@ CHANGES_SUMMARY=$(git diff HEAD~1 --stat 2>/dev/null || echo "待补充")
 cat > "$PR_FILE" << EOF
 # PR 请求：$TICKET_ID
 
-**提交者**: $(whoami)
+**提交者**: $INSTANCE_ID
 **分支**: $BRANCH_NAME
 **目标分支**: testing
 **创建时间**: $(date -Iseconds)
@@ -196,6 +203,20 @@ $CHANGES_SUMMARY
 ## 状态：pending_review
 
 **等待 Master 审核**
+
+## Slaver 等待流程
+
+**提交者当前状态**：
+- 如有紧急任务 → 等待 Master 反馈（每 15 分钟检查一次）
+- 如非紧急任务 → 可领取新任务并行开发
+
+**Master 反馈处理**：
+| 结果 | 行动 |
+|------|------|
+| 批准 | 准备 merge，领取新任务 |
+| 需要修改 | 立即修改，重新提交 PR |
+| 驳回 | 重新分析需求，重新开发 |
+
 EOF
 
 echo -e "${GREEN}✓${NC} PR 描述已创建：$PR_FILE"

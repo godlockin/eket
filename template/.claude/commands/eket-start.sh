@@ -142,22 +142,72 @@ echo ""
 echo -e "${BLUE}## 步骤 3: 决定实例角色${NC}"
 echo ""
 
+# 生成全局唯一实例 ID
+generate_instance_id() {
+    local role=$1
+    local timestamp=$(date +%Y%m%d_%H%M%S)
+    local random=$(openssl rand -hex 4 2>/dev/null || echo $RANDOM)
+    echo "${role}_${timestamp}_${random}"
+}
+
+# 检查是否已有 instance_config.yml（之前运行过）
+PREV_ROLE=""
+PREV_INSTANCE_ID=""
+if [ -f ".eket/state/instance_config.yml" ]; then
+    PREV_ROLE=$(grep "^role:" ".eket/state/instance_config.yml" 2>/dev/null | sed 's/role: *//' | tr -d '"' || echo "")
+    PREV_INSTANCE_ID=$(grep "^instance_id:" ".eket/state/instance_config.yml" 2>/dev/null | sed 's/instance_id: *//' | tr -d '"' || echo "")
+    if [ -n "$PREV_ROLE" ]; then
+        echo -e "${GREEN}检测到之前运行的角色：${PREV_ROLE}${NC}"
+    fi
+    if [ -n "$PREV_INSTANCE_ID" ]; then
+        echo -e "${GREEN}实例 ID: ${PREV_INSTANCE_ID}${NC}"
+    fi
+fi
+
 # 如果指定了强制角色，使用指定的角色
 if [ -n "$FORCE_ROLE" ]; then
     INSTANCE_ROLE="$FORCE_ROLE"
+    INSTANCE_ID=$(generate_instance_id "$INSTANCE_ROLE")
     echo -e "${GREEN}✓${NC} 使用强制指定的角色：${INSTANCE_ROLE}"
+    echo -e "${GREEN}✓${NC} 生成实例 ID: ${INSTANCE_ID}"
 elif [ "$MASTER_EXISTS" = true ]; then
+    # Master 标记存在 → 当前实例应该是 Slaver
     INSTANCE_ROLE="slaver"
+    INSTANCE_ID=$(generate_instance_id "$INSTANCE_ROLE")
     echo -e "${GREEN}检测到 Master 已初始化${NC}"
     echo -e "实例角色：${MAGENTA}Slaver (执行实例)${NC}"
+    echo -e "${GREEN}✓${NC} 生成实例 ID: ${INSTANCE_ID}"
+elif [ -n "$PREV_ROLE" ]; then
+    # 之前运行过，保持之前角色
+    INSTANCE_ROLE="$PREV_ROLE"
+    INSTANCE_ID="$PREV_INSTANCE_ID"
+    echo -e "${GREEN}保持之前的角色：${INSTANCE_ROLE}${NC}"
 elif [ "$CONFLUENCE_EXISTS" = false ] || [ "$JIRA_EXISTS" = false ] || [ "$CODE_REPO_EXISTS" = false ]; then
+    # 项目未初始化 → 必须是 Master 先初始化
     INSTANCE_ROLE="master"
+    INSTANCE_ID=$(generate_instance_id "$INSTANCE_ROLE")
     echo -e "${GREEN}检测到项目未初始化${NC}"
-    echo -e "实例角色：${CYAN}Master (协调实例)${NC}"
+    echo -e "实例角色：${CYAN}Master (协调实例) - 必须先初始化项目${NC}"
+    echo -e "${GREEN}✓${NC} 生成实例 ID: ${INSTANCE_ID}"
 else
-    INSTANCE_ROLE="slaver"
-    echo -e "${GREEN}检测到项目已初始化${NC}"
-    echo -e "实例角色：${MAGENTA}Slaver (执行实例)${NC}"
+    # 项目已初始化但没有之前角色 → 询问用户
+    echo ""
+    echo "项目已初始化，请选择实例角色:"
+    echo "  1) Master - 协调实例 (负责任务分析和 Review)"
+    echo "  2) Slaver - 执行实例 (负责领取和执行任务)"
+    echo ""
+    echo -n "选择 [1/2]，默认 1 (Master): "
+    read -r ROLE_CHOICE
+
+    if [ "$ROLE_CHOICE" = "2" ]; then
+        INSTANCE_ROLE="slaver"
+        echo -e "实例角色：${MAGENTA}Slaver (执行实例)${NC}"
+    else
+        INSTANCE_ROLE="master"
+        echo -e "实例角色：${CYAN}Master (协调实例)${NC}"
+    fi
+    INSTANCE_ID=$(generate_instance_id "$INSTANCE_ROLE")
+    echo -e "${GREEN}✓${NC} 生成实例 ID: ${INSTANCE_ID}"
 fi
 
 # 保存实例状态
@@ -227,11 +277,11 @@ if [ "$INSTANCE_ROLE" = "master" ]; then
         echo "# Confluence 文档中心" > "confluence/README.md"
         echo "initialized_at: $(date -Iseconds)" >> "confluence/README.md"
         echo "initialized_by: master" > "confluence/.eket_master_marker"
-        echo "master_instance: true" >> "confluence/.eket_master_marker"
+        echo "instance_id: ${INSTANCE_ID}" >> "confluence/.eket_master_marker"
         echo -e "${GREEN}✓${NC} Confluence 仓库已创建 (Master 标记已设置)"
     elif [ ! -f "confluence/.eket_master_marker" ]; then
         echo "initialized_by: master" > "confluence/.eket_master_marker"
-        echo "master_instance: true" >> "confluence/.eket_master_marker"
+        echo "instance_id: ${INSTANCE_ID}" >> "confluence/.eket_master_marker"
         echo -e "${GREEN}✓${NC} Confluence: Master 标记已添加"
     else
         echo -e "${GREEN}✓${NC} Confluence 仓库已存在 (Master 已初始化)"
@@ -247,11 +297,11 @@ if [ "$INSTANCE_ROLE" = "master" ]; then
         echo "# Jira 任务管理" > "jira/README.md"
         echo "initialized_at: $(date -Iseconds)" >> "jira/README.md"
         echo "initialized_by: master" > "jira/.eket_master_marker"
-        echo "master_instance: true" >> "jira/.eket_master_marker"
+        echo "instance_id: ${INSTANCE_ID}" >> "jira/.eket_master_marker"
         echo -e "${GREEN}✓${NC} Jira 仓库已创建 (Master 标记已设置)"
     elif [ ! -f "jira/.eket_master_marker" ]; then
         echo "initialized_by: master" > "jira/.eket_master_marker"
-        echo "master_instance: true" >> "jira/.eket_master_marker"
+        echo "instance_id: ${INSTANCE_ID}" >> "jira/.eket_master_marker"
         echo -e "${GREEN}✓${NC} Jira: Master 标记已添加"
     else
         echo -e "${GREEN}✓${NC} Jira 仓库已存在 (Master 已初始化)"
@@ -266,13 +316,13 @@ if [ "$INSTANCE_ROLE" = "master" ]; then
         echo "# 代码仓库" > "code_repo/README.md"
         echo "initialized_at: $(date -Iseconds)" >> "code_repo/README.md"
         echo "initialized_by: master" > "code_repo/.eket_master_marker"
-        echo "master_instance: true" >> "code_repo/.eket_master_marker"
+        echo "instance_id: ${INSTANCE_ID}" >> "code_repo/.eket_master_marker"
         echo -e "${GREEN}✓${NC} 代码仓库已创建 (Master 标记已设置)"
     elif [ ! -f "code_repo/.eket_master_marker" ] && [ ! -f "src/.eket_master_marker" ]; then
         MARKER_PATH="code_repo/.eket_master_marker"
         [ -d "src" ] && MARKER_PATH="src/.eket_master_marker"
         echo "initialized_by: master" > "$MARKER_PATH"
-        echo "master_instance: true" >> "$MARKER_PATH"
+        echo "instance_id: ${INSTANCE_ID}" >> "$MARKER_PATH"
         echo -e "${GREEN}✓${NC} 代码仓库：Master 标记已添加"
     else
         echo -e "${GREEN}✓${NC} 代码仓库已存在 (Master 已初始化)"
@@ -478,6 +528,21 @@ code_repo_path: "$(pwd)/code_repo"
 worktree_path: "$WORKTREE_DIR"
 EOF
     echo -e "${GREEN}✓${NC} Worktree 路径已配置"
+
+    # 创建 Slaver 标记文件（用于 Master 追踪活跃的 Slaver 实例）
+    mkdir -p ".eket/state/slavers"
+    SLAVER_MARKER_FILE=".eket/state/slavers/${INSTANCE_ID}.yml"
+    cat > "$SLAVER_MARKER_FILE" << EOF
+# Slaver 实例标记
+# 创建于：$(date -Iseconds)
+
+instance_id: ${INSTANCE_ID}
+agent_type: ${AGENT_TYPE:-null}
+started_at: $(date -Iseconds)
+status: active
+worktree_dir: $WORKTREE_DIR
+EOF
+    echo -e "${GREEN}✓${NC} Slaver 标记已创建：${INSTANCE_ID}"
     echo ""
 
     # ==========================================

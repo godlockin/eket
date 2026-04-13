@@ -602,14 +602,13 @@ export class HttpHookServer {
 
     // 如果没有 Authorization 头
     if (!authHeader) {
-      // 生产环境强制认证
-      const isProduction = process.env.NODE_ENV === 'production';
-      const requireAuth = this.config.requireAuth ?? isProduction;
+      // 默认所有环境都要求认证（除非显式设置 requireAuth: false）
+      const requireAuth = this.config.requireAuth ?? true;
 
       if (requireAuth && !this.config.secret && !this.config.jwt?.secret) {
-        // 生产环境无密钥配置，拒绝服务
+        // 无密钥配置，拒绝服务并提示配置方式
         console.error(
-          '[Security] CRITICAL: Production mode requires authentication, but no secret is configured. ' +
+          '[Security] CRITICAL: Authentication required, but no secret is configured. ' +
             'Set EKET_HOOK_SECRET or EKET_HOOK_JWT_SECRET environment variable.'
         );
         return {
@@ -622,7 +621,8 @@ export class HttpHookServer {
         return { authenticated: false, error: 'Missing Authorization header' };
       }
 
-      // 非生产环境且未要求认证，允许通过
+      // 仅在显式设置 requireAuth: false 时允许无认证访问（开发调试用）
+      console.warn('[Security] WARNING: Hook server running without authentication. Set requireAuth: true in production.');
       return { authenticated: true };
     }
 

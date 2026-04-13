@@ -44,20 +44,33 @@ describe('EKET Server Security Features', () => {
   });
 
   describe('HTTP-002: CORS Configuration', () => {
-    it('should include CORS headers in responses', async () => {
+    it('should not include CORS headers when CORS_ORIGIN is not set', async () => {
       const response = await request(serverApp).options('/api/v1/agents/register');
 
-      expect(response.headers['access-control-allow-methods']).toBeDefined();
-      expect(response.headers['access-control-allow-methods']).toContain('POST');
-      expect(response.headers['access-control-allow-methods']).toContain('GET');
+      // 未配置 CORS_ORIGIN 时，CORS 被禁用（安全默认值）
+      expect(response.headers['access-control-allow-origin']).toBeUndefined();
     });
 
-    it('should allow configured origins', async () => {
-      const response = await request(serverApp)
+    it('should include CORS headers when CORS_ORIGIN is configured', async () => {
+      const originalOrigin = process.env.CORS_ORIGIN;
+      process.env.CORS_ORIGIN = 'http://localhost:3000';
+
+      // 重新创建 server 使配置生效
+      const corsServer = new EketServer({ ...config, port: 0 });
+      const corsApp = (corsServer as any).app;
+
+      const response = await request(corsApp)
         .get('/health')
         .set('Origin', 'http://localhost:3000');
 
-      expect(response.headers['access-control-allow-origin']).toBeDefined();
+      expect(response.headers['access-control-allow-origin']).toBe('http://localhost:3000');
+
+      // 恢复环境变量
+      if (originalOrigin === undefined) {
+        delete process.env.CORS_ORIGIN;
+      } else {
+        process.env.CORS_ORIGIN = originalOrigin;
+      }
     });
   });
 

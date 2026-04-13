@@ -1,0 +1,72 @@
+# 项目状态报告（v2.1.2）
+
+**生成时间**: {{TIMESTAMP}}
+**生成频率**: 每 10 分钟自动更新
+
+---
+
+## 1. Slaver 状态
+
+| Slaver ID | 当前任务 | 状态 | 最后活动 | 备注 |
+|-----------|---------|------|---------|------|
+| {{SLAVER_ID}} | {{TASK_ID}} | idle/busy | {{TIMESTAMP}} | {{NOTE}} |
+
+**空闲 Slaver 列表**:
+- {{SLAVER_ID_1}} - 空闲时长：{{X}} 分钟
+- {{SLAVER_ID_2}} - 空闲时长：{{X}} 分钟
+
+---
+
+## 2. 所有 Cards 状态
+
+### 按状态分组
+
+| 状态 | 数量 | Ticket IDs |
+|------|------|-----------|
+| backlog | {{N}} | {{IDS}} |
+| ready | {{N}} | {{IDS}} |
+| in_progress | {{N}} | {{IDS}} |
+| review | {{N}} | {{IDS}} |
+| approved | {{N}} | {{IDS}} |
+| done | {{N}} | {{IDS}} |
+
+### 详细信息
+
+| Ticket ID | 类型 | 标题 | 优先级 | 状态 | 负责人 | 开始时间 |
+|-----------|------|------|--------|------|--------|---------|
+| {{ID}} | {{TYPE}} | {{TITLE}} | {{PRIORITY}} | {{STATUS}} | {{ASSIGNEE}} | {{STARTED_AT}} |
+
+---
+
+## 3. 项目进度
+
+**当前 Sprint**: {{SPRINT_ID}}
+**Sprint 目标**: {{GOAL}}
+**截止日期**: {{DEADLINE}}
+
+**完成情况**:
+- 总 Tickets: {{TOTAL}}
+- 已完成：{{DONE}} / {{TOTAL}} ({{PCT}}%)
+- 进行中：{{IN_PROGRESS}}
+- 待 Review: {{REVIEW_COUNT}}
+- 待领取：{{READY_COUNT}}
+
+---
+
+## 4. 风险与卡点
+
+| 风险项 | 影响 | 状态 | 行动 |
+|--------|------|------|------|
+| {{RISK}} | 高/中/低 | {{STATUS}} | {{ACTION}} |
+
+---
+
+## 5. 待办事项
+
+- [ ] {{TODO_1}}
+- [ ] {{TODO_2}}
+- [ ] {{TODO_3}}
+
+---
+
+*此文件由 Master 每 10 分钟自动更新*
