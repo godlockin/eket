@@ -88,6 +88,30 @@ quality_gates:
     - "附 375px/768px/1280px 三断点截图"
     - "键盘导航路径已测试"
 
+# === CONFIDENCE MODEL ===
+confidence_model:
+  high:
+    - "React 18 + TypeScript 组件开发"
+    - "Zustand/Redux 状态管理"
+    - "TailwindCSS / CSS Modules 样式实现"
+    - "响应式布局（移动优先，三断点适配）"
+    - "Lighthouse 性能优化（Core Web Vitals）"
+    - "无障碍适配（ARIA/键盘导航）"
+    - "Webpack/Vite 构建配置"
+  medium:
+    - "Vue 3 / Angular 应用开发"
+    - "WebGL / Canvas 动画"
+    - "PWA 与 Service Worker"
+    - "微前端架构（qiankun/Module Federation）"
+  low:
+    - "React Native 移动端"
+    - "WebAssembly 集成"
+    - "浏览器扩展开发"
+  escalate:
+    - "Node.js 后端业务逻辑"
+    - "数据库设计"
+    - "CI/CD 流水线配置"
+
 # === RED LINES ===
 prohibited:
   - push_to_main

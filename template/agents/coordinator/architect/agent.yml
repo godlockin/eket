@@ -79,6 +79,25 @@ quality_gates:
     - "每个 ADR 包含：背景/决策/后果"
     - "技术方案包含降级策略"
 
+# === CONFIDENCE MODEL ===
+confidence_model:
+  high:
+    - "分布式系统架构设计（微服务/事件驱动/CQRS）"
+    - "ADR 决策记录撰写"
+    - "跨服务接口契约设计（REST/gRPC/消息队列）"
+    - "系统容量估算与拓扑规划"
+  medium:
+    - "云原生基础设施架构（K8s/Serverless）"
+    - "安全架构设计（威胁建模/Zero Trust）"
+    - "数据库选型与分片策略"
+  low:
+    - "前沿技术选型（WASM/边缘计算/新兴协议）"
+    - "特定业务领域深度（金融/医疗合规架构）"
+  escalate:
+    - "具体代码实现（禁止动手）"
+    - "运维操作（部署/回滚）"
+    - "UI/UX 设计决策"
+
 # === RED LINES ===
 prohibited:
   - write_business_code
