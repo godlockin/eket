@@ -91,6 +91,26 @@ quality_gates:
     - "新增测试用例说明测试意图"
     - "缺陷 Ticket 包含复现步骤"
 
+# === CONFIDENCE MODEL ===
+confidence_model:
+  high:
+    - "单元测试与集成测试编写（Jest/Pytest/Go test）"
+    - "测试覆盖率分析与提升策略"
+    - "E2E 自动化测试（Playwright/Cypress）"
+    - "回归测试体系设计"
+    - "性能测试（k6/JMeter 基础）"
+  medium:
+    - "模糊测试（Fuzz Testing）"
+    - "契约测试（Pact）"
+    - "混沌测试设计"
+  low:
+    - "大规模分布式压测方案（万级并发+）"
+    - "硬件/嵌入式系统测试"
+  escalate:
+    - "功能代码实现"
+    - "基础设施配置"
+    - "UI 设计"
+
 # === RED LINES ===
 prohibited:
   - approve_own_tests               # 测试代码不得自我批准
