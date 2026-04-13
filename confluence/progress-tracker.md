@@ -1,6 +1,6 @@
 # EKET Framework - 项目进度追踪
 
-**当前版本**: v2.9.1
+**当前版本**: v2.9.2
 **更新时间**: 2026-04-13
 **维护者**: Master Agent
 
@@ -10,7 +10,7 @@
 
 | Pillar | 状态 | 完成度 |
 |--------|------|--------|
-| 测试覆盖 | ✅ 完成 | 1079/1079 (100%) |
+| 测试覆盖 | ✅ 完成 | 1095/1095 (100%) |
 | TypeScript 编译 | ✅ 完成 | 0 errors (25 → 0, v2.9.1) |
 | 三级架构 | ✅ 完成 | Level 1/2/3 全部实现 |
 | Docker 化 | ✅ 完成 | Dockerfile + docker-compose |
@@ -31,6 +31,7 @@
 | 分支策略强制执行 | ✅ 完成 | miao enforce_admins + testing 分支 + CI 覆盖 |
 | Agent 专家设定升级 | ✅ 完成 | routing_description + quality_gates + confidence_model |
 | 三省六部制度借鉴 | ✅ 完成 | gate_reviewer + independent_auditor + 状态机 + 协议文档 |
+| gate:review CLI | ✅ 完成 | node dist/index.js gate:review — 16 tests，SHA256 hash 链审计日志 |
 
 ---
 
@@ -50,6 +51,7 @@
 | 15b | Skill + Setup + 分支策略 + Agent 专家升级 | v2.8.0 | ✅ 完成 |
 | 16a | 三省六部制度借鉴：gate_reviewer + independent_auditor | v2.9.0 | ✅ 完成 |
 | 16b | **填平空洞**：TypeScript 编译错误清零（25 → 0）| v2.9.1 | ✅ 完成 |
+| 16c | **gate:review CLI**：执行前关卡命令实现 + flaky 测试修复 | v2.9.2 | ✅ 完成 |
 
 ---
 
@@ -67,16 +69,53 @@
 
 ---
 
-## Next Steps (Round 16c — 待规划)
+## Next Steps (Round 17 — 待规划)
 
 - PyPI 发布：`python3 -m build` + `twine upload` (sdk/python/RELEASING.md)
 - npm 发布：`npm pack` + `npm publish` (sdk/javascript/RELEASING.md)
 - GitHub Actions 自动发布 workflow（TASK-016 可选项）
 - SDK 对外文档整合至 Docusaurus 文档站
 - ticket-template.md 更新：加入 gate_review 阶段字段（gate_review_veto_count、veto_reason、resubmit_conditions）
-- Node.js 实现：gate_reviewer 进程自动触发逻辑（ticket 状态机 hook），参考 `gate:review <ticket-id>` CLI 命令设计
 - master:heartbeat CLI 命令：将 Master 的 4 个自我检查问题形式化为可执行命令（结构化 JSON 输出）
 - ticket-template 字段验证：`scripts/validate-ticket-template.sh` 防止模板偏移
+
+## Round 16c 完成详情（2026-04-13）
+
+### gate:review CLI 命令实现
+
+将 Round 16a 定义的 `gate_reviewer` agent.yml 合约落地为可执行 CLI 命令：
+
+**文件**：`node/src/commands/gate-review.ts`（~500 行）
+
+| 功能 | 实现 |
+|------|------|
+| Ticket 解析 | `parseTicket()` — 读取 YAML/Markdown ticket 文件 |
+| 验收标准检查 | 无 AC 行 → hard fail (VETO) |
+| TBD/TODO 检测 | 正则扫描全文 → hard fail (VETO) |
+| 技术方案检查 | 无设计描述 → warn only (不 VETO) |
+| 死锁防止 | `vetoCount >= 2` → 第 3 次强制 APPROVE |
+| SHA256 hash 链 | `appendAuditLog()` — append-only `confluence/audit/gate-review-log.jsonl` |
+| Dry-run 模式 | `--dry-run` — 只输出报告，不写文件 |
+| 批量扫描 | `--scan-all` — 扫描所有 gate_review 状态 ticket |
+
+**测试**：16 个测试全部通过（`node/tests/commands/gate-review.test.ts`）
+
+**CLI 注册**：
+```bash
+node dist/index.js gate:review [ticket-id]
+node dist/index.js gate:review --scan-all
+node dist/index.js gate:review TASK-001 --dry-run
+node dist/index.js gate:review TASK-001 --force-veto "依赖未完成"
+node dist/index.js gate:review TASK-001 --auto-approve
+```
+
+### master-election flaky 测试修复
+
+**根因**：`instanceId = instance_${hostname}_${pid}_${timestamp}` — CI 中同 PID+host 在 1ms 内创建两个实例，timestamp 相同导致 ID 碰撞
+
+**修复**：添加随机后缀 `const rand = Math.random().toString(36).slice(2, 7)` → `instance_host_pid_ts_xxxxx`
+
+**结果**：tests 1095/1095 passing，tagged v2.9.2
 
 ## Round 16b 完成详情（2026-04-13）
 
