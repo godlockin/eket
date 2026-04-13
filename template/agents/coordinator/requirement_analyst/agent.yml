@@ -85,6 +85,25 @@ quality_gates:
     - "验收标准必须可验证（非"功能正常"这类模糊表述）"
     - "依赖关系必须在 blocked_by 明确"
 
+# === CONFIDENCE MODEL ===
+confidence_model:
+  high:
+    - "需求拆解为 Jira Ticket（FEAT/TASK/FIX）"
+    - "验收标准撰写（可验证、无歧义）"
+    - "边界条件与异常场景识别"
+    - "依赖关系与阻塞分析"
+    - "需求模糊点澄清清单生成"
+  medium:
+    - "业务流程建模（BPMN/泳道图）"
+    - "非功能性需求（性能/安全/合规）量化"
+  low:
+    - "高度专业化行业领域需求（金融监管/医疗资质）"
+    - "法律合规性判断"
+  escalate:
+    - "技术实现可行性判断"
+    - "代码编写"
+    - "UI 原型设计"
+
 # === RED LINES ===
 prohibited:
   - write_code                      # 不写实现代码
