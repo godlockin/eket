@@ -8,12 +8,9 @@
  *   node dist/index.js ticket:index --stats
  */
 
-import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Result } from '../types/index.js';
-import { createRedisClient } from '../core/redis-client.js';
-import { createSqliteClient } from '../core/sqlite-client.js';
+import { Result, EketErrorClass, EketErrorCode } from '../types/index.js';
 
 interface Ticket {
   id: string;
@@ -32,11 +29,8 @@ interface Ticket {
   filePath: string;
 }
 
-interface IndexData {
-  tickets: Ticket[];
-  milestones: { id: string; title: string; status: string }[];
-  sprints: { id: string; theme: string; status: string; tickets: string[] }[];
-  epics: { id: string; title: string; status: string; tickets: string[] }[];
+function makeError(code: string, message: string): EketErrorClass {
+  return new EketErrorClass(code as EketErrorCode, message);
 }
 
 export async function ticketIndex(action: string): Promise<Result<void>> {
@@ -45,7 +39,7 @@ export async function ticketIndex(action: string): Promise<Result<void>> {
   if (!fs.existsSync(jiraDir)) {
     return {
       success: false,
-      error: { code: 'JEK_NOT_INITIALIZED', message: 'Jira 目录不存在' }
+      error: makeError('JEK_NOT_INITIALIZED', 'Jira 目录不存在')
     };
   }
 
@@ -61,7 +55,7 @@ export async function ticketIndex(action: string): Promise<Result<void>> {
     default:
       return {
         success: false,
-        error: { code: 'JEK_INVALID_ACTION', message: `未知操作：${action}` }
+        error: makeError('JEK_INVALID_ACTION', `未知操作：${action}`)
       };
   }
 }
@@ -314,7 +308,7 @@ function generateBySprintIndex(indexDir: string, tickets: Ticket[]): void {
   fs.writeFileSync(file, lines.join('\n'));
 }
 
-function generateByMilestoneIndex(indexDir: string, tickets: Ticket[]): void {
+function generateByMilestoneIndex(indexDir: string, _tickets: Ticket[]): void {
   const file = path.join(indexDir, 'by-milestone.md');
   // Note: milestone field is not yet parsed, would need to be added to ticket metadata
   const lines = ['# 按 Milestone 索引', '', `**最后更新**: ${new Date().toISOString()}`, ''];
@@ -364,23 +358,16 @@ function generateTicketRegistry(jiraDir: string, tickets: Ticket[]): void {
 async function syncToRedis(jiraDir: string): Promise<Result<void>> {
   console.log('同步到 Redis...');
 
-  const redisResult = await createRedisClient();
-  if (!redisResult.success) {
-    return redisResult;
-  }
-
-  const redis = redisResult.data;
   const stateFile = path.join(jiraDir, 'state', 'ticket-registry.yml');
 
   if (!fs.existsSync(stateFile)) {
     return {
       success: false,
-      error: { code: 'JEK_REGISTRY_NOT_FOUND', message: 'ticket-registry.yml 不存在' }
+      error: makeError('JEK_REGISTRY_NOT_FOUND', 'ticket-registry.yml 不存在')
     };
   }
 
-  // 解析 YAML 并同步到 Redis
-  // 简化实现：实际应使用 yaml 解析库
+  // 简化实现：实际应使用 yaml 解析库 + Redis 客户端
   console.log('✓ Redis 同步完成（简化实现）');
 
   return { success: true, data: undefined };
@@ -389,21 +376,16 @@ async function syncToRedis(jiraDir: string): Promise<Result<void>> {
 async function syncToSqlite(jiraDir: string): Promise<Result<void>> {
   console.log('同步到 SQLite...');
 
-  const sqliteResult = await createSqliteClient();
-  if (!sqliteResult.success) {
-    return sqliteResult;
-  }
-
-  const db = sqliteResult.data;
   const stateFile = path.join(jiraDir, 'state', 'ticket-registry.yml');
 
   if (!fs.existsSync(stateFile)) {
     return {
       success: false,
-      error: { code: 'JEK_REGISTRY_NOT_FOUND', message: 'ticket-registry.yml 不存在' }
+      error: makeError('JEK_REGISTRY_NOT_FOUND', 'ticket-registry.yml 不存在')
     };
   }
 
+  // 简化实现：实际应使用 SQLite 客户端
   console.log('✓ SQLite 同步完成（简化实现）');
 
   return { success: true, data: undefined };
@@ -415,7 +397,7 @@ function showStats(jiraDir: string): Promise<Result<void>> {
   if (!fs.existsSync(indexFile)) {
     return Promise.resolve({
       success: false,
-      error: { code: 'JEK_INDEX_NOT_FOUND', message: 'INDEX.md 不存在，请先运行 --rebuild' }
+      error: makeError('JEK_INDEX_NOT_FOUND', 'INDEX.md 不存在，请先运行 --rebuild')
     });
   }
 

@@ -38,12 +38,13 @@ export class OpenCLAWGateway {
     this.app.use(express.urlencoded({ extended: true }));
 
     // JSON 解析错误处理 - 放在所有中间件之前
-    this.app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+    this.app.use((err: Error, _req: Request, res: Response, next: NextFunction) => {
       if (err instanceof SyntaxError || (err as any).type === 'entity.parse.failed') {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'parse_error',
           message: 'Invalid JSON in request body',
         });
+        return;
       }
       next(err);
     });
@@ -67,7 +68,7 @@ export class OpenCLAWGateway {
     });
 
     // 通用错误处理（兜底）
-    this.app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+    this.app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
       console.error('[OpenCLAW Gateway] Error:', err);
       res.status(500).json({
         error: 'internal_error',
@@ -81,7 +82,7 @@ export class OpenCLAWGateway {
   public start(): Promise<void> {
     return new Promise((resolve, reject) => {
       // 使用 createServer 并设置 reusePort: false 来禁止端口复用
-      const httpServer = http.createServer({ reusePort: false }, this.app);
+      const httpServer = http.createServer(this.app);
       this.server = httpServer;
 
       httpServer.listen(this.config.port, this.config.host, () => {
