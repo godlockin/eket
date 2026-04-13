@@ -52,7 +52,7 @@ describe('MasterElection', () => {
       };
       const election1 = createMasterElection(config);
 
-      // 等待 1ms 确保时间戳不同
+      // 等待 1ms（随机后缀确保 ID 唯一性，不依赖时间戳）
       await new Promise(resolve => setTimeout(resolve, 1));
 
       const election2 = createMasterElection(config);
@@ -60,7 +60,7 @@ describe('MasterElection', () => {
       const id1 = election1.getInstanceId();
       const id2 = election2.getInstanceId();
 
-      // 两个 instance ID 应该不同（因为 PID 或时间戳不同）
+      // 两个 instance ID 应该不同（因为时间戳不同）
       expect(id1).not.toBe(id2);
     });
 
