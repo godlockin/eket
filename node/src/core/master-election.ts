@@ -133,11 +133,12 @@ export class MasterElection {
       ...warmStandbyConfig,
     };
 
-    // 生成唯一 instance ID
+    // 生成唯一 instance ID（加入随机后缀防止时间戳碰撞）
     const hostname = process.env.HOSTNAME || 'unknown';
     const pid = process.pid;
     const timestamp = Date.now();
-    this.instanceId = `instance_${hostname}_${pid}_${timestamp}`;
+    const rand = Math.random().toString(36).slice(2, 7);
+    this.instanceId = `instance_${hostname}_${pid}_${timestamp}_${rand}`;
   }
 
   /**
