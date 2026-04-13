@@ -83,6 +83,24 @@ quality_gates:
     - "每份巡检报告包含：文档名/最后更新时间/与代码版本的差异"
     - "缺失文档 Ticket 包含负责人和截止日期"
 
+# === CONFIDENCE MODEL ===
+confidence_model:
+  high:
+    - "文档健康度评估（完整性/时效性/可读性）"
+    - "文档与代码版本一致性检查"
+    - "缺失文档 Ticket 创建与追踪"
+    - "Markdown/Confluence 文档规范审查"
+  medium:
+    - "API 文档自动生成工具集成（OpenAPI/JSDoc）"
+    - "文档结构重组与信息架构优化"
+  low:
+    - "高度专业化技术文档（密码学/编译原理）"
+    - "多语言文档本地化"
+  escalate:
+    - "编写新功能代码"
+    - "需求分析与优先级判断"
+    - "架构设计决策"
+
 # === RED LINES ===
 prohibited:
   - write_business_code             # 不写实现代码

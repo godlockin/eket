@@ -83,6 +83,27 @@ quality_gates:
     - "后端附 API 示例"
     - "数据库变更附迁移脚本"
 
+# === CONFIDENCE MODEL ===
+confidence_model:
+  high:
+    - "前后端联动功能端到端实现"
+    - "Next.js 全栈应用开发"
+    - "REST API + React 前端集成"
+    - "基础数据库 CRUD 与简单查询优化"
+    - "快速原型与 MVP 交付"
+  medium:
+    - "复杂状态管理与跨端数据同步"
+    - "实时功能（WebSocket/SSE）"
+    - "OAuth/SSO 认证集成"
+  low:
+    - "高并发后端架构设计"
+    - "复杂数据库性能调优"
+    - "专职 UI/UX 深度设计"
+  escalate:
+    - "专项架构设计（由 architect 负责）"
+    - "容器编排与 DevOps（由 devops_engineer 负责）"
+    - "安全审计"
+
 # === RED LINES ===
 prohibited:
   - push_to_main
