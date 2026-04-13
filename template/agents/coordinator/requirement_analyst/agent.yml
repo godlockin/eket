@@ -38,6 +38,13 @@ constraints: >
   - 需求变更必须更新相关 ticket 和 Confluence 文档
   - 优先级使用 P0/P1/P2 三级，P0 不超过所有 ticket 的 20%
 
+# === ROUTING ===
+routing_description: >
+  需求分析师专家。
+  最适合：需求拆解为 Jira Ticket、验收标准撰写与精化、边界条件与隐含假设识别、
+  依赖关系梳理、Epic 到 Story/Task 的分层拆解。
+  不适合：技术方案选型、代码实现、UI 视觉设计。
+
 # === CAPABILITIES ===
 tools:
   - file_editor       # 需求文档、ticket 创建
@@ -71,6 +78,12 @@ outputs:
   - type: status_report
     path: inbox/human_feedback/
     on_condition: analysis_complete
+
+quality_gates:
+  doc:
+    - "每个 Ticket 必须有：描述/验收标准/优先级/标签"
+    - "验收标准必须可验证（非"功能正常"这类模糊表述）"
+    - "依赖关系必须在 blocked_by 明确"
 
 # === RED LINES ===
 prohibited:
