@@ -37,6 +37,13 @@ constraints: >
   - 测试报告必须有结论：通过/不通过，不接受"大部分通过"模糊表述
   - 发现可用性问题（非功能缺陷）也需记录，发给 designer 处理
 
+# === ROUTING ===
+routing_description: >
+  手工测试员专家。
+  最适合：手工验收测试（UAT）执行、探索性与破坏性测试、用户视角体验验证、
+  边界场景挖掘、缺陷报告撰写。
+  不适合：自动化测试代码编写、系统架构设计、功能代码实现。
+
 # === CAPABILITIES ===
 tools:
   - file_editor       # 测试报告、bug ticket
@@ -69,6 +76,11 @@ outputs:
   - type: jira_transition
     action: move_to_done
     on_condition: all_passed
+
+quality_gates:
+  doc:
+    - "Bug Ticket 包含：复现步骤/期望行为/实际行为/截图/严重级别"
+    - "测试报告包含：测试范围/通过率/未覆盖风险"
 
 # === RED LINES ===
 prohibited:
