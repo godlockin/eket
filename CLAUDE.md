@@ -318,10 +318,17 @@ Level 3: Shell 脚本          # lib/adapters/hybrid-adapter.sh 基础模式
 ## 分支策略
 
 ```
-feature/{ticket-id}-{desc}  →  PR  →  testing  →  测试通过  →  PR  →  main
+feature/{ticket-id}-{desc}  →  PR  →  testing  →  测试通过  →  PR  →  miao  →  PR  →  main
 ```
 
-- `main`：严格保护，仅 Master 合并
+| 分支 | 角色 | 保护规则 |
+|------|------|----------|
+| `main` | 发布快照，版本节点 | PR 必须，CI 必须，1人 review |
+| `miao` | 稳定主干，长期集成 | PR 必须，CI 必须，1人 review |
+| `testing` | 测试集成，验收门禁 | PR 必须，CI 必须 |
+| `feature/*` | 开发分支，Slaver 使用 | 无保护，自由提交 |
+
+- `main`：仅接受来自 `miao` 的 PR，代表正式发布节点
 - `testing`：保护，PR 合并需测试通过
 - `feature/*`：开放，Slaver 开发使用
 
