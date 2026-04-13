@@ -553,8 +553,7 @@ export class OpenCLAWIntegrationAdapter {
         success: true,
         data: status,
       };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    } catch (_err) {
       // 发生异常时返回模拟数据（降级模式）
       const mockStatus: OpenCLAWAgentStatus = {
         agent_id: agentId,

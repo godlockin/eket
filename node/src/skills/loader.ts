@@ -265,7 +265,7 @@ export class SkillLoader {
     const sandbox: vm.Context = {
       module: { exports: {} },
       exports: {},
-      require: (moduleName: string) => {
+      require: (_moduleName: string) => {
         // 简单处理 require，返回空对象
         // 复杂依赖需要在测试中 mock
         return {};

@@ -250,7 +250,7 @@ export class UnifiedSkillInterface implements SkillInterceptor {
     let totalExecutions = 0;
     let totalDuration = 0;
 
-    for (const [skillName, stats] of this.executionStats.entries()) {
+    for (const [, stats] of this.executionStats.entries()) {
       totalExecutions += stats.count;
       totalDuration += stats.totalDuration;
     }
@@ -277,10 +277,6 @@ export class UnifiedSkillInterface implements SkillInterceptor {
     this.executionStats.clear();
   }
 
-  /**
-   * 执行统计数据结构
-   */
-  private executionStats: Map<string, { count: number; totalDuration: number }>;
 
   /**
    * 执行带超时的 Skill
@@ -411,7 +407,7 @@ export class CachingInterceptor implements SkillInterceptor {
     }
   }
 
-  async afterExecute<T, R>(skill: Skill, result: SkillOutput<R>): Promise<void> {
+  async afterExecute<R>(skill: Skill, result: SkillOutput<R>): Promise<void> {
     if (result.success) {
       // 使用 skill name 和 result data 作为缓存 key
       // 注意：这里使用一个简化的 key，因为测试中 beforeExecute 传入 data: {}
