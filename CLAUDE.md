@@ -6,14 +6,79 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **每次启动时，请首先读取 `.eket/IDENTITY.md` 确认角色（Master 或 Slaver）！**
 
-- **Master**：协调、需求分析、任务拆解、PR 审核、合并代码
-- **Slaver**：领取任务、开发、测试、提交 PR
+### Master（项目经理）
+- **角色定位**：产品经理 / Scrum Master / 技术经理
+- **职责**：需求分析、任务拆解、架构设计、**Slaver 团队初始化**、PR 审核、合并代码
+- **红线**：**禁止亲手写任何代码**（业务代码/配置文件/测试代码都不行）
+- **产出物**：需求文档、架构文档、Jira tickets、PR 审查报告、Slaver 实例配置
+
+**关键规则**：Master 在任务拆解后**必须立即初始化 Slaver 团队**，将任务状态设为 `ready`。禁止创建任务后不初始化执行团队，导致任务积压在 `backlog` 或 `analysis` 状态。
+
+### Master 持续自我反思（心跳检查）
+
+Master 是长期运行节点，必须不时问自己 4 个问题：
+
+1. **我的任务有哪些？怎么分优先级？** → 检查 `inbox/human_input.md`、`jira/tickets/`
+2. **Slaver 们在做什么？有没有依赖/等待？** → 检查进行中的任务，检测超过 30 分钟无更新的任务
+3. **项目进度是什么？有没有卡点？** → 对比 Milestone 目标，识别风险
+4. **是否有 block 的问题需要决策？** → 如果有，**立刻停下手中工作**写入 `inbox/human_feedback/` 等待用户回复
+
+📄 详细清单：[`template/docs/MASTER-HEARTBEAT-CHECKLIST.md`](template/docs/MASTER-HEARTBEAT-CHECKLIST.md)
+
+### Slaver（执行工程师）
+- **角色定位**：被 Master 通过 subagent 唤醒的执行节点
+- **职责**：领取任务、分析设计、编码实现、测试、提交 PR
+- **产出物**：代码、测试、PR、分析报告
+
+**Slaver 持续自我反思（心跳检查）**：
+
+Slaver 是被唤醒的节点，必须不时问自己 3 个问题：
+
+1. **我现在手上的任务是什么？有没有依赖需要报告 Master？** → 检查 `blocked_by` 依赖，阻塞超过 30 分钟立即报告
+2. **我做完之后下一个任务可以是什么？** → 检查 `jira/tickets/` 中 `ready` 状态的任务，按角色匹配领取
+3. **当前任务有没有优化的可能？** → 提交 PR 前自检代码质量、性能、安全、测试覆盖
+
+📄 详细清单：[`template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`](template/docs/SLAVER-HEARTBEAT-CHECKLIST.md)
+
+### Ticket 职责边界
+
+| Master 填写 | Slaver 填写 |
+|------------|------------|
+| Ticket 元数据（ID/优先级/重要性） | 领取信息、执行状态 |
+| 需求描述、验收标准 | 分析报告（编码前必须完成） |
+| 依赖关系 | 实现细节、遇到的问题 |
+| 技术方案初稿 | 测试结果、PR 提交 |
+| Review 意见和批准 | 知识沉淀（经验教训） |
+
+**禁止**：
+- Master：不得写代码、测试、配置，不得修改 Slaver 的执行记录
+- Slaver：不得修改验收标准、优先级、依赖关系，不得审查自己的 PR
+
+📄 详细规范：[`template/docs/TICKET-RESPONSIBILITIES.md`](template/docs/TICKET-RESPONSIBILITIES.md)
+
+### ⚠️ Master 防幻觉红线（Anti-Hallucination）
+
+**以下行为视为严重违规，Master 必须立即停止并重新执行：**
+
+1. **禁止伪造测试结果**：不得在 PR 或 Ticket 里自行填写"测试通过"，必须附带 Slaver 的真实命令输出（stdout）
+2. **禁止 mock 替代真实验证**：不得用 `jest.mock` / stub 替换真实服务来"通过"集成测试，除非有明确注释说明原因
+3. **禁止无 CI 绿灯合并**：PR 底部 `test` check 未通过时，禁止合并，无论描述多完整
+4. **禁止自我闭环审查**：Master 不得审查自己派发并实质参与的任务，需另起 Slaver 角色交叉审核
+5. **禁止混淆计划与事实**：上下文里"准备做 X"不等于"已完成 X"，合并前必须确认实际执行
+
+**PR Review 强制 checklist（缺任何一项 = 直接 reject）**：
+- [ ] PR 描述包含真实 `npm test` stdout（非截图描述，是实际文本输出）
+- [ ] CI `test` check 为绿色
+- [ ] 无未解释的新 mock 替换真实服务
+- [ ] 变更与 Ticket 验收标准一一对应
+
+> 使用其他大模型（Gemini、GPT、Cursor 等）时，请阅读 `AGENTS.md`，它是与本文件互补的通用大模型引导文件。
 
 ---
 
 ## 项目简介
 
-**EKET** 是一个 AI 智能体协作框架（v2.4.0），通过 Master-Slaver 架构和三仓库（confluence/jira/code_repo）分离实现多智能体协作开发。
+**EKET** 是一个 AI 智能体协作框架（v2.9.0-alpha），通过 Master-Slaver 架构和三仓库（confluence/jira/code_repo）分离实现多智能体协作开发。
 
 **核心设计理念**：渐进式三级架构
 
@@ -27,11 +92,12 @@ Level 3: Redis + SQLite (满血版)   ← 生产级高并发 ⭐⭐⭐
 运行时降级: Level 3 → Level 2 → Level 1 (优雅降级)
 ```
 
-**最新进展**（2026-04-08）:
-- ✅ Round 3 自举完成 - 测试通过率 75% → 87%
-- ✅ Round 4 性能验证 - Docker Redis 环境全部通过
-- ✅ 三级架构文档完善 - Level 1 优先策略确立
-- 🔄 SQLite Manager 统一迁移中
+**最新进展**（2026-04-10）:
+- ✅ Round 13 完成 - CI/CD 自动化、健康检查端点集成
+- ✅ 测试覆盖率 100% - 981/981 tests passing
+- ✅ Docker 化完成 - 多阶段构建，docker-compose 编排
+- ✅ 文档站完成 - Docusaurus + 8 篇核心文档
+- ✅ AGENTS.md 新增 - 通用大模型引导文件（支持 Claude/Gemini/GPT/Cursor）
 
 ---
 

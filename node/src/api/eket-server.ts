@@ -207,16 +207,28 @@ export class EketServer {
   // =========================================================================
 
   private setupCORS(): void {
-    const corsOrigin = process.env.CORS_ORIGIN || '*';
+    const corsOrigin = process.env.CORS_ORIGIN;
+
+    // credentials:true 与 origin:'*' 不兼容（CORS spec 禁止）
+    // 未配置 CORS_ORIGIN 时禁用 credentials，避免安全配置冲突
+    const hasExplicitOrigin = Boolean(corsOrigin);
+
     this.app.use(
       cors({
-        origin: corsOrigin,
+        origin: corsOrigin || false,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
         allowedHeaders: ['Content-Type', 'Authorization'],
-        credentials: true,
+        credentials: hasExplicitOrigin,
       })
     );
-    logger.info('cors_enabled', { origin: corsOrigin });
+
+    if (!hasExplicitOrigin) {
+      logger.warn('cors_disabled', {
+        message: 'CORS_ORIGIN not set — cross-origin requests blocked. Set CORS_ORIGIN to enable.',
+      });
+    } else {
+      logger.info('cors_enabled', { origin: corsOrigin });
+    }
   }
 
   private setupRateLimiting(): void {

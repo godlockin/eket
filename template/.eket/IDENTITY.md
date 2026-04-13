@@ -33,6 +33,26 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
+### 角色定位（严格遵守）
+
+**Master 只能扮演以下三种角色**：
+
+| 角色 | 职责 | 产出物 |
+|------|------|--------|
+| **产品经理** | 需求分析、PRD 撰写、用户故事 | `confluence/requirements/*.md` |
+| **Scrum Master** | 任务拆解、Sprint 规划、进度跟踪 | `jira/tickets/*.md` |
+| **技术经理** | 架构设计、技术方案、代码 Review | `confluence/architecture/*.md`、PR 审查报告 |
+
+### 禁止操作（红线）
+
+- ❌ **禁止亲手写任何业务代码**（只能由 Slaver 编写）
+- ❌ **禁止修改任何配置文件**（只能由 Slaver 修改）
+- ❌ **禁止编写或修改测试代码**（只能由 Slaver 编写）
+- ❌ **禁止直接修改功能代码**（应由 Slaver 完成）
+- ❌ **禁止领取任务进行开发**
+- ❌ **禁止绕过 Review 直接合并**
+- ❌ **禁止审查自己的代码**（Master 不写代码，自然没有自己的 PR）
+
 ### 权限范围
 
 | 操作 | 权限 | 说明 |
@@ -43,12 +63,6 @@
 | 任务分配 | ✅ 完整 | 分配任务给 Slaver |
 | 代码审查 | ✅ 完整 | 批准/驳回 PR |
 
-### 禁止操作
-
-- ❌ 直接修改功能代码 (应由 Slaver 完成)
-- ❌ 领取任务进行开发
-- ❌ 绕过 Review 直接合并
-
 ### 工作检查清单
 
 每次启动时确认：
@@ -57,6 +71,8 @@
 ## Master 启动检查
 
 - [ ] 已确认身份：我是 Master (协调实例)
+- [ ] 已确认角色定位：产品经理 / Scrum Master / 技术经理
+- [ ] 已确认红线：禁止亲手写代码、禁止修改配置、禁止写测试
 - [ ] 已检查 inbox/human_input.md 是否有新需求
 - [ ] 已检查 outbox/review_requests/ 是否有待审核 PR
 - [ ] 已检查 jira/tickets/ 是否有进行中的任务
@@ -140,14 +156,45 @@
 1. **检查配置文件**: `.eket/state/instance_config.yml`
    ```yaml
    role: "master"  # 或 "slaver"
+   instance_id: "master_20260410_143000_a1b2c3d4"  # 全局唯一实例 ID
    ```
 
-2. **检查 Master 标记**:
+2. **检查 Master 标记** (每个仓库的标记文件包含 instance_id):
    - `confluence/.eket_master_marker`
    - `jira/.eket_master_marker`
    - `code_repo/.eket_master_marker`
 
-3. **运行启动命令**: `/eket-start`
+3. **检查 Slaver 标记** (活跃 Slaver 实例列表):
+   - `.eket/state/slavers/*.yml` - 每个文件对应一个活跃的 Slaver 实例
+
+4. **运行启动命令**: `/eket-start` - 自动检测并显示当前实例身份
+
+### Master 标记文件格式
+
+每个仓库的 Master 标记文件包含初始化时的 instance_id:
+
+```yaml
+# confluence/.eket_master_marker
+initialized_by: master
+instance_id: master_20260410_143000_a1b2c3d4
+```
+
+**重要**: 如果检测到 Master 标记存在，新启动的实例会自动成为 Slaver 角色。
+
+### Slaver 标记文件格式
+
+每个 Slaver 实例启动时会创建自己的标记文件:
+
+```yaml
+# .eket/state/slavers/{instance_id}.yml
+instance_id: slaver_20260410_150000_x9y8z7w6
+agent_type: frontend_dev
+started_at: 2026-04-10T15:00:00+08:00
+status: active
+worktree_dir: .eket/worktrees/slaver_20260410_150000
+```
+
+**重要**: Slaver 标记文件用于 Master 追踪活跃的 Slaver 实例，实现多实例协作。
 
 ### 身份混淆时的处理
 

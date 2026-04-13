@@ -1,0 +1,51 @@
+# Ticket 状态索引（v2.1.1）
+#
+# 核心原则：索引文件是唯一真相源
+# - Slaver 领取任务时：先更新此文件 → 再去 ticket 文件查看详情
+# - Master 审批时：先更新此文件 → 再更新 ticket 文件
+# - 状态查询：只读此文件，不扫描所有 ticket
+
+last_updated: "2026-04-10T18:00:00+08:00"
+
+# 状态索引（按状态分组）
+status_index:
+  backlog:
+    - { id: "FEAT-005", type: "feature", title: "待开发功能", priority: "P2" }
+
+  ready:
+    - { id: "FEAT-004", type: "feature", title: "等待领取", priority: "P1", role: "frontend_dev" }
+    - { id: "FIX-002", type: "bugfix", title: "等待领取修复", priority: "P2", role: "backend_dev" }
+
+  in_progress:
+    - { id: "FEAT-001", type: "feature", title: "开发中功能", priority: "P0", assignee: "slaver_xxx_001", started_at: "2026-04-10T15:00:00+08:00" }
+    - { id: "FEAT-002", type: "feature", title: "开发中功能 2", priority: "P1", assignee: "slaver_xxx_002", started_at: "2026-04-10T16:00:00+08:00" }
+
+  review:
+    - { id: "FEAT-003", type: "feature", title: "待 Review", priority: "P1", assignee: "slaver_xxx_001", submitted_at: "2026-04-10T17:00:00+08:00" }
+
+  approved:
+    - { id: "FEAT-000", type: "feature", title: "已完成", priority: "P1", approved_at: "2026-04-10T12:00:00+08:00" }
+
+  done:
+    - { id: "FEAT-999", type: "feature", title: "历史完成", priority: "P2", done_at: "2026-04-09T18:00:00+08:00" }
+
+# 快速查找表（按 ID 索引）
+by_id:
+  FEAT-000: { status: "approved", type: "feature", assignee: null, updated_at: "2026-04-10T12:00:00+08:00" }
+  FEAT-001: { status: "in_progress", type: "feature", assignee: "slaver_xxx_001", updated_at: "2026-04-10T15:00:00+08:00" }
+  FEAT-002: { status: "in_progress", type: "feature", assignee: "slaver_xxx_002", updated_at: "2026-04-10T16:00:00+08:00" }
+  FEAT-003: { status: "review", type: "feature", assignee: "slaver_xxx_001", updated_at: "2026-04-10T17:00:00+08:00" }
+  FEAT-004: { status: "ready", type: "feature", assignee: null, updated_at: "2026-04-10T14:00:00+08:00" }
+  FEAT-005: { status: "backlog", type: "feature", assignee: null, updated_at: "2026-04-10T13:00:00+08:00" }
+  FIX-002: { status: "ready", type: "bugfix", assignee: null, updated_at: "2026-04-10T14:30:00+08:00" }
+
+# Slaver 状态（用于快速查询谁在做什么）
+slaver_workload:
+  slaver_xxx_001:
+    current_task: "FEAT-001"
+    waiting_review: ["FEAT-003"]
+    status: "busy"
+  slaver_xxx_002:
+    current_task: "FEAT-002"
+    waiting_review: []
+    status: "busy"

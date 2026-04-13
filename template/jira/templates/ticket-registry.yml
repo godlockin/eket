@@ -1,0 +1,10 @@
+# Ticket 注册表
+
+# 此文件用于三方存储同步（Redis/SQLite）
+# 由 Master 维护，每次创建/更新 ticket 时同步
+
+last_synced: {{LAST_SYNCED}}
+total_tickets: {{TOTAL_COUNT}}
+
+tickets:
+{{TICKET_ENTRIES}}

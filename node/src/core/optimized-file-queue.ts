@@ -324,7 +324,7 @@ export class OptimizedFileQueueManager {
    * 计算消息校验和（用于完整性检查）
    */
   private calculateChecksum(message: Message): string {
-    const hash = crypto.createHash('md5');
+    const hash = crypto.createHash('sha256');
     hash.update(JSON.stringify(message, Object.keys(message).sort()));
     return hash.digest('hex');
   }

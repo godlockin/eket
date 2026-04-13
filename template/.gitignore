@@ -74,3 +74,9 @@ __pycache__/
 .idea/
 .vscode/
 *.sublime-*
+
+# 智能体消息队列（运行时产物，不追踪）
+shared/message_queue/inbox/
+shared/message_queue/outbox/
+shared/message_queue/broadcast/
+shared/message_queue/dead_letter/

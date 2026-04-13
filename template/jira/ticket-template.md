@@ -1,4 +1,4 @@
-# Jira Ticket 模板 (v2.0.0)
+# Jira Ticket 模板 (v2.1.0)
 
 <!--
 ================================================================================
@@ -11,13 +11,30 @@
 **类型**: {{TYPE}}  <!-- feature / bugfix / task / improvement / research -->
 **优先级**: {{PRIORITY}}  <!-- P0(紧急) / P1(高) / P2(中) / P3(低) -->
 
-**状态**: {{STATUS}}  <!-- backlog → analysis → approved → design → ready → in_progress → test → review → done -->
+**状态**: {{STATUS}}  <!-- backlog → analysis → approved → ready → in_progress → test → review → done -->
 **创建时间**: {{CREATED_AT}}
 **最后更新**: {{UPDATED_AT}}
 
-**负责人**: {{ASSIGEE}}
-**执行 Agent**: {{SLAVER_NAME}}
+**负责人**: {{ASSIGNEE}}  <!-- Slaver 领取时填写 instance_id -->
+**执行 Agent**: {{SLAVER_NAME}}  <!-- Slaver 领取时填写 instance_id -->
 **所属 Epic**: {{EPIC_ID}}
+**所属 Sprint**: {{SPRINT_ID}}
+**所属 Milestone**: {{MILESTONE_ID}}
+**适配角色**: {{TARGET_ROLE}}  <!-- frontend_dev / backend_dev / fullstack / tester / devops -->
+
+<!--
+================================================================================
+  Slaver 领取任务记录 (v2.1.0 新增)
+================================================================================
+-->
+
+## 领取记录
+
+| 操作 | Slaver Instance ID | 时间 | 状态变更 |
+|------|-------------------|------|----------|
+| 领取 | {{CLAIMED_BY}} | {{CLAIMED_AT}} | ready → in_progress |
+| 提交 Review | {{REVIEW_SUBMITTED_BY}} | {{REVIEW_SUBMITTED_AT}} | in_progress → review |
+| Review 通过 | {{REVIEW_APPROVED_BY}} | {{REVIEW_APPROVED_AT}} | review → done |
 
 <!--
 ================================================================================
