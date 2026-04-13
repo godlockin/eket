@@ -153,21 +153,24 @@ export class WebDashboardServer {
     // Health check routes (GET only)
     if (method === 'GET') {
       if (url === '/health') {
-        this.sendJson(res, 200, {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
           status: 'ok',
           version: '2.4.0',
           uptime: Math.floor(process.uptime()),
           timestamp: new Date().toISOString(),
           checks: { fileQueue: 'ok' },
-        });
+        }));
         return;
       }
       if (url === '/ready') {
-        this.sendJson(res, 200, { ready: true });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ready: true }));
         return;
       }
       if (url === '/live') {
-        this.sendJson(res, 200, { alive: true });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ alive: true }));
         return;
       }
     }
