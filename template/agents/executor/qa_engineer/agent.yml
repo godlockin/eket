@@ -37,6 +37,13 @@ constraints: >
   - 测试代码与业务代码同等对待：不允许重复代码，有独立 review
   - 测试数据必须隔离，禁止使用生产数据
 
+# === ROUTING ===
+routing_description: >
+  QA 工程师专家。
+  最适合：自动化测试框架搭建与用例编写、测试策略制定、覆盖率分析与提升、
+  E2E 测试与集成测试、回归测试流水线维护。
+  不适合：功能代码实现、UI 视觉设计、手工验收测试执行。
+
 # === CAPABILITIES ===
 tools:
   - code_editor       # 编写测试代码
@@ -73,6 +80,16 @@ outputs:
     path: outbox/test_reports/
   - type: jira_transition
     action: move_to_review
+
+quality_gates:
+  code:
+    - "测试用例覆盖：happy path + 边界值 + 错误路径"
+    - "集成测试覆盖主要业务流程"
+    - "无 jest.mock 替换真实服务（除非有注释说明）"
+  pr_checklist:
+    - "附覆盖率报告截图"
+    - "新增测试用例说明测试意图"
+    - "缺陷 Ticket 包含复现步骤"
 
 # === RED LINES ===
 prohibited:

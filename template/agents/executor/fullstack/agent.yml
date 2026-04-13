@@ -35,6 +35,13 @@ constraints: >
   - 数据库 schema 变更必须上报 architect 确认后实施
   - 禁止 TODO/placeholder/pass 语句，代码必须完全可运行
 
+# === ROUTING ===
+routing_description: >
+  全栈开发专家。
+  最适合：前后端联动的小型独立功能、全栈原型快速实现、端到端集成验证、
+  团队专职角色不足时的兜底交付。
+  不适合：专项架构设计评审、专职 UI/UX 视觉设计、专职 DevOps 基础设施操作。
+
 # === CAPABILITIES ===
 tools:
   - code_editor       # 读写源文件（前后端）
@@ -65,6 +72,16 @@ outputs:
     coverage_target: "> 70%"
   - type: jira_transition
     action: move_to_review
+
+quality_gates:
+  code:
+    - "TypeScript strict: 0 errors（前后端）"
+    - "单元测试覆盖率 >= 70%"
+    - "API 接口有文档"
+  pr_checklist:
+    - "前端附截图"
+    - "后端附 API 示例"
+    - "数据库变更附迁移脚本"
 
 # === RED LINES ===
 prohibited:
