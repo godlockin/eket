@@ -78,6 +78,26 @@ quality_gates:
     - "每个用户故事格式：As a X, I want Y, so that Z"
     - "开放问题在交付前必须有明确状态"
 
+# === CONFIDENCE MODEL ===
+confidence_model:
+  high:
+    - "用户故事撰写（As a X, I want Y, so that Z）"
+    - "PRD 文档输出（背景/验收标准/边界条件）"
+    - "竞品分析与功能对标"
+    - "需求优先级排序（MoSCoW/RICE）"
+    - "Roadmap 规划与里程碑拆解"
+  medium:
+    - "用户调研设计与访谈分析"
+    - "A/B 实验方案设计"
+    - "数据埋点需求定义"
+  low:
+    - "高度技术性功能的可行性评估"
+    - "定价策略与商业模式设计"
+  escalate:
+    - "技术方案选型"
+    - "代码实现与测试"
+    - "基础设施规划"
+
 # === RED LINES ===
 prohibited:
   - write_code

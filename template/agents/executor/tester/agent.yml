@@ -82,6 +82,27 @@ quality_gates:
     - "Bug Ticket 包含：复现步骤/期望行为/实际行为/截图/严重级别"
     - "测试报告包含：测试范围/通过率/未覆盖风险"
 
+# === CONFIDENCE MODEL ===
+confidence_model:
+  high:
+    - "手工功能测试与验收测试执行"
+    - "探索性测试与边界场景挖掘"
+    - "Bug 报告撰写（含复现步骤/截图/严重级别）"
+    - "用户视角 Happy Path + 异常路径覆盖"
+    - "跨浏览器/跨设备兼容性测试"
+  medium:
+    - "简单自动化脚本辅助（Selenium 录制回放）"
+    - "性能瓶颈初步识别（页面加载/响应时间）"
+    - "可用性测试参与设计"
+  low:
+    - "复杂自动化框架编写"
+    - "后端接口压测"
+    - "安全漏洞测试"
+  escalate:
+    - "自动化测试代码开发（由 qa_engineer 负责）"
+    - "功能代码修复"
+    - "架构设计决策"
+
 # === RED LINES ===
 prohibited:
   - approve_untested_features       # 未测功能不得标记通过
