@@ -1,6 +1,6 @@
 # EKET Framework - 项目进度追踪
 
-**当前版本**: v2.10.2
+**当前版本**: v2.10.4
 **更新时间**: 2026-04-14
 **维护者**: Master Agent
 
@@ -36,6 +36,7 @@
 | 自动发布 workflow | ✅ 完成 | .github/workflows/release.yml — PyPI (OIDC/token) + npm + GitHub Release |
 | Harness-inspired Slaver 升级 | ✅ 完成 | SlaverHeartbeat 能力声明 + 执行时长统计 + busyRatio 过载检测 |
 | GSD-inspired 工程纪律升级 | ✅ 完成 | Nyquist Rule + 4-Level Verification + Deviation Rules + Analysis Paralysis Guard |
+| 跨项目借鉴知识库 | ✅ 完成 | BORROWED-WISDOM.md — GSD/Harness/三省六部/OpenAI Agents SDK + 通用经验 |
 
 ---
 
@@ -60,6 +61,7 @@
 | 17b | **ticket-template v2.2.0 + validate script + master:heartbeat + release workflow** | v2.10.0 | ✅ 完成 |
 | 18 | **Harness 借鉴**：SlaverHeartbeat 能力声明 + 执行时长 + busyRatio 过载检测 | v2.10.1 | ✅ 完成 |
 | 19 | **GSD 借鉴**：Nyquist Rule + 4-Level Artifact Verification + Deviation Rules + Analysis Paralysis Guard | v2.10.2 | ✅ 完成 |
+| 19b | **工程记忆**：validate 误报修复 + BORROWED-WISDOM 跨项目借鉴知识库 | v2.10.3~4 | ✅ 完成 |
 
 ---
 
@@ -85,6 +87,30 @@
 - master:heartbeat 与 EKET Web Dashboard 集成（/api/heartbeat 端点）
 - Slaver heartbeat CLI（对应 master:heartbeat 的 Slaver 侧 3 问自检）
 - Slaver 领取任务时自动写入 started_at（task:claim 命令集成）
+
+## Round 19b 完成详情（2026-04-14）
+
+### v2.10.3 — validate-ticket-template.sh 误报修复
+
+`check_tbd()` 函数 `\bTODO\b` 正则误匹配 TASK-024.md 中解释性文本"非仅修改注释或 TODO）"，导致 TASK-024 被误判 WARN。
+
+新增排除规则：`| grep -vE '或\s*TODO|TODO\s*）|TODO\s*\)|or TODO|注释或'`
+
+验证：33/33 PASS，0 WARN，0 FAIL。
+
+### v2.10.4 — BORROWED-WISDOM.md 跨项目借鉴知识库
+
+新建 `confluence/memory/BORROWED-WISDOM.md`，沉淀 EKET 历次 Round 从外部项目借鉴的思想和规则：
+
+| 来源 | 借鉴内容 |
+|------|---------|
+| GSD (52k ⭐) | Nyquist Rule / 4-Level Verification / Deviation Rules / Analysis Paralysis Guard |
+| Harness CD | 4值状态 / Capacity Declaration / busyRatio / 时间戳 |
+| 唐代三省六部 | gate_reviewer 否决权 / independent_auditor 独立监察 / 制度性分权 |
+| OpenAI Agents SDK | routing_description / quality_gates / confidence_model |
+| EKET 自身迭代 | squash merge hash / 误报 vs 漏报 / 分支保护 / 向后兼容模式等 8 条 |
+
+附借鉴评估框架（5维度）防止盲目引入。
 
 ## Round 19 完成详情（2026-04-14）
 
