@@ -118,13 +118,13 @@ validate_ticket() {
   fi
 
   # 5. 验收标准（支持 ## 验收标准 或 **验收标准** 格式）
-  if ! file_has '(##\s*(验收标准|Acceptance Criteria)|\*\*验收标准\*\*)' "$file"; then
+  if ! file_has '(##\s*[0-9.]*\s*(验收标准|Acceptance Criteria)|\*\*验收标准\*\*)' "$file"; then
     issues+=("  ${RED}[FAIL]${RESET} 缺少验收标准（## 验收标准 section），gate:review 会 VETO")
     ticket_fail=$((ticket_fail + 1))
   else
     # 验收标准有内容检查（取段落后3行，去注释）
     local ac_content
-    ac_content=$(echo "$content" | grep -A5 -E '(##\s*验收标准|Acceptance Criteria)' | grep -vE '^##|^---' | grep -vE '^\s*$' | head -3 || true)
+    ac_content=$(echo "$content" | grep -A8 -E '(##\s*[0-9.]*\s*(验收标准|Acceptance Criteria))' | grep -vE '^##\s*[0-9.]*\s*(验收标准|Acceptance Criteria)|^---' | grep -vE '^\s*$' | head -3 || true)
     if [[ ${#ac_content} -lt 10 ]]; then
       issues+=("  ${YELLOW}[WARN]${RESET} 验收标准内容过少（gate:review 可能 VETO）")
       ticket_warn=$((ticket_warn + 1))
