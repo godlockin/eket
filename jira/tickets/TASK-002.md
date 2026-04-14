@@ -3,6 +3,9 @@
 **类型**: Bug Fix
 **优先级**: P0
 **状态**: completed
+**gate_review_veto_count**: 0
+**veto_reason**:
+**resubmit_conditions**:
 **分配给**: Slaver 2 (Backend/QA)
 **预估工时**: 2 小时
 **实际工时**: 1.5 小时
