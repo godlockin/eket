@@ -70,3 +70,6 @@ credentials.json
 service-account*.json
 confluence/.eket_master_marker
 jira/.eket_master_marker
+
+# Git worktrees
+.worktrees/
