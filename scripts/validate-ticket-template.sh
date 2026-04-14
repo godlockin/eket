@@ -160,7 +160,15 @@ validate_ticket() {
     fi
   fi
 
-  # 9. done 状态验收标准无可执行命令（INFO，不影响通过判断）
+  # 9. Artifact Schema check for pr_review/test status
+  if [[ "$status" == "pr_review" || "$status" == "test" ]]; then
+    if ! file_has 'implementation_report:|test_result:' "$file"; then
+      issues+=("  ${YELLOW}[WARN]${RESET} pr_review/test 状态缺少 implementation_report（建议填写 Artifact Schema v1）")
+      ticket_warn=$((ticket_warn + 1))
+    fi
+  fi
+
+  # 10. done 状态验收标准无可执行命令（INFO，不影响通过判断）
   if [[ "$status" == "done" ]]; then
     local ac_content
     ac_content=$(grep -A8 -E '##\s*[0-9.]*\s*(验收标准|Acceptance Criteria)' "$file" 2>/dev/null || true)

@@ -336,5 +336,36 @@ external:                    # 外部依赖
 
 ---
 
-**维护者**: EKET Framework Team  
-**最后更新**: 2026-04-10
+---
+
+## Slaver 执行报告 Schema（Artifact Schema v1）
+
+Slaver 在 Ticket 的「执行记录」部分填写时，必须包含以下结构化字段：
+
+### 分析报告（analysis → ready 前必填）
+
+```yaml
+analysis_report:
+  summary: "一句话描述方案"
+  approach: "技术方案关键点（1-3 点）"
+  risks: "已识别风险（无则填 none）"
+  estimated_hours: N  # 预估工时（小时）
+  blocked_by: "依赖的 ticket ID 或 none"
+```
+
+### 实现报告（in_progress → test 前必填）
+
+```yaml
+implementation_report:
+  files_changed:
+    - "path/to/file1.ts (新增/修改/删除)"
+    - "path/to/file2.ts (新增/修改/删除)"
+  test_result: "X/Y tests passing"  # 必须是真实命令输出
+  pr_link: "https://github.com/..."
+  notes: "实现过程中的重要决策（可选）"
+```
+
+---
+
+**维护者**: EKET Framework Team
+**最后更新**: 2026-04-14
