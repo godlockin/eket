@@ -6,6 +6,10 @@
 - **标题**: 集成测试环境改进
 - **负责人**: Slaver D (DevOps Specialist)
 - **日期**: 2026-04-07
+- **优先级**: P1
+- **状态**: done
+**completed_at**: 2026-04-14T00:00:00Z
+- **gate_review_veto_count**: 0
 - **分支**: `feature/TASK-008-test-environment`
 
 ---

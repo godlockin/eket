@@ -3,6 +3,10 @@
 **类型**: Refactor
 **优先级**: P1
 **状态**: in_progress
+**started_at**: 2026-04-07T00:00:00Z
+**gate_review_veto_count**: 0
+**veto_reason**:
+**resubmit_conditions**:
 **分配给**: Slaver 3 (Backend)
 **预估工时**: 7 小时（已调整）
 **开始时间**: 2026-04-07

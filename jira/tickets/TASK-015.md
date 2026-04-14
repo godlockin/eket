@@ -5,6 +5,9 @@
 **版本**: v2.5.0
 **优先级**: P3
 **状态**: open
+**gate_review_veto_count**: 0
+**veto_reason**:
+**resubmit_conditions**:
 **分支**: feature/TASK-015-roadmap-sync
 
 ## 背景

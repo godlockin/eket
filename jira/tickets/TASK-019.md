@@ -2,9 +2,14 @@
 
 **类型**: TASK
 **状态**: done
+**优先级**: P1
 **创建日期**: 2026-04-09
 **完成日期**: 2026-04-09
+**completed_at**: 2026-04-09T00:00:00Z
 **作者**: Master
+**gate_review_veto_count**: 0
+**veto_reason**:
+**resubmit_conditions**:
 
 ---
 

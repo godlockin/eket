@@ -5,6 +5,9 @@
 **预估工时**: 7 小时
 **实际工时**: 2.5 小时
 **状态**: DONE
+**gate_review_veto_count**: 0
+**veto_reason**:
+**resubmit_conditions**:
 **分支**: `miao` (已合并)
 
 ---
