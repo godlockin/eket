@@ -57,7 +57,7 @@ Remote Redis → Local Redis → SQLite → File System
 | 目录/文件 | 职责 |
 |-----------|------|
 | `index.ts` | CLI 入口，注册所有 Commander 命令 |
-| `commands/` | 各 CLI 命令实现（`registerXxx` 函数） |
+| `commands/` | 各 CLI 命令实现（`registerXxx` 函数），含 `gate-review.ts` |
 | `core/` | 核心业务逻辑模块（见上表） |
 | `api/` | HTTP 服务器（Web Dashboard、OpenCLAW Gateway、Hook Server） |
 | `skills/` | Skills 系统（Registry、Loader、内置 Skills） |
@@ -84,25 +84,40 @@ Remote Redis → Local Redis → SQLite → File System
    └─ 创建 jira/tickets/ Ticket（含验收标准、依赖关系）
    └─ 状态：backlog → analysis → ready
 
-3. Slaver 初始化
+3. Gate Review（执行前关卡）
+   └─ 状态进入 ready 后自动触发 gate_reviewer
+   └─ gate_reviewer 检查：AC 完整性 / TBD 检测 / 依赖状态
+   └─ APPROVE → in_progress；VETO → 打回 analysis
+   └─ 同一 ticket 否决 ≥ 2 次 → 第 3 次强制 APPROVE（死锁防止）
+   └─ 命令：node dist/index.js gate:review <ticket-id>
+
+4. Slaver 初始化
    └─ Master 通过 subagent 唤醒 Slaver 节点
    └─ Slaver 注册到 instance-registry
-   └─ 状态：ready → in_progress
+   └─ 状态：ready → gate_review → in_progress
 
-4. 任务执行（Slaver）
+5. 任务执行（Slaver）
    └─ 领取任务：node dist/index.js task:claim [id]
    └─ 分析设计（编写分析报告）
    └─ TDD 开发：写失败测试 → 实现 → 通过
-   └─ 提交 PR（feature/* → testing → main）
+   └─ 提交 PR（feature/* → testing → miao → main）
 
-5. 代码审核（Master）
+6. 代码审核（Master）
    └─ 检查 PR 验证证据（真实 npm test stdout）
    └─ 检查 CI test check 绿灯
-   └─ 通过后合并到 main
+   └─ 通过后合并到 miao，再同步到 main
 
-6. 心跳监控
+7. 心跳监控
    └─ Slaver 每 30s 上报心跳
    └─ Master 检测超时（>30min 无更新）自动告警
+```
+
+### Ticket 状态机
+
+```
+backlog → analysis → ready → gate_review → in_progress → test → pr_review → done
+                                              ↓ VETO
+                                           analysis（打回重新分析）
 ```
 
 ### 三仓库分离（可选高级模式）
