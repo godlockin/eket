@@ -39,6 +39,7 @@ import { createMessageQueue, createMessage } from './core/message-queue.js';
 import { createRedisClient } from './core/redis-client.js';
 import { createSQLiteManager } from './core/sqlite-manager.js';
 import { createHttpHookServer } from './hooks/http-hook-server.js';
+import { WORKFLOW_TEMPLATES, getWorkflowTemplate, type WorkflowTemplateName } from './core/workflow-engine.js';
 import { printError, logSuccess, logWarning } from './utils/error-handler.js';
 
 // 运维就绪性模块导入
@@ -1356,6 +1357,36 @@ Related Commands:
         });
         process.exit(1);
       }
+    });
+
+  // ============================================================================
+  // Workflow Template Commands (TASK-030: CrewAI Flows inspired)
+  // ============================================================================
+
+  program
+    .command('workflow:list')
+    .description('List available workflow templates')
+    .action(() => {
+      console.log('\nAvailable workflow templates:\n');
+      Object.entries(WORKFLOW_TEMPLATES).forEach(([key, tpl]) => {
+        console.log(`  ${key.padEnd(20)} ${tpl.description}`);
+      });
+      console.log('');
+    });
+
+  program
+    .command('workflow:start <template>')
+    .description('Start a workflow from a template (FEATURE_DEV | PARALLEL_REVIEW | BUG_FIX)')
+    .option('--ticket <id>', 'Associated ticket ID')
+    .action((template: string, opts: { ticket?: string }) => {
+      const tpl = getWorkflowTemplate(template as WorkflowTemplateName);
+      if (!tpl) {
+        console.error(`Unknown template: ${template}. Run workflow:list to see options.`);
+        process.exit(1);
+      }
+      console.log(`Starting workflow: ${tpl.name}`);
+      console.log(`Ticket: ${opts.ticket ?? 'none'}`);
+      console.log(`Steps: ${tpl.steps.map((s) => s.id).join(' → ')}`);
     });
 
   // ============================================================================
