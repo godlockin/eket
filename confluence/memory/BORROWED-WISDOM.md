@@ -1,6 +1,7 @@
 # EKET 借鉴知识库 — Borrowed Wisdom
 
 **创建时间**: 2026-04-14
+**最后更新**: 2026-04-14
 **维护者**: Master Agent
 **目的**: 沉淀从外部项目借鉴的思想和规则，避免"遗忘再重发明"
 
@@ -13,6 +14,7 @@
 3. [唐代三省六部制 — 制度性分权](#tang-dynasty)
 4. [OpenAI Agents SDK — 路由描述协议](#openai-agents)
 5. [通用跨项目经验](#universal)
+6. [多智能体框架全景对比（2026-04）](#landscape)
 
 ---
 
@@ -295,3 +297,115 @@ const normalizeStatus = (s: string): SlaverStatus => {
 | **可撤销性** | 借鉴错误时容易撤销吗？ | 纯新增内容（不修改已有逻辑）|
 
 **判断**: 5 项中 4 项高分 → 直接借鉴；3 项 → 写 spike ticket 先验证；< 3 项 → 记录想法，暂不行动。
+
+---
+
+## 6. 多智能体框架全景对比（2026-04）{#landscape}
+
+**调研时间**: 2026-04-14
+**数据来源**: GitHub API 实时查询 + 官方 README
+
+### 6.1 Stars 排行
+
+| 框架 | Stars | 状态 | 首发年 |
+|------|-------|------|--------|
+| [MetaGPT](https://github.com/FoundationAgents/MetaGPT) | 67k | 活跃 | 2023 |
+| [microsoft/autogen](https://github.com/microsoft/autogen) | 57k | ⚠️ 维护模式 | 2023 |
+| [crewAI](https://github.com/crewAIInc/crewAI) | 49k | 活跃 | 2023 |
+| [langchain-ai/langgraph](https://github.com/langchain-ai/langgraph) | 29k | 活跃 | 2024 |
+| [openai/openai-agents-python](https://github.com/openai/openai-agents-python) | 21k | 活跃 | 2025-03 |
+| [camel-ai/camel](https://github.com/camel-ai/camel) | 17k | 活跃 | 2023 |
+| [princeton-nlp/SWE-agent](https://github.com/princeton-nlp/SWE-agent) | ~14k | 活跃 | 2024 |
+| [microsoft/agent-framework (MAF)](https://github.com/microsoft/agent-framework) | 9.4k | 活跃（AutoGen 继任者） | 2025-04 |
+| [kyegomez/swarms](https://github.com/kyegomez/swarms) | 6.2k | 活跃 | 2023 |
+
+**重要事件**: 2025 年 AutoGen 进入维护模式，Microsoft Agent Framework (MAF) 成为官方继任者，采用 Actor 模型 + A2A 协议。
+
+### 6.2 各框架核心特征
+
+#### MetaGPT — 最接近 EKET 设计哲学
+
+- **定位**: AI 软件公司模拟器，SOP 驱动（ProductManager→Architect→Engineer）
+- **通信**: 结构化消息传递 + 共享消息池（blackboard）
+- **独特**: Artifact 链——每个角色输出标准化文档，强依赖链
+- **Master 等价**: ProductManager（需求）→ Architect（架构）→ Engineer（实现）
+- **EKET 借鉴点**: 产出物 Artifact 标准化 schema，机器可读可验证
+
+#### CrewAI — 最流行的 Role-Based 框架
+
+- **定位**: 角色扮演式自动化，Crews（自治）+ Flows（精确控制）双模式
+- **配置**: YAML 声明式（agents.yaml + tasks.yaml）
+- **独特**: Crews 与 Flows 正交设计，自治协作与精确编排可自由组合
+- **Master 等价**: `Process.hierarchical` 模式自动创建 Manager Agent
+- **EKET 借鉴点**: 重复性工作流模板化（Crew 化），减少 Master 介入
+
+#### LangGraph — 最强状态管理，生产级首选
+
+- **定位**: 有状态 Agent 的低层编排框架（受 Google Pregel 启发）
+- **架构**: DAG 图，节点=Agent/函数，边=状态转移
+- **独特**: Durable Execution（断点恢复）+ 时间旅行调试 + Subgraph 嵌套
+- **持久化**: 内建 checkpoint，跨会话状态恢复，失败可续
+- **EKET 借鉴点**: ⭐ **Ticket 执行快照 + 断点恢复**（EKET 最明显短板）
+
+#### Microsoft Agent Framework（MAF）— 企业级 AutoGen 继任者
+
+- **定位**: 生产就绪，Actor 模型 + A2A/MCP 互操作
+- **独特**: 跨框架互操作（Agent-to-Agent 协议），Semantic Kernel 集成
+- **企业**: 微软长期支持承诺，Azure AI Foundry 可观测性
+- **EKET 借鉴点**: A2A + MCP 互操作（EKET 开放生态的未来路径）
+
+#### OpenAI Agents SDK — Handoff 范式
+
+- **定位**: 轻量级，Handoff（任务移交）而非指派
+- **架构**: 去中心化，Triage Agent → 专业 Agent 动态路由
+- **独特**: 内建 Guardrails（输入/输出边界检查）+ tracing
+- **EKET 借鉴点**: Slaver 完成后直接 handoff 给下一 Slaver（减少 Master 协调开销）
+
+#### SWE-agent — 编码专用 SOTA
+
+- **定位**: 专门解决 GitHub issue，ACI（Agent-Computer Interface）设计
+- **成绩**: SWE-bench verified 65%+（开源最强）
+- **独特**: 为 agent 定制专用 bash 命令集（非原始 shell），减少噪音
+- **EKET 借鉴点**: ACI 接口设计——Slaver 执行代码任务时可定制专用命令集
+
+### 6.3 结构化对比总表
+
+| 维度 | MetaGPT | CrewAI | LangGraph | MAF | OpenAI Agents | **EKET** |
+|------|---------|--------|-----------|-----|---------------|---------|
+| 架构模式 | 中心化SOP | 中心/去中心 | 图状态机 | Actor模型 | Handoff链 | **中心化Master-Slaver** |
+| 任务调度 | 角色订阅 | 声明+动态委托 | 条件边路由 | 事件驱动 | 动态Handoff | **Ticket状态机** |
+| 状态持久化 | 弱 | 中 | ✅强 | ✅强 | 弱 | **中（文件队列+SQLite）** |
+| 断点恢复 | ❌ | ❌ | ✅ | ✅ | ❌ | **❌（待补）** |
+| 角色系统 | ✅固定 | ✅YAML | ❌需自建 | ✅ | ❌动态 | **✅角色+技能系统** |
+| 人类介入 | ✅ | ✅ | ✅ | ✅ | ✅ | **✅（inbox机制）** |
+| 代码开发专用 | ✅ | 部分 | ❌通用 | 部分 | ❌通用 | **✅核心场景** |
+| 降级容灾 | ❌ | ❌ | 部分 | ❌ | ❌ | **✅三级降级** |
+| Gate Review | ❌ | ❌ | ❌ | ❌ | ❌ | **✅（业界独创）** |
+| Anti-Hallucination | ❌ | ❌ | ❌ | ❌ | Guardrails | **✅红线规则** |
+| 互操作协议 | 弱 | 弱 | MCP | A2A+MCP | MCP | **❌（待补）** |
+
+### 6.4 EKET 差异化定位
+
+**独有优势**（其他框架没有）：
+1. **文件系统优先 + 三级降级** — 无依赖可运行，零基础设施启动
+2. **Gate Review 协议** — 任务执行前强制交叉审查，防 AI 幻觉，业界独创
+3. **Anti-Hallucination 红线** — 禁止伪造测试/无 CI 绿灯不合并，明确规则化
+4. **Inbox P0/P1/P2 分级** — 人类指令优先级响应机制
+5. **Master+Slaver 心跳自检** — 定期强制反思问题列表
+
+### 6.5 借鉴优先级路线图
+
+| 优先级 | 差距 | 借鉴来源 | 具体方向 |
+|--------|------|---------|---------|
+| **P0** | Ticket 断点恢复 | LangGraph checkpointing | Slaver 重启可从快照续跑，不重头 |
+| **P0** | 继续深化 Gate Review | — | 护城河，持续强化 |
+| **P1** | 产出物 schema 化 | MetaGPT Artifact 链 | 分析报告/PR/测试结果统一机器可读格式 |
+| **P1** | Slaver 间 Handoff | OpenAI Agents SDK | Master 审批后 Slaver A 直接移交 Slaver B |
+| **P1** | 工作流模板化 | CrewAI Flows | 重复性流程 Crew 化，无需 Master 介入 |
+| **P2** | A2A/MCP 互操作 | MAF | 暴露标准接口，外部 agent 可接入任务队列 |
+| **P2** | 执行 DAG 可视化 | LangSmith | Ticket 执行路径可视化追踪 |
+| **P2** | ACI 接口设计 | SWE-agent | Slaver 执行代码任务时定制专用命令集 |
+
+### 6.6 竞争格局一句话总结
+
+> EKET 在**工程可靠性**（三级降级容灾）和**质量门控**（Gate Review + Anti-Hallucination）两个维度领先所有竞争者。这是真正的护城河——其他框架能复制功能，但复制不了经过多 Round 迭代验证的工程纪律体系。
