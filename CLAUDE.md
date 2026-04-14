@@ -32,11 +32,12 @@ Master 是长期运行节点，必须不时问自己 4 个问题：
 
 **Slaver 持续自我反思（心跳检查）**：
 
-Slaver 是被唤醒的节点，必须不时问自己 3 个问题：
+Slaver 是被唤醒的节点，必须不时问自己 4 个问题：
 
 1. **我现在手上的任务是什么？有没有依赖需要报告 Master？** → 检查 `blocked_by` 依赖，阻塞超过 30 分钟立即报告
 2. **我做完之后下一个任务可以是什么？** → 检查 `jira/tickets/` 中 `ready` 状态的任务，按角色匹配领取
 3. **当前任务有没有优化的可能？** → 提交 PR 前自检代码质量、性能、安全、测试覆盖
+4. **我是否陷入分析瘫痪？** → 如果已连续读取 5+ 个文件而没有写任何代码，立刻开始写（哪怕只是框架代码）或报告 BLOCKED，禁止继续探索
 
 📄 详细清单：[`template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`](template/docs/SLAVER-HEARTBEAT-CHECKLIST.md)
 
@@ -71,6 +72,14 @@ Slaver 是被唤醒的节点，必须不时问自己 3 个问题：
 - [ ] CI `test` check 为绿色
 - [ ] 无未解释的新 mock 替换真实服务
 - [ ] 变更与 Ticket 验收标准一一对应
+
+**4-Level Artifact Verification（代码类 PR 必须通过全部 4 级）**：
+- [ ] **L1 存在性**：新增/修改的文件确实存在于 PR diff 中（非仅修改注释或 TODO）
+- [ ] **L2 实质性**：实现是真实逻辑，不是空函数体、占位 stub、或 `return undefined`
+- [ ] **L3 接线正确**：新代码被正确 import/export/注册（孤立的文件不算完成）
+- [ ] **L4 数据流动**：关键路径有集成/端到端测试验证真实数据流经（非纯 mock 链）
+
+L1-L3 缺任何一项 = 直接 reject。L4 不适用于纯文档/配置类 PR。
 
 > 使用其他大模型（Gemini、GPT、Cursor 等）时，请阅读 `AGENTS.md`，它是与本文件互补的通用大模型引导文件。
 
