@@ -21,6 +21,7 @@ import { registerAlerts } from './commands/alerts.js';
 import { registerClaim } from './commands/claim.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { registerGateReview } from './commands/gate-review.js';
+import { registerMasterHeartbeat } from './commands/master-heartbeat.js';
 import { runInitWizard } from './commands/init-wizard.js';
 import { runInteractiveStartCLI } from './commands/interactive-start.js';
 import { registerMasterPoll } from './commands/master-poll.js';
@@ -892,6 +893,9 @@ Related Commands:
 
   // 注册 gate:review 命令（执行前关卡审查）
   registerGateReview(program);
+
+  // 注册 master:heartbeat 命令（Master 4问自检）
+  registerMasterHeartbeat(program);
 
   // 注册 alerts 命令
   registerAlerts(program);

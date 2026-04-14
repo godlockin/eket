@@ -11,9 +11,13 @@
 **类型**: {{TYPE}}  <!-- feature / bugfix / task / improvement / research -->
 **优先级**: {{PRIORITY}}  <!-- P0(紧急) / P1(高) / P2(中) / P3(低) -->
 
-**状态**: {{STATUS}}  <!-- backlog → analysis → approved → ready → in_progress → test → review → done -->
+**状态**: {{STATUS}}  <!-- backlog → analysis → ready → gate_review → in_progress → test → pr_review → done -->
 **创建时间**: {{CREATED_AT}}
 **最后更新**: {{UPDATED_AT}}
+
+**gate_review_veto_count**: 0  <!-- gate:review 否决次数，≥2 时第 3 次强制 APPROVE -->
+**veto_reason**: <!-- gate:review VETO 时自动写入否决原因，多条用 ; 分隔 -->
+**resubmit_conditions**: <!-- gate:review VETO 时自动写入重新提交条件，多条用 ; 分隔 -->
 
 **负责人**: {{ASSIGNEE}}  <!-- Slaver 领取时填写 instance_id -->
 **执行 Agent**: {{SLAVER_NAME}}  <!-- Slaver 领取时填写 instance_id -->
@@ -30,11 +34,13 @@
 
 ## 领取记录
 
-| 操作 | Slaver Instance ID | 时间 | 状态变更 |
+| 操作 | Slaver / Reviewer | 时间 | 状态变更 |
 |------|-------------------|------|----------|
-| 领取 | {{CLAIMED_BY}} | {{CLAIMED_AT}} | ready → in_progress |
-| 提交 Review | {{REVIEW_SUBMITTED_BY}} | {{REVIEW_SUBMITTED_AT}} | in_progress → review |
-| Review 通过 | {{REVIEW_APPROVED_BY}} | {{REVIEW_APPROVED_AT}} | review → done |
+| 领取 | {{CLAIMED_BY}} | {{CLAIMED_AT}} | ready → gate_review |
+| Gate Review APPROVE | gate_reviewer | {{GATE_APPROVED_AT}} | gate_review → in_progress |
+| Gate Review VETO | gate_reviewer | {{GATE_VETOED_AT}} | gate_review → analysis |
+| 提交 Review | {{REVIEW_SUBMITTED_BY}} | {{REVIEW_SUBMITTED_AT}} | in_progress → pr_review |
+| Review 通过 | {{REVIEW_APPROVED_BY}} | {{REVIEW_APPROVED_AT}} | pr_review → done |
 
 <!--
 ================================================================================
@@ -174,10 +180,10 @@
 
 ---
 
-**模板版本**: v2.0.0
-**最后更新**: 2026-04-06
+**模板版本**: v2.2.0
+**最后更新**: 2026-04-14
 **变更说明**:
-- 元信息移到文件开头
-- 新增 Master Review Subagent 初始化记录
-- 新增人类参与审查点追踪
-- 结构化审查流程
+- v2.2.0: 加入 gate_review 三字段（gate_review_veto_count / veto_reason / resubmit_conditions）
+- 状态机更新：与 CLAUDE.md gate_review 节点对齐（backlog→analysis→ready→gate_review→in_progress→test→pr_review→done）
+- 领取记录表加入 Gate Review APPROVE / VETO 行
+- v2.0.0: 元信息移到文件开头；新增 Master Review Subagent 初始化记录；新增人类参与审查点追踪；结构化审查流程
