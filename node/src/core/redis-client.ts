@@ -314,6 +314,16 @@ export class RedisClient {
 
         if (data) {
           const heartbeat = JSON.parse(data) as SlaverHeartbeat;
+          // 向后兼容：老心跳数据可能缺少新字段
+          if (!heartbeat.capabilities) heartbeat.capabilities = [];
+          if (!heartbeat.capacity) {
+            heartbeat.capacity = {
+              maxConcurrent: 1,
+              current: heartbeat.currentTaskId ? 1 : 0
+            };
+          }
+          // 向后兼容：老 status 'active' → 'idle'
+          if ((heartbeat.status as string) === 'active') heartbeat.status = 'idle';
           // 检查是否过期（超过 30 秒无心跳）
           const now = Date.now();
           if (now - heartbeat.timestamp < 30000) {
