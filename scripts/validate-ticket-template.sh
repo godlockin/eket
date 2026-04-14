@@ -9,7 +9,7 @@ set -euo pipefail
 
 # ─── 颜色输出 ─────────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; RESET='\033[0m'
-BOLD='\033[1m'
+BOLD='\033[1m'; CYAN='\033[0;36m'
 
 # ─── 默认参数 ─────────────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -18,6 +18,7 @@ TICKETS_DIR="$REPO_ROOT/jira/tickets"
 STRICT=false
 FAIL_COUNT=0
 WARN_COUNT=0
+INFO_COUNT=0
 PASS_COUNT=0
 TOTAL=0
 
@@ -68,6 +69,7 @@ validate_ticket() {
   filename=$(basename "$file")
   local ticket_fail=0
   local ticket_warn=0
+  local ticket_info=0
   local issues=()
 
   # 读取文件内容
@@ -157,6 +159,16 @@ validate_ticket() {
     fi
   fi
 
+  # 9. done 状态验收标准无可执行命令（INFO，不影响通过判断）
+  if [[ "$status" == "done" ]]; then
+    local ac_content
+    ac_content=$(grep -A8 -E '##\s*[0-9.]*\s*(验收标准|Acceptance Criteria)' "$file" 2>/dev/null || true)
+    if [[ -n "$ac_content" ]] && ! echo "$ac_content" | grep -qE '`[^`]+`'; then
+      issues+=("  ${CYAN}[INFO]${RESET} 验收标准未包含可执行命令（建议符合 Nyquist Rule）")
+      ticket_info=$((ticket_info + 1))
+    fi
+  fi
+
   # ── gate_review 状态额外检查 ────────────────────────────────────────────────
   if [[ "$status" == "gate_review" ]]; then
     if ! file_has 'veto_reason' "$file"; then
@@ -189,17 +201,21 @@ validate_ticket() {
     if [[ $ticket_fail -gt 0 ]]; then
       echo -e "  ${RED}[FAIL]${RESET} ${BOLD}${display_id}${RESET} (${filename}, 状态: ${status:-unknown})"
       FAIL_COUNT=$((FAIL_COUNT + 1))
-    else
+    elif [[ $ticket_warn -gt 0 ]]; then
       echo -e "  ${YELLOW}[WARN]${RESET} ${BOLD}${display_id}${RESET} (${filename}, 状态: ${status:-unknown})"
       WARN_COUNT=$((WARN_COUNT + 1))
       PASS_COUNT=$((PASS_COUNT + 1))
       if $STRICT; then FAIL_COUNT=$((FAIL_COUNT + 1)); fi
+    else
+      echo -e "  ${CYAN}[INFO]${RESET} ${BOLD}${display_id}${RESET} (${filename}, 状态: ${status:-unknown})"
+      PASS_COUNT=$((PASS_COUNT + 1))
     fi
     for issue in "${issues[@]}"; do
       echo -e "$issue"
     done
   fi
 
+  INFO_COUNT=$((INFO_COUNT + ticket_info))
   TOTAL=$((TOTAL + 1))
 }
 
@@ -248,6 +264,7 @@ echo -e "${BOLD}═════════════════════�
 echo -e "  总计:  ${BOLD}${TOTAL}${RESET} 个 ticket"
 echo -e "  ${GREEN}通过:  ${PASS_COUNT}${RESET}"
 echo -e "  ${YELLOW}警告:  ${WARN_COUNT}${RESET}（仅 WARN，无 FAIL）"
+echo -e "  ${CYAN}提示:  ${INFO_COUNT}${RESET}（INFO，不影响通过判断）"
 echo -e "  ${RED}失败:  ${FAIL_COUNT}${RESET}"
 echo ""
 
