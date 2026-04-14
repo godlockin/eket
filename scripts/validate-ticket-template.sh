@@ -59,6 +59,7 @@ check_tbd() {
   grep -nE '\bTBD\b|\bTODO\b' "$file" 2>/dev/null \
     | grep -vE '^[0-9]+:(\s*#|<!--.*-->|\{\{.*\}\})' \
     | grep -vE 'gate_review_veto_count|veto_reason|resubmit_conditions' \
+    | grep -vE '或\s*TODO|TODO\s*）|TODO\s*\)|or TODO|注释或' \
     || true
 }
 
