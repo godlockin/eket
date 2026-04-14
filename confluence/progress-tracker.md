@@ -1,6 +1,6 @@
 # EKET Framework - 项目进度追踪
 
-**当前版本**: v2.10.0
+**当前版本**: v2.10.1
 **更新时间**: 2026-04-14
 **维护者**: Master Agent
 
@@ -10,7 +10,7 @@
 
 | Pillar | 状态 | 完成度 |
 |--------|------|--------|
-| 测试覆盖 | ✅ 完成 | 1105/1105 (100%) |
+| 测试覆盖 | ✅ 完成 | 1109/1109 (100%) |
 | TypeScript 编译 | ✅ 完成 | 0 errors (25 → 0, v2.9.1) |
 | 三级架构 | ✅ 完成 | Level 1/2/3 全部实现 |
 | Docker 化 | ✅ 完成 | Dockerfile + docker-compose |
@@ -34,6 +34,7 @@
 | gate:review CLI | ✅ 完成 | node dist/index.js gate:review — 16 tests，SHA256 hash 链审计日志 |
 | ticket-template v2.2.0 | ✅ 完成 | gate_review 字段 + validate-ticket-template.sh + master:heartbeat CLI |
 | 自动发布 workflow | ✅ 完成 | .github/workflows/release.yml — PyPI (OIDC/token) + npm + GitHub Release |
+| Harness-inspired Slaver 升级 | ✅ 完成 | SlaverHeartbeat 能力声明 + 执行时长统计 + busyRatio 过载检测 |
 
 ---
 
@@ -56,6 +57,7 @@
 | 16c | **gate:review CLI**：执行前关卡命令实现 + flaky 测试修复 | v2.9.2 | ✅ 完成 |
 | 17a | **Python SDK flake8 全清**：46 个 lint 问题修复 | v2.9.3 | ✅ 完成 |
 | 17b | **ticket-template v2.2.0 + validate script + master:heartbeat + release workflow** | v2.10.0 | ✅ 完成 |
+| 18 | **Harness 借鉴**：SlaverHeartbeat 能力声明 + 执行时长 + busyRatio 过载检测 | v2.10.1 | ✅ 完成 |
 
 ---
 
@@ -73,13 +75,46 @@
 
 ---
 
-## Next Steps (Round 18 — 待规划)
+## Next Steps (Round 19 — 待规划)
 
 - PyPI 发布：`python3 -m build` + `twine upload` (sdk/python/RELEASING.md)
 - npm 发布：`npm pack` + `npm publish` (sdk/javascript/RELEASING.md)
 - SDK 对外文档整合至 Docusaurus 文档站
 - master:heartbeat 与 EKET Web Dashboard 集成（/api/heartbeat 端点）
 - Slaver heartbeat CLI（对应 master:heartbeat 的 Slaver 侧 3 问自检）
+- Slaver 领取任务时自动写入 started_at（task:claim 命令集成）
+
+## Round 18 完成详情（2026-04-14）
+
+### TASK-020: SlaverHeartbeat 能力声明升级
+
+- `SlaverCapacity` 新接口：`{ maxConcurrent: number; current: number }`
+- `SlaverHeartbeat.status` 3值 → 4值：`idle | busy | draining | offline`
+  - `idle`：空闲可接单；`busy`：满载拒绝新任务；`draining`：优雅关闭中；`offline`：已离线
+- 新增字段：`capabilities: string[]`（角色能力列表）、`capacity: SlaverCapacity`、`lastTaskCompletedAt?: number`
+- `redis-client.ts` 向后兼容：老 `'active'` → `'idle'`，缺失字段补默认值
+- `heartbeat-monitor.ts` + `start-instance.ts` 同步更新
+
+### TASK-021: Ticket 执行时间戳 + master:heartbeat 慢任务统计
+
+- `ticket-template.md` v2.2.0 → v2.3.0：新增 `started_at` / `completed_at` 字段（Slaver 填写）
+- `master-heartbeat.ts` 新增：
+  - `SLOW_TASK_THRESHOLD_MINUTES = 120`（具名常量）
+  - `parseTimestamp()` 工具函数（解析失败不 crash）
+  - `HeartbeatReport.progress.slowTasks[]`：`in_progress` 且 started_at > 120min → YELLOW
+  - `HeartbeatReport.progress.avgExecutionMinutes`：done ticket 平均执行分钟数
+- 新增 3 个测试：慢任务检测、均值计算、缺字段不 crash
+
+### TASK-022: validate 脚本新字段检查 + busyRatio 过载检测
+
+- `validate-ticket-template.sh` WARN #7：`in_progress` 状态缺 `started_at`
+- `validate-ticket-template.sh` WARN #8：`done` 状态缺 `completed_at`
+- `HeartbeatReport.slaverStatus` 新增 `overloaded: SlaverHeartbeat[]` + `busyRatio: number`
+- 健康逻辑：`busyRatio >= 0.8` → YELLOW（80% Slaver 满载告警）
+- 除零保护：无活跃 Slaver 时 `busyRatio = 0`
+- Master 修复：validate 脚本正则支持 `## N. 验收标准` 编号格式
+
+**测试**: 1109/1109 ✅ | build 零 TS 错误 ✅
 
 ## Round 17b 完成详情（2026-04-14）
 
