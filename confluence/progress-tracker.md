@@ -1,7 +1,7 @@
 # EKET Framework - 项目进度追踪
 
-**当前版本**: v2.9.2
-**更新时间**: 2026-04-13
+**当前版本**: v2.10.0
+**更新时间**: 2026-04-14
 **维护者**: Master Agent
 
 ---
@@ -10,7 +10,7 @@
 
 | Pillar | 状态 | 完成度 |
 |--------|------|--------|
-| 测试覆盖 | ✅ 完成 | 1095/1095 (100%) |
+| 测试覆盖 | ✅ 完成 | 1105/1105 (100%) |
 | TypeScript 编译 | ✅ 完成 | 0 errors (25 → 0, v2.9.1) |
 | 三级架构 | ✅ 完成 | Level 1/2/3 全部实现 |
 | Docker 化 | ✅ 完成 | Dockerfile + docker-compose |
@@ -32,6 +32,8 @@
 | Agent 专家设定升级 | ✅ 完成 | routing_description + quality_gates + confidence_model |
 | 三省六部制度借鉴 | ✅ 完成 | gate_reviewer + independent_auditor + 状态机 + 协议文档 |
 | gate:review CLI | ✅ 完成 | node dist/index.js gate:review — 16 tests，SHA256 hash 链审计日志 |
+| ticket-template v2.2.0 | ✅ 完成 | gate_review 字段 + validate-ticket-template.sh + master:heartbeat CLI |
+| 自动发布 workflow | ✅ 完成 | .github/workflows/release.yml — PyPI (OIDC/token) + npm + GitHub Release |
 
 ---
 
@@ -52,6 +54,8 @@
 | 16a | 三省六部制度借鉴：gate_reviewer + independent_auditor | v2.9.0 | ✅ 完成 |
 | 16b | **填平空洞**：TypeScript 编译错误清零（25 → 0）| v2.9.1 | ✅ 完成 |
 | 16c | **gate:review CLI**：执行前关卡命令实现 + flaky 测试修复 | v2.9.2 | ✅ 完成 |
+| 17a | **Python SDK flake8 全清**：46 个 lint 问题修复 | v2.9.3 | ✅ 完成 |
+| 17b | **ticket-template v2.2.0 + validate script + master:heartbeat + release workflow** | v2.10.0 | ✅ 完成 |
 
 ---
 
@@ -69,15 +73,46 @@
 
 ---
 
-## Next Steps (Round 17 — 待规划)
+## Next Steps (Round 18 — 待规划)
 
 - PyPI 发布：`python3 -m build` + `twine upload` (sdk/python/RELEASING.md)
 - npm 发布：`npm pack` + `npm publish` (sdk/javascript/RELEASING.md)
-- GitHub Actions 自动发布 workflow（TASK-016 可选项）
 - SDK 对外文档整合至 Docusaurus 文档站
-- ticket-template.md 更新：加入 gate_review 阶段字段（gate_review_veto_count、veto_reason、resubmit_conditions）
-- master:heartbeat CLI 命令：将 Master 的 4 个自我检查问题形式化为可执行命令（结构化 JSON 输出）
-- ticket-template 字段验证：`scripts/validate-ticket-template.sh` 防止模板偏移
+- master:heartbeat 与 EKET Web Dashboard 集成（/api/heartbeat 端点）
+- Slaver heartbeat CLI（对应 master:heartbeat 的 Slaver 侧 3 问自检）
+
+## Round 17b 完成详情（2026-04-14）
+
+### ticket-template v2.2.0
+
+- 新增 `gate_review_veto_count`、`veto_reason`、`resubmit_conditions` 字段（与 `gate:review` CLI 字段名完全对齐）
+- 状态机描述更新：`backlog → analysis → ready → gate_review → in_progress → test → pr_review → done`
+- 领取记录表新增 Gate Review APPROVE/VETO 行
+
+### scripts/validate-ticket-template.sh
+
+- bash 3 / macOS 兼容（`grep -E`，`while read` 替代 `mapfile`）
+- FAIL 检查：Ticket ID、H1 标题、状态字段、验收标准 section
+- WARN 检查：优先级、验收标准内容过短、`gate_review_veto_count` 字段
+- gate_review 状态额外 FAIL：缺 `veto_reason` / `resubmit_conditions`
+- TBD/TODO 检测（WARN 级别，与 gate:review 对齐）
+- `--dir` / `--strict` 参数；退出码 0/1/2
+
+### master:heartbeat CLI 命令
+
+- `node dist/index.js master:heartbeat [--json] [--brief] [--project-root <path>]`
+- 实现 Master 4 问自检：任务队列、Slaver 状态、项目进度、阻塞问题
+- 导出 `generateReport()` 供测试直接调用
+- 健康评级 GREEN / YELLOW / RED；RED 时 exit code 2
+- 10 个单元测试覆盖所有主要路径；总测试数 1105/1105
+
+### GitHub Actions 自动发布 workflow
+
+- `.github/workflows/release.yml`：tag `v*` 触发
+- `publish-pypi`：OIDC Trusted Publishing 优先（`vars.PYPI_USE_OIDC == 'true'`），token 降级
+- `publish-npm`：`npm ci` + `npm test` + `npm publish --access public`
+- `create-release`：依赖两个发布 job 成功；从 `confluence/progress-tracker.md` 提取 Release Notes
+- CI 安全：版本号从 `GITHUB_REF_NAME` 提取（非用户控制 body），prerelease 检查通过 env var 传入
 
 ## Round 16c 完成详情（2026-04-13）
 
