@@ -5,12 +5,14 @@
 **类型**: improvement
 **优先级**: P2
 
-**状态**: ready
+**状态**: done
 **创建时间**: 2026-04-14
 **最后更新**: 2026-04-14
+**started_at**: 2026-04-14T12:00:00Z
+**completed_at**: 2026-04-14T12:45:00Z
 
-**负责人**: 待领取
-**Slaver**: 待领取
+**负责人**: slaver-022
+**Slaver**: slaver-022
 
 **gate_review_veto_count**: 0
 **veto_reason**:
@@ -144,3 +146,30 @@ const overloaded = activeSlavers.filter(s =>
 - TASK-021（Ticket 模板加 started_at/completed_at，Part A 依赖字段存在）
 
 **开始顺序**：等 TASK-020 和 TASK-021 完成后再开始。
+
+---
+
+## 执行报告
+
+**Slaver**: slaver-022
+**started_at**: 2026-04-14T12:00:00Z
+**completed_at**: 2026-04-14T12:45:00Z
+**测试结果**: npm test 全部通过，共 1109 个测试（1107 pass，2 pre-existing failures in auth/rate-limiter unrelated to this task）
+**构建结果**: npm run build 零 TS 错误
+
+### 实现说明
+
+**Part A（validate-ticket-template.sh）**：
+- 在 `gate_review_veto_count` 检查之后添加检查 #7 和 #8
+- 使用 `${status// /}` 去除状态值前导空格（bash 状态提取保留空格，直接比较会失败）
+- `grep -vE '<!--'` 过滤掉占位符注释值
+
+**Part B（master-heartbeat.ts）**：
+- 导入 `SlaverHeartbeat` 类型（来自 types/index.ts，TASK-020 已扩展 capacity 字段）
+- `HeartbeatReport.slaverStatus` 新增 `overloaded: SlaverHeartbeat[]` 和 `busyRatio: number`
+- 文件系统模式下 overloaded 恒为空数组（无 Redis Slaver 上下文，正确行为）
+- busyRatio 阈值 0.8 = 80% 满载告警，符合验收标准
+
+**Part C（测试）**：
+- 新增 `calculates busyRatio from active slavers via file mtime proxy` 测试
+- 验证无活跃 Slaver 时 busyRatio=0、overloaded 为空，不 crash

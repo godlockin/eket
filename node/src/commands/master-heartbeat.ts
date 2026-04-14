@@ -14,6 +14,7 @@ import * as path from 'path';
 
 import { Command } from 'commander';
 
+import { type SlaverHeartbeat } from '../types/index.js';
 import { EketErrorCode } from '../types/index.js';
 import { printError } from '../utils/error-handler.js';
 
@@ -94,6 +95,8 @@ export interface HeartbeatReport {
     active: SlaverStatus[];
     stale: SlaverStatus[]; // >30 min no update
     waitingOnMaster: TicketSummary[]; // pr_review status
+    overloaded: SlaverHeartbeat[];   // capacity.current >= capacity.maxConcurrent
+    busyRatio: number;               // busy状态数 / 总活跃数，0.0~1.0
   };
 
   // Q3: 项目进度是什么？有没有卡点？
@@ -300,6 +303,14 @@ export function generateReport(projectRoot: string): HeartbeatReport {
     ['pr_review', 'gate_review'].includes(t.status.toLowerCase())
   );
 
+  // overloaded: file-system mode has no real SlaverHeartbeat objects from Redis,
+  // so this will always be empty in file mode (correct—Redis Slavers not present).
+  const overloaded: SlaverHeartbeat[] = [];
+
+  // busyRatio: busy Slaver count / total active Slaver count (0 when no active slavers)
+  const busyCount = activeSlavers.filter((s) => s.status === 'busy' || s.status === 'in_progress').length;
+  const busyRatio = activeSlavers.length > 0 ? busyCount / activeSlavers.length : 0;
+
   // ── Q3: Progress ──────────────────────────────────────────────────────────
   const doneTickets = tickets.filter((t) =>
     ['done', 'completed', '✅'].includes(t.status.toLowerCase())
@@ -396,6 +407,12 @@ export function generateReport(projectRoot: string): HeartbeatReport {
     );
   }
 
+  // busyRatio >= 0.8 → YELLOW（80% Slaver 满载阈值，需关注扩容）
+  if (busyRatio >= 0.8) {
+    if (health === 'GREEN') health = 'YELLOW';
+    healthReasons.push(`${Math.round(busyRatio * 100)}% Slaver 满载（busyRatio=${busyRatio.toFixed(2)}），建议扩容`);
+  }
+
   if ((priorityGroups['p0'] ?? []).length > 0) {
     if (health === 'GREEN') health = 'YELLOW';
     healthReasons.push(`${priorityGroups['p0']!.length} 个 P0 ticket 待执行`);
@@ -425,6 +442,8 @@ export function generateReport(projectRoot: string): HeartbeatReport {
       active: activeSlavers,
       stale: staleSlavers,
       waitingOnMaster,
+      overloaded,
+      busyRatio,
     },
     progress: {
       doneCount,

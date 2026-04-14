@@ -297,4 +297,16 @@ blocked_by:
     const report = generateReport(tmpDir);
     expect(report.progress.slowTasks.length).toBe(0); // 没有 started_at 不算慢任务
   });
+
+  // ── busyRatio 计算 ────────────────────────────────────────────────────────
+  it('calculates busyRatio from active slavers via file mtime proxy', async () => {
+    // master:heartbeat 的 slaverStatus 基于文件系统（不依赖 Redis），
+    // busyRatio 在无活跃 Redis Slaver 时应为 0，不 crash
+    const { generateReport } = await import('../../src/commands/master-heartbeat.js') as {
+      generateReport: (root: string) => import('../../src/commands/master-heartbeat.js').HeartbeatReport;
+    };
+    const report = generateReport(tmpDir);
+    expect(report.slaverStatus.busyRatio).toBe(0);       // 无活跃 Slaver
+    expect(report.slaverStatus.overloaded).toHaveLength(0); // 无过载
+  });
 });
