@@ -137,6 +137,26 @@ validate_ticket() {
     ticket_warn=$((ticket_warn + 1))
   fi
 
+  # 7. in_progress 状态缺少 started_at（WARN）
+  if [[ "${status// /}" == "in_progress" ]]; then
+    local has_started_at=""
+    has_started_at=$(echo "$content" | grep -oE '\*\*started_at\*\*:\s*\S+' | grep -vE '<!--' | head -1 || true)
+    if [[ -z "$has_started_at" ]]; then
+      issues+=("  ${YELLOW}[WARN]${RESET} in_progress 状态缺少 started_at 字段（Slaver 应在领取时填写）")
+      ticket_warn=$((ticket_warn + 1))
+    fi
+  fi
+
+  # 8. done 状态缺少 completed_at（WARN）
+  if [[ "${status// /}" == "done" ]]; then
+    local has_completed_at=""
+    has_completed_at=$(echo "$content" | grep -oE '\*\*completed_at\*\*:\s*\S+' | grep -vE '<!--' | head -1 || true)
+    if [[ -z "$has_completed_at" ]]; then
+      issues+=("  ${YELLOW}[WARN]${RESET} done 状态缺少 completed_at 字段（影响 master:heartbeat 执行时长统计）")
+      ticket_warn=$((ticket_warn + 1))
+    fi
+  fi
+
   # ── gate_review 状态额外检查 ────────────────────────────────────────────────
   if [[ "$status" == "gate_review" ]]; then
     if ! file_has 'veto_reason' "$file"; then
