@@ -60,8 +60,8 @@ class HeartbeatThread(threading.Thread):
 heartbeat_thread = HeartbeatThread(client, interval=30)
 heartbeat_thread.start()
 
-print(f"\n💓 Heartbeat started (every 30s)")
-print(f"   Press Ctrl+C to stop\n")
+print("\n💓 Heartbeat started (every 30s)")
+print("   Press Ctrl+C to stop\n")
 
 # Simulate work
 try:
@@ -75,11 +75,11 @@ try:
             heartbeat_thread.current_status = AgentStatus.ACTIVE
 
 except KeyboardInterrupt:
-    print(f"\n\n⏹️  Stopping...")
+    print("\n\n⏹️  Stopping...")
 
 # Clean up
 heartbeat_thread.stop()
 client.deregister_agent()
 client.close()
 
-print(f"👋 Agent deregistered")
+print("👋 Agent deregistered")
