@@ -3,6 +3,20 @@
 .eket/logs/
 .eket/memory/
 
+# 运行时状态文件（A 类）
+jira/state/ticket-index.yml
+jira/state/project-status.yml
+jira/tickets/feature/*.md
+jira/tickets/bugfix/*.md
+jira/tickets/fix/*.md
+jira/tickets/task/*.md
+
+# 输入/输出文件（A 类）
+inbox/human_feedback/*.md
+outbox/review_requests/*.md
+outbox/tasks/*.md
+tasks/*.md
+
 # 临时文件
 *.tmp
 *.log
