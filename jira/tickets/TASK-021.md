@@ -5,12 +5,14 @@
 **类型**: improvement
 **优先级**: P1
 
-**状态**: ready
+**状态**: done
 **创建时间**: 2026-04-14
 **最后更新**: 2026-04-14
+**started_at**: 2026-04-14T10:00:00Z
+**completed_at**: 2026-04-14T10:30:00Z
 
-**负责人**: 待领取
-**Slaver**: 待领取
+**负责人**: slaver-021
+**Slaver**: slaver-021
 
 **gate_review_veto_count**: 0
 **veto_reason**:
@@ -134,3 +136,13 @@ const avgExecutionMinutes = completedWithTiming.length > 0
 ## 5. blocked_by
 
 无依赖，可立即开始。与 TASK-020 完全独立，可并行。
+
+---
+
+## 执行报告
+
+**Slaver**: slaver-021
+**started_at**: 2026-04-14T10:00:00Z
+**completed_at**: 2026-04-14T10:30:00Z
+**测试结果**: npm test 全部通过，共 1108 个测试（其中 master-heartbeat 13/13，新增 3 个）
+**构建结果**: npm run build 零错误（master-heartbeat.ts 零 TS 错误；start-instance.ts 有 TASK-020 遗留错误与本任务无关）

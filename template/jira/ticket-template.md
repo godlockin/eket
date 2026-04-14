@@ -1,4 +1,4 @@
-# Jira Ticket 模板 (v2.1.0)
+# Jira Ticket 模板 (v2.3.0)
 
 <!--
 ================================================================================
@@ -14,6 +14,8 @@
 **状态**: {{STATUS}}  <!-- backlog → analysis → ready → gate_review → in_progress → test → pr_review → done -->
 **创建时间**: {{CREATED_AT}}
 **最后更新**: {{UPDATED_AT}}
+**started_at**: <!-- Slaver 进入 in_progress 时填写，格式 ISO8601，如 2026-04-14T10:30:00Z -->
+**completed_at**: <!-- Slaver 将任务推进到 done 时填写，格式 ISO8601 -->
 
 **gate_review_veto_count**: 0  <!-- gate:review 否决次数，≥2 时第 3 次强制 APPROVE -->
 **veto_reason**: <!-- gate:review VETO 时自动写入否决原因，多条用 ; 分隔 -->
@@ -180,9 +182,10 @@
 
 ---
 
-**模板版本**: v2.2.0
+**模板版本**: v2.3.0
 **最后更新**: 2026-04-14
 **变更说明**:
+- v2.3.0: 新增 started_at / completed_at 字段（Slaver 负责填写）；started_at 在进入 in_progress 时填写，completed_at 在推进到 done 时填写；供 master:heartbeat 慢任务检测和平均执行时长统计使用
 - v2.2.0: 加入 gate_review 三字段（gate_review_veto_count / veto_reason / resubmit_conditions）
 - 状态机更新：与 CLAUDE.md gate_review 节点对齐（backlog→analysis→ready→gate_review→in_progress→test→pr_review→done）
 - 领取记录表加入 Gate Review APPROVE / VETO 行
