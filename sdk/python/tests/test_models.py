@@ -16,7 +16,6 @@ from eket_sdk.models import (
     TaskStatus,
     MessageType,
     PRStatus,
-    AcceptanceCriterion,
 )
 
 

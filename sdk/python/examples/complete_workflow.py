@@ -50,7 +50,8 @@ def main():
     print(f"   Found {len(tasks)} available task(s):")
     for task in tasks[:3]:
         print(
-            f"   - {task.id}: {task.title} [{task.priority.value}] ({task.estimate or 'no estimate'})"
+            f"   - {task.id}: {task.title} [{task.priority.value}]"
+            f" ({task.estimate or 'no estimate'})"
         )
     print()
 
@@ -58,12 +59,12 @@ def main():
     selected_task = tasks[0]
     print(f"🎯 Step 4: Claim Task {selected_task.id}")
     claimed_task = client.claim_task(selected_task.id)
-    print(f"   ✅ Task claimed successfully")
+    print("   ✅ Task claimed successfully")
     print(f"   Status: {claimed_task.status.value}")
     print(f"   Assigned to: {claimed_task.assigned_to}\n")
 
     # Step 5: Work on task with progress updates
-    print(f"💼 Step 5: Work on Task (simulated)")
+    print("💼 Step 5: Work on Task (simulated)")
     for progress in [0.25, 0.5, 0.75, 1.0]:
         time.sleep(1)  # Simulate work
 
@@ -79,7 +80,7 @@ def main():
     print()
 
     # Step 6: Update task to review status
-    print(f"✅ Step 6: Mark Task as Complete")
+    print("✅ Step 6: Mark Task as Complete")
     completed_task = client.update_task(
         claimed_task.id,
         status=TaskStatus.REVIEW,
@@ -89,7 +90,7 @@ def main():
     print(f"   Task status: {completed_task.status.value}\n")
 
     # Step 7: Submit PR
-    print(f"📤 Step 7: Submit Pull Request")
+    print("📤 Step 7: Submit Pull Request")
     branch = f"feature/{claimed_task.id}-implementation"
     pr_id = client.submit_pr(
         instance_id=agent.instance_id,
@@ -114,7 +115,7 @@ Completed implementation for {claimed_task.title}
     print(f"   Branch: {branch}\n")
 
     # Step 8: Send PR review request to master
-    print(f"📨 Step 8: Send Review Request to Master")
+    print("📨 Step 8: Send Review Request to Master")
     masters = client.list_agents(role=AgentRole.MASTER)
     if masters:
         master_id = masters[0].instance_id
@@ -136,7 +137,7 @@ Completed implementation for {claimed_task.title}
         print("   ⚠️  No master agents available\n")
 
     # Step 9: Check for messages
-    print(f"📬 Step 9: Check for Messages")
+    print("📬 Step 9: Check for Messages")
     messages = client.get_messages()
     if messages:
         print(f"   Received {len(messages)} message(s):")
@@ -146,10 +147,10 @@ Completed implementation for {claimed_task.title}
         print("   No new messages\n")
 
     # Step 10: Final heartbeat and deregister
-    print(f"👋 Step 10: Cleanup")
+    print("👋 Step 10: Cleanup")
     client.send_heartbeat(status=AgentStatus.IDLE)
     client.deregister_agent()
-    print(f"   ✅ Agent deregistered\n")
+    print("   ✅ Agent deregistered\n")
 
     print("✨ Workflow completed successfully!")
 

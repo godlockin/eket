@@ -19,7 +19,7 @@ agent = client.register_agent(
 print(f"✅ Registered as {agent.instance_id}")
 
 # List available tasks
-print(f"\n📋 Available Tasks:")
+print("\n📋 Available Tasks:")
 tasks = client.list_tasks(status=TaskStatus.READY)
 
 if not tasks:
@@ -38,7 +38,7 @@ print(f"\n🎯 Claiming task: {task.id}")
 
 try:
     claimed_task = client.claim_task(task.id)
-    print(f"   ✅ Task claimed successfully!")
+    print("   ✅ Task claimed successfully!")
     print(f"   Status: {claimed_task.status.value}")
     print(f"   Assigned to: {claimed_task.assigned_to}")
 except Exception as e:
@@ -47,7 +47,7 @@ except Exception as e:
     exit(1)
 
 # Simulate work with progress updates
-print(f"\n💼 Working on task...")
+print("\n💼 Working on task...")
 
 for progress in [0.25, 0.5, 0.75, 1.0]:
     time.sleep(1)  # Simulate work
@@ -68,9 +68,12 @@ for progress in [0.25, 0.5, 0.75, 1.0]:
         print(f"   📨 Received {len(messages)} message(s)")
 
 # Mark task as complete
-print(f"\n✅ Task completed! Updating status...")
+print("\n✅ Task completed! Updating status...")
 completed_task = client.update_task(
-    claimed_task.id, status=TaskStatus.REVIEW, progress=1.0, notes="Implementation completed, ready for review"
+    claimed_task.id,
+    status=TaskStatus.REVIEW,
+    progress=1.0,
+    notes="Implementation completed, ready for review",
 )
 
 print(f"   Task status: {completed_task.status.value}")
@@ -78,6 +81,6 @@ print(f"   Updated at: {completed_task.updated_at}")
 
 # Clean up
 client.deregister_agent()
-print(f"\n👋 Agent deregistered")
+print("\n👋 Agent deregistered")
 
 client.close()
