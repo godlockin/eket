@@ -18,6 +18,12 @@ import { EketErrorCode } from '../types/index.js';
 import { printError } from '../utils/error-handler.js';
 
 // ============================================================================
+// Constants
+// ============================================================================
+
+const SLOW_TASK_THRESHOLD_MINUTES = 120;
+
+// ============================================================================
 // Types
 // ============================================================================
 
@@ -42,6 +48,8 @@ export interface TicketSummary {
   lastUpdated: string | null;
   minutesSinceUpdate: number | null;
   blockedBy: string[];
+  startedAt: Date | null;
+  completedAt: Date | null;
 }
 
 export interface InboxStatus {
@@ -96,6 +104,8 @@ export interface HeartbeatReport {
     gateReviewCount: number;
     completionRate: number; // 0-100
     riskItems: string[];
+    slowTasks: TicketSummary[];            // in_progress 且 started_at 距今 > 120min
+    avgExecutionMinutes: number | null;    // done ticket 的平均执行分钟数，无数据时 null
   };
 
   // Q4: 是否有 block 的问题需要决策？
@@ -116,6 +126,13 @@ export interface HeartbeatReport {
 // ============================================================================
 // Ticket Parsing
 // ============================================================================
+
+function parseTimestamp(content: string, field: string): Date | null {
+  const match = content.match(new RegExp(`\\*\\*${field}\\*\\*:\\s*(\\S+)`));
+  if (!match || !match[1] || match[1].startsWith('<!--')) return null;
+  const d = new Date(match[1]);
+  return isNaN(d.getTime()) ? null : d;
+}
 
 function parseTicketFile(filePath: string): TicketSummary | null {
   try {
@@ -159,7 +176,11 @@ function parseTicketFile(filePath: string): TicketSummary | null {
     const lastUpdated = mtime.toISOString();
     const minutesSinceUpdate = Math.floor((Date.now() - mtime.getTime()) / 60000);
 
-    return { id, title, status, priority, assignee, lastUpdated, minutesSinceUpdate, blockedBy };
+    // Extract execution timestamps
+    const startedAt = parseTimestamp(content, 'started_at');
+    const completedAt = parseTimestamp(content, 'completed_at');
+
+    return { id, title, status, priority, assignee, lastUpdated, minutesSinceUpdate, blockedBy, startedAt, completedAt };
   } catch {
     return null;
   }
@@ -280,14 +301,32 @@ export function generateReport(projectRoot: string): HeartbeatReport {
   );
 
   // ── Q3: Progress ──────────────────────────────────────────────────────────
-  const doneCount = tickets.filter((t) =>
+  const doneTickets = tickets.filter((t) =>
     ['done', 'completed', '✅'].includes(t.status.toLowerCase())
-  ).length;
+  );
+  const doneCount = doneTickets.length;
   const inFlightCount = inFlightTickets.length;
   const gateReviewCount = tickets.filter((t) => t.status.toLowerCase() === 'gate_review').length;
   const blockedTickets = tickets.filter((t) => t.blockedBy.length > 0);
   const completionRate =
     tickets.length > 0 ? Math.round((doneCount / tickets.length) * 100) : 0;
+
+  // 慢任务检测
+  const now = Date.now();
+  const slowTasks = inFlightTickets.filter((t) => {
+    if (!t.startedAt) return false;
+    return (now - t.startedAt.getTime()) / 60000 > SLOW_TASK_THRESHOLD_MINUTES;
+  });
+
+  // 平均执行时长（只统计有完整时间戳的 done ticket）
+  const completedWithTiming = doneTickets.filter((t) => t.startedAt && t.completedAt);
+  const avgExecutionMinutes =
+    completedWithTiming.length > 0
+      ? completedWithTiming.reduce(
+          (sum: number, t: TicketSummary) => sum + (t.completedAt!.getTime() - t.startedAt!.getTime()) / 60000,
+          0
+        ) / completedWithTiming.length
+      : null;
 
   const riskItems: string[] = [];
   if (staleSlavers.length > 0) {
@@ -298,6 +337,9 @@ export function generateReport(projectRoot: string): HeartbeatReport {
   }
   if (blockedTickets.length > 0) {
     riskItems.push(`${blockedTickets.length} 个 ticket 存在依赖阻塞`);
+  }
+  if (slowTasks.length > 0) {
+    riskItems.push(`${slowTasks.length} 个任务超过 ${SLOW_TASK_THRESHOLD_MINUTES} 分钟未完成`);
   }
 
   // ── Q4: Blocked Issues ────────────────────────────────────────────────────
@@ -335,6 +377,14 @@ export function generateReport(projectRoot: string): HeartbeatReport {
     healthReasons.push(`${staleSlavers.length} 个 Slaver 超时无响应`);
     recommendations.push(
       `检查以下 ticket 的 Slaver 状态: ${staleSlavers.map((s) => s.ticketId).join(', ')}`
+    );
+  }
+
+  if (slowTasks.length > 0) {
+    if (health !== 'RED') health = 'YELLOW';
+    healthReasons.push(`${slowTasks.length} 个任务超过 ${SLOW_TASK_THRESHOLD_MINUTES} 分钟未完成`);
+    recommendations.push(
+      `检查以下慢任务进展: ${slowTasks.map((t) => t.id).join(', ')}`
     );
   }
 
@@ -383,6 +433,8 @@ export function generateReport(projectRoot: string): HeartbeatReport {
       gateReviewCount,
       completionRate,
       riskItems,
+      slowTasks,
+      avgExecutionMinutes,
     },
     blockedIssues: {
       items: blockedIssueItems,

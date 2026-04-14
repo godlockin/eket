@@ -242,4 +242,59 @@ blocked_by:
     expect(report.progress.doneCount).toBe(2);
     expect(report.progress.completionRate).toBe(50); // 2/4 = 50%
   });
+
+  // ── 慢任务检测 ────────────────────────────────────────────────────────────
+  it('detects slow task (started > 120 min ago)', async () => {
+    const startedAt = new Date(Date.now() - 180 * 60 * 1000).toISOString(); // 3小时前
+    writeFile(
+      path.join(tmpDir, 'jira', 'tickets'),
+      'TASK-SLOW.md',
+      `# TASK-SLOW: 慢任务\n\n**优先级**: P1\n**状态**: in_progress\n**负责人**: slaver_x\n**started_at**: ${startedAt}\n\n## 验收标准\n\n- ok\n`
+    );
+
+    const { generateReport } = await import('../../src/commands/master-heartbeat.js') as {
+      generateReport: (root: string) => import('../../src/commands/master-heartbeat.js').HeartbeatReport;
+    };
+    const report = generateReport(tmpDir);
+    expect(report.progress.slowTasks.length).toBe(1);
+    expect(report.health).not.toBe('GREEN');
+  });
+
+  // ── 平均执行时长 ──────────────────────────────────────────────────────────
+  it('calculates avgExecutionMinutes from done tickets', async () => {
+    const ticketsDir = path.join(tmpDir, 'jira', 'tickets');
+    const start1 = new Date(Date.now() - 60 * 60 * 1000).toISOString();   // 1小时前
+    const end1 = new Date().toISOString();                                  // 现在 → 60min
+    const start2 = new Date(Date.now() - 120 * 60 * 1000).toISOString();  // 2小时前
+    const end2 = new Date().toISOString();                                  // 现在 → 120min
+    writeFile(ticketsDir, 'DONE-1.md',
+      `# DONE-1: A\n\n**优先级**: P1\n**状态**: done\n**负责人**: slaver_a\n**started_at**: ${start1}\n**completed_at**: ${end1}\n\n## 验收标准\n\n- ok\n`
+    );
+    writeFile(ticketsDir, 'DONE-2.md',
+      `# DONE-2: B\n\n**优先级**: P1\n**状态**: done\n**负责人**: slaver_b\n**started_at**: ${start2}\n**completed_at**: ${end2}\n\n## 验收标准\n\n- ok\n`
+    );
+
+    const { generateReport } = await import('../../src/commands/master-heartbeat.js') as {
+      generateReport: (root: string) => import('../../src/commands/master-heartbeat.js').HeartbeatReport;
+    };
+    const report = generateReport(tmpDir);
+    expect(report.progress.avgExecutionMinutes).not.toBeNull();
+    expect(report.progress.avgExecutionMinutes!).toBeCloseTo(90, 0); // avg of 60 and 120
+  });
+
+  // ── 缺少时间戳不 crash ─────────────────────────────────────────────────────
+  it('handles missing started_at without crashing', async () => {
+    writeFile(
+      path.join(tmpDir, 'jira', 'tickets'),
+      'TASK-NOTIME.md',
+      `# TASK-NOTIME: 无时间戳\n\n**优先级**: P2\n**状态**: in_progress\n**负责人**: slaver_z\n\n## 验收标准\n\n- ok\n`
+    );
+
+    const { generateReport } = await import('../../src/commands/master-heartbeat.js') as {
+      generateReport: (root: string) => import('../../src/commands/master-heartbeat.js').HeartbeatReport;
+    };
+    expect(() => generateReport(tmpDir)).not.toThrow();
+    const report = generateReport(tmpDir);
+    expect(report.progress.slowTasks.length).toBe(0); // 没有 started_at 不算慢任务
+  });
 });
