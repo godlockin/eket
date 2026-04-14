@@ -15,7 +15,7 @@ export interface HeartbeatConfig {
   heartbeatTimeout?: number; // 超时时间（毫秒），仅 ActiveSlaverMonitor 使用
 }
 
-export type HeartbeatStatus = 'active' | 'busy' | 'offline';
+export type HeartbeatStatus = 'idle' | 'busy' | 'draining' | 'offline';
 
 /**
  * Slaver 心跳管理器
@@ -27,6 +27,8 @@ export class SlaverHeartbeatManager {
   private intervalId: NodeJS.Timeout | null = null;
   private currentStatus: HeartbeatStatus = 'offline';
   private currentTaskId?: string;
+  private capabilities: string[] = [];
+  private maxConcurrent: number = 1;
 
   constructor(slaverId: string, config: HeartbeatConfig = {}) {
     this.slaverId = slaverId;
@@ -59,7 +61,7 @@ export class SlaverHeartbeatManager {
       });
     }, this.heartbeatInterval);
 
-    this.currentStatus = 'active';
+    this.currentStatus = 'idle';
     console.log(`[Heartbeat] Started for slaver: ${this.slaverId}`);
 
     return { success: true, data: undefined };
@@ -85,11 +87,16 @@ export class SlaverHeartbeatManager {
   /**
    * 发送心跳
    */
-  private async sendHeartbeat(status: HeartbeatStatus = 'active'): Promise<void> {
+  private async sendHeartbeat(status: HeartbeatStatus = 'idle'): Promise<void> {
     const heartbeat: SlaverHeartbeat = {
       slaverId: this.slaverId,
       timestamp: Date.now(),
       status,
+      capabilities: this.capabilities,
+      capacity: {
+        maxConcurrent: this.maxConcurrent,
+        current: this.currentTaskId ? 1 : 0,
+      },
       currentTaskId: this.currentTaskId,
     };
 

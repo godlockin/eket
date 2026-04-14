@@ -1,7 +1,7 @@
 # EKET Framework - 项目进度追踪
 
-**当前版本**: v2.9.1
-**更新时间**: 2026-04-13
+**当前版本**: v2.10.1
+**更新时间**: 2026-04-14
 **维护者**: Master Agent
 
 ---
@@ -10,7 +10,7 @@
 
 | Pillar | 状态 | 完成度 |
 |--------|------|--------|
-| 测试覆盖 | ✅ 完成 | 1079/1079 (100%) |
+| 测试覆盖 | ✅ 完成 | 1109/1109 (100%) |
 | TypeScript 编译 | ✅ 完成 | 0 errors (25 → 0, v2.9.1) |
 | 三级架构 | ✅ 完成 | Level 1/2/3 全部实现 |
 | Docker 化 | ✅ 完成 | Dockerfile + docker-compose |
@@ -31,6 +31,10 @@
 | 分支策略强制执行 | ✅ 完成 | miao enforce_admins + testing 分支 + CI 覆盖 |
 | Agent 专家设定升级 | ✅ 完成 | routing_description + quality_gates + confidence_model |
 | 三省六部制度借鉴 | ✅ 完成 | gate_reviewer + independent_auditor + 状态机 + 协议文档 |
+| gate:review CLI | ✅ 完成 | node dist/index.js gate:review — 16 tests，SHA256 hash 链审计日志 |
+| ticket-template v2.2.0 | ✅ 完成 | gate_review 字段 + validate-ticket-template.sh + master:heartbeat CLI |
+| 自动发布 workflow | ✅ 完成 | .github/workflows/release.yml — PyPI (OIDC/token) + npm + GitHub Release |
+| Harness-inspired Slaver 升级 | ✅ 完成 | SlaverHeartbeat 能力声明 + 执行时长统计 + busyRatio 过载检测 |
 
 ---
 
@@ -50,6 +54,10 @@
 | 15b | Skill + Setup + 分支策略 + Agent 专家升级 | v2.8.0 | ✅ 完成 |
 | 16a | 三省六部制度借鉴：gate_reviewer + independent_auditor | v2.9.0 | ✅ 完成 |
 | 16b | **填平空洞**：TypeScript 编译错误清零（25 → 0）| v2.9.1 | ✅ 完成 |
+| 16c | **gate:review CLI**：执行前关卡命令实现 + flaky 测试修复 | v2.9.2 | ✅ 完成 |
+| 17a | **Python SDK flake8 全清**：46 个 lint 问题修复 | v2.9.3 | ✅ 完成 |
+| 17b | **ticket-template v2.2.0 + validate script + master:heartbeat + release workflow** | v2.10.0 | ✅ 完成 |
+| 18 | **Harness 借鉴**：SlaverHeartbeat 能力声明 + 执行时长 + busyRatio 过载检测 | v2.10.1 | ✅ 完成 |
 
 ---
 
@@ -67,16 +75,117 @@
 
 ---
 
-## Next Steps (Round 16c — 待规划)
+## Next Steps (Round 19 — 待规划)
 
 - PyPI 发布：`python3 -m build` + `twine upload` (sdk/python/RELEASING.md)
 - npm 发布：`npm pack` + `npm publish` (sdk/javascript/RELEASING.md)
-- GitHub Actions 自动发布 workflow（TASK-016 可选项）
 - SDK 对外文档整合至 Docusaurus 文档站
-- ticket-template.md 更新：加入 gate_review 阶段字段（gate_review_veto_count、veto_reason、resubmit_conditions）
-- Node.js 实现：gate_reviewer 进程自动触发逻辑（ticket 状态机 hook），参考 `gate:review <ticket-id>` CLI 命令设计
-- master:heartbeat CLI 命令：将 Master 的 4 个自我检查问题形式化为可执行命令（结构化 JSON 输出）
-- ticket-template 字段验证：`scripts/validate-ticket-template.sh` 防止模板偏移
+- master:heartbeat 与 EKET Web Dashboard 集成（/api/heartbeat 端点）
+- Slaver heartbeat CLI（对应 master:heartbeat 的 Slaver 侧 3 问自检）
+- Slaver 领取任务时自动写入 started_at（task:claim 命令集成）
+
+## Round 18 完成详情（2026-04-14）
+
+### TASK-020: SlaverHeartbeat 能力声明升级
+
+- `SlaverCapacity` 新接口：`{ maxConcurrent: number; current: number }`
+- `SlaverHeartbeat.status` 3值 → 4值：`idle | busy | draining | offline`
+  - `idle`：空闲可接单；`busy`：满载拒绝新任务；`draining`：优雅关闭中；`offline`：已离线
+- 新增字段：`capabilities: string[]`（角色能力列表）、`capacity: SlaverCapacity`、`lastTaskCompletedAt?: number`
+- `redis-client.ts` 向后兼容：老 `'active'` → `'idle'`，缺失字段补默认值
+- `heartbeat-monitor.ts` + `start-instance.ts` 同步更新
+
+### TASK-021: Ticket 执行时间戳 + master:heartbeat 慢任务统计
+
+- `ticket-template.md` v2.2.0 → v2.3.0：新增 `started_at` / `completed_at` 字段（Slaver 填写）
+- `master-heartbeat.ts` 新增：
+  - `SLOW_TASK_THRESHOLD_MINUTES = 120`（具名常量）
+  - `parseTimestamp()` 工具函数（解析失败不 crash）
+  - `HeartbeatReport.progress.slowTasks[]`：`in_progress` 且 started_at > 120min → YELLOW
+  - `HeartbeatReport.progress.avgExecutionMinutes`：done ticket 平均执行分钟数
+- 新增 3 个测试：慢任务检测、均值计算、缺字段不 crash
+
+### TASK-022: validate 脚本新字段检查 + busyRatio 过载检测
+
+- `validate-ticket-template.sh` WARN #7：`in_progress` 状态缺 `started_at`
+- `validate-ticket-template.sh` WARN #8：`done` 状态缺 `completed_at`
+- `HeartbeatReport.slaverStatus` 新增 `overloaded: SlaverHeartbeat[]` + `busyRatio: number`
+- 健康逻辑：`busyRatio >= 0.8` → YELLOW（80% Slaver 满载告警）
+- 除零保护：无活跃 Slaver 时 `busyRatio = 0`
+- Master 修复：validate 脚本正则支持 `## N. 验收标准` 编号格式
+
+**测试**: 1109/1109 ✅ | build 零 TS 错误 ✅
+
+## Round 17b 完成详情（2026-04-14）
+
+### ticket-template v2.2.0
+
+- 新增 `gate_review_veto_count`、`veto_reason`、`resubmit_conditions` 字段（与 `gate:review` CLI 字段名完全对齐）
+- 状态机描述更新：`backlog → analysis → ready → gate_review → in_progress → test → pr_review → done`
+- 领取记录表新增 Gate Review APPROVE/VETO 行
+
+### scripts/validate-ticket-template.sh
+
+- bash 3 / macOS 兼容（`grep -E`，`while read` 替代 `mapfile`）
+- FAIL 检查：Ticket ID、H1 标题、状态字段、验收标准 section
+- WARN 检查：优先级、验收标准内容过短、`gate_review_veto_count` 字段
+- gate_review 状态额外 FAIL：缺 `veto_reason` / `resubmit_conditions`
+- TBD/TODO 检测（WARN 级别，与 gate:review 对齐）
+- `--dir` / `--strict` 参数；退出码 0/1/2
+
+### master:heartbeat CLI 命令
+
+- `node dist/index.js master:heartbeat [--json] [--brief] [--project-root <path>]`
+- 实现 Master 4 问自检：任务队列、Slaver 状态、项目进度、阻塞问题
+- 导出 `generateReport()` 供测试直接调用
+- 健康评级 GREEN / YELLOW / RED；RED 时 exit code 2
+- 10 个单元测试覆盖所有主要路径；总测试数 1105/1105
+
+### GitHub Actions 自动发布 workflow
+
+- `.github/workflows/release.yml`：tag `v*` 触发
+- `publish-pypi`：OIDC Trusted Publishing 优先（`vars.PYPI_USE_OIDC == 'true'`），token 降级
+- `publish-npm`：`npm ci` + `npm test` + `npm publish --access public`
+- `create-release`：依赖两个发布 job 成功；从 `confluence/progress-tracker.md` 提取 Release Notes
+- CI 安全：版本号从 `GITHUB_REF_NAME` 提取（非用户控制 body），prerelease 检查通过 env var 传入
+
+## Round 16c 完成详情（2026-04-13）
+
+### gate:review CLI 命令实现
+
+将 Round 16a 定义的 `gate_reviewer` agent.yml 合约落地为可执行 CLI 命令：
+
+**文件**：`node/src/commands/gate-review.ts`（~500 行）
+
+| 功能 | 实现 |
+|------|------|
+| Ticket 解析 | `parseTicket()` — 读取 YAML/Markdown ticket 文件 |
+| 验收标准检查 | 无 AC 行 → hard fail (VETO) |
+| TBD/TODO 检测 | 正则扫描全文 → hard fail (VETO) |
+| 技术方案检查 | 无设计描述 → warn only (不 VETO) |
+| 死锁防止 | `vetoCount >= 2` → 第 3 次强制 APPROVE |
+| SHA256 hash 链 | `appendAuditLog()` — append-only `confluence/audit/gate-review-log.jsonl` |
+| Dry-run 模式 | `--dry-run` — 只输出报告，不写文件 |
+| 批量扫描 | `--scan-all` — 扫描所有 gate_review 状态 ticket |
+
+**测试**：16 个测试全部通过（`node/tests/commands/gate-review.test.ts`）
+
+**CLI 注册**：
+```bash
+node dist/index.js gate:review [ticket-id]
+node dist/index.js gate:review --scan-all
+node dist/index.js gate:review TASK-001 --dry-run
+node dist/index.js gate:review TASK-001 --force-veto "依赖未完成"
+node dist/index.js gate:review TASK-001 --auto-approve
+```
+
+### master-election flaky 测试修复
+
+**根因**：`instanceId = instance_${hostname}_${pid}_${timestamp}` — CI 中同 PID+host 在 1ms 内创建两个实例，timestamp 相同导致 ID 碰撞
+
+**修复**：添加随机后缀 `const rand = Math.random().toString(36).slice(2, 7)` → `instance_host_pid_ts_xxxxx`
+
+**结果**：tests 1095/1095 passing，tagged v2.9.2
 
 ## Round 16b 完成详情（2026-04-13）
 

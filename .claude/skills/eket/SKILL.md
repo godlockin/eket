@@ -1,6 +1,6 @@
 ---
 name: eket
-description: EKET AI 智能体协作框架 - Master-Slaver 多智能体开发框架
+description: EKET AI 智能体协作框架 - Master-Slaver 多智能体开发框架 (v2.9.2)
 ---
 
 # EKET Framework
@@ -39,6 +39,7 @@ description: EKET AI 智能体协作框架 - Master-Slaver 多智能体开发框
 - eket 命令 / instance:start / web:dashboard
 - 心跳监控 / heartbeat / Agent Pool
 - 消息队列 / queue:test / circuit-breaker
+- gate review / gate:review / 执行前关卡 / ticket 审查 / veto / 否决
 
 ## Quick Start（外部项目使用）
 
@@ -151,6 +152,29 @@ node dist/index.js pool:status
 node dist/index.js pool:select -r <role>
 ```
 
+### Gate Review（执行前关卡）
+
+```bash
+# 审查指定 ticket（gate_review 状态才会触发）
+node dist/index.js gate:review <ticket-id>
+
+# 扫描所有待审查 ticket
+node dist/index.js gate:review --scan-all
+
+# 预演审查，不写文件
+node dist/index.js gate:review <ticket-id> --dry-run
+
+# 强制否决（填入否决原因）
+node dist/index.js gate:review <ticket-id> --force-veto "依赖未完成"
+
+# 强制通过（跳过所有检查）
+node dist/index.js gate:review <ticket-id> --auto-approve
+```
+
+> **死锁防止**：同一 ticket 被否决 ≥ 2 次，第 3 次 gate:review 自动强制通过。
+> 审查报告写入 `confluence/audit/gate-review-reports/`，
+> 不可篡改审计日志写入 `confluence/audit/gate-review-log.jsonl`（SHA256 hash 链）。
+
 ## Development（内部开发）
 
 参考 [references/dev-commands.md](references/dev-commands.md)
@@ -253,11 +277,12 @@ Level 1: Shell 脚本          # lib/adapters/hybrid-adapter.sh 基础模式
 ## Branch Strategy
 
 ```
-feature/{ticket-id}-{desc}  →  PR  →  testing  →  测试通过  →  PR  →  main
+feature/{ticket-id}-{desc}  →  PR  →  testing  →  测试通过  →  PR  →  miao  →  PR  →  main
 ```
 
-- `main`：严格保护，仅 Master 合并
-- `testing`：保护，PR 合并需测试通过
+- `main`：发布快照，版本节点，仅接受来自 `miao` 的 PR
+- `miao`：稳定主干，长期集成，PR + CI + 1 review 必须
+- `testing`：测试集成，CI 覆盖
 - `feature/*`：开放，Slaver 开发使用
 
 ## References

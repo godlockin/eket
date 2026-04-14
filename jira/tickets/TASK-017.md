@@ -4,6 +4,11 @@
 **Round**: 14
 **目标版本**: v2.6.0
 **分支**: `feature/TASK-017-python-sdk-examples`
+**状态**: done
+**completed_at**: 2026-04-14T00:00:00Z
+**gate_review_veto_count**: 0
+**veto_reason**:
+**resubmit_conditions**:
 
 ---
 

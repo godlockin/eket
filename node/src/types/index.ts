@@ -32,11 +32,19 @@ export interface RedisConfig {
   keyPrefix?: string;
 }
 
+export interface SlaverCapacity {
+  maxConcurrent: number;  // 最大并发任务数，默认 1
+  current: number;        // 当前执行任务数
+}
+
 export interface SlaverHeartbeat {
   slaverId: string;
   timestamp: number;
-  status: 'active' | 'busy' | 'offline';
+  status: 'idle' | 'busy' | 'draining' | 'offline';  // 从3值扩展为4值
+  capabilities: string[];                              // 角色能力列表
+  capacity: SlaverCapacity;                            // 容量信息
   currentTaskId?: string;
+  lastTaskCompletedAt?: number;
 }
 
 // ============================================================================
