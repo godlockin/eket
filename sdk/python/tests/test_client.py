@@ -5,7 +5,7 @@ Run with: pytest test_client.py
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from eket_sdk import (
     EketClient,
     AgentType,

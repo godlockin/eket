@@ -396,7 +396,9 @@ export async function registerSlaverWithRedis(
     const heartbeat = {
       slaverId,
       timestamp: Date.now(),
-      status: 'active' as const,
+      status: 'idle' as const,
+      capabilities: [role || 'unknown'],
+      capacity: { maxConcurrent: 1, current: 0 },
       currentTaskId: undefined,
       role: role || 'unknown',
     };

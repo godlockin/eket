@@ -4,6 +4,11 @@
 **优先级**: P1
 **预估**: 4-5 小时
 **目标**: 完成剩余 15 个文件迁移到 SQLiteManager
+**状态**: done
+**completed_at**: 2026-04-14T00:00:00Z
+**gate_review_veto_count**: 0
+**veto_reason**:
+**resubmit_conditions**:
 
 ## 迁移清单 (优先核心 8 个)
 - src/core/sqlite-client.ts, sqlite-async-client.ts
@@ -22,7 +27,7 @@
 - 代码重复消除验证
 - `docs/architecture/TASK-011-sqlite-migration-completion.md`
 
-## 验收
+## 验收标准
 - 核心 8 个文件迁移完成
 - 测试通过无回归
 - 代码重复减少 ~300 行

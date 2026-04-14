@@ -5,7 +5,7 @@ Helper functions and utilities for EKET SDK.
 """
 
 import time
-from typing import Callable, TypeVar, Any
+from typing import Callable, TypeVar
 from functools import wraps
 
 T = TypeVar("T")

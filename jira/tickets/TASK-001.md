@@ -3,6 +3,9 @@
 **类型**: Bug Fix
 **优先级**: P0
 **状态**: ready
+**gate_review_veto_count**: 0
+**veto_reason**:
+**resubmit_conditions**:
 **分配给**: 待领取
 **预估工时**: 2 小时
 

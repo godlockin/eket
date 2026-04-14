@@ -1,10 +1,13 @@
-# Feature Ticket: FEAT-004 - 增量缓存机制
+# FEAT-004: 增量缓存机制
 
 **创建时间**: 2026-04-09
 **创建者**: Master Agent
 **重要性**: medium
 **优先级**: P1
 **状态**: backlog
+**gate_review_veto_count**: 0
+**veto_reason**:
+**resubmit_conditions**:
 **标签**: `feature`, `cache`, `incremental-processing`, `llm-optimization`
 **Epic**: EPIC-001
 **分配给**: null
