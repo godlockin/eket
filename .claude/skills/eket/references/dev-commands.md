@@ -7,7 +7,7 @@ cd node
 npm run build                                    # TypeScript → dist/
 npm run dev -- <command>                         # ts-node 开发模式，无需构建
 npm start                                        # node dist/index.js
-npm test                                         # 全量测试（981 tests）
+npm test                                         # 全量测试（1095 tests）
 npm test -- --testPathPattern=<pattern>          # 单文件，支持正则
 npm run bench                                    # 性能基准测试
 npm run bench:comprehensive                      # 综合基准测试
@@ -93,5 +93,8 @@ node dist/index.js redis:check                   # Redis 连通性
 node dist/index.js sqlite:check                  # SQLite 状态
 node dist/index.js pool:status                   # Agent Pool 状态
 node dist/index.js heartbeat:status              # 心跳状态
+node dist/index.js gate:review --scan-all        # 扫描所有待审查 ticket
+node dist/index.js gate:review <ticket-id>       # 审查指定 ticket
+node dist/index.js gate:review <ticket-id> --dry-run  # 预演审查
 ./lib/adapters/hybrid-adapter.sh doctor          # Shell 降级诊断
 ```
