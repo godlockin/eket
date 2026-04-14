@@ -309,4 +309,117 @@ blocked_by:
     expect(report.slaverStatus.busyRatio).toBe(0);       // 无活跃 Slaver
     expect(report.slaverStatus.overloaded).toHaveLength(0); // 无过载
   });
+
+  // ── TASK-028: 解析领取记录表格 → 正确提取 events ─────────────────────────
+  it('parseTicketTimeline extracts events from 领取记录 table', async () => {
+    const { parseTicketTimeline } = await import('../../src/commands/master-heartbeat.js') as {
+      parseTicketTimeline: (
+        ticketId: string,
+        title: string,
+        currentStatus: string,
+        content: string
+      ) => import('../../src/commands/master-heartbeat.js').TicketTimeline;
+    };
+
+    const content = `# TASK-099: 测试任务
+
+**状态**: done
+
+## 领取记录
+
+| 操作 | Slaver / Reviewer | 时间 | 状态变更 |
+|------|-------------------|------|----------|
+| 创建 | Master | 2026-04-10 | backlog → ready |
+| 领取 | slaver_a | 2026-04-10 | ready → in_progress |
+| 完成 | slaver_a | 2026-04-10 | in_progress → done |
+`;
+
+    const timeline = parseTicketTimeline('TASK-099', '测试任务', 'done', content);
+    expect(timeline.ticketId).toBe('TASK-099');
+    expect(timeline.events.length).toBe(3);
+    expect(timeline.events[0]!.status).toBe('ready');
+    expect(timeline.events[1]!.status).toBe('in_progress');
+    expect(timeline.events[2]!.status).toBe('done');
+    expect(timeline.events[0]!.actor).toBe('Master');
+    expect(timeline.events[1]!.actor).toBe('slaver_a');
+  });
+
+  // ── TASK-028: 计算阶段耗时（两个时间戳之差）────────────────────────────────
+  it('parseTicketTimeline calculates durationMinutes between consecutive events', async () => {
+    const { parseTicketTimeline } = await import('../../src/commands/master-heartbeat.js') as {
+      parseTicketTimeline: (
+        ticketId: string,
+        title: string,
+        currentStatus: string,
+        content: string
+      ) => import('../../src/commands/master-heartbeat.js').TicketTimeline;
+    };
+
+    // Use ISO timestamps with a known 30-minute gap
+    const t1 = '2026-04-10T10:00:00.000Z';
+    const t2 = '2026-04-10T10:30:00.000Z'; // +30min
+    const t3 = '2026-04-10T11:00:00.000Z'; // +30min
+
+    const content = `# TASK-DUR: 耗时测试
+
+**状态**: done
+
+## 领取记录
+
+| 操作 | Slaver / Reviewer | 时间 | 状态变更 |
+|------|-------------------|------|----------|
+| 创建 | Master | ${t1} | backlog → ready |
+| 领取 | slaver_x | ${t2} | ready → in_progress |
+| 完成 | slaver_x | ${t3} | in_progress → done |
+`;
+
+    const timeline = parseTicketTimeline('TASK-DUR', '耗时测试', 'done', content);
+    expect(timeline.events.length).toBe(3);
+    // First event (ready) should have durationMinutes = 30
+    expect(timeline.events[0]!.durationMinutes).toBe(30);
+    // Second event (in_progress) should have durationMinutes = 30
+    expect(timeline.events[1]!.durationMinutes).toBe(30);
+    // Last event (done) has no next → no durationMinutes
+    expect(timeline.events[2]!.durationMinutes).toBeUndefined();
+  });
+
+  // ── TASK-028: 时间戳缺失时不 crash（graceful handling）─────────────────────
+  it('parseTicketTimeline handles missing/invalid timestamps gracefully', async () => {
+    const { parseTicketTimeline } = await import('../../src/commands/master-heartbeat.js') as {
+      parseTicketTimeline: (
+        ticketId: string,
+        title: string,
+        currentStatus: string,
+        content: string
+      ) => import('../../src/commands/master-heartbeat.js').TicketTimeline;
+    };
+
+    // Table rows with empty / invalid timestamp
+    const content = `# TASK-NOTIME2: 无时间戳任务
+
+**状态**: in_progress
+
+## 领取记录
+
+| 操作 | Slaver / Reviewer | 时间 | 状态变更 |
+|------|-------------------|------|----------|
+| 创建 | Master |  | backlog → ready |
+| 领取 | slaver_z | not-a-date | ready → in_progress |
+`;
+
+    // Must not throw
+    let timeline!: import('../../src/commands/master-heartbeat.js').TicketTimeline;
+    expect(() => {
+      timeline = parseTicketTimeline('TASK-NOTIME2', '无时间戳任务', 'in_progress', content);
+    }).not.toThrow();
+
+    // Events still parsed; durationMinutes undefined (can't compute from invalid timestamps)
+    expect(timeline.events.length).toBeGreaterThanOrEqual(0);
+    // No durationMinutes when timestamps are invalid
+    for (const ev of timeline.events) {
+      expect(ev.durationMinutes).toBeUndefined();
+    }
+    // totalElapsedMinutes undefined when timestamps invalid
+    expect(timeline.totalElapsedMinutes).toBeUndefined();
+  });
 });

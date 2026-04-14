@@ -867,6 +867,69 @@ export function createWorkflowEngine(config: WorkflowEngineConfig): WorkflowEngi
   return new WorkflowEngine(config);
 }
 
+// ─── 工作流类型枚举（借鉴 CrewAI Flows）────────────────────────────
+export enum WorkflowType {
+  SEQUENTIAL = 'sequential',
+  PARALLEL = 'parallel',
+  DAG = 'dag',
+}
+
+// ─── 预设工作流模板步骤类型 ────────────────────────────────────────
+export interface WorkflowTemplateStep {
+  id: string;
+  role: string;
+  action: string;
+  timeout: number;
+  dependsOn?: string[];
+}
+
+// ─── 预设工作流模板（借鉴 CrewAI Flows）────────────────────────────
+export const WORKFLOW_TEMPLATES = {
+  FEATURE_DEV: {
+    name: 'feature-dev',
+    description: 'Feature 开发标准流：analysis → in_progress → test → pr_review',
+    type: WorkflowType.SEQUENTIAL,
+    steps: [
+      { id: 'analysis', role: 'analyzer', action: 'analyze_ticket', timeout: 30 },
+      { id: 'implement', role: 'developer', action: 'implement', timeout: 120 },
+      { id: 'test', role: 'tester', action: 'run_tests', timeout: 30 },
+      { id: 'pr', role: 'developer', action: 'create_pr', timeout: 10 },
+    ],
+  },
+  PARALLEL_REVIEW: {
+    name: 'parallel-review',
+    description: '并行代码审查：2 个 reviewer 独立审查后汇总',
+    type: WorkflowType.PARALLEL,
+    steps: [
+      { id: 'review_a', role: 'reviewer', action: 'code_review', timeout: 30 },
+      { id: 'review_b', role: 'reviewer', action: 'security_review', timeout: 30 },
+      { id: 'merge', role: 'master', action: 'merge_reviews', timeout: 10, dependsOn: ['review_a', 'review_b'] },
+    ],
+  },
+  BUG_FIX: {
+    name: 'bug-fix',
+    description: 'Bug 修复快速流：reproduce → locate → fix → verify',
+    type: WorkflowType.SEQUENTIAL,
+    steps: [
+      { id: 'reproduce', role: 'analyzer', action: 'reproduce_bug', timeout: 20 },
+      { id: 'locate', role: 'analyzer', action: 'locate_root_cause', timeout: 20 },
+      { id: 'fix', role: 'developer', action: 'implement_fix', timeout: 60 },
+      { id: 'verify', role: 'tester', action: 'verify_fix', timeout: 20 },
+    ],
+  },
+} as const;
+
+export type WorkflowTemplateName = keyof typeof WORKFLOW_TEMPLATES;
+
+/**
+ * 通过模板名称获取工作流配置
+ * @param name 模板名称（FEATURE_DEV | PARALLEL_REVIEW | BUG_FIX）
+ * @returns 模板对象或 null
+ */
+export function getWorkflowTemplate(name: WorkflowTemplateName) {
+  return WORKFLOW_TEMPLATES[name] ?? null;
+}
+
 // ============================================================================
 // 预定义工作流模板
 // ============================================================================
