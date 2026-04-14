@@ -1,6 +1,6 @@
 {
   "name": "eket-cli",
-  "version": "2.6.0",
+  "version": "2.9.2",
   "description": "EKET Framework CLI - Hybrid Node.js Implementation",
   "type": "module",
   "main": "dist/index.js",
