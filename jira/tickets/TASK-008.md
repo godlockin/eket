@@ -4,6 +4,9 @@
 **优先级**: P2
 **预估工时**: 6 小时
 **状态**: IN_PROGRESS
+**gate_review_veto_count**: 0
+**veto_reason**:
+**resubmit_conditions**:
 **分支**: `feature/TASK-008-test-environment`
 
 ---

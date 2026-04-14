@@ -1,0 +1,150 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  # ─── PyPI 发布 ──────────────────────────────────────────────────────────────
+  publish-pypi:
+    name: Publish Python SDK to PyPI
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write   # OIDC trusted publishing (preferred)
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build distribution
+        working-directory: sdk/python
+        run: python -m build
+
+      - name: Check distribution
+        working-directory: sdk/python
+        run: twine check dist/*
+
+      # Preferred: OIDC Trusted Publishing (no secret needed, set up on PyPI)
+      - name: Publish to PyPI (OIDC)
+        if: ${{ vars.PYPI_USE_OIDC == 'true' }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: sdk/python/dist/
+
+      # Fallback: API token via secret
+      - name: Publish to PyPI (token)
+        if: ${{ vars.PYPI_USE_OIDC != 'true' }}
+        working-directory: sdk/python
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: twine upload dist/*
+
+  # ─── npm 发布 ───────────────────────────────────────────────────────────────
+  publish-npm:
+    name: Publish JavaScript SDK to npm
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        working-directory: sdk/javascript
+        run: npm ci
+
+      - name: Run tests
+        working-directory: sdk/javascript
+        run: npm test
+
+      - name: Publish to npm
+        working-directory: sdk/javascript
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+  # ─── GitHub Release 创建 ────────────────────────────────────────────────────
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [publish-pypi, publish-npm]
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          # Use GITHUB_REF_NAME which is always the tag name (not user-controlled body)
+          echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release notes from progress tracker
+        id: notes
+        run: |
+          NOTES=$(awk '/^## Round [0-9]+ 完成详情/{found=1} found && /^## /{if(!first++){next}else{exit}} found{print}' \
+            confluence/progress-tracker.md 2>/dev/null | head -50 || echo "See progress-tracker.md for details.")
+          {
+            echo "notes<<RELEASE_NOTES_EOF"
+            echo "$NOTES"
+            echo "RELEASE_NOTES_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set prerelease flag
+        id: prerelease
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if echo "$VERSION" | grep -qE '(alpha|beta|rc)'; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          release_name: EKET Framework ${{ steps.version.outputs.version }}
+          body: |
+            ## ${{ steps.version.outputs.version }}
+
+            ${{ steps.notes.outputs.notes }}
+
+            ---
+            **Packages published:**
+            - PyPI: `pip install eket-sdk`
+            - npm: `npm install eket-sdk`
+          draft: false
+          prerelease: ${{ steps.prerelease.outputs.is_prerelease == 'true' }}

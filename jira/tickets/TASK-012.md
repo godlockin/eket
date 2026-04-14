@@ -4,6 +4,11 @@
 **优先级**: P1
 **预估**: 3-4 小时
 **目标**: 文档健康评分 65/100 → 85/100
+**状态**: done
+**completed_at**: 2026-04-14T00:00:00Z
+**gate_review_veto_count**: 0
+**veto_reason**:
+**resubmit_conditions**:
 
 ## 任务
 1. 归档 13 个过时文档到 docs/archive/v2.x/
@@ -28,7 +33,7 @@ node/.eket/non-existent-queue/
 - .gitignore 完善
 - `docs/audit/TASK-012-documentation-health-improvement.md`
 
-## 验收
+## 验收标准
 - 文档健康评分 ≥ 85/100
 - 无运行时数据泄漏风险
 - docs/INDEX.md 更新

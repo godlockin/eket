@@ -8,7 +8,7 @@
 
 ## Slaver 是被动唤醒的执行节点
 
-Slaver 由 Master 通过 subagent 初始化，被赋予特定角色（如 `frontend_dev`、`backend_dev`、`tester` 等）。Slaver 被唤醒后，**必须不断问自己以下 3 个问题**：
+Slaver 由 Master 通过 subagent 初始化，被赋予特定角色（如 `frontend_dev`、`backend_dev`、`tester` 等）。Slaver 被唤醒后，**必须不断问自己以下 4 个问题**：
 
 ---
 
@@ -99,6 +99,53 @@ Slaver 由 Master 通过 subagent 初始化，被赋予特定角色（如 `front
     ├── 是，影响架构 → 通知 Master → 等待确认
     └── 否 → 提交 PR
 ```
+
+---
+
+### □ 问题 4：我是否陷入分析瘫痪？
+
+→ 如果已连续读取 5+ 个文件而没有写任何代码，立刻开始写（哪怕只是框架代码）或报告 BLOCKED，禁止继续探索
+
+**判断标准**：
+- 连续 5 次或以上纯读取/搜索操作（Read/Grep/Glob/WebSearch/WebFetch）
+- 期间没有任何写操作（Edit/Write/Bash/Task）
+
+**决策点行动（二选一，禁止第三选项）**：
+- **行动 A — 开始写代码**：建立文件框架/骨架，哪怕不完整也要先动手
+- **行动 B — 报告 BLOCKED**：一句话说明卡在哪，等待 Master 指示
+
+**禁止**：继续读文件、继续搜索、继续"再分析一下"
+
+---
+
+## 行动阈值规则（Analysis Paralysis Guard）
+
+**规则**：执行阶段（in_progress）中，如果你已经连续做了 5 次或以上的纯读取/探索操作（Read/Grep/Glob/WebSearch/WebFetch）而没有任何写操作（Edit/Write/Bash/Task），必须立即触发决策点。
+
+**决策点行动（二选一，必须选其一，禁止继续探索）**：
+
+- **行动 A — 开始写代码**：即使只是文件框架/骨架代码也算。建立文件结构，然后逐步填充。
+- **行动 B — 报告 BLOCKED**：在执行报告里写一句话说明卡在哪里，等待 Master 指示。
+
+**禁止**：
+- 在决策点之后继续读取文件
+- 继续搜索"再多了解一点"
+- 继续"想一想"但不写任何代码
+
+### 例外情况（不计入连续次数）
+
+- **Gate Review 阶段首次分析**：领取任务后理解需求期，允许最多 10 次读操作（一次性豁免）
+- **明确标注调研任务**：ticket 里明确写"调研/research"类型，且在分析阶段（analysis status）
+
+### 为什么有这条规则
+
+过度探索会：
+1. 消耗大量 context window（读操作积累历史）
+2. 拖延任务进度（Master heartbeat 检测到 stale）
+3. 产生"感觉在工作但没有产出"的假进度
+4. 陷入完美主义陷阱（想完全理解再动手）
+
+好的 Slaver 策略：先建立最小可运行框架，然后迭代完善，而不是先完全理解再动手。
 
 ---
 
@@ -249,6 +296,7 @@ Ticket 文件中的领取记录格式：
 | 问题 1（依赖/阻塞） | 每 15 分钟 | 遇到困难时立即 |
 | 问题 2（下一任务） | 完成任务时 | 当前任务提交 PR 后 |
 | 问题 3（优化） | 提交 PR 前 | 完成编码准备测试时 |
+| 问题 4（分析瘫痪） | 每次读操作后 | 连续 5 次读操作后立即 |
 
 ---
 
@@ -336,6 +384,31 @@ Ticket 文件中的领取记录格式：
 
 ---
 
+## 偏差处理协议（Deviation Rules）
+
+执行任务时遇到超出 ticket 范围的问题，按以下规则处理：
+
+| 规则 | 触发条件 | 行动 | 范围限制 |
+|------|---------|------|---------|
+| Rule 1 — Bug Fix | 当前实现中发现明确 bug（逻辑错误/类型错误/边界条件） | 自动修复，PR 描述注明 | 仅限当前 ticket 修改过的文件 |
+| Rule 2 — Missing Critical | 缺失 error handling/输入校验/关键 null guard | 自动补充，PR 描述注明 | 仅限新增代码，不重构已有代码 |
+| Rule 3 — Blocking | missing dependency/broken import/编译错误 | 自动修复，记录在 PR | 只修复影响当前 ticket 的阻塞点 |
+| Rule 4 — Architectural | 需要修改 DB schema/新建 service/修改公共 API/大规模重构（100+ 行） | 暂停，写入 inbox/human_feedback/，标注 [BLOCKED-ARCH] | 不得自行决定 |
+
+**兜底规则**：同一问题尝试修复 ≥ 3 次仍失败 → 停止，在执行报告 `deferred_issues` 里记录失败细节，等待 Master。
+
+**预存在问题处理**：发现非本 ticket 引入的 bug → 记录到执行报告 `deferred_issues` 字段，不修复，避免意外变更范围。
+
+### Rule 4 判断清单（以下任一 = 必须上报）
+
+- [ ] 需要修改或新建数据库 schema / migration
+- [ ] 需要新建 service 文件（不在 ticket 指定范围内）
+- [ ] 需要修改对外公共 API 接口（影响其他 Slaver 的依赖）
+- [ ] 需要修改超过 100 行已有代码（大规模重构）
+- [ ] 不确定是否属于 Rule 4 → 按 Rule 4 处理（宁可多报，不要擅自决定）
+
+---
+
 ## 相关文档
 
 - [SLAVER-AUTO-EXEC-GUIDE.md](./SLAVER-AUTO-EXEC-GUIDE.md) — Slaver 自动执行流程
@@ -344,5 +417,5 @@ Ticket 文件中的领取记录格式：
 
 ---
 
-**维护者**: EKET Framework Team  
-**最后更新**: 2026-04-10
+**维护者**: EKET Framework Team
+**最后更新**: 2026-04-14

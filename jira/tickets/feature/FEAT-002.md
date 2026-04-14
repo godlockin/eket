@@ -1,10 +1,13 @@
-# Feature Ticket: FEAT-002 - God Nodes 识别
+# FEAT-002: God Nodes 识别
 
 **创建时间**: 2026-04-09
 **创建者**: Master Agent
 **重要性**: high
 **优先级**: P0
 **状态**: backlog
+**gate_review_veto_count**: 0
+**veto_reason**:
+**resubmit_conditions**:
 **标签**: `feature`, `graph-analysis`, `god-nodes`, `centrality`
 **Epic**: EPIC-001
 **分配给**: null

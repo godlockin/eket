@@ -32,6 +32,7 @@ SERVER_URL = "http://localhost:8080"
 # Helper
 # ---------------------------------------------------------------------------
 
+
 def section(title: str) -> None:
     print(f"\n{'=' * 60}")
     print(f"  {title}")
@@ -51,7 +52,7 @@ try:
     # because instance_id is None
     client.deregister_agent()
 except ValidationError as e:
-    print(f"[CAUGHT ValidationError]")
+    print("[CAUGHT ValidationError]")
     print(f"  code    : {e.code}")
     print(f"  message : {e.message}")
     print(f"  details : {e.details}")
@@ -68,12 +69,12 @@ try:
     client.instance_id = "non-existent-agent-id"
     client.get_agent()
 except NotFoundError as e:
-    print(f"[CAUGHT NotFoundError]")
+    print("[CAUGHT NotFoundError]")
     print(f"  code    : {e.code}")
     print(f"  message : {e.message}")
 except EketError as e:
     # Server not running → connection error falls under EketError
-    print(f"[CAUGHT EketError — server likely offline]")
+    print("[CAUGHT EketError — server likely offline]")
     print(f"  code    : {e.code}")
     print(f"  message : {e.message}")
 finally:
@@ -94,11 +95,11 @@ client_with_bad_token.instance_id = "some-instance"
 try:
     client_with_bad_token.send_heartbeat()
 except AuthenticationError as e:
-    print(f"[CAUGHT AuthenticationError]")
+    print("[CAUGHT AuthenticationError]")
     print(f"  code    : {e.code}")
     print(f"  message : {e.message}")
 except EketError as e:
-    print(f"[CAUGHT EketError — server likely offline]")
+    print("[CAUGHT EketError — server likely offline]")
     print(f"  code    : {e.code}")
     print(f"  message : {e.message}")
 finally:
@@ -115,11 +116,11 @@ client.instance_id = "agent-abc"
 try:
     client.claim_task("TASK-ALREADY-CLAIMED")
 except ConflictError as e:
-    print(f"[CAUGHT ConflictError]")
+    print("[CAUGHT ConflictError]")
     print(f"  code    : {e.code}")
     print(f"  message : {e.message}")
 except EketError as e:
-    print(f"[CAUGHT EketError — server likely offline]")
+    print("[CAUGHT EketError — server likely offline]")
     print(f"  code    : {e.code}")
     print(f"  message : {e.message}")
 finally:
@@ -139,7 +140,7 @@ offline_client = EketClient(
 try:
     offline_client.health_check()
 except EketError as e:
-    print(f"[CAUGHT EketError]")
+    print("[CAUGHT EketError]")
     print(f"  code    : {e.code}")
     print(f"  message : {e.message}")
 finally:
@@ -150,6 +151,7 @@ finally:
 # ---------------------------------------------------------------------------
 
 section("6. Recommended catch-all pattern")
+
 
 def safe_register(server_url: str) -> None:
     """Register agent with graceful degradation."""

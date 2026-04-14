@@ -55,7 +55,7 @@ Implemented user authentication with JWT tokens.
 print(f"   ✅ PR submitted: {pr_id}")
 
 # Send review request message to master
-print(f"\n📨 Sending review request to master...")
+print("\n📨 Sending review request to master...")
 
 # Find master agent
 masters = client.list_agents(role=AgentRole.MASTER)
@@ -84,10 +84,10 @@ else:
 
     print(f"   ✅ Message sent: {message_id}")
 
-print(f"\n✅ PR submission complete!")
+print("\n✅ PR submission complete!")
 print(f"   Task: {TASK_ID}")
 print(f"   Branch: {BRANCH}")
-print(f"   Status: Awaiting review")
+print("   Status: Awaiting review")
 
 # Clean up
 client.close()

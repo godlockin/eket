@@ -7,15 +7,12 @@ Main client class for interacting with EKET Protocol servers.
 import requests
 from typing import Optional, List, Dict, Any
 from urllib.parse import urljoin
-import time
 from datetime import datetime
 
 from .models import (
     Agent,
     Task,
     Message,
-    PR,
-    PRComment,
     AcceptanceCriterion,
     AgentType,
     AgentRole,
@@ -26,7 +23,6 @@ from .models import (
     TaskStatus,
     MessageType,
     MessagePriority,
-    PRStatus,
     TestStatus,
 )
 from .exceptions import (
@@ -129,7 +125,7 @@ class EketClient:
             try:
                 response_data = response.json()
             except ValueError:
-                raise ServerError(f"Invalid JSON response from server")
+                raise ServerError("Invalid JSON response from server")
 
             # Handle errors
             if not response.ok:
@@ -616,7 +612,9 @@ class EketClient:
             "task_id": task_id,
             "branch": branch,
             "description": description,
-            "test_status": test_status.value if isinstance(test_status, TestStatus) else test_status,
+            "test_status": (
+                test_status.value if isinstance(test_status, TestStatus) else test_status
+            ),
         }
 
         response = self._request("POST", "/api/v1/prs", data=data)

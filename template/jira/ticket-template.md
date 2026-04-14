@@ -1,4 +1,4 @@
-# Jira Ticket 模板 (v2.1.0)
+# Jira Ticket 模板 (v2.3.0)
 
 <!--
 ================================================================================
@@ -11,9 +11,15 @@
 **类型**: {{TYPE}}  <!-- feature / bugfix / task / improvement / research -->
 **优先级**: {{PRIORITY}}  <!-- P0(紧急) / P1(高) / P2(中) / P3(低) -->
 
-**状态**: {{STATUS}}  <!-- backlog → analysis → approved → ready → in_progress → test → review → done -->
+**状态**: {{STATUS}}  <!-- backlog → analysis → ready → gate_review → in_progress → test → pr_review → done -->
 **创建时间**: {{CREATED_AT}}
 **最后更新**: {{UPDATED_AT}}
+**started_at**: <!-- Slaver 进入 in_progress 时填写，格式 ISO8601，如 2026-04-14T10:30:00Z -->
+**completed_at**: <!-- Slaver 将任务推进到 done 时填写，格式 ISO8601 -->
+
+**gate_review_veto_count**: 0  <!-- gate:review 否决次数，≥2 时第 3 次强制 APPROVE -->
+**veto_reason**: <!-- gate:review VETO 时自动写入否决原因，多条用 ; 分隔 -->
+**resubmit_conditions**: <!-- gate:review VETO 时自动写入重新提交条件，多条用 ; 分隔 -->
 
 **负责人**: {{ASSIGNEE}}  <!-- Slaver 领取时填写 instance_id -->
 **执行 Agent**: {{SLAVER_NAME}}  <!-- Slaver 领取时填写 instance_id -->
@@ -30,11 +36,13 @@
 
 ## 领取记录
 
-| 操作 | Slaver Instance ID | 时间 | 状态变更 |
+| 操作 | Slaver / Reviewer | 时间 | 状态变更 |
 |------|-------------------|------|----------|
-| 领取 | {{CLAIMED_BY}} | {{CLAIMED_AT}} | ready → in_progress |
-| 提交 Review | {{REVIEW_SUBMITTED_BY}} | {{REVIEW_SUBMITTED_AT}} | in_progress → review |
-| Review 通过 | {{REVIEW_APPROVED_BY}} | {{REVIEW_APPROVED_AT}} | review → done |
+| 领取 | {{CLAIMED_BY}} | {{CLAIMED_AT}} | ready → gate_review |
+| Gate Review APPROVE | gate_reviewer | {{GATE_APPROVED_AT}} | gate_review → in_progress |
+| Gate Review VETO | gate_reviewer | {{GATE_VETOED_AT}} | gate_review → analysis |
+| 提交 Review | {{REVIEW_SUBMITTED_BY}} | {{REVIEW_SUBMITTED_AT}} | in_progress → pr_review |
+| Review 通过 | {{REVIEW_APPROVED_BY}} | {{REVIEW_APPROVED_AT}} | pr_review → done |
 
 <!--
 ================================================================================
@@ -51,6 +59,13 @@
 ---
 
 ## 2. 验收标准
+
+<!-- Nyquist Rule: 每条验收标准必须附带可自动化执行的验证命令（<60s 完成）
+     格式：- [ ] 描述；验证：`<命令>`
+     禁止：手动检查、人眼确认、"运行后观察" 等主观验证 -->
+
+- [ ] 功能描述；验证：`npm test -- --testPathPattern=<pattern>`
+- [ ] 构建零错误；验证：`npm run build 2>&1 | grep -c error || true`
 
 {{ACCEPTANCE_CRITERIA}}
 
@@ -90,6 +105,7 @@
 ## 6. 执行日志
 
 {{EXECUTION_LOG}}
+**deferred_issues**: <!-- 执行中发现但不在本 ticket 范围内的预存在问题，留给 Master 处理 -->
 
 ---
 
@@ -174,10 +190,11 @@
 
 ---
 
-**模板版本**: v2.0.0
-**最后更新**: 2026-04-06
+**模板版本**: v2.3.0
+**最后更新**: 2026-04-14
 **变更说明**:
-- 元信息移到文件开头
-- 新增 Master Review Subagent 初始化记录
-- 新增人类参与审查点追踪
-- 结构化审查流程
+- v2.3.0: 新增 started_at / completed_at 字段（Slaver 负责填写）；started_at 在进入 in_progress 时填写，completed_at 在推进到 done 时填写；供 master:heartbeat 慢任务检测和平均执行时长统计使用
+- v2.2.0: 加入 gate_review 三字段（gate_review_veto_count / veto_reason / resubmit_conditions）
+- 状态机更新：与 CLAUDE.md gate_review 节点对齐（backlog→analysis→ready→gate_review→in_progress→test→pr_review→done）
+- 领取记录表加入 Gate Review APPROVE / VETO 行
+- v2.0.0: 元信息移到文件开头；新增 Master Review Subagent 初始化记录；新增人类参与审查点追踪；结构化审查流程

@@ -1,10 +1,13 @@
-# Feature Ticket: FEAT-005 - Git Hook 集成
+# FEAT-005: Git Hook 集成
 
 **创建时间**: 2026-04-09
 **创建者**: Master Agent
 **重要性**: low
 **优先级**: P2
 **状态**: backlog
+**gate_review_veto_count**: 0
+**veto_reason**:
+**resubmit_conditions**:
 **标签**: `feature`, `git-hook`, `automation`, `ci-cd`
 **Epic**: EPIC-001
 **分配给**: null
