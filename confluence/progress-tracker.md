@@ -1,6 +1,6 @@
 # EKET Framework - 项目进度追踪
 
-**当前版本**: v2.10.1
+**当前版本**: v2.10.2
 **更新时间**: 2026-04-14
 **维护者**: Master Agent
 
@@ -35,6 +35,7 @@
 | ticket-template v2.2.0 | ✅ 完成 | gate_review 字段 + validate-ticket-template.sh + master:heartbeat CLI |
 | 自动发布 workflow | ✅ 完成 | .github/workflows/release.yml — PyPI (OIDC/token) + npm + GitHub Release |
 | Harness-inspired Slaver 升级 | ✅ 完成 | SlaverHeartbeat 能力声明 + 执行时长统计 + busyRatio 过载检测 |
+| GSD-inspired 工程纪律升级 | ✅ 完成 | Nyquist Rule + 4-Level Verification + Deviation Rules + Analysis Paralysis Guard |
 
 ---
 
@@ -58,6 +59,7 @@
 | 17a | **Python SDK flake8 全清**：46 个 lint 问题修复 | v2.9.3 | ✅ 完成 |
 | 17b | **ticket-template v2.2.0 + validate script + master:heartbeat + release workflow** | v2.10.0 | ✅ 完成 |
 | 18 | **Harness 借鉴**：SlaverHeartbeat 能力声明 + 执行时长 + busyRatio 过载检测 | v2.10.1 | ✅ 完成 |
+| 19 | **GSD 借鉴**：Nyquist Rule + 4-Level Artifact Verification + Deviation Rules + Analysis Paralysis Guard | v2.10.2 | ✅ 完成 |
 
 ---
 
@@ -83,6 +85,55 @@
 - master:heartbeat 与 EKET Web Dashboard 集成（/api/heartbeat 端点）
 - Slaver heartbeat CLI（对应 master:heartbeat 的 Slaver 侧 3 问自检）
 - Slaver 领取任务时自动写入 started_at（task:claim 命令集成）
+
+## Round 19 完成详情（2026-04-14）
+
+借鉴 [gsd-build/get-shit-done](https://github.com/gsd-build/get-shit-done)（52k stars）的工程纪律框架，强化 EKET Slaver 执行规范。
+
+### TASK-023: Nyquist Rule — 验收标准自动化要求
+
+- `template/jira/ticket-template.md`：验收标准 section 加入 Nyquist Rule HTML 注释 + 格式示例
+  - 规则：每条验收标准必须附带 <60s 可自动执行的 shell 命令
+- `CLAUDE.md`：Ticket 职责边界表后加 `### Nyquist Rule` 段落（可自动化/有时限/客观可重复 3 条规则）
+- `scripts/validate-ticket-template.sh`：新增 INFO 级别检查 #9
+  - done 状态 ticket 若验收标准无反引号命令 → `[CYAN][INFO]` 提示
+  - 不影响通过/失败判断，不受 `--strict` 影响，汇总行新增 INFO 计数
+
+### TASK-024: 4-Level Artifact Verification — PR Review 框架
+
+借鉴 GSD verifier 的 4 级产物验证，加强防幻觉机制：
+
+- `CLAUDE.md`：PR Review 强制 checklist 后加 4-Level 子段落
+  - L1 存在性：文件在 diff 中可见
+  - L2 实质性：非空函数体/stub/return undefined
+  - L3 接线：被正确 import/export/注册（孤立文件不算完成）
+  - L4 数据流：有非纯-mock 测试（纯文档 PR 豁免）
+  - L1-L3 缺任意一项 = 直接 reject
+- `template/docs/MASTER-HEARTBEAT-CHECKLIST.md`：加 4-level 对照表，明确 L2↔防幻觉/L4↔禁mock 的映射关系
+- `.github/PULL_REQUEST_TEMPLATE/pull_request_template.md`：加 Artifact Verification 自检 section
+
+### TASK-025: Deviation Rules — Slaver 偏差处理协议
+
+为 Slaver 建立明确的"自动修复 vs 上报 Master"决策规则：
+
+- `template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`：新增"偏差处理协议"章节
+  - Rule 1 Bug Fix：自动修复（限当前 ticket 修改过的文件）
+  - Rule 2 Missing Critical：自动补充 error handling/null guard（限新增代码）
+  - Rule 3 Blocking：自动修复 broken import/missing dep（限当前 ticket 阻塞点）
+  - Rule 4 Architectural：**必须上报** — DB schema/新 service/公共 API/100+ 行重构
+  - 兜底：3次修复失败 → 停止，记录 deferred_issues
+- `template/jira/ticket-template.md` 执行报告加 `deferred_issues` 字段
+- `CLAUDE.md` Slaver 职责段加偏差处理协议一句话引用
+
+### TASK-026: Analysis Paralysis Guard — 行动阈值规则
+
+- `template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`：新增"行动阈值规则"章节
+  - 阈值：连续 5+ 次读操作无写操作 → 触发决策点
+  - 决策：A) 立即写框架代码 / B) 报告 BLOCKED（二选一，禁止继续探索）
+  - 例外：Gate Review 首次分析豁免最多 10 次读操作
+- `CLAUDE.md` Slaver 心跳检查 3 问 → 4 问：加第 4 问"我是否陷入分析瘫痪？"
+
+**测试**: 1109/1109 ✅ | 纯文档/脚本改动，无 TS 变更
 
 ## Round 18 完成详情（2026-04-14）
 
