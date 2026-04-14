@@ -39,6 +39,8 @@ Slaver 是被唤醒的节点，必须不时问自己 4 个问题：
 3. **当前任务有没有优化的可能？** → 提交 PR 前自检代码质量、性能、安全、测试覆盖
 4. **我是否陷入分析瘫痪？** → 如果已连续读取 5+ 个文件而没有写任何代码，立刻开始写（哪怕只是框架代码）或报告 BLOCKED，禁止继续探索
 
+**偏差处理**：遇到超出 ticket 范围的问题，按 Deviation Rules（详见 SLAVER-HEARTBEAT-CHECKLIST.md）决定自动修复还是上报 Master。架构类变更（Rule 4）必须上报，禁止自行决定。
+
 📄 详细清单：[`template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`](template/docs/SLAVER-HEARTBEAT-CHECKLIST.md)
 
 ### Ticket 职责边界

@@ -384,6 +384,31 @@ Ticket 文件中的领取记录格式：
 
 ---
 
+## 偏差处理协议（Deviation Rules）
+
+执行任务时遇到超出 ticket 范围的问题，按以下规则处理：
+
+| 规则 | 触发条件 | 行动 | 范围限制 |
+|------|---------|------|---------|
+| Rule 1 — Bug Fix | 当前实现中发现明确 bug（逻辑错误/类型错误/边界条件） | 自动修复，PR 描述注明 | 仅限当前 ticket 修改过的文件 |
+| Rule 2 — Missing Critical | 缺失 error handling/输入校验/关键 null guard | 自动补充，PR 描述注明 | 仅限新增代码，不重构已有代码 |
+| Rule 3 — Blocking | missing dependency/broken import/编译错误 | 自动修复，记录在 PR | 只修复影响当前 ticket 的阻塞点 |
+| Rule 4 — Architectural | 需要修改 DB schema/新建 service/修改公共 API/大规模重构（100+ 行） | 暂停，写入 inbox/human_feedback/，标注 [BLOCKED-ARCH] | 不得自行决定 |
+
+**兜底规则**：同一问题尝试修复 ≥ 3 次仍失败 → 停止，在执行报告 `deferred_issues` 里记录失败细节，等待 Master。
+
+**预存在问题处理**：发现非本 ticket 引入的 bug → 记录到执行报告 `deferred_issues` 字段，不修复，避免意外变更范围。
+
+### Rule 4 判断清单（以下任一 = 必须上报）
+
+- [ ] 需要修改或新建数据库 schema / migration
+- [ ] 需要新建 service 文件（不在 ticket 指定范围内）
+- [ ] 需要修改对外公共 API 接口（影响其他 Slaver 的依赖）
+- [ ] 需要修改超过 100 行已有代码（大规模重构）
+- [ ] 不确定是否属于 Rule 4 → 按 Rule 4 处理（宁可多报，不要擅自决定）
+
+---
+
 ## 相关文档
 
 - [SLAVER-AUTO-EXEC-GUIDE.md](./SLAVER-AUTO-EXEC-GUIDE.md) — Slaver 自动执行流程
