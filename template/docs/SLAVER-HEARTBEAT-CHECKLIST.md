@@ -377,6 +377,7 @@ Ticket 文件中的领取记录格式：
 - [ ] 文档已更新
 - [ ] 提交历史已整理（rebase/squash）
 - [ ] 分支已同步上游最新代码
+- [ ] **Artifact Schema 已填写**：Ticket 的执行记录包含 `implementation_report` 结构化字段（test_result 必须是真实命令输出，非描述）
 
 **自检时间**: {{ISO8601 时间}}
 **自检者**: {{slaver_id}}
@@ -406,6 +407,39 @@ Ticket 文件中的领取记录格式：
 - [ ] 需要修改对外公共 API 接口（影响其他 Slaver 的依赖）
 - [ ] 需要修改超过 100 行已有代码（大规模重构）
 - [ ] 不确定是否属于 Rule 4 → 按 Rule 4 处理（宁可多报，不要擅自决定）
+
+---
+
+## 可用命令集（Agent-Computer Interface）
+
+### ✅ 允许的命令类别
+
+| 类别 | 允许命令 | 说明 |
+|------|---------|------|
+| 读取代码 | `cat`, `grep`, `find`, `ls`, `wc` | 只读，无副作用 |
+| 编辑代码 | `Edit`/`Write`/`Read` 工具 | 通过 Claude Code 工具，有权限控制 |
+| 测试 | `npm test`, `npm run lint`, `npm run build` | 项目标准命令 |
+| Git 只读 | `git status`, `git log`, `git diff`, `git branch` | 查看状态，不修改 |
+| Git 提交 | `git add`, `git commit`, `git push origin <feature-branch>` | 仅限 feature/* 分支 |
+| 脚本 | `bash scripts/validate-ticket-template.sh` | 项目内白名单脚本 |
+
+### ❌ 禁止的命令
+
+| 命令 | 原因 |
+|------|------|
+| `git push --force` / `git push -f` | 可能破坏他人工作 |
+| `git reset --hard` | 不可逆破坏 |
+| `rm -rf` | 不可逆删除 |
+| `git push origin main` / `origin miao` | 受保护分支，必须走 PR |
+| `npm publish` / `pip publish` | 发布操作，需 Master 授权 |
+| `sudo` / `chmod 777` | 权限提升 |
+| 任何直接操作数据库的命令 | 绕过应用层 |
+
+### 🟡 需要确认再用的命令
+
+- `git rebase` — 可能产生冲突，执行前说明原因
+- `npm install <new-package>` — 新增依赖需在 PR 描述说明
+- `curl` / `wget` — 网络请求需说明目的
 
 ---
 

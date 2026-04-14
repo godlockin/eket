@@ -41,6 +41,8 @@ Slaver 是被唤醒的节点，必须不时问自己 4 个问题：
 
 **偏差处理**：遇到超出 ticket 范围的问题，按 Deviation Rules（详见 SLAVER-HEARTBEAT-CHECKLIST.md）决定自动修复还是上报 Master。架构类变更（Rule 4）必须上报，禁止自行决定。
 
+**可用命令集（ACI）**：Slaver 操作范围受命令白名单约束，详见 `template/docs/SLAVER-HEARTBEAT-CHECKLIST.md` — "可用命令集"章节。禁止运行 `git push --force`、`rm -rf`、直接推送受保护分支等破坏性命令。
+
 📄 详细清单：[`template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`](template/docs/SLAVER-HEARTBEAT-CHECKLIST.md)
 
 ### Ticket 职责边界
