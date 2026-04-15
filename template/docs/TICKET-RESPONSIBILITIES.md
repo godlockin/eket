@@ -229,6 +229,16 @@ external:                    # 外部依赖
 - [ ] **需要修改** - 见 Review 意见，状态已改回 in_progress
 - [ ] **拒绝** - {{原因}}
 
+### 6.4 Merge 前必完成事项（Master 执行，顺序不可颠倒）
+
+1. - [ ] **所有测试通过** — CI 绿色 + 本地全量测试通过
+2. - [ ] **Review 完成** — 4-Level Artifact Verification 全部通过，明确批准
+3. - [ ] **更新 Confluence** — 相关技术文档/架构决策/API 变更已同步至 Confluence
+4. - [ ] **更新 Jira Ticket** — 状态推进为 `done`，填写实际完成时间和交付物链接
+5. - [ ] **执行合并** — Master 合并 PR 到目标分支
+
+> ⚠️ 第 3、4 步（文档更新）必须在合并之前完成，不得事后补录。
+
 **Reviewer**: {{Master 实例 ID}}
 **Review 时间**: {{ISO8601 时间}}
 ```

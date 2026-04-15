@@ -56,6 +56,18 @@ PR review 时，按顺序检查以下 4 个层级：
 - L4（数据流）= 对应"禁止 mock 替代真实验证"
 - L1/L3 是新增维度，补充了产物完整性检查
 
+### □ Merge 前强制流程（Review 通过后，顺序执行）
+
+**缺任何一步 = 不得合并：**
+
+1. - [ ] **所有测试通过** — CI `test` check 绿色，确认无新增失败
+2. - [ ] **Review 完成** — 4-Level Artifact Verification 全部通过，Master 明确批准
+3. - [ ] **更新 Confluence** — 将技术方案、架构变更、API 文档同步到 `confluence/projects/{project}/`
+4. - [ ] **更新 Jira Ticket** — 状态推进为 `done`，记录实际完成时间和交付物链接
+5. - [ ] **执行合并** — Master 合并 PR 到目标分支，关闭 Ticket
+
+> ⚠️ 步骤 3（Confluence 更新）和步骤 4（Jira 更新）必须在合并之前完成，不得事后补录。
+
 ---
 
 ### □ PR 队列检查
