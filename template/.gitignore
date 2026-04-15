@@ -94,3 +94,8 @@ shared/message_queue/inbox/
 shared/message_queue/outbox/
 shared/message_queue/broadcast/
 shared/message_queue/dead_letter/
+
+# Agent Memory - local 级别（个人私有知识，不追踪）
+# user 级别存储在 ~/.claude/agent-memory/，天然不在仓库中
+# project 级别（.claude/agent-memory/）追踪，用于团队共享
+.claude/agent-memory-local/
