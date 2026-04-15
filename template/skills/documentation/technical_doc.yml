@@ -9,7 +9,7 @@
 name: technical_doc
 version: 1.0.0
 category: documentation
-description: 编写技术文档
+description: "Use when engineers need internal technical documentation explaining system architecture, code design decisions, or implementation details for onboarding or maintainability. Triggers when user mentions 'technical documentation', 'architecture doc', 'design document', 'internal docs', 'developer guide', or 'code documentation'. Provides structured technical documents with diagrams."
 
 # 输入参数定义
 inputs:

@@ -9,7 +9,7 @@
 name: user_interview
 version: 1.0.0
 category: requirements
-description: 与用户进行需求访谈，收集和整理需求要点
+description: "Use when starting a new project or feature and need to understand user pain points, goals, and expectations. Triggers when user mentions 'user interview', 'requirements gathering', 'what do users want', or 'customer research'. Provides structured interview flow to extract background, pain points, goals, and constraints."
 
 # 输入参数定义
 inputs:

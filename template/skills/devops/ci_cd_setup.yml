@@ -9,7 +9,7 @@
 name: ci_cd_setup
 version: 1.0.0
 category: devops
-description: 配置 CI/CD 流水线
+description: "Use when setting up automated build, test, and deployment pipelines for a new project, or when migrating/updating an existing CI/CD workflow. Triggers when user mentions 'CI/CD', 'GitHub Actions', 'pipeline setup', 'automated deployment', 'continuous integration', 'branch protection', or 'deploy workflow'. Provides workflow YAML files and deployment configuration."
 
 # 输入参数定义
 inputs:
