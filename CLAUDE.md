@@ -86,6 +86,13 @@ Slaver 是被唤醒的节点，必须不时问自己 4 个问题：
 - [ ] 无未解释的新 mock 替换真实服务
 - [ ] 变更与 Ticket 验收标准一一对应
 
+**Merge 前必须完成（顺序执行，缺任何一项 = 不得合并）**：
+1. ✅ **所有测试通过** — CI `test` check 绿色，本地 `npm test` 全量通过
+2. ✅ **Review 完成** — Master 完成 4-Level Artifact Verification，明确批准
+3. ✅ **更新 Confluence 文档** — 相关技术文档、架构决策、API 变更同步更新
+4. ✅ **更新 Jira Ticket** — 状态推进至 `done`，填写实际完成时间和交付物链接
+5. ✅ **执行合并** — Master 合并 PR 到目标分支
+
 **4-Level Artifact Verification（代码类 PR 必须通过全部 4 级）**：
 - [ ] **L1 存在性**：新增/修改的文件确实存在于 PR diff 中（非仅修改注释或 TODO）
 - [ ] **L2 实质性**：实现是真实逻辑，不是空函数体、占位 stub、或 `return undefined`
