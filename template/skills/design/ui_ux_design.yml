@@ -9,7 +9,7 @@
 name: ui_ux_design
 version: 1.0.0
 category: design
-description: 用户界面和用户体验设计
+description: "Use when creating user interface designs, wireframes, or design specifications for web or mobile applications. Triggers when user mentions 'UI design', 'UX design', 'wireframe', 'mockup', 'user flow', 'design system', or 'visual design'. Provides user flows, wireframes, high-fidelity mockups, and design specifications."
 
 # 输入参数定义
 inputs:

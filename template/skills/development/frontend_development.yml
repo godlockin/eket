@@ -9,7 +9,7 @@
 name: frontend_development
 version: 1.0.0
 category: development
-description: 根据设计稿和 API 定义实现前端界面
+description: "Use when implementing UI components, integrating frontend with backend APIs, or scaffolding a new frontend project based on design specs. Triggers when user mentions 'frontend development', 'implement UI', 'React component', 'build interface', 'frontend integration', or 'SPA development'. Provides component code, API integration, state management, and unit tests."
 
 # 输入参数定义
 inputs:
