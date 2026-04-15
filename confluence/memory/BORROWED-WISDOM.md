@@ -1,7 +1,7 @@
 # EKET 借鉴知识库 — Borrowed Wisdom
 
 **创建时间**: 2026-04-14
-**最后更新**: 2026-04-15
+**最后更新**: 2026-04-15（Round 23）
 **维护者**: Master Agent
 **目的**: 沉淀从外部项目借鉴的思想和规则，避免"遗忘再重发明"
 
@@ -16,6 +16,7 @@
 5. [通用跨项目经验](#universal)
 6. [多智能体框架全景对比（2026-04）](#landscape)
 7. [claude-code-best-practice — Claude Code 工具层最佳实践](#claude-code-best-practice)
+8. [文档债 / 技术债清理 — Round 23 实战经验](#doc-debt-cleanup)
 
 ---
 
@@ -649,3 +650,27 @@ Anthropic 内部数百个 Skill 归纳为 9 类，按类别设计触发条件：
 | **互补性** | ⭐⭐⭐⭐⭐ 高度互补 | — |
 
 **结论**：EKET 是**流程框架**，claude-code-best-practice 是**工具使用手册**。EKET 在架构设计（Gate Review、三仓库分离、Ticket 状态机）上已超越大多数同类，但工具层的 Claude 原生特性利用（Memory、/loop、动态注入、settings.json 权限）有很大提升空间——本次 Round 22 已完成主要补齐。
+
+---
+
+## 8. 文档债 / 技术债清理 — Round 23 实战经验 {#doc-debt-cleanup}
+
+**来源**: EKET 自身项目（Round 23，2026-04-15）
+**背景**: 经过 22 轮迭代后，项目积累了大量游离文件、断链、过时内容和重复文档，进行了一次系统性多轮清理（PR #49~#54），净减少约 **7,000+ 行**过时内容。
+
+本次经验已拆分为三份独立文档，内容更完整：
+
+| 文档 | 主题 |
+|------|------|
+| [DOC-DEBT-CLEANUP.md](DOC-DEBT-CLEANUP.md) | 通用方法论：四种债务类型、清理顺序、断链检测、archive 结构、预防规则 |
+| [EKET-PROJECT-HYGIENE.md](EKET-PROJECT-HYGIENE.md) | EKET 特有规则：template/ 引用判断、ticket 状态一致性、outbox 清理、三仓库归属 |
+| [MULTI-AGENT-COLLAB-LESSONS.md](MULTI-AGENT-COLLAB-LESSONS.md) | 多智能体协作经验：任务分配、并行风险、环境依赖处理、失败模式（来自 Round 2/3） |
+
+### 核心原则（快速参考）
+
+1. **先移动后修链**：位置稳定前修链是无效劳动
+2. **删除前 grep**：`grep -rn "FILENAME" . --include="*.md"` 先确认没有引用
+3. **template/ 不是断链**：描述未来项目结构的引用，不需要修复
+4. **archive 要有结构**：按版本/类型分目录，不是垃圾桶
+5. **ticket 状态要清理**：定期检查僵尸 `IN_PROGRESS`，每 10 轮迭代扫描一次
+
