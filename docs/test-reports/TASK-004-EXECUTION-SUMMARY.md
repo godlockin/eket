@@ -233,7 +233,7 @@ node/package.json
 - **任务说明**: [jira/tickets/TASK-004.md](../jira/tickets/TASK-004.md)
 - **优化建议**: [docs/performance/optimization-recommendations.md](docs/performance/optimization-recommendations.md)
 - **测试报告**: [docs/performance/benchmark-report.md](docs/performance/benchmark-report.md)
-- **快速指南**: [PERFORMANCE_TESTING.md](PERFORMANCE_TESTING.md)
+- **快速指南**: [PERFORMANCE_TESTING.md](../performance/PERFORMANCE_TESTING.md)
 
 ---
 
