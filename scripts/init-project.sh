@@ -975,7 +975,6 @@ EOF
             echo -e "${YELLOW}⚠${NC} 未找到 settings.slaver.json，跳过权限配置安装"
         fi
     fi
-
     # 安装角色化 CLAUDE.md
     # 根据角色将对应模板覆盖安装为 CLAUDE.md
     # ==========================================
