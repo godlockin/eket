@@ -473,9 +473,9 @@ npm run format
 
 ## 🔗 相关文档
 
-- [Master 工作流程](MASTER-WORKFLOW.md)
-- [Slaver 自动执行指南](SLAVER-AUTO-EXEC-GUIDE.md)
-- [PR 审查流程](MASTER-PR-REVIEW-FLOW.md)
+- [Master 工作流程](../template/docs/MASTER-WORKFLOW.md)
+- [Slaver 自动执行指南](../template/docs/SLAVER-AUTO-EXEC-GUIDE.md)
+- [PR 审查流程](../template/docs/MASTER-PR-REVIEW-FLOW.md)
 
 ---
 

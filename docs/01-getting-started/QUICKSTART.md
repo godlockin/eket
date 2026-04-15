@@ -201,7 +201,7 @@ git push -u origin feature/<task-id>
 - 阅读 [docs/02-architecture/FRAMEWORK.md](../02-architecture/FRAMEWORK.md) 了解框架设计
 - 阅读 [docs/02-architecture/AGENTS_CONFIG.md](../02-architecture/AGENTS_CONFIG.md) 了解 Agent 配置
 - 阅读 [docs/02-architecture/SKILLS_SYSTEM.md](../02-architecture/SKILLS_SYSTEM.md) 了解 Skills 系统
-- 阅读 [docs/03-implementation/BRANCH_STRATEGY.md](../03-implementation/BRANCH_STRATEGY.md) 了解分支策略
+- 查阅 [CLAUDE.md](../../CLAUDE.md) 了解分支策略（## 分支策略 章节）
 
 ---
 
