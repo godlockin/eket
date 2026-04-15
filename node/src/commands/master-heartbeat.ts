@@ -75,9 +75,28 @@ export interface BlockedIssue {
   minutesBlocked: number | null;
 }
 
+export interface TicketEvent {
+  ticketId: string;
+  status: string;        // 状态名
+  enteredAt: string;     // ISO8601，进入该状态的时间
+  durationMinutes?: number; // 在该状态停留时长（如已离开）
+  actor?: string;        // 操作者（Slaver ID / gate_reviewer）
+}
+
+export interface TicketTimeline {
+  ticketId: string;
+  title: string;
+  currentStatus: string;
+  events: TicketEvent[];
+  totalElapsedMinutes?: number;
+}
+
 export interface HeartbeatReport {
   timestamp: string;
   projectRoot: string;
+
+  // Ticket execution timelines (parsed from 领取记录 tables)
+  ticketTimelines: TicketTimeline[];
 
   // Q1: 我的任务有哪些？怎么分优先级？
   taskQueue: {
@@ -255,6 +274,144 @@ function parseInbox(projectRoot: string): InboxStatus {
 }
 
 // ============================================================================
+// Timeline Parsing
+// ============================================================================
+
+/**
+ * Parse the 领取记录 Markdown table from ticket file content.
+ * Table format: | 操作 | Slaver / Reviewer | 时间 | 状态变更 |
+ * Returns a TicketTimeline with extracted events.
+ */
+export function parseTicketTimeline(
+  ticketId: string,
+  title: string,
+  currentStatus: string,
+  content: string
+): TicketTimeline {
+  const tableRowRegex = /^\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|/;
+  const events: TicketEvent[] = [];
+
+  const lines = content.split('\n');
+  let inTable = false;
+  let headerSkipped = false;
+
+  for (const line of lines) {
+    if (!line.trim().startsWith('|')) {
+      if (inTable) break;
+      continue;
+    }
+
+    // Detect 领取记录 table header
+    if (line.includes('操作') && line.includes('时间') && line.includes('状态变更')) {
+      inTable = true;
+      headerSkipped = false;
+      continue;
+    }
+
+    if (!inTable) continue;
+
+    // Skip separator line (|---|---|...|)
+    if (/^\|[\s|:-]+\|$/.test(line.trim())) {
+      headerSkipped = true;
+      continue;
+    }
+
+    if (!headerSkipped) {
+      headerSkipped = true;
+      continue;
+    }
+
+    const match = tableRowRegex.exec(line);
+    if (!match) continue;
+
+    const actor = (match[2] ?? '').trim();
+    const timeStr = (match[3] ?? '').trim();
+    const statusChange = (match[4] ?? '').trim();
+
+    // Parse the → status from "X → Y" format
+    const arrowMatch = statusChange.match(/[→>]\s*(\S+)/);
+    const status = arrowMatch ? (arrowMatch[1] ?? '').replace(/\s/g, '') : statusChange.replace(/\s/g, '');
+
+    // Attempt to parse date
+    let enteredAt = timeStr;
+    if (timeStr && timeStr !== '时间') {
+      const d = new Date(timeStr);
+      if (!isNaN(d.getTime())) {
+        enteredAt = d.toISOString();
+      }
+    }
+
+    if (status && status !== '状态变更' && status !== '-') {
+      events.push({
+        ticketId,
+        status,
+        enteredAt,
+        actor: actor && actor !== 'Slaver/Reviewer' && actor !== 'Slaver / Reviewer' ? actor : undefined,
+      });
+    }
+  }
+
+  // Calculate durationMinutes between consecutive events
+  for (let i = 0; i < events.length - 1; i++) {
+    const curr = events[i]!;
+    const next = events[i + 1]!;
+    const currTime = new Date(curr.enteredAt).getTime();
+    const nextTime = new Date(next.enteredAt).getTime();
+    if (!isNaN(currTime) && !isNaN(nextTime) && nextTime > currTime) {
+      curr.durationMinutes = Math.round((nextTime - currTime) / 60000);
+    }
+  }
+
+  // Total elapsed: first event → now
+  let totalElapsedMinutes: number | undefined;
+  if (events.length > 0) {
+    const firstTime = new Date(events[0]!.enteredAt).getTime();
+    if (!isNaN(firstTime)) {
+      totalElapsedMinutes = Math.round((Date.now() - firstTime) / 60000);
+    }
+  }
+
+  return { ticketId, title, currentStatus, events, totalElapsedMinutes };
+}
+
+function buildTicketTimelines(ticketsDir: string): TicketTimeline[] {
+  if (!fs.existsSync(ticketsDir)) return [];
+
+  const timelines: TicketTimeline[] = [];
+  try {
+    const entries = fs.readdirSync(ticketsDir);
+    for (const entry of entries) {
+      if (!entry.endsWith('.md') || entry.startsWith('README') || entry.startsWith('BACKLOG')) {
+        continue;
+      }
+      const filePath = path.join(ticketsDir, entry);
+      try {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const filename = path.basename(filePath, '.md');
+
+        let ticketId = filename;
+        const h1Match = content.match(/^#\s+([A-Z]+-\d+)/m);
+        if (h1Match) ticketId = h1Match[1] ?? filename;
+
+        const titleMatch = content.match(/^#\s+[A-Z]+-\d+[:\s]+(.+)/m);
+        const title = titleMatch ? (titleMatch[1] ?? '').trim() : filename;
+
+        const statusMatch = content.match(/\*\*(状态|status)\*\*:\s*(\S+)/i);
+        const currentStatus = statusMatch ? (statusMatch[2] ?? 'unknown').toLowerCase() : 'unknown';
+
+        const timeline = parseTicketTimeline(ticketId, title, currentStatus, content);
+        timelines.push(timeline);
+      } catch {
+        // ignore individual file errors
+      }
+    }
+  } catch {
+    // ignore dir read errors
+  }
+  return timelines;
+}
+
+// ============================================================================
 // Report Generation
 // ============================================================================
 
@@ -263,6 +420,7 @@ export function generateReport(projectRoot: string): HeartbeatReport {
   const ticketsDir = path.join(projectRoot, 'jira', 'tickets');
   const tickets = findTickets(ticketsDir);
   const inbox = parseInbox(projectRoot);
+  const ticketTimelines = buildTicketTimelines(ticketsDir);
 
   // ── Q1: Task Queue ────────────────────────────────────────────────────────
   const byStatus: Record<string, number> = {};
@@ -429,6 +587,7 @@ export function generateReport(projectRoot: string): HeartbeatReport {
   return {
     timestamp,
     projectRoot,
+    ticketTimelines,
     taskQueue: {
       total: activeTickets.length,
       byStatus,
@@ -551,6 +710,52 @@ function printBrief(report: HeartbeatReport): void {
   );
 }
 
+export function printTimelines(report: HeartbeatReport): void {
+  console.log('');
+  console.log('TICKET TIMELINES');
+  console.log('════════════════');
+
+  if (report.ticketTimelines.length === 0) {
+    console.log('  (no ticket timelines found)');
+    console.log('');
+    return;
+  }
+
+  for (const tl of report.ticketTimelines) {
+    if (tl.events.length === 0) continue;
+
+    const totalStr = tl.totalElapsedMinutes != null
+      ? `${tl.currentStatus}, ${tl.totalElapsedMinutes}min total`
+      : tl.currentStatus;
+    console.log(`${tl.ticketId}  ${tl.title}  [${totalStr}]`);
+
+    // Build the ASCII timeline chain
+    const parts: string[] = [];
+    for (let i = 0; i < tl.events.length; i++) {
+      const ev = tl.events[i]!;
+      parts.push(ev.status);
+      if (i < tl.events.length - 1) {
+        const dur = ev.durationMinutes != null ? `(${ev.durationMinutes}min)` : '';
+        parts.push(`──${dur}──►`);
+      }
+    }
+
+    // Append trailing arrow for in-progress tickets
+    const lastEvent = tl.events[tl.events.length - 1]!;
+    const lastIsTerminal = lastEvent.status === 'done' || lastEvent.status === 'completed';
+    if (!lastIsTerminal) {
+      const elapsed = lastEvent.durationMinutes != null
+        ? `──(${lastEvent.durationMinutes}min elapsed)──►`
+        : '──►';
+      parts.push(elapsed);
+      parts.push('?');
+    }
+
+    console.log(`  ${parts.join(' ')}`);
+    console.log('');
+  }
+}
+
 // ============================================================================
 // Command Registration
 // ============================================================================
@@ -563,9 +768,10 @@ export function registerMasterHeartbeat(program: Command): void {
     )
     .option('--json', '输出纯 JSON（机器可读）')
     .option('--brief', '单行摘要输出')
+    .option('--timeline', '输出每个 ticket 的执行时间线')
     .option('--project-root <path>', '项目根目录（默认: 当前目录）', process.cwd())
     .action(
-      (options: { json?: boolean; brief?: boolean; projectRoot: string }) => {
+      (options: { json?: boolean; brief?: boolean; timeline?: boolean; projectRoot: string }) => {
         try {
           const projectRoot = path.resolve(options.projectRoot);
 
@@ -583,6 +789,8 @@ export function registerMasterHeartbeat(program: Command): void {
             console.log(JSON.stringify(report, null, 2));
           } else if (options.brief) {
             printBrief(report);
+          } else if (options.timeline) {
+            printTimelines(report);
           } else {
             printReport(report);
           }
