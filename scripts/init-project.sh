@@ -80,13 +80,26 @@ copy_templates() {
 
     # 从 eket template 目录复制
     if [ -d "$EKET_TEMPLATE_DIR" ]; then
-        # 复制 CLAUDE.md
+        # 复制 CLAUDE.md（角色化版本优先）
         if [ ! -f "CLAUDE.md" ]; then
+            # 根据实例角色选择对应 CLAUDE.md 模板
+            # 注意：此处 INSTANCE_ROLE 尚未设置，使用通用版本作为初始安装
+            # 角色化安装在 configure_slaver_mode 中执行
             cp "$EKET_TEMPLATE_DIR/CLAUDE.md" "CLAUDE.md"
             # 替换占位符
             sed -i '' "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "CLAUDE.md" 2>/dev/null || \
             sed -i "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "CLAUDE.md"
             echo -e "${GREEN}✓${NC} CLAUDE.md"
+        fi
+
+        # 复制角色化 CLAUDE.md 模板（供后续角色初始化使用）
+        if [ -f "$EKET_TEMPLATE_DIR/CLAUDE.master.md" ] && [ ! -f "CLAUDE.master.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/CLAUDE.master.md" "CLAUDE.master.md"
+            echo -e "${GREEN}✓${NC} CLAUDE.master.md (Master 角色模板)"
+        fi
+        if [ -f "$EKET_TEMPLATE_DIR/CLAUDE.slaver.md" ] && [ ! -f "CLAUDE.slaver.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/CLAUDE.slaver.md" "CLAUDE.slaver.md"
+            echo -e "${GREEN}✓${NC} CLAUDE.slaver.md (Slaver 角色模板)"
         fi
 
         # 复制 AGENTS.md（通用大模型引导文件）
@@ -937,6 +950,37 @@ EOF
         esac
 
         echo -e "${GREEN}✓${NC} Slaver Profile 已创建"
+    fi
+
+    # ==========================================
+    # 安装角色化 CLAUDE.md
+    # 根据角色将对应模板覆盖安装为 CLAUDE.md
+    # ==========================================
+    echo ""
+    echo "----------------------------------------"
+    echo "安装角色化 CLAUDE.md"
+    echo "----------------------------------------"
+
+    if [ "$INSTANCE_ROLE" = "master" ]; then
+        if [ -f "CLAUDE.master.md" ]; then
+            cp "CLAUDE.master.md" "CLAUDE.md"
+            echo -e "${GREEN}✓${NC} CLAUDE.md ← CLAUDE.master.md（Master 动态注入版本已安装）"
+        elif [ -f "$EKET_TEMPLATE_DIR/CLAUDE.master.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/CLAUDE.master.md" "CLAUDE.md"
+            echo -e "${GREEN}✓${NC} CLAUDE.md ← template/CLAUDE.master.md（Master 动态注入版本已安装）"
+        else
+            echo -e "${YELLOW}⚠${NC} CLAUDE.master.md 未找到，保留通用 CLAUDE.md"
+        fi
+    elif [ "$INSTANCE_ROLE" = "slaver" ]; then
+        if [ -f "CLAUDE.slaver.md" ]; then
+            cp "CLAUDE.slaver.md" "CLAUDE.md"
+            echo -e "${GREEN}✓${NC} CLAUDE.md ← CLAUDE.slaver.md（Slaver 动态注入版本已安装）"
+        elif [ -f "$EKET_TEMPLATE_DIR/CLAUDE.slaver.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/CLAUDE.slaver.md" "CLAUDE.md"
+            echo -e "${GREEN}✓${NC} CLAUDE.md ← template/CLAUDE.slaver.md（Slaver 动态注入版本已安装）"
+        else
+            echo -e "${YELLOW}⚠${NC} CLAUDE.slaver.md 未找到，保留通用 CLAUDE.md"
+        fi
     fi
 }
 
