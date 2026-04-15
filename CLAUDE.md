@@ -23,6 +23,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **红线**：禁止修改验收标准/优先级/依赖关系，禁止审查自己的 PR
 - **红线**：禁止横向协助其他 Slaver（需上报 Master 决策）
 - **红线**：连续读取 5+ 文件无写操作 = 分析瘫痪，立刻写代码或报 BLOCKED
+- **红线**：ticket 完成后必须执行复盘，经验写入 ticket + 通用知识沉淀到 `confluence/memory/`
 
 ### Ticket 职责边界
 
