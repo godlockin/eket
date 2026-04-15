@@ -362,18 +362,55 @@ Ticket 文件中的领取记录格式：
 
 ---
 
-## PR 自检清单（提交前必填）
+## PR 自检清单（提交前必填，技术栈感知四件套）
 
-在 `jira/tickets/{TICKET-ID}.md` 的"执行记录"中：
+在 `jira/tickets/{TICKET-ID}.md` 的"执行记录"中，按项目技术栈选择对应命令执行自检：
+
+> 📌 技术栈探测：`bash scripts/detect-stack.sh` 自动识别当前栈
+
+### Node.js 项目
 
 ```markdown
-### PR 自检
+### PR 自检（Node.js）
 
-- [ ] 代码通过 `npm run lint`
-- [ ] 测试通过 `npm test`
+- [ ] `npm run build` — TypeScript 编译零 error
+- [ ] `npm run lint` — ESLint 零 error
+- [ ] `npm test` — 全量通过，零新增失败
+- [ ] `npm audit --audit-level=high` — 无 high/critical 漏洞
 - [ ] 测试覆盖率 ≥ 80%
-- [ ] 无明显的性能问题
-- [ ] 无安全隐患
+- [ ] 文档已更新
+- [ ] 提交历史已整理（rebase/squash）
+- [ ] 分支已同步上游最新代码
+
+**自检时间**: {{ISO8601 时间}}
+**自检者**: {{slaver_id}}
+```
+
+### Python 项目
+
+```markdown
+### PR 自检（Python）
+
+- [ ] `mypy src/` — 类型检查零 error
+- [ ] `ruff check .` — Lint 零 error
+- [ ] `pytest` — 全量通过，零新增失败
+- [ ] `pip-audit` 或 `safety check` — 无高危漏洞
+- [ ] 测试覆盖率 ≥ 80%
+- [ ] 文档已更新
+- [ ] 提交历史已整理（rebase/squash）
+- [ ] 分支已同步上游最新代码
+
+**自检时间**: {{ISO8601 时间}}
+**自检者**: {{slaver_id}}
+```
+
+### Shell / 通用项目
+
+```markdown
+### PR 自检（Shell）
+
+- [ ] `shellcheck scripts/*.sh` — 零 error
+- [ ] `bash scripts/validate-ticket-template.sh` — 全部通过
 - [ ] 文档已更新
 - [ ] 提交历史已整理（rebase/squash）
 - [ ] 分支已同步上游最新代码

@@ -92,6 +92,21 @@ export interface EventBusStats {
 // ============================================================================
 
 // ============================================================================
+// Predefined Event Types
+// ============================================================================
+
+/** Ticket 完成事件类型常量 */
+export const TICKET_COMPLETED_EVENT = 'ticket.completed';
+
+/** Ticket 完成事件 payload */
+export interface TicketCompletedPayload {
+  ticketId: string;
+  assignedTo: string;  // Slaver ID
+  completedAt: string; // ISO8601
+  suggestedNextTicket?: string; // 建议的下一个 ticket ID（可选）
+}
+
+// ============================================================================
 // Event Bus Class
 // ============================================================================
 

@@ -102,6 +102,48 @@ export interface ISQLiteClient {
     totalItems: number;
     byCategory: Array<{ category: string; count: number }>;
   }>>;
+  /** 保存执行检查点 */
+  saveCheckpoint(checkpoint: {
+    ticketId: string;
+    slaverId: string;
+    phase: 'analysis' | 'implement' | 'test' | 'pr';
+    stateJson: string;
+  }): Promise<Result<void>>;
+  /** 加载执行检查点 */
+  loadCheckpoint(ticketId: string, slaverId: string): Promise<Result<unknown>>;
+  /** 删除执行检查点 */
+  deleteCheckpoint(ticketId: string, slaverId: string): Promise<Result<void>>;
+}
+
+export interface ExecutionCheckpoint {
+  id?: number;
+  ticketId: string;
+  slaverId: string;
+  phase: 'analysis' | 'implement' | 'test' | 'pr';
+  stateJson: string;
+  createdAt?: string;
+}
+
+// ============================================================================
+// Handoff Types
+// ============================================================================
+
+/**
+ * Handoff 请求接口 — Slaver 完成后移交下一任务
+ */
+export interface HandoffRequest {
+  /** 完成的 ticket ID */
+  completedTicketId: string;
+  /** 发起 Handoff 的 Slaver ID */
+  slaverId: string;
+  /** 建议的下一个 ticket ID（空表示由 Master 决定） */
+  suggestedNextTicketId?: string;
+  /** 请求时间 */
+  requestedAt: string;
+  /** 是否已确认 */
+  confirmed: boolean;
+  /** 确认时间 */
+  confirmedAt?: string;
 }
 
 export interface Retrospective {
