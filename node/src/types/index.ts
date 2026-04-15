@@ -1219,3 +1219,36 @@ export interface HookResult {
   /** 执行时间戳（ISO 8601） */
   timestamp: string;
 }
+
+// ============================================================================
+// Progress Report Types (TASK-039 — mini-rules self-check)
+// ============================================================================
+
+/**
+ * 自检 checklist 条目
+ * passed: false 时 note 字段必填（schema 层校验）
+ */
+export interface SelfCheckItem {
+  ruleId: string;
+  description: string;
+  passed: boolean;
+  note?: string; // passed: false 时必填
+}
+
+/**
+ * Slaver 进度上报消息体
+ * selfCheck 字段由 buildProgressReport() 自动注入
+ */
+export interface ProgressReport {
+  ticketId: string;
+  slaverId: string;
+  phase: 'analysis' | 'implement' | 'test' | 'pr';
+  progress: number; // 0-100
+  statusMessage: string;
+  timestamp: string;
+  selfCheck: {
+    rules: Array<{ id: string; desc: string }>;
+    checklist: SelfCheckItem[];
+    analysisParalysisFlag: boolean;
+  };
+}
