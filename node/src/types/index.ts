@@ -618,6 +618,9 @@ export enum EketErrorCode {
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   UNAUTHORIZED = 'UNAUTHORIZED',
   INTERNAL_ERROR = 'INTERNAL_ERROR',
+
+  // Hook 管道 (TASK-035)
+  HOOK_BLOCKED = 'HOOK_BLOCKED',
 }
 
 export interface EketError {
@@ -1197,4 +1200,22 @@ export interface WorkflowJudgmentRequest {
   resolution?: string; // 判断结果
   resolvedBy?: string; // 谁做了判断
   resolvedAt?: number;
+}
+
+// ============================================================================
+// Hook Pipeline Types (TASK-035)
+// ============================================================================
+
+/**
+ * Hook 执行结果（用于 runPrePrReviewHook 等 hook 函数的返回值）
+ */
+export interface HookResult {
+  /** hook 是否通过 */
+  passed: boolean;
+  /** 失败或警告信息列表 */
+  errors: string[];
+  /** 关联的 ticket ID */
+  ticketId: string;
+  /** 执行时间戳（ISO 8601） */
+  timestamp: string;
 }
