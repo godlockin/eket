@@ -3,7 +3,7 @@
 **负责人**: Slaver B (测试修复专家 - QA/Backend)
 **优先级**: P1
 **预估工时**: 10 小时
-**状态**: IN_PROGRESS
+**状态**: done
 **gate_review_veto_count**: 0
 **veto_reason**:
 **resubmit_conditions**:
