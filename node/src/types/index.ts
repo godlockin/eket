@@ -124,6 +124,28 @@ export interface ExecutionCheckpoint {
   createdAt?: string;
 }
 
+// ============================================================================
+// Handoff Types
+// ============================================================================
+
+/**
+ * Handoff 请求接口 — Slaver 完成后移交下一任务
+ */
+export interface HandoffRequest {
+  /** 完成的 ticket ID */
+  completedTicketId: string;
+  /** 发起 Handoff 的 Slaver ID */
+  slaverId: string;
+  /** 建议的下一个 ticket ID（空表示由 Master 决定） */
+  suggestedNextTicketId?: string;
+  /** 请求时间 */
+  requestedAt: string;
+  /** 是否已确认 */
+  confirmed: boolean;
+  /** 确认时间 */
+  confirmedAt?: string;
+}
+
 export interface Retrospective {
   id: number;
   sprintId: string;

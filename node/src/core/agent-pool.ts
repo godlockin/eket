@@ -19,6 +19,9 @@
  * @module AgentPool
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
+
 import { ROUND_ROBIN_TTL, ROUND_ROBIN_KEY_PREFIX } from '../constants.js';
 import type {
   Result,
@@ -26,6 +29,7 @@ import type {
   DistributedRoundRobinConfig,
   InstanceRegistryConfig,
 } from '../types/index.js';
+import { EketError } from '../types/index.js';
 
 import { InstanceRegistry, createInstanceRegistry } from './instance-registry.js';
 import { RedisClient, createRedisClient } from './redis-client.js';
@@ -504,6 +508,106 @@ export class AgentPoolManager {
    */
   async releaseAgent(agentId: string, taskId?: string): Promise<Result<void>> {
     return await this.registry.updateInstanceStatus(agentId, 'idle', taskId);
+  }
+
+  /**
+   * 通知 Handoff 就绪 — Slaver 完成任务后调用
+   * 自动寻找 ready 状态的下一个 ticket 并写入 inbox 通知文件
+   * 保留人工控制点：Master 需执行 handoff:confirm 命令确认
+   */
+  async notifyHandoffReady(
+    completedTicketId: string,
+    slaverId: string,
+    projectRoot: string
+  ): Promise<Result<string>> {
+    try {
+      // 查找 ready 状态的 ticket（扫描 jira/tickets/）
+      const jiraDir = path.join(projectRoot, 'jira', 'tickets');
+      let suggestedNextTicketId: string | undefined;
+
+      if (fs.existsSync(jiraDir)) {
+        const files = fs.readdirSync(jiraDir).filter((f) => f.endsWith('.md'));
+        for (const file of files) {
+          const content = fs.readFileSync(path.join(jiraDir, file), 'utf-8');
+          const statusMatch = content.match(/\*\*status\*\*:\s*(\w+)/i);
+          if (statusMatch?.[1]?.toLowerCase() === 'ready') {
+            // 提取 ticket ID（文件名去掉 .md）
+            suggestedNextTicketId = path.basename(file, '.md').toUpperCase();
+            break;
+          }
+        }
+      }
+
+      // 写入 inbox 通知文件
+      const feedbackDir = path.join(projectRoot, 'inbox', 'human_feedback');
+      if (!fs.existsSync(feedbackDir)) {
+        fs.mkdirSync(feedbackDir, { recursive: true });
+      }
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const inboxFile = path.join(feedbackDir, `handoff-${completedTicketId}-${timestamp}.md`);
+      const suggestionNote = suggestedNextTicketId
+        ? `建议下一任务: ${suggestedNextTicketId}（ready 状态，角色匹配）`
+        : '未找到 ready 状态任务，Master 请手动分配';
+      const confirmCmd = `node dist/index.js handoff:confirm ${completedTicketId} ${slaverId}`;
+
+      const content = [
+        `## Handoff 请求 — ${completedTicketId} 完成`,
+        '',
+        `Slaver: ${slaverId}`,
+        `完成时间: ${new Date().toISOString()}`,
+        `${suggestionNote}`,
+        `确认命令: \`${confirmCmd}\``,
+        '',
+        '---',
+        '',
+        '> 执行上述确认命令后，框架将自动分配下一任务给该 Slaver。',
+        '> 如不需要自动 Handoff，忽略此文件即可。',
+      ].join('\n');
+
+      fs.writeFileSync(inboxFile, content, 'utf-8');
+
+      return { success: true, data: inboxFile };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      return {
+        success: false,
+        error: new EketError('HANDOFF_NOTIFY_FAILED', `Failed to notify handoff: ${errorMessage}`),
+      };
+    }
+  }
+
+  /**
+   * 执行 Handoff — Master 确认后调用
+   * 将 Slaver 的当前任务更新为新 ticket，状态变为 busy
+   */
+  async executeHandoff(
+    slaverId: string,
+    newTicketId: string
+  ): Promise<Result<void>> {
+    // 先将 Slaver 设为 idle，再分配新任务
+    const releaseResult = await this.registry.updateInstanceStatus(slaverId, 'idle', undefined);
+    if (!releaseResult.success) {
+      return releaseResult;
+    }
+
+    // 分配新任务
+    const assignResult = await this.assignTaskToAgent(slaverId, newTicketId);
+    if (!assignResult.success) {
+      return assignResult;
+    }
+
+    if (!assignResult.data.success) {
+      return {
+        success: false,
+        error: new EketError(
+          'HANDOFF_ASSIGN_FAILED',
+          assignResult.data.error?.message || 'Failed to assign task during handoff'
+        ),
+      };
+    }
+
+    return { success: true, data: undefined };
   }
 
   /**
