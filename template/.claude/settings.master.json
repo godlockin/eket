@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(*)",
+      "Edit(jira/**)",
+      "Edit(confluence/**)",
+      "Write(jira/**)",
+      "Write(confluence/**)",
+      "Edit(inbox/**)",
+      "Write(inbox/**)",
+      "Bash(git log*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git fetch*)",
+      "Bash(gh pr*)",
+      "Bash(gh issue*)",
+      "Bash(node dist/index.js gate:review*)",
+      "Bash(node dist/index.js task:*)",
+      "Bash(node dist/index.js system:*)"
+    ],
+    "ask": [
+      "Bash(git merge*)",
+      "Bash(git push*)",
+      "Edit(template/**)",
+      "Edit(scripts/**)"
+    ],
+    "deny": [
+      "Edit(node/src/**)",
+      "Edit(node/tests/**)",
+      "Write(node/src/**)",
+      "Write(node/tests/**)",
+      "Edit(node/package.json)",
+      "Bash(npm install*)",
+      "Bash(npm run build*)"
+    ]
+  }
+}
