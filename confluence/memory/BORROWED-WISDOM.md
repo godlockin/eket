@@ -1,7 +1,7 @@
 # EKET 借鉴知识库 — Borrowed Wisdom
 
 **创建时间**: 2026-04-14
-**最后更新**: 2026-04-14
+**最后更新**: 2026-04-15
 **维护者**: Master Agent
 **目的**: 沉淀从外部项目借鉴的思想和规则，避免"遗忘再重发明"
 
@@ -15,6 +15,7 @@
 4. [OpenAI Agents SDK — 路由描述协议](#openai-agents)
 5. [通用跨项目经验](#universal)
 6. [多智能体框架全景对比（2026-04）](#landscape)
+7. [claude-code-best-practice — Claude Code 工具层最佳实践](#claude-code-best-practice)
 
 ---
 
@@ -409,3 +410,242 @@ const normalizeStatus = (s: string): SlaverStatus => {
 ### 6.6 竞争格局一句话总结
 
 > EKET 在**工程可靠性**（三级降级容灾）和**质量门控**（Gate Review + Anti-Hallucination）两个维度领先所有竞争者。这是真正的护城河——其他框架能复制功能，但复制不了经过多 Round 迭代验证的工程纪律体系。
+
+---
+
+## 7. claude-code-best-practice — Claude Code 工具层最佳实践 {#claude-code-best-practice}
+
+**来源**: [shanraisshan/claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice)（44k ⭐，GitHub Trending #1，2026-03）
+**借鉴时间**: Round 22 (2026-04-15)
+**作者背景**: Shayan Raisshan（Claude Community Ambassador）+ Anthropic 核心团队（Boris Cherny 创始人、Thariq Shihipar 等）第一手实践
+**核心价值观**: *"from vibe coding to agentic engineering — practice makes claude perfect"*
+
+---
+
+### 7.1 三机制分工原则：Agent / Command / Skill
+
+**最重要的架构贡献**：清晰定义了 Claude Code 三个扩展机制的分工，以及"何时用哪个"的决策规则。
+
+| 机制 | 位置 | 上下文 | 自动触发 | 适用场景 |
+|------|------|--------|---------|---------|
+| **Skill** | `.claude/skills/<name>/SKILL.md` | 内联（主对话） | ✅ 通过 description | 可复用知识单元，零开销 |
+| **Agent** | `.claude/agents/<name>.md` | **独立子进程** | ✅ 通过 description | 自治多步骤任务，需要隔离上下文 |
+| **Command** | `.claude/commands/<name>.md` | 内联（主对话） | ❌ 只能用户 `/` 触发 | 需要用户主动发起的编排入口 |
+
+**黄金编排模式**：
+```
+[C] Command（用户触发 → 编排入口）
+    ↓
+[A] Agent（自治多步骤 → 隔离上下文）
+    预加载 Skill（领域知识）
+    ↓
+[S] Skill（可复用输出 → 内联执行）
+```
+
+**轻量优先规则**：同一意图有多个机制可用时，优先选最轻量的：`Skill → Agent → Command`。
+
+---
+
+### 7.2 Skill description 是触发器，不是摘要
+
+**问题**：Skill 的 `description` 字段写功能摘要，Claude 不知道何时该触发。
+
+**规则**：description 要为**模型**写，描述"何时应该触发"，而不是描述"这个 Skill 是什么"：
+
+```yaml
+# ❌ 错误（功能摘要）
+description: "管理 Redis 连接的工具"
+
+# ✅ 正确（触发条件）
+description: "Use when checking Redis connectivity, listing Slavers, or
+diagnosing connection issues. Triggers on: 'redis', 'connection', 'slaver list'."
+```
+
+**模板**：`"Use when [用户场景]. Triggers when user mentions [关键词]. Provides [输出]."`
+
+**EKET 落地**：TASK-030，已重写 template/skills/ 下全部 23 个 YAML 的 description。
+
+---
+
+### 7.3 settings.json 强制行为 vs CLAUDE.md 建议行为
+
+**来源**：Boris Cherny（Claude Code 创始人）内部实践
+
+> **"CLAUDE.md is guidance, settings.json is enforcement."**
+
+**问题**：CLAUDE.md 里写"NEVER do X"是软约束，Claude 在上下文压力下可能忽略。
+
+**规则**：确定性的禁止行为必须用 settings.json 的 permissions 系统强制：
+
+```json
+{
+  "permissions": {
+    "allow": ["Read(*)", "Edit(jira/**)"],
+    "ask":   ["Bash(git merge*)", "Edit(template/**)"],
+    "deny":  ["Edit(node/src/**)", "Bash(npm run build*)"]
+  }
+}
+```
+
+**三级语义**：
+- `allow`：无需确认，直接执行
+- `ask`：执行前弹出确认对话框
+- `deny`：物理级阻断，无论 prompt 怎么说都不执行
+
+**EKET 落地**：TASK-031，新增 settings.master.json（deny node/src/**）和 settings.slaver.json（deny force push 到受保护分支）。
+
+---
+
+### 7.4 动态 Shell 注入（!`command` 语法）
+
+**发现**：Claude Code 支持在 CLAUDE.md / Skill 文件中使用反引号动态执行 Shell 命令，输出注入到上下文。
+
+```markdown
+## 实时状态（每次启动自动刷新）
+
+待执行任务：!`find jira/tickets -name "*.md" | xargs grep -l "状态.*ready" | sort`
+当前 PR：!`gh pr list --base miao --state open --json number,title | jq -r '.[] | "#\(.number) \(.title)"'`
+```
+
+**关键价值**：CLAUDE.md 从"写死的静态文档"变为"每次启动自动获取实时数据的动态上下文"。
+
+**安全原则**：注入命令只用只读操作（find/grep/git log/gh pr list），禁止有副作用的命令。Fallback：`|| echo "(unavailable)"` 防命令失败导致上下文报错。
+
+**EKET 落地**：TASK-032，新增 CLAUDE.master.md（5处注入）和 CLAUDE.slaver.md（3处注入）。
+
+---
+
+### 7.5 Agent Memory — 跨会话持久记忆
+
+**Claude Code v2.1.33+ 原生特性**，Agent 可声明 memory 级别，跨会话积累知识：
+
+```yaml
+---
+name: gate-reviewer
+memory: project   # 团队共享，写入 .claude/agent-memory/gate-reviewer/
+---
+```
+
+**三级存储**：
+
+| 级别 | 路径 | 版本控制 | 共享 | 适用场景 |
+|------|------|---------|------|---------|
+| `user` | `~/.claude/agent-memory/<name>/` | ❌ | ❌ | 跨项目通用经验 |
+| `project` | `.claude/agent-memory/<name>/` | ✅ | ✅ | 团队共享的项目约定 |
+| `local` | `.claude/agent-memory-local/<name>/` | ❌（gitignore） | ❌ | 个人私有知识 |
+
+**工作机制**：启动时自动读取 `MEMORY.md` 前 200 行注入系统提示；超出后 Agent 自动迁移到主题文件。
+
+**激活方式（在 prompt 中明确要求）**：
+```markdown
+- 启动时：Review your memory for historical patterns before starting.
+- 完成后：Update your memory with new patterns discovered in this session.
+```
+
+**最佳组合**：Skill（静态领域知识）+ Memory（动态积累的历史经验），两者互补。
+
+**EKET 落地**：TASK-033，gate_reviewer（8条否决模式种子）和 code_reviewer（12条代码风格 + 14条反模式种子）均已配置 `memory: project`。
+
+---
+
+### 7.6 /loop 自动化重复任务
+
+**Boris Cherny 内部工作流**：`/loop 30m /heartbeat:master` — 每 30 分钟自动执行心跳，无需人工触发。
+
+```bash
+/loop 30m /heartbeat:master   # Master 心跳：任务队列 + Slaver 进度 + gate_review 超时 + inbox
+/loop 10m /heartbeat:slaver   # Slaver 心跳：当前任务 + 依赖检查 + 分支状态
+/loop 5m  /babysit-pr         # PR 监控：每 5 分钟检查 CI 状态
+```
+
+**与手动心跳的差距**：手动心跳依赖"记得执行"，/loop 将其变成基础设施，永不遗漏。
+
+**EKET 落地**：TASK-034，新增 heartbeat-master.md（7处动态注入）和 heartbeat-slaver.md（6处动态注入）。
+
+---
+
+### 7.7 Skill 渐进式披露结构
+
+**推荐的 Skill 文件夹结构**（不是单文件，是目录）：
+
+```
+skills/<name>/
+├── SKILL.md          # 核心提示（200行以内，触发条件描述）
+├── MEMORY.md         # 动态积累的 Gotchas（可选，需配合 memory: 字段）
+├── references/       # API 文档、规范参考
+├── scripts/          # 可内嵌执行的脚本（让 Claude 专注组合而非重建）
+└── examples/         # 输入/输出示例
+```
+
+**关键原则**：
+- SKILL.md 只写能改变 Claude 默认行为的内容，不写废话
+- 建立 Gotchas 区：收集 Claude 反复踩的坑
+- 内嵌脚本：给 Claude 可复用代码，而非让它每次重新生成
+
+---
+
+### 7.8 Skill 的 9 种类型分类（Thariq，Anthropic 内部）
+
+Anthropic 内部数百个 Skill 归纳为 9 类，按类别设计触发条件：
+
+| 类型 | 描述 | 触发关键词模板 |
+|------|------|-------------|
+| Library & API Reference | 内部库/CLI 使用说明 + gotchas | `Use when using [lib-name]` |
+| Product Verification | 产品测试验证（最值得花时间打磨） | `Use when verifying [feature]` |
+| Data Fetching & Analysis | 连接数据/监控栈 | `Use when querying [data-source]` |
+| Business Process & Team Automation | 重复流程自动化 | `Use when [process] needs to run` |
+| Code Scaffolding & Templates | 代码脚手架 | `Use when creating new [type]` |
+| Code Quality & Review | 代码质量强制 | `Use when reviewing [scope]` |
+| CI/CD & Deployment | 部署运维 | `Use when deploying [service]` |
+| Runbooks | 故障诊断 | `Use when [service] has issues` |
+| Infrastructure Operations | 基础设施操作（常需防护） | `Use when managing [infra]` |
+
+---
+
+### 7.9 CLAUDE.md 200 行原则 + `<important if="...">` 标签
+
+**200 行原则**：每个 CLAUDE.md 保持在 200 行以内。大型项目用 `.claude/rules/` 目录拆分，通过 `@path` 导入组合。
+
+**防忽略技术**（解决 CLAUDE.md 变长后被 Claude 忽略的问题）：
+
+```xml
+<important if="user asks about authentication">
+  Always use JWT with RS256, never HS256
+</important>
+```
+
+规则只在相关上下文中激活，不会因为文件太长被淹没。
+
+**Monorepo 加载策略**：
+- 向上加载（Ancestor）：启动时自动加载所有父目录的 CLAUDE.md
+- 向下懒加载（Descendant）：只在访问子目录文件时才加载
+- 平级不加载（Sibling）：`frontend/` 和 `backend/` 互不干扰
+
+---
+
+### 7.10 关键洞见：给 Claude 验证自己工作的方式
+
+**Boris Cherny 最重要的一条（#13）**：
+
+> **"给 Claude 验证自己工作的方式，能 2-3x 提升输出质量。"**
+
+这正是 EKET 的 Gate Review 和 Nyquist Rule 在做的事——强制 Agent 在完成后用命令验证结果，而不是声称完成。这是 EKET 与其他框架最大的差异化来源之一。
+
+**具体形式**：
+- Nyquist Rule：每条验收标准必须附带可执行验证命令
+- Gate Review：任务执行前独立审查员交叉验证
+- Stop Hook：Agent 完成时自动触发验证脚本
+- 4-Level Artifact Verification：L1 存在性 → L2 实质性 → L3 接线 → L4 数据流
+
+---
+
+### 7.11 EKET 与 claude-code-best-practice 的互补定位
+
+| 维度 | claude-code-best-practice | EKET |
+|------|--------------------------|------|
+| **焦点** | Claude Code 工具层配置（Skill/Agent/Hook） | 多 Agent 协作流程管理（Ticket/Branch/Review） |
+| **粒度** | 工具层 | 流程层 |
+| **状态管理** | 无（对话即状态） | 有（Jira Ticket 状态机） |
+| **互补性** | ⭐⭐⭐⭐⭐ 高度互补 | — |
+
+**结论**：EKET 是**流程框架**，claude-code-best-practice 是**工具使用手册**。EKET 在架构设计（Gate Review、三仓库分离、Ticket 状态机）上已超越大多数同类，但工具层的 Claude 原生特性利用（Memory、/loop、动态注入、settings.json 权限）有很大提升空间——本次 Round 22 已完成主要补齐。
