@@ -9,7 +9,7 @@
 name: integration_test
 version: 1.0.0
 category: testing
-description: 执行模块间集成测试
+description: "Use when multiple modules or services need to be tested together to verify their interactions and interface contracts are correct. Triggers when user mentions 'integration test', 'test modules together', 'API integration test', 'service communication test', or 'end-to-end service test'. Provides integration test files with interface-level assertions."
 
 # 输入参数定义
 inputs:

@@ -43,28 +43,28 @@ skills:
     category: requirements
     status: active
     version: 1.0.0
-    description: 用户需求访谈
+    description: "Use when starting a new project or feature and need to understand user pain points, goals, and expectations. Triggers when user mentions 'user interview', 'requirements gathering', 'what do users want', or 'customer research'."
 
   - name: requirement_decomposition
     path: requirements/requirement_decomposition.yml
     category: requirements
     status: active
     version: 1.0.0
-    description: 需求拆解为功能点
+    description: "Use when a high-level requirement needs to be broken down into actionable development tasks or Jira tickets. Triggers when user mentions 'break down requirements', 'decompose feature', 'split into tasks', or 'create tickets from requirement'."
 
   - name: acceptance_criteria_definition
     path: requirements/acceptance_criteria_definition.yml
     category: requirements
     status: active
     version: 1.0.0
-    description: 验收标准定义
+    description: "Use when feature points or user stories need clear, testable acceptance criteria before development begins. Triggers when user mentions 'acceptance criteria', 'definition of done', 'how do we know it works', or 'test conditions'."
 
   - name: user_story_mapping
     path: requirements/user_story_mapping.yml
     category: requirements
     status: active
     version: 1.0.0
-    description: 用户故事地图
+    description: "Use when requirements need to be organized into a visual user story map to prioritize features and plan sprints by user journey. Triggers when user mentions 'user story map', 'feature prioritization', 'sprint planning', or 'user journey'."
 
   # ===== 技术设计类 =====
   - name: architecture_design
@@ -72,35 +72,35 @@ skills:
     category: design
     status: active
     version: 1.0.0
-    description: 系统架构设计
+    description: "Use when starting system design for a new project or major feature. Triggers when user mentions 'system architecture', 'tech stack selection', 'component design', 'scalability design', or 'microservices'."
 
   - name: api_design
     path: design/api_design.yml
     category: design
     status: active
     version: 1.0.0
-    description: RESTful API 设计
+    description: "Use when designing new API endpoints or reviewing existing API contracts. Triggers when user mentions 'API design', 'REST endpoints', 'OpenAPI', 'API contract', or 'HTTP interface'."
 
   - name: database_design
     path: design/database_design.yml
     category: design
     status: active
     version: 1.0.0
-    description: 数据库 Schema 设计
+    description: "Use when designing a new database schema or optimizing an existing one. Triggers when user mentions 'database design', 'schema design', 'ERD', 'database migration', 'table structure', or 'data modeling'."
 
   - name: ui_ux_design
     path: design/ui_ux_design.yml
     category: design
     status: active
     version: 1.0.0
-    description: UI/UX 设计
+    description: "Use when creating user interface designs, wireframes, or design specifications for web or mobile applications. Triggers when user mentions 'UI design', 'UX design', 'wireframe', 'mockup', 'user flow', or 'design system'."
 
   - name: icon_design
     path: design/icon_design.yml
     category: design
     status: active
     version: 1.0.0
-    description: 图标设计
+    description: "Use when a project needs custom icons for app branding, feature identifiers, or UI action elements. Triggers when user mentions 'icon design', 'create icon', 'app icon', 'SVG icon', 'icon set', or 'favicon'."
 
   # ===== 开发实现类 =====
   - name: frontend_development
@@ -108,14 +108,14 @@ skills:
     category: development
     status: active
     version: 1.0.0
-    description: 前端开发
+    description: "Use when implementing UI components, integrating frontend with backend APIs, or scaffolding a new frontend project. Triggers when user mentions 'frontend development', 'implement UI', 'React component', 'build interface', or 'SPA development'."
 
   - name: backend_development
     path: development/backend_development.yml
     category: development
     status: active
     version: 1.0.0
-    description: 后端开发
+    description: "Use when implementing server-side business logic, REST API endpoints, or database models. Triggers when user mentions 'backend development', 'implement API', 'server-side logic', 'create endpoints', or 'Node.js/Python backend'."
 
   # ===== 测试验证类 =====
   - name: unit_test
@@ -123,28 +123,28 @@ skills:
     category: testing
     status: active
     version: 1.0.0
-    description: 单元测试
+    description: "Use when newly written code needs unit test coverage or when existing tests need updating. Triggers when user mentions 'unit test', 'write tests', 'test coverage', 'jest', 'pytest', or 'test a function/component'."
 
   - name: e2e_test
     path: testing/e2e_test.yml
     category: testing
     status: active
     version: 1.0.0
-    description: E2E 测试
+    description: "Use when full user workflows need to be validated against a running application. Triggers when user mentions 'E2E test', 'end-to-end test', 'Playwright', 'Cypress', 'browser automation', or 'user flow test'."
 
   - name: integration_test
     path: testing/integration_test.yml
     category: testing
     status: active
     version: 1.0.0
-    description: 集成测试
+    description: "Use when multiple modules or services need to be tested together to verify their interactions. Triggers when user mentions 'integration test', 'test modules together', 'API integration test', or 'service communication test'."
 
   - name: performance_test
     path: testing/performance_test.yml
     category: testing
     status: active
     version: 1.0.0
-    description: 性能测试
+    description: "Use when validating that a service meets latency, throughput, or concurrency requirements before production. Triggers when user mentions 'performance test', 'load test', 'stress test', 'QPS', 'latency benchmark', or 'bottleneck analysis'."
 
   # ===== 运维部署类 =====
   - name: docker_build
@@ -152,28 +152,28 @@ skills:
     category: devops
     status: active
     version: 1.0.0
-    description: Docker 构建
+    description: "Use when a project needs to be containerized for consistent deployment. Triggers when user mentions 'Docker', 'containerize', 'Dockerfile', 'docker-compose', 'build image', or 'container deployment'."
 
   - name: ci_cd_setup
     path: devops/ci_cd_setup.yml
     category: devops
     status: active
     version: 1.0.0
-    description: CI/CD 配置
+    description: "Use when setting up automated build, test, and deployment pipelines, or migrating an existing CI/CD workflow. Triggers when user mentions 'CI/CD', 'GitHub Actions', 'pipeline setup', 'automated deployment', 'continuous integration', or 'branch protection'."
 
   - name: kubernetes_deploy
     path: devops/kubernetes_deploy.yml
     category: devops
     status: active
     version: 1.0.0
-    description: Kubernetes 部署
+    description: "Use when deploying a containerized application to a Kubernetes cluster or managing scaling and rollout strategies. Triggers when user mentions 'Kubernetes', 'k8s deploy', 'kubectl apply', 'HPA', 'Deployment manifest', 'Ingress', or 'container orchestration'."
 
   - name: monitoring_setup
     path: devops/monitoring_setup.yml
     category: devops
     status: active
     version: 1.0.0
-    description: 监控配置
+    description: "Use when a deployed service needs observability with metrics, dashboards, alerts, and runbooks. Triggers when user mentions 'monitoring', 'Prometheus', 'Grafana', 'alerting', 'dashboard setup', 'observability', 'metrics', or 'on-call runbook'."
 
   # ===== 文档类 =====
   - name: api_documentation
@@ -181,28 +181,28 @@ skills:
     category: documentation
     status: active
     version: 1.0.0
-    description: API 文档
+    description: "Use when an API implementation is complete and developers need reference documentation with endpoint details and examples. Triggers when user mentions 'API documentation', 'API docs', 'OpenAPI spec', 'Swagger', or 'document endpoints'."
 
   - name: technical_doc
     path: documentation/technical_doc.yml
     category: documentation
     status: active
     version: 1.0.0
-    description: 技术文档
+    description: "Use when engineers need internal documentation explaining architecture, design decisions, or implementation details. Triggers when user mentions 'technical documentation', 'architecture doc', 'design document', 'internal docs', or 'developer guide'."
 
   - name: user_guide
     path: documentation/user_guide.yml
     category: documentation
     status: active
     version: 1.0.0
-    description: 用户指南
+    description: "Use when end users or non-technical stakeholders need step-by-step guidance for a product, including quick-start and FAQs. Triggers when user mentions 'user guide', 'user manual', 'how-to documentation', 'end-user docs', or 'quick start guide'."
 
   - name: release_notes
     path: documentation/release_notes.yml
     category: documentation
     status: active
     version: 1.0.0
-    description: 发布说明
+    description: "Use when a new version is ready to ship and needs structured release notes with new features, bug fixes, and breaking changes. Triggers when user mentions 'release notes', 'changelog', 'version announcement', 'what's new in v', or 'migration guide'."
 
 # Agent 推荐的 Skill 组合
 recommended_combinations:
