@@ -20,6 +20,7 @@ import { createWebDashboardServer } from './api/web-server.js';
 import { registerAlerts } from './commands/alerts.js';
 import { registerClaim } from './commands/claim.js';
 import { registerHandoff } from './commands/handoff.js';
+import { registerTaskResume } from './commands/task-resume.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { registerGateReview } from './commands/gate-review.js';
 import { registerMasterHeartbeat } from './commands/master-heartbeat.js';
@@ -590,6 +591,9 @@ Related Commands:
 
   // 注册 handoff 命令
   registerHandoff(program);
+
+  // 注册 task:resume 命令
+  registerTaskResume(program);
 
   // 注册 project:init 命令
   program
