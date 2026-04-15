@@ -170,6 +170,16 @@ validate_ticket() {
     fi
   fi
 
+  # 10. pr_review/test 状态验收标准质量工具检查（WARN）
+  if [[ "$status" == "pr_review" || "$status" == "test" ]]; then
+    local ac_block
+    ac_block=$(grep -A20 -E '##\s*[0-9.]*\s*(验收标准|Acceptance Criteria)' "$file" 2>/dev/null || true)
+    if [[ -n "$ac_block" ]] && ! echo "$ac_block" | grep -qiE 'lint|audit|mypy|ruff|shellcheck|clippy|golangci|govulncheck'; then
+      issues+=("  ${YELLOW}[WARN]${RESET} 验收标准未包含质量工具（lint/audit/mypy/ruff/shellcheck 等），建议补充技术栈四件套")
+      ticket_warn=$((ticket_warn + 1))
+    fi
+  fi
+
   # ── gate_review 状态额外检查 ────────────────────────────────────────────────
   if [[ "$status" == "gate_review" ]]; then
     if ! file_has 'veto_reason' "$file"; then
