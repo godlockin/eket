@@ -19,6 +19,7 @@ import { OpenCLAWGateway } from './api/openclaw-gateway.js';
 import { createWebDashboardServer } from './api/web-server.js';
 import { registerAlerts } from './commands/alerts.js';
 import { registerClaim } from './commands/claim.js';
+import { registerHandoff } from './commands/handoff.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { registerGateReview } from './commands/gate-review.js';
 import { registerMasterHeartbeat } from './commands/master-heartbeat.js';
@@ -586,6 +587,9 @@ Related Commands:
 
   // 注册 claim 命令
   registerClaim(program);
+
+  // 注册 handoff 命令
+  registerHandoff(program);
 
   // 注册 project:init 命令
   program

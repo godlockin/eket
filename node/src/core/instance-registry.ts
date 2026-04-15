@@ -15,10 +15,12 @@ import type {
   InstanceRegistryConfig,
   Result,
   BatchHeartbeatConfig,
+  ExecutionCheckpoint,
 } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
 
 import { RedisClient, createRedisClient } from './redis-client.js';
+import { createSQLiteManager } from './sqlite-manager.js';
 
 /**
  * Instance Registry
@@ -31,6 +33,7 @@ export class InstanceRegistry {
   private batchHeartbeatConfig: BatchHeartbeatConfig;
   private batchHeartbeatQueue: Array<{ instanceId: string; timestamp: number }> = [];
   private batchFlushTimer?: NodeJS.Timeout;
+  private sqlite: ReturnType<typeof createSQLiteManager> | null = null;
 
   constructor(config: InstanceRegistryConfig = {}) {
     // Defensive copy to prevent external mutation
@@ -166,6 +169,25 @@ export class InstanceRegistry {
         const newStatusKey = `${this.config.redisPrefix}by_status:${status}`;
         await client.srem(oldStatusKey, instanceId);
         await client.sadd(newStatusKey, instanceId);
+      }
+
+      // 自动更新检查点（异步，不阻塞主流程）
+      if (currentTaskId) {
+        const phaseMap: Record<string, ExecutionCheckpoint['phase']> = {
+          busy: 'implement',
+          idle: 'implement', // 完成时会 clearExecutionState
+        };
+        const phase = phaseMap[status];
+        if (phase) {
+          // 使用 void 避免 await 阻塞
+          void this.saveExecutionState(instanceId, currentTaskId, phase).catch(() => {
+            // 检查点失败不影响主流程
+          });
+        }
+      }
+      // 任务完成（idle + 有之前的 taskId）时清理检查点
+      if (status === 'idle' && instance.currentTaskId && instance.currentTaskId !== currentTaskId) {
+        void this.clearExecutionState(instanceId, instance.currentTaskId).catch(() => {});
       }
 
       return { success: true, data: undefined };
@@ -582,6 +604,97 @@ export class InstanceRegistry {
       return {
         success: false,
         error: new EketError(EketErrorCode.INSTANCE_LIST_FAILED, `Failed to list instances: ${errorMessage}`),
+      };
+    }
+  }
+
+  /**
+   * 保存执行状态检查点（断点恢复）
+   * 在 Slaver 状态变更时自动调用
+   *
+   * @param instanceId - Slaver 实例 ID
+   * @param ticketId - 当前 ticket ID
+   * @param phase - 执行阶段
+   * @param context - 可选的额外上下文（文件变更列表、最后操作等）
+   */
+  async saveExecutionState(
+    instanceId: string,
+    ticketId: string,
+    phase: ExecutionCheckpoint['phase'],
+    context: { filesChanged?: string[]; lastAction?: string; notes?: string } = {}
+  ): Promise<Result<void>> {
+    // 懒初始化 SQLite
+    if (!this.sqlite) {
+      this.sqlite = createSQLiteManager();
+      const connectResult = await this.sqlite.connect();
+      if (!connectResult.success) {
+        // SQLite 不可用时降级：记录警告但不阻塞主流程
+        console.warn('[InstanceRegistry] SQLite unavailable, checkpoint skipped');
+        this.sqlite = null;
+        return { success: true, data: undefined };
+      }
+    }
+
+    const stateJson = JSON.stringify({
+      filesChanged: context.filesChanged ?? [],
+      lastAction: context.lastAction ?? '',
+      notes: context.notes ?? '',
+      savedAt: new Date().toISOString(),
+    });
+
+    return this.sqlite.saveCheckpoint({
+      ticketId,
+      slaverId: instanceId,
+      phase,
+      stateJson,
+    });
+  }
+
+  /**
+   * 删除执行状态检查点（任务完成时调用）
+   */
+  async clearExecutionState(instanceId: string, ticketId: string): Promise<Result<void>> {
+    if (!this.sqlite) {
+      return { success: true, data: undefined };
+    }
+    return this.sqlite.deleteCheckpoint(ticketId, instanceId);
+  }
+
+  /**
+   * 原子交换任务 — Slaver Handoff 专用
+   * 将 Slaver 从 completedTaskId 切换到 newTaskId，保持 busy 状态
+   */
+  async swapTask(instanceId: string, newTaskId: string): Promise<Result<void>> {
+    const client = this.redis.getClient();
+    if (!client) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
+      };
+    }
+
+    try {
+      const key = `${this.config.redisPrefix}${instanceId}`;
+      const existingData = await client.get(key);
+
+      if (!existingData) {
+        return {
+          success: false,
+          error: new EketError(EketErrorCode.INSTANCE_NOT_FOUND, `Instance ${instanceId} not found`),
+        };
+      }
+
+      const instance = JSON.parse(existingData) as Instance;
+      instance.currentTaskId = newTaskId;
+      instance.updatedAt = Date.now();
+
+      await client.set(key, JSON.stringify(instance));
+      return { success: true, data: undefined };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      return {
+        success: false,
+        error: new EketError('INSTANCE_SWAP_FAILED', `Failed to swap task: ${errorMessage}`),
       };
     }
   }
