@@ -9,7 +9,7 @@
 name: unit_test
 version: 1.0.0
 category: testing
-description: 为代码编写和执行单元测试
+description: "Use when newly written code needs unit test coverage, or when existing tests need to be updated to meet a coverage target. Triggers when user mentions 'unit test', 'write tests', 'test coverage', 'jest', 'pytest', or 'test a function/component'. Provides test files, test reports, and coverage metrics."
 
 # 输入参数定义
 inputs:

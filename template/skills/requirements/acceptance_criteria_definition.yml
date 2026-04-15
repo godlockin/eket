@@ -9,7 +9,7 @@
 name: acceptance_criteria_definition
 version: 1.0.0
 category: requirements
-description: 为功能点定义清晰的验收标准
+description: "Use when feature points or user stories need clear, testable acceptance criteria before development begins. Triggers when user mentions 'acceptance criteria', 'definition of done', 'how do we know it works', or 'test conditions'. Provides Given-When-Then format criteria with corresponding test cases."
 
 # 输入参数定义
 inputs:

@@ -9,7 +9,7 @@
 name: user_story_mapping
 version: 1.0.0
 category: requirements
-description: 将需求转换为用户故事地图
+description: "Use when requirements need to be organized into a visual user story map to prioritize features and plan sprints by user journey. Triggers when user mentions 'user story map', 'feature prioritization', 'sprint planning', 'user journey', or 'story backlog'. Provides story cards ranked by business value and user impact."
 
 # 输入参数定义
 inputs:

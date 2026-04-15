@@ -9,7 +9,7 @@
 name: requirement_decomposition
 version: 1.0.0
 category: requirements
-description: 将原始需求拆解为可执行的功能点
+description: "Use when a high-level requirement needs to be broken down into actionable development tasks or Jira tickets. Triggers when user mentions 'break down requirements', 'decompose feature', 'split into tasks', or 'create tickets from requirement'. Provides structured feature list with dependency mapping."
 
 # 输入参数定义
 inputs:

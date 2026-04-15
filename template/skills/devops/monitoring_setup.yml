@@ -9,7 +9,7 @@
 name: monitoring_setup
 version: 1.0.0
 category: devops
-description: 监控系统配置和告警设置
+description: "Use when a deployed service needs observability instrumentation — metrics collection, dashboards, alert rules, and runbooks — to detect and diagnose production issues. Triggers when user mentions 'monitoring', 'Prometheus', 'Grafana', 'alerting', 'dashboard setup', 'observability', 'metrics', or 'on-call runbook'. Provides monitoring config, dashboards, alert rules, and incident runbooks."
 
 # 输入参数定义
 inputs:
