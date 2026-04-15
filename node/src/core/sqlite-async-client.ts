@@ -44,7 +44,10 @@ type WorkerOperationType =
   | 'insertRetroContent'
   | 'getRetroContentByCategory'
   | 'searchRetrospectives'
-  | 'generateReport';
+  | 'generateReport'
+  | 'saveCheckpoint'
+  | 'loadCheckpoint'
+  | 'deleteCheckpoint';
 
 function runWorker() {
   let db: Database.Database | null = null;
@@ -251,6 +254,61 @@ function runWorker() {
             break;
           }
 
+          case 'saveCheckpoint': {
+            if (!db) {
+              sendResponse(port, request.id, {
+                success: false,
+                error: { code: 'SQLITE_NOT_CONNECTED', message: 'Database not connected' },
+              });
+              break;
+            }
+            const { ticketId, slaverId, phase, stateJson } = request.payload as {
+              ticketId: string; slaverId: string; phase: string; stateJson: string;
+            };
+            db.prepare(`
+              INSERT INTO execution_checkpoints (ticket_id, slaver_id, phase, state_json)
+              VALUES (?, ?, ?, ?)
+              ON CONFLICT(ticket_id, slaver_id) DO UPDATE SET
+                phase = excluded.phase,
+                state_json = excluded.state_json,
+                created_at = CURRENT_TIMESTAMP
+            `).run(ticketId, slaverId, phase, stateJson);
+            sendResponse(port, request.id, { success: true, data: undefined });
+            break;
+          }
+
+          case 'loadCheckpoint': {
+            if (!db) {
+              sendResponse(port, request.id, {
+                success: false,
+                error: { code: 'SQLITE_NOT_CONNECTED', message: 'Database not connected' },
+              });
+              break;
+            }
+            const { ticketId, slaverId } = request.payload as { ticketId: string; slaverId: string };
+            const row = db.prepare(
+              'SELECT * FROM execution_checkpoints WHERE ticket_id = ? AND slaver_id = ?'
+            ).get(ticketId, slaverId);
+            sendResponse(port, request.id, { success: true, data: row ?? null });
+            break;
+          }
+
+          case 'deleteCheckpoint': {
+            if (!db) {
+              sendResponse(port, request.id, {
+                success: false,
+                error: { code: 'SQLITE_NOT_CONNECTED', message: 'Database not connected' },
+              });
+              break;
+            }
+            const { ticketId, slaverId } = request.payload as { ticketId: string; slaverId: string };
+            db.prepare(
+              'DELETE FROM execution_checkpoints WHERE ticket_id = ? AND slaver_id = ?'
+            ).run(ticketId, slaverId);
+            sendResponse(port, request.id, { success: true, data: undefined });
+            break;
+          }
+
           default:
             sendResponse(port, request.id, {
               success: false,
@@ -280,6 +338,8 @@ function initializeTables(db: Database.Database): void {
     CREATE TABLE IF NOT EXISTS message_history (id INTEGER PRIMARY KEY AUTOINCREMENT, message_id TEXT UNIQUE, from_agent TEXT, to_agent TEXT, type TEXT, payload TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
     CREATE INDEX IF NOT EXISTS idx_task_status ON task_history(status);
     CREATE INDEX IF NOT EXISTS idx_message_type ON message_history(type);
+    CREATE TABLE IF NOT EXISTS execution_checkpoints (id INTEGER PRIMARY KEY AUTOINCREMENT, ticket_id TEXT NOT NULL, slaver_id TEXT NOT NULL, phase TEXT NOT NULL, state_json TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE(ticket_id, slaver_id));
+    CREATE INDEX IF NOT EXISTS idx_checkpoint_slaver ON execution_checkpoints(slaver_id);
   `);
 }
 
@@ -450,6 +510,35 @@ export class AsyncSQLiteClient implements ISQLiteClient {
     try {
       const report = (await this.sendRequest('generateReport', undefined)) as { totalRetrospectives: number; totalSprints: number; totalItems: number; byCategory: Array<{ category: string; count: number }> };
       return { success: true, data: report };
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
+  }
+
+  async saveCheckpoint(checkpoint: {
+    ticketId: string;
+    slaverId: string;
+    phase: 'analysis' | 'implement' | 'test' | 'pr';
+    stateJson: string;
+  }): Promise<Result<void>> {
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
+    try {
+      await this.sendRequest('saveCheckpoint', checkpoint);
+      return { success: true, data: undefined };
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
+  }
+
+  async loadCheckpoint(ticketId: string, slaverId: string): Promise<Result<unknown>> {
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
+    try {
+      const row = await this.sendRequest('loadCheckpoint', { ticketId, slaverId });
+      return { success: true, data: row };
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
+  }
+
+  async deleteCheckpoint(ticketId: string, slaverId: string): Promise<Result<void>> {
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
+    try {
+      await this.sendRequest('deleteCheckpoint', { ticketId, slaverId });
+      return { success: true, data: undefined };
     } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
 }
