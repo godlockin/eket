@@ -19,7 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Master 是长期运行节点，必须不时问自己 4 个问题：
 
 1. **我的任务有哪些？怎么分优先级？** → 检查 `inbox/human_input.md`、`jira/tickets/`
-2. **Slaver 们在做什么？有没有依赖/等待？** → 检查进行中的任务，检测超过 30 分钟无更新的任务
+2. **Slaver 们在做什么？有没有依赖/等待？** → 检查进行中的任务；若 Slaver 超过上报间隔无进度消息，触发超时处理（见下方"Slaver 心跳超时 Release 策略"）
 3. **项目进度是什么？有没有卡点？** → 对比 Milestone 目标，识别风险
 4. **是否有 block 的问题需要决策？** → 如果有，**立刻停下手中工作**写入 `inbox/human_feedback/` 等待用户回复
 
@@ -44,6 +44,20 @@ Slaver 是被唤醒的节点，必须不时问自己 4 个问题：
 **可用命令集（ACI）**：Slaver 操作范围受命令白名单约束，详见 `template/docs/SLAVER-HEARTBEAT-CHECKLIST.md` — "可用命令集"章节。禁止运行 `git push --force`、`rm -rf`、直接推送受保护分支等破坏性命令。
 
 📄 详细清单：[`template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`](template/docs/SLAVER-HEARTBEAT-CHECKLIST.md)
+
+### ⚠️ Slaver Hard Rules
+
+**以下为 Slaver 强制行为规则，违反视为执行异常：**
+
+1. **禁止横向协助**：不得协助其他 Slaver 完成其任务，只有 Master 可以调整 Slaver 间的协作关系。发现需要协助的情况，上报 Master 决策。
+
+2. **降级执行必须标注**：检测到环境依赖缺失（Redis 不可用、env 缺失、依赖服务未启动）时，可切换降级模式继续执行，但产出物必须明确标注 `⚠️ 降级模式 / 待实测验证`，不视为完整验收，后续 Round 必须补全。
+
+3. **运行时进度上报（强制）**：
+   - **上报间隔** = `min(ticket 预估工时 / 10, 30分钟)`
+   - **上报格式**：发送 `progress_report` 类型消息到 `shared/message_queue/inbox/`，包含：当前阶段、完成百分比、已完成子任务、剩余工作、是否有阻塞
+   - **未上报视为心跳超时**，触发 Master 的超时处理流程
+   - 示例：预估 2 小时的 ticket → 每 12 分钟上报一次；预估 6 小时 → 每 30 分钟上报
 
 ### Ticket 职责边界
 
@@ -100,6 +114,42 @@ Slaver 是被唤醒的节点，必须不时问自己 4 个问题：
 - [ ] **L4 数据流动**：关键路径有集成/端到端测试验证真实数据流经（非纯 mock 链）
 
 L1-L3 缺任何一项 = 直接 reject。L4 不适用于纯文档/配置类 PR。
+
+### ⚠️ Master Hard Rules
+
+**以下为 Master 强制行为规则：**
+
+1. **PR 合并后必须清理 outbox**：PR 合并后立即执行 `git rm outbox/review_requests/<ticket-id>-*.md`，`outbox/review_requests/` 只保留当前待 review 的请求文件。
+
+2. **删除文件前必须先查反向引用**：
+   ```bash
+   grep -rn "FILENAME_TO_DELETE" . --include="*.md" | grep -v archive
+   ```
+   确认无引用（或引用已处理）后才能删除。
+
+3. **Slaver 心跳超时 Release 策略**：
+   - **判定超时**：Slaver 在上报间隔（`min(预估工时/10, 30分钟)`）内无进度消息 → 视为超时
+   - **超时后**：Master 立即初始化专属诊断 Assistant（`role: incident_reviewer`），对超时原因做根因分析，区分：
+     - **Slaver 侧问题**（能力不足 / 死锁 / 本地资源耗尽 / 分析瘫痪）→ Release 该 Slaver，ticket 退回 `ready`，重新分配或拆分任务
+     - **任务定义侧问题**（需求不清晰 / 边界模糊 / 缺少依赖未满足）→ ticket 退回 `analysis`，Master 补充定义后重新推进
+   - **超过 2 小时无响应**：无论原因，强制将 Slaver 状态改为 `idle`，ticket 退回 `ready`，并写入 `inbox/human_feedback/` 告警等待人类决策
+
+4. **可按需开专属助理**：Master 自行决定何时初始化专属 Assistant 实例，用途不限于：
+   - `role: pr_reviewer` — 专门做 4-Level Artifact Verification，结果写入消息队列供 Master 决策
+   - `role: scrum_master` — 负责心跳监控和进度催促，定期扫描 `shared/message_queue/inbox/` 的 `progress_report`
+   - `role: incident_reviewer` — 超时根因诊断（见上方规则 3）
+   - 专属助理的产出一律写入消息队列，不直接修改 ticket 状态
+
+5. **任务分配前确认环境就绪**：分配前运行 `node dist/index.js system:doctor`，确认 Redis/npm 依赖/env 变量就绪，避免 Slaver 启动后立即阻塞。
+
+6. **文档卫生（Soft Rule，每 10 轮执行一次）**：
+   ```bash
+   git ls-files --others --exclude-standard | grep "\.md$"  # 未追踪文档
+   grep -rl "in_progress" jira/tickets/*.md                 # 僵尸 ticket
+   ls outbox/review_requests/                               # 积压 review request
+   ```
+
+7. **新建文档前先想**：是否有同类文档可更新而不是新建？文档类型对应归属目录是否正确？（规范见 `confluence/memory/EKET-PROJECT-HYGIENE.md`）
 
 > 使用其他大模型（Gemini、GPT、Cursor 等）时，请阅读 `AGENTS.md`，它是与本文件互补的通用大模型引导文件。
 
