@@ -953,6 +953,29 @@ EOF
     fi
 
     # ==========================================
+    # 安装角色对应的 settings.json（物理级权限约束）
+    # ==========================================
+    echo ""
+    echo "----------------------------------------"
+    echo "安装角色权限配置（settings.json）"
+    echo "----------------------------------------"
+    mkdir -p ".claude"
+    if [ "$INSTANCE_ROLE" = "master" ]; then
+        if [ -f "$EKET_TEMPLATE_DIR/.claude/settings.master.json" ]; then
+            cp "$EKET_TEMPLATE_DIR/.claude/settings.master.json" ".claude/settings.json"
+            echo -e "${GREEN}✓${NC} .claude/settings.json (Master 权限配置 — 禁止写 node/src/**)"
+        else
+            echo -e "${YELLOW}⚠${NC} 未找到 settings.master.json，跳过权限配置安装"
+        fi
+    elif [ "$INSTANCE_ROLE" = "slaver" ]; then
+        if [ -f "$EKET_TEMPLATE_DIR/.claude/settings.slaver.json" ]; then
+            cp "$EKET_TEMPLATE_DIR/.claude/settings.slaver.json" ".claude/settings.json"
+            echo -e "${GREEN}✓${NC} .claude/settings.json (Slaver 权限配置 — 禁止 force push 到受保护分支)"
+        else
+            echo -e "${YELLOW}⚠${NC} 未找到 settings.slaver.json，跳过权限配置安装"
+        fi
+    fi
+
     # 安装角色化 CLAUDE.md
     # 根据角色将对应模板覆盖安装为 CLAUDE.md
     # ==========================================

@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git checkout*)",
+      "Bash(git push origin feature/*)",
+      "Bash(npm*)",
+      "Bash(node*)"
+    ],
+    "ask": [
+      "Bash(git push origin main*)",
+      "Bash(git push origin miao*)",
+      "Bash(git push origin testing*)",
+      "Bash(git reset --hard*)",
+      "Bash(rm -rf*)"
+    ],
+    "deny": [
+      "Bash(git push --force origin main*)",
+      "Bash(git push --force origin miao*)",
+      "Edit(jira/tickets/**)"
+    ]
+  }
+}
