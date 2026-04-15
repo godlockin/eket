@@ -9,7 +9,7 @@
 name: performance_test
 version: 1.0.0
 category: testing
-description: 执行性能测试和基准测试
+description: "Use when validating that a service meets latency, throughput, or concurrency requirements before going to production, or after major changes. Triggers when user mentions 'performance test', 'load test', 'stress test', 'QPS', 'latency benchmark', 'concurrent users', or 'bottleneck analysis'. Provides test results, bottleneck reports, and optimization recommendations."
 
 # 输入参数定义
 inputs:

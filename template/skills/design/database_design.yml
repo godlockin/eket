@@ -9,7 +9,7 @@
 name: database_design
 version: 1.0.0
 category: design
-description: 根据数据需求设计数据库 Schema
+description: "Use when designing a new database schema or optimizing an existing one for performance and scalability. Triggers when user mentions 'database design', 'schema design', 'ERD', 'database migration', 'table structure', or 'data modeling'. Provides normalized tables, index recommendations, and migration scripts."
 
 # 输入参数定义
 inputs:

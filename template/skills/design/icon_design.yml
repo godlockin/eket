@@ -9,7 +9,7 @@
 name: icon_design
 version: 1.0.0
 category: design
-description: 图标设计和创作
+description: "Use when a project needs custom icons for app branding, feature identifiers, or UI action elements. Triggers when user mentions 'icon design', 'create icon', 'app icon', 'SVG icon', 'icon set', or 'favicon'. Provides icon sketches, vector files in multiple formats (SVG/PNG/ICO), and usage guidelines."
 
 # 输入参数定义
 inputs:

@@ -9,7 +9,7 @@
 name: api_documentation
 version: 1.0.0
 category: documentation
-description: 生成 API 文档
+description: "Use when an API implementation is complete and developers or external consumers need reference documentation with endpoint details, request/response examples, and OpenAPI specs. Triggers when user mentions 'API documentation', 'API docs', 'OpenAPI spec', 'Swagger', 'document endpoints', or 'API reference'. Provides Markdown API docs and OpenAPI YAML specification."
 
 # 输入参数定义
 inputs:

@@ -9,7 +9,7 @@
 name: docker_build
 version: 1.0.0
 category: devops
-description: 为项目创建 Docker 配置并构建镜像
+description: "Use when a project needs to be containerized for consistent deployment, or when an existing Dockerfile needs to be created or optimized. Triggers when user mentions 'Docker', 'containerize', 'Dockerfile', 'docker-compose', 'build image', or 'container deployment'. Provides Dockerfile, docker-compose.yml, and build status."
 
 # 输入参数定义
 inputs:
