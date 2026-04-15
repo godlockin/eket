@@ -102,6 +102,26 @@ export interface ISQLiteClient {
     totalItems: number;
     byCategory: Array<{ category: string; count: number }>;
   }>>;
+  /** 保存执行检查点 */
+  saveCheckpoint(checkpoint: {
+    ticketId: string;
+    slaverId: string;
+    phase: 'analysis' | 'implement' | 'test' | 'pr';
+    stateJson: string;
+  }): Promise<Result<void>>;
+  /** 加载执行检查点 */
+  loadCheckpoint(ticketId: string, slaverId: string): Promise<Result<unknown>>;
+  /** 删除执行检查点 */
+  deleteCheckpoint(ticketId: string, slaverId: string): Promise<Result<void>>;
+}
+
+export interface ExecutionCheckpoint {
+  id?: number;
+  ticketId: string;
+  slaverId: string;
+  phase: 'analysis' | 'implement' | 'test' | 'pr';
+  stateJson: string;
+  createdAt?: string;
 }
 
 export interface Retrospective {

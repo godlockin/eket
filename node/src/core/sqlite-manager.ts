@@ -223,6 +223,32 @@ export class SQLiteManager implements ISQLiteClient {
   > {
     return this.client.generateReport();
   }
+
+  /**
+   * 保存执行检查点
+   */
+  async saveCheckpoint(checkpoint: {
+    ticketId: string;
+    slaverId: string;
+    phase: 'analysis' | 'implement' | 'test' | 'pr';
+    stateJson: string;
+  }): Promise<Result<void>> {
+    return this.client.saveCheckpoint(checkpoint);
+  }
+
+  /**
+   * 加载执行检查点
+   */
+  async loadCheckpoint(ticketId: string, slaverId: string): Promise<Result<unknown>> {
+    return this.client.loadCheckpoint(ticketId, slaverId);
+  }
+
+  /**
+   * 删除执行检查点
+   */
+  async deleteCheckpoint(ticketId: string, slaverId: string): Promise<Result<void>> {
+    return this.client.deleteCheckpoint(ticketId, slaverId);
+  }
 }
 
 /**
