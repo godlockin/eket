@@ -428,7 +428,7 @@ critical_path:
 
 - [Phase 1 SOP](../phase-1-initiation/README.md)
 - [Ticket 状态机](../../03-implementation/STATE_MACHINE.md)
-- [分支管理策略](../../03-implementation/BRANCH_STRATEGY.md)
+- [分支管理策略](../../../CLAUDE.md)
 
 ---
 

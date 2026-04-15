@@ -47,8 +47,7 @@
 | 文档 | 说明 | 适合人群 |
 |------|------|---------|
 | [README.md](03-implementation/README.md) | 实现概览 | 开发者 |
-| [MASTER-REVIEW-SUBAGENTS.md](03-implementation/MASTER-REVIEW-SUBAGENTS.md) | Master Review 子 Agent | 开发者 |
-| [TICKET-BOARD-STATS.md](03-implementation/TICKET-BOARD-STATS.md) | Ticket 看板统计 | PM、开发者 |
+| [STATE_MACHINE.md](03-implementation/STATE_MACHINE.md) | Ticket 状态机设计 | 开发者 |
 | [dependency-clarification.md](03-implementation/dependency-clarification.md) | 依赖关系说明 | 开发者 |
 
 ### 🧪 测试与验证 ([04-testing/](04-testing/))
@@ -101,9 +100,9 @@
 | 文档 | 说明 |
 |------|------|
 | [IDENTITY.md](IDENTITY.md) | Master/Slaver 身份卡片系统 |
-| [MASTER-WORKFLOW.md](MASTER-WORKFLOW.md) | Master 工作流程 |
-| [SLAVER-AUTO-EXEC-GUIDE.md](SLAVER-AUTO-EXEC-GUIDE.md) | Slaver 自动执行指南 |
-| [MASTER-PR-REVIEW-FLOW.md](MASTER-PR-REVIEW-FLOW.md) | PR 审核流程 |
+| [MASTER-WORKFLOW.md](../template/docs/MASTER-WORKFLOW.md) | Master 工作流程 |
+| [SLAVER-AUTO-EXEC-GUIDE.md](../template/docs/SLAVER-AUTO-EXEC-GUIDE.md) | Slaver 自动执行指南 |
+| [MASTER-PR-REVIEW-FLOW.md](../template/docs/MASTER-PR-REVIEW-FLOW.md) | PR 审核流程 |
 
 ### 🔌 集成与扩展
 
@@ -114,7 +113,7 @@
 | [OPENCLAW-INTEGRATION-DESIGN.md](OPENCLAW-INTEGRATION-DESIGN.md) | OpenCLAW 集成设计 |
 | [OPENCLAW-DATAFLOW-DESIGN.md](OPENCLAW-DATAFLOW-DESIGN.md) | 数据流设计 |
 | [MULTI_INSTANCE_DESIGN.md](MULTI_INSTANCE_DESIGN.md) | 多实例设计 |
-| [INITIALIZATION-GUIDE.md](INITIALIZATION-GUIDE.md) | 初始化指南 |
+| [QUICKSTART.md](01-getting-started/QUICKSTART.md) | 初始化与快速开始 |
 
 ### 🎨 API 文档 ([api/](api/))
 
@@ -260,10 +259,10 @@
 | **首次使用 EKET** | QUICKSTART → USAGE → IDENTITY |
 | **集成 AI 工具** | protocol/QUICKSTART → protocol/EKET_PROTOCOL_V1 → OPENCLAW-INTEGRATION-DESIGN |
 | **开发 Skills** | SKILLS_SYSTEM → developer/getting-started → CLAUDE.md |
-| **配置 Master/Slaver** | IDENTITY → MASTER-WORKFLOW → SLAVER-AUTO-EXEC-GUIDE |
-| **提交 PR** | SLAVER-AUTO-EXEC-GUIDE → MASTER-PR-REVIEW-FLOW |
+| **配置 Master/Slaver** | IDENTITY → [template/docs/MASTER-WORKFLOW](../template/docs/MASTER-WORKFLOW.md) → [template/docs/SLAVER-AUTO-EXEC-GUIDE](../template/docs/SLAVER-AUTO-EXEC-GUIDE.md) |
+| **提交 PR** | [template/docs/SLAVER-AUTO-EXEC-GUIDE](../template/docs/SLAVER-AUTO-EXEC-GUIDE.md) → [template/docs/MASTER-PR-REVIEW-FLOW](../template/docs/MASTER-PR-REVIEW-FLOW.md) |
 | **性能调优** | performance/benchmark-report → performance/optimization-recommendations |
-| **故障排查** | troubleshooting/common-issues → STATUS_REPORT → test-reports/ |
+| **故障排查** | troubleshooting/common-issues → test-reports/ |
 
 ---
 
