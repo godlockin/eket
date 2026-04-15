@@ -18,6 +18,7 @@ import type {
   JudgmentStatus,
   Result,
   CommunicationProtocolConfig,
+  HookResult,
 } from '../types/index.js';
 
 import { CommunicationProtocol, createCommunicationProtocol } from './communication-protocol.js';
@@ -928,6 +929,86 @@ export type WorkflowTemplateName = keyof typeof WORKFLOW_TEMPLATES;
  */
 export function getWorkflowTemplate(name: WorkflowTemplateName) {
   return WORKFLOW_TEMPLATES[name] ?? null;
+}
+
+// ============================================================================
+// Hook Pipeline (TASK-035)
+// ============================================================================
+
+/**
+ * Ticket 状态类型（与 jira/tickets 状态机对应）
+ */
+export type TicketStatus =
+  | 'backlog'
+  | 'analysis'
+  | 'ready'
+  | 'gate_review'
+  | 'in_progress'
+  | 'test'
+  | 'pr_review'
+  | 'done';
+
+/**
+ * transitionStatus 选项
+ */
+export interface TransitionStatusOptions {
+  /** 设为 true 可跳过 hook（ticket 元数据 hookOverride） */
+  hookOverride?: boolean;
+}
+
+/**
+ * runPrePrReviewHook — 进入 pr_review 状态前的 hook 执行点
+ *
+ * 此阶段为 stub，直接返回 { success: true, data: undefined }。
+ * TASK-036 实现真实 shell 脚本后接入此函数。
+ *
+ * @param ticketId - 目标 ticket ID
+ * @returns Result<undefined>
+ */
+export async function runPrePrReviewHook(ticketId: string): Promise<Result<undefined>> {
+  console.log(`[Hook] runPrePrReviewHook stub called for ticket: ${ticketId}`);
+  // Stub: TASK-036 will replace this with real shell invocation
+  return { success: true, data: undefined };
+}
+
+/**
+ * transitionStatus — ticket 状态变更，进入 pr_review 时自动触发 hook
+ *
+ * 行为：
+ * - 若 `to === 'pr_review'` 且未设置 hookOverride，执行 runPrePrReviewHook
+ * - 若环境变量 `EKET_HOOK_DRYRUN=true`，只记录日志不执行 hook
+ * - hook 失败则返回 HOOK_BLOCKED 错误（dryrun 模式不阻断）
+ *
+ * @param ticketId   - 目标 ticket ID
+ * @param from       - 当前状态
+ * @param to         - 目标状态
+ * @param options    - 可选：{ hookOverride: true } 跳过 hook
+ * @returns Result<void>
+ */
+export async function transitionStatus(
+  ticketId: string,
+  from: TicketStatus,
+  to: TicketStatus,
+  options?: TransitionStatusOptions,
+): Promise<Result<void>> {
+  if (to === 'pr_review' && !options?.hookOverride) {
+    if (process.env['EKET_HOOK_DRYRUN'] === 'true') {
+      // Dryrun：只记日志，不执行 hook，不阻断
+      console.log(`[Hook][DRYRUN] Would run pre-pr_review hook for ticket: ${ticketId} (from: ${from})`);
+    } else {
+      const hookResult = await runPrePrReviewHook(ticketId);
+      if (!hookResult.success) {
+        return {
+          success: false,
+          error: new EketError(EketErrorCode.HOOK_BLOCKED, `Pre-PR-review hook blocked ticket ${ticketId}: ${hookResult.error.message}`),
+        };
+      }
+    }
+  }
+
+  // Transition logic placeholder — downstream implementations wire real persistence
+  console.log(`[Workflow] Transition ${ticketId}: ${from} → ${to}`);
+  return { success: true, data: undefined };
 }
 
 // ============================================================================
