@@ -183,9 +183,9 @@ git commit -m "添加新书"
 
 ## 7. 参考文档
 
-- [wiki-v2-upgrade-plan.md](../../../../../00_文档/docs/plans/wiki-v2-upgrade-plan.md)
-- [personal-wiki-requirements.md](../../../../../working/sourcecode/research/LLM/dev_notes/requirements/personal-wiki-requirements.md)
-- [wiki-dev-lessons.md](../../../../../00_文档/docs/plans/wiki-dev-lessons.md)
+- wiki-v2-upgrade-plan.md（外部文档，本机路径）
+- personal-wiki-requirements.md（外部文档，本机路径）
+- wiki-dev-lessons.md（外部文档，本机路径）
 
 ---
 
