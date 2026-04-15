@@ -9,7 +9,7 @@
 name: release_notes
 version: 1.0.0
 category: documentation
-description: 创建版本发布说明
+description: "Use when a new version is ready to ship and needs well-structured release notes highlighting new features, improvements, bug fixes, and breaking changes for users and stakeholders. Triggers when user mentions 'release notes', 'changelog', 'version announcement', 'what's new in v', 'migration guide', or 'release announcement'. Provides release notes document, CHANGELOG entry, and multi-channel announcement."
 
 # 输入参数定义
 inputs:
