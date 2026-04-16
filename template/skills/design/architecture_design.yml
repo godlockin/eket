@@ -9,7 +9,7 @@
 name: architecture_design
 version: 1.0.0
 category: design
-description: 根据需求文档进行系统架构设计
+description: "Use when starting system design for a new project or major feature, or when an existing architecture needs to be reviewed and restructured. Triggers when user mentions 'system architecture', 'tech stack selection', 'component design', 'scalability design', or 'microservices'. Provides component diagrams, relationships, and technology recommendations in Mermaid format."
 
 # 输入参数定义
 inputs:

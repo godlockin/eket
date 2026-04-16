@@ -1,17 +1,7 @@
 # 实现细节
 
-**版本**: 0.7.2
-**最后更新**: 2026-03-25
-
----
-
-## v0.7 实施文档
-
-| 文档 | 内容 |
-|------|------|
-| [IMPLEMENTATION-v0.7-phase2.md](../IMPLEMENTATION-v0.7-phase2.md) | Phase 2: 核心功能实现 |
-| [IMPLEMENTATION-v0.7-phase3.md](../IMPLEMENTATION-v0.7-phase3.md) | Phase 3: 高级功能实现 |
-| [IMPLEMENTATION_SUMMARY.md](../IMPLEMENTATION_SUMMARY.md) | v0.7 实施总结 |
+**版本**: 2.0.0
+**最后更新**: 2026-04-15
 
 ---
 
@@ -19,7 +9,7 @@
 
 ### 分支策略
 
-[BRANCH_STRATEGY.md](BRANCH_STRATEGY.md) - Git 分支策略说明
+分支策略见 [CLAUDE.md](../../CLAUDE.md)（## 分支策略 章节）
 
 ### 状态机设计
 
@@ -29,11 +19,19 @@
 
 [dependency-clarification.md](dependency-clarification.md) - 项目依赖说明
 
+### Master/Slaver 工作流
+
+最新版本见 [template/docs/](../../template/docs/)：
+
+- [MASTER-WORKFLOW.md](../../template/docs/MASTER-WORKFLOW.md)
+- [MASTER-PR-REVIEW-FLOW.md](../../template/docs/MASTER-PR-REVIEW-FLOW.md)
+- [SLAVER-AUTO-EXEC-GUIDE.md](../../template/docs/SLAVER-AUTO-EXEC-GUIDE.md)
+
 ---
 
 ## 归档文档
 
-旧版实现文档已移至 [archive/v0.5/](../archive/v0.5/)
+旧版实现文档已移至 [archive/v0.5/](../archive/v0.5/) 和 [archive/v0.6/](../archive/v0.6/)
 
 ---
 

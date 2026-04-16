@@ -9,7 +9,7 @@
 name: user_guide
 version: 1.0.0
 category: documentation
-description: 创建用户指南和使用文档
+description: "Use when end users or non-technical stakeholders need step-by-step guidance to operate a product's features, including quick-start, FAQs, and troubleshooting. Triggers when user mentions 'user guide', 'user manual', 'how-to documentation', 'end-user docs', 'quick start guide', or 'help documentation'. Provides user guide, quick-start, and FAQ tailored to the target audience level."
 
 # 输入参数定义
 inputs:

@@ -1,5 +1,11 @@
 #!/bin/bash
 # EKET 项目初始化脚本
+#
+# 文件分类策略：见 template/FILE-CLASSIFICATION.md
+# - A 类：运行时可变文件（创建空目录/初始文件）
+# - B 类：框架契约/规范（复制到项目）
+# - C 类：模板文件（复制到项目，按需实例化）
+# - D 类：记忆加载文件（不复制，仅加载到上下文）
 
 # 使用方法:
 # 1. 在当前目录初始化:
@@ -74,13 +80,26 @@ copy_templates() {
 
     # 从 eket template 目录复制
     if [ -d "$EKET_TEMPLATE_DIR" ]; then
-        # 复制 CLAUDE.md
+        # 复制 CLAUDE.md（角色化版本优先）
         if [ ! -f "CLAUDE.md" ]; then
+            # 根据实例角色选择对应 CLAUDE.md 模板
+            # 注意：此处 INSTANCE_ROLE 尚未设置，使用通用版本作为初始安装
+            # 角色化安装在 configure_slaver_mode 中执行
             cp "$EKET_TEMPLATE_DIR/CLAUDE.md" "CLAUDE.md"
             # 替换占位符
             sed -i '' "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "CLAUDE.md" 2>/dev/null || \
             sed -i "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "CLAUDE.md"
             echo -e "${GREEN}✓${NC} CLAUDE.md"
+        fi
+
+        # 复制角色化 CLAUDE.md 模板（供后续角色初始化使用）
+        if [ -f "$EKET_TEMPLATE_DIR/CLAUDE.master.md" ] && [ ! -f "CLAUDE.master.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/CLAUDE.master.md" "CLAUDE.master.md"
+            echo -e "${GREEN}✓${NC} CLAUDE.master.md (Master 角色模板)"
+        fi
+        if [ -f "$EKET_TEMPLATE_DIR/CLAUDE.slaver.md" ] && [ ! -f "CLAUDE.slaver.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/CLAUDE.slaver.md" "CLAUDE.slaver.md"
+            echo -e "${GREEN}✓${NC} CLAUDE.slaver.md (Slaver 角色模板)"
         fi
 
         # 复制 AGENTS.md（通用大模型引导文件）
@@ -267,6 +286,104 @@ copy_templates() {
             mkdir -p "docs"
             cp -r "$EKET_TEMPLATE_DIR/docs/"* "docs/" 2>/dev/null || true
             echo -e "${GREEN}✓${NC} docs/ (项目文档)"
+        fi
+
+        # 复制 FILE-CLASSIFICATION.md（文件分类策略）
+        if [ -f "$EKET_TEMPLATE_DIR/FILE-CLASSIFICATION.md" ] && [ ! -f "FILE-CLASSIFICATION.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/FILE-CLASSIFICATION.md" "FILE-CLASSIFICATION.md"
+            echo -e "${GREEN}✓${NC} FILE-CLASSIFICATION.md (文件分类策略)"
+        fi
+
+        # 复制 INIT-GUIDE.md（初始化快速指南）
+        if [ -f "$EKET_TEMPLATE_DIR/INIT-GUIDE.md" ] && [ ! -f "INIT-GUIDE.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/INIT-GUIDE.md" "INIT-GUIDE.md"
+            echo -e "${GREEN}✓${NC} INIT-GUIDE.md (初始化快速指南)"
+        fi
+
+        # 复制 Jira 索引结构文档
+        if [ -f "$EKET_TEMPLATE_DIR/jira/INDEX-STRUCTURE.md" ] && [ ! -f "jira/INDEX-STRUCTURE.md" ]; then
+            mkdir -p "jira"
+            cp "$EKET_TEMPLATE_DIR/jira/INDEX-STRUCTURE.md" "jira/INDEX-STRUCTURE.md"
+            echo -e "${GREEN}✓${NC} jira/INDEX-STRUCTURE.md"
+        fi
+
+        # 复制 Ticket 编号规则
+        if [ -f "$EKET_TEMPLATE_DIR/jira/TICKET-NUMBERING.md" ] && [ ! -f "jira/TICKET-NUMBERING.md" ]; then
+            mkdir -p "jira"
+            cp "$EKET_TEMPLATE_DIR/jira/TICKET-NUMBERING.md" "jira/TICKET-NUMBERING.md"
+            echo -e "${GREEN}✓${NC} jira/TICKET-NUMBERING.md"
+        fi
+
+        # 创建 Jira 初始状态文件（空骨架）
+        if [ ! -f "jira/state/ticket-index.yml" ]; then
+            mkdir -p "jira/state"
+            cat > "jira/state/ticket-index.yml" <<'EOF'
+# Ticket 索引文件（Single Source of Truth）
+# 最后更新：待更新
+
+# 按状态分组
+status_index:
+  backlog: []
+  ready: []
+  in_progress: []
+  analysis_review: []
+  approved: []
+  review: []
+  changes_requested: []
+  rejected: []
+  done: []
+  blocked: []
+
+# 按 ID 快速查找
+by_id: {}
+
+# Slaver 工作负载
+slaver_workload: {}
+
+# 最后更新时间
+last_updated: null
+EOF
+            echo -e "${GREEN}✓${NC} jira/state/ticket-index.yml (空骨架)"
+        fi
+
+        # 创建项目状态初始文件
+        if [ ! -f "jira/state/project-status.yml" ]; then
+            cat > "jira/state/project-status.yml" <<'EOF'
+# 项目状态报告
+# 由 Master 每 10 分钟更新
+
+# 上次更新时间
+last_updated: null
+
+# Slaver 状态
+slavers:
+  active: []
+  idle: []
+  busy: []
+
+# 所有 Cards 状态
+cards:
+  milestones: []
+  sprints: []
+  epics: []
+  tickets: []
+
+# 项目进度
+progress:
+  sprint_target: null
+  deadline: null
+  days_remaining: null
+  completed: 0
+  total: 0
+  completion_rate: 0%
+
+# 风险与卡点
+risks: []
+
+# 待办事项
+action_items: []
+EOF
+            echo -e "${GREEN}✓${NC} jira/state/project-status.yml (空骨架)"
         fi
     else
         echo -e "${YELLOW}⚠${NC} 未找到 template 目录，跳过文件复制"
@@ -833,6 +950,59 @@ EOF
         esac
 
         echo -e "${GREEN}✓${NC} Slaver Profile 已创建"
+    fi
+
+    # ==========================================
+    # 安装角色对应的 settings.json（物理级权限约束）
+    # ==========================================
+    echo ""
+    echo "----------------------------------------"
+    echo "安装角色权限配置（settings.json）"
+    echo "----------------------------------------"
+    mkdir -p ".claude"
+    if [ "$INSTANCE_ROLE" = "master" ]; then
+        if [ -f "$EKET_TEMPLATE_DIR/.claude/settings.master.json" ]; then
+            cp "$EKET_TEMPLATE_DIR/.claude/settings.master.json" ".claude/settings.json"
+            echo -e "${GREEN}✓${NC} .claude/settings.json (Master 权限配置 — 禁止写 node/src/**)"
+        else
+            echo -e "${YELLOW}⚠${NC} 未找到 settings.master.json，跳过权限配置安装"
+        fi
+    elif [ "$INSTANCE_ROLE" = "slaver" ]; then
+        if [ -f "$EKET_TEMPLATE_DIR/.claude/settings.slaver.json" ]; then
+            cp "$EKET_TEMPLATE_DIR/.claude/settings.slaver.json" ".claude/settings.json"
+            echo -e "${GREEN}✓${NC} .claude/settings.json (Slaver 权限配置 — 禁止 force push 到受保护分支)"
+        else
+            echo -e "${YELLOW}⚠${NC} 未找到 settings.slaver.json，跳过权限配置安装"
+        fi
+    fi
+    # 安装角色化 CLAUDE.md
+    # 根据角色将对应模板覆盖安装为 CLAUDE.md
+    # ==========================================
+    echo ""
+    echo "----------------------------------------"
+    echo "安装角色化 CLAUDE.md"
+    echo "----------------------------------------"
+
+    if [ "$INSTANCE_ROLE" = "master" ]; then
+        if [ -f "CLAUDE.master.md" ]; then
+            cp "CLAUDE.master.md" "CLAUDE.md"
+            echo -e "${GREEN}✓${NC} CLAUDE.md ← CLAUDE.master.md（Master 动态注入版本已安装）"
+        elif [ -f "$EKET_TEMPLATE_DIR/CLAUDE.master.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/CLAUDE.master.md" "CLAUDE.md"
+            echo -e "${GREEN}✓${NC} CLAUDE.md ← template/CLAUDE.master.md（Master 动态注入版本已安装）"
+        else
+            echo -e "${YELLOW}⚠${NC} CLAUDE.master.md 未找到，保留通用 CLAUDE.md"
+        fi
+    elif [ "$INSTANCE_ROLE" = "slaver" ]; then
+        if [ -f "CLAUDE.slaver.md" ]; then
+            cp "CLAUDE.slaver.md" "CLAUDE.md"
+            echo -e "${GREEN}✓${NC} CLAUDE.md ← CLAUDE.slaver.md（Slaver 动态注入版本已安装）"
+        elif [ -f "$EKET_TEMPLATE_DIR/CLAUDE.slaver.md" ]; then
+            cp "$EKET_TEMPLATE_DIR/CLAUDE.slaver.md" "CLAUDE.md"
+            echo -e "${GREEN}✓${NC} CLAUDE.md ← template/CLAUDE.slaver.md（Slaver 动态注入版本已安装）"
+        else
+            echo -e "${YELLOW}⚠${NC} CLAUDE.slaver.md 未找到，保留通用 CLAUDE.md"
+        fi
     fi
 }
 

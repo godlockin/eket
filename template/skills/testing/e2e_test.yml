@@ -9,7 +9,7 @@
 name: e2e_test
 version: 1.0.0
 category: testing
-description: 编写和执行端到端测试
+description: "Use when full user workflows need to be validated against a running application to ensure the complete user journey works correctly. Triggers when user mentions 'E2E test', 'end-to-end test', 'Playwright', 'Cypress', 'browser automation', 'user flow test', or 'smoke test'. Provides browser-automated test scripts with screenshots on failure."
 
 # 输入参数定义
 inputs:

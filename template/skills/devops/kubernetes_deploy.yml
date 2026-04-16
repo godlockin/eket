@@ -9,7 +9,7 @@
 name: kubernetes_deploy
 version: 1.0.0
 category: devops
-description: Kubernetes 容器编排和部署
+description: "Use when deploying a containerized application to a Kubernetes cluster, or when managing scaling, service exposure, and rollout strategies. Triggers when user mentions 'Kubernetes', 'k8s deploy', 'kubectl apply', 'HPA', 'Deployment manifest', 'Ingress', or 'container orchestration'. Provides K8s manifests, HPA config, Service/Ingress definitions, and deployment verification."
 
 # 输入参数定义
 inputs:

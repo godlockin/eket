@@ -9,6 +9,11 @@
  * - 事件驱动的触发器
  */
 
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+import { writeFile, mkdir } from 'fs/promises';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { EketError, EketErrorCode } from '../types/index.js';
 import type {
   WorkflowDefinition,
@@ -865,6 +870,212 @@ export class WorkflowEngine {
  */
 export function createWorkflowEngine(config: WorkflowEngineConfig): WorkflowEngine {
   return new WorkflowEngine(config);
+}
+
+// ─── 工作流类型枚举（借鉴 CrewAI Flows）────────────────────────────
+export enum WorkflowType {
+  SEQUENTIAL = 'sequential',
+  PARALLEL = 'parallel',
+  DAG = 'dag',
+}
+
+// ─── 预设工作流模板步骤类型 ────────────────────────────────────────
+export interface WorkflowTemplateStep {
+  id: string;
+  role: string;
+  action: string;
+  timeout: number;
+  dependsOn?: string[];
+}
+
+// ─── 预设工作流模板（借鉴 CrewAI Flows）────────────────────────────
+export const WORKFLOW_TEMPLATES = {
+  FEATURE_DEV: {
+    name: 'feature-dev',
+    description: 'Feature 开发标准流：analysis → in_progress → test → pr_review',
+    type: WorkflowType.SEQUENTIAL,
+    steps: [
+      { id: 'analysis', role: 'analyzer', action: 'analyze_ticket', timeout: 30 },
+      { id: 'implement', role: 'developer', action: 'implement', timeout: 120 },
+      { id: 'test', role: 'tester', action: 'run_tests', timeout: 30 },
+      { id: 'pr', role: 'developer', action: 'create_pr', timeout: 10 },
+    ],
+  },
+  PARALLEL_REVIEW: {
+    name: 'parallel-review',
+    description: '并行代码审查：2 个 reviewer 独立审查后汇总',
+    type: WorkflowType.PARALLEL,
+    steps: [
+      { id: 'review_a', role: 'reviewer', action: 'code_review', timeout: 30 },
+      { id: 'review_b', role: 'reviewer', action: 'security_review', timeout: 30 },
+      { id: 'merge', role: 'master', action: 'merge_reviews', timeout: 10, dependsOn: ['review_a', 'review_b'] },
+    ],
+  },
+  BUG_FIX: {
+    name: 'bug-fix',
+    description: 'Bug 修复快速流：reproduce → locate → fix → verify',
+    type: WorkflowType.SEQUENTIAL,
+    steps: [
+      { id: 'reproduce', role: 'analyzer', action: 'reproduce_bug', timeout: 20 },
+      { id: 'locate', role: 'analyzer', action: 'locate_root_cause', timeout: 20 },
+      { id: 'fix', role: 'developer', action: 'implement_fix', timeout: 60 },
+      { id: 'verify', role: 'tester', action: 'verify_fix', timeout: 20 },
+    ],
+  },
+} as const;
+
+export type WorkflowTemplateName = keyof typeof WORKFLOW_TEMPLATES;
+
+/**
+ * 通过模板名称获取工作流配置
+ * @param name 模板名称（FEATURE_DEV | PARALLEL_REVIEW | BUG_FIX）
+ * @returns 模板对象或 null
+ */
+export function getWorkflowTemplate(name: WorkflowTemplateName) {
+  return WORKFLOW_TEMPLATES[name] ?? null;
+}
+
+// ============================================================================
+// Hook Pipeline (TASK-035)
+// ============================================================================
+
+/**
+ * Ticket 状态类型（与 jira/tickets 状态机对应）
+ */
+export type TicketStatus =
+  | 'backlog'
+  | 'analysis'
+  | 'ready'
+  | 'gate_review'
+  | 'in_progress'
+  | 'test'
+  | 'pr_review'
+  | 'done';
+
+/**
+ * transitionStatus 选项
+ */
+export interface TransitionStatusOptions {
+  /** 设为 true 可跳过 hook（ticket 元数据 hookOverride） */
+  hookOverride?: boolean;
+}
+
+/**
+ * runPrePrReviewHook — 进入 pr_review 状态前的 hook 执行点
+ *
+ * 此阶段为 stub，直接返回 { success: true, data: undefined }。
+ * TASK-036 实现真实 shell 脚本后接入此函数。
+ *
+ * @param ticketId - 目标 ticket ID
+ * @returns Result<undefined>
+ */
+export async function runPrePrReviewHook(ticketId: string): Promise<Result<undefined>> {
+  const execFileAsync = promisify(execFile);
+
+  // Resolve repo root relative to this compiled file (dist/core → repo root = ../../..)
+  const __filename = fileURLToPath(import.meta.url);
+  const repoRoot = join(dirname(__filename), '..', '..', '..');
+  const scriptPath = join(repoRoot, 'scripts', 'validate-ticket-pr.sh');
+
+  // Derive ticket file path: ticketId may be bare "TASK-036" or a full path
+  const ticketFilePath = ticketId.endsWith('.md')
+    ? ticketId
+    : join(repoRoot, 'jira', 'tickets', `${ticketId}.md`);
+
+  try {
+    const { stdout } = await execFileAsync(
+      'bash',
+      [scriptPath, ticketFilePath],
+      { timeout: 60_000 },
+    );
+    console.log(`[Hook] runPrePrReviewHook passed for ticket: ${ticketId} — ${stdout.trim()}`);
+    return { success: true, data: undefined };
+  } catch (e: unknown) {
+    const error = e as { stdout?: string; stderr?: string; message?: string };
+    const hookOutput = error.stdout?.trim() ?? error.message ?? 'Unknown hook failure';
+    const hookStderr = error.stderr?.trim();
+    console.error(`[Hook] runPrePrReviewHook FAILED for ${ticketId}: stdout="${hookOutput}" stderr="${hookStderr ?? ''}"`);
+    await writeViolationReport(ticketId, hookOutput);
+    return {
+      success: false,
+      error: new EketError(EketErrorCode.HOOK_BLOCKED, hookOutput),
+    };
+  }
+}
+
+/**
+ * writeViolationReport — 将 hook 违规信息写入 inbox/human_feedback/
+ *
+ * @param ticketId   - 目标 ticket ID
+ * @param violations - hook 返回的错误输出文本
+ */
+async function writeViolationReport(ticketId: string, violations: string): Promise<void> {
+  const __filename = fileURLToPath(import.meta.url);
+  const repoRoot = join(dirname(__filename), '..', '..', '..');
+  const ts = Date.now();
+  const reportDir = join(repoRoot, 'inbox', 'human_feedback');
+  const safeTicketId = ticketId.includes('/') ? ticketId.split('/').pop()!.replace(/\.md$/, '') : ticketId;
+  const reportPath = join(reportDir, `violation-${safeTicketId}-${ts}.md`);
+
+  const content = [
+    `# Hook 违规报告 — ${ticketId}`,
+    '',
+    `**时间**: ${new Date(ts).toISOString()}`,
+    `**触发事件**: status → pr_review`,
+    `**违规项**:`,
+    ...violations.split('\n').filter(Boolean).map((line) => `- ${line}`),
+    '',
+    '请修复后重新推进状态。',
+  ].join('\n');
+
+  try {
+    await mkdir(reportDir, { recursive: true });
+    await writeFile(reportPath, content, 'utf-8');
+    console.log(`[Hook] Violation report written: ${reportPath}`);
+  } catch (writeErr: unknown) {
+    const err = writeErr as { message?: string };
+    console.error(`[Hook] Failed to write violation report: ${err.message ?? String(writeErr)}`);
+  }
+}
+
+/**
+ * transitionStatus — ticket 状态变更，进入 pr_review 时自动触发 hook
+ *
+ * 行为：
+ * - 若 `to === 'pr_review'` 且未设置 hookOverride，执行 runPrePrReviewHook
+ * - 若环境变量 `EKET_HOOK_DRYRUN=true`，只记录日志不执行 hook
+ * - hook 失败则返回 HOOK_BLOCKED 错误（dryrun 模式不阻断）
+ *
+ * @param ticketId   - 目标 ticket ID
+ * @param from       - 当前状态
+ * @param to         - 目标状态
+ * @param options    - 可选：{ hookOverride: true } 跳过 hook
+ * @returns Result<void>
+ */
+export async function transitionStatus(
+  ticketId: string,
+  from: TicketStatus,
+  to: TicketStatus,
+  options?: TransitionStatusOptions,
+): Promise<Result<void>> {
+  if (to === 'pr_review' && !options?.hookOverride) {
+    if (process.env['EKET_HOOK_DRYRUN'] === 'true') {
+      // Dryrun：只记日志，不执行 hook，不阻断
+      console.log(`[Hook][DRYRUN] Would run pre-pr_review hook for ticket: ${ticketId} (from: ${from})`);
+    } else {
+      const hookResult = await runPrePrReviewHook(ticketId);
+      if (!hookResult.success) {
+        return {
+          success: false,
+          error: new EketError(EketErrorCode.HOOK_BLOCKED, `Pre-PR-review hook blocked ticket ${ticketId}: ${hookResult.error.message}`),
+        };
+      }
+    }
+  }
+
+  // Transition logic placeholder — downstream implementations wire real persistence
+  console.log(`[Workflow] Transition ${ticketId}: ${from} → ${to}`);
+  return { success: true, data: undefined };
 }
 
 // ============================================================================

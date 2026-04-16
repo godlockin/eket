@@ -214,10 +214,11 @@ external:                    # 外部依赖
 
 ### 6.1 Review 检查清单
 - [ ] 代码符合项目规范
-- [ ] 测试覆盖充分
+- [ ] 测试覆盖充分（覆盖率 ≥ 80%）
 - [ ] 文档已更新
-- [ ] 无安全漏洞
+- [ ] 无安全漏洞（通过 `npm audit` / `pip-audit` / `cargo audit`）
 - [ ] 性能无显著退化
+- [ ] 质量四件套全部通过（build + lint + test + audit）
 - [ ] 状态已更新：review → done
 
 ### 6.2 Review 意见
@@ -227,6 +228,16 @@ external:                    # 外部依赖
 - [ ] **批准合并** - 代码质量良好，状态已更新为 done
 - [ ] **需要修改** - 见 Review 意见，状态已改回 in_progress
 - [ ] **拒绝** - {{原因}}
+
+### 6.4 Merge 前必完成事项（Master 执行，顺序不可颠倒）
+
+1. - [ ] **所有测试通过** — CI 绿色 + 本地全量测试通过
+2. - [ ] **Review 完成** — 4-Level Artifact Verification 全部通过，明确批准
+3. - [ ] **更新 Confluence** — 相关技术文档/架构决策/API 变更已同步至 Confluence
+4. - [ ] **更新 Jira Ticket** — 状态推进为 `done`，填写实际完成时间和交付物链接
+5. - [ ] **执行合并** — Master 合并 PR 到目标分支
+
+> ⚠️ 第 3、4 步（文档更新）必须在合并之前完成，不得事后补录。
 
 **Reviewer**: {{Master 实例 ID}}
 **Review 时间**: {{ISO8601 时间}}
@@ -266,6 +277,18 @@ external:                    # 外部依赖
 **Slaver 职责**：
 - ✅ 领取任务后立即更新为 in_progress
 - ✅ PR 提交后更新为 review
+
+---
+
+## Nyquist Rule（验收标准自动化要求）
+
+每条验收标准必须满足：
+1. **可自动化**：附带具体的 shell 命令（而非手动运行/人眼确认）
+2. **有时限**：命令在 60 秒内完成（长时间运行的集成测试需拆分）
+3. **客观可重复**：相同代码 + 相同命令 = 相同结果（无随机性）
+4. **覆盖质量四件套**：命令必须涵盖该技术栈的类型检查 + lint + test + 安全扫描（可用 `scripts/detect-stack.sh` 查看当前栈要求）
+
+违反此规则的 PR 描述（仅贴截图/文字描述而非命令输出）视同未完成验收。
 
 ---
 
@@ -336,5 +359,36 @@ external:                    # 外部依赖
 
 ---
 
-**维护者**: EKET Framework Team  
-**最后更新**: 2026-04-10
+---
+
+## Slaver 执行报告 Schema（Artifact Schema v1）
+
+Slaver 在 Ticket 的「执行记录」部分填写时，必须包含以下结构化字段：
+
+### 分析报告（analysis → ready 前必填）
+
+```yaml
+analysis_report:
+  summary: "一句话描述方案"
+  approach: "技术方案关键点（1-3 点）"
+  risks: "已识别风险（无则填 none）"
+  estimated_hours: N  # 预估工时（小时）
+  blocked_by: "依赖的 ticket ID 或 none"
+```
+
+### 实现报告（in_progress → test 前必填）
+
+```yaml
+implementation_report:
+  files_changed:
+    - "path/to/file1.ts (新增/修改/删除)"
+    - "path/to/file2.ts (新增/修改/删除)"
+  test_result: "X/Y tests passing"  # 必须是真实命令输出
+  pr_link: "https://github.com/..."
+  notes: "实现过程中的重要决策（可选）"
+```
+
+---
+
+**维护者**: EKET Framework Team
+**最后更新**: 2026-04-14

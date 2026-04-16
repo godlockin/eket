@@ -36,6 +36,14 @@ jobs:
           NODE_OPTIONS: --experimental-vm-modules
         run: cd node && npm test
 
+      - name: Lint
+        continue-on-error: true
+        run: cd node && npm run lint
+
+      - name: Security Audit
+        continue-on-error: true
+        run: cd node && npm audit --audit-level=high
+
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v4
