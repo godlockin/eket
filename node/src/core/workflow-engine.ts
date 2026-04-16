@@ -18,7 +18,6 @@ import type {
   JudgmentStatus,
   Result,
   CommunicationProtocolConfig,
-  HookResult,
 } from '../types/index.js';
 
 import { CommunicationProtocol, createCommunicationProtocol } from './communication-protocol.js';
