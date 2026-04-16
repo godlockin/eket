@@ -1,170 +1,186 @@
 # EKET Framework
 
-**AI 智能体协作框架 | Version 2.3.0**
-**最后更新**: 2026-04-08
+**EKET (Elite Knowledge & Engineering Team) - AI Multi-Agent Collaborative Development Framework | Version 2.3.0**
+**Last Update**: 2026-04-16
+
+[English](README.md) | [中文说明](README_zh-CN.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)](https://www.gnu.org/software/bash/)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-blue.svg)](https://nodejs.org/)
 
-> **EKET** 是一个基于 AI 智能体协作的开发框架，通过 Master-Slaver 架构实现自动化软件生产和多领域协作。
+> **EKET (Elite Knowledge & Engineering Team)** is a **Multi-Agent Collaborative Development Framework** built specifically for AI Agents.
 >
-> **设计理念**：渐进式三级架构 - 从 Shell + 文档 到 满血版，确保任何环境都能使用。
+> It organizes advanced LLMs (like Gemini, Claude, GPT, or AI inside tools like Cursor) into a fully-equipped virtual engineering team. Through a highly structured **Master-Slaver Architecture**, EKET realizes full-lifecycle automated software production—from **requirements analysis**, **task planning**, and **workflow breakdown**, to **coding**, **unit testing**, and **code reviews**.
+>
+> 💡 **Core Philosophy: Serverless State Machine & Graceful Degradation**. EKET persists task states, message buses, and memory engines entirely within the local file system and Git repository. Using a progressive three-level architecture ("Pure Shell -> Node.js -> Redis+SQLite"), it automatically downgrades based on environmental dependencies, ensuring that full multi-agent collaboration works out of the box even without any external services.
+
+## 🎯 Vision & Mission
+
+- **Vision**: Return software engineering to pure design and creation. By utilizing powerful multi-agent collaboration to handle the tedious processes of coding, testing, and reviewing, we aim to build a 24/7 virtual R&D center where "you only need to point the direction, without intervening in the code details."
+- **Mission**: Provide a standard, reliable, gracefully degradable AI collaboration protocol. We overcome the "hallucination" limits of LLMs by introducing strict engineering workflows (upfront requirements analysis, strict role isolation, TDD, mandatory PR reviews), injecting industrial-grade usability and robustness into automated AI programming.
+
+## 🌟 Core Concepts & Features
+
+- 🤖 **"Virtual Engineering Team" Mechanism**: Clear division of responsibilities. A Master (Product Manager/Tech Lead) manages requirements and code merging, while delegating tasks to multiple specialized Slavers (e.g., `frontend_dev`, `backend_dev`, `qa_engineer`) executing in parallel, preventing boundary crossing and hallucination accumulation.
+- ⚙️ **Industrial-Grade Constraints**: AI generation is no longer chaotic. Built-in, strict engineering standards such as Feature branch workflows, TDD (Test-Driven Development), and mandatory Pre-coding Analysis Reports ensure output quality.
+- 🧠 **Multi-Level Persistent Memory Engine**: Layered memory management (short-term session cache, long-term project experience dictionary, and Confluence global architecture external brain) allows the team to understand your project better over time.
+- 🛡️ **Three-Level Elastic Runtime (Graceful Degradation)**:
+  - **Level 1 (Pure Shell)**: Zero dependencies, instant startup. Runs purely on any restricted machine.
+  - **Level 2 (Node.js)**: Includes Web Dashboard and a robust queue mechanism preventing concurrent file conflicts. Targeted at most local development scenarios.
+  - **Level 3 (Hybrid Full-Stack)**: Connects to Redis/SQLite for high availability, designed for high-concurrency production scenarios with multi-role agent clusters.
 
 ---
 
-## 🚀 30 秒快速启动 (Level 1 - Shell 模式)
+## 🚀 30-Second Quick Start (Level 1 - Shell Mode)
 
-**零依赖，纯 Bash，立即可用！**
+**Zero dependencies, Pure Bash, Ready out of the box!**
 
 ```bash
-# 1. 克隆仓库
+# 1. Clone the repository
 git clone https://github.com/godlockin/eket.git
 cd eket
 
-# 2. 启动 Master
+# 2. Start the Master
 ./scripts/eket-start.sh --role master
 
-# 3. (新终端) 启动 Slaver
+# 3. (In a new terminal) Start a Slaver
 ./scripts/eket-start.sh --role slaver --profile backend_dev
 
-# 完成！开始协作 🎉
+# Done! Collaboration begins 🎉
 ```
 
-**前置要求**：
+**Prerequisites**:
 - ✅ Bash >= 4.0
 - ✅ Git >= 2.30
-- ❌ 不需要 Node.js
-- ❌ 不需要 Redis
-- ❌ 不需要任何安装
+- ❌ Node.js NOT required
+- ❌ Redis NOT required
+- ❌ Zero Installation
 
 ---
 
-## 📚 三级架构 - 渐进增强设计
+## 📚 Three-Level Architecture - Progressive Enhancement
 
-EKET 采用**渐进式三级架构**，确保在不同环境下都能稳定运行：
+EKET utilizes a **Progressive Three-Level Architecture** to secure stable operations across different environments:
 
-### Level 1: Shell + 文档 (基础版) ⭐⭐⭐⭐⭐
+### Level 1: Shell + File System (Basic) ⭐⭐⭐⭐⭐
 
-**目标**：所有核心功能可用，零配置启动
+**Goal**: Core functions available with zero configuration.
 
 ```bash
-# 30 秒启动，无需安装任何依赖
+# Start in 30 seconds, zero external dependencies required
 ./scripts/eket-start.sh --role master
 ```
 
-**功能**：
-- ✅ Master-Slaver 协作
-- ✅ 任务分配和认领
-- ✅ 文件队列消息传递
-- ✅ 心跳监控
-- ✅ 状态跟踪
+**Features**:
+- ✅ Master-Slaver Collaboration
+- ✅ Task Assignment & Claiming
+- ✅ File Queue Messaging
+- ✅ Heartbeat Monitoring
+- ✅ Status Tracking
 
-**依赖**：Bash 4.0+, Git 2.30+
-
-**适用场景**：快速试用、最小化部署、纯 Shell 环境
+**Dependencies**: Bash 4.0+, Git 2.30+
+**Use Case**: Quick trial, minimal footprint deployment, pure Shell environments.
 
 ---
 
-### Level 2: Node.js + 文件队列 (增强版) ⭐⭐⭐⭐
+### Level 2: Node.js + File Queue (Enhanced) ⭐⭐⭐⭐
 
-**目标**：更高效、更专业、更丰富
+**Goal**: Higher efficiency, professional features, richer experience.
 
 ```bash
-# 安装和构建
+# Install and build
 cd node && npm install && npm run build
 
-# 启动 (自动使用 Node.js 模式)
+# Start (Automatically uses Node.js mode)
 node dist/index.js instance:start --role master
 
 # Web Dashboard
 node dist/index.js web:dashboard --port 3000
 ```
 
-**相比 Level 1 增加**：
-- ✅ TypeScript 类型安全
-- ✅ 丰富的 CLI 命令
-- ✅ 优化的文件队列（去重、归档、校验）
-- ✅ 断路器和重试机制
-- ✅ LRU 内存缓存
+**Added Features**:
+- ✅ TypeScript Type Safety
+- ✅ Rich CLI commands
+- ✅ Optimized File Queue (deduplication, archiving, validation)
+- ✅ Circuit Breaker & Retry Mechanism
+- ✅ LRU Memory Cache
 - ✅ Web Dashboard
 - ✅ OpenCLAW Gateway
 
-**依赖**：Node.js 18+, npm 9+
-
-**适用场景**：本地开发、团队协作、需要更好性能
+**Dependencies**: Node.js 18+, npm 9+
+**Use Case**: Local development, team collaboration, performance improvements.
 
 ---
 
-### Level 3: Redis + SQLite (满血版) ⭐⭐⭐
+### Level 3: Redis + SQLite (Full Power) ⭐⭐⭐
 
-**目标**：生产级、高并发、分布式
+**Goal**: Production-ready, high concurrency, distributed deployment.
 
 ```bash
-# 启动 Redis (Docker 推荐)
+# Start Redis (Docker recommended)
 docker run -d --name eket-redis -p 6379:6379 redis:7-alpine
 
-# 启动 (自动检测 Redis，使用满血模式)
+# Start (Automatically detects Redis, enters Full Power mode)
 node dist/index.js instance:start --role master
 ```
 
-**相比 Level 2 增加**：
-- ✅ Redis Pub/Sub 实时消息
-- ✅ Redis 连接池和主从切换
-- ✅ SQLite 持久化存储 (WAL 模式)
-- ✅ 三级 Master 选举
-- ✅ 分布式缓存 (LRU + Redis)
-- ✅ 知识库系统
-- ✅ 事务支持
+**Added Features**:
+- ✅ Redis Pub/Sub Real-time Messaging
+- ✅ Redis Connection Pool & Master/Slave failover
+- ✅ SQLite Persistent Storage (WAL mode)
+- ✅ Three-level Master Election
+- ✅ Distributed Cache (LRU + Redis)
+- ✅ Knowledge Base System
+- ✅ Transaction Support
 
-**依赖**：Level 2 + Redis 6.0+, SQLite 3.35+, Docker (可选)
-
-**适用场景**：生产环境、高并发、分布式部署
+**Dependencies**: Level 2 + Redis 6.0+, SQLite 3.35+, Docker (optional)
+**Use Case**: Production environments, high concurrency, distributed setups.
 
 ---
 
-## 🔄 运行时自动降级
+## 🔄 Runtime Automatic Degradation
 
-系统在运行时根据依赖可用性自动降级，确保稳定运行：
+The system automatically downgrades based on the availability of dependencies:
 
 ```
 Level 3 (Redis + SQLite)
-  ↓ Redis 不可用
-Level 2 (Node.js + 文件队列)
-  ↓ Node.js 不可用
-Level 1 (Shell + 文件队列)
-  ↓ 所有失败
-优雅退出 + 错误日志
+  ↓ Redis Unavailable
+Level 2 (Node.js + File Queue)
+  ↓ Node.js Unavailable
+Level 1 (Shell + File Queue)
+  ↓ All Failed
+Graceful Exit + Error Logs
 ```
 
-**检查当前运行级别**：
+**Check current run level**:
 ```bash
 ./lib/adapters/hybrid-adapter.sh check
 
-# 输出示例：
-# [INFO] Node.js: ✅ 可用
-# [INFO] Redis: ❌ 不可用
-# [INFO] Shell: ✅ 可用
-# [INFO] 当前运行级别: Level 2 (Node.js + 文件队列)
+# Example Output:
+# [INFO] Node.js: ✅ Available
+# [INFO] Redis: ❌ Unavailable
+# [INFO] Shell: ✅ Available
+# [INFO] Current Run Level: Level 2 (Node.js + File Queue)
 ```
 
 ---
 
-## 🎯 核心理念
+## 🎯 Core Philosophy
 
-> **一切皆 Task** —— 从需求分析到代码合并，所有工作都是 Task，只是难度和持续时间不同。
+> **Everything is a Task** — From requirements analysis to merging code, every operation is a Task, just differing in difficulty and duration.
 
-每个 Agent 是独立的 Instance，主动承接符合自己角色的任务。
+Each Agent is an independent Instance that actively claims tasks matching its specified role.
 
 ---
 
-## 🏗️ Master-Slaver 架构
+## 🏗️ Master-Slaver Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Master Node (长期存活)                 │
+│                    Master Node (Long-lived)               │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
-│  │ 监控服务    │  │ PR 审核     │  │ 任务调度    │     │
+│  │ Monitor     │  │ PR Review   │  │ Scheduler   │     │
 │  └─────────────┘  └─────────────┘  └─────────────┘     │
 └─────────────────────────────────────────────────────────┘
                          │
@@ -179,190 +195,190 @@ Level 1 (Shell + 文件队列)
 
 ---
 
-## 📋 常用命令
+## 📋 Common Commands
 
 ### Level 1 (Shell)
 
 ```bash
-# 启动 Master/Slaver
+# Start Master/Slaver
 ./scripts/eket-start.sh --role master
 ./scripts/eket-start.sh --role slaver --profile backend_dev
 
-# 心跳监控
+# Heartbeat Monitor
 ./scripts/heartbeat-monitor.sh
 
-# 生成统计报告
+# Generate Statistics Report
 ./scripts/generate-stats.sh
 
-# Docker 服务管理
-./scripts/docker-redis.sh      # 启动/停止 Redis
-./scripts/docker-sqlite.sh     # SQLite 管理
+# Docker Service Management
+./scripts/docker-redis.sh      # Start/Stop Redis
+./scripts/docker-sqlite.sh     # Manage SQLite
 
-# 查看帮助
+# View Help
 ./lib/adapters/hybrid-adapter.sh --help
 ```
 
 ### Level 2/3 (Node.js)
 
 ```bash
-# 构建
+# Build
 cd node && npm run build
 
-# 系统诊断
+# System Doctor
 node dist/index.js system:doctor
 
-# 实例管理
+# Instance Management
 node dist/index.js instance:start --auto
 node dist/index.js instance:start --human --role frontend_dev
 
-# Redis 操作 (Level 3)
+# Redis Operations (Level 3)
 node dist/index.js redis:check
 node dist/index.js redis:list-slavers
 
-# SQLite 操作 (Level 3)
+# SQLite Operations (Level 3)
 node dist/index.js sqlite:check
 node dist/index.js sqlite:list-retros
 node dist/index.js sqlite:search "<keyword>"
 
-# Web 服务
+# Web Services
 node dist/index.js web:dashboard --port 3000
 node dist/index.js hooks:start --port 8899
 node dist/index.js gateway:start --port 8080  # OpenCLAW Gateway
 
-# 性能测试 (Level 3)
+# Benchmarking (Level 3)
 node benchmarks/simple-benchmark.js
 ```
 
 ---
 
-## 📊 功能对比
+## 📊 Feature Comparison
 
-| 功能 | Level 1 | Level 2 | Level 3 |
-|------|:-------:|:-------:|:-------:|
-| **Master-Slaver 协作** | ✅ | ✅ | ✅ |
-| **任务分配认领** | ✅ | ✅ | ✅ |
-| **心跳监控** | ✅ | ✅ | ✅ |
-| **消息传递** | 文件队列 | 优化文件队列 | Redis Pub/Sub |
-| **消息去重归档** | ❌ | ✅ | ✅ |
-| **断路器重试** | ❌ | ✅ | ✅ |
-| **LRU 缓存** | ❌ | 内存 | 内存 + Redis |
-| **Master 选举** | 文件锁 | 文件锁 | Redis + SQLite + 文件 |
-| **知识库** | ❌ | ❌ | ✅ |
+| Feature | Level 1 | Level 2 | Level 3 |
+|---------|:-------:|:-------:|:-------:|
+| **Master-Slaver Collab.** | ✅ | ✅ | ✅ |
+| **Task Claiming** | ✅ | ✅ | ✅ |
+| **Heartbeat Monitor** | ✅ | ✅ | ✅ |
+| **Messaging** | File Queue | Optimized File Queue | Redis Pub/Sub |
+| **Message Deduplication** | ❌ | ✅ | ✅ |
+| **Circuit Breaker/Retry** | ❌ | ✅ | ✅ |
+| **LRU Cache** | ❌ | Memory | Memory + Redis |
+| **Master Election** | File Lock | File Lock | Redis + SQLite + File |
+| **Knowledge Base** | ❌ | ❌ | ✅ |
 | **Web Dashboard** | ❌ | ✅ | ✅ |
-| **OpenCLAW 集成** | ❌ | ✅ | ✅ |
-| **分布式部署** | ❌ | ❌ | ✅ |
-| **启动时间** | 30秒 | 1-2分钟 | 2-3分钟 |
-| **内存占用** | <10MB | 50-100MB | 100-200MB |
+| **OpenCLAW Integration**| ❌ | ✅ | ✅ |
+| **Distributed Deploy** | ❌ | ❌ | ✅ |
+| **Startup Time** | 30s | 1-2 mins | 2-3 mins |
+| **Memory Footprint** | <10MB | 50-100MB | 100-200MB |
 
 ---
 
-## 📖 文档导航
+## 📖 Documentation Navigation
 
-### 快速入门
-- **[30秒启动](docs/guides/QUICK-START.md)** - Level 1 Shell 模式快速启动
-- **[三级架构详解](docs/architecture/THREE-LEVEL-ARCHITECTURE.md)** - 架构设计和选择指南
-- **[降级策略](docs/architecture/DEGRADATION-STRATEGY.md)** - 自动降级机制
+### Quick Start
+- **[30 Second Start](docs/guides/QUICK-START.md)** - Level 1 Shell mode quick start
+- **[Three-Level Architecture Detailed](docs/architecture/THREE-LEVEL-ARCHITECTURE.md)** - Architecture design and capability choices
+- **[Degradation Strategy](docs/architecture/DEGRADATION-STRATEGY.md)** - Automatic fallback mechanism
 
-### Level 1 文档 (Shell + 文档)
-- **[Shell 模式指南](docs/guides/SHELL-MODE.md)** - 纯 Shell 使用指南
-- **[文件队列详解](docs/architecture/FILE-QUEUE.md)** - 文件队列消息机制
-- **[Shell 脚本参考](docs/guides/SHELL-SCRIPTS.md)** - 所有 Shell 脚本说明
+### Level 1 Docs (Shell & File)
+- **[Shell Mode Guide](docs/guides/SHELL-MODE.md)** - Pure shell operational guide
+- **[File Queue Details](docs/architecture/FILE-QUEUE.md)** - File-based messaging queue mechanism
+- **[Shell Scripts Reference](docs/guides/SHELL-SCRIPTS.md)** - Description of all provided scripts
 
-### Level 2 文档 (Node.js)
-- **[Node.js 模式指南](docs/guides/NODEJS-MODE.md)** - Node.js 功能和 CLI
-- **[CLI 命令参考](docs/guides/CLI-COMMANDS.md)** - 完整命令列表
-- **[Web Dashboard](docs/api/WEB-DASHBOARD.md)** - 仪表板使用
+### Level 2 Docs (Node.js)
+- **[Node.js Mode Guide](docs/guides/NODEJS-MODE.md)** - Node.js features and CLI usage
+- **[CLI Command Reference](docs/guides/CLI-COMMANDS.md)** - Complete list of CLI commands
+- **[Web Dashboard](docs/api/WEB-DASHBOARD.md)** - Dashboard reference
 
-### Level 3 文档 (满血版)
-- **[满血模式指南](docs/guides/FULL-STACK-MODE.md)** - Redis + SQLite 配置
-- **[性能优化](docs/performance/OPTIMIZATION.md)** - 性能调优指南
-- **[分布式部署](docs/guides/DISTRIBUTED-DEPLOYMENT.md)** - 多节点部署
+### Level 3 Docs (Full Power)
+- **[Full Power Mode Guide](docs/guides/FULL-STACK-MODE.md)** - Redis & SQLite configurations
+- **[Performance Optimization](docs/performance/OPTIMIZATION.md)** - Tuning guides
+- **[Distributed Deployment](docs/guides/DISTRIBUTED-DEPLOYMENT.md)** - Multi-node deployment strategies
 
-### 架构设计
-- **[Master-Slaver 架构](docs/architecture/MASTER-SLAVER.md)** - 核心架构设计
-- **[连接管理器](docs/architecture/CONNECTION-MANAGER.md)** - 四级降级逻辑
-- **[消息队列](docs/architecture/MESSAGE-QUEUE.md)** - Redis Pub/Sub + 文件队列
+### Architecture Design
+- **[Master-Slaver Architecture](docs/architecture/MASTER-SLAVER.md)** - Core architectural patterns
+- **[Connection Manager](docs/architecture/CONNECTION-MANAGER.md)** - Four-level degradation logic
+- **[Message Queue](docs/architecture/MESSAGE-QUEUE.md)** - Redis Pub/Sub & File Queue combo design
 
-### 开发指南
-- **[贡献指南](CONTRIBUTING.md)** - 如何贡献代码
-- **[测试指南](docs/guides/TESTING.md)** - 测试框架和用例
-- **[开发流程](docs/guides/DEVELOPMENT.md)** - 开发最佳实践
+### Development Guides
+- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute code
+- **[Testing Guide](docs/guides/TESTING.md)** - Test framework and case designs
+- **[Development Flow](docs/guides/DEVELOPMENT.md)** - Best practices for development
 
 ---
 
-## 🎓 使用场景推荐
+## 🎓 Recommended Use Cases
 
-### 场景 1: 快速试用 EKET
-**推荐**: **Level 1** (Shell)
+### Case 1: Quick Try-out
+**Recommendation**: **Level 1** (Shell)
 ```bash
 git clone https://github.com/godlockin/eket.git && cd eket
 ./scripts/eket-start.sh --role master
 ```
-**为什么**: 零配置，30 秒体验完整功能
+**Why**: Zero configuration required, 30-second full experience.
 
 ---
 
-### 场景 2: 本地开发项目
-**推荐**: **Level 2** (Node.js + 文件队列)
+### Case 2: Local Project Development
+**Recommendation**: **Level 2** (Node.js + File Queue)
 ```bash
 cd node && npm install && npm run build
 node dist/index.js instance:start --role master
 node dist/index.js web:dashboard --port 3000
 ```
-**为什么**: 丰富功能，无需外部依赖，有 Web 界面
+**Why**: Rich features, no external footprint/dependencies, Web UI available.
 
 ---
 
-### 场景 3: 团队协作
-**推荐**: **Level 3** (Redis + SQLite)
+### Case 3: Team Collaboration
+**Recommendation**: **Level 3** (Redis + SQLite)
 ```bash
 docker run -d --name eket-redis -p 6379:6379 redis:7-alpine
 node dist/index.js instance:start --role master
 ```
-**为什么**: 实时消息，支持多 Slaver 并发
+**Why**: Resilient real-time messaging, supports high-concurrency Slaver instances.
 
 ---
 
-### 场景 4: 生产环境
-**推荐**: **Level 3** + 高可用
+### Case 4: Enterprise Production
+**Recommendation**: **Level 3** + High Availability
 ```bash
-# Redis 主从配置
-# SQLite 定期备份
-# 多 Master 选举
-# 完整监控告警
+# Redis Master/Slave config
+# Scheduled SQLite backups
+# Multi-Master Election
+# Full Monitoring/Alerts
 ```
-**为什么**: 分布式支持，高可用保障
+**Why**: Distributed support, HA guarantee.
 
 ---
 
-## 🛠️ 环境变量
+## 🛠️ Environment Variables
 
 ```bash
-# 通用配置
+# General Configurations
 export EKET_LOG_LEVEL=info          # debug | info | warn | error
 export EKET_LOG_DIR=./logs
 
-# Level 3 Redis 配置
+# Level 3 Redis Config
 export EKET_REDIS_HOST=localhost
 export EKET_REDIS_PORT=6379
-export EKET_REMOTE_REDIS_HOST=      # 远程 Redis (主从)
+export EKET_REMOTE_REDIS_HOST=      # Remote Redis (Master/Slave)
 
-# Level 3 SQLite 配置
+# Level 3 SQLite Config
 export EKET_SQLITE_PATH=~/.eket/data/sqlite/eket.db
 
-# Level 3 性能配置
+# Level 3 Performance Config
 export EKET_MEMORY_WARNING_THRESHOLD=0.75
 export EKET_MEMORY_CRITICAL_THRESHOLD=0.9
 ```
 
 ---
 
-## 📊 性能基准 (Level 3)
+## 📊 Performance Benchmarks (Level 3)
 
-**Round 4 验证数据** (2026-04-08, Docker Redis):
+**Round 4 Verification Data** (2026-04-08, Docker Redis):
 
-| 操作 | P95 延迟 | 目标 | 结果 |
-|------|----------|------|------|
+| Operation | P95 Latency | Target | Result |
+|-----------|-------------|--------|--------|
 | Redis Write | 0.96ms | <5ms | ✅ |
 | Redis Read | 0.53ms | <5ms | ✅ |
 | SQLite Insert (WAL) | 0.04ms | <10ms | ✅ |
@@ -370,48 +386,48 @@ export EKET_MEMORY_CRITICAL_THRESHOLD=0.9
 | File Queue Enqueue | 1.30ms | <20ms | ✅ |
 | File Queue Dequeue | 1.09ms | <20ms | ✅ |
 
-**运行基准测试**:
+**Run Benchmark**:
 ```bash
 node node/benchmarks/simple-benchmark.js
 ```
 
-详细报告：[性能测试报告](docs/performance/TASK-015-completion-report.md)
+Detailed Report: [Performance Test Report](docs/performance/TASK-015-completion-report.md)
 
 ---
 
-## 🤝 贡献
+## 🤝 Contributing
 
-欢迎贡献代码、文档或 Issue！请阅读 [贡献指南](CONTRIBUTING.md)。
+We welcome code contributions, documentation updates, or new Issues! Please read the [Contributing Guide](CONTRIBUTING.md).
 
 ---
 
-## 📜 许可证
+## 📜 License
 
 [MIT License](LICENSE)
 
 ---
 
-## 🔗 相关链接
+## 🔗 Related Links
 
 - **GitHub**: https://github.com/godlockin/eket
-- **文档**: [docs/](docs/)
+- **Docs**: [docs/](docs/)
 - **Issues**: https://github.com/godlockin/eket/issues
-- **Discord**: (待建立)
+- **Discord**: (To be established)
 
 ---
 
-## 🎯 版本历史
+## 🎯 Version History
 
-- **v2.3.0** (2026-04-08) - Round 3 自举完成，测试通过率 87%，性能验证
-- **v2.2.0** (2026-04-07) - Round 2 大规模优化，35,775+ 行代码
-- **v2.1.1** (2026-04-06) - Round 1 自举系统首次运行
-- **v2.0.0** (2026-04-05) - Node.js 混合架构，三级降级
+- **v2.3.0** (2026-04-08) - Round 3 fully bootstrapped, pass rate 87%, performance validated
+- **v2.2.0** (2026-04-07) - Round 2 massive optimizations, 35,775+ lines of code
+- **v2.1.1** (2026-04-06) - Round 1 self-bootstrap system first run
+- **v2.0.0** (2026-04-05) - Node.js hybrid architecture, three-level degradation
 
-详见：[CHANGELOG.md](CHANGELOG.md)
+See details in: [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
-**开始你的 EKET 之旅吧！** 🚀
+**Start your EKET journey today!** 🚀
 
 ```bash
 git clone https://github.com/godlockin/eket.git && cd eket
