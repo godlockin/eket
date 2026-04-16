@@ -994,9 +994,7 @@ export async function runPrePrReviewHook(ticketId: string): Promise<Result<undef
     const error = e as { stdout?: string; stderr?: string; message?: string };
     const hookOutput = error.stdout?.trim() ?? error.message ?? 'Unknown hook failure';
     const hookStderr = error.stderr?.trim();
-    if (hookStderr) {
-      console.error(`[Hook] runPrePrReviewHook stderr: ${hookStderr}`);
-    }
+    console.error(`[Hook] runPrePrReviewHook FAILED for ${ticketId}: stdout="${hookOutput}" stderr="${hookStderr ?? ''}"`);
     await writeViolationReport(ticketId, hookOutput);
     return {
       success: false,
