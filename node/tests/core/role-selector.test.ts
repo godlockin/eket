@@ -1,7 +1,7 @@
 import { describe, it, expect } from '@jest/globals';
 import { selectRole, getRulesPath, getRulesFileName, ALL_ROLES } from '../../src/core/role-selector.js';
 
-describe('selectRole — all 12 roles', () => {
+describe('selectRole — all 15 roles', () => {
   it('analysis: maps analysis/research/spike', () => {
     expect(selectRole('analysis')).toBe('analysis');
     expect(selectRole('research')).toBe('analysis');
@@ -63,8 +63,28 @@ describe('selectRole — all 12 roles', () => {
     expect(selectRole('')).toBe('code');
   });
 
-  it('ALL_ROLES contains all 12 roles', () => {
-    expect(ALL_ROLES).toHaveLength(12);
+  it('ALL_ROLES contains all 15 roles', () => {
+    expect(ALL_ROLES).toHaveLength(15);
+  });
+
+  it('hr: maps hr/recruit/hiring/interview', () => {
+    expect(selectRole('hr')).toBe('hr');
+    expect(selectRole('recruit')).toBe('hr');
+    expect(selectRole('hiring')).toBe('hr');
+    expect(selectRole('interview')).toBe('hr');
+  });
+
+  it('algorithm: maps algorithm/ml/benchmark', () => {
+    expect(selectRole('algorithm')).toBe('algorithm');
+    expect(selectRole('ml')).toBe('algorithm');
+    expect(selectRole('benchmark')).toBe('algorithm');
+  });
+
+  it('llm: maps llm/prompt/rag/finetune', () => {
+    expect(selectRole('llm')).toBe('llm');
+    expect(selectRole('prompt')).toBe('llm');
+    expect(selectRole('rag')).toBe('llm');
+    expect(selectRole('finetune')).toBe('llm');
   });
 
   it('data: maps data/analytics/etl/reporting', () => {
