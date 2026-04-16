@@ -1,48 +1,78 @@
 import { describe, it, expect } from '@jest/globals';
-import { selectRole, getRulesPath, getRulesFileName } from '../../src/core/role-selector.js';
+import { selectRole, getRulesPath, getRulesFileName, ALL_ROLES } from '../../src/core/role-selector.js';
 
-describe('selectRole', () => {
-  it('maps feature → code', () => {
+describe('selectRole — all 9 roles', () => {
+  it('analysis: maps analysis/research/spike', () => {
+    expect(selectRole('analysis')).toBe('analysis');
+    expect(selectRole('research')).toBe('analysis');
+    expect(selectRole('spike')).toBe('analysis');
+  });
+
+  it('design: maps design/architecture/schema', () => {
+    expect(selectRole('design')).toBe('design');
+    expect(selectRole('architecture')).toBe('design');
+    expect(selectRole('schema')).toBe('design');
+  });
+
+  it('planning: maps planning/epic/breakdown', () => {
+    expect(selectRole('planning')).toBe('planning');
+    expect(selectRole('epic')).toBe('planning');
+    expect(selectRole('breakdown')).toBe('planning');
+  });
+
+  it('code: maps feature/bug/refactor', () => {
     expect(selectRole('feature')).toBe('code');
+    expect(selectRole('bug')).toBe('code');
+    expect(selectRole('refactor')).toBe('code');
   });
 
-  it('maps test → test', () => {
+  it('test: maps test/qa/quality', () => {
     expect(selectRole('test')).toBe('test');
+    expect(selectRole('qa')).toBe('test');
+    expect(selectRole('quality')).toBe('test');
   });
 
-  it('maps review → review', () => {
+  it('review: maps review/audit/pr', () => {
     expect(selectRole('review')).toBe('review');
+    expect(selectRole('audit')).toBe('review');
+    expect(selectRole('pr')).toBe('review');
   });
 
-  it('maps infra → infra', () => {
+  it('docs: maps docs/documentation/readme/wiki', () => {
+    expect(selectRole('docs')).toBe('docs');
+    expect(selectRole('documentation')).toBe('docs');
+    expect(selectRole('readme')).toBe('docs');
+    expect(selectRole('wiki')).toBe('docs');
+  });
+
+  it('infra: maps infra/ci/devops/deploy', () => {
     expect(selectRole('infra')).toBe('infra');
+    expect(selectRole('ci')).toBe('infra');
+    expect(selectRole('devops')).toBe('infra');
+    expect(selectRole('deploy')).toBe('infra');
   });
 
-  it('falls back to code for unknown type', () => {
-    expect(selectRole('unknown-type')).toBe('code');
+  it('security: maps security/vulnerability/pentest', () => {
+    expect(selectRole('security')).toBe('security');
+    expect(selectRole('vulnerability')).toBe('security');
+    expect(selectRole('pentest')).toBe('security');
+  });
+
+  it('unknown type falls back to code', () => {
+    expect(selectRole('unknown-xyz')).toBe('code');
+    expect(selectRole('')).toBe('code');
+  });
+
+  it('ALL_ROLES contains all 9 roles', () => {
+    expect(ALL_ROLES).toHaveLength(9);
   });
 });
 
-describe('getRulesFileName', () => {
-  it('returns uppercase filename for code role', () => {
-    expect(getRulesFileName('code')).toBe('SLAVER-RULES-CODE.md');
-  });
-
-  it('returns uppercase filename for test role', () => {
-    expect(getRulesFileName('test')).toBe('SLAVER-RULES-TEST.md');
-  });
-
-  it('returns uppercase filename for infra role', () => {
-    expect(getRulesFileName('infra')).toBe('SLAVER-RULES-INFRA.md');
-  });
-});
-
-describe('getRulesPath', () => {
-  it('returns correct path for code role', () => {
+describe('getRulesPath / getRulesFileName', () => {
+  it('returns correct path for each role', () => {
     expect(getRulesPath('code')).toBe('template/docs/SLAVER-RULES-CODE.md');
-  });
-
-  it('returns correct path for review role', () => {
-    expect(getRulesPath('review')).toBe('template/docs/SLAVER-RULES-REVIEW.md');
+    expect(getRulesPath('docs')).toBe('template/docs/SLAVER-RULES-DOCS.md');
+    expect(getRulesPath('security')).toBe('template/docs/SLAVER-RULES-SECURITY.md');
+    expect(getRulesPath('analysis')).toBe('template/docs/SLAVER-RULES-ANALYSIS.md');
   });
 });
