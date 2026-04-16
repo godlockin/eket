@@ -8,15 +8,19 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { existsSync, readdirSync, readFileSync, rmSync, mkdirSync } from 'fs';
 import { EketErrorCode } from '../../src/types/index.js';
 import { transitionStatus } from '../../src/core/workflow-engine.js';
 
 // ─── path helpers ─────────────────────────────────────────────────────────────
 
-// process.cwd() = node/ during npm test
-const REPO_ROOT = join(process.cwd(), '..');
+// Use import.meta.url for reliable path resolution in ts-jest ESM mode
+// workflow-engine-violation.test.ts is at node/tests/core/ → ../../../ = repo root
+const __filename = fileURLToPath(new URL(import.meta.url));
+const __dirname_here = dirname(__filename);
+const REPO_ROOT = join(__dirname_here, '..', '..', '..');
 const INBOX_DIR = join(REPO_ROOT, 'inbox', 'human_feedback');
 const VALID_TICKET_PATH = join(REPO_ROOT, 'test-fixtures', 'valid-ticket.md');
 const INVALID_TICKET_PATH = join(REPO_ROOT, 'test-fixtures', 'invalid-ticket-no-pr.md');

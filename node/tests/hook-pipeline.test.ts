@@ -13,7 +13,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { EketErrorCode } from '../src/types/index.js';
 
 // ─── import module under test ────────────────────────────────────────────────
@@ -24,10 +25,11 @@ import {
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-// Use process.cwd() which resolves to the node/ directory when running npm test
-// Then go up one level to reach repo root
-const REPO_ROOT = join(process.cwd(), '..');
-console.log(`[TEST DEBUG] process.cwd()=${process.cwd()} REPO_ROOT=${REPO_ROOT}`);
+// Use import.meta.url to reliably get repo root (works in ts-jest ESM mode)
+// hook-pipeline.test.ts is at node/tests/ → ../../ = repo root
+const __filename = fileURLToPath(new URL(import.meta.url));
+const __dirname_here = dirname(__filename);
+const REPO_ROOT = join(__dirname_here, '..', '..');
 const VALID_TICKET_PATH = join(REPO_ROOT, 'test-fixtures', 'valid-ticket.md');
 const INVALID_TICKET_PATH = join(REPO_ROOT, 'test-fixtures', 'invalid-ticket-no-pr.md');
 
