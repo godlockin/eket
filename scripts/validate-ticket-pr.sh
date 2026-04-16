@@ -11,6 +11,8 @@
 #   TEST_OUTPUT_IS_PLACEHOLDER  — 测试输出不得含占位符词
 
 set -uo pipefail
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
 
 # ─── 参数检查 ─────────────────────────────────────────────────────────────────
 TICKET_FILE="${1:-}"
