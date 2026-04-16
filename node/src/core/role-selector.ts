@@ -1,6 +1,6 @@
 /**
- * EKET Framework - Slaver Role Selector (TASK-046 redesign)
- * 覆盖完整软件工程周期的 12 种专项角色。
+ * EKET Framework - Slaver Role Selector (TASK-047: extended to 15 roles)
+ * 覆盖完整软件工程周期的 15 种专项角色。
  */
 
 export type SlaverRole =
@@ -15,11 +15,14 @@ export type SlaverRole =
   | 'security'
   | 'data'
   | 'ops'
-  | 'implementation';
+  | 'implementation'
+  | 'hr'
+  | 'algorithm'
+  | 'llm';
 
 export const ALL_ROLES: SlaverRole[] = [
   'analysis', 'design', 'planning', 'code', 'test', 'review', 'docs', 'infra', 'security',
-  'data', 'ops', 'implementation',
+  'data', 'ops', 'implementation', 'hr', 'algorithm', 'llm',
 ];
 
 const ROLE_MAP: Record<string, SlaverRole> = {
@@ -88,6 +91,29 @@ const ROLE_MAP: Record<string, SlaverRole> = {
   migration: 'implementation',
   onboarding: 'implementation',
   setup: 'implementation',
+  // HR
+  hr: 'hr',
+  recruit: 'hr',
+  hiring: 'hr',
+  headhunt: 'hr',
+  interview: 'hr',
+  jd: 'hr',
+  offer: 'hr',
+  talent: 'hr',
+  // Algorithm
+  algorithm: 'algorithm',
+  algo: 'algorithm',
+  ml: 'algorithm',
+  benchmark: 'algorithm',
+  'feature-engineering': 'algorithm',
+  paper: 'algorithm',
+  // LLM
+  llm: 'llm',
+  prompt: 'llm',
+  rag: 'llm',
+  finetune: 'llm',
+  inference: 'llm',
+  embedding: 'llm',
 };
 
 export function selectRole(ticketType: string): SlaverRole {
