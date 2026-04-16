@@ -63,8 +63,8 @@ describe('selectRole — all 15 roles', () => {
     expect(selectRole('')).toBe('code');
   });
 
-  it('ALL_ROLES contains all 15 roles', () => {
-    expect(ALL_ROLES).toHaveLength(15);
+  it('ALL_ROLES contains all 16 roles', () => {
+    expect(ALL_ROLES).toHaveLength(16);
   });
 
   it('hr: maps hr/recruit/hiring/interview', () => {
@@ -74,10 +74,16 @@ describe('selectRole — all 15 roles', () => {
     expect(selectRole('interview')).toBe('hr');
   });
 
-  it('algorithm: maps algorithm/ml/benchmark', () => {
+  it('algorithm: maps algorithm/ml/benchmark/labeling/training/experiment/automl/drift', () => {
     expect(selectRole('algorithm')).toBe('algorithm');
     expect(selectRole('ml')).toBe('algorithm');
     expect(selectRole('benchmark')).toBe('algorithm');
+    expect(selectRole('labeling')).toBe('algorithm');
+    expect(selectRole('annotation')).toBe('algorithm');
+    expect(selectRole('training')).toBe('algorithm');
+    expect(selectRole('experiment')).toBe('algorithm');
+    expect(selectRole('automl')).toBe('algorithm');
+    expect(selectRole('drift')).toBe('algorithm');
   });
 
   it('llm: maps llm/prompt/rag/finetune', () => {
