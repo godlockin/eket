@@ -9,6 +9,11 @@
  * - 事件驱动的触发器
  */
 
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+import { writeFile, mkdir } from 'fs/promises';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { EketError, EketErrorCode } from '../types/index.js';
 import type {
   WorkflowDefinition,
@@ -965,9 +970,72 @@ export interface TransitionStatusOptions {
  * @returns Result<undefined>
  */
 export async function runPrePrReviewHook(ticketId: string): Promise<Result<undefined>> {
-  console.log(`[Hook] runPrePrReviewHook stub called for ticket: ${ticketId}`);
-  // Stub: TASK-036 will replace this with real shell invocation
-  return { success: true, data: undefined };
+  const execFileAsync = promisify(execFile);
+
+  // Resolve repo root relative to this compiled file (dist/core → repo root = ../../..)
+  const __filename = fileURLToPath(import.meta.url);
+  const repoRoot = join(dirname(__filename), '..', '..', '..');
+  const scriptPath = join(repoRoot, 'scripts', 'validate-ticket-pr.sh');
+
+  // Derive ticket file path: ticketId may be bare "TASK-036" or a full path
+  const ticketFilePath = ticketId.endsWith('.md')
+    ? ticketId
+    : join(repoRoot, 'jira', 'tickets', `${ticketId}.md`);
+
+  try {
+    const { stdout } = await execFileAsync(
+      'bash',
+      [scriptPath, ticketFilePath],
+      { timeout: 60_000 },
+    );
+    console.log(`[Hook] runPrePrReviewHook passed for ticket: ${ticketId} — ${stdout.trim()}`);
+    return { success: true, data: undefined };
+  } catch (e: unknown) {
+    const error = e as { stdout?: string; stderr?: string; message?: string };
+    const hookOutput = error.stdout?.trim() ?? error.message ?? 'Unknown hook failure';
+    const hookStderr = error.stderr?.trim();
+    console.error(`[Hook] runPrePrReviewHook FAILED for ${ticketId}: stdout="${hookOutput}" stderr="${hookStderr ?? ''}"`);
+    await writeViolationReport(ticketId, hookOutput);
+    return {
+      success: false,
+      error: new EketError(EketErrorCode.HOOK_BLOCKED, hookOutput),
+    };
+  }
+}
+
+/**
+ * writeViolationReport — 将 hook 违规信息写入 inbox/human_feedback/
+ *
+ * @param ticketId   - 目标 ticket ID
+ * @param violations - hook 返回的错误输出文本
+ */
+async function writeViolationReport(ticketId: string, violations: string): Promise<void> {
+  const __filename = fileURLToPath(import.meta.url);
+  const repoRoot = join(dirname(__filename), '..', '..', '..');
+  const ts = Date.now();
+  const reportDir = join(repoRoot, 'inbox', 'human_feedback');
+  const safeTicketId = ticketId.includes('/') ? ticketId.split('/').pop()!.replace(/\.md$/, '') : ticketId;
+  const reportPath = join(reportDir, `violation-${safeTicketId}-${ts}.md`);
+
+  const content = [
+    `# Hook 违规报告 — ${ticketId}`,
+    '',
+    `**时间**: ${new Date(ts).toISOString()}`,
+    `**触发事件**: status → pr_review`,
+    `**违规项**:`,
+    ...violations.split('\n').filter(Boolean).map((line) => `- ${line}`),
+    '',
+    '请修复后重新推进状态。',
+  ].join('\n');
+
+  try {
+    await mkdir(reportDir, { recursive: true });
+    await writeFile(reportPath, content, 'utf-8');
+    console.log(`[Hook] Violation report written: ${reportPath}`);
+  } catch (writeErr: unknown) {
+    const err = writeErr as { message?: string };
+    console.error(`[Hook] Failed to write violation report: ${err.message ?? String(writeErr)}`);
+  }
 }
 
 /**
