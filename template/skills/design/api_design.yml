@@ -9,7 +9,7 @@
 name: api_design
 version: 1.0.0
 category: design
-description: 根据功能需求设计 RESTful API
+description: "Use when designing new API endpoints or reviewing existing API contracts to ensure RESTful consistency and proper request/response schemas. Triggers when user mentions 'API design', 'REST endpoints', 'OpenAPI', 'API contract', or 'HTTP interface'. Provides endpoint definitions, payload schemas, and OpenAPI YAML documentation."
 
 # 输入参数定义
 inputs:

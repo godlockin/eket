@@ -8,8 +8,9 @@ import * as path from 'path';
 import { RedisConnectionPool } from '../core/cache-layer.js';
 import { OptimizedFileQueueManager } from '../core/optimized-file-queue.js';
 import { RedisClient } from '../core/redis-client.js';
-import type { Message, Result } from '../types/index.js';
+import type { Message, ProgressReport, Result, SelfCheckItem } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
+import { SLAVER_HARD_RULES } from './slaver-rules.js';
 
 import { writeToMailbox as writeAgentMailbox } from './agent-mailbox.js';
 import { createRetryExecutor, type RetryExecutor } from './circuit-breaker.js';
@@ -395,5 +396,68 @@ export function createMessage(
     to,
     priority,
     payload,
+  };
+}
+
+// ============================================================================
+// Progress Report Builder (TASK-039 — mini-rules self-check injection)
+// ============================================================================
+
+export interface ReportParams {
+  ticketId: string;
+  slaverId: string;
+  phase: ProgressReport['phase'];
+  progress: number;
+  statusMessage: string;
+  /** 可选：覆盖某些规则的 passed 状态 */
+  overrides?: Array<{ ruleId: string; passed: boolean; note?: string }>;
+}
+
+/**
+ * 构建进度上报消息体，自动注入 Slaver Hard Rules selfCheck。
+ *
+ * 默认所有规则 passed: true。
+ * 若某规则 passed: false，note 字段必须非空，否则抛出 Error（schema 验证）。
+ */
+export function buildProgressReport(params: ReportParams): ProgressReport {
+  const overrideMap = new Map<string, { passed: boolean; note?: string }>(
+    (params.overrides ?? []).map((o) => [o.ruleId, { passed: o.passed, note: o.note }])
+  );
+
+  const checklist: SelfCheckItem[] = SLAVER_HARD_RULES.map((rule) => {
+    const override = overrideMap.get(rule.id);
+    const passed = override?.passed ?? true;
+    const note = override?.note;
+
+    // Schema 验证：passed: false 时 note 必填
+    if (!passed && !note) {
+      throw new Error(
+        `[buildProgressReport] Rule ${rule.id} marked as failed but 'note' is empty. ` +
+          `Provide a non-empty note explaining the violation.`
+      );
+    }
+
+    return {
+      ruleId: rule.id,
+      description: rule.desc,
+      passed,
+      note,
+    };
+  });
+
+  const analysisParalysisFlag = checklist.some((item) => item.ruleId === 'SR-03' && !item.passed);
+
+  return {
+    ticketId: params.ticketId,
+    slaverId: params.slaverId,
+    phase: params.phase,
+    progress: params.progress,
+    statusMessage: params.statusMessage,
+    timestamp: new Date().toISOString(),
+    selfCheck: {
+      rules: SLAVER_HARD_RULES,
+      checklist,
+      analysisParalysisFlag,
+    },
   };
 }

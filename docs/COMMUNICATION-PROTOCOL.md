@@ -315,8 +315,8 @@ fallback:
 
 - [`MASTER-HEARTBEAT-CHECKLIST.md`](./MASTER-HEARTBEAT-CHECKLIST.md) — Master 心跳检查
 - [`SLAVER-HEARTBEAT-CHECKLIST.md`](./SLAVER-HEARTBEAT-CHECKLIST.md) — Slaver 心跳检查
-- [`MASTER-WORKFLOW.md`](./MASTER-WORKFLOW.md) — Master 工作流程
-- [`SLAVER-AUTO-EXEC-GUIDE.md`](./SLAVER-AUTO-EXEC-GUIDE.md) — Slaver 自动执行指南
+- [`MASTER-WORKFLOW.md`](../template/docs/MASTER-WORKFLOW.md) — Master 工作流程
+- [`SLAVER-AUTO-EXEC-GUIDE.md`](../template/docs/SLAVER-AUTO-EXEC-GUIDE.md) — Slaver 自动执行指南
 
 ---
 

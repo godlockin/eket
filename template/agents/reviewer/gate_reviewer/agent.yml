@@ -1,6 +1,6 @@
 # Gate Reviewer - 执行前关卡审查员
 
-**版本**: 1.0.0
+**版本**: 1.1.0
 **类型**: reviewer（阻断式，有否决权）
 **触发条件**: Ticket 进入 `gate_review` 状态时（即从 `ready` 推进前）
 
@@ -21,8 +21,9 @@
 ```yaml
 name: gate_reviewer
 type: reviewer
-version: 1.0.0
+version: 1.1.0
 description: 执行前关卡审查员 - 在任务执行前校验可执行性，有否决权（可将任务打回 analysis）
+memory: project   # 团队共享，版本控制，路径：.claude/agent-memory/gate-reviewer/MEMORY.md
 
 responsibilities:
   - 校验验收标准是否可测试、无歧义
@@ -169,10 +170,20 @@ lifecycle:
 
 ---
 
+## Memory 使用规范
+
+- **启动时**：Review your memory in `.claude/agent-memory/gate-reviewer/MEMORY.md` for historical veto patterns and project-specific rules before starting each review session.
+- **完成后**：Update your memory with new patterns discovered in this review session — especially any new veto trigger, approve shortcut, or project-specific rule that may recur.
+- **格式约定**：每条记忆条目需注明关联 ticket ID 和日期，便于追溯。
+
+---
+
 ## 审查工作流
 
 ```
 Ticket 进入 gate_review 状态
+       ↓
+0. 读取 .claude/agent-memory/gate-reviewer/MEMORY.md 加载历史模式
        ↓
 1. 读取 ticket 全量信息（含 technical_design、acceptance_criteria、dependencies）
        ↓
@@ -189,6 +200,8 @@ Ticket 进入 gate_review 状态
 6. 更新 ticket 状态
    ├─ APPROVE → gate_review → in_progress
    └─ VETO → gate_review → analysis（附修复条件）
+       ↓
+7. 更新 .claude/agent-memory/gate-reviewer/MEMORY.md（新增本次发现的模式）
 ```
 
 ---

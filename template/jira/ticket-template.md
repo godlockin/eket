@@ -60,6 +60,13 @@
 
 ## 2. 验收标准
 
+<!-- Nyquist Rule: 每条验收标准必须附带可自动化执行的验证命令（<60s 完成）
+     格式：- [ ] 描述；验证：`<命令>`
+     禁止：手动检查、人眼确认、"运行后观察" 等主观验证 -->
+
+- [ ] 功能描述；验证：`npm test -- --testPathPattern=<pattern>`
+- [ ] 构建零错误；验证：`npm run build 2>&1 | grep -c error || true`
+
 {{ACCEPTANCE_CRITERIA}}
 
 ---
@@ -98,6 +105,7 @@
 ## 6. 执行日志
 
 {{EXECUTION_LOG}}
+**deferred_issues**: <!-- 执行中发现但不在本 ticket 范围内的预存在问题，留给 Master 处理 -->
 
 ---
 

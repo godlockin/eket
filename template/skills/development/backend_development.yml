@@ -9,7 +9,7 @@
 name: backend_development
 version: 1.0.0
 category: development
-description: 根据 API 定义和数据库设计实现后端服务
+description: "Use when implementing server-side business logic, REST API endpoints, database models, or backend services from an API specification. Triggers when user mentions 'backend development', 'implement API', 'server-side logic', 'create endpoints', 'build service', or 'Node.js/Python backend'. Provides models, controllers, routes, middleware, and unit tests."
 
 # 输入参数定义
 inputs:

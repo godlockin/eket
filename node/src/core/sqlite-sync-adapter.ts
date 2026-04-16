@@ -129,6 +129,32 @@ export class SyncSQLiteAdapter implements ISQLiteClient {
   }
 
   /**
+   * 保存执行检查点（包装为异步）
+   */
+  async saveCheckpoint(checkpoint: {
+    ticketId: string;
+    slaverId: string;
+    phase: 'analysis' | 'implement' | 'test' | 'pr';
+    stateJson: string;
+  }): Promise<Result<void>> {
+    return this.client.saveCheckpoint(checkpoint);
+  }
+
+  /**
+   * 加载执行检查点（包装为异步）
+   */
+  async loadCheckpoint(ticketId: string, slaverId: string): Promise<Result<unknown>> {
+    return this.client.loadCheckpoint(ticketId, slaverId);
+  }
+
+  /**
+   * 删除执行检查点（包装为异步）
+   */
+  async deleteCheckpoint(ticketId: string, slaverId: string): Promise<Result<void>> {
+    return this.client.deleteCheckpoint(ticketId, slaverId);
+  }
+
+  /**
    * 获取底层 SQLiteClient 实例（用于调试）
    */
   getUnderlyingClient(): SQLiteClient {

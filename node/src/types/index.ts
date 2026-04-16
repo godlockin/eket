@@ -102,6 +102,48 @@ export interface ISQLiteClient {
     totalItems: number;
     byCategory: Array<{ category: string; count: number }>;
   }>>;
+  /** 保存执行检查点 */
+  saveCheckpoint(checkpoint: {
+    ticketId: string;
+    slaverId: string;
+    phase: 'analysis' | 'implement' | 'test' | 'pr';
+    stateJson: string;
+  }): Promise<Result<void>>;
+  /** 加载执行检查点 */
+  loadCheckpoint(ticketId: string, slaverId: string): Promise<Result<unknown>>;
+  /** 删除执行检查点 */
+  deleteCheckpoint(ticketId: string, slaverId: string): Promise<Result<void>>;
+}
+
+export interface ExecutionCheckpoint {
+  id?: number;
+  ticketId: string;
+  slaverId: string;
+  phase: 'analysis' | 'implement' | 'test' | 'pr';
+  stateJson: string;
+  createdAt?: string;
+}
+
+// ============================================================================
+// Handoff Types
+// ============================================================================
+
+/**
+ * Handoff 请求接口 — Slaver 完成后移交下一任务
+ */
+export interface HandoffRequest {
+  /** 完成的 ticket ID */
+  completedTicketId: string;
+  /** 发起 Handoff 的 Slaver ID */
+  slaverId: string;
+  /** 建议的下一个 ticket ID（空表示由 Master 决定） */
+  suggestedNextTicketId?: string;
+  /** 请求时间 */
+  requestedAt: string;
+  /** 是否已确认 */
+  confirmed: boolean;
+  /** 确认时间 */
+  confirmedAt?: string;
 }
 
 export interface Retrospective {
@@ -576,6 +618,9 @@ export enum EketErrorCode {
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   UNAUTHORIZED = 'UNAUTHORIZED',
   INTERNAL_ERROR = 'INTERNAL_ERROR',
+
+  // Hook 管道 (TASK-035)
+  HOOK_BLOCKED = 'HOOK_BLOCKED',
 }
 
 export interface EketError {
@@ -1155,4 +1200,55 @@ export interface WorkflowJudgmentRequest {
   resolution?: string; // 判断结果
   resolvedBy?: string; // 谁做了判断
   resolvedAt?: number;
+}
+
+// ============================================================================
+// Hook Pipeline Types (TASK-035)
+// ============================================================================
+
+/**
+ * Hook 执行结果（用于 runPrePrReviewHook 等 hook 函数的返回值）
+ */
+export interface HookResult {
+  /** hook 是否通过 */
+  passed: boolean;
+  /** 失败或警告信息列表 */
+  errors: string[];
+  /** 关联的 ticket ID */
+  ticketId: string;
+  /** 执行时间戳（ISO 8601） */
+  timestamp: string;
+}
+
+// ============================================================================
+// Progress Report Types (TASK-039 — mini-rules self-check)
+// ============================================================================
+
+/**
+ * 自检 checklist 条目
+ * passed: false 时 note 字段必填（schema 层校验）
+ */
+export interface SelfCheckItem {
+  ruleId: string;
+  description: string;
+  passed: boolean;
+  note?: string; // passed: false 时必填
+}
+
+/**
+ * Slaver 进度上报消息体
+ * selfCheck 字段由 buildProgressReport() 自动注入
+ */
+export interface ProgressReport {
+  ticketId: string;
+  slaverId: string;
+  phase: 'analysis' | 'implement' | 'test' | 'pr';
+  progress: number; // 0-100
+  statusMessage: string;
+  timestamp: string;
+  selfCheck: {
+    rules: Array<{ id: string; desc: string }>;
+    checklist: SelfCheckItem[];
+    analysisParalysisFlag: boolean;
+  };
 }

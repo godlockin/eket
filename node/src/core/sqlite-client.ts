@@ -244,6 +244,19 @@ export class SQLiteClient {
 
       CREATE INDEX IF NOT EXISTS idx_task_status ON task_history(status);
       CREATE INDEX IF NOT EXISTS idx_message_type ON message_history(type);
+
+      -- 执行检查点表（断点恢复）
+      CREATE TABLE IF NOT EXISTS execution_checkpoints (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ticket_id TEXT NOT NULL,
+        slaver_id TEXT NOT NULL,
+        phase TEXT NOT NULL,
+        state_json TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(ticket_id, slaver_id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_checkpoint_slaver ON execution_checkpoints(slaver_id);
     `);
   }
 
@@ -483,6 +496,88 @@ export class SQLiteClient {
       return {
         success: false,
         error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Failed to generate report'),
+      };
+    }
+  }
+
+  /**
+   * 保存执行检查点（INSERT OR REPLACE）
+   */
+  saveCheckpoint(checkpoint: {
+    ticketId: string;
+    slaverId: string;
+    phase: 'analysis' | 'implement' | 'test' | 'pr';
+    stateJson: string;
+  }): Result<void> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const stmt = this.db.prepare(`
+        INSERT INTO execution_checkpoints (ticket_id, slaver_id, phase, state_json)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(ticket_id, slaver_id) DO UPDATE SET
+          phase = excluded.phase,
+          state_json = excluded.state_json,
+          created_at = CURRENT_TIMESTAMP
+      `);
+      stmt.run(checkpoint.ticketId, checkpoint.slaverId, checkpoint.phase, checkpoint.stateJson);
+      return { success: true, data: undefined };
+    } catch {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Failed to save checkpoint'),
+      };
+    }
+  }
+
+  /**
+   * 加载执行检查点
+   */
+  loadCheckpoint(ticketId: string, slaverId: string): Result<unknown> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const stmt = this.db.prepare(
+        'SELECT * FROM execution_checkpoints WHERE ticket_id = ? AND slaver_id = ?'
+      );
+      const row = stmt.get(ticketId, slaverId);
+      return { success: true, data: row ?? null };
+    } catch {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Failed to load checkpoint'),
+      };
+    }
+  }
+
+  /**
+   * 删除执行检查点
+   */
+  deleteCheckpoint(ticketId: string, slaverId: string): Result<void> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const stmt = this.db.prepare(
+        'DELETE FROM execution_checkpoints WHERE ticket_id = ? AND slaver_id = ?'
+      );
+      stmt.run(ticketId, slaverId);
+      return { success: true, data: undefined };
+    } catch {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Failed to delete checkpoint'),
       };
     }
   }
