@@ -621,6 +621,10 @@ export enum EketErrorCode {
 
   // Hook 管道 (TASK-035)
   HOOK_BLOCKED = 'HOOK_BLOCKED',
+
+  // 消息验证 (TASK-042)
+  INVALID_MESSAGE = 'INVALID_MESSAGE',
+  FILE_READ_ERROR = 'FILE_READ_ERROR',
 }
 
 export interface EketError {
