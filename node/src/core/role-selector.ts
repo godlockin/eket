@@ -1,6 +1,6 @@
 /**
- * EKET Framework - Slaver Role Selector (TASK-047: extended to 15 roles)
- * 覆盖完整软件工程周期的 15 种专项角色。
+ * EKET Framework - Slaver Role Selector (TASK-050: extended to 16 roles)
+ * 覆盖完整软件工程周期的 16 种专项角色。
  */
 
 export type SlaverRole =
@@ -18,11 +18,12 @@ export type SlaverRole =
   | 'implementation'
   | 'hr'
   | 'algorithm'
-  | 'llm';
+  | 'llm'
+  | 'ux';
 
 export const ALL_ROLES: SlaverRole[] = [
   'analysis', 'design', 'planning', 'code', 'test', 'review', 'docs', 'infra', 'security',
-  'data', 'ops', 'implementation', 'hr', 'algorithm', 'llm',
+  'data', 'ops', 'implementation', 'hr', 'algorithm', 'llm', 'ux',
 ];
 
 const ROLE_MAP: Record<string, SlaverRole> = {
@@ -107,6 +108,12 @@ const ROLE_MAP: Record<string, SlaverRole> = {
   benchmark: 'algorithm',
   'feature-engineering': 'algorithm',
   paper: 'algorithm',
+  labeling: 'algorithm',
+  annotation: 'algorithm',
+  training: 'algorithm',
+  experiment: 'algorithm',
+  automl: 'algorithm',
+  drift: 'algorithm',
   // LLM
   llm: 'llm',
   prompt: 'llm',
@@ -114,6 +121,17 @@ const ROLE_MAP: Record<string, SlaverRole> = {
   finetune: 'llm',
   inference: 'llm',
   embedding: 'llm',
+  // UX
+  ux: 'ux',
+  ui: 'ux',
+  'user-research': 'ux',
+  persona: 'ux',
+  wireframe: 'ux',
+  prototype: 'ux',
+  usability: 'ux',
+  accessibility: 'ux',
+  'design-system': 'ux',
+  interaction: 'ux',
 };
 
 export function selectRole(ticketType: string): SlaverRole {
