@@ -1,7 +1,7 @@
 import { describe, it, expect } from '@jest/globals';
 import { selectRole, getRulesPath, getRulesFileName, ALL_ROLES } from '../../src/core/role-selector.js';
 
-describe('selectRole — all 9 roles', () => {
+describe('selectRole — all 12 roles', () => {
   it('analysis: maps analysis/research/spike', () => {
     expect(selectRole('analysis')).toBe('analysis');
     expect(selectRole('research')).toBe('analysis');
@@ -63,8 +63,29 @@ describe('selectRole — all 9 roles', () => {
     expect(selectRole('')).toBe('code');
   });
 
-  it('ALL_ROLES contains all 9 roles', () => {
-    expect(ALL_ROLES).toHaveLength(9);
+  it('ALL_ROLES contains all 12 roles', () => {
+    expect(ALL_ROLES).toHaveLength(12);
+  });
+
+  it('data: maps data/analytics/etl/reporting', () => {
+    expect(selectRole('data')).toBe('data');
+    expect(selectRole('analytics')).toBe('data');
+    expect(selectRole('etl')).toBe('data');
+    expect(selectRole('reporting')).toBe('data');
+  });
+
+  it('ops: maps ops/monitoring/sre/alerting', () => {
+    expect(selectRole('ops')).toBe('ops');
+    expect(selectRole('monitoring')).toBe('ops');
+    expect(selectRole('sre')).toBe('ops');
+    expect(selectRole('alerting')).toBe('ops');
+  });
+
+  it('implementation: maps implementation/integration/migration', () => {
+    expect(selectRole('implementation')).toBe('implementation');
+    expect(selectRole('integration')).toBe('implementation');
+    expect(selectRole('migration')).toBe('implementation');
+    expect(selectRole('setup')).toBe('implementation');
   });
 });
 
