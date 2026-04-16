@@ -18,12 +18,14 @@ import ora from 'ora';
 import { OpenCLAWGateway } from './api/openclaw-gateway.js';
 import { createWebDashboardServer } from './api/web-server.js';
 import { registerAlerts } from './commands/alerts.js';
+import { registerSkillExtractCommand } from './commands/skill-extract.js';
 import { registerClaim } from './commands/claim.js';
 import { registerHandoff } from './commands/handoff.js';
 import { registerTaskResume } from './commands/task-resume.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { registerGateReview } from './commands/gate-review.js';
 import { registerMasterHeartbeat } from './commands/master-heartbeat.js';
+import { registerGraphQueryCommand } from './commands/graph-query.js';
 import { runInitWizard } from './commands/init-wizard.js';
 import { runInteractiveStartCLI } from './commands/interactive-start.js';
 import { registerMasterPoll } from './commands/master-poll.js';
@@ -906,9 +908,18 @@ Related Commands:
   // 注册 master:heartbeat 命令（Master 4问自检）
   registerMasterHeartbeat(program);
 
+  // 注册 graph:query 命令（SDLC 事件图查询）
+  registerGraphQueryCommand(program);
+
+  // 注册 skill:extract / skill:list 命令（Skill 自动生成）
+  registerSkillExtractCommand(program);
+
 
   // 注册 alerts 命令
   registerAlerts(program);
+
+  // 注册 skill:extract / skill:list 命令（TASK-043）
+
 
   // 注册 slaver:register 命令
   registerSlaverRegister(program);
