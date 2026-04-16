@@ -18,6 +18,7 @@ import { printError, logSuccess } from '../utils/error-handler.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
+import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
 import {
   loadConfig,
   getTickets,
@@ -242,6 +243,14 @@ Related Commands:
       const role =
         options.role || assignedInstance?.agent_type || (await matchRole(selectedTicket));
       roleSpinner.succeed(`Role matched: ${role}`);
+
+      // 6.1 选择专项规则（TASK-045）
+      const ticketType = selectedTicket.tags[0] ?? 'feature';
+      const slaverRole = selectRole(ticketType);
+      console.log(
+        `[Role] Ticket type: ${ticketType} → 加载专项规则: ${getRulesFileName(slaverRole)}`
+      );
+      console.log(`[Role] 规则路径: ${getRulesPath(slaverRole)}`);
 
       // 7. 更新任务状态
       const statusSpinner = ora('Updating task status...').start();
