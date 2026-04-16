@@ -1012,7 +1012,8 @@ async function writeViolationReport(ticketId: string, violations: string): Promi
   const repoRoot = join(dirname(__filename), '..', '..', '..');
   const ts = Date.now();
   const reportDir = join(repoRoot, 'inbox', 'human_feedback');
-  const reportPath = join(reportDir, `violation-${ticketId}-${ts}.md`);
+  const safeTicketId = ticketId.includes('/') ? ticketId.split('/').pop()!.replace(/\.md$/, '') : ticketId;
+  const reportPath = join(reportDir, `violation-${safeTicketId}-${ts}.md`);
 
   const content = [
     `# Hook 违规报告 — ${ticketId}`,
