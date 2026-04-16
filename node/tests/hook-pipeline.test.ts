@@ -27,6 +27,7 @@ import {
 // Use process.cwd() which resolves to the node/ directory when running npm test
 // Then go up one level to reach repo root
 const REPO_ROOT = join(process.cwd(), '..');
+console.log(`[TEST DEBUG] process.cwd()=${process.cwd()} REPO_ROOT=${REPO_ROOT}`);
 const VALID_TICKET_PATH = join(REPO_ROOT, 'test-fixtures', 'valid-ticket.md');
 const INVALID_TICKET_PATH = join(REPO_ROOT, 'test-fixtures', 'invalid-ticket-no-pr.md');
 
