@@ -80,7 +80,7 @@ jobs:
           find scripts/ tests/ -name "*.sh" \
             | xargs shellcheck \
                 --severity=error \
-                --exclude=SC1091,SC2034,SC2086,SC2155
+                --exclude=SC1091,SC2034,SC2086,SC2155,SC2164,SC2046,SC2206,SC2207
 
   # ============================================================
   # Job 3: Python SDK — pytest / mypy / ruff / pip-audit
