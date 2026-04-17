@@ -26,7 +26,7 @@ export const designSystemSkill: Skill = {
   version: '1.0.0',
 
   async execute(input: SkillInput): Promise<SkillOutput> {
-    const data = input as unknown as DesignSystemInput;
+    const data = input.data as unknown as DesignSystemInput;
     const framework = data.frontendFramework ?? 'react';
     const mode = data.isUpdate ? '更新' : '新建';
 

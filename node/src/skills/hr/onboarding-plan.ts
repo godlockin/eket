@@ -14,11 +14,11 @@ export interface OnboardingPlanOutput {
 
 export const onboardingPlanSkill: Skill<OnboardingPlanInput, OnboardingPlanOutput> = {
   name: 'onboarding-plan',
-  category: SkillCategory.CUSTOM,
+  category: SkillCategory.HR,
   description: 'Structured new hire onboarding plan covering Day 1, Week 1, Month 1, 90-day milestones, and feedback loop.',
   version: '1.0.0',
   async execute(input: SkillInput<OnboardingPlanInput>): Promise<SkillOutput<OnboardingPlanOutput>> {
-    const data = input as unknown as OnboardingPlanInput;
+    const data = input.data as unknown as OnboardingPlanInput;
     const start = Date.now();
     const employee = data.employeeName || 'new hire';
     const role = data.role || 'the role';

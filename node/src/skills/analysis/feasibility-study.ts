@@ -19,7 +19,7 @@ export const feasibilityStudySkill: Skill<FeasibilityStudyInput, FeasibilityStud
   description: 'Assess technical feasibility of a project across dimensions: technology, resources, timeline, and risk.',
   version: '1.0.0',
   async execute(input: SkillInput<FeasibilityStudyInput>): Promise<SkillOutput<FeasibilityStudyOutput>> {
-    const data = input as unknown as FeasibilityStudyInput;
+    const data = input.data as unknown as FeasibilityStudyInput;
     const start = Date.now();
     const techStack = data.techStack ?? [];
     const constraints = data.constraints ?? [];

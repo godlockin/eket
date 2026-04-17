@@ -19,7 +19,7 @@ export const onboardingGuideSkill: Skill<OnboardingGuideInput, OnboardingGuideOu
   description: 'Structured developer onboarding guide — from day 0 setup to first production PR in 30 days',
   version: '1.0.0',
   async execute(input: SkillInput<OnboardingGuideInput>): Promise<SkillOutput<OnboardingGuideOutput>> {
-    const data = input as unknown as OnboardingGuideInput;
+    const data = input.data as unknown as OnboardingGuideInput;
     const start = Date.now();
     const projectName = data.projectName || 'project';
     const stack = data.stackDescription || 'Node.js + TypeScript + PostgreSQL';

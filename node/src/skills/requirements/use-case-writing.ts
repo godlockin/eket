@@ -19,7 +19,7 @@ export const useCaseWritingSkill: Skill<UseCaseWritingInput, UseCaseWritingOutpu
   description: 'Write structured use cases following the Cockburn template with main flow, extensions, and preconditions.',
   version: '1.0.0',
   async execute(input: SkillInput<UseCaseWritingInput>): Promise<SkillOutput<UseCaseWritingOutput>> {
-    const data = input as unknown as UseCaseWritingInput;
+    const data = input.data as unknown as UseCaseWritingInput;
     const start = Date.now();
     const actors = data.actors ?? [];
     const useCaseName = data.useCaseName ?? 'Use Case';

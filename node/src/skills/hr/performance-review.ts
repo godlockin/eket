@@ -14,11 +14,11 @@ export interface PerformanceReviewOutput {
 
 export const performanceReviewSkill: Skill<PerformanceReviewInput, PerformanceReviewOutput> = {
   name: 'performance-review',
-  category: SkillCategory.CUSTOM,
+  category: SkillCategory.HR,
   description: 'End-to-end performance review process: self-assessment, 360 feedback, metrics review, growth planning, and calibration.',
   version: '1.0.0',
   async execute(input: SkillInput<PerformanceReviewInput>): Promise<SkillOutput<PerformanceReviewOutput>> {
-    const data = input as unknown as PerformanceReviewInput;
+    const data = input.data as unknown as PerformanceReviewInput;
     const start = Date.now();
     const employee = data.employeeName || 'employee';
     const period = data.reviewPeriod || 'review period';

@@ -56,7 +56,7 @@ export interface PRReviewOutput {
 export const PRReviewChecklistSkill: Skill<PRReviewInput, PRReviewOutput> = {
   name: 'pr_review_checklist',
   description: 'PR 系统化审查：类型安全 → 测试覆盖 → 构建 → 全量测试 → 安全 → 文档 → PR 描述完整性',
-  category: SkillCategory.TESTING,
+  category: SkillCategory.REVIEW,
   tags: ['review', 'pr', 'checklist', 'quality', 'security', 'ci'],
   version: '1.0.0',
 

@@ -18,7 +18,7 @@ export const architectureDocSkill: Skill<ArchitectureDocInput, ArchitectureDocOu
   description: 'Architecture Decision Records (ADR) and C4 system architecture documentation guide',
   version: '1.0.0',
   async execute(input: SkillInput<ArchitectureDocInput>): Promise<SkillOutput<ArchitectureDocOutput>> {
-    const data = input as unknown as ArchitectureDocInput;
+    const data = input.data as unknown as ArchitectureDocInput;
     const start = Date.now();
     const systemName = data.systemName || 'system';
     const docType = data.docType || 'both';

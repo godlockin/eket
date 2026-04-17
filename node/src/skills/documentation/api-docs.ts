@@ -19,7 +19,7 @@ export const apiDocsSkill: Skill<ApiDocsInput, ApiDocsOutput> = {
   description: 'Comprehensive OpenAPI/Swagger documentation strategy — spec-first or code-first, with interactive explorer',
   version: '1.0.0',
   async execute(input: SkillInput<ApiDocsInput>): Promise<SkillOutput<ApiDocsOutput>> {
-    const data = input as unknown as ApiDocsInput;
+    const data = input.data as unknown as ApiDocsInput;
     const start = Date.now();
     const apiName = data.apiName || 'API';
     const format = data.format || 'openapi-3';

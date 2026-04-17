@@ -4,6 +4,7 @@
  */
 
 import type { Skill, SkillInput, SkillOutput } from '../types.js';
+import { SkillCategory } from '../types.js';
 
 export interface PerformanceReviewInput {
   /** PR number */
@@ -28,13 +29,13 @@ export interface PerformanceReviewOutput {
 
 export const performanceReviewSkill: Skill<PerformanceReviewInput, PerformanceReviewOutput> = {
   name: 'performance-review',
-  category: 'review',
+  category: SkillCategory.REVIEW,
   description: 'Performance review in PRs: algorithmic complexity, N+1 queries, memory leaks, bundle size, caching.',
   version: '1.0.0',
   tags: ['review', 'performance', 'optimization', 'scalability'],
 
   async execute(input: SkillInput<PerformanceReviewInput>): Promise<SkillOutput<PerformanceReviewOutput>> {
-    const data = input as unknown as PerformanceReviewInput;
+    const data = input.data as unknown as PerformanceReviewInput;
     const start = Date.now();
     const context = data.prNumber ? `PR #${data.prNumber}` : 'code change';
     const layer = data.layer ?? 'full-stack';

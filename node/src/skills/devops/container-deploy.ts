@@ -19,7 +19,7 @@ export const containerDeploySkill: Skill<ContainerDeployInput, ContainerDeployOu
   description: 'Docker containerization and Kubernetes/ECS deployment guide with production-ready configuration',
   version: '1.0.0',
   async execute(input: SkillInput<ContainerDeployInput>): Promise<SkillOutput<ContainerDeployOutput>> {
-    const data = input as unknown as ContainerDeployInput;
+    const data = input.data as unknown as ContainerDeployInput;
     const start = Date.now();
     const appName = data.appName || 'app';
     const orchestrator = data.orchestrator || 'kubernetes';

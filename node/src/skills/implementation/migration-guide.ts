@@ -15,11 +15,11 @@ export interface MigrationGuideOutput {
 
 export const migrationGuideSkill: Skill<MigrationGuideInput, MigrationGuideOutput> = {
   name: 'migration-guide',
-  category: SkillCategory.DEVOPS,
+  category: SkillCategory.IMPLEMENTATION,
   description: 'Guides system or data migration with assessment, planning, dry-run, execution, validation, and rollback strategies.',
   version: '1.0.0',
   async execute(input: SkillInput<MigrationGuideInput>): Promise<SkillOutput<MigrationGuideOutput>> {
-    const data = input as unknown as MigrationGuideInput;
+    const data = input.data as unknown as MigrationGuideInput;
     const start = Date.now();
     const system = data.systemName || 'target system';
     return {

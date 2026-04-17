@@ -18,7 +18,7 @@ export const codeReviewChecklistSkill: Skill<CodeReviewChecklistInput, CodeRevie
   description: 'Systematic code review checklist covering correctness, security, performance, and maintainability',
   version: '1.0.0',
   async execute(input: SkillInput<CodeReviewChecklistInput>): Promise<SkillOutput<CodeReviewChecklistOutput>> {
-    const data = input as unknown as CodeReviewChecklistInput;
+    const data = input.data as unknown as CodeReviewChecklistInput;
     const start = Date.now();
     const lang = data.language || 'TypeScript';
     const focus = data.focusAreas || ['correctness', 'security', 'performance', 'style'];

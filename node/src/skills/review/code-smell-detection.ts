@@ -4,6 +4,7 @@
  */
 
 import type { Skill, SkillInput, SkillOutput } from '../types.js';
+import { SkillCategory } from '../types.js';
 
 export interface CodeSmellDetectionInput {
   /** File paths or code snippet to analyze */
@@ -28,13 +29,13 @@ export interface CodeSmellDetectionOutput {
 
 export const codeSmellDetectionSkill: Skill<CodeSmellDetectionInput, CodeSmellDetectionOutput> = {
   name: 'code-smell-detection',
-  category: 'review',
+  category: SkillCategory.REVIEW,
   description: 'Detect and document code smells: long methods, duplication, high complexity, feature envy, dead code.',
   version: '1.0.0',
   tags: ['review', 'code-quality', 'refactoring', 'static-analysis'],
 
   async execute(input: SkillInput<CodeSmellDetectionInput>): Promise<SkillOutput<CodeSmellDetectionOutput>> {
-    const data = input as unknown as CodeSmellDetectionInput;
+    const data = input.data as unknown as CodeSmellDetectionInput;
     const start = Date.now();
     const lang = data.language ?? 'TypeScript';
     const target = data.filePaths?.join(', ') ?? 'provided code snippet';

@@ -69,7 +69,7 @@ export interface TicketBreakdownOutput {
 export const TicketBreakdownSkill: Skill<TicketBreakdownInput, TicketBreakdownOutput> = {
   name: 'ticket_breakdown',
   description: 'Epic → Story → Task 拆解：理解边界 → 分 Story → 拆 Task → 标依赖 → 设优先级 → 写验收命令',
-  category: SkillCategory.REQUIREMENTS,
+  category: SkillCategory.PLANNING,
   tags: ['planning', 'breakdown', 'ticket', 'sprint', 'epic', 'story', 'task'],
   version: '1.0.0',
 

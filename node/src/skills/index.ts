@@ -49,15 +49,7 @@ export {
   type RequirementDecompositionOutput,
 } from './requirements/requirement_decomposition.js';
 
-// Design
-export {
-  APIDesignSkill,
-  type APIDesignInput,
-  type APIDesignOutput,
-  type APIEndpoint,
-  type APIParameter,
-  type APISchema,
-} from './design/api_design.js';
+// Design (api_design.ts removed — use api-design.ts instead)
 
 // Development
 export {
@@ -84,10 +76,4 @@ export {
 } from './devops/docker_build.js';
 
 // Documentation
-export {
-  APIDocumentationSkill,
-  type APIDocumentationInput,
-  type APIDocumentationOutput,
-  type EndpointConfig,
-  type ModelConfig,
-} from './documentation/api_documentation.js';
+// api_documentation.ts removed — use api-docs.ts instead

@@ -4,6 +4,7 @@
  */
 
 import type { Skill, SkillInput, SkillOutput } from '../types.js';
+import { SkillCategory } from '../types.js';
 
 export interface CapacityPlanningInput {
   /** Service or system name */
@@ -35,13 +36,13 @@ export interface CapacityPlanningOutput {
 
 export const capacityPlanningSkill: Skill<CapacityPlanningInput, CapacityPlanningOutput> = {
   name: 'capacity-planning',
-  category: 'ops',
+  category: SkillCategory.OPS,
   description: 'Capacity planning and forecasting: baseline analysis, growth modeling, resource projection, scaling strategy.',
   version: '1.0.0',
   tags: ['ops', 'capacity', 'planning', 'forecasting', 'scalability', 'infrastructure'],
 
   async execute(input: SkillInput<CapacityPlanningInput>): Promise<SkillOutput<CapacityPlanningOutput>> {
-    const data = input as unknown as CapacityPlanningInput;
+    const data = input.data as unknown as CapacityPlanningInput;
     const start = Date.now();
     const service = data.serviceName ?? 'target service';
     const growth = data.growthRate ?? '20% YoY';

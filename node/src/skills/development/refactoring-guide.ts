@@ -18,7 +18,7 @@ export const refactoringGuideSkill: Skill<RefactoringGuideInput, RefactoringGuid
   description: 'Safe, incremental refactoring steps following Martin Fowler patterns with test-safety nets',
   version: '1.0.0',
   async execute(input: SkillInput<RefactoringGuideInput>): Promise<SkillOutput<RefactoringGuideOutput>> {
-    const data = input as unknown as RefactoringGuideInput;
+    const data = input.data as unknown as RefactoringGuideInput;
     const start = Date.now();
     const type = data.refactoringType || 'general';
     const risk = data.riskLevel || 'medium';

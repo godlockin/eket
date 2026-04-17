@@ -14,11 +14,11 @@ export interface ConfigurationManagementOutput {
 
 export const configurationManagementSkill: Skill<ConfigurationManagementInput, ConfigurationManagementOutput> = {
   name: 'configuration-management',
-  category: SkillCategory.DEVOPS,
+  category: SkillCategory.IMPLEMENTATION,
   description: 'Establishes a robust configuration management system covering env hierarchy, secrets vault, feature flags, validation, and rotation.',
   version: '1.0.0',
   async execute(input: SkillInput<ConfigurationManagementInput>): Promise<SkillOutput<ConfigurationManagementOutput>> {
-    const data = input as unknown as ConfigurationManagementInput;
+    const data = input.data as unknown as ConfigurationManagementInput;
     const start = Date.now();
     const project = data.projectName || 'project';
     return {

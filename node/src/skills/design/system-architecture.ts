@@ -19,7 +19,7 @@ export const systemArchitectureSkill: Skill<SystemArchitectureInput, SystemArchi
   description: 'Design scalable system architecture covering components, communication patterns, data flow, and deployment topology.',
   version: '1.0.0',
   async execute(input: SkillInput<SystemArchitectureInput>): Promise<SkillOutput<SystemArchitectureOutput>> {
-    const data = input as unknown as SystemArchitectureInput;
+    const data = input.data as unknown as SystemArchitectureInput;
     const start = Date.now();
     const requirements = data.requirements ?? [];
     const scale = data.scale ?? 'medium';

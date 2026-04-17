@@ -55,7 +55,7 @@ export interface IncidentRunbookOutput {
 export const IncidentRunbookSkill: Skill<IncidentRunbookInput, IncidentRunbookOutput> = {
   name: 'incident_runbook',
   description: '故障响应手册：告警确认 → 影响评估 → 应急处置 → 根因分析 → 修复上线 → Postmortem',
-  category: SkillCategory.DEVOPS,
+  category: SkillCategory.OPS,
   tags: ['ops', 'incident', 'runbook', 'postmortem', 'sre', 'on-call'],
   version: '1.0.0',
 

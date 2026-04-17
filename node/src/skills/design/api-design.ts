@@ -19,7 +19,7 @@ export const apiDesignSkill: Skill<ApiDesignInput, ApiDesignOutput> = {
   description: 'Design well-structured REST or GraphQL APIs following industry best practices for versioning, security, and developer experience.',
   version: '1.0.0',
   async execute(input: SkillInput<ApiDesignInput>): Promise<SkillOutput<ApiDesignOutput>> {
-    const data = input as unknown as ApiDesignInput;
+    const data = input.data as unknown as ApiDesignInput;
     const start = Date.now();
     const apiType = data.apiType ?? 'REST';
     const resources = data.resources ?? [];

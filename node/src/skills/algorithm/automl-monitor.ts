@@ -36,7 +36,7 @@ export interface AutoMLMonitorOutput {
 export const autoMLMonitorSkill: Skill<AutoMLMonitorInput, AutoMLMonitorOutput> = {
   name: 'algorithm/automl-monitor',
   description: 'AutoResearch 闭环：8 步内外任务并行，线上监控 + 自动优化 + 数据飞轮',
-  category: SkillCategory.DATA,
+  category: SkillCategory.ALGORITHM,
   tags: ['algorithm', 'ml', 'automl', 'monitor', 'drift', 'ab-test', 'data-flywheel'],
   version: '1.0.0',
 

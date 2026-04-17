@@ -14,11 +14,11 @@ export interface FineTuningGuideOutput {
 
 export const fineTuningGuideSkill: Skill<FineTuningGuideInput, FineTuningGuideOutput> = {
   name: 'fine-tuning-guide',
-  category: SkillCategory.DATA,
+  category: SkillCategory.LLM,
   description: 'LLM fine-tuning guide covering data preparation, base model selection, PEFT/LoRA setup, training, evaluation, and deployment.',
   version: '1.0.0',
   async execute(input: SkillInput<FineTuningGuideInput>): Promise<SkillOutput<FineTuningGuideOutput>> {
-    const data = input as unknown as FineTuningGuideInput;
+    const data = input.data as unknown as FineTuningGuideInput;
     const start = Date.now();
     const task = data.taskType || 'target task';
     return {

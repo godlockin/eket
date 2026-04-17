@@ -35,7 +35,7 @@ export const secretScanningSkill: Skill<SecretScanningInput, SecretScanningOutpu
   tags: ['security', 'secret-scanning', 'credentials', 'compliance', 'devsecops'],
 
   async execute(input: SkillInput<SecretScanningInput>): Promise<SkillOutput<SecretScanningOutput>> {
-    const data = input as unknown as SecretScanningInput;
+    const data = input.data as unknown as SecretScanningInput;
     const start = Date.now();
     const target = data.repoPath ?? 'repository';
     const mode = data.scanMode ?? 'full-repo';

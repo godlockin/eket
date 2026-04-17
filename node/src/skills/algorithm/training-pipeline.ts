@@ -27,7 +27,7 @@ export interface TrainingPipelineOutput {
 export const trainingPipelineSkill: Skill<TrainingPipelineInput, TrainingPipelineOutput> = {
   name: 'algorithm/training-pipeline',
   description: '训练代码编写：7 步规范流程，确保代码模块化、可复现、有完整实验追踪',
-  category: SkillCategory.DATA,
+  category: SkillCategory.ALGORITHM,
   tags: ['algorithm', 'ml', 'training', 'pipeline', 'experiment'],
   version: '1.0.0',
 
