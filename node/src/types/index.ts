@@ -627,7 +627,7 @@ export enum EketErrorCode {
   FILE_READ_ERROR = 'FILE_READ_ERROR',
 }
 
-export interface EketError {
+export interface EketErrorShape {
   code: string;
   message: string;
   context?: Record<string, unknown>;
