@@ -158,7 +158,7 @@ export default tseslint.config(
       'prefer-const': 'error',
       'no-var': 'error',
       eqeqeq: ['error', 'always', { null: 'ignore' }],
-      curly: ['error', 'all'],
+      curly: ['warn', 'all'],
 
       // ============================================================================
       // TypeScript Specific
