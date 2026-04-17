@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "eket://protocol/message",
+  "title": "Message Queue Message",
+  "description": "Node-to-node messages in shared/message_queue/",
+  "type": "object",
+  "required": ["id", "timestamp", "from", "to", "type", "payload"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^msg_[0-9]{8}_[0-9]{6}_[0-9]{3}$",
+      "description": "msg_YYYYMMDD_HHMMSS_NNN (P0-8: 900×86400 空间)"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 UTC"
+    },
+    "from": {
+      "type": "string",
+      "description": "发送方 node_id"
+    },
+    "to": {
+      "type": "string",
+      "description": "接收方 node_id 或 'broadcast' / 'master' / 'slavers'"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "task_assigned",
+        "task_claimed",
+        "analysis_review_request",
+        "pr_review_request",
+        "help_request",
+        "status_update",
+        "blocker_alert",
+        "heartbeat_check",
+        "acknowledgment"
+      ]
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["P0", "P1", "P2", "P3"],
+      "default": "P1",
+      "description": "与 ticket.meta.priority 保持一致（大写）"
+    },
+    "payload": {
+      "type": "object",
+      "description": "按 type 不同，payload 结构不同。各 type 的 payload schema 见 protocol/schemas/payloads/"
+    },
+    "ttl_seconds": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 86400,
+      "description": "超时后归档"
+    }
+  },
+  "additionalProperties": false
+}
