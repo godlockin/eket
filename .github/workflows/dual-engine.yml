@@ -1,0 +1,54 @@
+name: dual-engine-equivalence
+
+on:
+  push:
+    branches: [miao, testing, main]
+  pull_request:
+    branches: [miao, testing, main]
+
+jobs:
+  dual-engine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: node/package-lock.json
+
+      - name: Install deps (node/)
+        working-directory: node
+        run: npm ci
+
+      - name: Build node/ (produces dist/ consumed by node-driver.mjs)
+        working-directory: node
+        run: npm run build
+
+      - name: Install shell test dependencies
+        # jq is used by lib/state/writer.sh; shellcheck to lint fixture scripts.
+        run: sudo apt-get update && sudo apt-get install -y jq shellcheck
+
+      - name: Lint dual-engine scripts (shellcheck, best-effort)
+        continue-on-error: true
+        run: |
+          find tests/dual-engine lib/state -name '*.sh' -print0 \
+            | xargs -0 shellcheck -x -e SC1091
+
+      - name: Run dual-engine equivalence suite (real, non-skeleton)
+        # run-all.sh without --ci runs every scenario for real; CI fails on any byte diff
+        run: bash tests/dual-engine/run-all.sh
+
+      - name: Upload fixture work dirs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dual-engine-workdirs
+          # framework.sh uses /tmp/eket-dual-engine-XXXXXX; best-effort collect
+          path: /tmp/eket-dual-engine-*
+          retention-days: 7
+          if-no-files-found: ignore

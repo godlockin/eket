@@ -48,6 +48,17 @@ validation:
   enabled: true
   strict_mode: false
 
+# ==================== Master 白名单 ====================
+# scripts/check-ticket-immutability.sh 读取此列表
+# 出现在列表中的作者可直接修改 priority / acceptance_criteria / blocked_by /
+# parent_epic / agent_type / estimate_hours 等"不可变字段"；其它作者必须走
+# Master Override 流程（commit message 含 [master-override]）。
+#
+# 用 GitHub handle 或 git user.email 均可，脚本两者都会匹配。
+master_emails:
+  - stevenchenworking@gmail.com
+  - godlockin
+
 # ==================== OpenCLAW 集成配置 ====================
 
 openclaw:

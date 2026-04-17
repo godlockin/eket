@@ -1,0 +1,66 @@
+name: pr-reviewer-check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  block-self-loop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Block self-loop review (dispatcher must not equal author)
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          set -e
+
+          if echo "$PR_LABELS" | grep -qE '"(solo-dev|bot-pr)"'; then
+            echo "✓ label exempts self-loop check"
+            exit 0
+          fi
+
+          ticket_ids=$(echo "$PR_BODY" | grep -oE '(FEAT|TASK|FIX|TEST|DEPL|T-DESIGN|EPIC)-[0-9]+' | sort -u)
+          if [[ -z "$ticket_ids" ]]; then
+            echo "✓ no ticket reference (pr-body-check will catch missing references)"
+            exit 0
+          fi
+
+          fail=0
+          for tid in $ticket_ids; do
+            # 查找 ticket 文件
+            ticket_file=$(find jira/tickets jira/epics -maxdepth 4 -name "${tid}.md" -type f 2>/dev/null | head -1)
+            if [[ -z "$ticket_file" ]]; then
+              echo "⚠ ticket $tid: file not found, skip (maybe new ticket in this PR)"
+              continue
+            fi
+
+            dispatched_by=$(grep -E '^dispatched_by:' "$ticket_file" | head -1 | sed -E 's/^dispatched_by:[[:space:]]*//; s/[[:space:]]*$//; s/^["'\'']//; s/["'\'']$//')
+            if [[ -z "$dispatched_by" ]]; then
+              echo "⚠ ticket $tid: no 'dispatched_by:' field (Master 未按规范记录派发人，EXPERT-PANEL-PLAYBOOK.md §3.2)"
+              fail=1
+              continue
+            fi
+
+            if [[ "$dispatched_by" == "$PR_AUTHOR" ]]; then
+              echo "✗ ticket $tid: PR author '$PR_AUTHOR' == dispatched_by '$dispatched_by'"
+              echo "   自我闭环审查违规 — MASTER-RULES.md §2.4"
+              fail=1
+            else
+              echo "✓ ticket $tid: dispatched_by='$dispatched_by' ≠ author='$PR_AUTHOR'"
+            fi
+          done
+
+          if [[ $fail -ne 0 ]]; then
+            echo ""
+            echo "豁免: label 'solo-dev' 或 'bot-pr'"
+            echo "修正: Master 必须在 ticket 里写 dispatched_by 字段且不是 Slaver 本人"
+            exit 1
+          fi

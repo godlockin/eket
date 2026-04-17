@@ -1,0 +1,35 @@
+name: debrief-check
+
+on:
+  pull_request:
+    branches: [miao, testing, main]
+  push:
+    branches: [miao, testing, main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # need full history so BASE ref is reachable
+
+      - name: Enforce debrief policy on done-transitions
+        shell: bash
+        run: |
+          chmod +x scripts/check-debrief.sh
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+            HEAD="${{ github.event.pull_request.head.sha }}"
+          else
+            # push event: compare against the commit before this push
+            BASE="${{ github.event.before }}"
+            HEAD="${{ github.event.after }}"
+            # first push to a branch has before=0000...; fall back to HEAD~1
+            if [[ "$BASE" =~ ^0+$ ]]; then
+              BASE="HEAD~1"
+            fi
+          fi
+          scripts/check-debrief.sh "$BASE" "$HEAD"
