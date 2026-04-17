@@ -5,6 +5,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { enqueueMessage } from '../core/state/writer.js';
 import { parseSimpleYAML } from '../utils/yaml-parser.js';
 
 /**
@@ -174,24 +175,19 @@ export async function sendClaimMessage(
   ticketId: string,
   role: string
 ): Promise<void> {
-  const queueDir = path.join(projectRoot, '.eket', 'data', 'queue');
-  fs.mkdirSync(queueDir, { recursive: true });
-
-  const messageId = `msg_${Date.now()}_${ticketId}`;
-  const messageFile = path.join(queueDir, `${messageId}.json`);
-
-  const message = {
-    id: messageId,
-    timestamp: new Date().toISOString(),
-    type: 'task_claimed',
+  // P0-1/2: 使用 writer 的单一入口，统一 ID 格式 + schema 校验 + 锁 + 审计。
+  // projectRoot 通过 EKET_ROOT 提示 writer（writer 自身有 git-toplevel 回退）。
+  if (!process.env.EKET_ROOT) {
+    process.env.EKET_ROOT = projectRoot;
+  }
+  await enqueueMessage({
     from: `agent_${role}`,
     to: 'coordinator',
+    type: 'task_claimed',
     payload: {
       ticket_id: ticketId,
-      role: role,
+      role,
       status: 'in_progress',
     },
-  };
-
-  fs.writeFileSync(messageFile, JSON.stringify(message, null, 2));
+  });
 }

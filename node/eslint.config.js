@@ -11,12 +11,23 @@
  * 6. Naming: consistent conventions
  */
 
+import { createRequire } from 'module';
+
 import eslint from '@eslint/js';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
 import tseslint from 'typescript-eslint';
 import importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
+
+const require = createRequire(import.meta.url);
+const noDirectSharedFsWrite = require('./eslint-rules/no-direct-shared-fs-write.js');
+
+const eketPlugin = {
+  rules: {
+    'no-direct-shared-fs-write': noDirectSharedFsWrite,
+  },
+};
 
 export default tseslint.config(
   {
@@ -192,6 +203,24 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       'import/order': 'off',
+    },
+  },
+  {
+    // EKET shared-state write guard — enforced on all TS sources under node/src
+    // except the legitimate writer, sandboxed skills adapters, and test files.
+    files: ['src/**/*.ts'],
+    ignores: [
+      'src/core/state/**',
+      'src/skills/**',
+      '**/*.test.ts',
+      '**/*.spec.ts',
+      '**/tests/**',
+    ],
+    plugins: {
+      eket: eketPlugin,
+    },
+    rules: {
+      'eket/no-direct-shared-fs-write': 'error',
     },
   },
 );

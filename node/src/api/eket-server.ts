@@ -27,6 +27,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 
 
 import { createRedisClient, type RedisClient } from '../core/redis-client.js';
+import { genMessageId } from '../core/state/writer.js';
 import type { Message } from '../types/index.js';
 import { logger } from '../utils/logger.js';
 
@@ -872,9 +873,9 @@ export class EketServer {
             return;
           }
 
-          // Create message (simplified version)
+          // Create message (P0-1/2: 统一 ID 格式)
           const message: Message = {
-            id: `msg_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+            id: genMessageId(),
             timestamp: new Date().toISOString(),
             from: body.from,
             to: body.to,

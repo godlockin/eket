@@ -28,7 +28,7 @@ export class SlaverHeartbeatManager {
   private currentStatus: HeartbeatStatus = 'offline';
   private currentTaskId?: string;
   private capabilities: string[] = [];
-  private maxConcurrent: number = 1;
+  private maxConcurrent = 1;
 
   constructor(slaverId: string, config: HeartbeatConfig = {}) {
     this.slaverId = slaverId;

@@ -13,9 +13,12 @@
  * 6. 更新心跳
  */
 
-import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { Command } from 'commander';
+
+import { updateHeartbeat as stateUpdateHeartbeat, writeProjectStatus } from '../core/state/index.js';
 import { printError, logInfo, logWarning } from '../utils/error-handler.js';
 
 // Color codes
@@ -58,8 +61,8 @@ function getMasterInstanceInfo(): { instanceId: string; role: string } {
     const instanceIdMatch = content.match(/instance_id:\s*(\S+)/);
     const roleMatch = content.match(/role:\s*(\S+)/);
 
-    if (instanceIdMatch) instanceId = instanceIdMatch[1];
-    if (roleMatch) role = roleMatch[1];
+    if (instanceIdMatch) {instanceId = instanceIdMatch[1];}
+    if (roleMatch) {role = roleMatch[1];}
   }
 
   return { instanceId, role };
@@ -291,8 +294,8 @@ function checkSlaverStatus(): void {
     const statusMatch = content.match(/status:\s*(\S+)/);
     const status = statusMatch ? statusMatch[1] : 'unknown';
 
-    if (status === 'idle') idleCount++;
-    if (status === 'busy' || status === 'working' || status === 'active') busyCount++;
+    if (status === 'idle') {idleCount++;}
+    if (status === 'busy' || status === 'working' || status === 'active') {busyCount++;}
 
     // 检查超时
     const stat = fs.statSync(filePath);
@@ -315,65 +318,43 @@ function checkSlaverStatus(): void {
 /**
  * 更新项目状态
  */
-function updateProjectStatus(): void {
+async function updateProjectStatus(): Promise<void> {
   console.log(`${COLORS.cyan}[CHECK]${COLORS.reset}`, new Date().toISOString().slice(0, 19).replace('T', ' '), '- 更新项目状态...');
 
-  const stateDir = 'jira/state';
-  fs.mkdirSync(stateDir, { recursive: true });
-
-  const now = new Date().toISOString();
-
-  // 更新项目状态报告
-  const statusContent = `# 项目状态报告
-# 生成于：${now}
-
-last_updated: ${now}
-
-slavers:
-  active: []
-  idle: []
-  busy: []
-
-cards:
-  milestones: []
-  sprints: []
-  epics: []
-  tickets: []
-
-progress:
-  sprint_target: null
-  deadline: null
-  days_remaining: null
-  completed: 0
-  total: 0
-  completion_rate: 0%
-
-risks: []
-action_items: []
-`;
-
-  fs.writeFileSync(path.join(stateDir, 'project-status.yml'), statusContent, 'utf-8');
+  await writeProjectStatus({
+    slavers: { active: [], idle: [], busy: [] },
+    cards: { milestones: [], sprints: [], epics: [], tickets: [] },
+    progress: {
+      sprint_target: null,
+      deadline: null,
+      days_remaining: null,
+      completed: 0,
+      total: 0,
+    },
+    risks: [],
+    action_items: [],
+  });
   logInfo('项目状态已更新');
 }
 
 /**
- * 更新心跳
+ * 更新心跳 — 统一走 core/state 层
+ *
+ * 共享核心字段 (role/status/timestamp/host/pid) + Master 专属 extras
+ * (pending_prs / pending_arbitrations / pending_human_decisions)
  */
-function updateHeartbeat(instanceId: string, status: MasterStatus): void {
-  const stateDir = '.eket/state';
-  fs.mkdirSync(stateDir, { recursive: true });
-
-  const now = new Date().toISOString();
-  const heartbeatContent = `# Master 心跳
-instance_id: ${instanceId}
-last_check: ${now}
-status: ${status.status}
-pending_prs: ${status.pendingPrs}
-pending_arbitrations: ${status.pendingArbitrations}
-pending_human_decisions: ${status.pendingHumanDecisions}
-`;
-
-  fs.writeFileSync(path.join(stateDir, `master_${instanceId}_heartbeat.yml`), heartbeatContent, 'utf-8');
+async function updateHeartbeat(instanceId: string, status: MasterStatus): Promise<void> {
+  await stateUpdateHeartbeat({
+    role: 'master',
+    instanceId,
+    status: status.status as string,
+    currentTask: null,
+    extras: {
+      pending_prs: status.pendingPrs,
+      pending_arbitrations: status.pendingArbitrations,
+      pending_human_decisions: status.pendingHumanDecisions,
+    },
+  });
 }
 
 /**
@@ -395,7 +376,7 @@ function showPollSummary(status: MasterStatus, config: PollConfig): void {
 /**
  * 执行一轮检查
  */
-function runSingleCheck(instanceId: string): MasterStatus {
+async function runSingleCheck(instanceId: string): Promise<MasterStatus> {
   const status = checkMasterStatus();
 
   checkPrQueue();
@@ -406,9 +387,9 @@ function runSingleCheck(instanceId: string): MasterStatus {
   console.log('');
   checkSlaverStatus();
   console.log('');
-  updateProjectStatus();
+  await updateProjectStatus();
 
-  updateHeartbeat(instanceId, status);
+  await updateHeartbeat(instanceId, status);
 
   return status;
 }
@@ -434,7 +415,7 @@ async function runPollLoop(config: PollConfig): Promise<void> {
     console.log('════════════════════════════════════════════════════════════════');
     console.log('');
 
-    const status = runSingleCheck(instanceId);
+    const status = await runSingleCheck(instanceId);
 
     // 根据状态调整轮询间隔
     let currentInterval = config.pollInterval;
@@ -515,7 +496,7 @@ Related Commands:
 
       if (config.once) {
         const { instanceId } = getMasterInstanceInfo();
-        const status = runSingleCheck(instanceId);
+        const status = await runSingleCheck(instanceId);
         showPollSummary(status, config);
       } else {
         await runPollLoop(config);

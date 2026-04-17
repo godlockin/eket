@@ -151,7 +151,7 @@ export interface HeartbeatReport {
 
 function parseTimestamp(content: string, field: string): Date | null {
   const match = content.match(new RegExp(`\\*\\*${field}\\*\\*:\\s*(\\S+)`));
-  if (!match || !match[1] || match[1].startsWith('<!--')) return null;
+  if (!match?.[1] || match[1].startsWith('<!--')) {return null;}
   const d = new Date(match[1]);
   return isNaN(d.getTime()) ? null : d;
 }
@@ -164,7 +164,7 @@ function parseTicketFile(filePath: string): TicketSummary | null {
     // Extract ID from filename or H1
     let id = filename;
     const h1Match = content.match(/^#\s+([A-Z]+-\d+)/m);
-    if (h1Match) id = h1Match[1] ?? filename;
+    if (h1Match) {id = h1Match[1] ?? filename;}
 
     // Extract title
     const titleMatch = content.match(/^#\s+[A-Z]+-\d+[:\s]+(.+)/m);
@@ -189,7 +189,7 @@ function parseTicketFile(filePath: string): TicketSummary | null {
       const lines = (blockedByMatch[1] ?? '').match(/-\s*(\S+)/g) || [];
       for (const line of lines) {
         const dep = line.replace(/^-\s*/, '').trim();
-        if (dep) blockedBy.push(dep);
+        if (dep) {blockedBy.push(dep);}
       }
     }
 
@@ -209,7 +209,7 @@ function parseTicketFile(filePath: string): TicketSummary | null {
 }
 
 function findTickets(ticketsDir: string): TicketSummary[] {
-  if (!fs.existsSync(ticketsDir)) return [];
+  if (!fs.existsSync(ticketsDir)) {return [];}
 
   const tickets: TicketSummary[] = [];
   try {
@@ -220,9 +220,9 @@ function findTickets(ticketsDir: string): TicketSummary[] {
       }
       const filePath = path.join(ticketsDir, entry);
       const stat = fs.statSync(filePath);
-      if (!stat.isFile()) continue;
+      if (!stat.isFile()) {continue;}
       const ticket = parseTicketFile(filePath);
-      if (ticket) tickets.push(ticket);
+      if (ticket) {tickets.push(ticket);}
     }
   } catch {
     // ignore read errors
@@ -297,7 +297,7 @@ export function parseTicketTimeline(
 
   for (const line of lines) {
     if (!line.trim().startsWith('|')) {
-      if (inTable) break;
+      if (inTable) {break;}
       continue;
     }
 
@@ -308,7 +308,7 @@ export function parseTicketTimeline(
       continue;
     }
 
-    if (!inTable) continue;
+    if (!inTable) {continue;}
 
     // Skip separator line (|---|---|...|)
     if (/^\|[\s|:-]+\|$/.test(line.trim())) {
@@ -322,7 +322,7 @@ export function parseTicketTimeline(
     }
 
     const match = tableRowRegex.exec(line);
-    if (!match) continue;
+    if (!match) {continue;}
 
     const actor = (match[2] ?? '').trim();
     const timeStr = (match[3] ?? '').trim();
@@ -375,7 +375,7 @@ export function parseTicketTimeline(
 }
 
 function buildTicketTimelines(ticketsDir: string): TicketTimeline[] {
-  if (!fs.existsSync(ticketsDir)) return [];
+  if (!fs.existsSync(ticketsDir)) {return [];}
 
   const timelines: TicketTimeline[] = [];
   try {
@@ -391,7 +391,7 @@ function buildTicketTimelines(ticketsDir: string): TicketTimeline[] {
 
         let ticketId = filename;
         const h1Match = content.match(/^#\s+([A-Z]+-\d+)/m);
-        if (h1Match) ticketId = h1Match[1] ?? filename;
+        if (h1Match) {ticketId = h1Match[1] ?? filename;}
 
         const titleMatch = content.match(/^#\s+[A-Z]+-\d+[:\s]+(.+)/m);
         const title = titleMatch ? (titleMatch[1] ?? '').trim() : filename;
@@ -435,11 +435,11 @@ export function generateReport(projectRoot: string): HeartbeatReport {
   const priorityGroups: Record<string, TicketSummary[]> = { p0: [], p1: [], p2: [], p3: [], unscheduled: [] };
   for (const t of activeTickets) {
     const p = t.priority.toUpperCase();
-    if (p === 'P0') priorityGroups['p0']!.push(t);
-    else if (p === 'P1') priorityGroups['p1']!.push(t);
-    else if (p === 'P2') priorityGroups['p2']!.push(t);
-    else if (p === 'P3') priorityGroups['p3']!.push(t);
-    else priorityGroups['unscheduled']!.push(t);
+    if (p === 'P0') {priorityGroups['p0']!.push(t);}
+    else if (p === 'P1') {priorityGroups['p1']!.push(t);}
+    else if (p === 'P2') {priorityGroups['p2']!.push(t);}
+    else if (p === 'P3') {priorityGroups['p3']!.push(t);}
+    else {priorityGroups['unscheduled']!.push(t);}
   }
 
   // ── Q2: Slaver Status ─────────────────────────────────────────────────────
@@ -483,7 +483,7 @@ export function generateReport(projectRoot: string): HeartbeatReport {
   // 慢任务检测
   const now = Date.now();
   const slowTasks = inFlightTickets.filter((t) => {
-    if (!t.startedAt) return false;
+    if (!t.startedAt) {return false;}
     return (now - t.startedAt.getTime()) / 60000 > SLOW_TASK_THRESHOLD_MINUTES;
   });
 
@@ -542,7 +542,7 @@ export function generateReport(projectRoot: string): HeartbeatReport {
   }
 
   if (staleSlavers.length > 0) {
-    if (health !== 'RED') health = 'YELLOW';
+    if (health !== 'RED') {health = 'YELLOW';}
     healthReasons.push(`${staleSlavers.length} 个 Slaver 超时无响应`);
     recommendations.push(
       `检查以下 ticket 的 Slaver 状态: ${staleSlavers.map((s) => s.ticketId).join(', ')}`
@@ -550,7 +550,7 @@ export function generateReport(projectRoot: string): HeartbeatReport {
   }
 
   if (slowTasks.length > 0) {
-    if (health !== 'RED') health = 'YELLOW';
+    if (health !== 'RED') {health = 'YELLOW';}
     healthReasons.push(`${slowTasks.length} 个任务超过 ${SLOW_TASK_THRESHOLD_MINUTES} 分钟未完成`);
     recommendations.push(
       `检查以下慢任务进展: ${slowTasks.map((t) => t.id).join(', ')}`
@@ -558,7 +558,7 @@ export function generateReport(projectRoot: string): HeartbeatReport {
   }
 
   if (waitingOnMaster.length > 0) {
-    if (health === 'GREEN') health = 'YELLOW';
+    if (health === 'GREEN') {health = 'YELLOW';}
     healthReasons.push(`${waitingOnMaster.length} 个 ticket 等待 Master 操作`);
     recommendations.push(
       `处理等待 Master 的 ticket: ${waitingOnMaster.map((t) => t.id).join(', ')}`
@@ -567,12 +567,12 @@ export function generateReport(projectRoot: string): HeartbeatReport {
 
   // busyRatio >= 0.8 → YELLOW（80% Slaver 满载阈值，需关注扩容）
   if (busyRatio >= 0.8) {
-    if (health === 'GREEN') health = 'YELLOW';
+    if (health === 'GREEN') {health = 'YELLOW';}
     healthReasons.push(`${Math.round(busyRatio * 100)}% Slaver 满载（busyRatio=${busyRatio.toFixed(2)}），建议扩容`);
   }
 
   if ((priorityGroups['p0'] ?? []).length > 0) {
-    if (health === 'GREEN') health = 'YELLOW';
+    if (health === 'GREEN') {health = 'YELLOW';}
     healthReasons.push(`${priorityGroups['p0']!.length} 个 P0 ticket 待执行`);
     recommendations.push(`优先处理 P0 ticket: ${priorityGroups['p0']!.map((t) => t.id).join(', ')}`);
   }
@@ -722,7 +722,7 @@ export function printTimelines(report: HeartbeatReport): void {
   }
 
   for (const tl of report.ticketTimelines) {
-    if (tl.events.length === 0) continue;
+    if (tl.events.length === 0) {continue;}
 
     const totalStr = tl.totalElapsedMinutes != null
       ? `${tl.currentStatus}, ${tl.totalElapsedMinutes}min total`

@@ -8,6 +8,7 @@ import * as path from 'path';
 
 import { Command } from 'commander';
 
+import { enqueueMessage } from '../core/state/writer.js';
 import type { Result } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
@@ -531,25 +532,19 @@ async function sendPRNotification(prData: {
     return;
   }
 
-  const queueDir = path.join(projectRoot, '.eket', 'data', 'queue');
-  fs.mkdirSync(queueDir, { recursive: true });
-
-  const messageId = `msg_${Date.now()}_pr_${prData.number}`;
-  const messageFile = path.join(queueDir, `${messageId}.json`);
-
-  const message = {
-    id: messageId,
-    timestamp: new Date().toISOString(),
-    type: 'pr_review_request' as const,
+  // P0-1/2: 使用 writer 的单一入口；走 shared/message_queue/inbox/ + schema 校验。
+  if (!process.env.EKET_ROOT) {
+    process.env.EKET_ROOT = projectRoot;
+  }
+  await enqueueMessage({
     from: 'system',
     to: 'coordinator',
+    type: 'pr_review_request',
     payload: {
       pr_number: prData.number,
       pr_url: prData.htmlUrl,
       pr_title: prData.title,
       status: 'pending_review',
     },
-  };
-
-  fs.writeFileSync(messageFile, JSON.stringify(message, null, 2));
+  });
 }

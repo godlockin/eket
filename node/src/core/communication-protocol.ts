@@ -25,6 +25,7 @@ import { EketError, EketErrorCode } from '../types/index.js';
 
 import { createMessageQueue, type MessageQueue } from './message-queue.js';
 import { createShardingManager, type ShardingManager } from './sharding.js';
+import { genMessageId } from './state/writer.js';
 
 /**
  * 消息回调类型
@@ -527,10 +528,11 @@ export class CommunicationProtocol {
   }
 
   /**
-   * 生成消息 ID
+   * 生成消息 ID（统一格式 msg_YYYYMMDD_HHMMSS_NNN）
+   * P0-1/2: 与 writer.genMessageId 共用 ID 空间
    */
   private generateMessageId(): string {
-    return `msg_${this.config.instanceId}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    return genMessageId();
   }
 
   /**

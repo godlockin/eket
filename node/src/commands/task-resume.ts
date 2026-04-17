@@ -42,12 +42,12 @@ function formatResumeInfo(row: {
       savedAt?: string;
     };
     const parts: string[] = [];
-    if (state.lastAction) parts.push(`  最后操作: ${state.lastAction}`);
+    if (state.lastAction) {parts.push(`  最后操作: ${state.lastAction}`);}
     if (state.filesChanged && state.filesChanged.length > 0) {
       parts.push(`  已变更文件: ${state.filesChanged.join(', ')}`);
     }
-    if (state.notes) parts.push(`  备注: ${state.notes}`);
-    if (state.savedAt) parts.push(`  保存时间: ${state.savedAt}`);
+    if (state.notes) {parts.push(`  备注: ${state.notes}`);}
+    if (state.savedAt) {parts.push(`  保存时间: ${state.savedAt}`);}
     stateInfo = parts.join('\n');
   } catch {
     stateInfo = `  state_json: ${row.state_json}`;

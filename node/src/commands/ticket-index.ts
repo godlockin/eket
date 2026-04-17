@@ -10,6 +10,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { Result, EketErrorClass, EketErrorCode } from '../types/index.js';
 
 interface Ticket {
@@ -77,7 +78,7 @@ async function rebuildIndex(jiraDir: string): Promise<Result<void>> {
 
   for (const type of ticketTypes) {
     const typeDir = path.join(ticketsDir, type);
-    if (!fs.existsSync(typeDir)) continue;
+    if (!fs.existsSync(typeDir)) {continue;}
 
     const files = fs.readdirSync(typeDir).filter(f => f.endsWith('.md'));
     for (const file of files) {

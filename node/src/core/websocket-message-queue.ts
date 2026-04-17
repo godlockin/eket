@@ -9,7 +9,6 @@
  * - Claude Code `sessions-websocket.ts` (WebSocket 通信层)
  */
 
-import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -24,6 +23,7 @@ import {
   type RawData,
   type WebSocketMessage,
 } from './sessions-websocket.js';
+import { genMessageId } from './state/writer.js';
 
 // ============================================================================
 // Types
@@ -433,11 +433,10 @@ export class WebSocketMessageQueue {
   }
 
   /**
-   * 生成消息 ID (使用加密安全的随机数生成器)
+   * 生成消息 ID (P0-1/2: 统一格式 msg_YYYYMMDD_HHMMSS_NNN)
    */
   private generateMessageId(): string {
-    const randomBytes = crypto.randomBytes(6).toString('hex');
-    return `msg_${Date.now()}_${randomBytes}`;
+    return genMessageId();
   }
 }
 

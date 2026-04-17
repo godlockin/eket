@@ -5,9 +5,9 @@
  * 使用静态模板（非 LLM）确保 TypeScript 编译通过。
  */
 
+import { existsSync } from 'fs';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { existsSync } from 'fs';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -33,11 +33,11 @@ export interface AutoSkill {
 
 export function inferCategory(summary: string): string {
   const lower = summary.toLowerCase();
-  if (lower.includes('zod') || lower.includes('schema') || lower.includes('validate')) return 'requirements';
-  if (lower.includes('test') || lower.includes('hook') || lower.includes('assert')) return 'testing';
-  if (lower.includes('ci') || lower.includes('deploy') || lower.includes('infra') || lower.includes('docker')) return 'devops';
-  if (lower.includes('design') || lower.includes('architect') || lower.includes('interface')) return 'design';
-  if (lower.includes('doc') || lower.includes('readme')) return 'documentation';
+  if (lower.includes('zod') || lower.includes('schema') || lower.includes('validate')) {return 'requirements';}
+  if (lower.includes('test') || lower.includes('hook') || lower.includes('assert')) {return 'testing';}
+  if (lower.includes('ci') || lower.includes('deploy') || lower.includes('infra') || lower.includes('docker')) {return 'devops';}
+  if (lower.includes('design') || lower.includes('architect') || lower.includes('interface')) {return 'design';}
+  if (lower.includes('doc') || lower.includes('readme')) {return 'documentation';}
   return 'development';
 }
 
@@ -91,7 +91,7 @@ export default ${varName};
 `;
 
   const dir = join(repoRoot, 'node', 'src', 'skills', category);
-  if (!existsSync(dir)) await mkdir(dir, { recursive: true });
+  if (!existsSync(dir)) {await mkdir(dir, { recursive: true });}
   const filePath = join(dir, `auto-${id}.ts`);
   await writeFile(filePath, code, 'utf-8');
 

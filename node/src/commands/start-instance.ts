@@ -12,8 +12,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { createMasterElection, type MasterElection } from '../core/master-election.js';
-import { createRedisClient } from '../core/redis-client.js';
 import { loadMindset, buildMasterContext, buildSlaverContext, injectSystemPrompt } from '../core/mindset-loader.js';
+import { createRedisClient } from '../core/redis-client.js';
 import { EketError, EketErrorCode, Result } from '../types/index.js';
 
 // ============================================================================

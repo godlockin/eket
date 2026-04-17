@@ -6,8 +6,9 @@
  * @module openclaw-gateway
  */
 
-import express, { Express, Request, Response, NextFunction } from 'express';
 import http from 'http';
+
+import express, { Express, Request, Response, NextFunction } from 'express';
 
 import { authMiddleware } from './middleware/auth.js';
 import { AgentRouter } from './routes/agent.js';

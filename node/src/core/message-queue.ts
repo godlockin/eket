@@ -10,10 +10,12 @@ import { OptimizedFileQueueManager } from '../core/optimized-file-queue.js';
 import { RedisClient } from '../core/redis-client.js';
 import type { Message, ProgressReport, Result, SelfCheckItem } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
-import { SLAVER_HARD_RULES } from './slaver-rules.js';
+
 
 import { writeToMailbox as writeAgentMailbox } from './agent-mailbox.js';
 import { createRetryExecutor, type RetryExecutor } from './circuit-breaker.js';
+import { SLAVER_HARD_RULES } from './slaver-rules.js';
+import { genMessageId } from './state/writer.js';
 
 export interface MessageQueueConfig {
   mode: 'redis' | 'file' | 'auto';
@@ -372,10 +374,10 @@ export function createMessageQueue(config?: Partial<MessageQueueConfig>): Hybrid
 }
 
 /**
- * 生成消息 ID
+ * 生成消息 ID（代理到 writer.genMessageId，P0-1/2 统一 ID 空间）
  */
 export function generateMessageId(): string {
-  return `msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  return genMessageId();
 }
 
 /**

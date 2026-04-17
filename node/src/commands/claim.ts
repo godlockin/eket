@@ -12,13 +12,14 @@ import { Command } from 'commander';
 import ora from 'ora';
 
 import { createInstanceRegistry } from '../core/instance-registry.js';
+import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
+import { transitionTicket } from '../core/state/index.js';
 import { createTaskAssigner, type AssignmentResult } from '../core/task-assigner.js';
 import type { Instance, Ticket } from '../types/index.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
-import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
 import {
   loadConfig,
   getTickets,
@@ -86,27 +87,18 @@ async function assignTaskWithRegistry(
 }
 
 /**
- * 更新任务状态
+ * 更新任务状态 — 统一走 core/state 写入层
+ *
+ * 历史遗留：旧版本直接 `fs.readFileSync` + 正则替换 `**状态**`（中文），
+ * 但 writer.ts/writer.sh 的字段名契约是英文 `**Status**`，两者不兼容导致
+ * 新旧 ticket 混布时状态更新丢失。此处统一改走 state 层。
  */
 async function updateTicketStatus(
-  projectRoot: string,
+  _projectRoot: string,
   ticketId: string,
   status: string
 ): Promise<void> {
-  // 查找任务文件
-  const jiraPath = path.join(projectRoot, 'jira', 'tickets');
-  const dirs = ['feature', 'bugfix', 'task', 'improvement'];
-
-  for (const dir of dirs) {
-    const ticketFile = path.join(jiraPath, dir, `${ticketId}.md`);
-    if (fs.existsSync(ticketFile)) {
-      // 更新状态 (简单替换)
-      let content = fs.readFileSync(ticketFile, 'utf-8');
-      content = content.replace(/\*\*状态\*\*:\s*\w+/i, `**状态**: ${status}`);
-      fs.writeFileSync(ticketFile, content);
-      return;
-    }
-  }
+  await transitionTicket(ticketId, status);
 }
 
 /**

@@ -14,9 +14,12 @@
  * 7. 更新心跳
  */
 
-import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { Command } from 'commander';
+
+import { updateHeartbeat as stateUpdateHeartbeat } from '../core/state/index.js';
 import { printError, logInfo, logWarning } from '../utils/error-handler.js';
 
 // Color codes
@@ -63,9 +66,9 @@ function getSlaverInstanceInfo(): { instanceId: string; role: string; specialty:
     const roleMatch = content.match(/role:\s*(\S+)/);
     const specialtyMatch = content.match(/specialty:\s*(\S+)/);
 
-    if (instanceIdMatch) instanceId = instanceIdMatch[1];
-    if (roleMatch) role = roleMatch[1];
-    if (specialtyMatch) specialty = specialtyMatch[1];
+    if (instanceIdMatch) {instanceId = instanceIdMatch[1];}
+    if (roleMatch) {role = roleMatch[1];}
+    if (specialtyMatch) {specialty = specialtyMatch[1];}
   }
 
   return { instanceId, role, specialty };
@@ -88,7 +91,7 @@ function checkSlaverStatus(instanceId: string): SlaverStatus {
   if (fs.existsSync(jiraDir)) {
     for (const dir of ['feature', 'bugfix', 'task', 'fix']) {
       const typeDir = path.join(jiraDir, dir);
-      if (!fs.existsSync(typeDir)) continue;
+      if (!fs.existsSync(typeDir)) {continue;}
 
       const files = fs.readdirSync(typeDir).filter(f => f.endsWith('.md'));
 
@@ -145,7 +148,7 @@ function checkSlaverStatus(instanceId: string): SlaverStatus {
   if (fs.existsSync(jiraDir)) {
     for (const dir of ['feature', 'bugfix', 'task', 'fix']) {
       const typeDir = path.join(jiraDir, dir);
-      if (!fs.existsSync(typeDir)) continue;
+      if (!fs.existsSync(typeDir)) {continue;}
 
       const files = fs.readdirSync(typeDir).filter(f => f.endsWith('.md'));
 
@@ -364,7 +367,7 @@ function checkReadyTasks(specialty: string): number {
 
   for (const dir of ['feature', 'bugfix', 'task', 'fix']) {
     const typeDir = path.join(jiraDir, dir);
-    if (!fs.existsSync(typeDir)) continue;
+    if (!fs.existsSync(typeDir)) {continue;}
 
     const files = fs.readdirSync(typeDir).filter(f => f.endsWith('.md'));
 
@@ -477,25 +480,23 @@ function checkBlockerReports(): void {
 }
 
 /**
- * 更新心跳
+ * 更新心跳 — 统一走 core/state 层
+ *
+ * 共享核心字段 + Slaver 专属 extras (specialty / pending_pr_feedback / new_messages / ready_tasks)
  */
-function updateHeartbeat(instanceId: string, status: SlaverStatus): void {
-  const stateDir = '.eket/state';
-  fs.mkdirSync(stateDir, { recursive: true });
-
-  const now = new Date().toISOString();
-  const heartbeatContent = `# Slaver 心跳
-instance_id: ${instanceId}
-specialty: ${status.specialty}
-last_check: ${now}
-status: ${status.status}
-current_ticket: ${status.currentTicket || 'none'}
-pending_pr_feedback: ${status.pendingPrFeedback}
-new_messages: ${status.newMessages}
-ready_tasks: ${status.readyTasks}
-`;
-
-  fs.writeFileSync(path.join(stateDir, `slaver_${instanceId}_heartbeat.yml`), heartbeatContent, 'utf-8');
+async function updateHeartbeat(instanceId: string, status: SlaverStatus): Promise<void> {
+  await stateUpdateHeartbeat({
+    role: 'slaver',
+    instanceId,
+    status: status.status as string,
+    currentTask: status.currentTicket ?? null,
+    extras: {
+      specialty: status.specialty,
+      pending_pr_feedback: status.pendingPrFeedback,
+      new_messages: status.newMessages,
+      ready_tasks: status.readyTasks,
+    },
+  });
 }
 
 /**
@@ -518,7 +519,7 @@ function showPollSummary(status: SlaverStatus, config: PollConfig): void {
 /**
  * 执行一轮检查
  */
-function runSingleCheck(instanceId: string, specialty: string): SlaverStatus {
+async function runSingleCheck(instanceId: string, specialty: string): Promise<SlaverStatus> {
   const status = checkSlaverStatus(instanceId);
 
   checkCurrentTask(status.currentTicket);
@@ -533,7 +534,7 @@ function runSingleCheck(instanceId: string, specialty: string): SlaverStatus {
   console.log('');
   checkBlockerReports();
 
-  updateHeartbeat(instanceId, status);
+  await updateHeartbeat(instanceId, status);
 
   return status;
 }
@@ -560,7 +561,7 @@ async function runPollLoop(config: PollConfig): Promise<void> {
     console.log('════════════════════════════════════════════════════════════════');
     console.log('');
 
-    const status = runSingleCheck(instanceId, specialty);
+    const status = await runSingleCheck(instanceId, specialty);
 
     // 根据状态调整轮询间隔
     let currentInterval = config.idlePollInterval;
@@ -636,7 +637,7 @@ Related Commands:
 
       if (config.once) {
         const { instanceId, specialty } = getSlaverInstanceInfo();
-        const status = runSingleCheck(instanceId, specialty);
+        const status = await runSingleCheck(instanceId, specialty);
         showPollSummary(status, config);
       } else {
         await runPollLoop(config);
