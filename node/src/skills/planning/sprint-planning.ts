@@ -1,4 +1,5 @@
 import type { Skill, SkillInput, SkillOutput } from '../types.js';
+import { SkillCategory } from '../types.js';
 
 export interface SprintPlanningInput {
   sprintNumber: number;
@@ -14,11 +15,11 @@ export interface SprintPlanningOutput {
 
 export const sprintPlanningSkill: Skill<SprintPlanningInput, SprintPlanningOutput> = {
   name: 'sprint-planning',
-  category: 'planning',
+  category: SkillCategory.PLANNING,
   description: 'Run a structured sprint planning ceremony to define sprint goal, select backlog items, and create actionable sprint plan.',
   version: '1.0.0',
   async execute(input: SkillInput<SprintPlanningInput>): Promise<SkillOutput<SprintPlanningOutput>> {
-    const data = input as unknown as SprintPlanningInput;
+    const data = input.data as unknown as SprintPlanningInput;
     const start = Date.now();
     const teamCapacity = data.teamCapacity ?? 40;
     const backlogItems = data.backlogItems ?? [];

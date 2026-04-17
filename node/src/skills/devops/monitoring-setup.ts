@@ -18,7 +18,7 @@ export const monitoringSetupSkill: Skill<MonitoringSetupInput, MonitoringSetupOu
   description: 'Full observability stack setup: metrics (Prometheus/Grafana), logs (Loki), traces (Jaeger/OTEL), alerts',
   version: '1.0.0',
   async execute(input: SkillInput<MonitoringSetupInput>): Promise<SkillOutput<MonitoringSetupOutput>> {
-    const data = input as unknown as MonitoringSetupInput;
+    const data = input.data as unknown as MonitoringSetupInput;
     const start = Date.now();
     const env = data.environment || 'kubernetes';
     const services = data.services || ['api-gateway', 'user-service', 'database'];

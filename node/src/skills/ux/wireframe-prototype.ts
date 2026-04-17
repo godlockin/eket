@@ -26,7 +26,7 @@ export const wireframePrototypeSkill: Skill = {
   version: '1.0.0',
 
   async execute(input: SkillInput): Promise<SkillOutput> {
-    const data = input as unknown as WireframePrototypeInput;
+    const data = input.data as unknown as WireframePrototypeInput;
     const tool = data.tool ?? 'figma';
     const platform = data.platform ?? 'responsive';
 

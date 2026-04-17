@@ -19,7 +19,7 @@ export const ciPipelineSkill: Skill<CIPipelineInput, CIPipelineOutput> = {
   description: 'Design and implement CI/CD pipeline with quality gates, security scanning, and zero-downtime deployment',
   version: '1.0.0',
   async execute(input: SkillInput<CIPipelineInput>): Promise<SkillOutput<CIPipelineOutput>> {
-    const data = input as unknown as CIPipelineInput;
+    const data = input.data as unknown as CIPipelineInput;
     const start = Date.now();
     const platform = data.platform || 'github-actions';
     const lang = data.language || 'TypeScript/Node.js';

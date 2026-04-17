@@ -54,7 +54,7 @@ export interface ThirdPartyIntegrationOutput {
 export const ThirdPartyIntegrationSkill: Skill<ThirdPartyIntegrationInput, ThirdPartyIntegrationOutput> = {
   name: 'third_party_integration',
   description: '第三方服务集成：文档锁定 → 沙箱验证 → 错误码处理 → 幂等设计 → 超时降级 → 凭证管理 → 监控接入',
-  category: SkillCategory.DEVELOPMENT,
+  category: SkillCategory.IMPLEMENTATION,
   tags: ['integration', 'third-party', 'api', 'circuit-breaker', 'idempotency', 'monitoring'],
   version: '1.0.0',
 

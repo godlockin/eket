@@ -19,7 +19,7 @@ export const userStoryMappingSkill: Skill<UserStoryMappingInput, UserStoryMappin
   description: 'Build a user story map to visualize user journeys, slice releases by value, and align team on MVP scope.',
   version: '1.0.0',
   async execute(input: SkillInput<UserStoryMappingInput>): Promise<SkillOutput<UserStoryMappingOutput>> {
-    const data = input as unknown as UserStoryMappingInput;
+    const data = input.data as unknown as UserStoryMappingInput;
     const start = Date.now();
     const userPersonas = data.userPersonas ?? [];
     const activities = data.activities ?? [];

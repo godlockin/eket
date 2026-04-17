@@ -76,11 +76,9 @@ export {
   CachingInterceptor,
   // 内置 Skills
   RequirementDecompositionSkill,
-  APIDesignSkill,
   FrontendDevelopmentSkill,
   UnitTestSkill,
   DockerBuildSkill,
-  APIDocumentationSkill,
 } from './skills/index.js';
 
 // ============================================================================

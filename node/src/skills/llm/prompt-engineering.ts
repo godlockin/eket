@@ -25,7 +25,7 @@ export interface PromptEngineeringOutput {
 export const promptEngineeringSkill: Skill<PromptEngineeringInput, PromptEngineeringOutput> = {
   name: 'llm/prompt-engineering',
   description: 'Prompt 工程：7 步系统化流程，从任务分解到 A/B 测试版本化管理',
-  category: SkillCategory.CUSTOM,
+  category: SkillCategory.LLM,
   tags: ['llm', 'prompt', 'rag', 'agent', 'engineering'],
   version: '1.0.0',
 

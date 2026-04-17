@@ -18,7 +18,7 @@ export const testStrategySkill: Skill<TestStrategyInput, TestStrategyOutput> = {
   description: 'Design test pyramid strategy with correct unit/integration/e2e ratio and tooling recommendations',
   version: '1.0.0',
   async execute(input: SkillInput<TestStrategyInput>): Promise<SkillOutput<TestStrategyOutput>> {
-    const data = input as unknown as TestStrategyInput;
+    const data = input.data as unknown as TestStrategyInput;
     const start = Date.now();
     const projectType = data.projectType || 'fullstack';
     const teamSize = data.teamSize || 5;

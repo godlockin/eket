@@ -14,11 +14,11 @@ export interface InterviewGuideOutput {
 
 export const interviewGuideSkill: Skill<InterviewGuideInput, InterviewGuideOutput> = {
   name: 'interview-guide',
-  category: SkillCategory.CUSTOM,
+  category: SkillCategory.HR,
   description: 'Structured technical interview process: JD alignment, screening, coding challenge, system design, culture fit, and debrief.',
   version: '1.0.0',
   async execute(input: SkillInput<InterviewGuideInput>): Promise<SkillOutput<InterviewGuideOutput>> {
-    const data = input as unknown as InterviewGuideInput;
+    const data = input.data as unknown as InterviewGuideInput;
     const start = Date.now();
     const role = data.role || 'engineer';
     return {

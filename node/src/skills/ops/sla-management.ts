@@ -4,6 +4,7 @@
  */
 
 import type { Skill, SkillInput, SkillOutput } from '../types.js';
+import { SkillCategory } from '../types.js';
 
 export interface SlaManagementInput {
   /** Service name */
@@ -30,13 +31,13 @@ export interface SlaManagementOutput {
 
 export const slaManagementSkill: Skill<SlaManagementInput, SlaManagementOutput> = {
   name: 'sla-management',
-  category: 'ops',
+  category: SkillCategory.OPS,
   description: 'SLA definition and monitoring: define SLOs, error budgets, SLIs, alerting, and review cadence.',
   version: '1.0.0',
   tags: ['ops', 'sla', 'slo', 'sli', 'reliability', 'error-budget', 'monitoring'],
 
   async execute(input: SkillInput<SlaManagementInput>): Promise<SkillOutput<SlaManagementOutput>> {
-    const data = input as unknown as SlaManagementInput;
+    const data = input.data as unknown as SlaManagementInput;
     const start = Date.now();
     const service = data.serviceName ?? 'target service';
     const slaType = data.slaType ?? 'external';

@@ -25,7 +25,7 @@ export interface DataLabelingOutput {
 export const dataLabelingSkill: Skill<DataLabelingInput, DataLabelingOutput> = {
   name: 'algorithm/data-labeling',
   description: '数据打标：7 步严谨流程，确保标注质量、一致性与可追溯性',
-  category: SkillCategory.DATA,
+  category: SkillCategory.ALGORITHM,
   tags: ['algorithm', 'ml', 'labeling', 'annotation', 'data'],
   version: '1.0.0',
 

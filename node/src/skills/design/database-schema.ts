@@ -19,7 +19,7 @@ export const databaseSchemaSkill: Skill<DatabaseSchemaInput, DatabaseSchemaOutpu
   description: 'Design a normalized, performant database schema with proper indexing, constraints, and migration strategy.',
   version: '1.0.0',
   async execute(input: SkillInput<DatabaseSchemaInput>): Promise<SkillOutput<DatabaseSchemaOutput>> {
-    const data = input as unknown as DatabaseSchemaInput;
+    const data = input.data as unknown as DatabaseSchemaInput;
     const start = Date.now();
     const dbType = data.dbType ?? 'relational';
     const entities = data.entities ?? [];

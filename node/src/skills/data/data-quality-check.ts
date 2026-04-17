@@ -35,7 +35,7 @@ export const dataQualityCheckSkill: Skill<DataQualityCheckInput, DataQualityChec
   tags: ['data', 'quality', 'validation', 'profiling', 'dq'],
 
   async execute(input: SkillInput<DataQualityCheckInput>): Promise<SkillOutput<DataQualityCheckOutput>> {
-    const data = input as unknown as DataQualityCheckInput;
+    const data = input.data as unknown as DataQualityCheckInput;
     const start = Date.now();
     const dataset = data.datasetName ?? 'target dataset';
     const source = data.sourceType ?? 'database';

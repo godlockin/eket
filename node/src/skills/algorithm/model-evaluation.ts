@@ -25,7 +25,7 @@ export interface ModelEvaluationOutput {
 export const modelEvaluationSkill: Skill<ModelEvaluationInput, ModelEvaluationOutput> = {
   name: 'algorithm/model-evaluation',
   description: '模型评估：6 步严谨流程，确保实验可复现、结论有统计依据',
-  category: SkillCategory.DATA,
+  category: SkillCategory.ALGORITHM,
   tags: ['algorithm', 'ml', 'evaluation', 'experiment'],
   version: '1.0.0',
 

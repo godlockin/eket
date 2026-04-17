@@ -1,4 +1,5 @@
 import type { Skill, SkillInput, SkillOutput } from '../types.js';
+import { SkillCategory } from '../types.js';
 
 export interface RoadmapPrioritizationInput {
   productName: string;
@@ -14,11 +15,11 @@ export interface RoadmapPrioritizationOutput {
 
 export const roadmapPrioritizationSkill: Skill<RoadmapPrioritizationInput, RoadmapPrioritizationOutput> = {
   name: 'roadmap-prioritization',
-  category: 'planning',
+  category: SkillCategory.PLANNING,
   description: 'Prioritize product roadmap features using structured scoring frameworks to maximize business value and strategic alignment.',
   version: '1.0.0',
   async execute(input: SkillInput<RoadmapPrioritizationInput>): Promise<SkillOutput<RoadmapPrioritizationOutput>> {
-    const data = input as unknown as RoadmapPrioritizationInput;
+    const data = input.data as unknown as RoadmapPrioritizationInput;
     const start = Date.now();
     const features = data.features ?? [];
     const horizon = data.horizon ?? '12 months';

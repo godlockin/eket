@@ -14,11 +14,11 @@ export interface RagPipelineOutput {
 
 export const ragPipelineSkill: Skill<RagPipelineInput, RagPipelineOutput> = {
   name: 'rag-pipeline',
-  category: SkillCategory.DATA,
+  category: SkillCategory.LLM,
   description: 'End-to-end RAG pipeline design: chunking, embedding, vector store, retrieval, reranking, and evaluation.',
   version: '1.0.0',
   async execute(input: SkillInput<RagPipelineInput>): Promise<SkillOutput<RagPipelineOutput>> {
-    const data = input as unknown as RagPipelineInput;
+    const data = input.data as unknown as RagPipelineInput;
     const start = Date.now();
     const domain = data.domain || 'target domain';
     return {

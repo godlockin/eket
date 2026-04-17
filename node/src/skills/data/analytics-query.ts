@@ -35,7 +35,7 @@ export const analyticsQuerySkill: Skill<AnalyticsQueryInput, AnalyticsQueryOutpu
   tags: ['data', 'analytics', 'sql', 'query-optimization', 'performance'],
 
   async execute(input: SkillInput<AnalyticsQueryInput>): Promise<SkillOutput<AnalyticsQueryOutput>> {
-    const data = input as unknown as AnalyticsQueryInput;
+    const data = input.data as unknown as AnalyticsQueryInput;
     const start = Date.now();
     const engine = data.engine ?? 'SQL database';
     const tables = data.tables?.join(', ') ?? 'target tables';
