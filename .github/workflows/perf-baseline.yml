@@ -1,0 +1,64 @@
+name: perf-baseline
+
+# NOTE on baseline source: benchmarks/baseline.json is currently calibrated from
+# local macOS runs (Round 4). CI on ubuntu-latest may see 2-5x higher p95 due
+# to shared hardware. If this workflow reports regressions that aren't real,
+# bootstrap a CI baseline by:
+#   1. Merging this workflow, let it run 5+ times on main with threshold_pct=200
+#   2. Take median p95 across those runs → update baseline.json via reviewed PR
+#   3. Lower threshold_pct back to 30
+# CODEOWNERS (benchmarks/baseline.json) ensures the bump goes through review.
+
+on:
+  push:
+    branches: [miao, testing, main]
+    paths:
+      - 'node/src/**'
+      - 'node/package*.json'
+      - 'benchmarks/**'
+      - '.github/workflows/perf-baseline.yml'
+  pull_request:
+    branches: [miao, testing, main]
+    paths:
+      - 'node/src/**'
+      - 'node/package*.json'
+      - 'benchmarks/**'
+      - '.github/workflows/perf-baseline.yml'
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: node/package-lock.json
+
+      - name: Install + build node/
+        working-directory: node
+        run: |
+          npm ci
+          npm run build
+
+      - name: Run simple-benchmark (3 samples for median)
+        run: |
+          for i in 1 2 3; do
+            EKET_BENCH_TAG="ci-run-$i" node benchmarks/simple-benchmark.js
+          done
+
+      - name: Check regression vs baseline.json (median of 3)
+        run: EKET_BENCH_SAMPLES=3 node benchmarks/check-regression.mjs
+
+      - name: Upload benchmark result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ github.sha }}
+          path: benchmarks/results/
+          retention-days: 30

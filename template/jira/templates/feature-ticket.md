@@ -9,6 +9,9 @@
 **Epic**: {{EPIC_ID}}
 **分配给**: null
 
+<!-- dispatched_by: Master 的 GitHub handle，pr-reviewer-check Action 用此判定自我闭环；不得与 PR 作者相同 -->
+dispatched_by: null
+
 ---
 
 ## 0. 任务元数据

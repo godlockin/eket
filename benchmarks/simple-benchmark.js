@@ -166,14 +166,14 @@ async function runBenchmark() {
     stats: queue.getStats(),
   };
 
-  // 确定 round 编号（查找已有结果）
+  // 结果文件名：时间戳 + git sha（若可得），避免 CI 每次覆盖 roundN 基线。
+  // 强制唯一：check-regression.mjs 依据字典序取最新，timestamp 前缀能保证顺序。
   const resultsDir = path.join(__dirname, 'results');
   fs.mkdirSync(resultsDir, { recursive: true });
 
-  const existingFiles = fs.readdirSync(resultsDir).filter(f => f.startsWith('round'));
-  const roundNumber = existingFiles.length + 4; // 从 Round 4 开始（已有 Round 1-3）
-
-  const outputFile = path.join(resultsDir, `round${roundNumber}-benchmark-results.json`);
+  const ts = new Date().toISOString().replace(/[:.]/g, '-');
+  const sha = process.env.GITHUB_SHA?.slice(0, 7) || process.env.EKET_BENCH_TAG || 'local';
+  const outputFile = path.join(resultsDir, `${ts}-${sha}.json`);
   fs.writeFileSync(outputFile, JSON.stringify(results, null, 2));
 
   console.log(`\n✅ Benchmark completed!`);
@@ -197,4 +197,9 @@ async function runBenchmark() {
 }
 
 // 运行基准测试
-runBenchmark().catch(console.error);
+runBenchmark()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

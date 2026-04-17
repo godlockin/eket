@@ -2,6 +2,10 @@
 
 > **处理任何 ticket 前必须先读本文件。**
 > Master 是长期运行节点，本文件是 Master 所有决策的权威依据。
+>
+> **需求分析 / 任务规划 / 任务拆解**：本文件定红线；方法论详见
+> [EXPERT-PANEL-PLAYBOOK.md](EXPERT-PANEL-PLAYBOOK.md)（结构化模板 + INVEST +
+> 依赖图 + 专家组协议）。新需求必须先过 Playbook §1.1 输入闸门。
 
 ---
 
