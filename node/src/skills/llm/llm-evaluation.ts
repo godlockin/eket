@@ -14,11 +14,11 @@ export interface LlmEvaluationOutput {
 
 export const llmEvaluationSkill: Skill<LlmEvaluationInput, LlmEvaluationOutput> = {
   name: 'llm-evaluation',
-  category: SkillCategory.ANALYSIS,
+  category: SkillCategory.LLM,
   description: 'Systematic LLM evaluation framework: benchmark selection, RAGAS metrics, human eval, regression testing, and monitoring dashboard.',
   version: '1.0.0',
   async execute(input: SkillInput<LlmEvaluationInput>): Promise<SkillOutput<LlmEvaluationOutput>> {
-    const data = input as unknown as LlmEvaluationInput;
+    const data = input.data as unknown as LlmEvaluationInput;
     const start = Date.now();
     const model = data.modelName || 'target model';
     return {

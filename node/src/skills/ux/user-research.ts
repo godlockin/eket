@@ -28,7 +28,7 @@ export const userResearchSkill: Skill = {
   version: '1.0.0',
 
   async execute(input: SkillInput): Promise<SkillOutput> {
-    const data = input as unknown as UserResearchInput;
+    const data = input.data as unknown as UserResearchInput;
 
     const start = Date.now();
     return { success: true, data: {

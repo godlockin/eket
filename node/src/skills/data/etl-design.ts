@@ -37,7 +37,7 @@ export const etlDesignSkill: Skill<EtlDesignInput, EtlDesignOutput> = {
   tags: ['data', 'etl', 'pipeline', 'data-engineering', 'warehouse'],
 
   async execute(input: SkillInput<EtlDesignInput>): Promise<SkillOutput<EtlDesignOutput>> {
-    const data = input as unknown as EtlDesignInput;
+    const data = input.data as unknown as EtlDesignInput;
     const start = Date.now();
     const pipeline = data.pipelineName ?? 'ETL pipeline';
     const sources = data.sources?.join(', ') ?? 'source systems';

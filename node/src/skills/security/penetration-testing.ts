@@ -35,7 +35,7 @@ export const penetrationTestingSkill: Skill<PenetrationTestingInput, Penetration
   tags: ['security', 'penetration-testing', 'vulnerability', 'ethical-hacking'],
 
   async execute(input: SkillInput<PenetrationTestingInput>): Promise<SkillOutput<PenetrationTestingOutput>> {
-    const data = input as unknown as PenetrationTestingInput;
+    const data = input.data as unknown as PenetrationTestingInput;
     const start = Date.now();
     const target = data.targetSystem ?? 'target system';
     const testType = data.testType ?? 'grey-box';

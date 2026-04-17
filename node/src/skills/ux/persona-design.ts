@@ -24,7 +24,7 @@ export const personaDesignSkill: Skill = {
   version: '1.0.0',
 
   async execute(input: SkillInput): Promise<SkillOutput> {
-    const data = input as unknown as PersonaDesignInput;
+    const data = input.data as unknown as PersonaDesignInput;
     const segments = data.segmentCount ?? 2;
 
     const start = Date.now();

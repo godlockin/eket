@@ -18,7 +18,7 @@ export const acceptanceCriteriaSkill: Skill<AcceptanceCriteriaInput, AcceptanceC
   description: 'Write precise, testable acceptance criteria using Gherkin BDD scenarios or rule-based formats.',
   version: '1.0.0',
   async execute(input: SkillInput<AcceptanceCriteriaInput>): Promise<SkillOutput<AcceptanceCriteriaOutput>> {
-    const data = input as unknown as AcceptanceCriteriaInput;
+    const data = input.data as unknown as AcceptanceCriteriaInput;
     const start = Date.now();
     const format = data.format ?? 'gherkin';
     const userStory = data.userStory ?? 'As a user, I want to [action] so that [benefit]';

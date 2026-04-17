@@ -27,7 +27,7 @@ export interface ExperimentManagementOutput {
 export const experimentManagementSkill: Skill<ExperimentManagementInput, ExperimentManagementOutput> = {
   name: 'algorithm/experiment-management',
   description: '实验管理：6 步规范流程，确保实验可追溯、可对比、结论有依据',
-  category: SkillCategory.DATA,
+  category: SkillCategory.ALGORITHM,
   tags: ['algorithm', 'ml', 'experiment', 'mlflow', 'wandb', 'tracking'],
   version: '1.0.0',
 

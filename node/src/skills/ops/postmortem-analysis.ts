@@ -4,6 +4,7 @@
  */
 
 import type { Skill, SkillInput, SkillOutput } from '../types.js';
+import { SkillCategory } from '../types.js';
 
 export interface PostmortemAnalysisInput {
   /** Incident ID or title */
@@ -32,13 +33,13 @@ export interface PostmortemAnalysisOutput {
 
 export const postmortemAnalysisSkill: Skill<PostmortemAnalysisInput, PostmortemAnalysisOutput> = {
   name: 'postmortem-analysis',
-  category: 'ops',
+  category: SkillCategory.OPS,
   description: 'Blameless postmortem: timeline reconstruction, root cause analysis, contributing factors, action items.',
   version: '1.0.0',
   tags: ['ops', 'postmortem', 'incident', 'root-cause', 'reliability', 'blameless'],
 
   async execute(input: SkillInput<PostmortemAnalysisInput>): Promise<SkillOutput<PostmortemAnalysisOutput>> {
-    const data = input as unknown as PostmortemAnalysisInput;
+    const data = input.data as unknown as PostmortemAnalysisInput;
     const start = Date.now();
     const incident = data.incidentId ?? 'incident';
     const severity = data.severity ?? 'P1';

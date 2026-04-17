@@ -14,11 +14,11 @@ export interface VendorEvaluationOutput {
 
 export const vendorEvaluationSkill: Skill<VendorEvaluationInput, VendorEvaluationOutput> = {
   name: 'vendor-evaluation',
-  category: SkillCategory.ANALYSIS,
+  category: SkillCategory.IMPLEMENTATION,
   description: 'Structured vendor evaluation process: requirements definition, shortlisting, POC, scoring matrix, and final decision.',
   version: '1.0.0',
   async execute(input: SkillInput<VendorEvaluationInput>): Promise<SkillOutput<VendorEvaluationOutput>> {
-    const data = input as unknown as VendorEvaluationInput;
+    const data = input.data as unknown as VendorEvaluationInput;
     const start = Date.now();
     const category = data.category || 'vendor';
     return {

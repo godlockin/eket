@@ -27,7 +27,7 @@ export interface JdWritingOutput {
 export const jdWritingSkill: Skill<JdWritingInput, JdWritingOutput> = {
   name: 'hr/jd-writing',
   description: '岗位 JD 撰写：7 步结构化流程，确保 JD 精准对齐用人部门需求',
-  category: SkillCategory.CUSTOM,
+  category: SkillCategory.HR,
   tags: ['hr', 'jd', 'recruiting', 'talent'],
   version: '1.0.0',
 

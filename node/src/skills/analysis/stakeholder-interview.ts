@@ -18,7 +18,7 @@ export const stakeholderInterviewSkill: Skill<StakeholderInterviewInput, Stakeho
   description: 'Conduct structured stakeholder interviews to elicit requirements, pain points, and priorities.',
   version: '1.0.0',
   async execute(input: SkillInput<StakeholderInterviewInput>): Promise<SkillOutput<StakeholderInterviewOutput>> {
-    const data = input as unknown as StakeholderInterviewInput;
+    const data = input.data as unknown as StakeholderInterviewInput;
     const start = Date.now();
     const stakeholders = data.stakeholders ?? [];
     const objectives = data.objectives ?? [];

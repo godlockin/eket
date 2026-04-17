@@ -1,4 +1,5 @@
 import type { Skill, SkillInput, SkillOutput } from '../types.js';
+import { SkillCategory } from '../types.js';
 
 export interface RiskAssessmentInput {
   projectName: string;
@@ -13,11 +14,11 @@ export interface RiskAssessmentOutput {
 
 export const riskAssessmentSkill: Skill<RiskAssessmentInput, RiskAssessmentOutput> = {
   name: 'risk-assessment',
-  category: 'planning',
+  category: SkillCategory.PLANNING,
   description: 'Perform structured project risk assessment: identify, analyze, prioritize, and create mitigation plans for key risks.',
   version: '1.0.0',
   async execute(input: SkillInput<RiskAssessmentInput>): Promise<SkillOutput<RiskAssessmentOutput>> {
-    const data = input as unknown as RiskAssessmentInput;
+    const data = input.data as unknown as RiskAssessmentInput;
     const start = Date.now();
     const domains = data.domains ?? ['technical', 'resource', 'schedule', 'scope', 'external'];
     const riskTolerance = data.riskTolerance ?? 'medium';

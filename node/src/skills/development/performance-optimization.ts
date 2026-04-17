@@ -18,7 +18,7 @@ export const performanceOptimizationSkill: Skill<PerformanceOptimizationInput, P
   description: 'Systematic performance profiling and optimization workflow — measure first, optimize second',
   version: '1.0.0',
   async execute(input: SkillInput<PerformanceOptimizationInput>): Promise<SkillOutput<PerformanceOptimizationOutput>> {
-    const data = input as unknown as PerformanceOptimizationInput;
+    const data = input.data as unknown as PerformanceOptimizationInput;
     const start = Date.now();
     const sysType = data.systemType || 'fullstack';
     const target = data.targetMetric || 'response time p99 < 200ms';

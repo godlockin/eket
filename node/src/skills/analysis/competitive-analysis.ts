@@ -18,7 +18,7 @@ export const competitiveAnalysisSkill: Skill<CompetitiveAnalysisInput, Competiti
   description: 'Perform systematic competitive analysis to identify market positioning, feature gaps, and strategic opportunities.',
   version: '1.0.0',
   async execute(input: SkillInput<CompetitiveAnalysisInput>): Promise<SkillOutput<CompetitiveAnalysisOutput>> {
-    const data = input as unknown as CompetitiveAnalysisInput;
+    const data = input.data as unknown as CompetitiveAnalysisInput;
     const start = Date.now();
     const competitors = data.competitors ?? [];
     const dimensions = data.dimensions ?? ['features', 'pricing', 'UX', 'integrations', 'support'];

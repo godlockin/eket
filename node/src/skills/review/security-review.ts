@@ -4,6 +4,7 @@
  */
 
 import type { Skill, SkillInput, SkillOutput } from '../types.js';
+import { SkillCategory } from '../types.js';
 
 export interface SecurityReviewInput {
   /** PR number or commit range */
@@ -28,13 +29,13 @@ export interface SecurityReviewOutput {
 
 export const securityReviewSkill: Skill<SecurityReviewInput, SecurityReviewOutput> = {
   name: 'security-review',
-  category: 'review',
+  category: SkillCategory.REVIEW,
   description: 'Security-focused code review covering injection, auth, secrets, dependency CVEs, and OWASP Top-10.',
   version: '1.0.0',
   tags: ['review', 'security', 'owasp', 'vulnerability', 'code-review'],
 
   async execute(input: SkillInput<SecurityReviewInput>): Promise<SkillOutput<SecurityReviewOutput>> {
-    const data = input as unknown as SecurityReviewInput;
+    const data = input.data as unknown as SecurityReviewInput;
     const start = Date.now();
     const context = data.prNumber ? `PR #${data.prNumber}` : 'code change';
     const appType = data.appType ?? 'web application';

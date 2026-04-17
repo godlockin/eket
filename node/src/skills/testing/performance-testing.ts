@@ -19,7 +19,7 @@ export const performanceTestingSkill: Skill<PerformanceTestingInput, Performance
   description: 'Load and stress testing methodology using k6 — from baseline to breaking point',
   version: '1.0.0',
   async execute(input: SkillInput<PerformanceTestingInput>): Promise<SkillOutput<PerformanceTestingOutput>> {
-    const data = input as unknown as PerformanceTestingInput;
+    const data = input.data as unknown as PerformanceTestingInput;
     const start = Date.now();
     const service = data.targetService || 'API service';
     const testType = data.testType || 'load';

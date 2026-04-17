@@ -18,7 +18,7 @@ export const e2eTestingSkill: Skill<E2ETestingInput, E2ETestingOutput> = {
   description: 'E2E test scenario design and implementation using page object model and real user journey coverage',
   version: '1.0.0',
   async execute(input: SkillInput<E2ETestingInput>): Promise<SkillOutput<E2ETestingOutput>> {
-    const data = input as unknown as E2ETestingInput;
+    const data = input.data as unknown as E2ETestingInput;
     const start = Date.now();
     const framework = data.framework || 'playwright';
     const appUrl = data.applicationUrl || 'http://localhost:3000';

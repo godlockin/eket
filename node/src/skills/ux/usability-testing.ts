@@ -28,7 +28,7 @@ export const usabilityTestingSkill: Skill = {
   version: '1.0.0',
 
   async execute(input: SkillInput): Promise<SkillOutput> {
-    const data = input as unknown as UsabilityTestingInput;
+    const data = input.data as unknown as UsabilityTestingInput;
     const participants = data.participantCount ?? 5;
     const testType = data.testType ?? 'moderated';
 

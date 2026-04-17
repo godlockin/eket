@@ -35,7 +35,7 @@ export const threatModelingSkill: Skill<ThreatModelingInput, ThreatModelingOutpu
   tags: ['security', 'threat-modeling', 'stride', 'risk-assessment', 'architecture'],
 
   async execute(input: SkillInput<ThreatModelingInput>): Promise<SkillOutput<ThreatModelingOutput>> {
-    const data = input as unknown as ThreatModelingInput;
+    const data = input.data as unknown as ThreatModelingInput;
     const start = Date.now();
     const system = data.systemName ?? 'target system';
     const components = data.components?.join(', ') ?? 'system components';
