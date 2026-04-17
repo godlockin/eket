@@ -7,7 +7,7 @@ on:
     branches: [miao, testing, main]
 
 jobs:
-  check:
+  require-debrief:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 

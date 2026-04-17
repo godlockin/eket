@@ -11,11 +11,11 @@
 
 | Check Name (GitHub 会自动发现) | Workflow 文件 | 拦截场景 |
 |---|---|---|
-| `pr-body-check / enforce-real-test-evidence` | `.github/workflows/pr-body-check.yml` | PR 描述缺真实 Jest/TAP 输出或 ticket 引用 |
-| `pr-reviewer-check / block-self-loop` | `.github/workflows/pr-reviewer-check.yml` | 派发者 == PR 作者（自我闭环） |
-| `dual-engine / run-dual-engine` | `.github/workflows/dual-engine.yml` | 7 场景双引擎对比失败 |
-| `perf-baseline / check-regression` | `.github/workflows/perf-baseline.yml` | 关键指标 > baseline × 1.3 |
-| `debrief-check / require-debrief` | `.github/workflows/debrief-check.yml` | ticket 标记 done 但无复盘文件 |
+| `verify-test-evidence` | `.github/workflows/pr-body-check.yml` | PR 描述缺真实 Jest/TAP 输出或 ticket 引用 |
+| `block-self-loop` | `.github/workflows/pr-reviewer-check.yml` | 派发者 == PR 作者（自我闭环） |
+| `dual-engine` | `.github/workflows/dual-engine.yml` | 7 场景双引擎对比失败 |
+| `benchmark` | `.github/workflows/perf-baseline.yml` | 关键指标 > baseline × 1.3 |
+| `require-debrief` | `.github/workflows/debrief-check.yml` | ticket 标记 done 但无复盘文件 |
 
 ---
 
@@ -34,10 +34,10 @@
    - [x] **Require status checks to pass before merging**
      - [x] Require branches to be up to date before merging
      - 在搜索框中依次添加（必须先让 workflow 至少跑过一次才会出现在列表里）：
-       - `enforce-real-test-evidence`
+       - `verify-test-evidence`
        - `block-self-loop`
-       - `run-dual-engine`
-       - `check-regression`
+       - `dual-engine`
+       - `benchmark`
        - `require-debrief`
 
    - [x] **Require conversation resolution before merging**
