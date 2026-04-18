@@ -1,7 +1,7 @@
 ---
 id: TASK-053
 title: 修复 broadcast 自动 PR 因 GITHUB_TOKEN 无法触发下游 workflow
-status: backlog
+status: closed
 priority: P1
 type: bugfix
 epic: EPIC-V3-MIGRATION
@@ -41,3 +41,6 @@ required check 全部 stuck "expected"——这是 GitHub 的安全限制：默�
 
 ## 依赖
 TASK-052 已 merge (d95132ee)
+
+## 关闭说明
+Superseded by TASK-060 — 采用方案3（retro-inbox 非保护分支），已在 TASK-060 完整实现。

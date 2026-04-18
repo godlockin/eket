@@ -78,7 +78,7 @@ jobs:
           branch: retro/auto-pr${{ github.event.pull_request.number }}
           delete-branch: true
           title: "chore(retro): broadcast PR #${{ github.event.pull_request.number }} stub"
-          base: main
+          base: retro-inbox
           labels: |
             auto-broadcast
             bot-pr
@@ -112,5 +112,7 @@ jobs:
             exit 0
           fi
           echo "Enabling auto-merge for PR #$PR"
-          gh pr merge "$PR" --squash --delete-branch --auto || \
-            gh pr merge "$PR" --squash --delete-branch || true
+          if ! gh pr merge "$PR" --squash --delete-branch --auto; then
+            echo "::warning::auto-merge failed for broadcast PR #$PR — retro stub will remain open on retro-inbox branch. Manual merge required."
+            exit 1
+          fi
