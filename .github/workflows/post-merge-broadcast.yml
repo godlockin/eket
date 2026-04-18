@@ -67,12 +67,12 @@ jobs:
       - name: Commit & push back to main
         run: |
           set -euo pipefail
-          if git diff --quiet; then
+          git add confluence/memory/retrospectives/INBOX/
+          if git diff --cached --quiet; then
             echo "No retro stub to commit (already exists?)"
             exit 0
           fi
           git config user.name "eket-broadcast-bot"
           git config user.email "broadcast@eket.local"
-          git add confluence/memory/retrospectives/INBOX/
           git commit -m "chore(retro): broadcast PR #${{ github.event.pull_request.number }} stub [skip ci]"
           git push origin main
