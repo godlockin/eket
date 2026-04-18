@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "eket://protocol/node.profile",
+  "title": "Node Profile",
+  "description": "节点身份声明，位于 .eket/state/nodes/<node-id>.yml。Phase 0 writers 只落盘 node_id/role/specialty/registered_at；type/host/joined_at 为 Phase 1 扩展字段，schema 将其标记为 optional 以对齐当前 Shell/Node writer 行为（详见 P0-9 dual-engine 场景 03）。",
+  "type": "object",
+  "required": ["node_id", "role"],
+  "properties": {
+    "node_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{2,63}$",
+      "description": "全局唯一，见 conventions/node-id.md"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["ai_agent", "human", "bot", "cron", "webhook"],
+      "description": "节点类型 — 人/AI/脚本无差别参与"
+    },
+    "agent": {
+      "type": ["string", "null"],
+      "description": "若 type=ai_agent，具体模型标识（如 claude-sonnet-4.5 / gpt-4o）"
+    },
+    "role": {
+      "type": "string",
+      "enum": ["master", "slaver", "observer"]
+    },
+    "specialty": {
+      "type": ["string", "null"],
+      "enum": [
+        "frontend_dev",
+        "backend_dev",
+        "fullstack",
+        "qa_engineer",
+        "devops_engineer",
+        "data_scientist",
+        "designer",
+        null
+      ]
+    },
+    "host": {
+      "type": "string",
+      "description": "主机标识（hostname / IP / pod 名）"
+    },
+    "session_id": {
+      "type": ["string", "null"],
+      "description": "同一主机多 session 区分（pid / terminal-id / window-id）"
+    },
+    "engine": {
+      "type": "string",
+      "enum": ["shell", "node", "hybrid"],
+      "description": "节点运行引擎"
+    },
+    "protocol_version": {
+      "type": "string",
+      "description": "节点遵循的 protocol/VERSION"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "能力标签（typescript / react / ci-runner / human-review 等）"
+    },
+    "joined_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_heartbeat": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "online": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

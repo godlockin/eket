@@ -12,18 +12,21 @@
  * - 健康检查
  */
 
+import { createRequire } from 'module';
 import { Command } from 'commander';
 import ora from 'ora';
 
 import { OpenCLAWGateway } from './api/openclaw-gateway.js';
 import { createWebDashboardServer } from './api/web-server.js';
 import { registerAlerts } from './commands/alerts.js';
+import { registerSkillExtractCommand } from './commands/skill-extract.js';
 import { registerClaim } from './commands/claim.js';
 import { registerHandoff } from './commands/handoff.js';
 import { registerTaskResume } from './commands/task-resume.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { registerGateReview } from './commands/gate-review.js';
 import { registerMasterHeartbeat } from './commands/master-heartbeat.js';
+import { registerGraphQueryCommand } from './commands/graph-query.js';
 import { runInitWizard } from './commands/init-wizard.js';
 import { runInteractiveStartCLI } from './commands/interactive-start.js';
 import { registerMasterPoll } from './commands/master-poll.js';
@@ -48,6 +51,9 @@ import { printError, logSuccess, logWarning } from './utils/error-handler.js';
 import { logger, initLogger } from './utils/logger.js';
 import { startGlobalMemoryMonitoring } from './utils/memory-monitor.js';
 import { setupProcessHandlers, gracefulShutdown } from './utils/process-cleanup.js';
+
+// createRequire for synchronous module availability detection
+const _require = createRequire(import.meta.url);
 
 // Skills 系统导出（仅供库使用者 import，不参与 CLI 命令）
 // 使用方式：import { SkillsRegistry, SkillLoader, UnifiedSkillInterface } from 'eket-cli';
@@ -74,11 +80,9 @@ export {
   CachingInterceptor,
   // 内置 Skills
   RequirementDecompositionSkill,
-  APIDesignSkill,
   FrontendDevelopmentSkill,
   UnitTestSkill,
   DockerBuildSkill,
-  APIDocumentationSkill,
 } from './skills/index.js';
 
 // ============================================================================
@@ -170,15 +174,16 @@ const pkg = {
 };
 
 /**
- * 检查 Node.js 模块是否可用
+ * 检查 Node.js 模块是否可用（同步检测）
  * 用于 Shell 脚本检测
+ * NOTE: dynamic import() 返回 Promise，不会同步 throw，必须用 createRequire 做同步检测
  */
 function checkAvailability(): boolean {
   try {
-    // 检查关键依赖
-    import('ioredis');
-    import('better-sqlite3');
-    import('commander');
+    // 使用同步 require 检测关键依赖
+    _require('ioredis');
+    _require('better-sqlite3');
+    _require('commander');
     return true;
   } catch {
     return false;
@@ -906,9 +911,18 @@ Related Commands:
   // 注册 master:heartbeat 命令（Master 4问自检）
   registerMasterHeartbeat(program);
 
+  // 注册 graph:query 命令（SDLC 事件图查询）
+  registerGraphQueryCommand(program);
+
+  // 注册 skill:extract / skill:list 命令（Skill 自动生成）
+  registerSkillExtractCommand(program);
+
 
   // 注册 alerts 命令
   registerAlerts(program);
+
+  // 注册 skill:extract / skill:list 命令（TASK-043）
+
 
   // 注册 slaver:register 命令
   registerSlaverRegister(program);

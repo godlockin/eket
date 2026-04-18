@@ -1,0 +1,70 @@
+name: pr-body-check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  verify-test-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assert PR body contains real test output
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          set -e
+
+          # 豁免：docs-only / chore / infra-only PR 用 label 标记
+          if echo "$PR_LABELS" | grep -qE '"(docs-only|infra-only|skip-test-evidence)"'; then
+            echo "✓ label exempts test-evidence check"
+            exit 0
+          fi
+
+          # 豁免：PR 标题以 docs:/chore: 开头
+          if [[ "$PR_TITLE" =~ ^(docs|chore): ]]; then
+            echo "✓ docs/chore PR exempt"
+            exit 0
+          fi
+
+          body="$PR_BODY"
+          fail=0
+
+          # Rule 1: 必须包含 Jest/Mocha/Node test runner 特征
+          if ! echo "$body" | grep -qiE 'Tests?:[[:space:]]+[0-9]+[[:space:]]+passed|PASS[[:space:]]+[^[:space:]]+\.test\.|Test Suites:|# pass[[:space:]]+[0-9]+|ok[[:space:]]+[0-9]+'; then
+            echo "✗ PR body missing real test runner output"
+            echo "   期望形如: 'Tests: 12 passed, 12 total' 或 'PASS src/foo.test.ts' 或 TAP '# pass 12'"
+            fail=1
+          fi
+
+          # Rule 2: pass 数必须 > 0
+          passed=$(echo "$body" | grep -oiE 'Tests?:[[:space:]]+[0-9]+[[:space:]]+passed' | grep -oE '[0-9]+' | head -1)
+          if [[ -n "$passed" && "$passed" -eq 0 ]]; then
+            echo "✗ Tests: 0 passed — empty test run is not evidence"
+            fail=1
+          fi
+
+          # Rule 3: 禁止仅截图/仅描述性短语
+          if echo "$body" | grep -qiE '^[[:space:]]*(tests pass|all green|ci ok|tests ok)[[:space:]]*$'; then
+            echo "✗ descriptive phrase without raw output"
+            fail=1
+          fi
+
+          # Rule 4: 链接 ticket ID
+          if ! echo "$body" | grep -qE '(FEAT|TASK|FIX|TEST|DEPL|T-DESIGN|EPIC)-[0-9]+'; then
+            echo "✗ PR body must reference a ticket id (e.g. TASK-042)"
+            fail=1
+          fi
+
+          if [[ $fail -ne 0 ]]; then
+            echo ""
+            echo "参考: template/docs/MASTER-RULES.md §3 + EXPERT-PANEL-PLAYBOOK.md §3.2 test_strategy"
+            echo "豁免办法: 加 label 'docs-only' 或 'infra-only' 或 title 前缀 'docs:'/'chore:'"
+            exit 1
+          fi
+          echo "✓ PR body contains real test evidence"

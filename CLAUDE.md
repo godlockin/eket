@@ -7,6 +7,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **每次启动时**：先读 `.eket/IDENTITY.md` 确认角色（Master 或 Slaver）！
 
 > **🔴 处理任何 ticket 前，Master 必须先读 [`template/docs/MASTER-RULES.md`](template/docs/MASTER-RULES.md)，Slaver 必须先读 [`template/docs/SLAVER-RULES.md`](template/docs/SLAVER-RULES.md)。**
+>
+> **🔴 Master 收到新需求 / 架构变更 / 重构 / 生产事故时，必须先读 [`template/docs/EXPERT-PANEL-PLAYBOOK.md`](template/docs/EXPERT-PANEL-PLAYBOOK.md) 并按其召唤专家组。触发词示例：**"帮我分析"、"新需求"、"设计一下"、"拆任务"、"重构"、"线上事故"。禁止跳过 §1.1 输入闸门直接拆 ticket。
+
+### 需求分析硬校验
+
+执行 `bash scripts/check-requirement-analysis.sh <EPIC-ID>` 验证交付物六节齐全。Master 宣布"已拆好"前必须通过此校验；pre-commit hook 会在提交新 EPIC 目录时自动运行。
 
 ---
 

@@ -1,0 +1,120 @@
+# Ticket Metadata Schema
+#
+# Ticket 格式: Markdown 文件，文件头包含元数据（key: value），后续章节为业务内容。
+# 本 schema 定义元数据块字段（非 Markdown 正文）。
+#
+# 参考文件: jira/tickets/TASK-005.md / jira/templates/feature-ticket.md
+# 版本: 0.1.0
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "eket://protocol/ticket.meta"
+title: Ticket Metadata
+type: object
+
+required:
+  - id
+  - title
+  - status
+  - priority
+  - importance
+
+properties:
+  id:
+    type: string
+    pattern: "^(FEAT|TASK|FIX|TEST|DEPL|T-DESIGN)-[0-9]{3,6}$"
+    description: "Ticket ID，前缀 + 三位以上数字"
+
+  title:
+    type: string
+    minLength: 3
+    maxLength: 200
+
+  status:
+    type: string
+    enum:
+      - backlog
+      - analysis
+      - analysis_review
+      - approved
+      - design
+      - design_review
+      - ready
+      - in_progress
+      - testing
+      - dev_complete
+      - review
+      - changes_requested
+      - gate_review
+      - merged
+      - done
+      - blocked
+      - cancelled
+
+  priority:
+    type: string
+    enum: [P0, P1, P2, P3]
+
+  importance:
+    type: string
+    enum: [critical, high, medium, low]
+
+  epic:
+    type: [string, "null"]
+    description: "所属 Epic ID"
+
+  assignee:
+    type: [string, "null"]
+    description: "当前负责人（Slaver instance-id 或 null）"
+
+  branch:
+    type: [string, "null"]
+    pattern: "^(feature|bugfix|hotfix|docs)/(FEAT|TASK|FIX|TEST|DEPL|T-DESIGN)-[0-9]+-[a-z0-9-]+$"
+
+  created_at:
+    type: string
+    format: date-time
+
+  updated_at:
+    type: string
+    format: date-time
+
+  estimated_hours:
+    type: number
+    minimum: 0
+
+  actual_hours:
+    type: number
+    minimum: 0
+
+  dependencies:
+    type: object
+    properties:
+      blocks:
+        type: array
+        items: { type: string }
+      blocked_by:
+        type: array
+        items: { type: string }
+      related:
+        type: array
+        items: { type: string }
+      external:
+        type: array
+        items: { type: string }
+
+  gate_review:
+    type: object
+    properties:
+      veto_count:
+        type: integer
+        minimum: 0
+      veto_reason:
+        type: [string, "null"]
+      resubmit_conditions:
+        type: [string, "null"]
+
+  tags:
+    type: array
+    items: { type: string }
+
+additionalProperties: false

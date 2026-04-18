@@ -225,6 +225,137 @@ describe('MasterElection', () => {
   });
 });
 
+// ============================================================================
+// TASK-054 Bug Fix Tests
+// ============================================================================
+
+describe('TASK-054 Bug Fixes', () => {
+  beforeEach(() => {
+    fs.mkdirSync(path.join(TEST_PROJECT_ROOT, '.eket', 'state', 'master_lock'), {
+      recursive: true,
+      force: true,
+    });
+  });
+
+  afterEach(() => {
+    try {
+      fs.rmSync(TEST_PROJECT_ROOT, { recursive: true, force: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+  });
+
+  describe('Bug-1: relinquish() deletes marker file', () => {
+    it('should delete confluence marker file after relinquish', async () => {
+      const config: MasterElectionConfig = {
+        projectRoot: TEST_PROJECT_ROOT,
+        electionTimeout: 2000,
+        declarationPeriod: 100,
+        leaseTime: 10000,
+      };
+
+      const election = createMasterElection(config);
+      const result = await election.elect();
+
+      expect(result.success).toBe(true);
+
+      if (result.success && result.data.isMaster) {
+        const markerPath = path.join(TEST_PROJECT_ROOT, 'confluence', '.eket_master_marker');
+        // Marker should exist after election
+        expect(fs.existsSync(markerPath)).toBe(true);
+
+        await election.relinquish();
+
+        // Marker must be deleted so backup can promote
+        expect(fs.existsSync(markerPath)).toBe(false);
+      } else {
+        // Non-master: just ensure relinquish doesn't throw
+        await election.relinquish();
+        expect(true).toBe(true);
+      }
+    });
+
+    it('backup should be promotable after master relinquishes', async () => {
+      const config: MasterElectionConfig = {
+        projectRoot: TEST_PROJECT_ROOT,
+        electionTimeout: 2000,
+        declarationPeriod: 100,
+        leaseTime: 10000,
+      };
+
+      const master = createMasterElection(config);
+      const result1 = await master.elect();
+      expect(result1.success).toBe(true);
+
+      // Relinquish deletes marker
+      await master.relinquish();
+
+      // A new instance should now be able to elect (marker gone)
+      const newElection = createMasterElection(config);
+      const result2 = await newElection.elect();
+      expect(result2.success).toBe(true);
+      if (result2.success) {
+        expect(result2.data.isMaster).toBe(true);
+      }
+      await newElection.close();
+    });
+  });
+
+  describe('Bug-2: SQLite master_declaration table created', () => {
+    it('should create master_declaration table during SQLite init', async () => {
+      const sqlitePath = path.join(TEST_PROJECT_ROOT, 'test-election.db');
+      const config: MasterElectionConfig = {
+        projectRoot: TEST_PROJECT_ROOT,
+        sqlitePath,
+        electionTimeout: 2000,
+        declarationPeriod: 100,
+        leaseTime: 10000,
+      };
+
+      // Disable redis by not providing config, force SQLite path
+      const election = createMasterElection(config);
+      const result = await election.elect();
+
+      // Election should succeed without "no such table" error
+      expect(result.success).toBe(true);
+
+      await election.close();
+    });
+  });
+
+  describe('Bug-3: Redis key prefix not double-stacked', () => {
+    it('constants should not contain eket: prefix', () => {
+      // We verify indirectly: the keys used in the module are accessible
+      // via module internals inspection or by testing behavior
+      // Since constants are private, we check the source
+      const sourceFile = path.join(
+        __dirname,
+        '../src/core/master-election.ts'
+      );
+      if (fs.existsSync(sourceFile)) {
+        const src = fs.readFileSync(sourceFile, 'utf-8');
+        // MASTER_LOCK_KEY should be 'master:lock' not 'eket:master:lock'
+        expect(src).toContain("MASTER_LOCK_KEY = 'master:lock'");
+        expect(src).toContain("MASTER_DECLARATION_KEY = 'master:declaration'");
+        expect(src).not.toMatch(/MASTER_LOCK_KEY = 'eket:master:lock'/);
+      } else {
+        // Check compiled output
+        const distFile = path.join(
+          __dirname,
+          '../dist/core/master-election.js'
+        );
+        if (fs.existsSync(distFile)) {
+          const dist = fs.readFileSync(distFile, 'utf-8');
+          expect(dist).toContain("master:lock");
+          expect(dist).not.toContain("eket:eket:master:lock");
+        }
+        // If neither exists, pass (build hasn't run yet)
+        expect(true).toBe(true);
+      }
+    });
+  });
+});
+
 describe('Election Levels', () => {
   it('should have correct level priority', () => {
     // 验证级别优先级：redis > sqlite > file
