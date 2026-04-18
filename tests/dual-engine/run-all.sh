@@ -28,15 +28,10 @@ for scenario in "$SCENARIOS_DIR"/*.sh; do
 
   # 单次执行，捕获 rc + 输出（禁用 errexit 以继续汇总）
   set +e
-  if [[ "${EKET_DUAL_DEBUG:-}" == "1" ]]; then
-    out=$(bash -x "$scenario" "${extra_args[@]}" 2>&1)
-  else
-    out=$(bash "$scenario" "${extra_args[@]}" 2>&1)
-  fi
+  out=$(bash "$scenario" "${extra_args[@]}" 2>&1)
   rc=$?
   set -e
   printf '%s\n' "$out"
-  echo "  [rc=$rc]"
 
   if (( rc != 0 )); then
     failed=$((failed + 1))
