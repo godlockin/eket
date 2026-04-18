@@ -41,6 +41,8 @@ jobs:
 
       - name: Run dual-engine equivalence suite (real, non-skeleton)
         # run-all.sh without --ci runs every scenario for real; CI fails on any byte diff
+        env:
+          EKET_DUAL_DEBUG: '1'
         run: bash tests/dual-engine/run-all.sh
 
       - name: Upload fixture work dirs on failure
