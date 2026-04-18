@@ -21,12 +21,12 @@ export class RedisHelper {
     return this.client !== null && this.redis.isReady();
   }
 
-  async hset(key: string, data: Record<string, string | number>): Promise<void> {
+  async hset(key: string, data: Record<string, unknown>): Promise<void> {
     if (!this.client) {throw new Error('Redis client not available');}
     await this.client.hset(key, data);
   }
 
-  async hgetall<T extends Record<string, string> = Record<string, string>>(
+  async hgetall<T extends object = Record<string, string>>(
     key: string
   ): Promise<T | null> {
     if (!this.client) {throw new Error('Redis client not available');}

@@ -32,6 +32,16 @@ import { logger } from '../utils/logger.js';
 
 import { RedisHelper } from './redis-helper.js';
 
+// Extend Express Request to carry authenticated instance_id
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      instance_id?: string;
+    }
+  }
+}
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -323,7 +333,7 @@ export class EketServer {
     const token = authHeader.substring(7);
     try {
       const payload = jwt.verify(token, this.config.jwtSecret) as { instance_id: string };
-      (req as any).instance_id = payload.instance_id;
+      req.instance_id = payload.instance_id;
       next();
     } catch (err) {
       res.status(401).json({
