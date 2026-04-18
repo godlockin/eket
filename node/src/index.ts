@@ -173,6 +173,8 @@ const pkg = {
   description: 'EKET Framework CLI - AI Agent Collaboration Tools',
 };
 
+const _require = createRequire(import.meta.url);
+
 /**
  * 检查 Node.js 模块是否可用（同步检测）
  * 用于 Shell 脚本检测
