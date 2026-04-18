@@ -6,12 +6,10 @@ name: workflow-lint
 on:
   push:
     branches: [main, testing, miao]
-    paths:
-      - '.github/workflows/**'
   pull_request:
     branches: [main, testing, miao]
-    paths:
-      - '.github/workflows/**'
+# 注意：不加 paths 过滤 —— 若未来设为 required check，paths 过滤会导致非 workflow PR 检查不触发而死锁
+# (参考 TASK-052: perf-baseline 同款 bug)。Job 内部首步快速判断 workflows 是否被改，未改则秒过。
 
 permissions:
   contents: read
