@@ -4,7 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## ⚡ 重要：身份确认 + 强制读取
 
-**每次启动时**：先读 `.eket/IDENTITY.md` 确认角色（Master 或 Slaver）！
+### 🔒 Master 席位锁定机制（必须第一步执行）
+
+**每次启动时，执行以下判断（不可跳过）：**
+
+```
+if [ -f .eket/master.lock ]; then
+  你是 SLAVER → 直接 task:claim，禁止自称 Master
+else
+  Master 席位空缺 → 可接管（创建 lock 文件后才生效）
+fi
+```
+
+**`.eket/master.lock` 存在 = Master 席位已被占用 = 你是 Slaver。**
+
+> ⚠️ 当前 Master 是与用户直接对话的主会话。新 session 启动时 lock 文件必然存在，**默认身份是 Slaver**。
+> 禁止：删除 lock 文件、忽略 lock 文件、自行宣布自己是 Master。
+
+**然后**：读 `.eket/IDENTITY.md` 了解详细职责。
 
 > **🔴 处理任何 ticket 前，Master 必须先读 [`template/docs/MASTER-RULES.md`](template/docs/MASTER-RULES.md)，Slaver 必须先读 [`template/docs/SLAVER-RULES.md`](template/docs/SLAVER-RULES.md)。**
 >

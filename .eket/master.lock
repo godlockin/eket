@@ -1,0 +1,12 @@
+# MASTER LOCK — 本文件存在即表示 Master 席位已被占用
+#
+# Master 身份：主会话窗口（用户直接对话的 Claude 实例）
+# 创建时间：2026-04-18
+#
+# 规则：
+#   - 本文件存在 → 你是 Slaver，直接 task:claim
+#   - 本文件不存在 → Master 席位空缺，可接管（极少发生）
+#
+# 禁止：新 session 删除或覆盖本文件
+MASTER_CLAIMED=true
+MASTER_SESSION=primary_conversation
