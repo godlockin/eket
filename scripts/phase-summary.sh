@@ -31,12 +31,18 @@ mkdir -p "$OUT_DIR"
 
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 COMMIT_LOG=$(git -C "$REPO_ROOT" log --oneline --no-decorate "${FROM_REF}..${TO_REF}" 2>/dev/null || echo "(empty range)")
-COMMIT_COUNT=$(printf '%s\n' "$COMMIT_LOG" | grep -c . || true)
+if [[ "$COMMIT_LOG" == "(empty range)" ]]; then
+  COMMIT_COUNT=0
+else
+  COMMIT_COUNT=$(printf '%s\n' "$COMMIT_LOG" | grep -c .)
+fi
 
-# 收集 retros (INBOX + 年份归档)
-RETRO_FILES=$(find "$REPO_ROOT/confluence/memory/retrospectives" \
-  -type f -name '*.md' \
-  ! -name 'README.md' 2>/dev/null | sort)
+# 收集 retros — 仅包含 from..to range 内新增的文件
+RETRO_FILES=$(git -C "$REPO_ROOT" log --diff-filter=A --name-only \
+  --pretty=format: "${FROM_REF}..${TO_REF}" -- \
+  'confluence/memory/retrospectives/*.md' \
+  'confluence/memory/retrospectives/**/*.md' 2>/dev/null \
+  | grep -v '^$' | grep -v 'README\.md' | sort || true)
 
 {
   echo "# Phase Summary — ${PHASE}"

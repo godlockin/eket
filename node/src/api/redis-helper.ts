@@ -4,29 +4,35 @@
  * 封装 Redis 操作，简化 eket-server.ts 中的代码
  */
 
+import type { Redis as IoRedis } from 'ioredis';
+
 import type { RedisClient } from '../core/redis-client.js';
 
 export class RedisHelper {
   private redis: RedisClient;
-  private client: any; // ioredis client
+  private client: IoRedis | null;
 
   constructor(redis: RedisClient) {
     this.redis = redis;
-    this.client = redis.getClient();
+    this.client = redis.getClient() as IoRedis | null;
   }
 
   isAvailable(): boolean {
     return this.client !== null && this.redis.isReady();
   }
 
-  async hset(key: string, data: Record<string, any>): Promise<void> {
+  async hset(key: string, data: Record<string, unknown>): Promise<void> {
     if (!this.client) {throw new Error('Redis client not available');}
     await this.client.hset(key, data);
   }
 
-  async hgetall(key: string): Promise<Record<string, string>> {
+  async hgetall<T extends object = Record<string, string>>(
+    key: string
+  ): Promise<T | null> {
     if (!this.client) {throw new Error('Redis client not available');}
-    return await this.client.hgetall(key);
+    const result = await this.client.hgetall(key);
+    if (!result || Object.keys(result).length === 0) {return null;}
+    return result as T;
   }
 
   async del(key: string): Promise<void> {
