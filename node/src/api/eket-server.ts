@@ -460,7 +460,7 @@ export class EketServer {
         };
 
         if (this.redisHelper?.isAvailable()) {
-          await this.redisHelper.hset(`agent:${instance_id}`, agentData as any);
+          await this.redisHelper.hset(`agent:${instance_id}`, agentData as unknown as Record<string, string>);
           await this.redisHelper.sadd('agents:all', instance_id);
         }
 
@@ -618,8 +618,8 @@ export class EketServer {
           if (this.redis) {
             const instanceIds = await this.redisHelper!.smembers('agents:all');
             for (const id of instanceIds) {
-              const agentData = (await this.redisHelper!.hgetall(`agent:${id}`)) as any;
-              if (Object.keys(agentData).length === 0) {continue;}
+              const agentData = await this.redisHelper!.hgetall(`agent:${id}`);
+              if (!agentData) {continue;}
 
               // Filter by role
               if (role && agentData.role !== role) {continue;}
@@ -627,7 +627,7 @@ export class EketServer {
               // Filter by status
               if (status && agentData.status !== status) {continue;}
 
-              agents.push(agentData as AgentDetails);
+              agents.push(agentData as unknown as AgentDetails);
             }
           }
 
@@ -664,8 +664,8 @@ export class EketServer {
           if (this.redis) {
             const taskIds = await this.redisHelper!.smembers('tasks:all');
             for (const id of taskIds) {
-              const taskData = (await this.redisHelper!.hgetall(`task:${id}`)) as any;
-              if (Object.keys(taskData).length === 0) {continue;}
+              const taskData = await this.redisHelper!.hgetall(`task:${id}`);
+              if (!taskData) {continue;}
 
               // Parse JSON fields
               if (taskData.acceptance_criteria) {
@@ -680,11 +680,11 @@ export class EketServer {
               if (assigned_to && taskData.assigned_to !== assigned_to) {continue;}
               if (tags) {
                 const requiredTags = tags.split(',');
-                const taskTags = taskData.tags || [];
+                const taskTags: string[] = taskData.tags ? JSON.parse(taskData.tags) as string[] : [];
                 if (!requiredTags.every((t: string) => taskTags.includes(t))) {continue;}
               }
 
-              tasks.push(taskData as Task);
+              tasks.push(taskData as unknown as Task);
             }
           }
 
@@ -708,7 +708,7 @@ export class EketServer {
           const { task_id } = req.params;
 
           if (this.redis) {
-            const taskData = (await this.redisHelper!.hgetall(`task:${task_id}`)) as any;
+            const taskData = await this.redisHelper!.hgetall(`task:${task_id}`);
             if (!taskData || Object.keys(taskData).length === 0) {
               res.status(404).json({
                 success: false,
@@ -752,7 +752,7 @@ export class EketServer {
           const updates = req.body as { status?: string; progress?: number; notes?: string };
 
           if (this.redis) {
-            const taskData = (await this.redisHelper!.hgetall(`task:${task_id}`)) as any;
+            const taskData = await this.redisHelper!.hgetall(`task:${task_id}`);
             if (!taskData || Object.keys(taskData).length === 0) {
               res.status(404).json({
                 success: false,
@@ -797,7 +797,7 @@ export class EketServer {
           const { instance_id } = req.body as { instance_id: string };
 
           if (this.redis) {
-            const taskData = (await this.redisHelper!.hgetall(`task:${task_id}`)) as any;
+            const taskData = await this.redisHelper!.hgetall(`task:${task_id}`);
             if (!taskData || Object.keys(taskData).length === 0) {
               res.status(404).json({
                 success: false,
@@ -990,7 +990,7 @@ export class EketServer {
           };
 
           if (this.redis) {
-            await this.redisHelper!.hset(`pr:${body.task_id}`, pr as any);
+            await this.redisHelper!.hset(`pr:${body.task_id}`, pr as unknown as Record<string, string>);
             await this.redisHelper!.sadd('prs:all', body.task_id);
           }
 
@@ -1030,7 +1030,7 @@ export class EketServer {
           }
 
           if (this.redis) {
-            const prData = (await this.redisHelper!.hgetall(`pr:${task_id}`)) as any;
+            const prData = await this.redisHelper!.hgetall(`pr:${task_id}`);
             if (!prData || Object.keys(prData).length === 0) {
               res.status(404).json({
                 success: false,
@@ -1089,7 +1089,7 @@ export class EketServer {
           }
 
           if (this.redis) {
-            const prData = (await this.redisHelper!.hgetall(`pr:${task_id}`)) as any;
+            const prData = await this.redisHelper!.hgetall(`pr:${task_id}`);
             if (!prData || Object.keys(prData).length === 0) {
               res.status(404).json({
                 success: false,
