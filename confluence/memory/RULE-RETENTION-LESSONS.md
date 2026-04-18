@@ -150,6 +150,97 @@ EKET_HOOK_DRYRUN=true  # 只记日志，不阻断
 
 ---
 
+---
+
+## 6. dynamic import() 永不同步抛出
+
+**来源**: sprint-001 / TASK-049~053
+**适用**: Node.js ESM/CJS 混合项目中检测可选依赖
+
+### 问题
+
+```typescript
+// ❌ 错误假设：import() 失败会 throw
+try {
+  await import('optional-module');
+  moduleAvailable = true;
+} catch {
+  moduleAvailable = false; // 实际上 import() 返回 Promise，rejected promise 需 await 才能 catch
+}
+
+// 更危险的版本（非 await）：
+try {
+  import('optional-module'); // Promise 被丢弃，catch 永远不执行
+  moduleAvailable = true;
+} catch {
+  // 永远不会到这里
+}
+```
+
+### 正确方案
+
+```typescript
+// ✓ 同步检测：使用 createRequire
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+function isModuleAvailable(moduleName: string): boolean {
+  try {
+    require.resolve(moduleName);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// ✓ 异步检测（需 await）：
+async function tryImport(moduleName: string) {
+  try {
+    return await import(moduleName);
+  } catch {
+    return null;
+  }
+}
+```
+
+**规则**：需要同步判断模块是否存在 → 必须用 `createRequire`。`import()` 只适合异步加载且必须 `await`。
+
+---
+
+## 7. Redis keyPrefix 双重叠加模式
+
+**来源**: sprint-001 / backend Redis 集成
+**适用**: 所有使用 ioredis `keyPrefix` 配置的项目
+
+### 问题
+
+```typescript
+// ioredis 配置
+const redis = new Redis({ keyPrefix: 'eket:' });
+
+// ❌ 常量中已包含前缀
+const MASTER_LOCK_KEY = 'eket:master:lock';
+await redis.set(MASTER_LOCK_KEY, '1');
+// 实际写入的 key: "eket:eket:master:lock" ← 双重叠加！
+```
+
+### 正确方案
+
+```typescript
+// ✓ 常量只含语义部分，不含 keyPrefix 值
+const MASTER_LOCK_KEY = 'master:lock';
+await redis.set(MASTER_LOCK_KEY, '1');
+// 实际写入的 key: "eket:master:lock" ✓
+
+// 或者不使用 keyPrefix，在常量中明确包含
+const redis = new Redis(); // 无 keyPrefix
+const MASTER_LOCK_KEY = 'eket:master:lock'; // key 自带命名空间
+```
+
+**规则**：使用 `keyPrefix` 时，所有 key 常量必须**不含** keyPrefix 值。代码 review checklist 中加入此检查项。
+
+---
+
 **参见**：
 - [MULTI-AGENT-COLLAB-LESSONS.md](MULTI-AGENT-COLLAB-LESSONS.md) — 多智能体协作经验
 - [EKET-PROJECT-HYGIENE.md](EKET-PROJECT-HYGIENE.md) — EKET 特有卫生规则
