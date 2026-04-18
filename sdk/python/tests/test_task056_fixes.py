@@ -6,11 +6,14 @@ Unit tests for TASK-056 bug fixes:
   Bug-4: datetime.utcnow() replaced with datetime.now(timezone.utc)
 """
 
-import pytest
-from unittest.mock import patch, Mock
-from datetime import datetime, timezone
+import inspect
+from datetime import datetime
+from unittest.mock import patch
 
-from eket_sdk import EketClient, AgentType, AgentRole, AgentSpecialty, ReviewStatus
+import pytest
+
+import eket_sdk.client as _client_module
+from eket_sdk import AgentRole, AgentType, EketClient, MessageType, ReviewStatus
 from eket_sdk.exceptions import AuthenticationError
 
 
@@ -148,7 +151,6 @@ class TestBug3ReviewStatus:
 
         # Verify the serialized value sent to server
         call_kwargs = mock_request.call_args
-        import json
         sent_data = call_kwargs.kwargs.get("json") or call_kwargs[1].get("json", {})
         assert sent_data["status"] == "approved"
 
@@ -201,7 +203,6 @@ class TestBug4DatetimeUtcNow:
         mock_request.return_value.ok = True
         mock_request.return_value.json.return_value = {"message_id": "msg_001"}
 
-        from eket_sdk import MessageType
         client.send_message(
             from_id="slaver_001",
             to_id="master_001",
@@ -216,7 +217,5 @@ class TestBug4DatetimeUtcNow:
 
     def test_no_utcnow_in_client_source(self):
         """Ensure datetime.utcnow() is not present in client.py source."""
-        import inspect
-        import eket_sdk.client as client_module
-        source = inspect.getsource(client_module)
+        source = inspect.getsource(_client_module)
         assert "utcnow()" not in source, "datetime.utcnow() still present in client.py"
