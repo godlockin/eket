@@ -1,0 +1,57 @@
+name: workflow-lint
+
+# 防止 .github/workflows/*.yml 损坏（PR #77→#81 教训：duplicate step + 'truer' typo 因无 lint 合入）
+# 用 actionlint 做 GitHub Actions 语法 + 步骤结构校验。轻量快（<10s）。
+
+on:
+  push:
+    branches: [main, testing, miao]
+    paths:
+      - '.github/workflows/**'
+  pull_request:
+    branches: [main, testing, miao]
+    paths:
+      - '.github/workflows/**'
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run actionlint
+        uses: raven-actions/actionlint@v2
+        with:
+          # shellcheck SC2086 (word splitting) — workflow shell 里 gh CLI 大量使用裸变量，降级为 warning
+          # 其他 shellcheck check 保持默认
+          shellcheck_ignore: SC2086
+
+      - name: YAML parse + step-count sanity
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import sys, yaml, pathlib
+          errs = []
+          for p in sorted(pathlib.Path('.github/workflows').glob('*.yml')):
+              try:
+                  with open(p) as f:
+                      d = yaml.safe_load(f)
+              except Exception as e:
+                  errs.append(f"{p}: yaml parse failed: {e}")
+                  continue
+              jobs = (d or {}).get('jobs', {}) or {}
+              for jname, jdef in jobs.items():
+                  steps = (jdef or {}).get('steps', []) or []
+                  names = [s.get('name') or s.get('uses') or '?' for s in steps]
+                  dupes = [n for n in names if names.count(n) > 1 and n != '?']
+                  if dupes:
+                      errs.append(f"{p} job={jname}: duplicate step names {sorted(set(dupes))}")
+          if errs:
+              print('\n'.join(errs))
+              sys.exit(1)
+          print(f"OK: parsed all workflows, no duplicate step names")
+          PY
