@@ -22,9 +22,24 @@ jobs:
         run: |
           set -e
 
-          if echo "$PR_LABELS" | grep -qE '"(solo-dev|bot-pr)"'; then
-            echo "✓ label exempts self-loop check"
+          if echo "$PR_LABELS" | grep -qE '"bot-pr"'; then
+            echo "✓ bot-pr label exempts self-loop check"
             exit 0
+          fi
+
+          # solo-dev: 不再无条件豁免，要求 PR body 含 AI review 证据 (codex/claude/gemini review)
+          if echo "$PR_LABELS" | grep -qE '"solo-dev"'; then
+            if echo "$PR_BODY" | grep -qiE '(codex|claude|gemini|gpt-?[0-9]|chatgpt)[^\n]{0,40}(review|reviewed|reviewer|approved)|AI[- ]?review:'; then
+              echo "✓ solo-dev with AI review evidence found in PR body"
+              exit 0
+            else
+              echo "✗ solo-dev label set, but PR body lacks AI review evidence."
+              echo "   要求：PR body 含至少一条 AI review 证据，例如:"
+              echo "     - 'Codex review: PASS - no issues found'"
+              echo "     - 'Claude reviewed: 2 nits, both addressed'"
+              echo "     - 'AI-Review: gemini-2.0 - approved'"
+              exit 1
+            fi
           fi
 
           ticket_ids=$(echo "$PR_BODY" | grep -oE '(FEAT|TASK|FIX|TEST|DEPL|T-DESIGN|EPIC)-[0-9]+' | sort -u)
@@ -60,7 +75,7 @@ jobs:
 
           if [[ $fail -ne 0 ]]; then
             echo ""
-            echo "豁免: label 'solo-dev' 或 'bot-pr'"
+            echo "豁免: label 'bot-pr'，或 'solo-dev' + PR body 含 AI review 证据"
             echo "修正: Master 必须在 ticket 里写 dispatched_by 字段且不是 Slaver 本人"
             exit 1
           fi

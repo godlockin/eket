@@ -2,7 +2,7 @@
 
 > 目的：让本仓库新增的 5 条 CI 闸门（pr-body-check / pr-reviewer-check / dual-engine / perf-baseline / debrief-check）成为**强制**规则，而不是"装饰性"检查。
 > Admin 也无法 bypass（除非显式开启 allow admins）。
-
+> ⚠️ **命名约定陷阱**：GitHub branch protection 中的 “check name” 使用的是 workflow YAML 里的 **`jobs.<id>.name:`**（或者如果没写 name 则是 job key），**不是**顺位的 `name:` 顶层字段。调试时用 `gh api /repos/:owner/:repo/commits/:sha/check-runs --jq '.check_runs[].name'` 查真实名字。
 ---
 
 ## 必需的状态检查

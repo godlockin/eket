@@ -487,6 +487,23 @@ EOF
     echo -e "${BLUE}## 步骤 4.2: 分析项目状态${NC}"
     echo ""
 
+    # v0.9.4: 注入最近 retro stub（让 Slaver 跨 session 继承经验）
+    RETRO_INBOX="confluence/memory/retrospectives/INBOX"
+    if [ -d "$RETRO_INBOX" ]; then
+        RECENT_RETROS=$(ls -1t "$RETRO_INBOX"/*.md 2>/dev/null | grep -v README.md | head -3)
+        if [ -n "$RECENT_RETROS" ]; then
+            echo -e "${YELLOW}📣 最近合并的 PR retro stub (必读)：${NC}"
+            echo "$RECENT_RETROS" | while IFS= read -r f; do
+                title=$(grep -m1 '^# ' "$f" | sed 's/^# //')
+                echo "  - $f"
+                echo "    $title"
+            done
+            echo "  → 完整内容请 cat $RETRO_INBOX/<file>; 24h 内升级为完整 retro"
+            echo ""
+        fi
+    fi
+
+
     # 读取 Confluence 文档
     if [ -d "confluence/projects" ]; then
         DOC_COUNT=$(find confluence/projects -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
