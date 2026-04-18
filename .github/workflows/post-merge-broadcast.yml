@@ -113,42 +113,4 @@ jobs:
           fi
           echo "Enabling auto-merge for PR #$PR"
           gh pr merge "$PR" --squash --delete-branch --auto || \
-            gh pr merge "$PR" --squash --delete-branch || truer${{ github.event.pull_request.number }}
-          delete-branch: true
-          title: "chore(retro): broadcast PR #${{ github.event.pull_request.number }} stub"
-          base: main
-          labels: |
-            auto-broadcast
-            bot-pr
-            infra-only
-            docs-only
-          body: |
-            自动生成的 retro stub，对应已合并的 #${{ github.event.pull_request.number }}。
-
-            ## Tests
-            Tests: 0 N/A passed (auto-broadcast bot PR — infra-only/docs-only)
-
-            ## Ref
-            Ref: ${{ steps.gen.outputs.ticket }}
-
-            ## AI-Review
-            AI-Review: post-merge-broadcast bot — auto-generated, no human-authored code
-
-            <!-- bot-pr label exempts block-self-loop; docs-only/infra-only exempts verify-test-evidence -->
-
-      - name: Enable auto-merge on broadcast PR
-        if: success()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          # peter-evans returns the PR number via API call; fetch newest auto-broadcast PR
-          PR=$(gh pr list --label auto-broadcast --state open --json number,headRefName \
-            --jq ".[] | select(.headRefName==\"retro/auto-pr${{ github.event.pull_request.number }}\") | .number" | head -1)
-          if [ -z "$PR" ]; then
-            echo "No PR opened (likely no changes); skip auto-merge"
-            exit 0
-          fi
-          echo "Enabling auto-merge for PR #$PR"
-          gh pr merge "$PR" --squash --delete-branch --auto || \
             gh pr merge "$PR" --squash --delete-branch || true
