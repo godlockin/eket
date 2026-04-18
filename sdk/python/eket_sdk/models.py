@@ -124,6 +124,14 @@ class TestStatus(str, Enum):
     SKIPPED = "skipped"
 
 
+class ReviewStatus(str, Enum):
+    """Pull request review decision enumeration."""
+
+    APPROVED = "approved"
+    CHANGES_REQUESTED = "changes_requested"
+    REJECTED = "rejected"
+
+
 # ============================================================================
 # Data Models
 # ============================================================================

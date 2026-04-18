@@ -17,7 +17,7 @@ from .client import EketClient
 from .models import (
     Agent, Task, Message, PR,
     AgentType, AgentRole, AgentSpecialty, AgentStatus,
-    TaskStatus, MessageType, PRStatus,
+    TaskStatus, MessageType, PRStatus, ReviewStatus,
 )
 from .exceptions import (
     EketError,
@@ -44,6 +44,7 @@ __all__ = [
     "TaskStatus",
     "MessageType",
     "PRStatus",
+    "ReviewStatus",
     # Exceptions
     "EketError",
     "AuthenticationError",
