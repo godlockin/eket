@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "eket://protocol/heartbeat",
+  "title": "Heartbeat File",
+  "description": ".eket/state/<role>_<instance_id>_heartbeat.yml 的内容格式（YAML 文件，本 schema 是其对应 JSON 结构）",
+  "type": "object",
+  "required": ["instance_id", "role", "status", "timestamp"],
+  "properties": {
+    "instance_id": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": ["master", "slaver"]
+    },
+    "specialty": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["idle", "busy", "working", "blocked", "offline"]
+    },
+    "current_task": {
+      "type": ["string", "null"],
+      "description": "当前领取的 ticket ID"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "capacity": {
+      "type": "object",
+      "properties": {
+        "max_concurrent": { "type": "integer", "minimum": 1 },
+        "current_load": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "host": { "type": "string" },
+    "pid": { "type": ["integer", "null"] }
+  },
+  "additionalProperties": false
+}

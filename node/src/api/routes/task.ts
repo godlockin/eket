@@ -122,8 +122,13 @@ TaskRouter.get('/:id', async (_req: Request, res: Response): Promise<void> => {
     const result = await getAdapter().getTaskStatus(id);
 
     if (!result.success) {
-      res.status(500).json({
-        error: 'query_failed',
+      const errCode = (result.error as { code?: string }).code ?? '';
+      const isNotFound =
+        errCode === 'TASK_NOT_FOUND' ||
+        errCode === 'NOT_FOUND' ||
+        result.error.message?.toLowerCase().includes('not found');
+      res.status(isNotFound ? 404 : 500).json({
+        error: isNotFound ? 'not_found' : 'query_failed',
         message: result.error.message,
       });
       return;
