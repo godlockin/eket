@@ -12,6 +12,7 @@
  * - 健康检查
  */
 
+import { createRequire } from 'module';
 import { Command } from 'commander';
 import ora from 'ora';
 
@@ -169,16 +170,18 @@ const pkg = {
   description: 'EKET Framework CLI - AI Agent Collaboration Tools',
 };
 
+const _require = createRequire(import.meta.url);
+
 /**
- * 检查 Node.js 模块是否可用
+ * 检查 Node.js 模块是否可用（同步检测）
  * 用于 Shell 脚本检测
  */
 function checkAvailability(): boolean {
   try {
-    // 检查关键依赖
-    import('ioredis');
-    import('better-sqlite3');
-    import('commander');
+    // 使用同步 require 检测关键依赖
+    _require('ioredis');
+    _require('better-sqlite3');
+    _require('commander');
     return true;
   } catch {
     return false;
