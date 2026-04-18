@@ -27,6 +27,18 @@ if [[ -x scripts/check-ticket-immutability.sh ]]; then
   }
 fi
 
+# 1c) Workflow YAML 校验 — 防止 .github/workflows/*.yml 损坏 (PR #77→#81 教训)
+staged_wf=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^\.github/workflows/.*\.ya?ml$' || true)
+if [[ -n "$staged_wf" && -x scripts/lint-workflows.sh ]]; then
+  # shellcheck disable=SC2086
+  bash scripts/lint-workflows.sh $staged_wf || {
+    echo ""
+    echo "pre-commit: workflow YAML 校验失败 (duplicate step / parse error)"
+    echo "参考: PR #77 corruption / TASK-054"
+    exit 1
+  }
+fi
+
 # 2) 复盘 hook — 若 ticket 从 in_progress/review 切到 done 必须同时更新 confluence/memory
 if [[ -x scripts/check-debrief.sh ]]; then
   # 只在 HEAD 存在时运行（新仓库首次 commit 跳过）
