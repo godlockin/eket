@@ -19,11 +19,9 @@ on:
       - '.github/workflows/perf-baseline.yml'
   pull_request:
     branches: [miao, testing, main]
-    paths:
-      - 'node/src/**'
-      - 'node/package*.json'
-      - 'benchmarks/**'
-      - '.github/workflows/perf-baseline.yml'
+    # NOTE: 不加 paths 过滤！benchmark 是 required check，
+    # 加了 paths 会让 docs/infra-only PR 永远 'expected' → merge 死锁。
+    # 不相关 PR 跑一次轻量 benchmark (~1min) 是可接受成本。
 
 jobs:
   benchmark:
