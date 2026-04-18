@@ -44,6 +44,7 @@ export interface MessageQueue {
 export class RedisMessageQueue implements MessageQueue {
   private pool: RedisConnectionPool;
   private subscribedChannels: Map<string, MessageHandler> = new Map();
+  private subscriberClients: Map<string, RedisClient> = new Map();
   private config: { host: string; port: number; password?: string };
 
   constructor(config: MessageQueueConfig) {
@@ -65,8 +66,12 @@ export class RedisMessageQueue implements MessageQueue {
   }
 
   async disconnect(): Promise<void> {
-    await this.pool.close();
+    for (const [, client] of this.subscriberClients) {
+      await client.disconnect();
+    }
+    this.subscriberClients.clear();
     this.subscribedChannels.clear();
+    await this.pool.close();
   }
 
   async publish(channel: string, message: Message): Promise<Result<void>> {
@@ -101,8 +106,6 @@ export class RedisMessageQueue implements MessageQueue {
       };
     }
 
-    this.subscribedChannels.set(channel, handler);
-
     // 使用独立的订阅连接（不通过连接池）
     const subscriber = new RedisClient({
       host: this.config.host,
@@ -115,7 +118,11 @@ export class RedisMessageQueue implements MessageQueue {
       return result;
     }
 
-    return await subscriber.subscribeMessage(channel, (data) => {
+    // Store before subscribing to allow cleanup on failure
+    this.subscribedChannels.set(channel, handler);
+    this.subscriberClients.set(channel, subscriber);
+
+    const subResult = await subscriber.subscribeMessage(channel, (data) => {
       try {
         const message = JSON.parse(data) as Message;
         handler(message);
@@ -123,11 +130,25 @@ export class RedisMessageQueue implements MessageQueue {
         console.error('[Redis MQ] Parse message error');
       }
     });
+
+    if (!subResult.success) {
+      // Clean up to prevent ALREADY_SUBSCRIBED residue
+      this.subscribedChannels.delete(channel);
+      this.subscriberClients.delete(channel);
+      await subscriber.disconnect();
+      return subResult;
+    }
+
+    return subResult;
   }
 
   async unsubscribe(channel: string): Promise<void> {
+    const subscriberClient = this.subscriberClients.get(channel);
+    if (subscriberClient) {
+      await subscriberClient.disconnect();
+      this.subscriberClients.delete(channel);
+    }
     this.subscribedChannels.delete(channel);
-    // Redis 客户端目前没有直接的 unsubscribe 方法，需要时添加
   }
 
   getMode(): 'redis' | 'file' {
@@ -297,9 +318,13 @@ export class HybridMessageQueue implements MessageQueue {
         async () => await redisMQ.publish(channel, message),
         `publish:${channel}`
       );
-      // 转换 Result 类型
       if (result.success) {
         return { success: true, data: undefined };
+      }
+      // Redis failed — degrade to fileMQ
+      console.warn('[Hybrid MQ] Redis publish failed, degrading to file queue');
+      if (this.fileMQ) {
+        return await this.fileMQ.publish(channel, message);
       }
       return result;
     }

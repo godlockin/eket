@@ -12,6 +12,7 @@
  * - 健康检查
  */
 
+import { createRequire } from 'module';
 import { Command } from 'commander';
 import ora from 'ora';
 
@@ -50,6 +51,9 @@ import { printError, logSuccess, logWarning } from './utils/error-handler.js';
 import { logger, initLogger } from './utils/logger.js';
 import { startGlobalMemoryMonitoring } from './utils/memory-monitor.js';
 import { setupProcessHandlers, gracefulShutdown } from './utils/process-cleanup.js';
+
+// createRequire for synchronous module availability detection
+const _require = createRequire(import.meta.url);
 
 // Skills 系统导出（仅供库使用者 import，不参与 CLI 命令）
 // 使用方式：import { SkillsRegistry, SkillLoader, UnifiedSkillInterface } from 'eket-cli';
@@ -170,15 +174,16 @@ const pkg = {
 };
 
 /**
- * 检查 Node.js 模块是否可用
+ * 检查 Node.js 模块是否可用（同步检测）
  * 用于 Shell 脚本检测
+ * NOTE: dynamic import() 返回 Promise，不会同步 throw，必须用 createRequire 做同步检测
  */
 function checkAvailability(): boolean {
   try {
-    // 检查关键依赖
-    import('ioredis');
-    import('better-sqlite3');
-    import('commander');
+    // 使用同步 require 检测关键依赖
+    _require('ioredis');
+    _require('better-sqlite3');
+    _require('commander');
     return true;
   } catch {
     return false;
