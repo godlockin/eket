@@ -1,0 +1,78 @@
+name: post-merge-broadcast
+
+# 当 PR 合入 main 后，自动生成 retro stub 并 commit 回去
+# Slaver 启动时会读最新 stub，确保经验跨 session 流动
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  broadcast:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate retro stub
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p confluence/memory/retrospectives/INBOX
+          TS=$(date -u +%Y%m%dT%H%M%SZ)
+          TICKET=$(printf '%s\n%s' "$PR_TITLE" "$PR_BODY" \
+            | grep -oiE '(FEAT|TASK|FIX|TEST|DEPL|T-DESIGN|EPIC)-[0-9A-Z]+' \
+            | head -1 || echo "UNKNOWN")
+          STUB="confluence/memory/retrospectives/INBOX/${TS}-PR${PR_NUMBER}-${TICKET}.md"
+
+          {
+            echo "# Retro stub — PR #${PR_NUMBER} (${TICKET})"
+            echo
+            echo "- merged_at: ${TS}"
+            echo "- merge_sha: ${MERGE_SHA}"
+            echo "- author: ${PR_AUTHOR}"
+            echo "- title: ${PR_TITLE}"
+            echo "- url: ${PR_URL}"
+            echo
+            echo "## TODO (24h SLA)"
+            echo "- [ ] What worked"
+            echo "- [ ] What hurt + root cause"
+            echo "- [ ] Lessons → 沉淀到 confluence/memory/{RULE-RETENTION-LESSONS,BORROWED-WISDOM}.md"
+            echo "- [ ] 移动本文件到 confluence/memory/retrospectives/$(date -u +%Y)/"
+            echo
+            echo "## PR body snapshot"
+            echo
+            echo '```'
+            printf '%s\n' "${PR_BODY:-(empty)}" | head -200
+            echo '```'
+          } > "$STUB"
+
+          echo "Wrote $STUB"
+
+      - name: Commit & push back to main
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No retro stub to commit (already exists?)"
+            exit 0
+          fi
+          git config user.name "eket-broadcast-bot"
+          git config user.email "broadcast@eket.local"
+          git add confluence/memory/retrospectives/INBOX/
+          git commit -m "chore(retro): broadcast PR #${{ github.event.pull_request.number }} stub [skip ci]"
+          git push origin main
