@@ -290,6 +290,13 @@ export interface AgentProfile {
 // Instance Types (Phase 4.1)
 // ============================================================================
 
+export interface LevelChange {
+  from: number;
+  to: number;
+  reason: string;
+  at: string; // ISO timestamp
+}
+
 export interface Instance {
   id: string;
   type: 'human' | 'ai';
@@ -301,6 +308,8 @@ export interface Instance {
   lastHeartbeat?: number;
   metadata?: Record<string, unknown>;
   updatedAt?: number; // Added for compatibility
+  currentLevel: 1 | 2 | 3;
+  levelChanges: LevelChange[];
 }
 
 export interface InstanceRegistryConfig {
