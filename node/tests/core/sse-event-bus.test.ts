@@ -131,4 +131,29 @@ describe('SSEEventBus', () => {
       expect((res as any)._writes.length).toBe(writesBefore); // no new writes
     });
   });
+
+  describe('dead connection cleanup', () => {
+    it('removes subscriber when writableEnded=true after publish', () => {
+      const res = makeMockRes();
+      bus.subscribe('chan-dead', res);
+      expect(bus.subscriberCount('chan-dead')).toBe(1);
+
+      // Mark connection as ended
+      (res as any).writableEnded = true;
+
+      bus.publish('chan-dead', { type: 'heartbeat', data: {}, timestamp: new Date().toISOString() });
+      expect(bus.subscriberCount('chan-dead')).toBe(0);
+    });
+
+    it('removes subscriber when _write throws', () => {
+      const res = makeMockRes();
+      // Override write to throw
+      (res as any).write = () => { throw new Error('socket closed'); };
+      bus.subscribe('chan-throw', res);
+      expect(bus.subscriberCount('chan-throw')).toBe(1);
+
+      bus.publish('chan-throw', { type: 'heartbeat', data: {}, timestamp: new Date().toISOString() });
+      expect(bus.subscriberCount('chan-throw')).toBe(0);
+    });
+  });
 });

@@ -100,11 +100,9 @@ export class SSEEventBus {
 
     const dead: Response[] = [];
     for (const res of subs) {
-      if (res.writableEnded) {
+      if (res.writableEnded || !this._write(res, event)) {
         dead.push(res);
-        continue;
       }
-      this._write(res, event);
     }
     // Clean up dead connections
     for (const res of dead) {
@@ -112,12 +110,14 @@ export class SSEEventBus {
     }
   }
 
-  private _write(res: Response, event: SSEEvent): void {
+  private _write(res: Response, event: SSEEvent): boolean {
     try {
       const data = JSON.stringify(event);
       res.write(`event: ${event.type}\ndata: ${data}\n\n`);
+      return true;
     } catch (err) {
       logger.warn('sse_write_error', { error: (err as Error).message });
+      return false;
     }
   }
 }

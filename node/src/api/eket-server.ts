@@ -1177,6 +1177,9 @@ export class EketServer {
       req.on('close', () => {
         sseEventBus.unsubscribe(channelId, res);
       });
+      req.on('error', () => {
+        sseEventBus.unsubscribe(channelId, res);
+      });
     });
   }
 

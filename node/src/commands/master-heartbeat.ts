@@ -486,7 +486,7 @@ export function generateReport(projectRoot: string): HeartbeatReport {
   const blockedTickets = tickets.filter((t) => t.blockedBy.length > 0);
 
   // Use canProceed() to identify blocked tickets whose dependencies are now satisfied
-  const failedIds = new Set(tickets.filter((t) => t.status === 'failed').map((t) => t.id));
+  const failedIds = new Set(tickets.filter((t) => t.status.toLowerCase() === 'failed').map((t) => t.id));
   const completedIds = new Set(doneTickets.map((t) => t.id));
   const unlockableTickets = blockedTickets.filter((t) =>
     canProceed(t.blockedBy, t.triggerRule, completedIds, failedIds)

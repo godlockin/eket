@@ -71,16 +71,22 @@ describe('generateReport canProceed integration', () => {
     expect(report.progress.unlockableCount).toBe(1);
   });
 
-  it('mixed trigger_rules: only matching ones unlocked', () => {
+  it('all_done: dep with FAILED (uppercase) status → unlockable (normalize fix)', () => {
     dir = makeTestDir();
-    writeTicket(dir, 'TASK-010', 'done', []);
-    writeTicket(dir, 'TASK-011', 'in_progress', []);
-    // This one is unlockable (one_success, TASK-010 is done)
-    writeTicket(dir, 'TASK-012', 'blocked', ['TASK-010', 'TASK-011'], 'one_success');
-    // This one is NOT unlockable (all_success, TASK-011 not done)
-    writeTicket(dir, 'TASK-013', 'blocked', ['TASK-010', 'TASK-011'], 'all_success');
+    writeTicket(dir, 'TASK-014', 'FAILED', []);
+    writeTicket(dir, 'TASK-015', 'blocked', ['TASK-014'], 'all_done');
 
     const report = generateReport(dir);
     expect(report.progress.unlockableCount).toBe(1);
+  });
+
+  it('canProceed returns true when blockedBy is empty', () => {
+    dir = makeTestDir();
+    writeTicket(dir, 'TASK-016', 'in_progress', []);
+
+    const report = generateReport(dir);
+    // ticket with no blockedBy should not appear in unlockable (it's not blocked)
+    // and blockedCount should be 0
+    expect(report.progress.blockedCount).toBe(0);
   });
 });

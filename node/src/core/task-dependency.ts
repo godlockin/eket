@@ -28,6 +28,8 @@ export function canProceed(
       return blockedBy.some((id) => completedIds.has(id));
     case 'all_done':
       return blockedBy.every((id) => completedIds.has(id) || failedIds.has(id));
+    default:
+      return false;
   }
 }
 
