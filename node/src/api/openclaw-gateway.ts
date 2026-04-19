@@ -12,6 +12,7 @@ import http from 'http';
 import { authMiddleware } from './middleware/auth.js';
 import { AgentRouter } from './routes/agent.js';
 import { MemoryRouter } from './routes/memory.js';
+import { SkillsRouter, AgentSkillsRouter } from './routes/skills.js';
 import { TaskRouter } from './routes/task.js';
 import { WorkflowRouter } from './routes/workflow.js';
 
@@ -57,6 +58,8 @@ export class OpenCLAWGateway {
     this.app.use('/api/v1/task', TaskRouter);
     this.app.use('/api/v1/agent', AgentRouter);
     this.app.use('/api/v1/memory', MemoryRouter);
+    this.app.use('/api/v1/skills', SkillsRouter);
+    this.app.use('/api/v1/agents/:id/skills', AgentSkillsRouter);
 
     // 健康检查
     this.app.get('/health', (_req: Request, res: Response) => {

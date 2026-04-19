@@ -271,6 +271,13 @@ export class SQLiteClient {
       );
 
       CREATE INDEX IF NOT EXISTS idx_checkpoint_slaver ON execution_checkpoints(slaver_id);
+
+      -- Agent-Skills 关联表（TASK-068）
+      CREATE TABLE IF NOT EXISTS agent_skills (
+        agent_id  TEXT NOT NULL,
+        skill_id  TEXT NOT NULL,
+        PRIMARY KEY (agent_id, skill_id)
+      );
     `);
   }
 
@@ -748,6 +755,59 @@ export class SQLiteClient {
 
       const claimed = claimTxn();
       return { success: true, data: claimed };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
+      };
+    }
+  }
+
+  /**
+   * 设置 Agent 绑定的 Skills（全量替换）
+   */
+  setAgentSkills(agentId: string, skillIds: string[]): Result<void> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const txn = this.db.transaction(() => {
+        this.db!.prepare('DELETE FROM agent_skills WHERE agent_id = ?').run(agentId);
+        const insert = this.db!.prepare(
+          'INSERT OR IGNORE INTO agent_skills (agent_id, skill_id) VALUES (?, ?)'
+        );
+        for (const skillId of skillIds) {
+          insert.run(agentId, skillId);
+        }
+      });
+      txn();
+      return { success: true, data: undefined };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
+      };
+    }
+  }
+
+  /**
+   * 获取 Agent 绑定的 Skills
+   */
+  getAgentSkills(agentId: string): Result<string[]> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const rows = this.db
+        .prepare('SELECT skill_id FROM agent_skills WHERE agent_id = ? ORDER BY skill_id')
+        .all(agentId) as { skill_id: string }[];
+      return { success: true, data: rows.map((r) => r.skill_id) };
     } catch (e) {
       return {
         success: false,
