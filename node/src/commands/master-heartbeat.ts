@@ -17,6 +17,7 @@ import { Command } from 'commander';
 import { type SlaverHeartbeat } from '../types/index.js';
 import { EketErrorCode } from '../types/index.js';
 import { printError } from '../utils/error-handler.js';
+import { globalSSEBus } from '../core/sse-event-bus.js';
 
 // ============================================================================
 // Constants
@@ -784,6 +785,12 @@ export function registerMasterHeartbeat(program: Command): void {
           }
 
           const report = generateReport(projectRoot);
+
+          try {
+            globalSSEBus.broadcast({ type: 'system_status', data: { report }, timestamp: new Date().toISOString() });
+          } catch {
+            // silently ignore SSE broadcast errors
+          }
 
           if (options.json) {
             console.log(JSON.stringify(report, null, 2));

@@ -20,6 +20,7 @@ import path from 'path';
 import Ajv from 'ajv';
 import cors from 'cors';
 import express, { Express, Request, Response, NextFunction } from 'express';
+import { globalSSEBus } from '../core/sse-event-bus.js';
 import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import morgan from 'morgan';
@@ -1154,6 +1155,17 @@ export class EketServer {
         }
       }
     );
+
+    // GET /api/v1/stream/__dashboard__ (must be before :channelId)
+    this.app.get('/api/v1/stream/__dashboard__', (_req: Request, res: Response) => {
+      globalSSEBus.subscribe('__dashboard__', res);
+    });
+
+    // GET /api/v1/stream/:channelId
+    this.app.get('/api/v1/stream/:channelId', (req: Request, res: Response) => {
+      const channelId = req.params['channelId'] as string;
+      globalSSEBus.subscribe(channelId, res);
+    });
   }
 
   // =========================================================================

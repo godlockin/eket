@@ -7,10 +7,10 @@
 **优先级**: P1
 **重要性**: high
 
-**状态**: ready
+**状态**: done
 **创建时间**: 2026-04-19
 **创建者**: Master
-**负责人**: 待认领
+**负责人**: Slaver (backend)
 
 **依赖关系**:
 - blocks: [TASK-073]
@@ -89,3 +89,37 @@ cd node && npm test -- --testPathPattern=sse-event-bus
 ## 回滚
 
 新增端点和模块，不修改现有 WebSocket 逻辑，并行运行。
+
+---
+
+## 执行日志
+
+**领取时间**: 2026-04-19
+**完成时间**: 2026-04-19
+**执行者**: Slaver (backend)
+
+### 实现细节
+
+1. 新建 `node/src/core/sse-event-bus.ts` — SSEEventBus 类 + globalSSEBus 单例
+   - 支持 9 种 SSEEventType
+   - channel 级隔离，多客户端连接
+   - publish 自动广播到 `__dashboard__`
+   - subscribe 返回 unsubscribe 函数，监听 `res.on('close')`
+
+2. 修改 `node/src/api/eket-server.ts` — 新增两个端点：
+   - `GET /api/v1/stream/__dashboard__`
+   - `GET /api/v1/stream/:channelId`
+
+3. 修改 `node/src/commands/master-heartbeat.ts` — generateReport 后广播 system_status
+
+4. 新建 `node/tests/core/sse-event-bus.test.ts` — 8 个单元测试全部通过
+
+### 测试结果
+
+```
+Tests: 8 passed, 8 total
+```
+
+### PR
+
+branch: feature/TASK-072-sse-event-bus
