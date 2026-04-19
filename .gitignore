@@ -38,11 +38,6 @@ confluence/memory/retrospectives/*
 htmlcov/
 obsidian-plugins/
 
-# docs-site 构建产物（docs-site/.gitignore 已有，根目录兜底）
-docs-site/node_modules/
-docs-site/build/
-docs-site/.docusaurus/
-
 # 空目录占位
 .benchmarks/
 
