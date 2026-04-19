@@ -88,8 +88,8 @@ const DEFAULT_WARM_STANDBY_CONFIG: WarmStandbyConfig = {
 // Constants
 // ============================================================================
 
-const MASTER_LOCK_KEY = 'eket:master:lock';
-const MASTER_DECLARATION_KEY = 'eket:master:declaration';
+const MASTER_LOCK_KEY = 'master:lock';
+const MASTER_DECLARATION_KEY = 'master:declaration';
 const MASTER_MARKER_FILE = '.eket_master_marker';
 
 // ============================================================================
@@ -311,6 +311,15 @@ export class MasterElection {
           master_id TEXT NOT NULL,
           acquired_at INTEGER NOT NULL,
           expires_at INTEGER NOT NULL
+        )
+      `);
+
+      // Bug-2 fix: 创建 master_declaration 表（declarationPeriod 依赖此表）
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS master_declaration (
+          id INTEGER PRIMARY KEY CHECK (id = 1),
+          value TEXT NOT NULL,
+          declared_at INTEGER NOT NULL
         )
       `);
 
@@ -691,7 +700,7 @@ export class MasterElection {
           await this.redisClient
             .getClient()
             ?.setex(
-              'eket:master:heartbeat',
+              'master:heartbeat',
               Math.floor(this.warmStandbyConfig.heartbeatTimeout / 1000),
               JSON.stringify(this.masterState)
             );
@@ -721,7 +730,7 @@ export class MasterElection {
         // Master 定期同步状态到共享存储
         if (this.redisClient) {
           await this.redisClient.getClient()?.setex(
-            'eket:master:state',
+            'master:state',
             this.warmStandbyConfig.stateSyncInterval / 1000 + 60,
             JSON.stringify({
               ...this.masterState,
@@ -753,7 +762,7 @@ export class MasterElection {
 
       // 添加到 Backup Master 列表
       if (this.redisClient) {
-        await this.redisClient.getClient()?.sadd('eket:master:backups', this.instanceId);
+        await this.redisClient.getClient()?.sadd('master:backups', this.instanceId);
 
         // 定期发送 Backup 心跳
         const backupHeartbeat = async () => {
@@ -762,7 +771,7 @@ export class MasterElection {
           }
 
           await this.redisClient?.getClient()?.setex(
-            `eket:master:backup:${this.instanceId}`,
+            `master:backup:${this.instanceId}`,
             Math.floor(this.warmStandbyConfig.heartbeatTimeout / 1000),
             JSON.stringify({
               instanceId: this.instanceId,
@@ -799,7 +808,7 @@ export class MasterElection {
     }
 
     try {
-      const heartbeat = await this.redisClient.getClient()?.get('eket:master:heartbeat');
+      const heartbeat = await this.redisClient.getClient()?.get('master:heartbeat');
       if (!heartbeat) {
         return false;
       }
@@ -855,7 +864,7 @@ export class MasterElection {
     }
 
     try {
-      const heartbeat = await this.redisClient.getClient()?.get('eket:master:heartbeat');
+      const heartbeat = await this.redisClient.getClient()?.get('master:heartbeat');
       if (!heartbeat) {
         return null;
       }
@@ -875,7 +884,7 @@ export class MasterElection {
     }
 
     try {
-      const backups = await this.redisClient.getClient()?.smembers('eket:master:backups');
+      const backups = await this.redisClient.getClient()?.smembers('master:backups');
       return backups || [];
     } catch {
       return [];
@@ -927,8 +936,8 @@ export class MasterElection {
     // 清理锁
     if (this.redisClient) {
       await this.redisClient.getClient()?.del(MASTER_LOCK_KEY);
-      await this.redisClient.getClient()?.del('eket:master:heartbeat');
-      await this.redisClient.getClient()?.del('eket:master:state');
+      await this.redisClient.getClient()?.del('master:heartbeat');
+      await this.redisClient.getClient()?.del('master:state');
       await this.redisClient.disconnect();
     }
 
@@ -945,6 +954,10 @@ export class MasterElection {
     if (fs.existsSync(lockDir)) {
       fs.rmSync(lockDir, { recursive: true, force: true });
     }
+
+    // Bug-1 fix: 删除 Master marker 文件，确保 backup 可晋升
+    const markerPath = path.join(this.config.projectRoot, 'confluence', MASTER_MARKER_FILE);
+    fs.rmSync(markerPath, { force: true });
 
     console.log('[MasterElection] Relinquished master status');
   }

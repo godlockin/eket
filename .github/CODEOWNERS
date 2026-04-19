@@ -1,0 +1,26 @@
+# EKET CODEOWNERS
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-configuration/about-code-owners
+#
+# Any change to perf baselines or CI gates requires an owner review.
+# Owners are placeholder GitHub handles — replace before enabling branch protection.
+
+# Performance baseline: must be deliberate, reviewer-approved bump.
+/benchmarks/baseline.json         @eket-perf-owners
+
+# CI gates: changing these can silently weaken the pipeline.
+/.github/workflows/dual-engine.yml    @eket-ci-owners
+/.github/workflows/perf-baseline.yml  @eket-ci-owners @eket-perf-owners
+/.github/workflows/debrief-check.yml  @eket-ci-owners
+
+# Dual-engine framework: equivalence guarantees live here.
+/tests/dual-engine/                   @eket-platform-owners
+
+# State writers / schemas: changes here affect byte-equivalence.
+/lib/state/                           @eket-platform-owners
+/node/src/core/state/                 @eket-platform-owners
+/protocol/                            @eket-platform-owners
+
+# Master/Slaver role rules: governance, not code.
+/template/docs/MASTER-*.md            @eket-governance-owners
+/template/docs/SLAVER-*.md            @eket-governance-owners
+/template/docs/EXPERT-PANEL-*.md      @eket-governance-owners

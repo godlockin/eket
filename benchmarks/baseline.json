@@ -1,0 +1,7 @@
+{
+  "_note": "Performance regression baseline. Values are p95 in ms. CI fails if actual > baseline * (1 + threshold_pct/100). Update deliberately when a legit perf change lands; reviewer MUST approve baseline bumps.",
+  "_source": "benchmarks/simple-benchmark.js on Round 4 (committed 2026-04-08)",
+  "_threshold_pct": 30,
+  "enqueue_p95_ms": 0.771,
+  "dequeue_p95_ms": 1.535
+}
