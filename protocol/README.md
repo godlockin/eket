@@ -1,3 +1,6 @@
+> **权威源声明**：本目录是 EKET Shell/Node/SDK 三端的共同契约。
+> 导航入口：`docs/reference/EKET-PROTOCOL.md`（仅导航，不含内容副本）。
+
 # EKET Protocol
 
 **版本**: 见 [`VERSION`](VERSION)
