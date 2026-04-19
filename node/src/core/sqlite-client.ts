@@ -782,16 +782,19 @@ export class SQLiteClient {
       };
     }
     try {
-      const row = this.db
-        .prepare('SELECT COALESCE(MAX(seq), -1) + 1 AS next_seq FROM task_messages WHERE task_id = ?')
-        .get(taskId) as { next_seq: number };
-      const seq = msg.seq !== undefined ? msg.seq : row.next_seq;
-      this.db
-        .prepare(
-          `INSERT INTO task_messages (task_id, seq, type, tool, content, input_json, output)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`
-        )
-        .run(taskId, seq, msg.type, msg.tool ?? null, msg.content ?? null, msg.input_json ?? null, msg.output ?? null);
+      const insert = this.db.transaction(() => {
+        const row = this.db!
+          .prepare('SELECT COALESCE(MAX(seq), -1) + 1 AS next_seq FROM task_messages WHERE task_id = ?')
+          .get(taskId) as { next_seq: number };
+        const seq = msg.seq !== undefined ? msg.seq : row.next_seq;
+        this.db!
+          .prepare(
+            `INSERT INTO task_messages (task_id, seq, type, tool, content, input_json, output)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`
+          )
+          .run(taskId, seq, msg.type, msg.tool ?? null, msg.content ?? null, msg.input_json ?? null, msg.output ?? null);
+      });
+      insert();
       return { success: true, data: undefined };
     } catch (e) {
       return {
