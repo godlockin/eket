@@ -30,7 +30,7 @@ import * as path from 'path';
 
 import Database from 'better-sqlite3';
 
-import type { Retrospective, RetroContent, Result } from '../types/index.js';
+import type { Retrospective, RetroContent, Result, TaskMessage } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
 
 /**
@@ -271,6 +271,21 @@ export class SQLiteClient {
       );
 
       CREATE INDEX IF NOT EXISTS idx_checkpoint_slaver ON execution_checkpoints(slaver_id);
+
+      -- 任务消息表（结构化存储 LLM 执行消息）
+      CREATE TABLE IF NOT EXISTS task_messages (
+        id        INTEGER PRIMARY KEY AUTOINCREMENT,
+        task_id   TEXT    NOT NULL,
+        seq       INTEGER NOT NULL,
+        type      TEXT    NOT NULL CHECK(type IN ('text','tool_use','tool_result','thinking','error')),
+        tool      TEXT,
+        content   TEXT,
+        input_json TEXT,
+        output    TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(task_id, seq)
+      );
+      CREATE INDEX IF NOT EXISTS idx_task_messages_task_id ON task_messages(task_id, seq);
     `);
   }
 
@@ -748,6 +763,59 @@ export class SQLiteClient {
 
       const claimed = claimTxn();
       return { success: true, data: claimed };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
+      };
+    }
+  }
+
+  /**
+   * 追加 task message（seq 自动递增）
+   */
+  appendTaskMessage(taskId: string, msg: Omit<TaskMessage, 'id' | 'created_at'>): Result<void> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const row = this.db
+        .prepare('SELECT COALESCE(MAX(seq), -1) + 1 AS next_seq FROM task_messages WHERE task_id = ?')
+        .get(taskId) as { next_seq: number };
+      const seq = msg.seq !== undefined ? msg.seq : row.next_seq;
+      this.db
+        .prepare(
+          `INSERT INTO task_messages (task_id, seq, type, tool, content, input_json, output)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`
+        )
+        .run(taskId, seq, msg.type, msg.tool ?? null, msg.content ?? null, msg.input_json ?? null, msg.output ?? null);
+      return { success: true, data: undefined };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
+      };
+    }
+  }
+
+  /**
+   * 查询 task messages（按 seq ASC）
+   */
+  getTaskMessages(taskId: string): Result<TaskMessage[]> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const rows = this.db
+        .prepare('SELECT * FROM task_messages WHERE task_id = ? ORDER BY seq ASC')
+        .all(taskId) as TaskMessage[];
+      return { success: true, data: rows };
     } catch (e) {
       return {
         success: false,

@@ -124,6 +124,21 @@ export interface ExecutionCheckpoint {
   createdAt?: string;
 }
 
+/**
+ * Task Message — 结构化存储 Slaver 执行过程中的 LLM 消息
+ */
+export interface TaskMessage {
+  id?: number;
+  task_id: string;
+  seq: number;
+  type: 'text' | 'tool_use' | 'tool_result' | 'thinking' | 'error';
+  tool?: string | null;
+  content?: string | null;
+  input_json?: string | null;
+  output?: string | null;
+  created_at?: string;
+}
+
 // ============================================================================
 // Handoff Types
 // ============================================================================

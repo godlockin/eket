@@ -19,6 +19,69 @@ import { EketError } from '../types/index.js';
 import { printError } from '../utils/error-handler.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
+interface ResumeCheckpoint {
+  ticketId: string;
+  slaverId: string;
+  sessionId?: string;
+  phase?: string;
+}
+
+/**
+ * 判断错误是否为 session 相关失败
+ */
+function isSessionError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
+  return msg.includes('session') || msg.includes('expired') || msg.includes('not found');
+}
+
+/**
+ * Session resume 失败时的降级策略
+ * - 若 sessionId 为空或 session 错误 → 清除 checkpoint，走 fresh 路径
+ * @param _attemptResume - 可注入的 session resume 函数（便于测试）
+ */
+export async function resumeWithFallback(
+  checkpoint: ResumeCheckpoint,
+  _attemptResume: (sessionId: string) => Promise<void> = attemptSessionResume
+): Promise<void> {
+  const sqlite = createSQLiteManager();
+  await sqlite.connect();
+
+  try {
+    if (!checkpoint.sessionId) {
+      console.warn('WARN: session resume failed, falling back to fresh session');
+      await sqlite.deleteCheckpoint(checkpoint.ticketId, checkpoint.slaverId);
+      console.log(`[task:resume] Checkpoint cleared. Re-run task:claim for ticket ${checkpoint.ticketId}`);
+      return;
+    }
+
+    // 尝试 session resume（此处模拟：若 sessionId 触发已知失败模式则降级）
+    try {
+      // 真实场景：此处调用 AI SDK resume API
+      // 此处抛出以触发降级逻辑（仅供测试 mock 覆盖）
+      await _attemptResume(checkpoint.sessionId);
+    } catch (err: unknown) {
+      if (isSessionError(err)) {
+        console.warn('WARN: session resume failed, falling back to fresh session');
+        await sqlite.deleteCheckpoint(checkpoint.ticketId, checkpoint.slaverId);
+        console.log(`[task:resume] Checkpoint cleared. Re-run task:claim for ticket ${checkpoint.ticketId}`);
+        return;
+      }
+      throw err;
+    }
+  } finally {
+    await sqlite.close();
+  }
+}
+
+/**
+ * 尝试 session resume（可被 mock 覆盖用于测试）
+ */
+export async function attemptSessionResume(sessionId: string): Promise<void> {
+  // 实际接入 Claude API session resume 时在此实现
+  // 当前为 no-op stub
+  void sessionId;
+}
+
 interface ResumeOptions {
   slaver: string;
 }
