@@ -1,0 +1,16 @@
+name: hello-world
+description: A simple 2-node serial bash workflow
+version: "1.0"
+
+nodes:
+  - id: hello
+    name: Hello Step
+    type: bash
+    command: echo "Hello from EKET workflow!"
+
+  - id: world
+    name: World Step
+    type: bash
+    command: echo "World! Workflow node 2 running."
+    depends_on:
+      - hello

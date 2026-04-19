@@ -47,7 +47,30 @@ Slaver 每完成一个子阶段后，必须依次回答以下 4 个问题：
 
 ---
 
-## 2. 分析瘫痪检测规则
+## 2. 启动流程
+
+### 2.1 加载活跃上下文（TASK-079）
+
+Slaver **每次启动**时，必须在执行任何操作前读取 `.eket/ACTIVE_CONTEXT.md`：
+
+```
+IF .eket/ACTIVE_CONTEXT.md 存在:
+  → 读取并展示文件内容
+  → 确认当前 ticket ID、角色、领取时间
+  → 继续上次中断的工作（无需重新 claim）
+ELSE:
+  → 执行正常领取流程（/eket-claim）
+```
+
+**文件位置**：`.eket/ACTIVE_CONTEXT.md`  
+**自动生成时机**：每次成功 claim 后由 `injectActiveContext()` 刷新。  
+**手动查看**：`cat .eket/ACTIVE_CONTEXT.md`
+
+> **为什么重要**：防止 Slaver 重启后遗忘当前任务、重复领取或错误判断状态。
+
+---
+
+## 3. 分析瘫痪检测规则
 
 ### 定义
 
@@ -77,7 +100,7 @@ IF 读取文件次数 >= 5 AND 无写操作:
 
 ---
 
-## 3. Deviation Rules（偏差处理规则）
+## 4. Deviation Rules（偏差处理规则）
 
 遇到超出 ticket 范围的问题时，按以下规则决定：
 
@@ -103,7 +126,7 @@ IF 读取文件次数 >= 5 AND 无写操作:
 
 ---
 
-## 4. Nyquist Rule（验收标准自动化要求）详细说明
+## 5. Nyquist Rule（验收标准自动化要求）详细说明
 
 ### 核心要求
 
@@ -135,7 +158,7 @@ echo "exit code: $?"  # 必须为 0
 
 ---
 
-## 5. Slaver Hard Rules（3 条）
+## 6. Slaver Hard Rules（3 条）
 
 ### Rule 1：禁止横向协助
 
@@ -171,7 +194,7 @@ echo "exit code: $?"  # 必须为 0
 
 ---
 
-## 6. 任务完成后强制复盘（Slaver Retrospective）
+## 7. 任务完成后强制复盘（Slaver Retrospective）
 
 每个 ticket 完成（PR 合并或 done 状态）后，Slaver **必须**执行复盘，将经验教训写入 ticket 文件。
 
