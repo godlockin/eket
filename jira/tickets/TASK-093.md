@@ -1,7 +1,7 @@
 # TASK-093: docs/06-sop 与 template/docs 职责边界明确 + 06-sop 清理
 
 ## 元数据
-- **状态**: ready
+- **状态**: done
 - **类型**: chore
 - **优先级**: P1
 - **负责人**: 待领取
@@ -36,3 +36,20 @@ ls template/docs/ | sort > /tmp/template.txt
 ls docs/06-sop/ | sort > /tmp/sop.txt
 comm -12 /tmp/template.txt /tmp/sop.txt
 ```
+
+## 执行结论（2026-04-19）
+
+**负责人**: Slaver
+
+**发现**：两目录**无重叠文件**，主题完全不同：
+- `template/docs/` = Master/Slaver 规程正本（MASTER-RULES、SLAVER-RULES 等，v2.x，由 init-project.sh 复制）
+- `docs/06-sop/` = v0.8.0 时代"文档优先审查模式"旧提案（状态=提案，未正式采纳）
+
+**决策**：`docs/06-sop/` 归档至 `docs/archive/v0.8-proposals/06-sop-proposals/`
+
+**变更**：
+- `git mv docs/06-sop docs/archive/v0.8-proposals/06-sop-proposals`
+- `docs/README.md` 移除 06-sop 条目，添加 SOP 正本位置说明
+- 提交：`2bbc52fa`（miao 分支）
+
+**测试**：1196/1199 通过，3 失败为 pre-existing（rate-limiter + server security，与本次无关）
