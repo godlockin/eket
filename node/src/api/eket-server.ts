@@ -27,6 +27,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 
 
 import { createRedisClient, type RedisClient } from '../core/redis-client.js';
+import { sseEventBus } from '../core/sse-event-bus.js';
 import type { Message } from '../types/index.js';
 import { logger } from '../utils/logger.js';
 
@@ -166,6 +167,7 @@ export class EketServer {
     this.registerTaskRoutes();
     this.registerMessageRoutes();
     this.registerPRRoutes();
+    this.registerSSERoutes();
 
     // Error handler
     this.app.use(this.errorHandler.bind(this));
@@ -1154,6 +1156,31 @@ export class EketServer {
         }
       }
     );
+  }
+
+  // =========================================================================
+  // SSE Routes
+  // =========================================================================
+
+  private registerSSERoutes(): void {
+    // GET /api/v1/stream/:channelId — Server-Sent Events endpoint
+    this.app.get('/api/v1/stream/:channelId', (req: Request, res: Response) => {
+      const { channelId } = req.params;
+      if (!channelId) {
+        res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Missing channelId' } });
+        return;
+      }
+
+      sseEventBus.subscribe(channelId, res);
+
+      // Clean up when client disconnects
+      req.on('close', () => {
+        sseEventBus.unsubscribe(channelId, res);
+      });
+      req.on('error', () => {
+        sseEventBus.unsubscribe(channelId, res);
+      });
+    });
   }
 
   // =========================================================================
