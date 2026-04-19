@@ -18,6 +18,7 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
 import { printError, logInfo, logWarning } from '../utils/error-handler.js';
+import { appendTaskMessage } from '../core/task-logger.js';
 
 // Color codes
 const COLORS = {
@@ -110,6 +111,11 @@ function checkSlaverStatus(instanceId: string): SlaverStatus {
 
           if (ticketStatus === 'review') {
             status = 'waiting_review';
+            // 记录执行日志：进入等待 review 状态
+            void appendTaskMessage(currentTicket, '任务状态变更为 waiting_review', instanceId);
+          } else {
+            // 记录执行日志：进入 in_progress 状态
+            void appendTaskMessage(currentTicket, '心跳检测：任务进行中 (in_progress)', instanceId);
           }
           break;
         }

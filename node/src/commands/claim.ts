@@ -12,6 +12,7 @@ import { Command } from 'commander';
 import ora from 'ora';
 
 import { createInstanceRegistry } from '../core/instance-registry.js';
+import { createSQLiteManager } from '../core/sqlite-manager.js';
 import { createTaskAssigner, type AssignmentResult } from '../core/task-assigner.js';
 import type { Instance, Ticket } from '../types/index.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
@@ -19,6 +20,7 @@ import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
 import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
+import { resolveAndPersistModel } from '../core/claude-runner.js';
 import {
   loadConfig,
   getTickets,
@@ -26,6 +28,7 @@ import {
   initializeProfile,
   sendClaimMessage,
 } from './claim-helpers.js';
+import { appendTaskMessage, injectActiveContext } from '../core/task-logger.js';
 
 interface ClaimOptions {
   ticketId?: string;
@@ -223,6 +226,28 @@ Related Commands:
 
       // 5. 任务分配（如果启用）
       let assignedInstance: Instance | undefined;
+
+      // 5.0 SQLite 原子事务领取（防竞争）
+      const slaverId = process.env.EKET_SLAVER_ID ?? `slaver_${process.pid}`;
+      const sqliteClient = createSQLiteManager();
+      const sqliteConnected = await sqliteClient.connect();
+      if (sqliteConnected.success) {
+        const claimResult = await sqliteClient.claimTask(selectedTicket.id, slaverId);
+        await sqliteClient.close();
+        if (claimResult.success && claimResult.data === false) {
+          printError({
+            code: 'TASK_ALREADY_CLAIMED',
+            message: `Task ${selectedTicket.id} 已被其他 Slaver 抢占，请选择其他任务`,
+            solutions: ['Run `eket-cli task:list` to see available tasks'],
+          });
+          return;
+        }
+        // claimResult.success === false: SQLite 操作失败，降级到文件系统
+      } else {
+        await sqliteClient.close();
+        console.log('[Claim] SQLite unavailable, using filesystem-only mode');
+      }
+
       if (options.assign) {
         const assignSpinner = ora('Assigning task with Task Assigner...').start();
         const assignResult = await assignTaskWithRegistry(projectRoot, selectedTicket);
@@ -267,10 +292,27 @@ Related Commands:
       await initializeProfile(projectRoot, role, selectedTicket);
       profileSpinner.succeed(`Profile initialized: ${role}`);
 
+      // 9.1 TASK-081: 解析并持久化 model 选择
+      const resolvedTier = resolveAndPersistModel(projectRoot, selectedTicket);
+      console.log(`[Model] Resolved: ${resolvedTier} (based on tags: ${selectedTicket.tags?.join(', ') ?? 'none'})`);
+
       // 10. 发送消息
       const messageSpinner = ora('Sending message to queue...').start();
       await sendClaimMessage(projectRoot, selectedTicket.id, role);
       messageSpinner.succeed('Message sent');
+
+      // 11. 追加执行日志到 ticket（TASK-078）
+      const agentId = `agent_${role}_${process.pid}`;
+      await appendTaskMessage(selectedTicket.id, '领取任务', agentId);
+
+      // 12. 刷新活跃上下文（TASK-079）
+      await injectActiveContext({
+        ticketId: selectedTicket.id,
+        role,
+        slaverId: agentId,
+        claimedAt: new Date().toISOString(),
+        status: 'in_progress',
+      });
 
       logSuccess('Task claimed successfully', [
         `Task: ${selectedTicket.id}`,
