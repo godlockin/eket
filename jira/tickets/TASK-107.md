@@ -1,11 +1,12 @@
 # TASK-107: DAG Middleware — 迁移现有所有 Hook
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: refactor
 - **优先级**: P1
-- **负责人**: 待领取
+- **负责人**: Slaver
 - **创建时间**: 2026-04-20
+- **完成时间**: 2026-04-20
 - **依赖**: TASK-106
 
 ## 背景
@@ -30,8 +31,15 @@ TASK-106 建立 DAG middleware 框架后，将现有 27 种 hook 事件全部迁
 | TaskCompleted | 反馈上报∥worktree清理 | skill_graph更新 |
 | TeammateIdle | — | 任务调度 |
 
-## 实现步骤
+## 实现结果
 
-1. 按分组逐一迁移，每迁移一组跑一次 `npm test`
-2. 更新 `http-hook-server.ts` 内部使用 `PipelineExecutor`
-3. 补充文档注释
+- 新建 `node/src/hooks/pipelines/` 目录，7 个 pipeline 文件
+- `pre-tool-use.ts`: GuardrailNode ∥ SecurityNode ∥ EnvConfigNode → AuditLogNode
+- `post-tool-use.ts`: MetricsNode ∥ AuditNode
+- `session.ts`: IndexLoadNode ∥ HeartbeatNode
+- `task.ts`: FeedbackNode ∥ WorktreeCleanupNode → SkillGraphUpdateNode
+- `compact.ts`: SummarizationNode
+- `permission.ts`: PermissionCheckNode
+- `misc.ts`: PassthroughNode（其余 15 种事件）
+- `http-hook-server.ts` 内部增加 `EVENT_PIPELINE_GROUP` 映射 + `getPipeline` + pipeline 调用逻辑，对外 API 不变
+- `npm test`: 1276 passed, 0 新增失败（1 pre-existing suite failure 与本任务无关）
