@@ -20,7 +20,6 @@ import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
 import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
-import { resolveAndPersistModel } from '../core/claude-runner.js';
 import {
   loadConfig,
   getTickets,
@@ -28,7 +27,7 @@ import {
   initializeProfile,
   sendClaimMessage,
 } from './claim-helpers.js';
-import { appendTaskMessage, injectActiveContext } from '../core/task-logger.js';
+import { appendTaskMessage, injectActiveContext as injectActiveContextData } from '../core/task-logger.js';
 
 /**
  * 获取或生成持久化 Slaver ID（P4修复）
@@ -58,6 +57,62 @@ interface ClaimOptions {
   auto: boolean;
   role?: string;
   assign?: boolean;
+}
+
+/**
+ * 构建 ACTIVE_CONTEXT.md 内容（TASK-069）
+ */
+export function buildActiveContextMd(
+  ticket: { id: string; title: string },
+  slaverId: string,
+  skills: string[],
+  role: string
+): string {
+  const now = new Date().toISOString();
+  const skillList = skills.length > 0 ? skills.map((s) => `- ${s}`).join('\n') : '- (none)';
+  return `# EKET Active Context
+
+> 此文件由 task:claim 自动生成，ticket 完成后删除。请勿手动编辑。
+> 生成时间: ${now}
+
+## Active Ticket
+
+- **ID**: ${ticket.id}
+- **Title**: ${ticket.title}
+
+## Identity
+
+- **Slaver ID**: ${slaverId}
+- **Role**: ${role}
+- **Started At**: ${now}
+
+## Available Commands
+
+- \`task:claim\` — 领取下一个任务
+- \`task:resume\` — 断点恢复
+- \`system:doctor\` — 系统诊断
+- \`heartbeat:start\` — 启动心跳
+
+## Active Skills
+
+${skillList}
+`;
+}
+
+/**
+ * 注入活跃上下文到 .eket/ACTIVE_CONTEXT.md（TASK-069，4-arg 版本供测试使用）
+ */
+export async function injectActiveContext(
+  projectRoot: string,
+  ticket: { id: string; title: string },
+  slaverId: string,
+  role: string
+): Promise<void> {
+  const skills: string[] = [];
+  const content = buildActiveContextMd(ticket, slaverId, skills, role);
+  const dir = path.join(projectRoot, '.eket');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'ACTIVE_CONTEXT.md'), content, 'utf-8');
 }
 
 /**
@@ -256,7 +311,7 @@ Related Commands:
       const sqliteClient = createSQLiteManager();
       const sqliteConnected = await sqliteClient.connect();
       if (sqliteConnected.success) {
-        const claimResult = await sqliteClient.claimTask(selectedTicket.id, slaverId);
+        const claimResult = await sqliteClient.claimTaskById(selectedTicket.id, slaverId);
         await sqliteClient.close();
         if (claimResult.success && claimResult.data === false) {
           // 被其他 Slaver 抢占
@@ -335,11 +390,11 @@ Related Commands:
       messageSpinner.succeed('Message sent');
 
       // 11. 追加执行日志到 ticket（TASK-078）
-      const slaverId = `agent_${role}_${process.pid}`;
-      await appendTaskMessage(selectedTicket.id, '领取任务', slaverId);
+      const logSlaverId = `agent_${role}_${process.pid}`;
+      await appendTaskMessage(selectedTicket.id, '领取任务', logSlaverId);
 
       // 12. 刷新活跃上下文（TASK-079）
-      await injectActiveContext({
+      await injectActiveContextData({
         ticketId: selectedTicket.id,
         role,
         slaverId,
