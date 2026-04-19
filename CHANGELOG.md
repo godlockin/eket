@@ -5,6 +5,56 @@ All notable changes to the EKET Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.0-beta] - 2026-04-19
+
+### Changed
+- Version graduation: alpha → beta（毕业条件全满足）
+- 新增 RELEASE-POLICY.md（docs/roadmap/）
+- node/package.json 版本从 2.9.2 升至 2.14.0-beta
+
+## [2.13.1] - 2026-04-19
+
+### Changed
+- docs/: conference-style 重组，明确 06-sop vs template/docs 边界（TASK-093）
+- docs/archive: 建立 INDEX，过时文档加 DEPRECATED 标记
+- docs/protocol → protocol/ 合并，清理重复目录
+
+### Fixed
+- HTTP-003 Input Validation：enum 校验缺失 + 错误消息格式（TASK-094）
+- JSON Schema 文件缺失导致 agent registration 校验跳过
+
+## [2.13.0] - 2026-04-19
+
+### Added
+- confluence/memory/ 知识沉淀机制激活：patterns/pitfalls/glossary（TASK-095）
+- k6/ 性能基准集成进 npm bench scripts（TASK-091）
+- web/ 确认为 Node dashboard 前端，补充说明（TASK-092）
+
+### Removed
+- docs-site/ Docusaurus 文档站（TASK-089）
+- template/scripts/ 孤儿目录（TASK-088）
+- 根目录垃圾文件、node/template 残留、node/src/api/examples 双轨
+
+## [2.12.0] - 2026-04-19
+
+### Added
+- SSEEventBus 实现 + canProceed() 断路器触发（TASK-082/083）
+- workflow:run/validate commands + model routing（TASK-080/081）
+- appendTaskMessage + injectActiveContext（TASK-078/079）
+- resumeWithFallback + SQLite claimTask（TASK-076/077）
+
+### Fixed
+- master-election relinquish marker / SQLite 修复（TASK-054）
+- message-queue Redis subscriber 连接泄漏（TASK-055）
+- python-sdk token=None / 枚举降级 / datetime 废弃警告（TASK-056）
+- skills auto-registry 接入，index.ts 导出断层（TASK-057）
+- index.ts createRequire 同步模块加载（TASK-058/059）
+- broadcast auto-merge 静默失败（TASK-060）
+
+### Changed
+- governance: 强制执行 Master/Slaver 规则
+- ci: shell/python 检查 job，hardening lint/audit gates
+
 ## [2.4.0] - 2026-04-09
 
 ### 🧹 清账 Round 13a — 测试 100% + 降级架构补全
