@@ -20,7 +20,6 @@ import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
 import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
-import { resolveAndPersistModel } from '../core/claude-runner.js';
 import {
   loadConfig,
   getTickets,
@@ -28,30 +27,6 @@ import {
   initializeProfile,
   sendClaimMessage,
 } from './claim-helpers.js';
-import { appendTaskMessage, injectActiveContext } from '../core/task-logger.js';
-
-/**
- * 获取或生成持久化 Slaver ID（P4修复）
- * 读写 .eket/slaver-id 文件，避免 PID 重启后 ID 变化导致检查点丢失
- */
-function getOrCreateSlaverId(projectRoot: string): string {
-  if (process.env.EKET_SLAVER_ID) {
-    return process.env.EKET_SLAVER_ID;
-  }
-  const slaveridPath = path.join(projectRoot, '.eket', 'slaver-id');
-  try {
-    if (fs.existsSync(slaveridPath)) {
-      const id = fs.readFileSync(slaveridPath, 'utf-8').trim();
-      if (id) return id;
-    }
-    const newId = `slaver_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    fs.mkdirSync(path.dirname(slaveridPath), { recursive: true });
-    fs.writeFileSync(slaveridPath, newId, 'utf-8');
-    return newId;
-  } catch {
-    return `slaver_${process.pid}`;
-  }
-}
 
 interface ClaimOptions {
   ticketId?: string;
@@ -248,17 +223,17 @@ Related Commands:
       }
 
       // 5. 任务分配（如果启用）
+      // 5. 任务分配（如果启用）
       let assignedInstance: Instance | undefined;
 
       // 5.0 SQLite 原子事务领取（防竞争）
-      const slaverId = getOrCreateSlaverId(projectRoot);
+      const slaverId = process.env.EKET_SLAVER_ID ?? `slaver_${process.pid}`;
       const sqliteClient = createSQLiteManager();
       const sqliteConnected = await sqliteClient.connect();
       if (sqliteConnected.success) {
         const claimResult = await sqliteClient.claimTask(selectedTicket.id, slaverId);
         await sqliteClient.close();
         if (claimResult.success && claimResult.data === false) {
-          // 被其他 Slaver 抢占
           printError({
             code: 'TASK_ALREADY_CLAIMED',
             message: `Task ${selectedTicket.id} 已被其他 Slaver 抢占，请选择其他任务`,
@@ -266,20 +241,8 @@ Related Commands:
           });
           return;
         }
-        if (!claimResult.success) {
-          // SQLite 操作失败，不降级，直接报错（P2修复）
-          printError({
-            code: 'SQLITE_CLAIM_FAILED',
-            message: `SQLite 领取操作失败: ${claimResult.error?.message ?? 'unknown'}`,
-            solutions: [
-              'Check SQLite database health: node dist/index.js system:doctor',
-              'Retry after resolving the database issue',
-            ],
-          });
-          return;
-        }
+        // claimResult.success === false: SQLite 操作失败，降级到文件系统
       } else {
-        // SQLite 完全不可用时才降级文件系统
         await sqliteClient.close();
         console.log('[Claim] SQLite unavailable, using filesystem-only mode');
       }
@@ -328,27 +291,10 @@ Related Commands:
       await initializeProfile(projectRoot, role, selectedTicket);
       profileSpinner.succeed(`Profile initialized: ${role}`);
 
-      // 9.1 TASK-081: 解析并持久化 model 选择
-      const resolvedTier = resolveAndPersistModel(projectRoot, selectedTicket);
-      console.log(`[Model] Resolved: ${resolvedTier} (based on tags: ${selectedTicket.tags?.join(', ') ?? 'none'})`);
-
       // 10. 发送消息
       const messageSpinner = ora('Sending message to queue...').start();
       await sendClaimMessage(projectRoot, selectedTicket.id, role);
       messageSpinner.succeed('Message sent');
-
-      // 11. 追加执行日志到 ticket（TASK-078）
-      const agentId = `agent_${role}_${process.pid}`;
-      await appendTaskMessage(selectedTicket.id, '领取任务', agentId);
-
-      // 12. 刷新活跃上下文（TASK-079）
-      await injectActiveContext({
-        ticketId: selectedTicket.id,
-        role,
-        slaverId: agentId,
-        claimedAt: new Date().toISOString(),
-        status: 'in_progress',
-      });
 
       logSuccess('Task claimed successfully', [
         `Task: ${selectedTicket.id}`,

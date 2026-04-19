@@ -312,25 +312,25 @@ function runWorker() {
 
           case 'claimTask': {
             if (!db) {
-              sendResponse(port, request.id, { success: false, error: { code: 'SQLITE_NOT_CONNECTED', message: 'Database not connected' } });
+              sendResponse(port, request.id, {
+                success: false,
+                error: { code: 'SQLITE_NOT_CONNECTED', message: 'Database not connected' },
+              });
               break;
             }
-            const { ticketId: ct, slaverId: cs } = request.payload as { ticketId: string; slaverId: string };
-            db.prepare('BEGIN EXCLUSIVE').run();
-            try {
-              const existing = db.prepare("SELECT 1 FROM task_history WHERE ticket_id = ? AND status = 'in_progress'").get(ct);
-              if (existing) {
-                db.prepare('COMMIT').run();
-                sendResponse(port, request.id, { success: true, data: false });
-              } else {
-                db.prepare("INSERT INTO task_history (ticket_id, assigned_to, status, started_at) VALUES (?, ?, 'in_progress', datetime('now'))").run(ct, cs);
-                db.prepare('COMMIT').run();
-                sendResponse(port, request.id, { success: true, data: true });
-              }
-            } catch (e) {
-              db.prepare('ROLLBACK').run();
-              throw e;
-            }
+            const { ticketId: ctTicketId, slaverId: ctSlaverId } = request.payload as { ticketId: string; slaverId: string };
+            const claimTx = db.transaction((): boolean => {
+              const existing = db!.prepare(
+                "SELECT assigned_to FROM task_history WHERE ticket_id = ? AND status = 'in_progress'"
+              ).get(ctTicketId) as { assigned_to: string } | undefined;
+              if (existing) return false;
+              db!.prepare(
+                "INSERT INTO task_history (ticket_id, status, assigned_to, started_at) VALUES (?, 'in_progress', ?, CURRENT_TIMESTAMP)"
+              ).run(ctTicketId, ctSlaverId);
+              return true;
+            });
+            const claimed = claimTx();
+            sendResponse(port, request.id, { success: true, data: claimed });
             break;
           }
 
@@ -570,12 +570,11 @@ export class AsyncSQLiteClient implements ISQLiteClient {
   async claimTask(ticketId: string, slaverId: string): Promise<Result<boolean>> {
     if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
     try {
-      const claimed = (await this.sendRequest('claimTask', { ticketId, slaverId })) as boolean;
-      return { success: true, data: claimed };
+      const claimed = await this.sendRequest('claimTask', { ticketId, slaverId });
+      return { success: true, data: claimed as boolean };
     } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
 }
-
 
 export function createAsyncSQLiteClient(dbPath?: string): AsyncSQLiteClient {
   return new AsyncSQLiteClient(dbPath);

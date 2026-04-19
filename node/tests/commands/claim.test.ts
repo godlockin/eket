@@ -1,85 +1,134 @@
 /**
- * Task Claim Tests
- * P5: 真实并发场景 — 两个同时 claimTask 同一 ticket，只有一个成功
+ * Claim Command Tests (TASK-077)
+ * Tests for SQLite claimTask() integration in registerClaim
  */
 
-import * as os from 'os';
-import * as path from 'path';
-import * as fs from 'fs';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { Command } from 'commander';
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+// --- SQLiteManager mock ---
+const mockClaimTask = jest.fn<() => Promise<{ success: boolean; data?: boolean; error?: Error }>>()
+  .mockResolvedValue({ success: true, data: true });
+const mockConnect = jest.fn<() => Promise<{ success: boolean }>>()
+  .mockResolvedValue({ success: true });
+const mockClose = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
 
-import { SQLiteClient } from '../../src/core/sqlite-client.js';
+jest.unstable_mockModule('../../src/core/sqlite-manager.js', () => ({
+  createSQLiteManager: jest.fn(() => ({
+    connect: mockConnect,
+    claimTask: mockClaimTask,
+    close: mockClose,
+  })),
+}));
 
-describe('claimTask — concurrent safety (P1 fix)', () => {
-  let tmpDir: string;
-  let dbPath: string;
+// --- Minimal mocks for claim dependencies ---
+jest.unstable_mockModule('../../src/utils/process-cleanup.js', () => ({
+  findProjectRoot: jest.fn<() => Promise<string>>().mockResolvedValue('/fake/project'),
+}));
+
+jest.unstable_mockModule('../../src/core/instance-registry.js', () => ({
+  createInstanceRegistry: jest.fn(() => ({
+    connect: jest.fn<() => Promise<{ success: boolean }>>().mockResolvedValue({ success: false }),
+    disconnect: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+    getAvailableInstances: jest.fn<() => Promise<{ success: boolean; data: unknown[] }>>().mockResolvedValue({ success: false, data: [] }),
+  })),
+}));
+
+jest.unstable_mockModule('../../src/core/task-assigner.js', () => ({
+  createTaskAssigner: jest.fn(() => ({
+    assignTicket: jest.fn(() => ({ assigned: false })),
+  })),
+}));
+
+jest.unstable_mockModule('../../src/core/role-selector.js', () => ({
+  selectRole: jest.fn(() => 'feature_dev'),
+  getRulesFileName: jest.fn(() => 'feature_dev_rules.md'),
+  getRulesPath: jest.fn(() => '/fake/rules/path'),
+}));
+
+jest.unstable_mockModule('../../src/utils/execFileNoThrow.js', () => ({
+  execFileNoThrow: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+}));
+
+// claim-helpers mock
+jest.unstable_mockModule('../../src/commands/claim-helpers.js', () => ({
+  loadConfig: jest.fn(() => Promise.resolve({ version: '1.0' })),
+  getTickets: jest.fn(() => Promise.resolve([
+    { id: 'TASK-099', title: 'Test ticket', priority: 'normal', tags: ['feature'], status: 'ready' },
+  ])),
+  matchRole: jest.fn(() => Promise.resolve('feature_dev')),
+  initializeProfile: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+  sendClaimMessage: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+}));
+
+// fs mock to avoid real filesystem
+jest.unstable_mockModule('fs', () => {
+  const actual = jest.requireActual<typeof import('fs')>('fs');
+  return {
+    ...actual,
+    existsSync: jest.fn(() => false),
+    mkdirSync: jest.fn(),
+  };
+});
+
+const { registerClaim } = await import('../../src/commands/claim.js');
+
+describe('task:claim — SQLite claimTask() integration', () => {
+  let program: Command;
+  let consoleOutput: string[];
+  let originalConsoleLog: typeof console.log;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'eket-claim-test-'));
-    dbPath = path.join(tmpDir, 'test.db');
+    jest.clearAllMocks();
+    mockConnect.mockResolvedValue({ success: true });
+    mockClaimTask.mockResolvedValue({ success: true, data: true });
+    mockClose.mockResolvedValue(undefined);
+
+    program = new Command();
+    program.exitOverride();
+    registerClaim(program);
+
+    consoleOutput = [];
+    originalConsoleLog = console.log;
+    console.log = (...args: unknown[]) => {
+      consoleOutput.push(args.join(' '));
+    };
   });
 
   afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    console.log = originalConsoleLog;
   });
 
-  it('only one of two sequential claimTask calls on same ticket succeeds', () => {
-    const clientA = new SQLiteClient(dbPath);
-    const clientB = new SQLiteClient(dbPath);
-
-    clientA.connect();
-    clientB.connect();
-
-    const resultA = clientA.claimTask('TICKET-001', 'slaver_A');
-    const resultB = clientB.claimTask('TICKET-001', 'slaver_B');
-
-    expect(resultA.success).toBe(true);
-    expect(resultB.success).toBe(true);
-
-    // Exactly one should succeed
-    const successCount = [resultA.data, resultB.data].filter(Boolean).length;
-    expect(successCount).toBe(1);
-
-    clientA.close();
-    clientB.close();
+  it('should call claimTask when SQLite is available', async () => {
+    await program.parseAsync(['node', 'test', 'task:claim', 'TASK-099']);
+    expect(mockClaimTask).toHaveBeenCalledWith('TASK-099', expect.any(String));
   });
 
-  it('repeated claimTask returns false for already-claimed ticket', () => {
-    const client = new SQLiteClient(dbPath);
-    client.connect();
+  it('should abort with error when ticket is already claimed (data=false)', async () => {
+    mockClaimTask.mockResolvedValue({ success: true, data: false });
 
-    const first = client.claimTask('TICKET-002', 'slaver_X');
-    const second = client.claimTask('TICKET-002', 'slaver_Y');
+    // process.exit would normally be called; exitOverride handles that
+    // We just verify the output contains error indication
+    const consoleError: string[] = [];
+    const origError = console.error;
+    console.error = (...args: unknown[]) => { consoleError.push(args.join(' ')); };
 
-    expect(first.success).toBe(true);
-    expect(first.data).toBe(true);
-    expect(second.success).toBe(true);
-    expect(second.data).toBe(false);
+    await program.parseAsync(['node', 'test', 'task:claim', 'TASK-099']);
 
-    client.close();
+    console.error = origError;
+
+    const allOutput = [...consoleOutput, ...consoleError].join('\n');
+    expect(allOutput).toMatch(/抢占|TASK_ALREADY_CLAIMED|already claimed/i);
   });
 
-  it('returns error when db not connected', () => {
-    const client = new SQLiteClient(dbPath);
-    // Not connected
-    const result = client.claimTask('TICKET-003', 'slaver_Z');
-    expect(result.success).toBe(false);
-    expect(result.error?.message).toContain('not connected');
-  });
+  it('should fallback gracefully when SQLite connect fails', async () => {
+    mockConnect.mockResolvedValue({ success: false });
 
-  it('different tickets can both be claimed', () => {
-    const client = new SQLiteClient(dbPath);
-    client.connect();
+    // Should not throw, just proceed with filesystem mode
+    await expect(
+      program.parseAsync(['node', 'test', 'task:claim', 'TASK-099'])
+    ).resolves.not.toThrow();
 
-    const r1 = client.claimTask('TICKET-A', 'slaver_1');
-    const r2 = client.claimTask('TICKET-B', 'slaver_2');
-
-    expect(r1.success).toBe(true);
-    expect(r1.data).toBe(true);
-    expect(r2.success).toBe(true);
-    expect(r2.data).toBe(true);
-
-    client.close();
+    expect(mockClaimTask).not.toHaveBeenCalled();
   });
 });

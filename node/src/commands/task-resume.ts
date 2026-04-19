@@ -14,7 +14,7 @@ import * as path from 'path';
 
 import { Command } from 'commander';
 
-import { createSQLiteManager } from '../core/sqlite-manager.js';
+import { resumeWithFallback } from '../core/session-resume.js';
 import { EketError } from '../types/index.js';
 import { printError } from '../utils/error-handler.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
@@ -85,43 +85,13 @@ Examples:
 `
     )
     .action(async (options: ResumeOptions) => {
-      const sqlite = createSQLiteManager();
-
       try {
-        const connectResult = await sqlite.connect();
-        if (!connectResult.success) {
+        // 调用 resumeWithFallback 获取检查点（SQLite 不可用时返回 null）
+        const checkpoint = await resumeWithFallback(options.slaver);
+
+        if (!checkpoint) {
           console.log(
-            `[task:resume] SQLite 不可用（${connectResult.error?.message ?? 'unknown'}），无法查询检查点`
-          );
-          console.log(`  请运行 node dist/index.js task:claim 重新领取任务`);
-          return;
-        }
-
-        // 查询该 Slaver 的检查点
-        const result = await sqlite.get(
-          'SELECT * FROM execution_checkpoints WHERE slaver_id = ? ORDER BY created_at DESC LIMIT 1',
-          [options.slaver]
-        );
-
-        if (!result.success) {
-          printError(
-            result.error ||
-              new EketError('SQLITE_QUERY_FAILED', 'Failed to query execution_checkpoints')
-          );
-          process.exit(1);
-        }
-
-        const row = result.data as {
-          ticket_id: string;
-          slaver_id: string;
-          phase: string;
-          state_json: string;
-          created_at?: string;
-        } | null;
-
-        if (!row) {
-          console.log(
-            `[task:resume] Slaver "${options.slaver}" 无未完成检查点，请运行 task:claim 领取新任务`
+            `[task:resume] SQLite 不可用或 Slaver "${options.slaver}" 无未完成检查点，请运行 task:claim 领取新任务`
           );
           const projectRoot = (await findProjectRoot()) || process.cwd();
           const jiraDir = path.join(projectRoot, 'jira', 'tickets');
@@ -142,13 +112,25 @@ Examples:
           return;
         }
 
-        console.log(formatResumeInfo(row));
+        // 将 ResumeCheckpoint 转换为 formatResumeInfo 期望的格式
+        const stateJson = JSON.stringify({
+          filesChanged: checkpoint.filesChanged,
+          lastAction: checkpoint.lastAction,
+          notes: checkpoint.notes,
+          savedAt: checkpoint.savedAt,
+        });
+        console.log(
+          formatResumeInfo({
+            ticket_id: checkpoint.ticketId,
+            slaver_id: checkpoint.slaverId,
+            phase: checkpoint.phase,
+            state_json: stateJson,
+          })
+        );
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
         printError(new EketError('RESUME_FAILED', `task:resume failed: ${errorMessage}`));
         process.exit(1);
-      } finally {
-        await sqlite.close();
       }
     });
 }
