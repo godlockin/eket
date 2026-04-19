@@ -27,6 +27,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 
 
 import { createRedisClient, type RedisClient } from '../core/redis-client.js';
+import { parseTicketsDag } from '../core/ticket-dag-parser.js';
 import type { Message } from '../types/index.js';
 import { logger } from '../utils/logger.js';
 
@@ -166,6 +167,7 @@ export class EketServer {
     this.registerTaskRoutes();
     this.registerMessageRoutes();
     this.registerPRRoutes();
+    this.initializeDagRoutes();
 
     // Error handler
     this.app.use(this.errorHandler.bind(this));
@@ -1154,6 +1156,94 @@ export class EketServer {
         }
       }
     );
+  }
+
+  // =========================================================================
+  // DAG / Dashboard
+  // =========================================================================
+
+  private initializeDagRoutes(): void {
+    const ticketsDir = path.resolve(process.cwd(), '..', 'jira', 'tickets');
+
+    // GET /api/v1/tickets/dag — returns DAG JSON
+    this.app.get('/api/v1/tickets/dag', (_req: Request, res: Response) => {
+      try {
+        const dag = parseTicketsDag(ticketsDir);
+        res.json({ success: true, data: dag });
+      } catch (err) {
+        res.status(500).json({
+          success: false,
+          error: { code: 'INTERNAL_ERROR', message: (err as Error).message },
+        });
+      }
+    });
+
+    // GET /dashboard — simple HTML with ASCII DAG view
+    this.app.get('/dashboard', (_req: Request, res: Response) => {
+      try {
+        const dag = parseTicketsDag(ticketsDir);
+        const nodeMap = new Map(dag.nodes.map((n) => [n.id, n]));
+
+        const dagLines = dag.edges.length === 0
+          ? ['(no dependencies found)']
+          : dag.edges.map((e) => {
+              const src = nodeMap.get(e.source);
+              const tgt = nodeMap.get(e.target);
+              const srcStatus = src ? src.status : '?';
+              const tgtStatus = tgt ? tgt.status : '?';
+              return `  ${e.source} (${srcStatus}) → depends on → ${e.target} (${tgtStatus})`;
+            });
+
+        const nodesHtml = dag.nodes
+          .map(
+            (n) =>
+              `<tr><td>${n.id}</td><td>${n.label}</td><td>${n.status}</td><td>${n.assignee ?? '—'}</td></tr>`
+          )
+          .join('\n');
+
+        const html = `<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>EKET Dashboard</title>
+  <style>
+    body { font-family: monospace; background: #0d1117; color: #c9d1d9; padding: 2rem; }
+    h1, h2 { color: #58a6ff; }
+    pre { background: #161b22; padding: 1rem; border-radius: 6px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #30363d; padding: 0.4rem 0.8rem; text-align: left; }
+    th { background: #21262d; }
+    tr:nth-child(even) { background: #161b22; }
+    .done { color: #3fb950; }
+    .in_progress { color: #58a6ff; }
+    .ready { color: #8b949e; }
+    .blocked, .failed { color: #f85149; }
+  </style>
+</head>
+<body>
+  <h1>🤖 EKET Dashboard</h1>
+
+  <h2>📊 Ticket DAG</h2>
+  <p>Dependency edges (source depends on target):</p>
+  <pre>${dagLines.join('\n')}</pre>
+
+  <h2>📋 All Tickets</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Assignee</th></tr></thead>
+    <tbody>${nodesHtml}</tbody>
+  </table>
+
+  <h2>🔗 API</h2>
+  <p><a href="/api/v1/tickets/dag" style="color:#58a6ff">/api/v1/tickets/dag</a> — Raw DAG JSON</p>
+</body>
+</html>`;
+
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+      } catch (err) {
+        res.status(500).send(`<pre>Error: ${(err as Error).message}</pre>`);
+      }
+    });
   }
 
   // =========================================================================
