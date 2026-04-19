@@ -60,6 +60,14 @@ export interface SkillNodeRecord {
   triggers?: string[];
 }
 
+export interface SkillEdgeRecord {
+  source_id: string;
+  target_id: string;
+  weight: number;
+  co_activation_count: number;
+  last_activated_at: string;
+}
+
 // ============================================================================
 // SQLite Types
 // ============================================================================

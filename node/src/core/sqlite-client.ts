@@ -30,7 +30,7 @@ import * as path from 'path';
 
 import Database from 'better-sqlite3';
 
-import type { Retrospective, RetroContent, Result, SkillNodeRecord, TaskMessage } from '../types/index.js';
+import type { Retrospective, RetroContent, Result, SkillEdgeRecord, SkillNodeRecord, TaskMessage } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
 
 /**
@@ -1007,6 +1007,80 @@ export class SQLiteClient {
           last_activated_at = CURRENT_TIMESTAMP
       `).run(sourceId, targetId);
       return Promise.resolve();
+    } catch (e: unknown) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message));
+    }
+  }
+
+  /**
+   * 更新 skill edge 权重（TASK-102b）
+   * 若边存在：weight = clamp(weight + delta, 0, 1)，更新 last_activated_at
+   * 若边不存在：插入 weight = clamp(0.5 + delta, 0, 1)
+   * weight < 0.1 后软删除（active=0）
+   */
+  updateEdgeWeight(sourceId: string, targetId: string, delta: number): Promise<void> {
+    if (!this.db) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'));
+    }
+    try {
+      const clamp = (v: number) => Math.min(1.0, Math.max(0.0, v));
+      const existing = this.db.prepare(
+        'SELECT weight FROM skill_edges WHERE source_id = ? AND target_id = ?'
+      ).get(sourceId, targetId) as { weight: number } | undefined;
+
+      if (existing) {
+        const newWeight = clamp(existing.weight + delta);
+        const active = newWeight < 0.1 ? 0 : 1;
+        this.db.prepare(`
+          UPDATE skill_edges
+          SET weight = ?, active = ?, last_activated_at = CURRENT_TIMESTAMP
+          WHERE source_id = ? AND target_id = ?
+        `).run(newWeight, active, sourceId, targetId);
+      } else {
+        const newWeight = clamp(0.5 + delta);
+        const active = newWeight < 0.1 ? 0 : 1;
+        this.db.prepare(`
+          INSERT INTO skill_edges (source_id, target_id, weight, active)
+          VALUES (?, ?, ?, ?)
+        `).run(sourceId, targetId, newWeight, active);
+      }
+      return Promise.resolve();
+    } catch (e: unknown) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message));
+    }
+  }
+
+  /**
+   * 获取 topN 协作者（TASK-102b）
+   * 查询 source_id=nodeId 或 target_id=nodeId 的 active=1 边
+   * 应用时间衰减（超30天每30天 * 0.95），不写库
+   */
+  getTopCollaborators(nodeId: string, topN: number): Promise<SkillEdgeRecord[]> {
+    if (!this.db) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'));
+    }
+    try {
+      const rows = this.db.prepare(`
+        SELECT source_id, target_id, weight, co_activation_count, last_activated_at
+        FROM skill_edges
+        WHERE (source_id = ? OR target_id = ?) AND active = 1
+      `).all(nodeId, nodeId) as Array<{
+        source_id: string; target_id: string; weight: number;
+        co_activation_count: number; last_activated_at: string;
+      }>;
+
+      const now = Date.now();
+      const decayed = rows.map((r) => {
+        const lastMs = new Date(r.last_activated_at).getTime();
+        const daysDiff = (now - lastMs) / (1000 * 60 * 60 * 24);
+        const overDays = Math.max(0, daysDiff - 30);
+        const periods = overDays / 30;
+        const decayedWeight = periods > 0 ? r.weight * Math.pow(0.95, periods) : r.weight;
+        return { ...r, weight: decayedWeight };
+      });
+
+      decayed.sort((a, b) => b.weight - a.weight);
+      return Promise.resolve(decayed.slice(0, topN));
     } catch (e: unknown) {
       return Promise.reject(new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message));
     }
