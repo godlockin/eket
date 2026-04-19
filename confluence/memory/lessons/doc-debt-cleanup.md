@@ -200,4 +200,4 @@ ls outbox/review_requests/                               # 过期 review request
 **参见**：
 - [EKET-PROJECT-HYGIENE.md](EKET-PROJECT-HYGIENE.md) — EKET 特有卫生规则
 - [MULTI-AGENT-COLLAB-LESSONS.md](MULTI-AGENT-COLLAB-LESSONS.md) — 多智能体协作经验
-- [BORROWED-WISDOM.md](BORROWED-WISDOM.md) — 完整知识库索引
+- [BORROWED-WISDOM.md](../research/borrowed-wisdom.md) — 完整知识库索引

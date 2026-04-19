@@ -16,8 +16,11 @@
 完成 ticket 后，按以下优先级写入：
 1. 遇到坑 → `pitfalls/`
 2. 发现通用解法 → `patterns/`
-3. Sprint 复盘 → `retrospectives/`
-4. 引入新术语 → `glossary/terms.md`
+3. 单次 ticket/任务经验教训 → `lessons/`
+4. Sprint/PR 复盘 → `retrospectives/2026/`
+5. 引入新术语 → `glossary/terms.md`
+
+> **注意**：`lessons/` 存放任务经验教训（含 ticket debrief），`research/` 存放研究性长文（外部借鉴分析、深度调研报告）。两者勿混淆。
 
 ## 文件命名规范
 

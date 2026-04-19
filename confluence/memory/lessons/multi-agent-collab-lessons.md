@@ -218,6 +218,6 @@ Master（协调）
 **参见**：
 - [DOC-DEBT-CLEANUP.md](DOC-DEBT-CLEANUP.md) — 文档债清理方法论
 - [EKET-PROJECT-HYGIENE.md](EKET-PROJECT-HYGIENE.md) — EKET 特有卫生规则
-- [BORROWED-WISDOM.md](BORROWED-WISDOM.md) — 完整知识库索引
+- [BORROWED-WISDOM.md](../research/borrowed-wisdom.md) — 完整知识库索引
 - `docs/reports/ROUND3-MASTER-FINAL-REPORT.md` — Round 3 详细报告
 - `docs/plans/completed/ROUND2-MASTER-FINAL-REPORT.md` — Round 2 详细报告

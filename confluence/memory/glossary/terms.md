@@ -55,3 +55,24 @@
 - Slaver 填写：领取信息、分析报告、实现细节、测试结果、PR 链接、知识沉淀  
 
 **文件格式**：见 `template/` 目录下的 ticket 模板。
+
+---
+
+## 三仓库分离（Three-Repo Separation）
+
+**定义**：EKET 将协作数据拆分为三个逻辑仓库：  
+- `confluence/`：知识库（架构决策、经验教训、术语表）  
+- `jira/`：任务管理（ticket 定义、模板、状态机）  
+- `code_repo`：业务代码（`node/`、`.github/`、`scripts/` 等）  
+
+**规则**：不同类型的文件只能放在对应仓库，禁止混放（如执行报告不得散落在根目录）。  
+**参见**：`confluence/memory/lessons/eket-project-hygiene.md` §4
+
+---
+
+## PR Retro（PR 复盘）
+
+**定义**：每个 PR 合并后由 Slaver 填写的复盘记录，存储于 `confluence/memory/retrospectives/2026/`。  
+**格式**：`{YYYYMMDD}T{HHMMSS}Z-PR{N}-TASK-{ID}.md`  
+**SLA**：PR 合并后 24 小时内完成 TODO checklist（What worked / What hurt / Lessons 沉淀）。  
+**触发**：`post-merge-broadcast` CI 自动在 `retrospectives/INBOX/` 创建 stub，Slaver 填写后移至 `retrospectives/2026/`。
