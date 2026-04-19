@@ -12,7 +12,6 @@
 | [performance/](performance/) | 性能测试与优化建议 |
 | [roadmap/](roadmap/) | 路线图与版本规划 |
 | [adr/](adr/) | Architecture Decision Records |
-| [06-sop/](06-sop/) | 内部运作规程（SOP） |
 | [archive/](archive/) | 历史归档（只进不出） |
 
 ## 导航说明
@@ -21,3 +20,4 @@
 - **了解架构设计**：参考 `architecture/` 和 `adr/`
 - **框架开发贡献**：参考 `guides/` 和 `ops/`
 - **历史决策**：在 `archive/INDEX.md` 中检索
+- **内部运作规程（SOP/Rules）**：正本在 `template/docs/`（由 `init-project.sh` 复制到外部项目）；v0.8 时代的旧提案已归档至 `archive/v0.8-proposals/06-sop-proposals/`
