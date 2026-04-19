@@ -7,7 +7,7 @@
 **优先级**: P2
 **重要性**: medium
 
-**状态**: ready
+**状态**: done
 **创建时间**: 2026-04-19
 **创建者**: Master
 **负责人**: 待认领
@@ -87,3 +87,32 @@ node dist/index.js knowledge:search "session resume 降级"
 ## 回滚
 
 新增表和命令，不影响现有功能。
+
+---
+
+## 执行日志（Slaver）
+
+**负责人**: backend-slaver  
+**认领时间**: 2026-04-19  
+**完成时间**: 2026-04-19
+
+### 实现摘要
+
+- `node/src/core/sqlite-client.ts`：新增 `knowledge_fts`（FTS5）、`knowledge_embeddings` 表，新增 `insertKnowledge`、`searchFTS`、`getAllEmbeddings` 方法
+- `node/src/core/rag-search.ts`：实现 `hashEmbedding`（128维，无外部依赖）、`KeywordSearchStrategy`、`VectorSearchStrategy`、`RAGService`（合并去重）
+- `node/src/commands/knowledge-index.ts`：扫描 `confluence/memory/**/*.md`，分块（≤500字符），写入 SQLite
+- `node/src/commands/knowledge-search.ts`：调用 RAGService，打印 Top-K 结果
+- `node/src/index.ts`：注册 `knowledge:index` 和 `knowledge:search` 命令
+
+### 测试结果
+
+```
+Tests: 9 passed, 9 total
+Test Suites: 1 passed, 1 total
+```
+
+### 知识沉淀
+
+- FTS5 upsert 需先 DELETE 再 INSERT（FTS5 不支持 ON CONFLICT）
+- better-sqlite3 FTS5 搜索语法：`WHERE knowledge_fts MATCH ?`，查询词含特殊字符时需转义
+- `hashEmbedding` 基于字符编码+bigram，同文本余弦相似度=1，足够演示语义检索降级场景

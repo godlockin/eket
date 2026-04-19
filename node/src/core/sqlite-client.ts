@@ -257,7 +257,143 @@ export class SQLiteClient {
       );
 
       CREATE INDEX IF NOT EXISTS idx_checkpoint_slaver ON execution_checkpoints(slaver_id);
+
+      -- 知识库全文检索（FTS5）
+      CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts USING fts5(
+        doc_id UNINDEXED,
+        content,
+        source_path UNINDEXED
+      );
+
+      -- 知识库向量存储
+      CREATE TABLE IF NOT EXISTS knowledge_embeddings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        doc_id TEXT NOT NULL UNIQUE,
+        content TEXT NOT NULL,
+        source_path TEXT NOT NULL,
+        embedding TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+      );
     `);
+  }
+
+  /**
+   * 插入知识块（FTS5 + 向量）
+   */
+  insertKnowledge(
+    docId: string,
+    content: string,
+    sourcePath: string,
+    embedding: number[],
+  ): Result<void> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      // Upsert FTS
+      this.db
+        .prepare(`DELETE FROM knowledge_fts WHERE doc_id = ?`)
+        .run(docId);
+      this.db
+        .prepare(`INSERT INTO knowledge_fts(doc_id, content, source_path) VALUES (?, ?, ?)`)
+        .run(docId, content, sourcePath);
+      // Upsert embeddings
+      this.db
+        .prepare(
+          `INSERT INTO knowledge_embeddings(doc_id, content, source_path, embedding)
+           VALUES (?, ?, ?, ?)
+           ON CONFLICT(doc_id) DO UPDATE SET
+             content = excluded.content,
+             source_path = excluded.source_path,
+             embedding = excluded.embedding`,
+        )
+        .run(docId, content, sourcePath, JSON.stringify(embedding));
+      return { success: true, data: undefined };
+    } catch (e: unknown) {
+      return {
+        success: false,
+        error: new EketError(
+          EketErrorCode.SQLITE_OPERATION_FAILED,
+          `insertKnowledge failed: ${(e as Error).message}`,
+        ),
+      };
+    }
+  }
+
+  /**
+   * FTS5 全文检索
+   */
+  searchFTS(
+    query: string,
+    limit = 10,
+  ): Result<{ docId: string; content: string; sourcePath: string }[]> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const rows = this.db
+        .prepare(
+          `SELECT doc_id, content, source_path FROM knowledge_fts
+           WHERE knowledge_fts MATCH ?
+           LIMIT ?`,
+        )
+        .all(query, limit) as { doc_id: string; content: string; source_path: string }[];
+      return {
+        success: true,
+        data: rows.map((r) => ({
+          docId: r.doc_id,
+          content: r.content,
+          sourcePath: r.source_path,
+        })),
+      };
+    } catch (e: unknown) {
+      return {
+        success: false,
+        error: new EketError(
+          EketErrorCode.SQLITE_OPERATION_FAILED,
+          `searchFTS failed: ${(e as Error).message}`,
+        ),
+      };
+    }
+  }
+
+  /**
+   * 获取所有向量（用于余弦检索）
+   */
+  getAllEmbeddings(): Result<{ docId: string; content: string; embedding: number[] }[]> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const rows = this.db
+        .prepare(`SELECT doc_id, content, embedding FROM knowledge_embeddings`)
+        .all() as { doc_id: string; content: string; embedding: string }[];
+      return {
+        success: true,
+        data: rows.map((r) => ({
+          docId: r.doc_id,
+          content: r.content,
+          embedding: JSON.parse(r.embedding) as number[],
+        })),
+      };
+    } catch (e: unknown) {
+      return {
+        success: false,
+        error: new EketError(
+          EketErrorCode.SQLITE_OPERATION_FAILED,
+          `getAllEmbeddings failed: ${(e as Error).message}`,
+        ),
+      };
+    }
   }
 
   /**
