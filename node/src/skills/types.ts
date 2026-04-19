@@ -22,6 +22,14 @@ export enum SkillCategory {
   SECURITY = 'security',
   DATA = 'data',
   CUSTOM = 'custom',
+  UX = 'ux',
+  REVIEW = 'review',
+  OPS = 'ops',
+  PLANNING = 'planning',
+  HR = 'hr',
+  LLM = 'llm',
+  IMPLEMENTATION = 'implementation',
+  ALGORITHM = 'algorithm',
 }
 
 // ============================================================================

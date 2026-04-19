@@ -7,7 +7,7 @@ Main client class for interacting with EKET Protocol servers.
 import requests
 from typing import Optional, List, Dict, Any
 from urllib.parse import urljoin
-from datetime import datetime
+from datetime import datetime, timezone
 
 from .models import (
     Agent,
@@ -24,6 +24,7 @@ from .models import (
     MessageType,
     MessagePriority,
     TestStatus,
+    ReviewStatus,
 )
 from .exceptions import (
     EketError,
@@ -34,6 +35,14 @@ from .exceptions import (
     ServerError,
     ServiceUnavailableError,
 )
+
+
+def _safe_agent_type(value: Optional[str]) -> AgentType:
+    """Deserialize AgentType with fallback to CUSTOM for unknown values."""
+    try:
+        return AgentType(value)
+    except (ValueError, KeyError):
+        return AgentType.CUSTOM
 
 
 class EketClient:
@@ -208,7 +217,10 @@ class EketClient:
         response = self._request("POST", "/api/v1/agents/register", data=data)
 
         # Store token and instance_id
-        self.jwt_token = response.get("token")
+        token = response.get("token")
+        if token is None:
+            raise AuthenticationError("Registration succeeded but server returned no token")
+        self.jwt_token = token
         self.instance_id = response.get("instance_id")
 
         # Update session headers
@@ -221,8 +233,8 @@ class EketClient:
             role=role,
             status=AgentStatus.ACTIVE,
             specialty=specialty,
-            registered_at=datetime.utcnow().isoformat(),
-            last_heartbeat=datetime.utcnow().isoformat(),
+            registered_at=datetime.now(timezone.utc).isoformat(),
+            last_heartbeat=datetime.now(timezone.utc).isoformat(),
             capabilities=capabilities or [],
             metadata=metadata or {},
         )
@@ -309,7 +321,7 @@ class EketClient:
 
         return Agent(
             instance_id=agent_data.get("instance_id"),
-            agent_type=AgentType(agent_data.get("agent_type")),
+            agent_type=_safe_agent_type(agent_data.get("agent_type")),
             role=AgentRole(agent_data.get("role")),
             status=AgentStatus(agent_data.get("status")),
             specialty=AgentSpecialty(agent_data["specialty"])
@@ -345,7 +357,7 @@ class EketClient:
         return [
             Agent(
                 instance_id=a.get("instance_id"),
-                agent_type=AgentType(a.get("agent_type")),
+                agent_type=_safe_agent_type(a.get("agent_type")),
                 role=AgentRole(a.get("role")),
                 status=AgentStatus(a.get("status")),
                 specialty=AgentSpecialty(a["specialty"]) if a.get("specialty") else None,
@@ -527,7 +539,7 @@ class EketClient:
             "to": to_id,
             "type": msg_type.value if isinstance(msg_type, MessageType) else msg_type,
             "payload": payload,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "priority": priority.value if isinstance(priority, MessagePriority) else priority,
         }
 
@@ -624,7 +636,7 @@ class EketClient:
         self,
         task_id: str,
         reviewer: str,
-        status: str,
+        status: ReviewStatus,
         comments: Optional[List[Dict[str, Any]]] = None,
         summary: Optional[str] = None,
     ) -> Dict[str, Any]:
@@ -634,7 +646,7 @@ class EketClient:
         Args:
             task_id: Task/PR ID
             reviewer: Reviewer instance ID
-            status: Review status (approved/changes_requested/rejected)
+            status: Review status (ReviewStatus enum)
             comments: List of review comments
             summary: Review summary
 
@@ -644,7 +656,10 @@ class EketClient:
         Raises:
             NotFoundError: If PR not found
         """
-        data = {"reviewer": reviewer, "status": status}
+        data = {
+            "reviewer": reviewer,
+            "status": status.value if isinstance(status, ReviewStatus) else status,
+        }
 
         if comments:
             data["comments"] = comments

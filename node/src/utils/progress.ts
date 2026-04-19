@@ -134,18 +134,6 @@ export async function withProgress<T>(
 }
 
 /**
- * Progress step for multi-step operations
- */
-export interface ProgressStep {
-  /** Step name */
-  name: string;
-  /** Steps weight (for proportional progress) */
-  weight: number;
-  /** Current step progress (0-1) */
-  progress: number;
-}
-
-/**
  * Multi-step progress tracker
  *
  * @example
@@ -202,7 +190,7 @@ export class MultiStepProgress {
    */
   updateStepProgress(progress: number): void {
     const currentStep = this.steps[this.currentStepIndex];
-    if (!currentStep || !this.bar) return;
+    if (!currentStep || !this.bar) {return;}
 
     currentStep.progress = progress;
 

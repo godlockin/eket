@@ -1,0 +1,111 @@
+# Ticket Status State Machine
+#
+# 定义合法的 ticket 状态转移。
+# Shell 和 Node 引擎在执行状态变更前必须按此校验。
+#
+# 版本: 0.1.0
+---
+initial: backlog
+
+states:
+  backlog:
+    description: "新建，未开始分析"
+    allowed_transitions: [analysis, cancelled]
+    who_can_transition: [master]
+
+  analysis:
+    description: "Master 正在分析需求"
+    allowed_transitions: [analysis_review, backlog, cancelled]
+    who_can_transition: [master]
+
+  analysis_review:
+    description: "需求分析完成，等待 review"
+    allowed_transitions: [approved, analysis]
+    who_can_transition: [master]
+
+  approved:
+    description: "需求已通过，待设计"
+    allowed_transitions: [design, ready, in_progress, cancelled]
+    who_can_transition: [master]
+
+  design:
+    description: "技术设计中"
+    allowed_transitions: [design_review, approved]
+    who_can_transition: [master, slaver]
+
+  design_review:
+    description: "设计等待审核"
+    allowed_transitions: [ready, design]
+    who_can_transition: [master]
+
+  ready:
+    description: "可被 Slaver 领取"
+    allowed_transitions: [in_progress, cancelled]
+    who_can_transition: [slaver]
+    side_effects:
+      - notify_slavers
+
+  in_progress:
+    description: "Slaver 开发中"
+    allowed_transitions: [testing, blocked, ready]
+    who_can_transition: [slaver]
+    requires:
+      - assignee
+      - branch
+
+  testing:
+    description: "单元/集成测试中"
+    allowed_transitions: [dev_complete, review, in_progress]
+    who_can_transition: [slaver]
+
+  dev_complete:
+    description: "开发完成，待提 PR"
+    allowed_transitions: [review, in_progress]
+    who_can_transition: [slaver]
+
+  review:
+    description: "PR 已提交，等 Master 审核"
+    allowed_transitions: [gate_review, changes_requested, merged]
+    who_can_transition: [master]
+    requires:
+      - pr_file
+
+  gate_review:
+    description: "自动门禁审查中"
+    allowed_transitions: [merged, changes_requested]
+    who_can_transition: [master, automation]
+
+  changes_requested:
+    description: "Master 要求修改"
+    allowed_transitions: [in_progress, testing]
+    who_can_transition: [slaver]
+
+  merged:
+    description: "已合并，待收尾"
+    allowed_transitions: [done]
+    who_can_transition: [master]
+
+  done:
+    description: "已完成（终态）"
+    allowed_transitions: []
+    terminal: true
+
+  blocked:
+    description: "被外部依赖阻塞"
+    allowed_transitions: [in_progress, ready]
+    who_can_transition: [slaver, master]
+    # 注: blocked 不直接转 cancelled；如需取消，先 unblock 再由 Master 取消
+
+  cancelled:
+    description: "已取消（终态）"
+    allowed_transitions: []
+    terminal: true
+
+# 角色定义
+actors:
+  master:
+    description: "Master 节点，仅 1 个"
+  slaver:
+    description: "Slaver 节点，可多个"
+  automation:
+    description: "自动化流程（CI、gate-review）"

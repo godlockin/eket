@@ -46,6 +46,7 @@ setup(
             "black>=23.0.0",
             "flake8>=6.0.0",
             "mypy>=1.0.0",
+            "types-requests>=2.31.0",
         ],
     },
     entry_points={
