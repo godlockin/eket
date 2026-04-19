@@ -37,6 +37,7 @@ import { registerSlaverPoll } from './commands/slaver-poll.js';
 import { registerSlaverRegister } from './commands/slaver-register.js';
 import { startInstance, listAvailableRoles } from './commands/start-instance.js';
 import { registerSubmitPR } from './commands/submit-pr.js';
+import { registerWorkflowCommands } from './commands/workflow.js';
 import { registerTeamStatus } from './commands/team-status.js';
 import { createAgentPoolManager } from './core/agent-pool.js';
 import { createHeartbeatManager, createSlaverMonitor } from './core/heartbeat-monitor.js';
@@ -1416,6 +1417,9 @@ Related Commands:
   // ============================================================================
 
   registerCompletion(program);
+
+  // TASK-080: YAML Workflow Commands
+  registerWorkflowCommands(program);
 
   // 解析命令行
   await program.parseAsync(process.argv);
