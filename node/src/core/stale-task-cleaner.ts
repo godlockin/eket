@@ -141,10 +141,10 @@ export function failStaleTasks(config: StaleTaskCleanerConfig): StaleTaskResult 
       continue;
     }
 
-    // Only process in_progress tickets
+    // Process in_progress and blocked tickets (blocked can escalate to failed)
     const statusMatch = content.match(/\*\*(状态|status)\*\*:\s*(\S+)/i);
     const status = statusMatch?.[2]?.toLowerCase();
-    if (status !== 'in_progress') continue;
+    if (status !== 'in_progress' && status !== 'blocked') continue;
 
     const ticketId = file.replace('.md', '');
     const claimedAt = parseClaimedAt(content);
