@@ -7,10 +7,11 @@
 **优先级**: P1
 **重要性**: high
 
-**状态**: ready
+**状态**: done
 **创建时间**: 2026-04-19
 **创建者**: Master
-**负责人**: 待认领
+**负责人**: Slaver
+**完成时间**: 2026-04-19
 
 **依赖关系**:
 - blocks: [TASK-075]
@@ -97,6 +98,37 @@ interface WorkflowDefinition {
 ```bash
 cd node && npm test -- --testPathPattern=workflow-yaml-engine
 ```
+
+## 执行日志（Slaver）
+
+**领取时间**: 2026-04-19
+**完成时间**: 2026-04-19
+
+### 实现文件
+- `node/src/core/workflow-yaml-engine.ts` — 核心引擎（parseWorkflow / topologicalSort / evaluateWhen / executeWorkflow）
+- `node/tests/core/workflow-yaml-engine.test.ts` — 10 个测试用例
+
+### 测试结果
+```
+Tests: 10 passed, 10 total
+- linear DAG (A→B→C): 3 tests ✓
+- parallel DAG (A→[B,C]→D): 2 tests ✓ (B/C 并发验证 <20ms 差距)
+- conditional branch: 5 tests ✓ (when=false 跳过, when=true 执行)
+```
+
+### 技术决策
+- `evaluateWhen` 手写解析器（regex），不用 eval，支持 `== / !=` 两种操作符
+- 拓扑排序按层分组（BFS），同层 `Promise.allSettled` 并行
+- NodeExecutor 注入接口，测试 100% mock，无真实 Claude 调用
+- ESM 兼容：import 带 `.js` 扩展名
+
+### 验收标准核查
+- AC-1 ✓ workflow-yaml-engine.ts 已创建
+- AC-2 ✓ 支持 prompt/bash/noop 类型
+- AC-3 ✓ depends_on + Promise.allSettled 并行
+- AC-4 ✓ when 条件表达式手写解析
+- AC-5 ✓ ctx[nodeId] = {output} 变量传递
+- AC-6 ✓ 线性/并行/条件分支 3 类测试
 
 ## 回滚
 
