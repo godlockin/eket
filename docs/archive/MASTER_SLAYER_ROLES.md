@@ -1,3 +1,7 @@
+> ⚠️ **DEPRECATED** — 此文档已过时，当前版本请参考：[template/docs/MASTER-RULES.md](../../template/docs/MASTER-RULES.md)。
+
+---
+
 # EKET Master/Slaver 职责分工
 
 **版本**: 0.4.0

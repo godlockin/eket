@@ -1,3 +1,7 @@
+> ⚠️ **DEPRECATED** — 此文档已过时，当前版本请参考：[template/docs/MASTER-RULES.md](../../template/docs/MASTER-RULES.md)。
+
+---
+
 # EKET Master 战略调整 - 三级架构优先级
 
 **Master**: Claude Opus 4.6
