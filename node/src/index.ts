@@ -23,6 +23,7 @@ import { registerSkillExtractCommand } from './commands/skill-extract.js';
 import { registerKnowledgeIndex } from './commands/knowledge-index.js';
 import { registerKnowledgeSearch } from './commands/knowledge-search.js';
 import { registerClaim } from './commands/claim.js';
+import { registerComplete } from './commands/complete.js';
 import { registerHandoff } from './commands/handoff.js';
 import { registerTaskResume } from './commands/task-resume.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
@@ -597,6 +598,9 @@ Related Commands:
 
   // 注册 claim 命令
   registerClaim(program);
+
+  // 注册 complete 命令
+  registerComplete(program);
 
   // 注册 handoff 命令
   registerHandoff(program);

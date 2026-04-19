@@ -14,9 +14,9 @@ import ora from 'ora';
 import { createInstanceRegistry } from '../core/instance-registry.js';
 import { createSQLiteManager } from '../core/sqlite-manager.js';
 import { createTaskAssigner, type AssignmentResult } from '../core/task-assigner.js';
+import { WorktreeManager } from '../core/worktree-manager.js';
 import type { Instance, Ticket } from '../types/index.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
-import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
 import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
@@ -191,19 +191,12 @@ async function updateTicketStatus(
 }
 
 /**
- * 创建 worktree
+ * 获取 isolation 模式（读取环境变量，默认 "worktree"）
  */
-async function createWorktree(projectRoot: string, ticketId: string): Promise<string> {
-  const worktreeDir = path.join(projectRoot, '.eket', 'worktrees', ticketId);
-
-  // 确保目录存在
-  fs.mkdirSync(path.dirname(worktreeDir), { recursive: true });
-
-  // 调用 git worktree add (使用安全执行)
-  const branchName = ticketId.replace(/[^a-zA-Z0-9_-]/g, '_');
-  await execFileNoThrow('git', ['worktree', 'add', '-b', branchName, worktreeDir]);
-
-  return worktreeDir;
+export function getIsolationMode(): 'worktree' | 'none' {
+  const val = process.env.EKET_ISOLATION;
+  if (val === 'none') return 'none';
+  return 'worktree';
 }
 
 /**
@@ -374,10 +367,20 @@ Related Commands:
       await updateTicketStatus(projectRoot, selectedTicket.id, 'in_progress');
       statusSpinner.succeed(`Task status updated: ${selectedTicket.id} -> in_progress`);
 
-      // 8. 创建 worktree
-      const worktreeSpinner = ora('Creating worktree...').start();
-      const worktreePath = await createWorktree(projectRoot, selectedTicket.id);
-      worktreeSpinner.succeed(`Worktree created: ${worktreePath}`);
+      // 8. 创建 worktree（isolation=worktree 时）
+      let worktreePath = '';
+      const isolationMode = getIsolationMode();
+      if (isolationMode === 'worktree') {
+        const worktreeSpinner = ora('Creating worktree...').start();
+        try {
+          const wm = new WorktreeManager({ projectRoot });
+          worktreePath = await wm.createWorktree(selectedTicket.id, slaverId);
+          worktreeSpinner.succeed(`[worktree] Created: ${worktreePath}`);
+        } catch (e: unknown) {
+          const err = e as { message?: string };
+          worktreeSpinner.warn(`Worktree creation skipped: ${err.message ?? 'unknown'}`);
+        }
+      }
 
       // 9. 初始化 Profile
       const profileSpinner = ora('Initializing profile...').start();
