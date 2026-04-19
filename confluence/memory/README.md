@@ -1,41 +1,28 @@
-# confluence/memory — 知识沉淀规范
+# confluence/memory — EKET 知识沉淀中心
 
-Slaver 完成 ticket 后，**必须**将经验写入此处。
+## 目录结构
 
-## 目录说明
-
-| 目录 | 内容 | 写入时机 |
+| 目录 | 说明 | 写入时机 |
 |------|------|---------|
-| `patterns/` | 可复用的架构模式、解法模式 | 每次发现通用解法时 |
-| `pitfalls/` | 踩坑记录与解法 | 每次遇到非显然问题时 |
+| `patterns/` | 可复用的架构模式、解法模式 | 发现通用解法时 |
+| `pitfalls/` | 踩坑记录与解法 | 遇到非显然问题时 |
 | `glossary/` | 领域术语定义 | 引入新术语时 |
+| `research/` | 研究性长文档（借鉴分析、深度调研） | 完成专项研究时 |
+| `lessons/` | 实战经验教训（简短提炼） | 每轮复盘后 |
+| `retrospectives/` | Sprint/PR 复盘记录 | 每个 Sprint 结束 |
 
-## 写入格式
+## Slaver 使用指引
 
-### patterns/ 文件格式
+完成 ticket 后，按以下优先级写入：
+1. 遇到坑 → `pitfalls/`
+2. 发现通用解法 → `patterns/`
+3. Sprint 复盘 → `retrospectives/`
+4. 引入新术语 → `glossary/terms.md`
 
-```markdown
-# [Pattern 名称]
-**场景**：什么情况下使用
-**方案**：具体做法
-**来源**：TASK-XXX
-```
+## 文件命名规范
 
-### pitfalls/ 文件格式
-
-```markdown
-# [坑的名称]
-**症状**：什么现象
-**根因**：为什么
-**解法**：怎么修
-**来源**：TASK-XXX
-```
-
-## 现有文件说明
-
-- `BORROWED-WISDOM.md`：从外部项目借鉴的模式（历史研究产出）
-- `MULTI-AGENT-COLLAB-LESSONS.md`：多智能体协作经验
-- `RULE-RETENTION-LESSONS.md`：规则保持经验
-- `patterns/`：可复用架构模式（结构化索引）
-- `pitfalls/`：踩坑记录（结构化索引）
-- `glossary/`：领域术语表
+- `patterns/`：`{主题}.md`，如 `three-level-degradation.md`
+- `pitfalls/`：`{症状描述}.md`，如 `async-test-leak.md`
+- `retrospectives/`：`{YYYYMMDD}-{TASK-ID}.md` 或 `sprint-{N}-retro.md`
+- `lessons/`：`{主题}.md`（lowercase-kebab）
+- `research/`：`{主题}.md`（lowercase-kebab）
