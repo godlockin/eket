@@ -47,7 +47,8 @@ type WorkerOperationType =
   | 'generateReport'
   | 'saveCheckpoint'
   | 'loadCheckpoint'
-  | 'deleteCheckpoint';
+  | 'deleteCheckpoint'
+  | 'claimTask';
 
 function runWorker() {
   let db: Database.Database | null = null;
@@ -309,6 +310,30 @@ function runWorker() {
             break;
           }
 
+          case 'claimTask': {
+            if (!db) {
+              sendResponse(port, request.id, { success: false, error: { code: 'SQLITE_NOT_CONNECTED', message: 'Database not connected' } });
+              break;
+            }
+            const { ticketId: ct, slaverId: cs } = request.payload as { ticketId: string; slaverId: string };
+            db.prepare('BEGIN EXCLUSIVE').run();
+            try {
+              const existing = db.prepare("SELECT 1 FROM task_history WHERE ticket_id = ? AND status = 'in_progress'").get(ct);
+              if (existing) {
+                db.prepare('COMMIT').run();
+                sendResponse(port, request.id, { success: true, data: false });
+              } else {
+                db.prepare("INSERT INTO task_history (ticket_id, assigned_to, status, started_at) VALUES (?, ?, 'in_progress', datetime('now'))").run(ct, cs);
+                db.prepare('COMMIT').run();
+                sendResponse(port, request.id, { success: true, data: true });
+              }
+            } catch (e) {
+              db.prepare('ROLLBACK').run();
+              throw e;
+            }
+            break;
+          }
+
           default:
             sendResponse(port, request.id, {
               success: false,
@@ -541,7 +566,16 @@ export class AsyncSQLiteClient implements ISQLiteClient {
       return { success: true, data: undefined };
     } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
+
+  async claimTask(ticketId: string, slaverId: string): Promise<Result<boolean>> {
+    if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
+    try {
+      const claimed = (await this.sendRequest('claimTask', { ticketId, slaverId })) as boolean;
+      return { success: true, data: claimed };
+    } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
+  }
 }
+
 
 export function createAsyncSQLiteClient(dbPath?: string): AsyncSQLiteClient {
   return new AsyncSQLiteClient(dbPath);
