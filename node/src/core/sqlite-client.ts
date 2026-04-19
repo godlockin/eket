@@ -561,6 +561,48 @@ export class SQLiteClient {
   }
 
   /**
+   * 原子事务领取 ticket（防止多 Slaver 竞争）
+   * 使用事务确保 ticket 状态检查和更新的原子性
+   *
+   * @returns true 表示领取成功，false 表示已被他人抢占
+   */
+  claimTask(ticketId: string, slaverId: string): Result<boolean> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const claimTx = this.db.transaction((): boolean => {
+        // 检查是否已被领取（排他锁由事务保证）
+        const existing = this.db!.prepare(
+          "SELECT assigned_to FROM task_history WHERE ticket_id = ? AND status = 'in_progress'"
+        ).get(ticketId) as { assigned_to: string } | undefined;
+
+        if (existing) {
+          return false; // 已被抢占
+        }
+
+        // 插入领取记录
+        this.db!.prepare(
+          "INSERT INTO task_history (ticket_id, status, assigned_to, started_at) VALUES (?, 'in_progress', ?, CURRENT_TIMESTAMP)"
+        ).run(ticketId, slaverId);
+
+        return true;
+      });
+
+      const claimed = claimTx() as boolean;
+      return { success: true, data: claimed };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
+      };
+    }
+  }
+
+  /**
    * 删除执行检查点
    */
   deleteCheckpoint(ticketId: string, slaverId: string): Result<void> {
