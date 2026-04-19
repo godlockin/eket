@@ -249,6 +249,13 @@ export class SQLiteManager implements ISQLiteClient {
   async deleteCheckpoint(ticketId: string, slaverId: string): Promise<Result<void>> {
     return this.client.deleteCheckpoint(ticketId, slaverId);
   }
+
+  /**
+   * 原子事务领取任务（防竞争）
+   */
+  async claimTask(ticketId: string, slaverId: string): Promise<Result<boolean>> {
+    return this.client.claimTask(ticketId, slaverId);
+  }
 }
 
 /**
