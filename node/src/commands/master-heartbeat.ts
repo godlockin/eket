@@ -17,6 +17,7 @@ import { Command } from 'commander';
 import { type SlaverHeartbeat } from '../types/index.js';
 import { EketErrorCode } from '../types/index.js';
 import { printError } from '../utils/error-handler.js';
+import { failStaleTasks } from '../core/stale-task-cleaner.js';
 
 // ============================================================================
 // Constants
@@ -584,7 +585,7 @@ export function generateReport(projectRoot: string): HeartbeatReport {
     }
   }
 
-  return {
+  const report = {
     timestamp,
     projectRoot,
     ticketTimelines,
@@ -623,6 +624,15 @@ export function generateReport(projectRoot: string): HeartbeatReport {
     healthReasons,
     recommendations,
   };
+
+  // TASK-066: 心跳末尾执行超时清理
+  try {
+    failStaleTasks({ projectRoot });
+  } catch {
+    // 超时清理失败不影响心跳报告输出
+  }
+
+  return report;
 }
 
 // ============================================================================

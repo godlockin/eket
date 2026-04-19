@@ -231,6 +231,20 @@ export class SQLiteClient {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      -- 任务队列表（用于原子性领取）
+      CREATE TABLE IF NOT EXISTS tickets (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'ready',
+        priority INTEGER NOT NULL DEFAULT 0,
+        assignee TEXT,
+        claimed_at TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);
+      CREATE INDEX IF NOT EXISTS idx_tickets_priority ON tickets(priority DESC, created_at ASC);
+
       -- 消息历史表
       CREATE TABLE IF NOT EXISTS message_history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -578,6 +592,166 @@ export class SQLiteClient {
       return {
         success: false,
         error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Failed to delete checkpoint'),
+      };
+    }
+  }
+
+  /**
+   * 插入 ticket（用于测试或队列初始化）
+   */
+  insertTicket(ticket: {
+    id: string;
+    title?: string;
+    status?: string;
+    priority?: number;
+  }): Result<void> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      this.db
+        .prepare(
+          `INSERT OR REPLACE INTO tickets (id, title, status, priority)
+           VALUES (?, ?, ?, ?)`
+        )
+        .run(
+          ticket.id,
+          ticket.title ?? '',
+          ticket.status ?? 'ready',
+          ticket.priority ?? 0
+        );
+      return { success: true, data: undefined };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
+      };
+    }
+  }
+
+  /**
+   * 按 id 查询 ticket
+   */
+  getTicketById(id: string): Result<{
+    id: string;
+    title: string;
+    status: string;
+    priority: number;
+    assignee: string | null;
+    claimed_at: string | null;
+    created_at: string;
+  } | null> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const row = this.db.prepare('SELECT * FROM tickets WHERE id = ?').get(id) as
+        | {
+            id: string;
+            title: string;
+            status: string;
+            priority: number;
+            assignee: string | null;
+            claimed_at: string | null;
+            created_at: string;
+          }
+        | undefined;
+      return { success: true, data: row ?? null };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
+      };
+    }
+  }
+
+  /**
+   * 原子性领取任务（TASK-065）
+   *
+   * 使用 better-sqlite3 db.transaction()（等价于 BEGIN IMMEDIATE），
+   * 防止多 Slaver 并发双重领取同一 ticket。
+   *
+   * @param slaverId - 领取者 ID
+   * @returns 领取的 ticket，若无可用 ticket 返回 null
+   */
+  claimTask(slaverId: string): Result<{
+    id: string;
+    title: string;
+    status: string;
+    priority: number;
+    assignee: string | null;
+    claimed_at: string | null;
+    created_at: string;
+  } | null> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+
+    try {
+      const db = this.db;
+
+      const claimTxn = db.transaction((): {
+        id: string;
+        title: string;
+        status: string;
+        priority: number;
+        assignee: string | null;
+        claimed_at: string | null;
+        created_at: string;
+      } | null => {
+        // SELECT highest-priority ready ticket
+        const ticket = db
+          .prepare(
+            `SELECT id FROM tickets
+             WHERE status = 'ready'
+             ORDER BY priority DESC, created_at ASC
+             LIMIT 1`
+          )
+          .get() as { id: string } | undefined;
+
+        if (!ticket) return null;
+
+        // UPDATE with status guard — only succeeds if still 'ready'
+        const result = db
+          .prepare(
+            `UPDATE tickets
+             SET status = 'in_progress', assignee = ?, claimed_at = datetime('now')
+             WHERE id = ? AND status = 'ready'`
+          )
+          .run(slaverId, ticket.id);
+
+        if (result.changes !== 1) return null;
+
+        const row = db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticket.id) as
+          | {
+              id: string;
+              title: string;
+              status: string;
+              priority: number;
+              assignee: string | null;
+              claimed_at: string | null;
+              created_at: string;
+            }
+          | undefined;
+
+        return row ?? null;
+      });
+
+      const claimed = claimTxn();
+      return { success: true, data: claimed };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
       };
     }
   }
