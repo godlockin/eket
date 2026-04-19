@@ -20,7 +20,6 @@ import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
 import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
-import { resolveAndPersistModel } from '../core/claude-runner.js';
 import {
   loadConfig,
   getTickets,
@@ -28,7 +27,6 @@ import {
   initializeProfile,
   sendClaimMessage,
 } from './claim-helpers.js';
-import { appendTaskMessage, injectActiveContext } from '../core/task-logger.js';
 
 /**
  * 获取或生成持久化 Slaver ID（P4修复）
@@ -248,6 +246,7 @@ Related Commands:
       }
 
       // 5. 任务分配（如果启用）
+      // 5. 任务分配（如果启用）
       let assignedInstance: Instance | undefined;
 
       // 5.0 SQLite 原子事务领取（防竞争）
@@ -328,27 +327,10 @@ Related Commands:
       await initializeProfile(projectRoot, role, selectedTicket);
       profileSpinner.succeed(`Profile initialized: ${role}`);
 
-      // 9.1 TASK-081: 解析并持久化 model 选择
-      const resolvedTier = resolveAndPersistModel(projectRoot, selectedTicket);
-      console.log(`[Model] Resolved: ${resolvedTier} (based on tags: ${selectedTicket.tags?.join(', ') ?? 'none'})`);
-
       // 10. 发送消息
       const messageSpinner = ora('Sending message to queue...').start();
       await sendClaimMessage(projectRoot, selectedTicket.id, role);
       messageSpinner.succeed('Message sent');
-
-      // 11. 追加执行日志到 ticket（TASK-078）
-      const agentId = `agent_${role}_${process.pid}`;
-      await appendTaskMessage(selectedTicket.id, '领取任务', agentId);
-
-      // 12. 刷新活跃上下文（TASK-079）
-      await injectActiveContext({
-        ticketId: selectedTicket.id,
-        role,
-        slaverId: agentId,
-        claimedAt: new Date().toISOString(),
-        status: 'in_progress',
-      });
 
       logSuccess('Task claimed successfully', [
         `Task: ${selectedTicket.id}`,
