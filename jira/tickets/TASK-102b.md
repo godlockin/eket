@@ -1,10 +1,10 @@
 # TASK-102b: skill_graph 权重衰减 + getTopCollaborators
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P0
-- **负责人**: 待领取
+- **负责人**: Slaver
 - **创建时间**: 2026-04-20
 - **依赖**: TASK-102a
 
