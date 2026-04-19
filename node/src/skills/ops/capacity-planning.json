@@ -1,0 +1,18 @@
+{
+  "id": "ops/capacity-planning",
+  "type": "skill",
+  "domain": "ops",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "capacity",
+    "scaling",
+    "resource planning"
+  ],
+  "collaborates_with": [
+    "devops/monitoring-setup",
+    "planning/risk-assessment"
+  ],
+  "lazy": true,
+  "description": "Capacity Planning"
+}

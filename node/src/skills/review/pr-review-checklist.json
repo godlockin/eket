@@ -1,0 +1,18 @@
+{
+  "id": "review/pr-review-checklist",
+  "type": "skill",
+  "domain": "review",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "PR review",
+    "merge checklist",
+    "code quality"
+  ],
+  "collaborates_with": [
+    "development/code-review-checklist",
+    "testing/test-strategy"
+  ],
+  "lazy": true,
+  "description": "Pr Review Checklist"
+}

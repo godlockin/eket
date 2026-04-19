@@ -1,0 +1,18 @@
+{
+  "id": "documentation/architecture-doc",
+  "type": "skill",
+  "domain": "documentation",
+  "level": 1,
+  "model_hint": "haiku",
+  "triggers": [
+    "architecture doc",
+    "ADR",
+    "system doc"
+  ],
+  "collaborates_with": [
+    "development/code-review-checklist",
+    "design/api-design"
+  ],
+  "lazy": true,
+  "description": "Architecture Doc"
+}

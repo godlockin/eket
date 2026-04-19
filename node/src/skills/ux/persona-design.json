@@ -1,0 +1,18 @@
+{
+  "id": "ux/persona-design",
+  "type": "skill",
+  "domain": "ux",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "persona",
+    "用户画像",
+    "user persona"
+  ],
+  "collaborates_with": [
+    "requirements/user-story-mapping",
+    "design/system-architecture"
+  ],
+  "lazy": true,
+  "description": "Persona Design"
+}

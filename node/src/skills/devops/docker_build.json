@@ -1,0 +1,18 @@
+{
+  "id": "devops/docker_build",
+  "type": "skill",
+  "domain": "devops",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "Docker",
+    "Dockerfile",
+    "image build"
+  ],
+  "collaborates_with": [
+    "testing/e2e-testing",
+    "ops/incident-runbook"
+  ],
+  "lazy": true,
+  "description": "Docker Build"
+}

@@ -27,6 +27,18 @@ import * as url from 'url';
 import * as zlib from 'zlib';
 
 // ============================================================================
+// Pipeline imports (DAG middleware - TASK-107)
+// ============================================================================
+import { PipelineExecutor } from '../core/middleware-pipeline.js';
+import { createPreToolUsePipeline } from './pipelines/pre-tool-use.js';
+import { createPostToolUsePipeline } from './pipelines/post-tool-use.js';
+import { createSessionPipeline } from './pipelines/session.js';
+import { createTaskPipeline } from './pipelines/task.js';
+import { createCompactPipeline } from './pipelines/compact.js';
+import { createPermissionPipeline } from './pipelines/permission.js';
+import { createMiscPipeline } from './pipelines/misc.js';
+
+// ============================================================================
 // JWT 工具函数
 // ============================================================================
 
@@ -301,10 +313,46 @@ export interface HttpHookServerConfig {
 // HTTP Hook Server
 // ============================================================================
 
+/**
+ * Event → pipeline group mapping
+ */
+const EVENT_PIPELINE_GROUP: Record<HookEvent, string> = {
+  PreToolUse: 'pre-tool-use',
+  PostToolUse: 'post-tool-use',
+  PostToolUseFailure: 'post-tool-use',
+  SessionStart: 'session',
+  SessionEnd: 'session',
+  TaskCreated: 'task',
+  TaskCompleted: 'task',
+  TeammateIdle: 'task',
+  PreCompact: 'compact',
+  PostCompact: 'compact',
+  PermissionRequest: 'permission',
+  PermissionDenied: 'permission',
+  Notification: 'misc',
+  UserPromptSubmit: 'misc',
+  Stop: 'misc',
+  StopFailure: 'misc',
+  SubagentStart: 'misc',
+  SubagentStop: 'misc',
+  Setup: 'misc',
+  Elicitation: 'misc',
+  ElicitationResult: 'misc',
+  ConfigChange: 'misc',
+  WorktreeCreate: 'misc',
+  WorktreeRemove: 'misc',
+  InstructionsLoaded: 'misc',
+  CwdChanged: 'misc',
+  FileChanged: 'misc',
+};
+
 export class HttpHookServer {
   private server: http.Server | null = null;
   private handlers: Map<HookEvent, HookEventHandler[]> = new Map();
   private config: HttpHookServerConfig;
+  /** Pipeline executors — lazy created once per group */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private pipelineCache: Map<string, PipelineExecutor<any>> = new Map();
   /** 速率限制：IP -> { 请求时间戳列表 } */
   private rateLimitMap: Map<string, number[]> = new Map();
   /** 速率限制清理定时器 */
@@ -799,6 +847,42 @@ export class HttpHookServer {
   }
 
   /**
+   * 获取（或创建）指定分组的 pipeline executor
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private getPipeline(group: string): PipelineExecutor<any> {
+    if (this.pipelineCache.has(group)) {
+      return this.pipelineCache.get(group)!;
+    }
+    let pipeline: PipelineExecutor<unknown>;
+    switch (group) {
+      case 'pre-tool-use':
+        pipeline = createPreToolUsePipeline() as PipelineExecutor<unknown>;
+        break;
+      case 'post-tool-use':
+        pipeline = createPostToolUsePipeline() as PipelineExecutor<unknown>;
+        break;
+      case 'session':
+        pipeline = createSessionPipeline() as PipelineExecutor<unknown>;
+        break;
+      case 'task':
+        pipeline = createTaskPipeline() as PipelineExecutor<unknown>;
+        break;
+      case 'compact':
+        pipeline = createCompactPipeline() as PipelineExecutor<unknown>;
+        break;
+      case 'permission':
+        pipeline = createPermissionPipeline() as PipelineExecutor<unknown>;
+        break;
+      default:
+        pipeline = createMiscPipeline() as PipelineExecutor<unknown>;
+        break;
+    }
+    this.pipelineCache.set(group, pipeline);
+    return pipeline;
+  }
+
+  /**
    * 处理 Hook 事件
    */
   private async processHook(event: HookEvent, payload: HttpHookPayload): Promise<HttpHookResponse> {
@@ -807,7 +891,28 @@ export class HttpHookServer {
     // 默认响应：允许继续
     let combinedResponse: HttpHookResponse = { action: 'allow' };
 
-    // 按顺序执行所有处理器
+    // --- DAG Pipeline execution (TASK-107) ---
+    const group = EVENT_PIPELINE_GROUP[event] ?? 'misc';
+    try {
+      const pipeline = this.getPipeline(group);
+      const pipelineResult = await pipeline.execute({ payload, response: combinedResponse });
+      // If pipeline produced a deny, propagate immediately
+      const pipelineResponse = (pipelineResult.state as { response?: HttpHookResponse }).response;
+      if (pipelineResponse?.action === 'deny') {
+        return pipelineResponse;
+      }
+      // Merge non-deny fields
+      if (pipelineResponse?.updatedInput) {
+        combinedResponse.updatedInput = pipelineResponse.updatedInput;
+      }
+      if (pipelineResponse?.feedback) {
+        combinedResponse.feedback = pipelineResponse.feedback;
+      }
+    } catch (pipelineError) {
+      console.warn(`[HTTP Hook Server] Pipeline error for ${event}:`, pipelineError);
+    }
+
+    // --- Legacy handlers (backward-compatible) ---
     for (const handler of handlers) {
       try {
         const response = await handler(payload);

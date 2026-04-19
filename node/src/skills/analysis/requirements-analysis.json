@@ -1,0 +1,19 @@
+{
+  "id": "analysis/requirements-analysis",
+  "type": "skill",
+  "domain": "analysis",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "requirements",
+    "需求分析",
+    "BRD",
+    "PRD"
+  ],
+  "collaborates_with": [
+    "requirements/requirements-analysis",
+    "planning/risk-assessment"
+  ],
+  "lazy": true,
+  "description": "Requirements Analysis"
+}

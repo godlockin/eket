@@ -1,0 +1,18 @@
+{
+  "id": "data/etl-design",
+  "type": "skill",
+  "domain": "data",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "ETL",
+    "data transformation",
+    "pipeline design"
+  ],
+  "collaborates_with": [
+    "algorithm/feature-engineering",
+    "devops/ci-pipeline"
+  ],
+  "lazy": true,
+  "description": "Etl Design"
+}
