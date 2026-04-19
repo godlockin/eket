@@ -30,7 +30,7 @@ import * as path from 'path';
 
 import Database from 'better-sqlite3';
 
-import type { Retrospective, RetroContent, Result, TaskMessage } from '../types/index.js';
+import type { Retrospective, RetroContent, Result, SkillNodeRecord, TaskMessage } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
 
 /**
@@ -310,6 +310,29 @@ export class SQLiteClient {
         source_path TEXT NOT NULL,
         embedding TEXT NOT NULL,
         created_at TEXT DEFAULT (datetime('now'))
+      );
+
+      -- Skill Graph: 节点表（TASK-102a）
+      CREATE TABLE IF NOT EXISTS skill_nodes (
+        id TEXT PRIMARY KEY,
+        type TEXT NOT NULL CHECK(type IN ('skill', 'expert')),
+        domain TEXT NOT NULL,
+        level INTEGER DEFAULT 1 CHECK(level BETWEEN 1 AND 3),
+        model_hint TEXT,
+        triggers TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Skill Graph: 边表（TASK-102a）
+      CREATE TABLE IF NOT EXISTS skill_edges (
+        source_id TEXT NOT NULL,
+        target_id TEXT NOT NULL,
+        weight REAL DEFAULT 0.5 CHECK(weight BETWEEN 0.0 AND 1.0),
+        co_activation_count INTEGER DEFAULT 1,
+        active INTEGER DEFAULT 1,
+        last_activated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (source_id, target_id)
       );
     `);
   }
@@ -940,6 +963,78 @@ export class SQLiteClient {
         success: false,
         error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
       };
+    }
+  }
+
+  /**
+   * 注册或替换 SkillNode（INSERT OR REPLACE）
+   */
+  registerSkillNode(node: SkillNodeRecord): Promise<void> {
+    if (!this.db) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'));
+    }
+    try {
+      this.db.prepare(`
+        INSERT OR REPLACE INTO skill_nodes (id, type, domain, level, model_hint, triggers, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      `).run(
+        node.id,
+        node.type,
+        node.domain,
+        node.level,
+        node.model_hint ?? null,
+        node.triggers ? JSON.stringify(node.triggers) : null,
+      );
+      return Promise.resolve();
+    } catch (e: unknown) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message));
+    }
+  }
+
+  /**
+   * Upsert skill edge：存在则 co_activation_count++，否则插入
+   */
+  upsertSkillEdge(sourceId: string, targetId: string): Promise<void> {
+    if (!this.db) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'));
+    }
+    try {
+      this.db.prepare(`
+        INSERT INTO skill_edges (source_id, target_id)
+        VALUES (?, ?)
+        ON CONFLICT(source_id, target_id) DO UPDATE SET
+          co_activation_count = co_activation_count + 1,
+          last_activated_at = CURRENT_TIMESTAMP
+      `).run(sourceId, targetId);
+      return Promise.resolve();
+    } catch (e: unknown) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message));
+    }
+  }
+
+  /**
+   * 获取 SkillNode（按 id）
+   */
+  getSkillNode(id: string): Promise<SkillNodeRecord | null> {
+    if (!this.db) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'));
+    }
+    try {
+      const row = this.db.prepare('SELECT * FROM skill_nodes WHERE id = ?').get(id) as {
+        id: string; type: 'skill' | 'expert'; domain: string; level: 1 | 2 | 3;
+        model_hint: string | null; triggers: string | null;
+      } | undefined;
+      if (!row) return Promise.resolve(null);
+      return Promise.resolve({
+        id: row.id,
+        type: row.type,
+        domain: row.domain,
+        level: row.level,
+        model_hint: row.model_hint ?? undefined,
+        triggers: row.triggers ? (JSON.parse(row.triggers) as string[]) : undefined,
+      });
+    } catch (e: unknown) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message));
     }
   }
 
