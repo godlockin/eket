@@ -113,6 +113,8 @@ export interface ISQLiteClient {
   loadCheckpoint(ticketId: string, slaverId: string): Promise<Result<unknown>>;
   /** 删除执行检查点 */
   deleteCheckpoint(ticketId: string, slaverId: string): Promise<Result<void>>;
+  /** 原子事务领取任务（防竞争）: data=true 成功; data=false 被抢占; success=false 操作失败 */
+  claimTask(ticketId: string, slaverId: string): Promise<Result<boolean>>;
 }
 
 export interface ExecutionCheckpoint {

@@ -10,6 +10,7 @@ import * as path from 'path';
 
 import { Command } from 'commander';
 import { execFile } from 'child_process';
+import { load } from 'js-yaml';
 import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
@@ -44,210 +45,51 @@ interface NodeResult {
 }
 
 // ============================================================================
-// YAML Parser (simple subset sufficient for workflow files)
+// YAML Parser (using js-yaml for robust parsing)
 // ============================================================================
 
-/**
- * Parse a simple workflow YAML file.
- * Supports top-level keys and a `nodes:` list with nested properties.
- */
 function parseWorkflowYaml(content: string): WorkflowDefinition {
-  const lines = content.split('\n');
-  const def: Partial<WorkflowDefinition> & { nodes: WorkflowNode[] } = { nodes: [] };
+  const raw = load(content) as Record<string, unknown>;
 
-  let i = 0;
-
-  function stripInlineComment(s: string): string {
-    // Remove inline comments (but be careful with URLs)
-    const idx = s.indexOf(' #');
-    return idx >= 0 ? s.slice(0, idx).trim() : s.trim();
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Invalid YAML: expected a mapping at top level');
   }
 
-  function unquote(s: string): string {
-    s = s.trim();
-    if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
-      return s.slice(1, -1);
-    }
-    return s;
-  }
-
-  function indent(line: string): number {
-    return line.match(/^(\s*)/)?.[1]?.length ?? 0;
-  }
-
-  while (i < lines.length) {
-    const line = lines[i];
-    const trimmed = line.trim();
-
-    // Skip empty lines and comments
-    if (!trimmed || trimmed.startsWith('#')) {
-      i++;
-      continue;
-    }
-
-    // Top-level key: value
-    const kvMatch = trimmed.match(/^(\w+):\s*(.*)$/);
-    if (!kvMatch) {
-      i++;
-      continue;
-    }
-
-    const key = kvMatch[1];
-    const value = stripInlineComment(kvMatch[2]);
-
-    if (key === 'name') {
-      def.name = unquote(value);
-      i++;
-    } else if (key === 'description') {
-      def.description = unquote(value);
-      i++;
-    } else if (key === 'version') {
-      def.version = unquote(value);
-      i++;
-    } else if (key === 'nodes') {
-      // Parse nodes list
-      i++;
-      while (i < lines.length) {
-        const nodeLine = lines[i];
-        const nodeTrimmed = nodeLine.trim();
-
-        if (!nodeTrimmed || nodeTrimmed.startsWith('#')) {
-          i++;
-          continue;
-        }
-
-        // Node list item starts with `- id:` or `- name:`
-        if (!nodeLine.match(/^\s+-\s+/)) {
-          break; // Back to top level
-        }
-
-        // Parse a node block
-        const node: Partial<WorkflowNode> & { depends_on: string[] } = { depends_on: [] };
-        const nodeIndent = indent(nodeLine);
-
-        // Parse first property of the node (on the `-` line)
-        const firstPropMatch = nodeLine.match(/^\s+-\s+(\w+):\s*(.*)$/);
-        if (firstPropMatch) {
-          const propKey = firstPropMatch[1];
-          const propVal = stripInlineComment(firstPropMatch[2]);
-          assignNodeProp(node, propKey, propVal, unquote);
-        }
-        i++;
-
-        // Parse remaining properties of this node (indented deeper)
-        while (i < lines.length) {
-          const propLine = lines[i];
-          const propTrimmed = propLine.trim();
-
-          if (!propTrimmed || propTrimmed.startsWith('#')) {
-            i++;
-            continue;
-          }
-
-          const propIndent = indent(propLine);
-
-          // Next node or top-level key
-          if (propIndent <= nodeIndent && propTrimmed !== '') {
-            break;
-          }
-
-          // depends_on list item
-          if (propTrimmed.startsWith('- ') && node.depends_on !== undefined) {
-            node.depends_on.push(unquote(propTrimmed.slice(2).trim()));
-            i++;
-            continue;
-          }
-
-          // args list item
-          if (propTrimmed.startsWith('- ') && 'args' in node) {
-            if (!node.args) node.args = [];
-            node.args.push(unquote(propTrimmed.slice(2).trim()));
-            i++;
-            continue;
-          }
-
-          const propKvMatch = propTrimmed.match(/^(\w+):\s*(.*)$/);
-          if (propKvMatch) {
-            const propKey = propKvMatch[1];
-            const propVal = stripInlineComment(propKvMatch[2]);
-
-            if (propKey === 'depends_on' && !propVal) {
-              // List follows
-              i++;
-              while (i < lines.length) {
-                const listLine = lines[i].trim();
-                if (listLine.startsWith('- ')) {
-                  node.depends_on.push(unquote(listLine.slice(2).trim()));
-                  i++;
-                } else {
-                  break;
-                }
-              }
-              continue;
-            }
-
-            if (propKey === 'args' && !propVal) {
-              node.args = [];
-              i++;
-              while (i < lines.length) {
-                const listLine = lines[i].trim();
-                if (listLine.startsWith('- ')) {
-                  if (!node.args) node.args = [];
-                  node.args.push(unquote(listLine.slice(2).trim()));
-                  i++;
-                } else {
-                  break;
-                }
-              }
-              continue;
-            }
-
-            assignNodeProp(node, propKey, propVal, unquote);
-          }
-          i++;
-        }
-
-        if (node.id) {
-          def.nodes.push(node as WorkflowNode);
-        }
-      }
-    } else {
-      i++;
-    }
-  }
-
-  if (!def.name) {
+  if (!raw['name'] || typeof raw['name'] !== 'string') {
     throw new Error('Workflow YAML missing required field: name');
   }
 
-  return def as WorkflowDefinition;
-}
-
-function assignNodeProp(
-  node: Record<string, unknown> & { depends_on: string[] },
-  key: string,
-  value: string,
-  unquote: (s: string) => string
-): void {
-  switch (key) {
-    case 'id':
-      node.id = unquote(value);
-      break;
-    case 'name':
-      node.name = unquote(value);
-      break;
-    case 'type':
-      node.type = unquote(value) as WorkflowNode['type'];
-      break;
-    case 'command':
-      node.command = unquote(value);
-      break;
-    case 'on_failure':
-      node.on_failure = unquote(value) as WorkflowNode['on_failure'];
-      break;
-    default:
-      break;
+  const nodes: WorkflowNode[] = [];
+  const rawNodes = raw['nodes'];
+  if (Array.isArray(rawNodes)) {
+    for (const rawNode of rawNodes) {
+      if (!rawNode || typeof rawNode !== 'object') continue;
+      const n = rawNode as Record<string, unknown>;
+      const node: Partial<WorkflowNode> & { id: string } = {
+        id: String(n['id'] ?? ''),
+      };
+      if (n['type'] !== undefined) node.type = n['type'] as WorkflowNode['type'];
+      if (n['name'] !== undefined) node.name = String(n['name']);
+      if (n['command'] !== undefined) node.command = String(n['command']);
+      if (n['on_failure'] !== undefined) {
+        node.on_failure = n['on_failure'] as WorkflowNode['on_failure'];
+      }
+      if (Array.isArray(n['args'])) {
+        node.args = (n['args'] as unknown[]).map(String);
+      }
+      if (Array.isArray(n['depends_on'])) {
+        node.depends_on = (n['depends_on'] as unknown[]).map(String);
+      }
+      nodes.push(node as WorkflowNode);
+    }
   }
+
+  return {
+    name: raw['name'],
+    description: raw['description'] !== undefined ? String(raw['description']) : undefined,
+    version: raw['version'] !== undefined ? String(raw['version']) : undefined,
+    nodes,
+  };
 }
 
 // ============================================================================
@@ -436,7 +278,19 @@ export async function executeWorkflow(yamlPath: string): Promise<boolean> {
         }
       } else {
         console.log(`  ✗  [${node.id}] failed: ${result.error ?? result.stderr ?? 'unknown error'}`);
-        if (node.on_failure === 'continue') {
+        if (node.on_failure !== 'continue') {
+          // on_failure: stop (default) — mark remaining nodes as skipped and abort
+          console.log(`     stopping workflow (on_failure: stop)`);
+          for (const pendingNode of [...remaining, ...notReady]) {
+            if (!results.has(pendingNode.id)) {
+              results.set(pendingNode.id, { id: pendingNode.id, status: 'skipped' });
+            }
+          }
+          remaining.splice(0, remaining.length);
+          const failed = [...results.values()].filter((r) => r.status === 'failed');
+          console.log(`\n✗ Workflow stopped due to failure: ${failed.map((r) => r.id).join(', ')}`);
+          return false;
+        } else {
           console.log(`     continuing (on_failure: continue)`);
         }
       }
@@ -475,7 +329,10 @@ async function executeNode(node: WorkflowNode): Promise<NodeResult> {
           return { id: node.id, status: 'failed', error: 'No command specified' };
         }
         const args = node.args ?? [];
-        const { stdout, stderr } = await execFileAsync('bash', ['-c', node.command, ...args], {
+        // '--' separates script from positional args ($1, $2, ...) per bash -c convention
+        const bashArgs =
+          args.length > 0 ? ['-c', node.command, '--', ...args] : ['-c', node.command];
+        const { stdout, stderr } = await execFileAsync('bash', bashArgs, {
           timeout: 30_000,
         });
         return { id: node.id, status: 'completed', stdout, stderr };

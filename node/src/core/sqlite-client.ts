@@ -243,6 +243,8 @@ export class SQLiteClient {
       );
 
       CREATE INDEX IF NOT EXISTS idx_task_status ON task_history(status);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_task_history_unique_inprogress
+        ON task_history(ticket_id) WHERE status = 'in_progress';
       CREATE INDEX IF NOT EXISTS idx_message_type ON message_history(type);
 
       -- 执行检查点表（断点恢复）
@@ -578,6 +580,46 @@ export class SQLiteClient {
       return {
         success: false,
         error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Failed to delete checkpoint'),
+      };
+    }
+  }
+
+  /**
+   * 原子事务领取任务（防竞争，BEGIN EXCLUSIVE）
+   * @returns true 领取成功, false 已被抢占
+   */
+  claimTask(ticketId: string, slaverId: string): Result<boolean> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      this.db.prepare('BEGIN EXCLUSIVE').run();
+      try {
+        const existing = this.db
+          .prepare("SELECT 1 FROM task_history WHERE ticket_id = ? AND status = 'in_progress'")
+          .get(ticketId);
+        if (existing) {
+          this.db.prepare('COMMIT').run();
+          return { success: true, data: false };
+        }
+        this.db
+          .prepare(
+            "INSERT INTO task_history (ticket_id, assigned_to, status, started_at) VALUES (?, ?, 'in_progress', datetime('now'))"
+          )
+          .run(ticketId, slaverId);
+        this.db.prepare('COMMIT').run();
+        return { success: true, data: true };
+      } catch (e) {
+        this.db.prepare('ROLLBACK').run();
+        throw e;
+      }
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
       };
     }
   }

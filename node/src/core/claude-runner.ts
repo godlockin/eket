@@ -77,6 +77,7 @@ export function writeModelToProfile(projectRoot: string, tier: ModelTier): void 
   const profilePath = path.join(projectRoot, '.eket', 'state', 'agent_profile.yml');
 
   if (!fs.existsSync(profilePath)) {
+    console.warn(`[writeModelToProfile] profile not found, skipping: ${profilePath}`);
     return; // Profile must be initialized by claim first
   }
 

@@ -107,6 +107,70 @@ nodes:
     expect(result.errors.some((e) => e.includes('nonexistent'))).toBe(true);
   });
 
+  it('detects self-cycle A→A', () => {
+    const p = writeYaml('self-cycle.yml', `
+name: test
+nodes:
+  - id: A
+    type: bash
+    command: echo a
+    depends_on:
+      - A
+`);
+    const result = validateWorkflowYaml(p);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.toLowerCase().includes('cycle'))).toBe(true);
+  });
+
+  it('detects mutual cycle A→B→A', () => {
+    const p = writeYaml('mutual-cycle.yml', `
+name: test
+nodes:
+  - id: A
+    type: bash
+    command: echo a
+    depends_on:
+      - B
+  - id: B
+    type: bash
+    command: echo b
+    depends_on:
+      - A
+`);
+    const result = validateWorkflowYaml(p);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.toLowerCase().includes('cycle'))).toBe(true);
+  });
+
+  it('allows diamond DAG A→B,C; B,C→D (no cycle)', () => {
+    const p = writeYaml('diamond.yml', `
+name: test
+nodes:
+  - id: A
+    type: bash
+    command: echo a
+  - id: B
+    type: bash
+    command: echo b
+    depends_on:
+      - A
+  - id: C
+    type: bash
+    command: echo c
+    depends_on:
+      - A
+  - id: D
+    type: bash
+    command: echo d
+    depends_on:
+      - B
+      - C
+`);
+    const result = validateWorkflowYaml(p);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
   it('validates hello-world.yml example', () => {
     const examplePath = path.resolve(
       process.cwd(),
