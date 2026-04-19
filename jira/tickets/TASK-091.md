@@ -1,10 +1,10 @@
 # TASK-091: k6/ 评估 — 归档或集成 CI
 
 ## 元数据
-- **状态**: ready
+- **状态**: done
 - **类型**: chore
 - **优先级**: P2
-- **负责人**: 待领取
+- **负责人**: Slaver
 - **创建时间**: 2026-04-19
 - **依赖**: 无
 
@@ -29,6 +29,22 @@
 2. 在 `docs/archive/INDEX.md` 更新条目
 
 Slaver 执行前先运行 `k6 run k6/quick-test.js` 验证可用性，再决定方案。
+
+## 实现细节
+
+**决策**: 方案 A（集成）
+
+**评估结论**:
+- `quick-test.js` 目标 URL: `__ENV.EKET_HOOK_URL || 'http://localhost:8899'`
+- Node.js hooks server 默认端口: `8899`（`node/src/index.ts:1010`）
+- URL 完全一致，脚本测试路径 `/hooks/pre-tool-use` 是有效端点
+
+**执行操作**:
+- `node/package.json` 添加 `bench:k6` + `bench:k6:load` scripts
+- k6/ 目录保留
+- PR: #105
+
+**PR**: https://github.com/godlockin/eket/pull/105
 
 ## 执行命令
 
