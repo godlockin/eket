@@ -216,6 +216,20 @@ main() {
     fi
   done
 
+  # Skill 安装
+  echo ""
+  if [ "$auto_yes" = true ]; then
+    echo "  → 安装 Claude Code skill..."
+    bash "$SCRIPT_DIR/install-skill.sh" --update
+  else
+    read -rp "安装 EKET skill 到 ~/.claude/skills/eket/（Claude Code 分析团队功能）？[Y/n] " ans
+    if [[ ! "$ans" =~ ^[Nn]$ ]]; then
+      bash "$SCRIPT_DIR/install-skill.sh" --update
+    else
+      echo "  跳过 skill 安装（可稍后运行：./scripts/install-skill.sh）"
+    fi
+  fi
+
   echo -e "${GREEN}═══════════════════════════════════${NC}"
   echo -e "${GREEN}  EKET 安装完成！${NC}"
   echo -e "${GREEN}═══════════════════════════════════${NC}"

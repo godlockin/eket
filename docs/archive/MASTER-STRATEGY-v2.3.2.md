@@ -1,3 +1,7 @@
+> ⚠️ **DEPRECATED** — 此文档已过时，当前版本请参考：[template/docs/MASTER-RULES.md](../../template/docs/MASTER-RULES.md)。
+
+---
+
 # Master 战略规划：v2.3.2 迭代
 
 **规划日期**: 2026-04-08

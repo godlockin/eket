@@ -1,37 +1,149 @@
 ---
 name: eket
-description: EKET AI 智能体协作框架 - Master-Slaver 多智能体开发框架 (v2.9.2)
+description: EKET AI 智能体协作框架 - Master-Slaver 多智能体开发框架
 ---
 
 # EKET Framework
 
 ## Preamble
 
-当用户要求对**既存项目**进行深度分析时，在执行任何分析前，**必须**先用 AskUserQuestion 询问团队加载方式：
+当用户要求对**既存项目**进行深度分析时，在执行任何分析前，**必须**先用 AskUserQuestion 询问两个问题（依次，每次一个）：
+
+---
+
+### 问题 1：分析模式
 
 ```
 项目：[当前项目名]
-检测到既存项目，需要组建分析团队。请选择加载方式：
+请选择分析模式：
 ```
 
-选项：
-- **A) 默认组合（推荐）** — Master + 3 Slaver（fullstack / frontend / backend），立即开始
-- **B) 引导式加载** — 逐步选择角色、专长、并发数
+| 选项 | 说明 | 专家组重点 |
+|------|------|-----------|
+| **A) 借鉴研究** | 研究外部项目，提炼可借鉴点 | 架构师 + 后端为主，产出"可借鉴点清单" |
+| **B) 接手维护** | 全面了解既存项目，准备开发 | 全专家组，产出"风险清单 + 上手路径" |
+| **C) 重构评估** | 评估技术债务和重构可行性 | 架构师 + 后端 + DevOps，产出"债务地图" |
+| **D) 快速了解** | 5 分钟项目快照 | 仅架构师，产出简要全局视图 |
 
-**If A：** 直接用默认配置初始化团队，执行分析。
+---
 
-**If B：** 依次用 AskUserQuestion 询问（每次一个问题）：
-1. 需要几个 Slaver？（1 / 2 / 3 / 自定义）
-2. 每个 Slaver 的角色？（从 `instance:start --list-roles` 列表选）
-3. 专长方向？（fullstack / frontend / backend / devops / qa / 自定义）
-4. 确认配置后初始化团队，开始分析。
+### 问题 2：团队配置
 
-> 此 Preamble 仅在「深度分析既存项目」场景触发，普通命令查询跳过。
+```
+请选择团队加载方式：
+```
+
+| 选项 | 说明 |
+|------|------|
+| **A) 默认全栈专家组（推荐）** | Master + 5 专家，立即开始 |
+| **B) 引导式定制** | 保留/裁剪默认专家，按需引入领域专家 |
+
+**默认专家组**：
+
+| 专家 | 职责 |
+|------|------|
+| 🏗️ 架构师 | 整体架构、模块划分、技术选型、依赖关系、系统边界 |
+| 🖥️ 后端工程师 | 服务层、API 设计、数据模型、性能、安全、可扩展性 |
+| 🎨 前端工程师 | 页面结构、组件拆分、状态管理、构建工具、框架使用 |
+| 🖌️ UI/UX 设计师 | 交互逻辑、用户体验、设计一致性、可访问性 |
+| 📋 产品经理 | 业务价值、功能完整性、用户故事、优先级合理性 |
+
+**If B（引导式）：** 依次询问：
+
+1. **保留哪些默认专家？**（多选）
+   - ✅ 架构师（强烈建议保留）
+   - ✅ 后端工程师
+   - ✅ 前端工程师
+   - ✅ UI/UX 设计师
+   - ✅ 产品经理
+
+2. **是否引入领域专家？**（多选，可选）
+   - 🔒 安全专家 — 漏洞扫描、鉴权、数据安全
+   - 📊 数据工程师 — 数据管道、存储、分析模型
+   - ⚙️ DevOps 工程师 — CI/CD、部署、监控、基础设施
+   - 🧪 QA 工程师 — 测试覆盖率、质量风险、边界场景
+   - 💼 业务分析师 — 业务规则、合规、行业背景
+   - 🤖 AI/ML 工程师 — 模型集成、推理链路、向量存储
+   - 不引入，继续
+
+---
+
+### 执行流程（两问确认后）
+
+```
+Phase 1 — 架构师先行（全局扫描）
+  └─ 产出：模块地图、技术栈、系统边界、核心依赖
+
+Phase 2 — 其余专家并行（基于架构师报告各自展开）
+  ├─ 后端工程师
+  ├─ 前端工程师
+  ├─ UI/UX 设计师
+  ├─ 产品经理
+  └─ [可选领域专家...]
+
+Phase 3 — Master 汇总综合报告
+```
+
+### 专家 Persona 加载
+
+每位专家有独立 persona 文件（存于 `~/.claude/skills/eket/experts/`），包含 personality、thinking_framework、analysis_focus 等详细设定。**执行分析时，读取对应专家文件以获得完整人物设定**：
+
+| 专家 | 文件路径 |
+|------|---------|
+| 🏗️ 架构师 | `~/.claude/skills/eket/experts/default/architect.md` |
+| 🖥️ 后端工程师 | `~/.claude/skills/eket/experts/default/backend.md` |
+| 🎨 前端工程师 | `~/.claude/skills/eket/experts/default/frontend.md` |
+| 🖌️ UI/UX 设计师 | `~/.claude/skills/eket/experts/default/ux.md` |
+| 📋 产品经理 | `~/.claude/skills/eket/experts/default/product.md` |
+| 🔒 安全专家 | `~/.claude/skills/eket/experts/optional/security.md` |
+| 📊 数据工程师 | `~/.claude/skills/eket/experts/optional/data.md` |
+| ⚙️ DevOps | `~/.claude/skills/eket/experts/optional/devops.md` |
+| 🧪 QA | `~/.claude/skills/eket/experts/optional/qa.md` |
+| 💼 业务分析师 | `~/.claude/skills/eket/experts/optional/business.md` |
+| 🤖 AI/ML | `~/.claude/skills/eket/experts/optional/aiml.md` |
+
+### 每位专家固定输出格式
+
+```
+## [专家角色] 分析报告
+
+### 亮点（2-3条）
+- ...
+
+### 风险 / 问题（2-3条）
+- ...
+
+### 改进建议（按优先级）
+1. [P0] ...
+2. [P1] ...
+3. [P2] ...
+```
+
+### Master 汇总报告结构
+
+```
+## 综合分析报告 — [项目名]
+
+### 架构全景图
+### 各维度亮点汇总
+### 风险矩阵（影响 × 概率）
+### 优先级改进路线图
+```
+
+> 此 Preamble 仅在「深度分析既存项目」场景触发，普通命令查询（如 task:claim、system:doctor）跳过。
 
 ---
 
 ## Trigger
 当用户提到以下内容时自动调用此 skill：
+
+**分析类（触发 Preamble）**：
+- 分析项目 / 看看这个项目 / 研究一下 / 帮我了解
+- 借鉴 / 调研 / 这个项目怎么样 / 深度分析
+- 接手 / 熟悉代码库 / 看一下代码 / 项目审查
+- 重构评估 / 技术债 / 快速了解
+
+**命令类（直接执行，跳过 Preamble）**：
 - 启动 eket / 初始化框架 / 配置 Master
 - 领取任务 / slaver 注册 / task:claim
 - 系统诊断 / Redis 检查 / system:doctor
@@ -39,7 +151,6 @@ description: EKET AI 智能体协作框架 - Master-Slaver 多智能体开发框
 - eket 命令 / instance:start / web:dashboard
 - 心跳监控 / heartbeat / Agent Pool
 - 消息队列 / queue:test / circuit-breaker
-- gate review / gate:review / 执行前关卡 / ticket 审查 / veto / 否决
 
 ## Quick Start（外部项目使用）
 
@@ -152,29 +263,6 @@ node dist/index.js pool:status
 node dist/index.js pool:select -r <role>
 ```
 
-### Gate Review（执行前关卡）
-
-```bash
-# 审查指定 ticket（gate_review 状态才会触发）
-node dist/index.js gate:review <ticket-id>
-
-# 扫描所有待审查 ticket
-node dist/index.js gate:review --scan-all
-
-# 预演审查，不写文件
-node dist/index.js gate:review <ticket-id> --dry-run
-
-# 强制否决（填入否决原因）
-node dist/index.js gate:review <ticket-id> --force-veto "依赖未完成"
-
-# 强制通过（跳过所有检查）
-node dist/index.js gate:review <ticket-id> --auto-approve
-```
-
-> **死锁防止**：同一 ticket 被否决 ≥ 2 次，第 3 次 gate:review 自动强制通过。
-> 审查报告写入 `confluence/audit/gate-review-reports/`，
-> 不可篡改审计日志写入 `confluence/audit/gate-review-log.jsonl`（SHA256 hash 链）。
-
 ## Development（内部开发）
 
 参考 [references/dev-commands.md](references/dev-commands.md)
@@ -277,12 +365,11 @@ Level 1: Shell 脚本          # lib/adapters/hybrid-adapter.sh 基础模式
 ## Branch Strategy
 
 ```
-feature/{ticket-id}-{desc}  →  PR  →  testing  →  测试通过  →  PR  →  miao  →  PR  →  main
+feature/{ticket-id}-{desc}  →  PR  →  testing  →  测试通过  →  PR  →  main
 ```
 
-- `main`：发布快照，版本节点，仅接受来自 `miao` 的 PR
-- `miao`：稳定主干，长期集成，PR + CI + 1 review 必须
-- `testing`：测试集成，CI 覆盖
+- `main`：严格保护，仅 Master 合并
+- `testing`：保护，PR 合并需测试通过
 - `feature/*`：开放，Slaver 开发使用
 
 ## References
