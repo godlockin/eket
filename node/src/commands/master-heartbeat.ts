@@ -16,6 +16,8 @@ import { Command } from 'commander';
 
 import { type SlaverHeartbeat } from '../types/index.js';
 import { EketErrorCode } from '../types/index.js';
+import { canProceed, parseTriggerRule, type TriggerRule } from '../core/task-dependency.js';
+import { sseEventBus } from '../core/sse-event-bus.js';
 import { printError } from '../utils/error-handler.js';
 
 // ============================================================================
@@ -49,6 +51,7 @@ export interface TicketSummary {
   lastUpdated: string | null;
   minutesSinceUpdate: number | null;
   blockedBy: string[];
+  triggerRule: TriggerRule;
   startedAt: Date | null;
   completedAt: Date | null;
 }
@@ -123,6 +126,7 @@ export interface HeartbeatReport {
     doneCount: number;
     inFlightCount: number;
     blockedCount: number;
+    unlockableCount: number; // blocked tickets whose deps are now satisfied via canProceed()
     gateReviewCount: number;
     completionRate: number; // 0-100
     riskItems: string[];
@@ -193,6 +197,9 @@ function parseTicketFile(filePath: string): TicketSummary | null {
       }
     }
 
+    // Extract trigger_rule
+    const triggerRule = parseTriggerRule(content);
+
     // Extract last updated (from file mtime as fallback)
     const mtime = fs.statSync(filePath).mtime;
     const lastUpdated = mtime.toISOString();
@@ -202,7 +209,7 @@ function parseTicketFile(filePath: string): TicketSummary | null {
     const startedAt = parseTimestamp(content, 'started_at');
     const completedAt = parseTimestamp(content, 'completed_at');
 
-    return { id, title, status, priority, assignee, lastUpdated, minutesSinceUpdate, blockedBy, startedAt, completedAt };
+    return { id, title, status, priority, assignee, lastUpdated, minutesSinceUpdate, blockedBy, triggerRule, startedAt, completedAt };
   } catch {
     return null;
   }
@@ -477,6 +484,14 @@ export function generateReport(projectRoot: string): HeartbeatReport {
   const inFlightCount = inFlightTickets.length;
   const gateReviewCount = tickets.filter((t) => t.status.toLowerCase() === 'gate_review').length;
   const blockedTickets = tickets.filter((t) => t.blockedBy.length > 0);
+
+  // Use canProceed() to identify blocked tickets whose dependencies are now satisfied
+  const failedIds = new Set(tickets.filter((t) => t.status.toLowerCase() === 'failed').map((t) => t.id));
+  const completedIds = new Set(doneTickets.map((t) => t.id));
+  const unlockableTickets = blockedTickets.filter((t) =>
+    canProceed(t.blockedBy, t.triggerRule, completedIds, failedIds)
+  );
+
   const completionRate =
     tickets.length > 0 ? Math.round((doneCount / tickets.length) * 100) : 0;
 
@@ -608,6 +623,7 @@ export function generateReport(projectRoot: string): HeartbeatReport {
       doneCount,
       inFlightCount,
       blockedCount: blockedTickets.length,
+      unlockableCount: unlockableTickets.length,
       gateReviewCount,
       completionRate,
       riskItems,
@@ -784,6 +800,23 @@ export function registerMasterHeartbeat(program: Command): void {
           }
 
           const report = generateReport(projectRoot);
+
+          // Broadcast agent_status event to __dashboard__ channel
+          try {
+            sseEventBus.publish('__dashboard__', {
+              type: 'agent_status',
+              data: {
+                health: report.health,
+                doneCount: report.progress.doneCount,
+                inFlightCount: report.progress.inFlightCount,
+                blockedCount: report.progress.blockedCount,
+                unlockableCount: report.progress.unlockableCount,
+              },
+              timestamp: report.timestamp,
+            });
+          } catch {
+            // SSE bus unavailable — non-fatal
+          }
 
           if (options.json) {
             console.log(JSON.stringify(report, null, 2));
