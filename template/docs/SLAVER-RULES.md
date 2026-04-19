@@ -244,11 +244,27 @@ PR 被 Master 批准合并后，在关闭 session 前执行。
 {一句话描述}
 ```
 
-### 知识沉淀（Soft Rule）
+### 知识沉淀（Hard Rule — TASK-095 起强制执行）
 
-如果复盘内容具有**通用价值**（不只适用于本 ticket，而是适用于整个框架的任何 Slaver），应同时写入 `confluence/memory/`：
-- 技术踩坑 → `confluence/memory/` 新增或更新对应文件
-- 框架经验 → 追加到 `confluence/memory/BORROWED-WISDOM.md`
+如果复盘内容具有**通用价值**（不只适用于本 ticket，而是适用于整个框架的任何 Slaver），**必须**写入 `confluence/memory/` 对应子目录：
+
+| 内容类型 | 写入位置 | 文件命名 |
+|----------|----------|---------|
+| 可复用架构/解法模式 | `confluence/memory/patterns/` | `<模式名>.md` |
+| 踩坑记录与解法 | `confluence/memory/pitfalls/` | `<问题名>.md` |
+| 新引入的领域术语 | `confluence/memory/glossary/terms.md` | 追加条目 |
+| 外部项目借鉴 | `confluence/memory/BORROWED-WISDOM.md` | 追加 Section |
+
+**文件格式**（详见 `confluence/memory/README.md`）：
+```markdown
+# [Pattern/Pitfall 名称]
+**场景/症状**：...
+**方案/根因**：...
+**解法**：...（pitfall 专有）
+**来源**：TASK-XXX
+```
+
+**完成后检查**：运行 `bash scripts/check-memory-entry.sh <TASK-ID>` 确认已沉淀。
 
 > 单次任务的教训 = 局部记忆；沉淀到 `confluence/memory/` = 组织记忆，对所有未来 Slaver 可见。
 
