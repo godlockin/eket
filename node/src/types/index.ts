@@ -117,7 +117,7 @@ export interface ISQLiteClient {
    * 原子事务领取 ticket（防止多 Slaver 竞争）
    * 返回 true 表示领取成功，false 表示已被抢占
    */
-  claimTask(ticketId: string, slaverId: string): Promise<Result<boolean>>;
+  claimTaskById(ticketId: string, slaverId: string): Promise<Result<boolean>>;
 }
 
 export interface ExecutionCheckpoint {
@@ -1260,4 +1260,19 @@ export interface ProgressReport {
     checklist: SelfCheckItem[];
     analysisParalysisFlag: boolean;
   };
+}
+
+/**
+ * Task Message — 结构化存储 Slaver 执行过程中的 LLM 消息
+ */
+export interface TaskMessage {
+  id?: number;
+  task_id: string;
+  seq: number;
+  type: 'text' | 'tool_use' | 'tool_result' | 'thinking' | 'error';
+  tool?: string | null;
+  content?: string | null;
+  input_json?: string | null;
+  output?: string | null;
+  created_at?: string;
 }

@@ -30,7 +30,7 @@ import * as path from 'path';
 
 import Database from 'better-sqlite3';
 
-import type { Retrospective, RetroContent, Result } from '../types/index.js';
+import type { Retrospective, RetroContent, Result, TaskMessage } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
 
 /**
@@ -259,6 +259,58 @@ export class SQLiteClient {
       );
 
       CREATE INDEX IF NOT EXISTS idx_checkpoint_slaver ON execution_checkpoints(slaver_id);
+
+      -- 任务消息表（结构化存储 LLM 执行消息）
+      CREATE TABLE IF NOT EXISTS task_messages (
+        id        INTEGER PRIMARY KEY AUTOINCREMENT,
+        task_id   TEXT    NOT NULL,
+        seq       INTEGER NOT NULL,
+        type      TEXT    NOT NULL CHECK(type IN ('text','tool_use','tool_result','thinking','error')),
+        tool      TEXT,
+        content   TEXT,
+        input_json TEXT,
+        output    TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(task_id, seq)
+      );
+      CREATE INDEX IF NOT EXISTS idx_task_messages_task_id ON task_messages(task_id, seq);
+
+      -- Agent-Skills 关联表（TASK-068）
+      CREATE TABLE IF NOT EXISTS agent_skills (
+        agent_id  TEXT NOT NULL,
+        skill_id  TEXT NOT NULL,
+        PRIMARY KEY (agent_id, skill_id)
+      );
+
+      -- 任务队列表（TASK-065: 原子性领取）
+      CREATE TABLE IF NOT EXISTS tickets (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'ready',
+        priority INTEGER NOT NULL DEFAULT 0,
+        assignee TEXT,
+        claimed_at TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);
+      CREATE INDEX IF NOT EXISTS idx_tickets_priority ON tickets(priority DESC, created_at ASC);
+
+      -- 知识库全文检索（FTS5）
+      CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts USING fts5(
+        doc_id UNINDEXED,
+        content,
+        source_path UNINDEXED
+      );
+
+      -- 知识库向量存储
+      CREATE TABLE IF NOT EXISTS knowledge_embeddings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        doc_id TEXT NOT NULL UNIQUE,
+        content TEXT NOT NULL,
+        source_path TEXT NOT NULL,
+        embedding TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+      );
     `);
   }
 
@@ -566,7 +618,7 @@ export class SQLiteClient {
    *
    * @returns true 表示领取成功，false 表示已被他人抢占
    */
-  claimTask(ticketId: string, slaverId: string): Result<boolean> {
+  claimTaskById(ticketId: string, slaverId: string): Result<boolean> {
     if (!this.db) {
       return {
         success: false,
@@ -627,10 +679,9 @@ export class SQLiteClient {
   }
 
   /**
-   * 原子事务领取任务（防竞争，BEGIN EXCLUSIVE）
-   * @returns true 领取成功, false 已被抢占
+   * 追加 task message（seq 自动递增）
    */
-  claimTask(ticketId: string, slaverId: string): Result<boolean> {
+  appendTaskMessage(taskId: string, msg: Omit<TaskMessage, 'id' | 'created_at'>): Result<void> {
     if (!this.db) {
       return {
         success: false,
@@ -638,26 +689,20 @@ export class SQLiteClient {
       };
     }
     try {
-      this.db.prepare('BEGIN EXCLUSIVE').run();
-      try {
-        const existing = this.db
-          .prepare("SELECT 1 FROM task_history WHERE ticket_id = ? AND status = 'in_progress'")
-          .get(ticketId);
-        if (existing) {
-          this.db.prepare('COMMIT').run();
-          return { success: true, data: false };
-        }
-        this.db
+      const insert = this.db.transaction(() => {
+        const row = this.db!
+          .prepare('SELECT COALESCE(MAX(seq), -1) + 1 AS next_seq FROM task_messages WHERE task_id = ?')
+          .get(taskId) as { next_seq: number };
+        const seq = msg.seq !== undefined ? msg.seq : row.next_seq;
+        this.db!
           .prepare(
-            "INSERT INTO task_history (ticket_id, assigned_to, status, started_at) VALUES (?, ?, 'in_progress', datetime('now'))"
+            `INSERT INTO task_messages (task_id, seq, type, tool, content, input_json, output)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`
           )
-          .run(ticketId, slaverId);
-        this.db.prepare('COMMIT').run();
-        return { success: true, data: true };
-      } catch (e) {
-        this.db.prepare('ROLLBACK').run();
-        throw e;
-      }
+          .run(taskId, seq, msg.type, msg.tool ?? null, msg.content ?? null, msg.input_json ?? null, msg.output ?? null);
+      });
+      insert();
+      return { success: true, data: undefined };
     } catch (e) {
       return {
         success: false,
@@ -665,6 +710,239 @@ export class SQLiteClient {
       };
     }
   }
+
+  /**
+   * 查询 task messages（按 seq ASC）
+   */
+  getTaskMessages(taskId: string): Result<TaskMessage[]> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const rows = this.db
+        .prepare('SELECT * FROM task_messages WHERE task_id = ? ORDER BY seq ASC')
+        .all(taskId) as TaskMessage[];
+      return { success: true, data: rows };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
+      };
+    }
+  }
+
+  /**
+   * 设置 Agent 绑定的 Skills（全量替换）
+   */
+  setAgentSkills(agentId: string, skillIds: string[]): Result<void> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const txn = this.db.transaction(() => {
+        this.db!.prepare('DELETE FROM agent_skills WHERE agent_id = ?').run(agentId);
+        const insert = this.db!.prepare(
+          'INSERT OR IGNORE INTO agent_skills (agent_id, skill_id) VALUES (?, ?)'
+        );
+        for (const skillId of skillIds) {
+          insert.run(agentId, skillId);
+        }
+      });
+      txn();
+      return { success: true, data: undefined };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
+      };
+    }
+  }
+
+  /**
+   * 获取 Agent 绑定的 Skills
+   */
+  getAgentSkills(agentId: string): Result<string[]> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const rows = this.db
+        .prepare('SELECT skill_id FROM agent_skills WHERE agent_id = ? ORDER BY skill_id')
+        .all(agentId) as { skill_id: string }[];
+      return { success: true, data: rows.map((r) => r.skill_id) };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
+      };
+    }
+  }
+
+  /**
+   * 插入知识块（FTS5 + 向量）
+   */
+  insertKnowledge(
+    docId: string,
+    content: string,
+    sourcePath: string,
+    embedding: number[],
+  ): Result<void> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      this.db.prepare(`DELETE FROM knowledge_fts WHERE doc_id = ?`).run(docId);
+      this.db.prepare(`INSERT INTO knowledge_fts(doc_id, content, source_path) VALUES (?, ?, ?)`).run(docId, content, sourcePath);
+      this.db.prepare(
+        `INSERT INTO knowledge_embeddings(doc_id, content, source_path, embedding)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT(doc_id) DO UPDATE SET
+           content = excluded.content,
+           source_path = excluded.source_path,
+           embedding = excluded.embedding`,
+      ).run(docId, content, sourcePath, JSON.stringify(embedding));
+      return { success: true, data: undefined };
+    } catch (e: unknown) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, `insertKnowledge failed: ${(e as Error).message}`),
+      };
+    }
+  }
+
+  /**
+   * FTS5 全文检索
+   */
+  searchFTS(query: string, limit = 10): Result<{ docId: string; content: string; sourcePath: string }[]> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const rows = this.db.prepare(
+        `SELECT doc_id, content, source_path FROM knowledge_fts WHERE knowledge_fts MATCH ? LIMIT ?`,
+      ).all(query, limit) as { doc_id: string; content: string; source_path: string }[];
+      return {
+        success: true,
+        data: rows.map((r) => ({ docId: r.doc_id, content: r.content, sourcePath: r.source_path })),
+      };
+    } catch (e: unknown) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, `searchFTS failed: ${(e as Error).message}`),
+      };
+    }
+  }
+
+  /**
+   * 获取所有向量（用于余弦检索）
+   */
+  getAllEmbeddings(): Result<{ docId: string; content: string; embedding: number[] }[]> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const rows = this.db.prepare(`SELECT doc_id, content, embedding FROM knowledge_embeddings`).all() as { doc_id: string; content: string; embedding: string }[];
+      return {
+        success: true,
+        data: rows.map((r) => ({ docId: r.doc_id, content: r.content, embedding: JSON.parse(r.embedding) as number[] })),
+      };
+    } catch (e: unknown) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, `getAllEmbeddings failed: ${(e as Error).message}`),
+      };
+    }
+  }
+
+  /**
+   * 插入或替换 ticket（TASK-065: 用于测试）
+   */
+  insertTicket(ticket: {
+    id: string;
+    title?: string;
+    status?: string;
+    priority?: number;
+  }): Result<void> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      this.db.prepare(
+        `INSERT OR REPLACE INTO tickets (id, title, status, priority) VALUES (?, ?, ?, ?)`
+      ).run(ticket.id, ticket.title ?? '', ticket.status ?? 'ready', ticket.priority ?? 0);
+      return { success: true, data: undefined };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
+      };
+    }
+  }
+
+  /**
+   * 原子性领取下一个可用任务（TASK-065）
+   * 按优先级 DESC 取最高优先级 ready ticket，事务保证原子性
+   * @returns 领取的 ticket，无可用 ticket 返回 null
+   */
+  claimTask(slaverId: string): Result<{
+    id: string;
+    title: string;
+    status: string;
+    priority: number;
+    assignee: string | null;
+    claimed_at: string | null;
+    created_at: string;
+  } | null> {
+    if (!this.db) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'),
+      };
+    }
+    try {
+      const db = this.db;
+      type TicketRow = { id: string; title: string; status: string; priority: number; assignee: string | null; claimed_at: string | null; created_at: string };
+      const claimTxn = db.transaction((): TicketRow | null => {
+        const ticket = db.prepare(
+          `SELECT id FROM tickets WHERE status = 'ready' ORDER BY priority DESC, created_at ASC LIMIT 1`
+        ).get() as { id: string } | undefined;
+        if (!ticket) return null;
+        const result = db.prepare(
+          `UPDATE tickets SET status = 'in_progress', assignee = ?, claimed_at = datetime('now') WHERE id = ? AND status = 'ready'`
+        ).run(slaverId, ticket.id);
+        if (result.changes !== 1) return null;
+        return db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticket.id) as TicketRow | undefined ?? null;
+      });
+      return { success: true, data: claimTxn() };
+    } catch (e) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message),
+      };
+    }
+  }
+
 }
 
 /**

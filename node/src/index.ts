@@ -20,6 +20,8 @@ import { OpenCLAWGateway } from './api/openclaw-gateway.js';
 import { createWebDashboardServer } from './api/web-server.js';
 import { registerAlerts } from './commands/alerts.js';
 import { registerSkillExtractCommand } from './commands/skill-extract.js';
+import { registerKnowledgeIndex } from './commands/knowledge-index.js';
+import { registerKnowledgeSearch } from './commands/knowledge-search.js';
 import { registerClaim } from './commands/claim.js';
 import { registerHandoff } from './commands/handoff.js';
 import { registerTaskResume } from './commands/task-resume.js';
@@ -917,6 +919,10 @@ Related Commands:
 
   // 注册 skill:extract / skill:list 命令（Skill 自动生成）
   registerSkillExtractCommand(program);
+
+  // 注册知识库检索命令（RAG, TASK-074）
+  registerKnowledgeIndex(program);
+  registerKnowledgeSearch(program);
 
 
   // 注册 alerts 命令

@@ -23,6 +23,8 @@ import { setupCORS, setupRateLimiting, setupRequestLogging, setupBodyParsing } f
 import { createAgentRouter } from './routes/agent-routes.js';
 import { createTaskRouter } from './routes/task-routes.js';
 import { createHealthRouter, createSystemRouter } from './routes/system-routes.js';
+import { sseEventBus } from '../core/sse-event-bus.js';
+import { parseTicketsDag } from '../core/ticket-dag-parser.js';
 export type {
   EketServerConfig,
   AgentRegistration,
@@ -187,6 +189,46 @@ export class EketServer {
     this.app.use('/api/v1', createSystemRouter(lazyDeps));
     this.app.use('/api/v1', createAgentRouter(lazyDeps));
     this.app.use('/api/v1', createTaskRouter(lazyDeps));
+
+    // SSE event bus (TASK-072)
+    this.app.get('/api/v1/stream/__dashboard__', (_req: Request, res: Response) => {
+      sseEventBus.subscribe('__dashboard__', res);
+    });
+    this.app.get('/api/v1/stream/:channelId', (req: Request, res: Response) => {
+      const channelId = req.params['channelId'] as string;
+      sseEventBus.subscribe(channelId, res);
+    });
+
+    // DAG / Dashboard (TASK-073)
+    const ticketsDir = path.resolve(process.cwd(), '..', 'jira', 'tickets');
+    this.app.get('/api/v1/tickets/dag', (_req: Request, res: Response) => {
+      try {
+        const dag = parseTicketsDag(ticketsDir);
+        res.json({ success: true, data: dag });
+      } catch (err) {
+        res.status(500).json({
+          success: false,
+          error: { code: 'INTERNAL_ERROR', message: (err as Error).message },
+        });
+      }
+    });
+    this.app.get('/dashboard', (_req: Request, res: Response) => {
+      try {
+        const dag = parseTicketsDag(ticketsDir);
+        const nodeMap = new Map(dag.nodes.map((n) => [n.id, n]));
+        const dagLines = dag.edges.length === 0
+          ? ['(no dependencies found)']
+          : dag.edges.map((e) => {
+              const src = nodeMap.get(e.source);
+              const tgt = nodeMap.get(e.target);
+              return `  ${e.source} (${src?.status ?? '?'}) → depends on → ${e.target} (${tgt?.status ?? '?'})`;
+            });
+        const html = `<pre>${dagLines.join('\n')}</pre>`;
+        res.send(html);
+      } catch (err) {
+        res.status(500).send((err as Error).message);
+      }
+    });
 
     this.app.use(this.errorHandler.bind(this));
 
