@@ -12,6 +12,7 @@ import { Command } from 'commander';
 import ora from 'ora';
 
 import { createInstanceRegistry } from '../core/instance-registry.js';
+import { SQLiteClient } from '../core/sqlite-client.js';
 import { createTaskAssigner, type AssignmentResult } from '../core/task-assigner.js';
 import type { Instance, Ticket } from '../types/index.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
@@ -32,6 +33,72 @@ interface ClaimOptions {
   auto: boolean;
   role?: string;
   assign?: boolean;
+}
+
+/**
+ * 构建 ACTIVE_CONTEXT.md 内容（TASK-069）
+ */
+export function buildActiveContextMd(
+  ticket: { id: string; title: string },
+  slaverId: string,
+  skills: string[],
+  role: string
+): string {
+  const now = new Date().toISOString();
+  const skillList = skills.length > 0 ? skills.map((s) => `- ${s}`).join('\n') : '- (none)';
+  return `# EKET Active Context
+
+> 此文件由 task:claim 自动生成，ticket 完成后删除。请勿手动编辑。
+> 生成时间: ${now}
+
+## Active Ticket
+
+- **ID**: ${ticket.id}
+- **Title**: ${ticket.title}
+
+## Identity
+
+- **Slaver ID**: ${slaverId}
+- **Role**: ${role}
+- **Started At**: ${now}
+
+## Available Commands
+
+- \`task:claim\` — 领取下一个任务
+- \`task:resume\` — 断点恢复
+- \`system:doctor\` — 系统诊断
+- \`heartbeat:start\` — 启动心跳
+
+## Active Skills
+
+${skillList}
+`;
+}
+
+/**
+ * 注入活跃上下文到 .eket/ACTIVE_CONTEXT.md（TASK-069）
+ */
+export async function injectActiveContext(
+  projectRoot: string,
+  ticket: { id: string; title: string },
+  slaverId: string,
+  role: string
+): Promise<void> {
+  const db = new SQLiteClient();
+  let skills: string[] = [];
+  const connectResult = db.connect();
+  if (connectResult.success) {
+    const skillsResult = db.getAgentSkills(slaverId);
+    if (skillsResult.success) {
+      skills = skillsResult.data;
+    }
+    db.close();
+  }
+
+  const content = buildActiveContextMd(ticket, slaverId, skills, role);
+  const eketDir = path.join(projectRoot, '.eket');
+  fs.mkdirSync(eketDir, { recursive: true });
+  fs.writeFileSync(path.join(eketDir, 'ACTIVE_CONTEXT.md'), content, 'utf-8');
 }
 
 /**
@@ -278,6 +345,13 @@ Related Commands:
         `Instance: ${assignedInstance?.id || 'local'}`,
         `Worktree: ${worktreePath}`,
       ]);
+
+      // 11. 注入活跃上下文（TASK-069）
+      const slaverId = assignedInstance?.id || 'local';
+      await injectActiveContext(projectRoot, selectedTicket, slaverId, role).catch(() => {
+        // 非关键路径，静默忽略
+      });
+
       console.log('\nNext step: Run /eket-start to begin execution\n');
     });
 }
