@@ -13,6 +13,8 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "bench": "ts-node --esm benchmarks/performance-benchmark.ts",
     "bench:comprehensive": "ts-node --esm benchmarks/comprehensive-benchmark.ts",
+    "bench:k6": "k6 run ../k6/quick-test.js",
+    "bench:k6:load": "k6 run ../k6/load-test.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
