@@ -28,6 +28,29 @@ import {
   sendClaimMessage,
 } from './claim-helpers.js';
 
+/**
+ * 获取或生成持久化 Slaver ID（P4修复）
+ * 读写 .eket/slaver-id 文件，避免 PID 重启后 ID 变化导致检查点丢失
+ */
+function getOrCreateSlaverId(projectRoot: string): string {
+  if (process.env.EKET_SLAVER_ID) {
+    return process.env.EKET_SLAVER_ID;
+  }
+  const slaveridPath = path.join(projectRoot, '.eket', 'slaver-id');
+  try {
+    if (fs.existsSync(slaveridPath)) {
+      const id = fs.readFileSync(slaveridPath, 'utf-8').trim();
+      if (id) return id;
+    }
+    const newId = `slaver_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    fs.mkdirSync(path.dirname(slaveridPath), { recursive: true });
+    fs.writeFileSync(slaveridPath, newId, 'utf-8');
+    return newId;
+  } catch {
+    return `slaver_${process.pid}`;
+  }
+}
+
 interface ClaimOptions {
   ticketId?: string;
   auto: boolean;
@@ -227,13 +250,14 @@ Related Commands:
       let assignedInstance: Instance | undefined;
 
       // 5.0 SQLite 原子事务领取（防竞争）
-      const slaverId = process.env.EKET_SLAVER_ID ?? `slaver_${process.pid}`;
+      const slaverId = getOrCreateSlaverId(projectRoot);
       const sqliteClient = createSQLiteManager();
       const sqliteConnected = await sqliteClient.connect();
       if (sqliteConnected.success) {
         const claimResult = await sqliteClient.claimTask(selectedTicket.id, slaverId);
         await sqliteClient.close();
         if (claimResult.success && claimResult.data === false) {
+          // 被其他 Slaver 抢占
           printError({
             code: 'TASK_ALREADY_CLAIMED',
             message: `Task ${selectedTicket.id} 已被其他 Slaver 抢占，请选择其他任务`,
@@ -241,8 +265,20 @@ Related Commands:
           });
           return;
         }
-        // claimResult.success === false: SQLite 操作失败，降级到文件系统
+        if (!claimResult.success) {
+          // SQLite 操作失败，不降级，直接报错（P2修复）
+          printError({
+            code: 'SQLITE_CLAIM_FAILED',
+            message: `SQLite 领取操作失败: ${claimResult.error?.message ?? 'unknown'}`,
+            solutions: [
+              'Check SQLite database health: node dist/index.js system:doctor',
+              'Retry after resolving the database issue',
+            ],
+          });
+          return;
+        }
       } else {
+        // SQLite 完全不可用时才降级文件系统
         await sqliteClient.close();
         console.log('[Claim] SQLite unavailable, using filesystem-only mode');
       }
