@@ -7,10 +7,34 @@
 **优先级**: P2
 **重要性**: medium
 
-**状态**: ready
+**状态**: done
 **创建时间**: 2026-04-19
 **创建者**: Master
-**负责人**: 待认领
+**负责人**: backend-slaver
+
+---
+
+## 执行日志
+
+**领取时间**: 2026-04-19
+**完成时间**: 2026-04-19
+**执行分支**: feature/TASK-071-model-router
+
+### 实现摘要
+- 新建 `node/src/core/model-router.ts`：`resolveModel()` + `getModelDisplayName()`
+- 修改 `node/src/commands/claim-helpers.ts`：`initializeProfile()` 扩展 ticket 参数含 tags/model，写入 model 到 agent_profile.yml
+- 新建 `node/tests/core/model-router.test.ts`：6个测试全通过
+
+### 测试结果
+```
+Tests: 6 passed, 6 total
+✓ tag=classify → haiku
+✓ tag=implement → opus
+✓ tag=docs (no match) → sonnet (default)
+✓ explicit model field overrides tag rules
+✓ 多 tag 中有一个命中 → 返回对应模型
+✓ getModelDisplayName maps tiers correctly
+```
 
 **依赖关系**:
 - blocks: []

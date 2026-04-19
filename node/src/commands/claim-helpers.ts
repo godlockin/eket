@@ -150,17 +150,20 @@ export async function matchRole(ticket: {
 export async function initializeProfile(
   projectRoot: string,
   role: string,
-  ticket: { id: string; title: string }
+  ticket: { id: string; title: string; tags?: string[]; model?: string }
 ): Promise<void> {
+  const { resolveModel } = await import('../core/model-router.js');
   const profileDir = path.join(projectRoot, '.eket', 'state');
   fs.mkdirSync(profileDir, { recursive: true });
 
+  const modelTier = resolveModel(ticket);
   const profilePath = path.join(profileDir, 'agent_profile.yml');
   const profile = `role: slaver
 agent_type: ${role}
 current_ticket: ${ticket.id}
 current_ticket_title: ${ticket.title}
 started_at: ${new Date().toISOString()}
+model: ${modelTier}
 `;
 
   fs.writeFileSync(profilePath, profile);
