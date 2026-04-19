@@ -19,6 +19,7 @@ import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
 import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
+import { parseFreshContext } from '../core/task-dependency.js';
 import {
   loadConfig,
   getTickets,
@@ -264,7 +265,21 @@ Related Commands:
 
       // 9. 初始化 Profile
       const profileSpinner = ora('Initializing profile...').start();
-      await initializeProfile(projectRoot, role, selectedTicket);
+      // Read raw ticket content to parse fresh_context
+      let freshContext = false;
+      try {
+        const jiraPath = path.join(projectRoot, 'jira', 'tickets');
+        const dirs = ['feature', 'bugfix', 'task', 'improvement'];
+        for (const dir of dirs) {
+          const ticketFile = path.join(jiraPath, dir, `${selectedTicket.id}.md`);
+          if (fs.existsSync(ticketFile)) {
+            const rawContent = fs.readFileSync(ticketFile, 'utf-8');
+            freshContext = parseFreshContext(rawContent);
+            break;
+          }
+        }
+      } catch { /* ignore */ }
+      await initializeProfile(projectRoot, role, selectedTicket, freshContext);
       profileSpinner.succeed(`Profile initialized: ${role}`);
 
       // 10. 发送消息

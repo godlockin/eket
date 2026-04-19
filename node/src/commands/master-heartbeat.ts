@@ -477,6 +477,13 @@ export function generateReport(projectRoot: string): HeartbeatReport {
   const inFlightCount = inFlightTickets.length;
   const gateReviewCount = tickets.filter((t) => t.status.toLowerCase() === 'gate_review').length;
   const blockedTickets = tickets.filter((t) => t.blockedBy.length > 0);
+  // TASK-075 Integration Point: use canProceed() from task-dependency.ts to evaluate
+  // which blocked tickets can be unlocked based on their trigger_rule field.
+  // Example:
+  //   import { canProceed, parseTriggerRule } from '../core/task-dependency.js';
+  //   const completedIds = new Set(doneTickets.map(t => t.id));
+  //   const failedIds = new Set(tickets.filter(t => t.status === 'failed').map(t => t.id));
+  //   const unlockable = blockedTickets.filter(t => canProceed(t.blockedBy, parseTriggerRule(rawContent), completedIds, failedIds));
   const completionRate =
     tickets.length > 0 ? Math.round((doneCount / tickets.length) * 100) : 0;
 

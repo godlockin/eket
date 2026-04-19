@@ -150,7 +150,8 @@ export async function matchRole(ticket: {
 export async function initializeProfile(
   projectRoot: string,
   role: string,
-  ticket: { id: string; title: string }
+  ticket: { id: string; title: string },
+  freshContext: boolean = false
 ): Promise<void> {
   const profileDir = path.join(projectRoot, '.eket', 'state');
   fs.mkdirSync(profileDir, { recursive: true });
@@ -164,6 +165,21 @@ started_at: ${new Date().toISOString()}
 `;
 
   fs.writeFileSync(profilePath, profile);
+
+  // Write ACTIVE_CONTEXT.md with fresh_context flag (AC-4)
+  const activeContextPath = path.join(projectRoot, '.eket', 'ACTIVE_CONTEXT.md');
+  const activeContext = `# Active Context
+
+## Identity
+- **Role**: slaver
+- **Agent Type**: ${role}
+- **Current Ticket**: ${ticket.id}
+- **Fresh Context**: ${freshContext}
+
+## Notes
+${freshContext ? '> ⚠️ fresh_context=true: Start a new session to avoid context pollution from previous tasks.' : '> fresh_context=false: Session reuse is acceptable.'}
+`;
+  fs.writeFileSync(activeContextPath, activeContext);
 }
 
 /**

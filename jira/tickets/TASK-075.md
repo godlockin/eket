@@ -7,7 +7,7 @@
 **优先级**: P2
 **重要性**: medium
 
-**状态**: ready
+**状态**: done
 **创建时间**: 2026-04-19
 **创建者**: Master
 **负责人**: 待认领
@@ -80,3 +80,33 @@ cd node && npm test -- --testPathPattern=task-dependency
 ## 回滚
 
 纯新增函数 + ticket 元数据字段，向后兼容（缺省值 = 原有行为）。
+
+---
+
+## 执行日志
+
+**负责人**: backend-slaver
+**领取时间**: 2026-04-19
+**完成时间**: 2026-04-19
+
+### 实现内容
+
+1. **新建** `node/src/core/task-dependency.ts` — `TriggerRule` 类型 + `canProceed()` + `parseTriggerRule()` + `parseFreshContext()`
+2. **修改** `node/src/commands/claim-helpers.ts` — `initializeProfile()` 增加 `freshContext` 参数，写入 `.eket/ACTIVE_CONTEXT.md`
+3. **修改** `node/src/commands/claim.ts` — 读取 ticket 原始内容，调用 `parseFreshContext()` 传给 `initializeProfile()`
+4. **修改** `node/src/commands/master-heartbeat.ts` — 在 `blockedTickets` 计算处追加集成点注释
+5. **新建** `node/tests/core/task-dependency.test.ts` — 11 个测试全部通过
+
+### 测试结果
+
+```
+Tests: 11 passed, 11 total
+```
+
+### AC 验收
+
+- AC-1 ✅ ticket 元数据字段 `trigger_rule` / `fresh_context` 支持（通过 parser 读取）
+- AC-2 ✅ `canProceed()` 实现3种规则
+- AC-3 ✅ master-heartbeat.ts 注释标注集成点
+- AC-4 ✅ `ACTIVE_CONTEXT.md` 写入 fresh_context 信息
+- AC-5 ✅ 6+额外 = 11 个单元测试通过
