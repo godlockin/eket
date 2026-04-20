@@ -1,7 +1,7 @@
 # TASK-124: [Rust] ticket-dag + task-dependency — DAG 构建/拓扑排序/trigger_rule
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P0
 - **负责人**: 待认领

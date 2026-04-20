@@ -1,7 +1,7 @@
 # TASK-128: [Rust] communication-protocol — Master↔Slaver 通信协议
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P0
 - **负责人**: 待认领

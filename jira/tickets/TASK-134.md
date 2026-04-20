@@ -1,7 +1,7 @@
 # TASK-134: [Rust] heartbeat-monitor + stale-task-cleaner 守护进程
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P1
 - **负责人**: 待认领

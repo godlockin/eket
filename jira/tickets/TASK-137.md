@@ -1,7 +1,7 @@
 # TASK-137: [Rust] CLI 剩余命令 — gate-review, submit-pr, task-resume, team-status, task-progress
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P2
 - **负责人**: 待认领
