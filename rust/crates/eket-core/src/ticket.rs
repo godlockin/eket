@@ -18,6 +18,8 @@ pub struct TicketFile {
     pub status: TicketStatus,
     pub priority: String,
     pub assignee: Option<String>,
+    /// Ticket type: feature / bug / refactor / chore
+    pub ticket_type: Option<String>,
     pub raw: String,
 }
 
@@ -52,7 +54,11 @@ impl TicketFile {
             .or_else(|| extract_field(&raw, "assignee"))
             .filter(|s| s != "待领取" && !s.is_empty());
 
-        Ok(Self { path: path.to_path_buf(), id, title, status, priority, assignee, raw })
+        let ticket_type = extract_field(&raw, "类型")
+            .or_else(|| extract_field(&raw, "type"))
+            .filter(|s| !s.is_empty());
+
+        Ok(Self { path: path.to_path_buf(), id, title, status, priority, assignee, ticket_type, raw })
     }
 
     /// 更新 ticket 文件中的 **状态** 字段（原子写）
