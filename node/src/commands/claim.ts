@@ -29,6 +29,7 @@ import {
 } from './claim-helpers.js';
 import { appendTaskMessage, injectActiveContext as injectActiveContextData } from '../core/task-logger.js';
 import { reviewTicket } from '../core/ticket-reviewer.js';
+import { SagaExecutor } from '../core/saga-executor.js';
 import { sseBus } from '../core/sse-bus.js';
 
 /**
@@ -396,18 +397,40 @@ Related Commands:
       await updateTicketStatus(projectRoot, selectedTicket.id, 'in_progress');
       statusSpinner.succeed(`Task status updated: ${selectedTicket.id} -> in_progress`);
 
-      // 8. 创建 worktree（isolation=worktree 时）
+      // 8. 创建 worktree（isolation=worktree 时，使用 SagaExecutor 保证原子性）
       let worktreePath = '';
       const isolationMode = getIsolationMode();
       if (isolationMode === 'worktree') {
         const worktreeSpinner = ora('Creating worktree...').start();
-        try {
-          const wm = new WorktreeManager({ projectRoot });
-          worktreePath = await wm.createWorktree(selectedTicket.id, slaverId);
+        interface WorktreeState { path: string }
+        const wm = new WorktreeManager({ projectRoot });
+        const worktreeSaga = new SagaExecutor<WorktreeState>();
+        worktreeSaga.addStep({
+          name: 'createWorktree',
+          forward: async (_state) => {
+            const created = await wm.createWorktree(selectedTicket.id, slaverId);
+            return { path: created };
+          },
+          compensate: async (_state) => {
+            try {
+              await wm.removeWorktree(selectedTicket.id, true);
+            } catch { /* ignore removal errors */ }
+          },
+        });
+        const sagaResult = await worktreeSaga.execute({ path: '' });
+        if (sagaResult.success) {
+          worktreePath = sagaResult.state.path;
           worktreeSpinner.succeed(`[worktree] Created: ${worktreePath}`);
-        } catch (e: unknown) {
-          const err = e as { message?: string };
-          worktreeSpinner.warn(`Worktree creation skipped: ${err.message ?? 'unknown'}`);
+        } else {
+          const errMsg = sagaResult.error?.message ?? 'unknown';
+          worktreeSpinner.warn(`Worktree creation skipped: ${errMsg}`);
+          // Saga failed → mark ticket blocked + write inbox feedback
+          await updateTicketStatus(projectRoot, selectedTicket.id, 'blocked');
+          const feedbackDir = path.join(projectRoot, 'inbox', 'human_feedback');
+          fs.mkdirSync(feedbackDir, { recursive: true });
+          const feedbackFile = path.join(feedbackDir, `blocked-${selectedTicket.id}-${slaverId}.md`);
+          fs.writeFileSync(feedbackFile, `# Blocked: ${selectedTicket.id}\n\n**Slaver ID**: ${slaverId}\n**Ticket**: ${selectedTicket.id}\n**Time**: ${new Date().toISOString()}\n**Status**: blocked\n\n## Reason\n\nWorktree creation saga failed: ${errMsg}\n`, 'utf-8');
+          console.log(`\n[feedback] Written: ${feedbackFile}`);
         }
       }
 
