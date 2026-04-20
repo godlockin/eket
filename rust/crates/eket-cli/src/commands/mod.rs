@@ -1,3 +1,4 @@
+pub mod knowledge;
 pub mod server;
 pub mod system_doctor;
 pub mod task_claim;
@@ -5,3 +6,11 @@ pub mod task_complete;
 pub mod task_create;
 pub mod slaver_register;
 pub mod slaver_poll;
+pub mod gate_review;
+pub mod submit_pr;
+pub mod task_resume;
+pub mod team_status;
+pub mod task_progress;
+pub mod handoff;
+pub mod master_heartbeat;
+pub mod master_poll;
