@@ -1,11 +1,12 @@
 /**
  * PreToolUse Pipeline
  *
- * DAG: GuardrailNode ∥ SecurityNode ∥ EnvConfigNode → AuditLogNode
+ * DAG: GuardrailNode ∥ SecurityNode ∥ EnvConfigNode ∥ ParalysisCheckNode → AuditLogNode
  */
 
 import { PipelineExecutor, MiddlewareNode } from '../../core/middleware-pipeline.js';
 import type { HttpHookPayload, HttpHookResponse } from '../http-hook-server.js';
+import { globalParalysisDetector } from '../../core/analysis-paralysis-detector.js';
 
 export interface PreToolUseState extends Record<string, unknown> {
   payload: HttpHookPayload;
@@ -71,8 +72,29 @@ export function createPreToolUsePipeline(): PipelineExecutor<PreToolUseState> {
       },
     },
     {
+      id: 'ParalysisCheckNode',
+      deps: [],
+      parallel: true,
+      failBehavior: 'warn',
+      handle: async (state) => {
+        const { toolName, toolInput } = state.payload.data;
+        if (toolName) {
+          const filePath =
+            typeof toolInput === 'object' && toolInput !== null
+              ? (toolInput as Record<string, unknown>).file_path as string | undefined ??
+                (toolInput as Record<string, unknown>).path as string | undefined
+              : undefined;
+          const warning = globalParalysisDetector.record(toolName, filePath);
+          if (warning) {
+            console.warn(`[ParalysisCheckNode] ${warning.message}`);
+          }
+        }
+        return state;
+      },
+    },
+    {
       id: 'AuditLogNode',
-      deps: ['GuardrailNode', 'SecurityNode', 'EnvConfigNode'],
+      deps: ['GuardrailNode', 'SecurityNode', 'EnvConfigNode', 'ParalysisCheckNode'],
       parallel: false,
       failBehavior: 'warn',
       handle: async (state) => {
