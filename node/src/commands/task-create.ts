@@ -11,6 +11,7 @@ import * as readline from 'readline';
 import { Command } from 'commander';
 
 import { findProjectRoot } from '../utils/process-cleanup.js';
+import { DependencyInferrer } from '../core/dependency-inferrer.js';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -83,7 +84,7 @@ export function getNextTicketNumber(ticketsDir: string): number {
 
 // ─── Ticket writer ────────────────────────────────────────────────────────────
 
-export function formatTicket(fields: InferredFields, taskId: string): string {
+export function formatTicket(fields: InferredFields & { deps?: string[] }, taskId: string): string {
   const typeLabel =
     fields.type === 'bug' ? 'Bug Fix' :
     fields.type === 'refactor' ? 'Refactor' :
@@ -103,9 +104,7 @@ export function formatTicket(fields: InferredFields, taskId: string): string {
 - **优先级**: ${fields.priority}
 - **负责人**: 待领取
 - **创建时间**: ${new Date().toISOString().slice(0, 10)}
-- **依赖**: 无
-
-## 背景
+- **依赖**: ${fields.deps && fields.deps.length > 0 ? fields.deps.join(', ') : '无'}
 
 ${fields.background}
 
@@ -121,15 +120,35 @@ ${clarificationSection}
 
 **类型**: ${typeLabel}
 **技能要求**: TypeScript
-**依赖**: 无
+**依赖**: ${fields.deps && fields.deps.length > 0 ? fields.deps.join(', ') : '无'}
 `;
 }
 
-export function writeTicketFile(fields: InferredFields, taskId: string, ticketsDir: string): string {
+export function writeTicketFile(fields: InferredFields & { deps?: string[] }, taskId: string, ticketsDir: string): string {
   fs.mkdirSync(ticketsDir, { recursive: true });
   const filePath = path.join(ticketsDir, `${taskId}.md`);
   fs.writeFileSync(filePath, formatTicket(fields, taskId), 'utf-8');
   return filePath;
+}
+
+// ─── Dependency loader ────────────────────────────────────────────────────────
+
+export async function inferDependencies(
+  content: string,
+  ticketsDir: string,
+): Promise<import('../core/dependency-inferrer.js').DependencyCandidate[]> {
+  if (!fs.existsSync(ticketsDir)) return [];
+  const files = fs.readdirSync(ticketsDir)
+    .filter((f) => /^TASK-\d+\.md$/.test(f))
+    .map((f) => ({ name: f, mtime: fs.statSync(path.join(ticketsDir, f)).mtimeMs }))
+    .sort((a, b) => b.mtime - a.mtime)
+    .slice(0, 50)
+    .map(({ name }) => ({
+      id: name.replace('.md', ''),
+      content: fs.readFileSync(path.join(ticketsDir, name), 'utf-8'),
+    }));
+  const inferrer = new DependencyInferrer();
+  return inferrer.inferDependencies(content, files);
 }
 
 // ─── Readline helper ──────────────────────────────────────────────────────────
@@ -192,6 +211,31 @@ export async function runTaskCreate(description: string, rl: readline.Interface,
   // If detail was filled in but acceptance still empty (edge case)
   if (!fields.acceptanceCriteria) {
     fields.acceptanceCriteria = '- 功能实现完整，通过基本验证';
+  }
+
+  // ─── Dependency inference ────────────────────────────────────────────────────
+  const inferredDeps = await inferDependencies(
+    [fields.title, fields.background, fields.detail, fields.acceptanceCriteria].join('\n'),
+    ticketsDir,
+  );
+  if (inferredDeps.length > 0) {
+    console.log('\n[推断依赖]');
+    const confirmedDeps: string[] = [];
+    let skipAll = false;
+    for (const cand of inferredDeps) {
+      if (skipAll) break;
+      console.log(`- ${cand.ticketId}（置信度 ${cand.confidence}）：匹配关键词: ${cand.reason}`);
+      const ans = await question(rl, `确认加入依赖？[Y/n/s(跳过所有)] `);
+      const trimmed = ans.trim().toLowerCase();
+      if (trimmed === 's') { skipAll = true; break; }
+      if (trimmed === '' || trimmed === 'y') confirmedDeps.push(cand.ticketId);
+    }
+    if (confirmedDeps.length > 0) {
+      // Patch formatTicket result: replace "依赖: 无" with confirmed deps
+      fields.background = fields.background; // no-op, deps injected via metadata below
+      // Store deps in a custom property we handle in formatTicket
+      (fields as InferredFields & { deps?: string[] }).deps = confirmedDeps;
+    }
   }
 
   const nextNum = getNextTicketNumber(ticketsDir);
