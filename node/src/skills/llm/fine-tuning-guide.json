@@ -1,0 +1,19 @@
+{
+  "id": "llm/fine-tuning-guide",
+  "type": "skill",
+  "domain": "llm",
+  "level": 3,
+  "model_hint": "opus",
+  "triggers": [
+    "fine-tuning",
+    "RLHF",
+    "SFT",
+    "model training"
+  ],
+  "collaborates_with": [
+    "algorithm/model-evaluation",
+    "data/data-pipeline"
+  ],
+  "lazy": true,
+  "description": "Fine Tuning Guide"
+}
