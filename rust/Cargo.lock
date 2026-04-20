@@ -563,6 +563,7 @@ dependencies = [
  "eket-core",
  "eket-engine",
  "eket-server",
+ "serde",
  "serde_json",
  "tempfile",
  "tokio",
