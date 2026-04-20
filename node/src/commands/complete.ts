@@ -17,6 +17,7 @@ import { findProjectRoot } from '../utils/process-cleanup.js';
 import { getIsolationMode } from './claim.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import type { SkillFeedback } from '../types/index.js';
+import { sseBus } from '../core/sse-bus.js';
 
 // Try to load SkillIndex for activatedSkills detection (graceful degradation)
 let _getSkillIndex: (() => import('../skills/index-loader.js').SkillIndex) | null = null;
@@ -276,6 +277,7 @@ export function registerComplete(program: Command): void {
         await reportSkillFeedback(projectRoot, ticketId, slaverId);
         await appendCommitTrailer(ticketId, slaverId);
         logSuccess('Task completed', [`Task: ${ticketId}`, 'Isolation: none']);
+        sseBus.publish({ type: 'task_completed', ticketId, slaverId, timestamp: new Date().toISOString() });
         return;
       }
 
@@ -303,6 +305,15 @@ export function registerComplete(program: Command): void {
 
         // Update ticket status to BLOCKED
         updateTicketStatus(projectRoot, ticketId, 'blocked');
+
+        // Publish task_failed SSE event (TASK-109)
+        sseBus.publish({
+          type: 'task_failed',
+          ticketId,
+          slaverId,
+          timestamp: new Date().toISOString(),
+          payload: { reason: 'worktree_merge_failed', error: errMsg },
+        });
 
         // Write inbox notification
         writeConflictNotice(projectRoot, ticketId, slaverId, worktreePath, errMsg);
@@ -341,5 +352,13 @@ export function registerComplete(program: Command): void {
         `Task: ${ticketId}`,
         `Worktree merged and removed: ${worktreePath}`,
       ]);
+
+      // Publish task_completed SSE event (TASK-109)
+      sseBus.publish({
+        type: 'task_completed',
+        ticketId,
+        slaverId,
+        timestamp: new Date().toISOString(),
+      });
     });
 }

@@ -28,6 +28,8 @@ import {
   sendClaimMessage,
 } from './claim-helpers.js';
 import { appendTaskMessage, injectActiveContext as injectActiveContextData } from '../core/task-logger.js';
+import { reviewTicket } from '../core/ticket-reviewer.js';
+import { sseBus } from '../core/sse-bus.js';
 
 /**
  * 获取或生成持久化 Slaver ID（P4修复）
@@ -409,6 +411,71 @@ Related Commands:
         }
       }
 
+      // 8.5 Slaver 自主 ticket 完整性 review（TASK-110b）
+      {
+        // Find ticket file path
+        const jiraBase = path.join(projectRoot, 'jira', 'tickets');
+        const searchDirs = ['', 'feature', 'bugfix', 'task', 'improvement'];
+        let ticketFilePath = '';
+        for (const dir of searchDirs) {
+          const candidate = dir
+            ? path.join(jiraBase, dir, `${selectedTicket.id}.md`)
+            : path.join(jiraBase, `${selectedTicket.id}.md`);
+          if (fs.existsSync(candidate)) {
+            ticketFilePath = candidate;
+            break;
+          }
+        }
+
+        if (ticketFilePath) {
+          const reviewSpinner = ora('Running ticket review...').start();
+          const reviewResult = await reviewTicket(ticketFilePath);
+
+          if (!reviewResult.passed) {
+            reviewSpinner.fail('Ticket review failed');
+            console.log('\n❌ Ticket 完整性检查不通过：');
+            reviewResult.issues.forEach((issue: string) => console.log(`  • ${issue}`));
+
+            // 删除刚创建的 worktree
+            if (worktreePath) {
+              try {
+                const wm = new WorktreeManager({ projectRoot });
+                await wm.removeWorktree(selectedTicket.id, true);
+                console.log('[worktree] Cleaned up due to review failure');
+              } catch { /* ignore */ }
+            }
+
+            // 更新 ticket 状态为 blocked
+            await updateTicketStatus(projectRoot, selectedTicket.id, 'blocked');
+
+            // 写 inbox/human_feedback/blocked-<ticketId>-<slaverId>.md
+            const feedbackDir = path.join(projectRoot, 'inbox', 'human_feedback');
+            fs.mkdirSync(feedbackDir, { recursive: true });
+            const feedbackFile = path.join(feedbackDir, `blocked-${selectedTicket.id}-${slaverId}.md`);
+            const feedbackContent = `# Blocked: ${selectedTicket.id}
+
+**Slaver ID**: ${slaverId}
+**Ticket**: ${selectedTicket.id}
+**Time**: ${new Date().toISOString()}
+**Status**: blocked
+
+## Issues
+
+${reviewResult.issues.map((i: string) => `- ${i}`).join('\n')}
+
+## Required Actions
+
+请 Master 补充 ticket 信息后重新分配此任务。
+`;
+            fs.writeFileSync(feedbackFile, feedbackContent, 'utf-8');
+            console.log(`\n[feedback] Written: ${feedbackFile}`);
+            process.exit(1);
+          }
+
+          reviewSpinner.succeed('✅ Ticket review passed，开始执行');
+        }
+      }
+
       // 9. 初始化 Profile
       const profileSpinner = ora('Initializing profile...').start();
       await initializeProfile(projectRoot, role, selectedTicket);
@@ -438,6 +505,15 @@ Related Commands:
         `Instance: ${assignedInstance?.id || 'local'}`,
         `Worktree: ${worktreePath}`,
       ]);
+
+      // Publish task_started SSE event (TASK-109)
+      sseBus.publish({
+        type: 'task_started',
+        ticketId: selectedTicket.id,
+        slaverId: logSlaverId,
+        timestamp: new Date().toISOString(),
+      });
+
       console.log('\nNext step: Run /eket-start to begin execution\n');
     });
 }

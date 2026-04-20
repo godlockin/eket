@@ -12,6 +12,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { sseBus } from './sse-bus.js';
 
 // ============================================================================
 // Types
@@ -165,6 +166,7 @@ export function failStaleTasks(config: StaleTaskCleanerConfig): StaleTaskResult 
       appendTimeoutLog(filePath, msg);
       result.failed.push(ticketId);
       auditEntries.push(`[FAILED] ${ticketId}: ${msg}`);
+      sseBus.publish({ type: 'task_timed_out', ticketId, slaverId: 'stale-cleaner', timestamp: new Date().toISOString(), payload: { reason: 'failed_threshold', elapsed } });
     } else if (elapsed >= blockedThresholdMs) {
       const minutes = Math.round(elapsed / 60000);
       const msg = `超时自动标记为 blocked（已运行约 ${minutes}min）`;

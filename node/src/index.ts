@@ -24,8 +24,10 @@ import { registerKnowledgeIndex } from './commands/knowledge-index.js';
 import { registerKnowledgeSearch } from './commands/knowledge-search.js';
 import { registerClaim } from './commands/claim.js';
 import { registerComplete } from './commands/complete.js';
+import { registerTaskProgress } from './commands/task-progress.js';
 import { registerHandoff } from './commands/handoff.js';
 import { registerTaskResume } from './commands/task-resume.js';
+import { registerTaskCreate } from './commands/task-create.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { registerGateReview } from './commands/gate-review.js';
 import { registerMasterHeartbeat } from './commands/master-heartbeat.js';
@@ -602,11 +604,17 @@ Related Commands:
   // 注册 complete 命令
   registerComplete(program);
 
+  // 注册 task:progress 命令 (TASK-109)
+  registerTaskProgress(program);
+
   // 注册 handoff 命令
   registerHandoff(program);
 
   // 注册 task:resume 命令
   registerTaskResume(program);
+
+  // 注册 task:create 命令
+  registerTaskCreate(program);
 
   // 注册 project:init 命令
   program
