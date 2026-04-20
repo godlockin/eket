@@ -52,9 +52,16 @@ export interface CompletenessGaps {
 }
 
 export function checkCompleteness(detail: string, acceptanceCriteria: string): CompletenessGaps {
+  const hasChecklist = /^-\s+\[[ xX]\]/m.test(acceptanceCriteria);
+  const nonHeadingLen = acceptanceCriteria
+    .split('\n')
+    .filter((l) => !/^#{1,4}\s/.test(l))
+    .join('\n')
+    .trim().length;
+  const validAcceptance = hasChecklist || nonHeadingLen >= 50;
   return {
     needsDetail: detail.trim().length < 50,
-    needsAcceptance: acceptanceCriteria.trim().length === 0,
+    needsAcceptance: !validAcceptance,
   };
 }
 

@@ -79,6 +79,44 @@ function isTicketDone(content: string): boolean {
 }
 
 /**
+ * 校验验收标准章节：
+ * - 章节缺失/空 → fail
+ * - 有至少一个 checklist 项（- [ ] 或 - [x]）→ pass
+ * - 或有 ≥50 chars 的非标题正文 → pass
+ * - 否则 → fail
+ */
+export function checkAcceptanceCriteria(content: string): { pass: boolean; issue?: string } {
+  const section = extractSection(content, '验收标准') ?? extractSection(content, 'Acceptance Criteria');
+
+  if (section === null) {
+    return { pass: false, issue: '验收标准章节缺失' };
+  }
+
+  const trimmed = section.trim();
+  if (trimmed.length === 0) {
+    return { pass: false, issue: '验收标准章节为空' };
+  }
+
+  // Check for checklist items
+  if (/^-\s+\[[ xX]\]/m.test(trimmed)) {
+    return { pass: true };
+  }
+
+  // Strip heading lines, check remaining text length
+  const nonHeadingText = trimmed
+    .split('\n')
+    .filter((line) => !/^#{1,4}\s/.test(line))
+    .join('\n')
+    .trim();
+
+  if (nonHeadingText.length >= 50) {
+    return { pass: true };
+  }
+
+  return { pass: false, issue: '验收标准内容不足（需要 checklist 项或 ≥50 字描述）' };
+}
+
+/**
  * 主校验函数：读取 ticket Markdown，执行完整性检查
  */
 export async function reviewTicket(ticketPath: string): Promise<ReviewResult> {
@@ -106,9 +144,9 @@ export async function reviewTicket(ticketPath: string): Promise<ReviewResult> {
   }
 
   // 2. 检查「验收标准」章节
-  const acceptance = extractSection(content, '验收标准');
-  if (acceptance === null || acceptance.replace(/\s/g, '').length === 0) {
-    issues.push('验收标准缺失，无法验收');
+  const acResult = checkAcceptanceCriteria(content);
+  if (!acResult.pass) {
+    issues.push(acResult.issue ?? '验收标准缺失，无法验收');
   }
 
   // 3. 检查依赖 ticket 完成状态
