@@ -3,12 +3,26 @@ name = "eket-server"
 version.workspace = true
 edition.workspace = true
 
+[[bin]]
+name = "eket-server"
+path = "src/main.rs"
+
+[lib]
+name = "eket_server"
+path = "src/lib.rs"
+
 [dependencies]
 eket-core = { path = "../eket-core" }
 eket-engine = { path = "../eket-engine" }
 tokio = { workspace = true }
 axum = { workspace = true }
 tower-http = { workspace = true }
+tower = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"
+http-body-util = "0.1"
