@@ -14,6 +14,7 @@ import { WebSocketServer } from 'ws';
 
 import type { RedisClient } from '../../core/redis-client.js';
 import { sseEventBus } from '../../core/sse-event-bus.js';
+import { sseBus } from '../../core/sse-bus.js';
 import type { Message } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
 import type { RedisHelper } from '../redis-helper.js';
@@ -331,6 +332,30 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
       }
     }
   );
+
+  // GET /events — SSE task event stream (TASK-109)
+  router.get('/events', (req: Request, res: Response) => {
+    const slaverId = typeof req.query['slaver'] === 'string' ? req.query['slaver'] : undefined;
+    sseBus.addClient(res, slaverId);
+
+    // Heartbeat every 30s
+    const heartbeat = setInterval(() => {
+      if (!res.writableEnded) {
+        res.write(': heartbeat\n\n');
+      } else {
+        clearInterval(heartbeat);
+      }
+    }, 30_000);
+
+    req.on('close', () => {
+      clearInterval(heartbeat);
+      sseBus.removeClient(res);
+    });
+    req.on('error', () => {
+      clearInterval(heartbeat);
+      sseBus.removeClient(res);
+    });
+  });
 
   // GET /stream/:channelId — SSE
   router.get('/stream/:channelId', (req: Request, res: Response) => {

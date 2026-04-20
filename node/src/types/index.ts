@@ -1307,6 +1307,25 @@ export interface ProgressReport {
   };
 }
 
+// ============================================================================
+// SSE Task Event Types (TASK-109)
+// ============================================================================
+
+export type TaskEventType =
+  | 'task_started'
+  | 'task_running'
+  | 'task_completed'
+  | 'task_failed'
+  | 'task_timed_out';
+
+export interface TaskEvent {
+  type: TaskEventType;
+  ticketId: string;
+  slaverId: string;
+  timestamp: string;
+  payload?: Record<string, unknown>;
+}
+
 /**
  * Task Message — 结构化存储 Slaver 执行过程中的 LLM 消息
  */
