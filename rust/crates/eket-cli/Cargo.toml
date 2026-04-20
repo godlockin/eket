@@ -1,0 +1,17 @@
+[package]
+name = "eket-cli"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "eket"
+path = "src/main.rs"
+
+[dependencies]
+eket-core = { path = "../eket-core" }
+tokio = { workspace = true }
+clap = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow = { workspace = true }
