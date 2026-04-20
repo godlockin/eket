@@ -8,6 +8,7 @@ pub mod election;
 pub mod error;
 pub mod queue;
 pub mod redis;
+pub mod ticket;
 pub mod types;
 
 pub use error::{EketError, EketResult};
