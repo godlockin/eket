@@ -11,38 +11,60 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 use tokio::sync::{broadcast, Mutex};
 use tracing::{debug, info, warn};
-use uuid::Uuid;
 
 use crate::error::{EketError, EketResult};
 use crate::redis::EketRedisClient;
 
 // ─── Message ──────────────────────────────────────────────────────────────────
 
-/// 对应 TS: Message interface
+/// 对应 TS: Message interface (types/index.ts)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Message {
     pub id: String,
-    pub channel: String,
-    pub r#type: String,
-    pub payload: serde_json::Value,
-    pub sender: Option<String>,
     pub timestamp: chrono::DateTime<chrono::Utc>,
+    /// Sender instance/slaver ID (TS: from)
+    pub from: String,
+    /// Recipient instance/channel (TS: to)
+    pub to: String,
+    pub r#type: String,
+    pub priority: MessagePriority,
+    pub payload: serde_json::Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum MessagePriority {
+    Urgent,
+    High,
+    Normal,
+    Low,
+}
+
+impl Default for MessagePriority {
+    fn default() -> Self { Self::Normal }
 }
 
 impl Message {
     pub fn new(
-        channel: impl Into<String>,
+        from: impl Into<String>,
+        to: impl Into<String>,
         msg_type: impl Into<String>,
         payload: serde_json::Value,
     ) -> Self {
         Self {
-            id: Uuid::new_v4().to_string(),
-            channel: channel.into(),
-            r#type: msg_type.into(),
-            payload,
-            sender: None,
+            id: uuid::Uuid::new_v4().to_string(),
             timestamp: chrono::Utc::now(),
+            from: from.into(),
+            to: to.into(),
+            r#type: msg_type.into(),
+            priority: MessagePriority::Normal,
+            payload,
         }
+    }
+
+    pub fn with_priority(mut self, priority: MessagePriority) -> Self {
+        self.priority = priority;
+        self
     }
 }
 
@@ -93,12 +115,12 @@ impl MessageQueue {
         &self.mode
     }
 
-    /// Publish a message to a channel
+    /// Publish a message to a channel (channel = msg.to)
     /// 对应 TS: MessageQueue.publish()
-    pub async fn publish(&self, channel: &str, msg: Message) -> EketResult<()> {
+    pub async fn publish(&self, msg: Message) -> EketResult<()> {
         match &self.mode {
-            QueueMode::Redis => self.publish_redis(channel, msg).await,
-            QueueMode::File => self.publish_file(channel, msg).await,
+            QueueMode::Redis => self.publish_redis(msg).await,
+            QueueMode::File => self.publish_file(msg).await,
         }
     }
 
@@ -122,10 +144,10 @@ impl MessageQueue {
 
     // ── Redis impl ────────────────────────────────────────────────────────────
 
-    async fn publish_redis(&self, channel: &str, msg: Message) -> EketResult<()> {
+    async fn publish_redis(&self, msg: Message) -> EketResult<()> {
         let redis = self.redis.as_ref().ok_or_else(|| EketError::Other("no Redis".into()))?;
+        let channel = msg.to.clone();
         let json = serde_json::to_string(&msg)?;
-        // Use LPUSH; subscribers poll with RPOP (simple list-based queue)
         let key = format!("eket:queue:{channel}");
         redis.lpush(&key, &json).await?;
         debug!("Published to Redis channel {channel}: {}", msg.id);
@@ -164,8 +186,9 @@ impl MessageQueue {
 
     // ── File impl ─────────────────────────────────────────────────────────────
 
-    async fn publish_file(&self, channel: &str, msg: Message) -> EketResult<()> {
-        let dir = self.queue_dir.join(channel);
+    async fn publish_file(&self, msg: Message) -> EketResult<()> {
+        let channel = msg.to.clone();
+        let dir = self.queue_dir.join(&channel);
         tokio::fs::create_dir_all(&dir).await?;
         let file = dir.join(format!("{}.json", msg.id));
         let json = serde_json::to_string_pretty(&msg)?;
@@ -254,8 +277,8 @@ mod tests {
 
         q.subscribe("test-channel".to_string(), handler).await.unwrap();
 
-        let msg = Message::new("test-channel", "test", serde_json::json!({"hello": "world"}));
-        q.publish("test-channel", msg).await.unwrap();
+        let msg = Message::new("slaver_1", "test-channel", "test", serde_json::json!({"hello": "world"}));
+        q.publish(msg).await.unwrap();
 
         // Give poller time to pick up
         tokio::time::sleep(Duration::from_millis(500)).await;
@@ -277,8 +300,8 @@ mod tests {
         q.subscribe("bulk".to_string(), handler).await.unwrap();
 
         for i in 0..5 {
-            let msg = Message::new("bulk", "item", serde_json::json!({"i": i}));
-            q.publish("bulk", msg).await.unwrap();
+            let msg = Message::new("slaver_1", "bulk", "item", serde_json::json!({"i": i}));
+            q.publish(msg).await.unwrap();
         }
 
         tokio::time::sleep(Duration::from_millis(800)).await;
@@ -299,11 +322,10 @@ mod tests {
         });
 
         q.subscribe("dedup".to_string(), handler).await.unwrap();
-        let msg = Message::new("dedup", "test", serde_json::json!(null));
-        q.publish("dedup", msg).await.unwrap();
+        let msg = Message::new("slaver_1", "dedup", "test", serde_json::json!(null));
+        q.publish(msg).await.unwrap();
 
         tokio::time::sleep(Duration::from_millis(600)).await;
-        // Wait extra to ensure no second delivery
         tokio::time::sleep(Duration::from_millis(400)).await;
         assert_eq!(counter.load(Ordering::Relaxed), 1, "message should be delivered exactly once");
     }
@@ -323,8 +345,8 @@ mod tests {
         q.subscribe("unsub-ch".to_string(), handler).await.unwrap();
         q.unsubscribe("unsub-ch").await;
 
-        let msg = Message::new("unsub-ch", "test", serde_json::json!(null));
-        q.publish("unsub-ch", msg).await.unwrap();
+        let msg = Message::new("slaver_1", "unsub-ch", "test", serde_json::json!(null));
+        q.publish(msg).await.unwrap();
 
         tokio::time::sleep(Duration::from_millis(500)).await;
         assert_eq!(counter.load(Ordering::Relaxed), 0, "no delivery after unsubscribe");
