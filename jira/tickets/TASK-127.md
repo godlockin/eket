@@ -1,7 +1,7 @@
 # TASK-127: [Rust] conflict-resolver — 分布式锁 + 冲突解决
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P0
 - **负责人**: 待认领

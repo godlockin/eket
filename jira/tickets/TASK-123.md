@@ -1,7 +1,7 @@
 # TASK-123: [Rust] instance-registry — 实例注册/发现/心跳
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P0
 - **负责人**: 待认领
