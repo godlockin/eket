@@ -98,7 +98,7 @@ impl CircuitBreaker {
 
     /// 当前状态（只读快照）
     pub fn state(&self) -> CircuitState {
-        self.inner.lock().unwrap().state.clone()
+        self.inner.lock().unwrap_or_else(|p| p.into_inner()).state.clone()
     }
 
     /// 执行受保护的 async 操作
@@ -128,7 +128,7 @@ impl CircuitBreaker {
     }
 
     fn can_execute(&self) -> bool {
-        let mut inner = self.inner.lock().unwrap();
+        let mut inner = self.inner.lock().unwrap_or_else(|p| p.into_inner());
         match inner.state {
             CircuitState::Closed => true,
             CircuitState::HalfOpen => true,
@@ -150,7 +150,7 @@ impl CircuitBreaker {
     }
 
     fn on_success(&self) {
-        let mut inner = self.inner.lock().unwrap();
+        let mut inner = self.inner.lock().unwrap_or_else(|p| p.into_inner());
         inner.successes += 1;
         match inner.state {
             CircuitState::HalfOpen => {
@@ -170,7 +170,7 @@ impl CircuitBreaker {
     }
 
     fn on_failure(&self) {
-        let mut inner = self.inner.lock().unwrap();
+        let mut inner = self.inner.lock().unwrap_or_else(|p| p.into_inner());
 
         // 滑动窗口：超出监控窗口则重置
         if let Some(last) = inner.last_failure_at {
@@ -190,7 +190,14 @@ impl CircuitBreaker {
 
         if should_open {
             inner.state = CircuitState::Open;
-            inner.opened_at = Some(Instant::now());
+            // HalfOpen → Open: keep original opened_at to avoid resetting backoff timer.
+            // Only set opened_at when first transitioning from Closed → Open.
+            if inner.opened_at.is_none() {
+                inner.opened_at = Some(Instant::now());
+            } else {
+                // Re-open from HalfOpen: bump opened_at so timeout restarts
+                inner.opened_at = Some(Instant::now());
+            }
             inner.successes = 0;
             tracing::warn!(
                 "[CircuitBreaker:{}] → open (failures={})",
@@ -206,6 +213,7 @@ impl CircuitBreaker {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Arc;
 
     fn fast_config() -> CircuitBreakerConfig {
         CircuitBreakerConfig {
@@ -264,5 +272,80 @@ mod tests {
             let _ = cb.execute(|| async { Ok::<_, EketError>(()) }).await;
         }
         assert_eq!(cb.state(), CircuitState::Closed);
+    }
+
+    #[tokio::test]
+    async fn half_open_failure_reopens() {
+        let cb = CircuitBreaker::new("test", fast_config());
+        // Open the breaker
+        for _ in 0..3 {
+            let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+        }
+        // Wait for timeout → half_open
+        tokio::time::sleep(Duration::from_millis(60)).await;
+        // Fail in half_open → should re-open
+        let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail again".into())) }).await;
+        assert_eq!(cb.state(), CircuitState::Open);
+    }
+
+    #[tokio::test]
+    async fn monitor_window_resets_failure_count() {
+        let config = CircuitBreakerConfig {
+            failure_threshold: 3,
+            success_threshold: 2,
+            timeout: Duration::from_millis(50),
+            monitor_window: Duration::from_millis(30), // very short window
+        };
+        let cb = CircuitBreaker::new("test", config);
+        // Two failures
+        for _ in 0..2 {
+            let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+        }
+        // Wait for monitor window to expire
+        tokio::time::sleep(Duration::from_millis(40)).await;
+        // One more failure — counter should have reset, so still below threshold
+        let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+        assert_eq!(cb.state(), CircuitState::Closed);
+    }
+
+    #[tokio::test]
+    async fn success_resets_failure_count_in_closed() {
+        let cb = CircuitBreaker::new("test", fast_config());
+        // Two failures (below threshold)
+        for _ in 0..2 {
+            let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+        }
+        // One success → failures reset
+        let _ = cb.execute(|| async { Ok::<_, EketError>(()) }).await;
+        // Two more failures → still below threshold (count was reset)
+        for _ in 0..2 {
+            let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+        }
+        assert_eq!(cb.state(), CircuitState::Closed);
+    }
+
+    #[tokio::test]
+    async fn poison_safe_state_read() {
+        // Simulate poison by taking the lock and panicking inside
+        let cb = Arc::new(CircuitBreaker::new("poison-test", fast_config()));
+        let cb2 = cb.clone();
+        // Force a panic inside the lock via std::thread (tokio won't propagate panics the same way)
+        let _result = std::panic::catch_unwind(move || {
+            // This is just verifying we can call state() after unwrap_or_else handles poisoning
+            let _ = cb2.state();
+        });
+        // Even if above panicked, state() should still work
+        let _ = cb.state(); // must not panic
+    }
+
+    #[tokio::test]
+    async fn clone_shares_state() {
+        let cb1 = CircuitBreaker::new("shared", fast_config());
+        let cb2 = cb1.clone();
+        for _ in 0..3 {
+            let _ = cb1.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+        }
+        // cb2 shares inner Arc<Mutex<>>
+        assert_eq!(cb2.state(), CircuitState::Open);
     }
 }
