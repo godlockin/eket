@@ -9,11 +9,9 @@ mod commands;
     name = "eket",
     version = env!("CARGO_PKG_VERSION"),
     about = "EKET — AI Agent Collaboration Framework",
-    long_about = None,
 )]
 struct Cli {
-    /// Log level (trace, debug, info, warn, error)
-    #[arg(long, env = "EKET_LOG_LEVEL", default_value = "info")]
+    #[arg(long, env = "EKET_LOG_LEVEL", default_value = "warn")]
     log_level: String,
 
     #[command(subcommand)]
@@ -29,8 +27,19 @@ enum Commands {
     /// Claim a ticket for execution
     #[command(name = "task:claim")]
     TaskClaim {
-        /// Optional ticket ID to claim directly
+        /// Specific ticket ID to claim (e.g. TASK-042). Omit to auto-pick highest priority.
         ticket_id: Option<String>,
+    },
+
+    /// Mark a ticket as complete
+    #[command(name = "task:complete")]
+    TaskComplete {
+        /// Ticket ID to complete (e.g. TASK-042)
+        ticket_id: String,
+
+        /// Skip appending git commit trailer
+        #[arg(long)]
+        no_trailer: bool,
     },
 }
 
@@ -38,7 +47,6 @@ enum Commands {
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    // Init tracing
     fmt()
         .with_env_filter(
             EnvFilter::try_from_default_env()
@@ -50,5 +58,8 @@ async fn main() -> Result<()> {
     match cli.command {
         Commands::SystemDoctor => commands::system_doctor::run().await,
         Commands::TaskClaim { ticket_id } => commands::task_claim::run(ticket_id).await,
+        Commands::TaskComplete { ticket_id, no_trailer } => {
+            commands::task_complete::run(ticket_id, no_trailer).await
+        }
     }
 }
