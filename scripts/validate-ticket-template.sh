@@ -160,7 +160,25 @@ validate_ticket() {
     fi
   fi
 
-  # 9. Artifact Schema check for pr_review/test status
+  # 8b. done 状态最新 commit 缺少 Confidence: trailer（WARN，历史 ticket 无此字段）
+  if [[ "${status// /}" == "done" ]]; then
+    local ticket_dir
+    ticket_dir=$(dirname "$file")
+    local has_confidence=""
+    has_confidence=$(git log --oneline -5 -- "$ticket_dir" 2>/dev/null | head -1 || true)
+    if [[ -n "$has_confidence" ]]; then
+      local commit_hash
+      commit_hash=$(echo "$has_confidence" | awk '{print $1}')
+      local commit_body
+      commit_body=$(git log -1 --format=%B "$commit_hash" 2>/dev/null || true)
+      if ! echo "$commit_body" | grep -q "Confidence:"; then
+        issues+=("  ${YELLOW}[WARN]${RESET} done ticket 最新 commit 未含 Confidence: trailer（TASK-108 自动生成，历史 ticket 可忽略）")
+        ticket_warn=$((ticket_warn + 1))
+      fi
+    fi
+  fi
+
+
   if [[ "$status" == "pr_review" || "$status" == "test" ]]; then
     if ! file_has 'implementation_report:|test_result:' "$file"; then
       issues+=("  ${YELLOW}[WARN]${RESET} pr_review/test 状态缺少 implementation_report（建议填写 Artifact Schema v1）")
