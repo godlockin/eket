@@ -54,11 +54,11 @@ impl EketRedisClient {
     }
 
     pub fn is_available(&self) -> bool {
-        self.available.load(std::sync::atomic::Ordering::Relaxed)
+        self.available.load(std::sync::atomic::Ordering::Acquire)
     }
 
     fn mark_unavailable(&self) {
-        self.available.store(false, std::sync::atomic::Ordering::Relaxed);
+        self.available.store(false, std::sync::atomic::Ordering::Release);
     }
 
     /// PING
@@ -82,7 +82,10 @@ impl EketRedisClient {
         self.inner
             .set::<(), _, _>(key, value, expiry, None, false)
             .await
-            .map_err(|e| EketError::Redis(e.to_string()))
+            .map_err(|e| {
+                self.mark_unavailable();
+                EketError::Redis(e.to_string())
+            })
     }
 
     /// GET
@@ -91,7 +94,10 @@ impl EketRedisClient {
         self.inner
             .get::<Option<String>, _>(key)
             .await
-            .map_err(|e| EketError::Redis(e.to_string()))
+            .map_err(|e| {
+                self.mark_unavailable();
+                EketError::Redis(e.to_string())
+            })
     }
 
     /// DEL
@@ -100,7 +106,10 @@ impl EketRedisClient {
         let n: i64 = self.inner
             .del(key)
             .await
-            .map_err(|e| EketError::Redis(e.to_string()))?;
+            .map_err(|e| {
+                self.mark_unavailable();
+                EketError::Redis(e.to_string())
+            })?;
         Ok(n > 0)
     }
 
@@ -116,7 +125,10 @@ impl EketRedisClient {
                 false,
             )
             .await
-            .map_err(|e| EketError::Redis(e.to_string()))?;
+            .map_err(|e| {
+                self.mark_unavailable();
+                EketError::Redis(e.to_string())
+            })?;
         Ok(result)
     }
 
@@ -126,7 +138,10 @@ impl EketRedisClient {
         self.inner
             .lpush(key, value)
             .await
-            .map_err(|e| EketError::Redis(e.to_string()))
+            .map_err(|e| {
+                self.mark_unavailable();
+                EketError::Redis(e.to_string())
+            })
     }
 
     /// RPOP — dequeue
@@ -135,7 +150,10 @@ impl EketRedisClient {
         self.inner
             .rpop::<Option<String>, _>(key, None)
             .await
-            .map_err(|e| EketError::Redis(e.to_string()))
+            .map_err(|e| {
+                self.mark_unavailable();
+                EketError::Redis(e.to_string())
+            })
     }
 
     fn require_available(&self) -> EketResult<()> {

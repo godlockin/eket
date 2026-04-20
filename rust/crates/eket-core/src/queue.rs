@@ -172,9 +172,19 @@ impl MessageQueue {
         // Atomic write: write to tmp then rename
         let tmp = dir.join(format!(".{}.tmp", msg.id));
         tokio::fs::write(&tmp, &json).await?;
-        tokio::fs::rename(&tmp, &file).await?;
+        // rename() fails with EXDEV when tmp and dst are on different filesystems.
+        // Fall back to copy+delete in that case.
+        if let Err(e) = tokio::fs::rename(&tmp, &file).await {
+            // EXDEV = 18 on Linux/macOS (cross-device link)
+            if e.raw_os_error() == Some(18) {
+                tokio::fs::copy(&tmp, &file).await?;
+                tokio::fs::remove_file(&tmp).await?;
+            } else {
+                return Err(EketError::Io(e));
+            }
+        }
         debug!("Published to file channel {channel}: {}", msg.id);
-        // Also broadcast locally for in-process subscribers
+        // Broadcast locally for in-process subscribers (ignore lagged/no-receiver errors)
         let _ = self.local_bus.send(msg);
         Ok(())
     }
@@ -199,8 +209,12 @@ impl MessageQueue {
                         for file in files {
                             if let Ok(content) = tokio::fs::read_to_string(&file).await {
                                 if let Ok(msg) = serde_json::from_str::<Message>(&content) {
-                                    let _ = tokio::fs::remove_file(&file).await;
-                                    handler(msg).await;
+                                    // Delete BEFORE calling handler: if delete fails, skip (message
+                                    // stays in queue for retry). This prevents double-processing on
+                                    // panic/crash between read and delete.
+                                    if tokio::fs::remove_file(&file).await.is_ok() {
+                                        handler(msg).await;
+                                    }
                                 }
                             }
                         }
@@ -269,5 +283,50 @@ mod tests {
 
         tokio::time::sleep(Duration::from_millis(800)).await;
         assert_eq!(counter.load(Ordering::Relaxed), 5);
+    }
+
+    #[tokio::test]
+    async fn file_queue_no_duplicate_delivery() {
+        // Verifies delete-before-handler: each message delivered exactly once
+        let dir = TempDir::new().unwrap();
+        let q = MessageQueue::new_auto(None, dir.path()).await;
+        let counter = Arc::new(AtomicU32::new(0));
+        let counter2 = counter.clone();
+
+        let handler: MessageHandler = Arc::new(move |_| {
+            counter2.fetch_add(1, Ordering::Relaxed);
+            Box::pin(async {})
+        });
+
+        q.subscribe("dedup".to_string(), handler).await.unwrap();
+        let msg = Message::new("dedup", "test", serde_json::json!(null));
+        q.publish("dedup", msg).await.unwrap();
+
+        tokio::time::sleep(Duration::from_millis(600)).await;
+        // Wait extra to ensure no second delivery
+        tokio::time::sleep(Duration::from_millis(400)).await;
+        assert_eq!(counter.load(Ordering::Relaxed), 1, "message should be delivered exactly once");
+    }
+
+    #[tokio::test]
+    async fn unsubscribe_stops_poller() {
+        let dir = TempDir::new().unwrap();
+        let q = MessageQueue::new_auto(None, dir.path()).await;
+        let counter = Arc::new(AtomicU32::new(0));
+        let counter2 = counter.clone();
+
+        let handler: MessageHandler = Arc::new(move |_| {
+            counter2.fetch_add(1, Ordering::Relaxed);
+            Box::pin(async {})
+        });
+
+        q.subscribe("unsub-ch".to_string(), handler).await.unwrap();
+        q.unsubscribe("unsub-ch").await;
+
+        let msg = Message::new("unsub-ch", "test", serde_json::json!(null));
+        q.publish("unsub-ch", msg).await.unwrap();
+
+        tokio::time::sleep(Duration::from_millis(500)).await;
+        assert_eq!(counter.load(Ordering::Relaxed), 0, "no delivery after unsubscribe");
     }
 }
