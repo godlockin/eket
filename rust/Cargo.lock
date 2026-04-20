@@ -560,6 +560,7 @@ dependencies = [
  "clap",
  "eket-core",
  "serde_json",
+ "tempfile",
  "tokio",
  "tracing",
  "tracing-subscriber",
