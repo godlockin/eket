@@ -102,9 +102,9 @@ pub async fn run(args: SlaverPollArgs) -> Result<()> {
 }
 
 fn expand_tilde(path: &str) -> String {
-    if let Some(rest) = path.strip_prefix("~/") {
-        if let Ok(home) = std::env::var("HOME") {
-            return format!("{home}/{rest}");
+    if path.starts_with("~/") {
+        if let Some(home) = std::env::var("HOME").ok() {
+            return format!("{}/{}", home, &path[2..]);
         }
     }
     path.to_string()
@@ -116,7 +116,7 @@ fn expand_tilde(path: &str) -> String {
 mod tests {
     use super::*;
     use eket_engine::{
-        mailbox::AgentMailbox,
+        mailbox::{AgentMailbox, MailboxMessage, MailboxMessageType},
         protocol::{ProtocolSender, TaskAssignPayload},
     };
     use tempfile::TempDir;

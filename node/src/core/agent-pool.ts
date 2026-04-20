@@ -685,6 +685,8 @@ export class AgentPoolManager {
       lastHeartbeat: Date.now(),
       updatedAt: Date.now(),
       metadata: agent.metadata,
+      currentLevel: 2 as const,
+      levelChanges: [],
     };
 
     const result = await this.registry.registerInstance(instance);
