@@ -1,0 +1,19 @@
+{
+  "id": "ops/sla-management",
+  "type": "skill",
+  "domain": "ops",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "SLA",
+    "SLO",
+    "error budget",
+    "uptime"
+  ],
+  "collaborates_with": [
+    "devops/monitoring-setup",
+    "planning/risk-assessment"
+  ],
+  "lazy": true,
+  "description": "Sla Management"
+}

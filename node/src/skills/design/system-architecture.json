@@ -1,0 +1,18 @@
+{
+  "id": "design/system-architecture",
+  "type": "skill",
+  "domain": "design",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "architecture",
+    "system design",
+    "microservice"
+  ],
+  "collaborates_with": [
+    "requirements/user-story-mapping",
+    "development/code-review-checklist"
+  ],
+  "lazy": true,
+  "description": "System Architecture"
+}

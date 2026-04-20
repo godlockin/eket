@@ -1,0 +1,19 @@
+{
+  "id": "security/penetration-testing",
+  "type": "skill",
+  "domain": "security",
+  "level": 3,
+  "model_hint": "opus",
+  "triggers": [
+    "penetration",
+    "pentest",
+    "exploit",
+    "红队"
+  ],
+  "collaborates_with": [
+    "review/security-review",
+    "testing/e2e-testing"
+  ],
+  "lazy": true,
+  "description": "Penetration Testing"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "llm/rag-pipeline",
+  "type": "skill",
+  "domain": "llm",
+  "level": 3,
+  "model_hint": "opus",
+  "triggers": [
+    "RAG",
+    "retrieval augmented",
+    "vector store"
+  ],
+  "collaborates_with": [
+    "algorithm/model-evaluation",
+    "data/data-pipeline"
+  ],
+  "lazy": true,
+  "description": "Rag Pipeline"
+}

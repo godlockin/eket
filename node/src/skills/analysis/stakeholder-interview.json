@@ -1,0 +1,18 @@
+{
+  "id": "analysis/stakeholder-interview",
+  "type": "skill",
+  "domain": "analysis",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "stakeholder",
+    "interview",
+    "用户访谈"
+  ],
+  "collaborates_with": [
+    "requirements/requirements-analysis",
+    "planning/risk-assessment"
+  ],
+  "lazy": true,
+  "description": "Stakeholder Interview"
+}

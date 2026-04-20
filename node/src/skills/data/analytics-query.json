@@ -1,0 +1,19 @@
+{
+  "id": "data/analytics-query",
+  "type": "skill",
+  "domain": "data",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "analytics",
+    "query",
+    "SQL",
+    "data analysis"
+  ],
+  "collaborates_with": [
+    "algorithm/feature-engineering",
+    "devops/ci-pipeline"
+  ],
+  "lazy": true,
+  "description": "Analytics Query"
+}

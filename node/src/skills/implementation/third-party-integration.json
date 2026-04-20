@@ -1,0 +1,18 @@
+{
+  "id": "implementation/third-party-integration",
+  "type": "skill",
+  "domain": "implementation",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "integration",
+    "third-party",
+    "SDK integration"
+  ],
+  "collaborates_with": [
+    "design/api-design",
+    "testing/unit_test"
+  ],
+  "lazy": true,
+  "description": "Third Party Integration"
+}
