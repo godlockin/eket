@@ -41,6 +41,10 @@ enum Commands {
         #[arg(long)]
         no_trailer: bool,
     },
+
+    /// Create a new ticket
+    #[command(name = "task:create")]
+    TaskCreate(commands::task_create::TaskCreateArgs),
 }
 
 #[tokio::main]
@@ -61,5 +65,6 @@ async fn main() -> Result<()> {
         Commands::TaskComplete { ticket_id, no_trailer } => {
             commands::task_complete::run(ticket_id, no_trailer).await
         }
+        Commands::TaskCreate(args) => commands::task_create::run(args).await,
     }
 }
