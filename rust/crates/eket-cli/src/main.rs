@@ -46,6 +46,10 @@ enum Commands {
     #[command(name = "task:create")]
     TaskCreate(commands::task_create::TaskCreateArgs),
 
+    /// Start HTTP API server
+    #[command(name = "server")]
+    Server(commands::server::ServerArgs),
+
     /// Register a Slaver instance
     #[command(name = "slaver:register")]
     SlaverRegister(commands::slaver_register::SlaverRegisterArgs),
@@ -74,6 +78,7 @@ async fn main() -> Result<()> {
             commands::task_complete::run(ticket_id, no_trailer).await
         }
         Commands::TaskCreate(args) => commands::task_create::run(args).await,
+        Commands::Server(args) => commands::server::run(args).await,
         Commands::SlaverRegister(args) => commands::slaver_register::run(args).await,
         Commands::SlaverPoll(args) => commands::slaver_poll::run(args).await,
     }

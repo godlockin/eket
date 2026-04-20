@@ -10,6 +10,7 @@ path = "src/main.rs"
 [dependencies]
 eket-core = { path = "../eket-core" }
 eket-engine = { path = "../eket-engine" }
+eket-server = { path = "../eket-server" }
 async-trait = { workspace = true }
 dirs = { workspace = true }
 tokio = { workspace = true, features = ["process"] }

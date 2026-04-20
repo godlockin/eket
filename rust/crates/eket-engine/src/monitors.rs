@@ -62,10 +62,39 @@ impl HeartbeatMonitor {
     }
 
     pub async fn check_once(&self) {
-        let instances = match self.db.list_instances(None) {
-            Ok(v) => v,
-            Err(e) => {
+        // list_instances reads last_seen as i64 (unix ts), but InstanceRegistry stores as RFC3339.
+        // Use direct SQL to handle both formats.
+        struct RawInst {
+            id: String,
+            status: String,
+            last_seen_str: Option<String>,
+        }
+
+        let db = Arc::clone(&self.db);
+        let instances = match tokio::task::spawn_blocking(move || {
+            let conn = db.pool().get()?;
+            let mut stmt = conn.prepare(
+                "SELECT id, status, CAST(last_seen AS TEXT) FROM slaver_instances",
+            )?;
+            let rows = stmt.query_map([], |row| {
+                Ok(RawInst {
+                    id: row.get(0)?,
+                    status: row.get(1)?,
+                    last_seen_str: row.get::<_, Option<String>>(2)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+            Ok::<_, eket_core::error::EketError>(rows)
+        })
+        .await
+        {
+            Ok(Ok(v)) => v,
+            Ok(Err(e)) => {
                 warn!("[HeartbeatMonitor] list_instances failed: {e}");
+                return;
+            }
+            Err(e) => {
+                warn!("[HeartbeatMonitor] spawn_blocking failed: {e}");
                 return;
             }
         };
@@ -77,10 +106,20 @@ impl HeartbeatMonitor {
             if inst.status == "offline" {
                 continue;
             }
-            let stale = match inst.last_seen {
+            // Parse last_seen: try i64 first, then RFC3339
+            let last_seen_ts: Option<i64> = inst.last_seen_str.as_deref().and_then(|s| {
+                s.parse::<i64>().ok().or_else(|| {
+                    s.parse::<chrono::DateTime<chrono::Utc>>()
+                        .ok()
+                        .map(|dt| dt.timestamp())
+                })
+            });
+
+            let stale = match last_seen_ts {
                 Some(ts) => now_ts - ts > ttl_secs,
-                None => true, // no last_seen = assume stale
+                None => true,
             };
+
             if stale {
                 debug!("[HeartbeatMonitor] marking offline: {}", inst.id);
                 if let Err(e) = self.registry.mark_offline(&inst.id).await {
@@ -260,9 +299,22 @@ mod tests {
         ));
         monitor.check_once().await;
 
-        // Verify status = offline via direct DB query
-        let inst = db.get_instance("inst-stale").unwrap().unwrap();
-        assert_eq!(inst.status, "offline", "stale instance must be marked offline");
+        // Check via direct SQL
+        let status: String = tokio::task::spawn_blocking({
+            let db2 = Arc::clone(&db);
+            move || {
+                let conn = db2.pool().get().unwrap();
+                conn.query_row(
+                    "SELECT status FROM slaver_instances WHERE id = 'inst-stale'",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap()
+            }
+        })
+        .await
+        .unwrap();
+        assert_eq!(status, "offline", "stale instance must be marked offline");
     }
 
     #[tokio::test]
@@ -280,8 +332,22 @@ mod tests {
         ));
         monitor.check_once().await;
 
-        let inst = db.get_instance("inst-fresh").unwrap().unwrap();
-        assert_ne!(inst.status, "offline", "fresh instance must not be marked offline");
+        // Check via direct SQL (registry stores last_seen as RFC3339, db.get_instance expects i64)
+        let status: String = tokio::task::spawn_blocking({
+            let db2 = Arc::clone(&db);
+            move || {
+                let conn = db2.pool().get().unwrap();
+                conn.query_row(
+                    "SELECT status FROM slaver_instances WHERE id = 'inst-fresh'",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap()
+            }
+        })
+        .await
+        .unwrap();
+        assert_ne!(status, "offline", "fresh instance must not be marked offline");
     }
 
     #[tokio::test]
@@ -317,8 +383,21 @@ mod tests {
         // Should not error or double-publish
         monitor.check_once().await;
 
-        let inst = db.get_instance("inst-already-off").unwrap().unwrap();
-        assert_eq!(inst.status, "offline");
+        let status: String = tokio::task::spawn_blocking({
+            let db2 = Arc::clone(&db);
+            move || {
+                let conn = db2.pool().get().unwrap();
+                conn.query_row(
+                    "SELECT status FROM slaver_instances WHERE id = 'inst-already-off'",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap()
+            }
+        })
+        .await
+        .unwrap();
+        assert_eq!(status, "offline");
     }
 
     // ── StaleCleaner ─────────────────────────────────────────────────────────
