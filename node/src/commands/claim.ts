@@ -14,6 +14,9 @@ import ora from 'ora';
 import { createInstanceRegistry } from '../core/instance-registry.js';
 import { createSQLiteManager } from '../core/sqlite-manager.js';
 import { createTaskAssigner, type AssignmentResult } from '../core/task-assigner.js';
+import { WorktreeManager } from '../core/worktree-manager.js';
+import { EnvelopeManager } from '../core/envelope-manager.js';
+import { SkillStacker } from '../core/skill-stacker.js';
 import type { Instance, Ticket } from '../types/index.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
@@ -28,6 +31,10 @@ import {
   sendClaimMessage,
 } from './claim-helpers.js';
 import { appendTaskMessage, injectActiveContext } from '../core/task-logger.js';
+import { contextCompressor } from '../core/context-compressor.js';
+import { reviewTicket } from '../core/ticket-reviewer.js';
+import { SagaExecutor } from '../core/saga-executor.js';
+import { sseBus } from '../core/sse-bus.js';
 
 /**
  * 获取或生成持久化 Slaver ID（P4修复）
@@ -246,6 +253,15 @@ Related Commands:
         return;
       }
 
+      // 4.5 加载 Layer 2 session summary（如果存在）
+      {
+        const summary = await contextCompressor.loadSummary(selectedTicket.id);
+        if (summary) {
+          console.log('[context] Loaded session summary from previous run');
+          console.log(summary);
+        }
+      }
+
       // 5. 任务分配（如果启用）
       // 5. 任务分配（如果启用）
       let assignedInstance: Instance | undefined;
@@ -297,6 +313,37 @@ Related Commands:
         } else {
           assignSpinner.info('Task assigner unavailable, using local matching');
         }
+      }
+
+      // 5.5 读取 TaskEnvelope + Skill Stacking（TASK-118）
+      {
+        try {
+          const eketDir = path.join(projectRoot, '.eket');
+          const envelopeManager = new EnvelopeManager(eketDir);
+          const envelope = await envelopeManager.readEnvelope(selectedTicket.id);
+          if (envelope) {
+            console.log(`[envelope] Found envelope for ${selectedTicket.id}, mode=${envelope.mode}`);
+            if (envelope.requiredSkills.length > 0) {
+              const skillsRoot = path.join(projectRoot, 'node', 'src', 'skills');
+              const stacker = new SkillStacker(skillsRoot);
+              const stackedCtx = await stacker.loadStack(envelope.requiredSkills);
+              console.log(`[skills] Loaded stack: [${stackedCtx.skillIds.join(', ')}]`);
+            }
+          } else {
+            // Parse required_skills from ticket markdown if no envelope
+            const rawRequired = (selectedTicket as { rawContent?: string }).rawContent ?? '';
+            const m = rawRequired.match(/required_skills[:\s]+\[([^\]]+)\]/);
+            if (m) {
+              const skillIds = m[1].split(',').map((s: string) => s.trim()).filter(Boolean);
+              if (skillIds.length > 0) {
+                const skillsRoot = path.join(projectRoot, 'node', 'src', 'skills');
+                const stacker = new SkillStacker(skillsRoot);
+                const stackedCtx = await stacker.loadStack(skillIds);
+                console.log(`[skills] Loaded stack: [${stackedCtx.skillIds.join(', ')}]`);
+              }
+            }
+          }
+        } catch { /* envelope/skill-stacker unavailable — continue */ }
       }
 
       // 6. 匹配角色
