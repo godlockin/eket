@@ -290,4 +290,23 @@ Slaver 操作范围受以下命令白名单约束：
 
 ---
 
+## Commit Trailer 规范
+
+每个 ticket 完成时的最终 commit **必须**包含决策上下文 trailer（由框架自动生成）：
+
+```
+Confidence: high | medium | low
+Rejected-approaches: <逗号分隔方案，可为 none>
+Directive: <关键决策一句话>
+Scope-risk: low | medium | high
+Followup: <可选后续建议>
+```
+
+**语义**：
+- Confidence：实现信心（high=无升降级，medium=升级1次，low=升级2+次）
+- Rejected-approaches：在执行中明确放弃的方案
+- Scope-risk：变更影响范围（按文件数自动推断：≤5=low，6~15=medium，16+=high）
+
+---
+
 > 📄 更多执行流程：[`template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`](SLAVER-HEARTBEAT-CHECKLIST.md) | [`template/docs/SLAVER-AUTO-EXEC-GUIDE.md`](SLAVER-AUTO-EXEC-GUIDE.md)

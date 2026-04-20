@@ -15,6 +15,7 @@ import { createSQLiteClient } from '../core/sqlite-client.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 import { getIsolationMode } from './claim.js';
+import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import type { SkillFeedback } from '../types/index.js';
 
 // Try to load SkillIndex for activatedSkills detection (graceful degradation)
@@ -25,6 +26,103 @@ let _getSkillIndex: (() => import('../skills/index-loader.js').SkillIndex) | nul
     _getSkillIndex = mod.getSkillIndex;
   } catch { /* optional */ }
 })();
+
+/**
+ * 推断 Scope-risk：从 git diff --stat 获取变更文件数
+ */
+export function inferScopeRisk(fileCount: number): 'low' | 'medium' | 'high' {
+  if (fileCount <= 5) return 'low';
+  if (fileCount <= 15) return 'medium';
+  return 'high';
+}
+
+/**
+ * 从 git diff HEAD~1 --stat 获取变更文件数
+ */
+export async function getChangedFileCount(): Promise<number> {
+  const result = await execFileNoThrow('git', ['diff', 'HEAD~1', '--stat']);
+  const output = result.stdout.trim();
+  if (!output) return 0;
+  const lastLine = output.split('\n').pop() ?? '';
+  const match = lastLine.match(/(\d+)\s+file/);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
+/**
+ * 构建 Commit Trailer 字符串
+ */
+export async function buildCommitTrailer(ticketId: string, slaverId: string): Promise<string> {
+  // Confidence: from levelChanges count
+  let levelChangesCount = 0;
+  let rejectedApproaches = 'none';
+
+  try {
+    const { createInstanceRegistry } = await import('../core/instance-registry.js');
+    const registry = createInstanceRegistry();
+    const result = await registry.getInstance(slaverId);
+    const instance = result && 'data' in result ? result.data : null;
+    if (instance) {
+      const changes = instance.levelChanges ?? [];
+      levelChangesCount = changes.length;
+      // Extract rejected approaches from levelChanges reasons
+      const reasons = changes
+        .map((c: { reason?: string }) => c.reason)
+        .filter((r: string | undefined): r is string => Boolean(r))
+        .map((r: string) => r.split(/[\s,]+/)[0])
+        .filter((r: string) => r.length > 2);
+      if (reasons.length > 0) {
+        rejectedApproaches = [...new Set(reasons)].join(', ');
+      }
+    }
+  } catch {
+    // registry unavailable — use defaults
+  }
+
+  const confidence: 'high' | 'medium' | 'low' =
+    levelChangesCount === 0 ? 'high' : levelChangesCount === 1 ? 'medium' : 'low';
+
+  // Directive: ticketId as directive (truncated to 80 chars)
+  const directive = ticketId.slice(0, 80);
+
+  // Scope-risk: from git diff stat
+  const fileCount = await getChangedFileCount();
+  const scopeRisk = inferScopeRisk(fileCount);
+
+  return [
+    `Confidence: ${confidence}`,
+    `Rejected-approaches: ${rejectedApproaches}`,
+    `Directive: ${directive}`,
+    `Scope-risk: ${scopeRisk}`,
+  ].join('\n');
+}
+
+/**
+ * 追加 Commit Trailer 到最新 commit（幂等）
+ */
+export async function appendCommitTrailer(ticketId: string, slaverId: string): Promise<void> {
+  try {
+    // Check if already has trailer
+    const logResult = await execFileNoThrow('git', ['log', '-1', '--format=%B']);
+    const currentMsg = logResult.stdout.trim();
+
+    if (currentMsg.includes('Confidence:')) {
+      console.log('[commit-trailer] Trailer already present, skipping (idempotent)');
+      return;
+    }
+
+    const trailer = await buildCommitTrailer(ticketId, slaverId);
+    const newMsg = `${currentMsg}\n\n${trailer}`;
+
+    const amendResult = await execFileNoThrow('git', ['commit', '--amend', '-m', newMsg]);
+    if (amendResult.status !== 0) {
+      console.warn(`[commit-trailer] git commit --amend failed: ${amendResult.stderr}`);
+      return;
+    }
+    console.log('[commit-trailer] Appended trailer to latest commit');
+  } catch (e: unknown) {
+    console.warn(`[commit-trailer] Failed to append trailer (non-fatal): ${(e as Error).message ?? e}`);
+  }
+}
 
 /**
  * 向 inbox/human_feedback/ 写合并冲突通知
@@ -176,6 +274,7 @@ export function registerComplete(program: Command): void {
         // isolation=none: just update ticket status
         updateTicketStatus(projectRoot, ticketId, 'done');
         await reportSkillFeedback(projectRoot, ticketId, slaverId);
+        await appendCommitTrailer(ticketId, slaverId);
         logSuccess('Task completed', [`Task: ${ticketId}`, 'Isolation: none']);
         return;
       }
@@ -234,6 +333,9 @@ export function registerComplete(program: Command): void {
 
       // Report skill feedback (TASK-104b)
       await reportSkillFeedback(projectRoot, ticketId, slaverId);
+
+      // Append commit trailer (TASK-108)
+      await appendCommitTrailer(ticketId, slaverId);
 
       logSuccess('Task completed', [
         `Task: ${ticketId}`,
