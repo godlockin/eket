@@ -1,0 +1,18 @@
+{
+  "id": "llm/llm-evaluation",
+  "type": "skill",
+  "domain": "llm",
+  "level": 3,
+  "model_hint": "opus",
+  "triggers": [
+    "LLM eval",
+    "benchmark",
+    "model evaluation"
+  ],
+  "collaborates_with": [
+    "algorithm/model-evaluation",
+    "data/data-pipeline"
+  ],
+  "lazy": true,
+  "description": "Llm Evaluation"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "hr/jd-writing",
+  "type": "skill",
+  "domain": "hr",
+  "level": 1,
+  "model_hint": "haiku",
+  "triggers": [
+    "job description",
+    "JD",
+    "招聘",
+    "role spec"
+  ],
+  "collaborates_with": [
+    "planning/sprint-planning"
+  ],
+  "lazy": true,
+  "description": "Jd Writing"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "documentation/onboarding-guide",
+  "type": "skill",
+  "domain": "documentation",
+  "level": 1,
+  "model_hint": "haiku",
+  "triggers": [
+    "onboarding",
+    "setup guide",
+    "getting started"
+  ],
+  "collaborates_with": [
+    "development/code-review-checklist",
+    "design/api-design"
+  ],
+  "lazy": true,
+  "description": "Onboarding Guide"
+}

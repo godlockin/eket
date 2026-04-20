@@ -1,0 +1,19 @@
+{
+  "id": "algorithm/model-deployment",
+  "type": "skill",
+  "domain": "algorithm",
+  "level": 3,
+  "model_hint": "opus",
+  "triggers": [
+    "model deploy",
+    "serving",
+    "inference",
+    "TorchServe"
+  ],
+  "collaborates_with": [
+    "llm/llm-evaluation",
+    "data/feature-engineering"
+  ],
+  "lazy": true,
+  "description": "Model Deployment"
+}

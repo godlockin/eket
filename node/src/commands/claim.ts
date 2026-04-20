@@ -14,9 +14,9 @@ import ora from 'ora';
 import { createInstanceRegistry } from '../core/instance-registry.js';
 import { createSQLiteManager } from '../core/sqlite-manager.js';
 import { createTaskAssigner, type AssignmentResult } from '../core/task-assigner.js';
+import { WorktreeManager } from '../core/worktree-manager.js';
 import type { Instance, Ticket } from '../types/index.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
-import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
 import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
@@ -191,19 +191,12 @@ async function updateTicketStatus(
 }
 
 /**
- * 创建 worktree
+ * 获取 isolation 模式（读取环境变量，默认 "worktree"）
  */
-async function createWorktree(projectRoot: string, ticketId: string): Promise<string> {
-  const worktreeDir = path.join(projectRoot, '.eket', 'worktrees', ticketId);
-
-  // 确保目录存在
-  fs.mkdirSync(path.dirname(worktreeDir), { recursive: true });
-
-  // 调用 git worktree add (使用安全执行)
-  const branchName = ticketId.replace(/[^a-zA-Z0-9_-]/g, '_');
-  await execFileNoThrow('git', ['worktree', 'add', '-b', branchName, worktreeDir]);
-
-  return worktreeDir;
+export function getIsolationMode(): 'worktree' | 'none' {
+  const val = process.env.EKET_ISOLATION;
+  if (val === 'none') return 'none';
+  return 'worktree';
 }
 
 /**
@@ -361,6 +354,33 @@ Related Commands:
         options.role || assignedInstance?.agent_type || (await matchRole(selectedTicket));
       roleSpinner.succeed(`Role matched: ${role}`);
 
+      // 6.05 推荐层级（TASK-104b）
+      {
+        let recommendedLevel: 1 | 2 | 3 = 1;
+        try {
+          const { getSkillIndex } = await import('../skills/index-loader.js');
+          const idx = getSkillIndex();
+          const domain = selectedTicket.id.replace(/-\d+.*$/, '').toLowerCase();
+          recommendedLevel = (idx.modelRouteTable[domain] ?? idx.modelRouteTable['default'] ?? 1) as 1 | 2 | 3;
+        } catch { /* SkillIndex not initialized — use default */ }
+        const levelNames: Record<number, string> = { 1: 'haiku', 2: 'sonnet', 3: 'opus' };
+        console.log(`[model] Recommended level: ${recommendedLevel} (${levelNames[recommendedLevel]})`);
+        // Write recommended level to instance
+        try {
+          const { createInstanceRegistry } = await import('../core/instance-registry.js');
+          const registry = createInstanceRegistry();
+          const result = await registry.getInstance(slaverId);
+          const instance = result && 'data' in result ? result.data : null;
+          if (instance) {
+            // Upgrade until we reach recommended level
+            while (instance.currentLevel < recommendedLevel) {
+              await registry.upgradeModel(slaverId, `claim:recommended-level-${recommendedLevel}`);
+              instance.currentLevel = Math.min(3, instance.currentLevel + 1) as 1 | 2 | 3;
+            }
+          }
+        } catch { /* registry unavailable */ }
+      }
+
       // 6.1 选择专项规则（TASK-045）
       const ticketType = selectedTicket.tags[0] ?? 'feature';
       const slaverRole = selectRole(ticketType);
@@ -374,10 +394,20 @@ Related Commands:
       await updateTicketStatus(projectRoot, selectedTicket.id, 'in_progress');
       statusSpinner.succeed(`Task status updated: ${selectedTicket.id} -> in_progress`);
 
-      // 8. 创建 worktree
-      const worktreeSpinner = ora('Creating worktree...').start();
-      const worktreePath = await createWorktree(projectRoot, selectedTicket.id);
-      worktreeSpinner.succeed(`Worktree created: ${worktreePath}`);
+      // 8. 创建 worktree（isolation=worktree 时）
+      let worktreePath = '';
+      const isolationMode = getIsolationMode();
+      if (isolationMode === 'worktree') {
+        const worktreeSpinner = ora('Creating worktree...').start();
+        try {
+          const wm = new WorktreeManager({ projectRoot });
+          worktreePath = await wm.createWorktree(selectedTicket.id, slaverId);
+          worktreeSpinner.succeed(`[worktree] Created: ${worktreePath}`);
+        } catch (e: unknown) {
+          const err = e as { message?: string };
+          worktreeSpinner.warn(`Worktree creation skipped: ${err.message ?? 'unknown'}`);
+        }
+      }
 
       // 9. 初始化 Profile
       const profileSpinner = ora('Initializing profile...').start();

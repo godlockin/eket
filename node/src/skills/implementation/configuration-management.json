@@ -1,0 +1,18 @@
+{
+  "id": "implementation/configuration-management",
+  "type": "skill",
+  "domain": "implementation",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "config management",
+    "feature flag",
+    "env config"
+  ],
+  "collaborates_with": [
+    "design/api-design",
+    "testing/unit_test"
+  ],
+  "lazy": true,
+  "description": "Configuration Management"
+}

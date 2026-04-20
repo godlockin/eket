@@ -1,0 +1,19 @@
+{
+  "id": "security/threat-modeling",
+  "type": "skill",
+  "domain": "security",
+  "level": 3,
+  "model_hint": "opus",
+  "triggers": [
+    "threat",
+    "attack surface",
+    "STRIDE",
+    "security model"
+  ],
+  "collaborates_with": [
+    "review/security-review",
+    "testing/e2e-testing"
+  ],
+  "lazy": true,
+  "description": "Threat Modeling"
+}

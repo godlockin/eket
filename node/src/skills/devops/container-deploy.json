@@ -1,0 +1,19 @@
+{
+  "id": "devops/container-deploy",
+  "type": "skill",
+  "domain": "devops",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "container",
+    "Kubernetes",
+    "k8s",
+    "deploy"
+  ],
+  "collaborates_with": [
+    "testing/e2e-testing",
+    "ops/incident-runbook"
+  ],
+  "lazy": true,
+  "description": "Container Deploy"
+}
