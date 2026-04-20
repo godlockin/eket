@@ -66,7 +66,7 @@ describe('inferPriority', () => {
 
 describe('checkCompleteness', () => {
   it('needsDetail when detail < 50 chars', () => {
-    const gaps = checkCompleteness('短描述', '- 通过测试');
+    const gaps = checkCompleteness('短描述', '- [ ] 通过所有单元测试并确认 CI 绿灯');
     expect(gaps.needsDetail).toBe(true);
     expect(gaps.needsAcceptance).toBe(false);
   });
@@ -80,7 +80,7 @@ describe('checkCompleteness', () => {
 
   it('no gaps when both are sufficient', () => {
     const longDetail = '这是一个超过五十字的详细描述，包含了很多技术细节和实现方案，确保代码质量和功能完整性，需要详细测试覆盖。';
-    const gaps = checkCompleteness(longDetail, '- POST /api/login 返回200');
+    const gaps = checkCompleteness(longDetail, '- [ ] POST /api/login 返回200');
     expect(gaps.needsDetail).toBe(false);
     expect(gaps.needsAcceptance).toBe(false);
   });

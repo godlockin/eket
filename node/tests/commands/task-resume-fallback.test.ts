@@ -1,19 +1,21 @@
 /**
  * TASK-064: resumeWithFallback 降级策略测试
  */
-import { resumeWithFallback } from '../../src/commands/task-resume.js';
+import { jest } from '@jest/globals';
 
 const mockDeleteCheckpoint = jest.fn().mockResolvedValue({ success: true, data: undefined });
 const mockConnect = jest.fn().mockResolvedValue({ success: true, data: undefined });
 const mockClose = jest.fn().mockResolvedValue(undefined);
 
-jest.mock('../../src/core/sqlite-manager.js', () => ({
+jest.unstable_mockModule('../../src/core/sqlite-manager.js', () => ({
   createSQLiteManager: () => ({
     connect: mockConnect,
     close: mockClose,
     deleteCheckpoint: mockDeleteCheckpoint,
   }),
 }));
+
+const { resumeWithFallback } = await import('../../src/commands/task-resume.js');
 
 describe('resumeWithFallback', () => {
   let warnSpy: jest.SpyInstance;
