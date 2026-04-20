@@ -12,6 +12,17 @@ pub struct EketRedisClient {
 }
 
 impl EketRedisClient {
+    /// Create a permanently-unavailable stub (for tests / offline mode).
+    #[cfg(test)]
+    pub fn new_unavailable() -> Self {
+        use fred::prelude::*;
+        let client = RedisClient::new(RedisConfig::default(), None, None, None);
+        Self {
+            inner: client,
+            available: std::sync::atomic::AtomicBool::new(false),
+        }
+    }
+
     /// 创建并连接 Redis（失败时不 panic，标记为不可用）
     pub async fn connect(host: &str, port: u16, password: Option<&str>) -> Self {
         let server = ServerConfig::new_centralized(host, port);
