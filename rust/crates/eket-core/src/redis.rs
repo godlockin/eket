@@ -13,7 +13,6 @@ pub struct EketRedisClient {
 
 impl EketRedisClient {
     /// Create a permanently-unavailable stub (for tests / offline mode).
-    #[cfg(test)]
     pub fn new_unavailable() -> Self {
         use fred::prelude::*;
         let client = RedisClient::new(RedisConfig::default(), None, None, None);

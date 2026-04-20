@@ -116,7 +116,7 @@ fn expand_tilde(path: &str) -> String {
 mod tests {
     use super::*;
     use eket_engine::{
-        mailbox::{AgentMailbox, MailboxMessage, MailboxMessageType},
+        mailbox::AgentMailbox,
         protocol::{ProtocolSender, TaskAssignPayload},
     };
     use tempfile::TempDir;
