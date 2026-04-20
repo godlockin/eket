@@ -3,3 +3,6 @@ pub mod event_bus;
 pub mod workflow;
 pub mod agent_pool;
 pub mod mailbox;
+pub mod protocol;
+pub mod lock;
+pub mod conflict_resolver;
