@@ -12,12 +12,14 @@ import { Command } from 'commander';
 
 import { WorktreeManager } from '../core/worktree-manager.js';
 import { createSQLiteClient } from '../core/sqlite-client.js';
+import { CompletionValidator } from '../core/completion-validator.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 import { getIsolationMode } from './claim.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
-import type { SkillFeedback } from '../types/index.js';
+import type { SkillFeedback, SlaveResult } from '../types/index.js';
 import { sseBus } from '../core/sse-bus.js';
+import { contextCompressor } from '../core/context-compressor.js';
 
 // Try to load SkillIndex for activatedSkills detection (graceful degradation)
 let _getSkillIndex: (() => import('../skills/index-loader.js').SkillIndex) | null = null;
@@ -249,8 +251,99 @@ async function reportSkillFeedback(
 }
 
 /**
- * 注册 task:complete 命令
+ * 获取 git 变更文件列表
  */
+async function getChangedFiles(): Promise<string[]> {
+  const result = await execFileNoThrow('git', ['diff', 'HEAD~1', '--name-only']);
+  const output = result.stdout.trim();
+  if (!output) return [];
+  return output.split('\n').filter(Boolean);
+}
+
+/**
+ * 运行完成验证，失败时写 inbox 并打印 warning（不硬阻断）
+ */
+async function runCompletionValidation(
+  projectRoot: string,
+  ticketId: string,
+  slaverId: string,
+): Promise<void> {
+  try {
+    const validator = new CompletionValidator(projectRoot);
+    const changedFiles = await getChangedFiles();
+    const report = await validator.validateCompletion(ticketId, changedFiles);
+
+    if (!report.passed) {
+      console.warn(`[completion-validator] WARN: ${report.summary}`);
+      // Write to inbox
+      const dir = path.join(projectRoot, 'inbox', 'human_feedback');
+      fs.mkdirSync(dir, { recursive: true });
+      const filename = `validation-warn-${ticketId}-${Date.now()}.md`;
+      const details = report.checks
+        .filter(c => !c.passed)
+        .map(c => `- [${c.dimension}] ${c.message} (source: ${c.source})`)
+        .join('\n');
+      fs.writeFileSync(
+        path.join(dir, filename),
+        `## Completion Validation Warning — ${ticketId}\nSlaver: ${slaverId}\n\n${report.summary}\n\n${details}\n`,
+        'utf-8',
+      );
+    } else {
+      console.log(`[completion-validator] ${report.summary}`);
+    }
+  } catch (e: unknown) {
+    console.warn(`[completion-validator] Failed (non-fatal): ${(e as Error).message ?? e}`);
+  }
+}
+
+/**
+ * Build and write SlaveResult to .eket/results/<ticketId>.json
+ */
+export async function writeSlaveResult(
+  projectRoot: string,
+  ticketId: string,
+  slaverId: string,
+  options: {
+    prNumber?: number;
+    prUrl?: string;
+    skillFeedback?: SkillFeedback;
+  } = {}
+): Promise<SlaveResult> {
+  const filesChanged: string[] = [];
+  try {
+    const result = await execFileNoThrow('git', ['diff', 'HEAD~1', '--name-only']);
+    if (result.stdout.trim()) {
+      filesChanged.push(...result.stdout.trim().split('\n').filter(Boolean));
+    }
+  } catch { /* non-fatal */ }
+
+  const slaveResult: SlaveResult = {
+    ticketId,
+    slaverId,
+    completedAt: Date.now(),
+    prNumber: options.prNumber,
+    prUrl: options.prUrl,
+    filesChanged,
+    testsAdded: 0,
+    testsPassed: 0,
+    keyDecisions: [],
+    deferredIssues: [],
+    skillFeedback: options.skillFeedback,
+  };
+
+  const resultsDir = path.join(projectRoot, '.eket', 'results');
+  fs.mkdirSync(resultsDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(resultsDir, `${ticketId}.json`),
+    JSON.stringify(slaveResult, null, 2),
+    'utf-8'
+  );
+  console.log(`[slave-result] Written: .eket/results/${ticketId}.json`);
+
+  return slaveResult;
+}
+
+
 export function registerComplete(program: Command): void {
   program
     .command('task:complete <ticketId>')
@@ -273,6 +366,7 @@ export function registerComplete(program: Command): void {
 
       if (isolationMode !== 'worktree') {
         // isolation=none: just update ticket status
+        await runCompletionValidation(projectRoot, ticketId, slaverId);
         updateTicketStatus(projectRoot, ticketId, 'done');
         await reportSkillFeedback(projectRoot, ticketId, slaverId);
         await appendCommitTrailer(ticketId, slaverId);
@@ -294,6 +388,9 @@ export function registerComplete(program: Command): void {
       }
 
       console.log(`[worktree] Merging worktree for ${ticketId}...`);
+
+      // Run completion validation before merge (warn, don't hard-block)
+      await runCompletionValidation(projectRoot, ticketId, slaverId);
 
       try {
         await wm.mergeWorktree(ticketId);
@@ -345,8 +442,14 @@ export function registerComplete(program: Command): void {
       // Report skill feedback (TASK-104b)
       await reportSkillFeedback(projectRoot, ticketId, slaverId);
 
+      // Archive session to confluence/memory (TASK-117)
+      await contextCompressor.archiveToMemory(ticketId);
+
       // Append commit trailer (TASK-108)
       await appendCommitTrailer(ticketId, slaverId);
+
+      // Write SlaveResult (TASK-121)
+      await writeSlaveResult(projectRoot, ticketId, slaverId);
 
       logSuccess('Task completed', [
         `Task: ${ticketId}`,
