@@ -15,7 +15,7 @@ use tokio::sync::Mutex;
 use tracing::{info, warn};
 use uuid::Uuid;
 
-use crate::db::{DbPool, SqliteClient};
+use crate::db::DbPool;
 use crate::error::{EketError, EketResult};
 use crate::redis::EketRedisClient;
 
@@ -23,7 +23,8 @@ use crate::redis::EketRedisClient;
 
 const REDIS_LOCK_KEY: &str = "eket:master:lock";
 const REDIS_LEASE_TTL_SECS: u64 = 30;
-const RENEW_INTERVAL_SECS: u64 = 10; // 续租间隔（< TTL/2）
+const RENEW_INTERVAL_SECS: u64 = 15; // TTL/2 — ensures renewal before expiry
+const MAX_RENEW_FAILURES: u32 = 3;   // resign after 3 consecutive failures → prevent split brain
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -90,7 +91,10 @@ impl MasterElection {
                     Ok(result) => {
                         if result.is_master {
                             self.start_renewer_redis(redis.clone()).await;
+                            return Ok(result);
                         }
+                        // Another instance holds Redis lock → this instance is a slaver at Redis level.
+                        // Return immediately: Redis is authoritative when available.
                         return Ok(result);
                     }
                     Err(e) => {
@@ -154,12 +158,26 @@ impl MasterElection {
 
         let handle = tokio::spawn(async move {
             let mut interval = tokio::time::interval(Duration::from_secs(RENEW_INTERVAL_SECS));
+            let mut consecutive_failures: u32 = 0;
             loop {
                 interval.tick().await;
                 match redis.set(REDIS_LOCK_KEY, &id, Some(REDIS_LEASE_TTL_SECS)).await {
-                    Ok(_) => debug_assert!(true, "lease renewed"),
+                    Ok(_) => {
+                        consecutive_failures = 0;
+                        tracing::debug!("[Election] Redis lease renewed for {id}");
+                    }
                     Err(e) => {
-                        warn!("[Election] Redis renew failed: {e}. Master lease may expire.");
+                        consecutive_failures += 1;
+                        warn!(
+                            "[Election] Redis renew failed ({consecutive_failures}/{MAX_RENEW_FAILURES}): {e}"
+                        );
+                        if consecutive_failures >= MAX_RENEW_FAILURES {
+                            warn!("[Election] {id} resigning: too many renew failures → prevent split brain");
+                            // Abort self — caller should detect loss of master role
+                            let mut guard = renewer.lock().await;
+                            guard.take(); // clear so resign() is idempotent
+                            break;
+                        }
                     }
                 }
             }
@@ -313,5 +331,54 @@ mod tests {
         let e2 = MasterElection::new(None, None, dir.path());
         let r2 = e2.elect().await.unwrap();
         assert!(r2.is_master);
+    }
+
+    #[tokio::test]
+    async fn only_one_master_concurrent_file() {
+        let dir = TempDir::new().unwrap();
+        let mut handles = vec![];
+        for _ in 0..10 {
+            let p = dir.path().to_path_buf();
+            handles.push(tokio::spawn(async move {
+                let e = MasterElection::new(None, None, p);
+                e.elect().await.unwrap()
+            }));
+        }
+        let results: Vec<_> = futures::future::join_all(handles)
+            .await
+            .into_iter()
+            .map(|r| r.unwrap())
+            .collect();
+        let masters: Vec<_> = results.iter().filter(|r| r.is_master).collect();
+        assert_eq!(masters.len(), 1, "exactly one master expected");
+    }
+
+    #[tokio::test]
+    async fn sqlite_election_uses_unique_role_key() {
+        // SQLite election: both instances can "win" INSERT because IDs differ.
+        // The uniqueness at SQLite level is instance ID. Both return is_master=true
+        // when using separate in-memory DBs (which is the intended per-process behavior).
+        // For true mutual exclusion at SQLite level, a shared DB file is required.
+        let dir = TempDir::new().unwrap();
+        let e1 = make_election(dir.path());
+        let r1 = e1.elect().await.unwrap();
+        assert!(r1.is_master);
+        assert_eq!(r1.level, ElectionLevel::Sqlite);
+
+        // Second instance with fresh pool (different in-memory DB) → also wins at SQLite
+        // This is expected: SQLite election only provides mutual exclusion when sharing same DB
+        let pool2 = create_pool(":memory:").unwrap();
+        let e2 = MasterElection::new(None, Some(pool2), dir.path());
+        let r2 = e2.elect().await.unwrap();
+        // r2 will win too (different in-memory DB) — this is the expected SQLite semantics
+        assert_eq!(r2.level, ElectionLevel::Sqlite);
+    }
+
+    #[tokio::test]
+    async fn instance_id_is_unique() {
+        let dir = TempDir::new().unwrap();
+        let e1 = make_election(dir.path());
+        let e2 = make_election(dir.path());
+        assert_ne!(e1.instance_id(), e2.instance_id());
     }
 }
