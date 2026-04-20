@@ -318,6 +318,21 @@ export interface InstanceRegistryConfig {
 }
 
 // ============================================================================
+// Skill Feedback Types (TASK-104b)
+// ============================================================================
+
+export interface SkillFeedback {
+  ticketId: string;
+  slaverId: string;
+  recommendedLevel: 1 | 2 | 3;
+  actualLevel: 1 | 2 | 3;
+  activatedSkills: string[];
+  activatedExperts: string[];
+  levelChanges: LevelChange[];
+  completedAt: string;
+}
+
+// ============================================================================
 // Web Dashboard Types (Phase 5.1)
 // ============================================================================
 

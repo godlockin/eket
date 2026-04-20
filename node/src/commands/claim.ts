@@ -354,6 +354,33 @@ Related Commands:
         options.role || assignedInstance?.agent_type || (await matchRole(selectedTicket));
       roleSpinner.succeed(`Role matched: ${role}`);
 
+      // 6.05 推荐层级（TASK-104b）
+      {
+        let recommendedLevel: 1 | 2 | 3 = 1;
+        try {
+          const { getSkillIndex } = await import('../skills/index-loader.js');
+          const idx = getSkillIndex();
+          const domain = selectedTicket.id.replace(/-\d+.*$/, '').toLowerCase();
+          recommendedLevel = (idx.modelRouteTable[domain] ?? idx.modelRouteTable['default'] ?? 1) as 1 | 2 | 3;
+        } catch { /* SkillIndex not initialized — use default */ }
+        const levelNames: Record<number, string> = { 1: 'haiku', 2: 'sonnet', 3: 'opus' };
+        console.log(`[model] Recommended level: ${recommendedLevel} (${levelNames[recommendedLevel]})`);
+        // Write recommended level to instance
+        try {
+          const { createInstanceRegistry } = await import('../core/instance-registry.js');
+          const registry = createInstanceRegistry();
+          const result = await registry.getInstance(slaverId);
+          const instance = result && 'data' in result ? result.data : null;
+          if (instance) {
+            // Upgrade until we reach recommended level
+            while (instance.currentLevel < recommendedLevel) {
+              await registry.upgradeModel(slaverId, `claim:recommended-level-${recommendedLevel}`);
+              instance.currentLevel = Math.min(3, instance.currentLevel + 1) as 1 | 2 | 3;
+            }
+          }
+        } catch { /* registry unavailable */ }
+      }
+
       // 6.1 选择专项规则（TASK-045）
       const ticketType = selectedTicket.tags[0] ?? 'feature';
       const slaverRole = selectRole(ticketType);

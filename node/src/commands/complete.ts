@@ -11,9 +11,20 @@ import * as path from 'path';
 import { Command } from 'commander';
 
 import { WorktreeManager } from '../core/worktree-manager.js';
+import { createSQLiteClient } from '../core/sqlite-client.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 import { getIsolationMode } from './claim.js';
+import type { SkillFeedback } from '../types/index.js';
+
+// Try to load SkillIndex for activatedSkills detection (graceful degradation)
+let _getSkillIndex: (() => import('../skills/index-loader.js').SkillIndex) | null = null;
+(async () => {
+  try {
+    const mod = await import('../skills/index-loader.js');
+    _getSkillIndex = mod.getSkillIndex;
+  } catch { /* optional */ }
+})();
 
 /**
  * 向 inbox/human_feedback/ 写合并冲突通知
@@ -75,6 +86,70 @@ function getSlaverId(projectRoot: string): string {
 }
 
 /**
+ * 上报 SkillFeedback（TASK-104b）
+ */
+async function reportSkillFeedback(
+  projectRoot: string,
+  ticketId: string,
+  slaverId: string,
+): Promise<void> {
+  try {
+    // Determine activatedSkills from SkillIndex (by domain matching)
+    let activatedSkills: string[] = [];
+    let recommendedLevel: 1 | 2 | 3 = 1;
+    if (_getSkillIndex) {
+      try {
+        const idx = _getSkillIndex();
+        // Extract domain from ticketId (e.g. "TASK-104b" -> "task", or use tag matching)
+        const domain = ticketId.replace(/-\d+.*$/, '').toLowerCase();
+        const domainSkills = idx.nodes.filter(
+          (n) => n.domain?.toLowerCase().includes(domain) || domain.includes(n.domain?.toLowerCase() ?? '')
+        );
+        activatedSkills = domainSkills.length > 0
+          ? domainSkills.map((n) => n.id)
+          : idx.nodes.slice(0, 3).map((n) => n.id); // fallback: first 3
+        recommendedLevel = (idx.modelRouteTable[domain] ?? idx.modelRouteTable['default'] ?? 1) as 1 | 2 | 3;
+      } catch { /* SkillIndex not initialized — skip */ }
+    }
+
+    // Load instance state for levelChanges
+    let actualLevel: 1 | 2 | 3 = 1;
+    let levelChanges: import('../types/index.js').LevelChange[] = [];
+    try {
+      const { createInstanceRegistry } = await import('../core/instance-registry.js');
+      const registry = createInstanceRegistry();
+      const result = await registry.getInstance(slaverId);
+      const instance = result && 'data' in result ? result.data : null;
+      if (instance) {
+        actualLevel = instance.currentLevel;
+        levelChanges = instance.levelChanges;
+      }
+    } catch { /* registry unavailable */ }
+
+    const feedback: SkillFeedback = {
+      ticketId,
+      slaverId,
+      recommendedLevel,
+      actualLevel,
+      activatedSkills,
+      activatedExperts: [],
+      levelChanges,
+      completedAt: new Date().toISOString(),
+    };
+
+    const dbPath = path.join(projectRoot, '.eket', 'eket.db');
+    const client = createSQLiteClient(dbPath);
+    await client.connect();
+    await client.saveSkillFeedback(ticketId, feedback);
+    await client.close();
+    console.log(`[skill-feedback] Saved feedback for ${ticketId}`);
+  } catch (e: unknown) {
+    // Non-fatal: log and continue
+    console.warn(`[skill-feedback] Failed to save feedback: ${(e as Error).message ?? e}`);
+  }
+}
+
+/**
  * 注册 task:complete 命令
  */
 export function registerComplete(program: Command): void {
@@ -100,6 +175,7 @@ export function registerComplete(program: Command): void {
       if (isolationMode !== 'worktree') {
         // isolation=none: just update ticket status
         updateTicketStatus(projectRoot, ticketId, 'done');
+        await reportSkillFeedback(projectRoot, ticketId, slaverId);
         logSuccess('Task completed', [`Task: ${ticketId}`, 'Isolation: none']);
         return;
       }
@@ -155,6 +231,9 @@ export function registerComplete(program: Command): void {
 
       // Update ticket status
       updateTicketStatus(projectRoot, ticketId, 'done');
+
+      // Report skill feedback (TASK-104b)
+      await reportSkillFeedback(projectRoot, ticketId, slaverId);
 
       logSuccess('Task completed', [
         `Task: ${ticketId}`,

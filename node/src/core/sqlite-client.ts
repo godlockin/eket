@@ -30,7 +30,7 @@ import * as path from 'path';
 
 import Database from 'better-sqlite3';
 
-import type { Retrospective, RetroContent, Result, SkillEdgeRecord, SkillNodeRecord, TaskMessage } from '../types/index.js';
+import type { Retrospective, RetroContent, Result, SkillEdgeRecord, SkillNodeRecord, SkillFeedback, TaskMessage } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
 
 /**
@@ -228,7 +228,9 @@ export class SQLiteClient {
         assigned_to TEXT,
         started_at TIMESTAMP,
         completed_at TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        skill_feedback_json TEXT,
+        feedback_processed INTEGER DEFAULT 0
       );
 
       -- 消息历史表
@@ -335,6 +337,14 @@ export class SQLiteClient {
         PRIMARY KEY (source_id, target_id)
       );
     `);
+
+    // Migration: add skill_feedback_json and feedback_processed columns if missing (TASK-104b)
+    try {
+      this.db.prepare(`ALTER TABLE task_history ADD COLUMN skill_feedback_json TEXT`).run();
+    } catch { /* column already exists */ }
+    try {
+      this.db.prepare(`ALTER TABLE task_history ADD COLUMN feedback_processed INTEGER DEFAULT 0`).run();
+    } catch { /* column already exists */ }
   }
 
   /**
@@ -1081,6 +1091,75 @@ export class SQLiteClient {
 
       decayed.sort((a, b) => b.weight - a.weight);
       return Promise.resolve(decayed.slice(0, topN));
+    } catch (e: unknown) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message));
+    }
+  }
+
+  /**
+   * 保存 SkillFeedback 到 task_history（TASK-104b）
+   */
+  saveSkillFeedback(ticketId: string, feedback: SkillFeedback): Promise<void> {
+    if (!this.db) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'));
+    }
+    try {
+      const json = JSON.stringify(feedback);
+      const existing = this.db.prepare(
+        "SELECT id FROM task_history WHERE ticket_id = ?"
+      ).get(ticketId);
+      if (existing) {
+        this.db.prepare(
+          "UPDATE task_history SET skill_feedback_json = ?, completed_at = CURRENT_TIMESTAMP WHERE ticket_id = ?"
+        ).run(json, ticketId);
+      } else {
+        this.db.prepare(
+          "INSERT INTO task_history (ticket_id, status, skill_feedback_json, completed_at) VALUES (?, 'done', ?, CURRENT_TIMESTAMP)"
+        ).run(ticketId, json);
+      }
+      return Promise.resolve();
+    } catch (e: unknown) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message));
+    }
+  }
+
+  /**
+   * 获取最近 N 小时内新增的未处理 skill_feedback（TASK-104b）
+   */
+  getUnprocessedFeedback(withinHours = 1): Promise<Array<{ id: number; ticketId: string; feedback: SkillFeedback }>> {
+    if (!this.db) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'));
+    }
+    try {
+      const rows = this.db.prepare(`
+        SELECT id, ticket_id, skill_feedback_json
+        FROM task_history
+        WHERE skill_feedback_json IS NOT NULL
+          AND feedback_processed = 0
+          AND created_at >= datetime('now', ? || ' hours')
+      `).all(`-${withinHours}`) as Array<{ id: number; ticket_id: string; skill_feedback_json: string }>;
+
+      const result = rows.map((r) => ({
+        id: r.id,
+        ticketId: r.ticket_id,
+        feedback: JSON.parse(r.skill_feedback_json) as SkillFeedback,
+      }));
+      return Promise.resolve(result);
+    } catch (e: unknown) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message));
+    }
+  }
+
+  /**
+   * 标记 feedback 为已处理（TASK-104b）
+   */
+  markFeedbackProcessed(id: number): Promise<void> {
+    if (!this.db) {
+      return Promise.reject(new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected'));
+    }
+    try {
+      this.db.prepare('UPDATE task_history SET feedback_processed = 1 WHERE id = ?').run(id);
+      return Promise.resolve();
     } catch (e: unknown) {
       return Promise.reject(new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, (e as Error).message));
     }
