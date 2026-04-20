@@ -1,7 +1,7 @@
 # TASK-108: Commit Trailer 决策上下文（Rules + Harness）
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P1
 - **负责人**: 待领取
