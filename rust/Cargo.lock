@@ -578,6 +578,7 @@ dependencies = [
  "fred",
  "futures",
  "hostname",
+ "moka",
  "r2d2",
  "r2d2_sqlite",
  "rusqlite",
@@ -595,13 +596,17 @@ name = "eket-engine"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "chrono",
  "eket-core",
+ "futures",
  "moka",
  "serde",
  "serde_json",
+ "tempfile",
  "thiserror",
  "tokio",
  "tracing",
+ "uuid",
 ]
 
 [[package]]
