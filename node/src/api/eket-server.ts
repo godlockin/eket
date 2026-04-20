@@ -12,6 +12,7 @@ import path from 'path';
 
 import Ajv from 'ajv';
 import express, { Express, Request, Response, NextFunction } from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import jwt from 'jsonwebtoken';
 import { WebSocketServer, WebSocket } from 'ws';
 
@@ -49,6 +50,24 @@ declare global {
 }
 
 // ============================================================================
+// Rust API Proxy Helpers
+// ============================================================================
+
+const RUST_API_URL = process.env.EKET_RUST_API_URL || 'http://localhost:9877';
+const RUST_TIMEOUT_MS = 500;
+
+async function isRustServerAlive(): Promise<boolean> {
+  try {
+    const resp = await fetch(`${RUST_API_URL}/health`, {
+      signal: AbortSignal.timeout(RUST_TIMEOUT_MS),
+    });
+    return resp.ok;
+  } catch {
+    return false;
+  }
+}
+
+// ============================================================================
 // EKET Server Class
 // ============================================================================
 
@@ -77,8 +96,11 @@ export class EketServer {
     this.startTime = new Date();
     this.ajv = new Ajv({ allErrors: true, strict: false });
     this.loadSchemas();
-    this.initialize();
+    // initialize() is async; store the promise so start() can await it
+    this._initPromise = this.initialize();
   }
+
+  private _initPromise: Promise<void>;
 
   // =========================================================================
   // Schema Loading
@@ -166,7 +188,7 @@ export class EketServer {
   // Initialization
   // =========================================================================
 
-  private initialize(): void {
+  private async initialize(): Promise<void> {
     setupCORS(this.app);
     setupRateLimiting(this.app);
     setupRequestLogging(this.app);
@@ -186,6 +208,30 @@ export class EketServer {
     };
 
     this.app.use('/', createHealthRouter(lazyDeps));
+
+    // Rust API proxy — check once at startup, proxy /api/v1/* if alive
+    const rustAlive = await isRustServerAlive();
+    if (rustAlive) {
+      logger.info('rust_api_proxy_enabled', { target: RUST_API_URL });
+      console.log(`[EKET] Rust API server detected at ${RUST_API_URL} — proxying /api/v1/*`);
+      this.app.use(
+        '/api/v1',
+        createProxyMiddleware({
+          target: RUST_API_URL,
+          changeOrigin: true,
+          on: {
+            error: (err, _req, _res, _next) => {
+              logger.warn('rust_proxy_error', { error: (err as Error).message });
+              console.warn('[EKET] Rust proxy error, falling through to Node handler:', (err as Error).message);
+            },
+          },
+        })
+      );
+    } else {
+      logger.info('rust_api_proxy_disabled', { reason: 'server not reachable', target: RUST_API_URL });
+      console.log('[EKET] Rust API server not detected — using Node.js handlers (fallback mode)');
+    }
+
     this.app.use('/api/v1', createSystemRouter(lazyDeps));
     this.app.use('/api/v1', createAgentRouter(lazyDeps));
     this.app.use('/api/v1', createTaskRouter(lazyDeps));
@@ -283,6 +329,9 @@ export class EketServer {
   // =========================================================================
 
   public async start(): Promise<void> {
+    // Wait for async initialization (proxy detection) to complete
+    await this._initPromise;
+
     try {
       this.redis = createRedisClient();
       await this.redis.connect();

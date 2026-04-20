@@ -1,7 +1,7 @@
 # TASK-138: [Rust] Phase 5 集成 — Node.js Dashboard 对接 + 端到端验证
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P2
 - **负责人**: 待认领
