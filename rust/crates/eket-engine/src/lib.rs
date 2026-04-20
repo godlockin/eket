@@ -1,2 +1,5 @@
-// eket-engine: 工作流引擎 / Agent Pool
-// Phase 2-4 实现，当前为占位
+// eket-engine: 工作流引擎 / Agent Pool / Mailbox / EventBus
+pub mod event_bus;
+pub mod workflow;
+pub mod agent_pool;
+pub mod mailbox;
