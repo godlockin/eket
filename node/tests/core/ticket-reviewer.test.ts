@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
-import { reviewTicket } from '../../src/core/ticket-reviewer.js';
+import { checkAcceptanceCriteria, reviewTicket } from '../../src/core/ticket-reviewer.js';
 
 // Helper: create a temp project with a ticket file
 function createTempProject(ticketId: string, ticketContent: string): { projectRoot: string; ticketPath: string } {
@@ -77,7 +77,7 @@ describe('reviewTicket', () => {
     try {
       const result = await reviewTicket(ticketPath);
       expect(result.passed).toBe(false);
-      expect(result.issues.some((i) => i.includes('验收标准缺失'))).toBe(true);
+      expect(result.issues.some((i) => i.includes('验收标准'))).toBe(true);
     } finally {
       cleanup(projectRoot);
     }
@@ -154,5 +154,42 @@ describe('reviewTicket', () => {
     } finally {
       cleanup(projectRoot);
     }
+  });
+});
+
+// ─── checkAcceptanceCriteria unit tests ───────────────────────────────────────
+
+describe('checkAcceptanceCriteria', () => {
+  function withSection(body: string): string {
+    return `# T\n\n## 验收标准\n\n${body}`;
+  }
+
+  it('valid checklist → pass', () => {
+    const r = checkAcceptanceCriteria(withSection('- [ ] feature works\n- [x] tests pass'));
+    expect(r.pass).toBe(true);
+  });
+
+  it('no 验收标准 section → fail with message', () => {
+    const r = checkAcceptanceCriteria('# T\n\n## 详细描述\n\nsome text');
+    expect(r.pass).toBe(false);
+    expect(r.issue).toMatch(/缺失/);
+  });
+
+  it('empty 验收标准 section → fail', () => {
+    const r = checkAcceptanceCriteria('# T\n\n## 验收标准\n\n   \n\n## 其他\n\nfoo');
+    expect(r.pass).toBe(false);
+    expect(r.issue).toMatch(/空|缺失|不足/);
+  });
+
+  it('only heading but no content → fail', () => {
+    const r = checkAcceptanceCriteria('# T\n\n## 验收标准\n\n### Sub\n');
+    expect(r.pass).toBe(false);
+  });
+
+  it('≥50 char description (no checklist) → pass', () => {
+    const longText = '验收：功能实现完整，所有测试通过，代码风格合规，文档更新到位，无明显性能回归，边界条件全部处理，无安全漏洞。';
+    expect(longText.length).toBeGreaterThanOrEqual(50);
+    const r = checkAcceptanceCriteria(withSection(longText));
+    expect(r.pass).toBe(true);
   });
 });
