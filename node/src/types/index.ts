@@ -1340,3 +1340,93 @@ export interface TaskMessage {
   output?: string | null;
   created_at?: string;
 }
+
+/**
+ * Task Envelope — Master 派发任务时附带的完整上下文，跨 session 不丢失
+ */
+export interface TaskEnvelope {
+  ticketId: string;
+  mode: 'default' | 'ultrawork' | 'debug';
+  requiredSkills: string[];
+  contextSnapshot?: string;
+  dispatchedAt: number;
+}
+
+/**
+ * Ultrareview — 多 Agent 独立代码审查结果
+ */
+export interface ReviewerResult {
+  reviewerId: string;
+  focus: string;
+  issues: Array<{ severity: 'critical' | 'warning' | 'info'; message: string; file?: string }>;
+  score: number; // 0-100
+}
+
+export interface UltrareviewReport {
+  prNumber: number;
+  overallScore: number;
+  reviewers: ReviewerResult[];
+  topIssues: Array<{ severity: string; message: string; reviewers: string[] }>;
+  recommendation: 'approve' | 'request-changes' | 'comment';
+  generatedAt: number;
+}
+
+// ============================================================================
+// Loop Context (TASK-120)
+// ============================================================================
+
+export interface LoopContext {
+  attempt: number;
+  lastFailReason: string;
+}
+
+// Base state note: pipeline states may include _loopContext when inside a loop node
+// _loopContext?: LoopContext
+
+// ============================================================================
+// SlaveResult & Aggregation (TASK-121)
+// ============================================================================
+
+export interface SlaveResult {
+  ticketId: string;
+  slaverId: string;
+  completedAt: number;
+  prNumber?: number;
+  prUrl?: string;
+  filesChanged: string[];
+  testsAdded: number;
+  testsPassed: number;
+  keyDecisions: string[];
+  deferredIssues: string[];
+  skillFeedback?: SkillFeedback;
+}
+
+export interface FileConflict {
+  file: string;
+  tickets: string[];
+}
+
+export interface AggregatedResult {
+  tickets: string[];
+  allFilesChanged: string[];
+  conflicts: FileConflict[];
+  totalTestsAdded: number;
+  totalTestsPassed: number;
+}
+
+// ============================================================================
+// Completion Validator Types (TASK-116)
+// ============================================================================
+
+export interface ValidationCheck {
+  dimension: 'architecture' | 'code-style' | 'acceptance-criteria';
+  passed: boolean;
+  message: string;
+  source: string;
+}
+
+export interface ValidationReport {
+  passed: boolean;
+  checks: ValidationCheck[];
+  summary: string;
+}
