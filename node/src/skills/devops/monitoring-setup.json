@@ -1,0 +1,19 @@
+{
+  "id": "devops/monitoring-setup",
+  "type": "skill",
+  "domain": "devops",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "monitoring",
+    "alerting",
+    "Prometheus",
+    "Grafana"
+  ],
+  "collaborates_with": [
+    "testing/e2e-testing",
+    "ops/incident-runbook"
+  ],
+  "lazy": true,
+  "description": "Monitoring Setup"
+}

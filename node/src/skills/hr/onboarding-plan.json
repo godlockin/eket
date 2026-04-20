@@ -1,0 +1,17 @@
+{
+  "id": "hr/onboarding-plan",
+  "type": "skill",
+  "domain": "hr",
+  "level": 1,
+  "model_hint": "haiku",
+  "triggers": [
+    "onboarding plan",
+    "新员工",
+    "ramp-up"
+  ],
+  "collaborates_with": [
+    "planning/sprint-planning"
+  ],
+  "lazy": true,
+  "description": "Onboarding Plan"
+}

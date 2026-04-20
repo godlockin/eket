@@ -1,0 +1,19 @@
+{
+  "id": "testing/e2e-testing",
+  "type": "skill",
+  "domain": "testing",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "E2E",
+    "end-to-end",
+    "Playwright",
+    "Cypress"
+  ],
+  "collaborates_with": [
+    "development/code-review-checklist",
+    "review/pr-review-checklist"
+  ],
+  "lazy": true,
+  "description": "E2E Testing"
+}

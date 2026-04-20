@@ -1,0 +1,19 @@
+{
+  "id": "testing/unit_test",
+  "type": "skill",
+  "domain": "testing",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "unit test",
+    "jest",
+    "pytest",
+    "TDD"
+  ],
+  "collaborates_with": [
+    "development/code-review-checklist",
+    "review/pr-review-checklist"
+  ],
+  "lazy": true,
+  "description": "Unit Test"
+}

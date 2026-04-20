@@ -1,0 +1,19 @@
+{
+  "id": "development/performance-optimization",
+  "type": "skill",
+  "domain": "development",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "performance",
+    "bottleneck",
+    "latency",
+    "optimize"
+  ],
+  "collaborates_with": [
+    "review/code-smell-detection",
+    "testing/unit_test"
+  ],
+  "lazy": true,
+  "description": "Performance Optimization"
+}

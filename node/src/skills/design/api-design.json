@@ -1,0 +1,19 @@
+{
+  "id": "design/api-design",
+  "type": "skill",
+  "domain": "design",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "API design",
+    "REST",
+    "GraphQL",
+    "endpoint"
+  ],
+  "collaborates_with": [
+    "requirements/user-story-mapping",
+    "development/code-review-checklist"
+  ],
+  "lazy": true,
+  "description": "Api Design"
+}

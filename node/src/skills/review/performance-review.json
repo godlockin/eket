@@ -1,0 +1,18 @@
+{
+  "id": "review/performance-review",
+  "type": "skill",
+  "domain": "review",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "performance review",
+    "360 review",
+    "OKR review"
+  ],
+  "collaborates_with": [
+    "development/code-review-checklist",
+    "testing/test-strategy"
+  ],
+  "lazy": true,
+  "description": "Performance Review"
+}

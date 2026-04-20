@@ -1,0 +1,18 @@
+{
+  "id": "algorithm/data-labeling",
+  "type": "skill",
+  "domain": "algorithm",
+  "level": 3,
+  "model_hint": "opus",
+  "triggers": [
+    "data labeling",
+    "annotation",
+    "标注"
+  ],
+  "collaborates_with": [
+    "llm/llm-evaluation",
+    "data/feature-engineering"
+  ],
+  "lazy": true,
+  "description": "Data Labeling"
+}

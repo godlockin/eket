@@ -1,0 +1,18 @@
+{
+  "id": "review/security-review",
+  "type": "skill",
+  "domain": "review",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "security review",
+    "OWASP",
+    "threat analysis"
+  ],
+  "collaborates_with": [
+    "development/code-review-checklist",
+    "testing/test-strategy"
+  ],
+  "lazy": true,
+  "description": "Security Review"
+}

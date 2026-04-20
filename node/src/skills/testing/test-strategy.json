@@ -1,0 +1,18 @@
+{
+  "id": "testing/test-strategy",
+  "type": "skill",
+  "domain": "testing",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "test strategy",
+    "test plan",
+    "QA strategy"
+  ],
+  "collaborates_with": [
+    "development/code-review-checklist",
+    "review/pr-review-checklist"
+  ],
+  "lazy": true,
+  "description": "Test Strategy"
+}
