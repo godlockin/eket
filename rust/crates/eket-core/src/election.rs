@@ -11,7 +11,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, Semaphore};
 use tracing::{info, warn};
 use uuid::Uuid;
 
@@ -25,6 +25,17 @@ const REDIS_LOCK_KEY: &str = "eket:master:lock";
 const REDIS_LEASE_TTL_SECS: u64 = 30;
 const RENEW_INTERVAL_SECS: u64 = 15; // TTL/2 — ensures renewal before expiry
 const MAX_RENEW_FAILURES: u32 = 3;   // resign after 3 consecutive failures → prevent split brain
+/// Cap concurrent spawn_blocking SQLite calls to avoid exhausting the r2d2 pool (max_size=8)
+const SQLITE_ELECTION_CONCURRENCY: usize = 4;
+
+/// Global semaphore to throttle concurrent SQLite spawn_blocking election calls
+static SQLITE_SEM: std::sync::OnceLock<Arc<Semaphore>> = std::sync::OnceLock::new();
+
+fn sqlite_semaphore() -> Arc<Semaphore> {
+    SQLITE_SEM
+        .get_or_init(|| Arc::new(Semaphore::new(SQLITE_ELECTION_CONCURRENCY)))
+        .clone()
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -191,8 +202,14 @@ impl MasterElection {
     async fn elect_sqlite(&self, pool: &DbPool) -> EketResult<ElectionResult> {
         let pool = pool.clone();
         let id = self.instance_id.clone();
+        // Acquire semaphore permit to avoid pool exhaustion under high concurrency
+        let _permit = sqlite_semaphore()
+            .acquire_owned()
+            .await
+            .map_err(|e| EketError::Other(format!("Semaphore closed: {e}")))?;
 
         let won = tokio::task::spawn_blocking(move || -> EketResult<bool> {
+            let _guard = _permit; // hold permit until spawn_blocking finishes
             let conn = pool.get()?;
             let now = chrono::Utc::now().to_rfc3339();
             let rows = conn.execute(
@@ -225,16 +242,20 @@ impl MasterElection {
                 interval.tick().await;
                 let pool2 = pool.clone();
                 let id2 = id.clone();
-                let _ = tokio::task::spawn_blocking(move || -> EketResult<()> {
-                    let conn = pool2.get()?;
-                    let now = chrono::Utc::now().to_rfc3339();
-                    conn.execute(
-                        "UPDATE instances SET last_seen = ?1 WHERE id = ?2",
-                        rusqlite::params![now, id2],
-                    )?;
-                    Ok(())
-                })
-                .await;
+                // Acquire semaphore before spawn_blocking
+                if let Ok(permit) = sqlite_semaphore().acquire_owned().await {
+                    let _ = tokio::task::spawn_blocking(move || -> EketResult<()> {
+                        let _guard = permit;
+                        let conn = pool2.get()?;
+                        let now = chrono::Utc::now().to_rfc3339();
+                        conn.execute(
+                            "UPDATE instances SET last_seen = ?1 WHERE id = ?2",
+                            rusqlite::params![now, id2],
+                        )?;
+                        Ok(())
+                    })
+                    .await;
+                }
             }
         });
 
