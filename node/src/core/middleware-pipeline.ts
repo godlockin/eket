@@ -12,11 +12,17 @@
 
 export type FailBehavior = 'block' | 'warn' | 'skip';
 
+export interface LoopConfig<T> {
+  maxRetries: number;
+  validator: (state: T) => boolean | Promise<boolean>;
+}
+
 export interface MiddlewareNode<T = Record<string, unknown>> {
   id: string;
   deps: string[];        // 依赖的其他节点 id，空数组=无依赖
   parallel: boolean;     // 同层是否可与其他节点并行
   failBehavior: FailBehavior;
+  loop?: LoopConfig<T>;  // 可选：迭代细化语义 (TASK-120)
   handle: (state: T) => Promise<T>;
 }
 
@@ -119,7 +125,19 @@ export class PipelineExecutor<T = Record<string, unknown>> {
         toRun.map(async (id): Promise<NodeOutcome> => {
           const node = this.nodes.get(id)!;
           try {
-            const nextState = await node.handle(state);
+            let nextState = await node.handle(state);
+            if (node.loop) {
+              const { maxRetries, validator } = node.loop;
+              let attempt = 0;
+              while (!(await validator(nextState)) && attempt < maxRetries) {
+                const stateWithCtx = { ...nextState, _loopContext: { attempt: attempt + 1, lastFailReason: `validator failed attempt ${attempt + 1}` } } as T;
+                nextState = await node.handle(stateWithCtx);
+                attempt++;
+              }
+              if (!(await validator(nextState))) {
+                throw new Error(`Loop node "${id}" exceeded maxRetries (${maxRetries})`);
+              }
+            }
             return { id, ok: true, state: nextState };
           } catch (e: unknown) {
             return { id, ok: false, behavior: node.failBehavior, error: e };
@@ -193,6 +211,7 @@ export function createPreToolUsePipeline(): PipelineExecutor<PreToolUseState> {
       deps: [],
       parallel: true,
       failBehavior: 'block',
+      loop: { maxRetries: 2, validator: (s) => !s.blocked },
       handle: async (state) => {
         // 示例：检查禁用工具列表
         const blockedTools = ['rm', 'dd', 'mkfs'];
