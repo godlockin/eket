@@ -31,6 +31,7 @@ import { registerTaskCreate } from './commands/task-create.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { registerGateReview } from './commands/gate-review.js';
 import { registerMasterHeartbeat } from './commands/master-heartbeat.js';
+import { registerUltrareview } from './commands/ultrareview.js';
 import { registerGraphQueryCommand } from './commands/graph-query.js';
 import { runInitWizard } from './commands/init-wizard.js';
 import { runInteractiveStartCLI } from './commands/interactive-start.js';
@@ -1438,6 +1439,9 @@ Related Commands:
 
   // TASK-080: YAML Workflow Commands
   registerWorkflowCommands(program);
+
+  // TASK-119: Ultrareview — multi-agent parallel PR review
+  registerUltrareview(program);
 
   // 解析命令行
   await program.parseAsync(process.argv);
