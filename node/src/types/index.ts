@@ -1308,7 +1308,7 @@ export interface TaskEnvelope {
 }
 
 /**
- * Ultrareview — 多 Agent 独立代码审查结果
+ * Ultrareview — 多 Agent 独立代码审查结果 (TASK-119)
  */
 export interface ReviewerResult {
   reviewerId: string;
@@ -1406,23 +1406,4 @@ export interface ValidationReport {
   passed: boolean;
   checks: ValidationCheck[];
   summary: string;
-}
-
-/**
- * Ultrareview — 多 Agent 独立代码审查结果 (TASK-119)
- */
-export interface ReviewerResult {
-  reviewerId: string;
-  focus: string;
-  issues: Array<{ severity: 'critical' | 'warning' | 'info'; message: string; file?: string }>;
-  score: number; // 0-100
-}
-
-export interface UltrareviewReport {
-  prNumber: number;
-  overallScore: number;
-  reviewers: ReviewerResult[];
-  topIssues: Array<{ severity: string; message: string; reviewers: string[] }>;
-  recommendation: 'approve' | 'request-changes' | 'comment';
-  generatedAt: number;
 }
