@@ -156,12 +156,14 @@ Phase 3 — Master 汇总综合报告
 
 ### Rust CLI（推荐，~21ms/cmd）
 
-1. 编译安装：`cd rust && cargo build --release && cp target/release/eket ~/.local/bin/`
-2. 系统诊断：`eket system:doctor`
-3. 注册 Slaver：`eket slaver:register --role backend --skills rust`
-4. 领取任务：`eket task:claim`
-5. 完成任务：`eket task:complete TASK-NNN`
-6. 启动 API server：`eket server`（:9877）
+1. 检查环境：`bash scripts/setup.sh --check-rust` 或手动 `rustc --version`
+   若无 Rust：`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+2. 编译安装：`cd rust && cargo build --release && cp target/release/eket ~/.local/bin/`
+3. 系统诊断：`eket system:doctor`
+4. 注册 Slaver：`eket slaver:register --role backend --skills rust`
+5. 领取任务：`eket task:claim`
+6. 完成任务：`eket task:complete TASK-NNN`
+7. 启动 API server：`eket server`（:9877）
 
 ### Node.js（Web Dashboard / LLM）
 
