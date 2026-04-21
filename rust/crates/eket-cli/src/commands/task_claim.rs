@@ -7,6 +7,7 @@
 /// 4. 输出 JSON 结果（兼容 TS 版本格式）
 
 use anyhow::Result;
+use clap::Args;
 use eket_core::{
     config::EketConfig,
     db::{create_pool, SqliteClient},
@@ -15,6 +16,22 @@ use eket_core::{
 };
 use serde_json::json;
 use std::path::{Path, PathBuf};
+
+// ─── Args ────────────────────────────────────────────────────────────────────
+
+#[derive(Args, Debug)]
+pub struct TaskClaimArgs {
+    /// Specific ticket ID to claim (e.g. TASK-042). Omit to auto-pick highest priority.
+    pub ticket_id: Option<String>,
+
+    /// 自动领取最高优先级 ready ticket
+    #[arg(short = 'a', long, help = "自动领取最高优先级 ready ticket")]
+    pub auto: bool,
+
+    /// 按角色过滤 (e.g. backend, frontend)
+    #[arg(short = 'r', long, help = "按角色过滤 (e.g. backend, frontend)")]
+    pub role: Option<String>,
+}
 
 // ─── Slaver ID ────────────────────────────────────────────────────────────────
 
@@ -88,7 +105,6 @@ fn write_active_context(
 /// Returns true if this slaver won the claim; false if already claimed by another.
 /// Uses BEGIN IMMEDIATE to serialize concurrent claims.
 fn try_atomic_claim(client: &SqliteClient, ticket_id: &str, slaver_id: &str) -> bool {
-    use eket_core::types::TicketStatus;
     // Use SQLite transaction to atomically check+update status
     match client.claim_ticket_atomic(ticket_id, slaver_id) {
         Ok(claimed) => claimed,
@@ -99,9 +115,29 @@ fn try_atomic_claim(client: &SqliteClient, ticket_id: &str, slaver_id: &str) -> 
     }
 }
 
+// ─── Role filter ──────────────────────────────────────────────────────────────
+
+/// Filter tickets by role keyword: checks if ticket file content contains the role string.
+//NOTE: Role filtering is content-based (case-insensitive substring match in ticket .md file).
+fn filter_by_role(tickets: Vec<TicketFile>, tickets_dir: &Path, role: &str) -> Vec<TicketFile> {
+    let role_lower = role.to_lowercase();
+    tickets
+        .into_iter()
+        .filter(|t| {
+            let file_path = tickets_dir.join(format!("{}.md", t.id));
+            if let Ok(content) = std::fs::read_to_string(&file_path) {
+                content.to_lowercase().contains(&role_lower)
+            } else {
+                // Include ticket if file unreadable (conservative)
+                true
+            }
+        })
+        .collect()
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-pub async fn run(ticket_id: Option<String>) -> Result<()> {
+pub async fn run(args: TaskClaimArgs) -> Result<()> {
     let config = EketConfig::load().unwrap_or_default();
 
     // Locate project root: must have BOTH jira/tickets/ AND .eket/
@@ -114,12 +150,21 @@ pub async fn run(ticket_id: Option<String>) -> Result<()> {
     let client = pool.as_ref().map(|p| SqliteClient::new(p.clone()));
 
     // Select ticket
-    let mut ticket = match ticket_id {
+    // If --auto is true and no ticket_id given: query for highest priority ready ticket (filtered by role if given)
+    // If --role is given without explicit ticket_id: also filter by role when auto-picking
+    // Keep existing behavior when ticket_id is given
+    let mut ticket = match args.ticket_id {
         Some(ref id) => find_ticket(&tickets_dir, id)
             .map_err(|e| anyhow::anyhow!("{e}"))?,
         None => {
-            let todos = scan_todo_tickets(&tickets_dir)
+            let mut todos = scan_todo_tickets(&tickets_dir)
                 .map_err(|e| anyhow::anyhow!("{e}"))?;
+
+            // Apply role filter if --role is given
+            if let Some(ref role) = args.role {
+                todos = filter_by_role(todos, &tickets_dir, role);
+            }
+
             if todos.is_empty() {
                 println!("{}", serde_json::to_string_pretty(&json!({
                     "status": "no_tickets",
@@ -127,6 +172,7 @@ pub async fn run(ticket_id: Option<String>) -> Result<()> {
                 }))?);
                 return Ok(());
             }
+            // auto=true or no ticket_id: pick highest priority (first from sorted list)
             todos.into_iter().next().unwrap()
         }
     };

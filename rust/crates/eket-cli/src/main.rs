@@ -38,10 +38,7 @@ enum Commands {
 
     /// Claim a ticket for execution
     #[command(name = "task:claim")]
-    TaskClaim {
-        /// Specific ticket ID to claim (e.g. TASK-042). Omit to auto-pick highest priority.
-        ticket_id: Option<String>,
-    },
+    TaskClaim(commands::task_claim::TaskClaimArgs),
 
     /// Mark a ticket as complete
     #[command(name = "task:complete")]
@@ -120,7 +117,7 @@ async fn main() -> Result<()> {
         Commands::KnowledgeSearch(args) => commands::knowledge::run_search(args).await,
         Commands::Recommend(args) => commands::knowledge::run_recommend(args).await,
         Commands::SystemDoctor => commands::system_doctor::run().await,
-        Commands::TaskClaim { ticket_id } => commands::task_claim::run(ticket_id).await,
+        Commands::TaskClaim(args) => commands::task_claim::run(args).await,
         Commands::TaskComplete { ticket_id, no_trailer } => {
             commands::task_complete::run(ticket_id, no_trailer).await
         }
