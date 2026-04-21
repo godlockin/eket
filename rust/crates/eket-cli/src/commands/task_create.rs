@@ -23,11 +23,13 @@ pub struct TaskCreateArgs {
     /// Ticket 标题
     pub title: String,
 
-    #[arg(long, default_value = "feature")]
-    pub r#type: String,
+    /// Ticket 类型（可选，支持从 title 关键词自动推断）
+    #[arg(long)]
+    pub r#type: Option<String>,
 
-    #[arg(long, default_value = "P2")]
-    pub priority: String,
+    /// 优先级（可选，支持从 title 关键词自动推断）
+    #[arg(long)]
+    pub priority: Option<String>,
 
     /// 前置依赖，逗号分隔，如 "TASK-001,TASK-002"
     #[arg(long, default_value = "")]
@@ -39,6 +41,39 @@ pub struct TaskCreateArgs {
     /// tickets 目录路径（默认自动探测）
     #[arg(long)]
     pub tickets_dir: Option<PathBuf>,
+}
+
+// ─── Inference helpers ────────────────────────────────────────────────────────
+
+/// Infer ticket type from title keywords.
+//NOTE: Order matters — check more specific terms first.
+fn infer_type(title: &str) -> &'static str {
+    let lower = title.to_lowercase();
+    if lower.contains("fix") || lower.contains("bug") {
+        "bugfix"
+    } else if lower.contains("refactor") {
+        "refactor"
+    } else if lower.contains("test") {
+        "test"
+    } else if lower.contains("docs") || lower.contains("doc") {
+        "docs"
+    } else if lower.contains("feat") || lower.contains("add") || lower.contains("新增") {
+        "feature"
+    } else {
+        "feature"
+    }
+}
+
+/// Infer priority from title keywords.
+fn infer_priority(title: &str) -> &'static str {
+    let lower = title.to_lowercase();
+    if lower.contains("p0") || lower.contains("urgent") || lower.contains("紧急") {
+        "P0"
+    } else if lower.contains("p1") || lower.contains("critical") {
+        "P1"
+    } else {
+        "P2"
+    }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -145,6 +180,10 @@ fn build_ticket_content(
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 pub async fn run(args: TaskCreateArgs) -> Result<()> {
+    // Resolve type and priority: explicit > inferred from title
+    let ticket_type = args.r#type.as_deref().unwrap_or_else(|| infer_type(&args.title)).to_string();
+    let priority = args.priority.as_deref().unwrap_or_else(|| infer_priority(&args.title)).to_string();
+
     // 1. Find tickets dir
     let tickets_dir = find_tickets_dir(args.tickets_dir)?;
 
@@ -187,8 +226,8 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
     let content = build_ticket_content(
         &ticket_id,
         &args.title,
-        &args.r#type,
-        &args.priority,
+        &ticket_type,
+        &priority,
         &args.assignee,
         &blocked_by,
     );
@@ -208,8 +247,8 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
         "ticket_id": ticket_id,
         "path": file_path.display().to_string(),
         "title": args.title,
-        "type": args.r#type,
-        "priority": args.priority,
+        "type": ticket_type,
+        "priority": priority,
         "blocked_by": blocked_by,
     });
     println!("{}", serde_json::to_string_pretty(&report)?);
@@ -227,8 +266,8 @@ mod tests {
     fn make_args(title: &str, blocked_by: &str, dir: &TempDir) -> TaskCreateArgs {
         TaskCreateArgs {
             title: title.to_string(),
-            r#type: "feature".to_string(),
-            priority: "P2".to_string(),
+            r#type: Some("feature".to_string()),
+            priority: Some("P2".to_string()),
             blocked_by: blocked_by.to_string(),
             assignee: String::new(),
             tickets_dir: Some(dir.path().to_path_buf()),
@@ -332,5 +371,38 @@ mod tests {
             !dir2.path().join("TASK-2.md").exists(),
             "Cycle ticket should not be created"
         );
+    }
+
+    #[tokio::test]
+    async fn type_inferred_from_title() {
+        let dir = TempDir::new().unwrap();
+        let args = TaskCreateArgs {
+            title: "fix login bug".to_string(),
+            r#type: None,
+            priority: None,
+            blocked_by: String::new(),
+            assignee: String::new(),
+            tickets_dir: Some(dir.path().to_path_buf()),
+        };
+        run(args).await.unwrap();
+        let content = fs::read_to_string(dir.path().join("TASK-1.md")).unwrap();
+        assert!(content.contains("**类型**: bugfix"));
+        assert!(content.contains("**优先级**: P2"));
+    }
+
+    #[tokio::test]
+    async fn priority_inferred_from_title() {
+        let dir = TempDir::new().unwrap();
+        let args = TaskCreateArgs {
+            title: "urgent: fix crash".to_string(),
+            r#type: None,
+            priority: None,
+            blocked_by: String::new(),
+            assignee: String::new(),
+            tickets_dir: Some(dir.path().to_path_buf()),
+        };
+        run(args).await.unwrap();
+        let content = fs::read_to_string(dir.path().join("TASK-1.md")).unwrap();
+        assert!(content.contains("**优先级**: P0"));
     }
 }

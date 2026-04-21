@@ -14,13 +14,21 @@ pub struct SubmitPrArgs {
     #[arg(long, default_value = "")]
     pub title: String,
 
-    /// PR body/description
-    #[arg(long, default_value = "")]
+    /// PR body/description (also accepted as --description)
+    #[arg(long, alias = "description", default_value = "")]
     pub body: String,
 
     /// Base branch
     #[arg(long, default_value = "main")]
     pub base: String,
+
+    /// Create PR as draft
+    #[arg(long)]
+    pub draft: bool,
+
+    /// Reviewers (comma-separated usernames)
+    #[arg(long, value_delimiter = ',')]
+    pub reviewers: Vec<String>,
 
     /// Output structured JSON
     #[arg(long)]
@@ -67,13 +75,29 @@ pub async fn run(args: SubmitPrArgs) -> Result<()> {
             // Try parse URL from push output
             parse_pr_url_from_push_output(&combined).or_else(|| {
                 // Step 2: gh pr create fallback
+                let mut gh_args = vec![
+                    "pr".to_string(),
+                    "create".to_string(),
+                    "--title".to_string(),
+                    args.title.clone(),
+                    "--body".to_string(),
+                    args.body.clone(),
+                    "--base".to_string(),
+                    args.base.clone(),
+                ];
+
+                if args.draft {
+                    gh_args.push("--draft".to_string());
+                }
+
+                // Pass each reviewer as separate --reviewer flag
+                for reviewer in &args.reviewers {
+                    gh_args.push("--reviewer".to_string());
+                    gh_args.push(reviewer.clone());
+                }
+
                 let gh_out = Command::new("gh")
-                    .args([
-                        "pr", "create",
-                        "--title", &args.title,
-                        "--body", &args.body,
-                        "--base", &args.base,
-                    ])
+                    .args(&gh_args)
                     .output()
                     .ok()?;
                 let s = String::from_utf8_lossy(&gh_out.stdout).trim().to_string();
