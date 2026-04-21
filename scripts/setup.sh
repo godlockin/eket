@@ -31,14 +31,34 @@ NC='\033[0m'
 level1_install() {
   echo -e "${BLUE}[Level 1] Shell 基础环境${NC}"
 
-  # 检查必要命令
-  for cmd in bash curl git; do
+  # 检查必要命令，缺失时给出平台安装提示
+  for cmd in curl git; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
       echo -e "${RED}✗ 缺少依赖：$cmd${NC}"
+      # 平台安装提示
+      if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "  macOS 安装方式："
+        echo "    brew install $cmd"
+        echo "  或安装 Xcode Command Line Tools：xcode-select --install"
+      else
+        echo "  Ubuntu/Debian 安装方式："
+        echo "    sudo apt-get update && sudo apt-get install -y $cmd"
+        echo "  RHEL/CentOS 安装方式："
+        echo "    sudo yum install -y $cmd"
+      fi
       exit 1
     fi
   done
-  echo "  ✓ bash / curl / git 已安装"
+  echo "  ✓ curl / git 已安装"
+
+  # macOS：检测 git 是否会触发 Xcode 安装弹窗（stub git）
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    if git --version 2>&1 | grep -q "xcode-select"; then
+      echo -e "${YELLOW}  ⚠ macOS git 需要 Xcode Command Line Tools${NC}"
+      echo "  → 运行：xcode-select --install，然后重新执行本脚本"
+      exit 1
+    fi
+  fi
 
   # macOS bash 版本检查（默认 bash 3.x 不支持部分特性）
   local bash_major
@@ -164,19 +184,31 @@ build_eket_binary() {
     return 1
   fi
 
-  echo "  → 构建 Rust binary（cargo build --release）..."
-  if (cd "$rust_dir" && cargo build --release); then
+  echo "  → 构建 Rust binary（cargo build --release，首次约 60s）..."
+  if (cd "$rust_dir" && cargo build --release --quiet 2>&1); then
     local bin_src="$rust_dir/target/release/eket"
     if [ -f "$bin_src" ]; then
       mkdir -p "$HOME/.local/bin"
       cp "$bin_src" "$HOME/.local/bin/eket"
       echo -e "  ${GREEN}✓ eket binary 已安装到 ~/.local/bin/eket${NC}"
 
-      # PATH 检查
+      # PATH 检查 + 自动写入
       if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-        echo -e "${YELLOW}  ⚠ ~/.local/bin 不在 PATH 中${NC}"
-        echo "  请添加到 shell 配置（~/.bashrc 或 ~/.zshrc）："
-        echo "    export PATH=\"\$HOME/.local/bin:\$PATH\""
+        echo -e "${YELLOW}  ⚠ ~/.local/bin 不在 PATH，自动写入 shell 配置${NC}"
+        local shell_rc=""
+        if [[ "$SHELL" == */zsh ]]; then shell_rc="$HOME/.zshrc"
+        elif [[ "$SHELL" == */bash ]]; then shell_rc="$HOME/.bashrc"
+        fi
+        if [ -n "$shell_rc" ]; then
+          if ! grep -q 'HOME/.local/bin' "$shell_rc" 2>/dev/null; then
+            { echo ''; echo '# Added by EKET setup'; echo 'export PATH="$HOME/.local/bin:$PATH"'; } >> "$shell_rc"
+            echo -e "  ${GREEN}✓ 已写入 $shell_rc（新终端自动生效）${NC}"
+          fi
+          export PATH="$HOME/.local/bin:$PATH"
+          echo "  ✓ 当前终端已生效"
+        else
+          echo "  请手动添加：export PATH=\"\$HOME/.local/bin:\$PATH\""
+        fi
       fi
       return 0
     else
@@ -296,15 +328,16 @@ main() {
   level1_install
 
   # Level 1.5: Rust（可选，交互式）
-  if [ "$target_level" -ge 2 ] || [ "$target_level" -eq 0 ]; then
+  # --level=1 也提供 Rust 提示，只是不强制
+  if [ "$target_level" -ge 1 ] || [ "$target_level" -eq 0 ]; then
     if [ "$auto_yes" = true ]; then
       level_rust_install
     else
-      read -rp "安装 Level 1.5（Rust 工具链 + eket binary，~21ms/cmd）？[y/N] " ans
-      if [[ "$ans" =~ ^[Yy]$ ]]; then
+      read -rp "安装 Level 1.5（Rust 工具链 + eket binary，~21ms/cmd，推荐）？[Y/n] " ans
+      if [[ ! "$ans" =~ ^[Nn]$ ]]; then
         level_rust_install
       else
-        echo "  跳过 Level 1.5（Rust）"
+        echo "  跳过 Level 1.5（Rust）。可稍后运行：setup.sh --check-rust"
       fi
     fi
   fi
