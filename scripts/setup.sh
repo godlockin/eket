@@ -31,14 +31,34 @@ NC='\033[0m'
 level1_install() {
   echo -e "${BLUE}[Level 1] Shell 基础环境${NC}"
 
-  # 检查必要命令
-  for cmd in bash curl git; do
+  # 检查必要命令，缺失时给出平台安装提示
+  for cmd in curl git; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
       echo -e "${RED}✗ 缺少依赖：$cmd${NC}"
+      # 平台安装提示
+      if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "  macOS 安装方式："
+        echo "    brew install $cmd"
+        echo "  或安装 Xcode Command Line Tools：xcode-select --install"
+      else
+        echo "  Ubuntu/Debian 安装方式："
+        echo "    sudo apt-get update && sudo apt-get install -y $cmd"
+        echo "  RHEL/CentOS 安装方式："
+        echo "    sudo yum install -y $cmd"
+      fi
       exit 1
     fi
   done
-  echo "  ✓ bash / curl / git 已安装"
+  echo "  ✓ curl / git 已安装"
+
+  # macOS：检测 git 是否会触发 Xcode 安装弹窗（stub git）
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    if git --version 2>&1 | grep -q "xcode-select"; then
+      echo -e "${YELLOW}  ⚠ macOS git 需要 Xcode Command Line Tools${NC}"
+      echo "  → 运行：xcode-select --install，然后重新执行本脚本"
+      exit 1
+    fi
+  fi
 
   # macOS bash 版本检查（默认 bash 3.x 不支持部分特性）
   local bash_major
@@ -121,6 +141,112 @@ level2_install() {
 }
 
 # ─────────────────────────────────────────────
+# Level 1.5: Rust 工具链
+# ─────────────────────────────────────────────
+check_rust() {
+  if command -v rustc >/dev/null 2>&1 && command -v cargo >/dev/null 2>&1; then
+    local ver
+    ver=$(rustc --version | awk '{print $2}')
+    echo -e "  ${GREEN}✓ Rust $ver 已检测到${NC}"
+    cargo --version | sed 's/^/  ✓ /'
+    return 0
+  else
+    echo -e "${YELLOW}  ⚠ 未检测到 Rust 工具链（rustc/cargo）${NC}"
+    return 1
+  fi
+}
+
+install_rust_prompt() {
+  echo ""
+  echo "  Rust 工具链未安装。选项："
+  echo "    1) 自动安装 rustup（推荐）"
+  echo "    2) 跳过 Rust，使用 Node.js 降级"
+  read -rp "  请选择 [1/2]（默认 2）: " ans
+  if [[ "$ans" == "1" ]]; then
+    echo "  → 安装 rustup..."
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    # shellcheck source=/dev/null
+    if [ -f "$HOME/.cargo/env" ]; then
+      source "$HOME/.cargo/env"
+    fi
+    echo -e "  ${GREEN}✓ rustup 安装完成${NC}"
+    return 0
+  else
+    echo -e "${YELLOW}  跳过 Rust 安装${NC}"
+    return 1
+  fi
+}
+
+build_eket_binary() {
+  local rust_dir="$PROJECT_ROOT/rust"
+  if [ ! -d "$rust_dir" ]; then
+    echo -e "${YELLOW}  ⚠ rust/ 目录不存在，跳过构建${NC}"
+    return 1
+  fi
+
+  echo "  → 构建 Rust binary（cargo build --release，首次约 60s）..."
+  if (cd "$rust_dir" && cargo build --release --quiet 2>&1); then
+    local bin_src="$rust_dir/target/release/eket"
+    if [ -f "$bin_src" ]; then
+      mkdir -p "$HOME/.local/bin"
+      cp "$bin_src" "$HOME/.local/bin/eket"
+      echo -e "  ${GREEN}✓ eket binary 已安装到 ~/.local/bin/eket${NC}"
+
+      # PATH 检查 + 自动写入
+      if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+        echo -e "${YELLOW}  ⚠ ~/.local/bin 不在 PATH，自动写入 shell 配置${NC}"
+        local shell_rc=""
+        if [[ "$SHELL" == */zsh ]]; then shell_rc="$HOME/.zshrc"
+        elif [[ "$SHELL" == */bash ]]; then shell_rc="$HOME/.bashrc"
+        fi
+        if [ -n "$shell_rc" ]; then
+          if ! grep -q 'HOME/.local/bin' "$shell_rc" 2>/dev/null; then
+            { echo ''; echo '# Added by EKET setup'; echo 'export PATH="$HOME/.local/bin:$PATH"'; } >> "$shell_rc"
+            echo -e "  ${GREEN}✓ 已写入 $shell_rc（新终端自动生效）${NC}"
+          fi
+          export PATH="$HOME/.local/bin:$PATH"
+          echo "  ✓ 当前终端已生效"
+        else
+          echo "  请手动添加：export PATH=\"\$HOME/.local/bin:\$PATH\""
+        fi
+      fi
+      return 0
+    else
+      echo -e "${RED}  ✗ 构建产物不存在：$bin_src${NC}"
+      return 1
+    fi
+  else
+    echo -e "${RED}  ✗ Rust 构建失败${NC}"
+    echo -e "${YELLOW}  Rust binary 不可用，使用 Node.js 降级（node dist/index.js）${NC}"
+    echo "  提示：可设置 EKET_SKIP_RUST_BUILD=1 跳过 Rust 构建"
+    return 1
+  fi
+}
+
+level_rust_install() {
+  echo -e "${BLUE}[Level 1.5] Rust 工具链${NC}"
+
+  # CI 环境跳过
+  if [ "${EKET_SKIP_RUST_BUILD:-}" = "1" ]; then
+    echo "  EKET_SKIP_RUST_BUILD=1，跳过 Rust 构建"
+    echo -e "${GREEN}✓ Level 1.5 跳过（CI 模式）${NC}\n"
+    return
+  fi
+
+  if check_rust; then
+    build_eket_binary || true
+  else
+    if install_rust_prompt; then
+      build_eket_binary || true
+    else
+      echo -e "${YELLOW}  Rust binary 不可用，使用 Node.js 降级（node dist/index.js）${NC}"
+    fi
+  fi
+
+  echo -e "${GREEN}✓ Level 1.5 完成${NC}\n"
+}
+
+# ─────────────────────────────────────────────
 # Level 3: Docker + Redis
 # ─────────────────────────────────────────────
 level3_install() {
@@ -183,6 +309,10 @@ main() {
       --level=*) target_level="${arg#--level=}" ;;
       --all)     target_level=4 ;;
       --yes|-y)  auto_yes=true ;;
+      --check-rust)
+        echo -e "${BLUE}Rust 工具链检查${NC}"
+        check_rust && exit 0 || exit 1
+        ;;
       --help|-h)
         head -12 "$0" | grep "^#" | sed 's/^# \?//'
         exit 0
@@ -196,6 +326,21 @@ main() {
 
   # Level 1 始终运行
   level1_install
+
+  # Level 1.5: Rust（可选，交互式）
+  # --level=1 也提供 Rust 提示，只是不强制
+  if [ "$target_level" -ge 1 ] || [ "$target_level" -eq 0 ]; then
+    if [ "$auto_yes" = true ]; then
+      level_rust_install
+    else
+      read -rp "安装 Level 1.5（Rust 工具链 + eket binary，~21ms/cmd，推荐）？[Y/n] " ans
+      if [[ ! "$ans" =~ ^[Nn]$ ]]; then
+        level_rust_install
+      else
+        echo "  跳过 Level 1.5（Rust）。可稍后运行：setup.sh --check-rust"
+      fi
+    fi
+  fi
 
   # Level 2-4：按 target_level 或交互询问
   local level_descs=("" "" "Node.js 依赖 + 构建" "Docker + Redis" "SQLite 数据目录")
