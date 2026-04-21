@@ -9,6 +9,8 @@ pub struct EketConfig {
     pub log_level: String,
     pub instance_id: Option<String>,
     pub api_port: u16,
+    pub tickets_dir: Option<String>,
+    pub mailbox_dir: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -41,6 +43,8 @@ impl Default for EketConfig {
             log_level: "info".into(),
             instance_id: None,
             api_port: 9877,
+            tickets_dir: None,
+            mailbox_dir: None,
         }
     }
 }
@@ -61,6 +65,8 @@ impl EketConfig {
             )?
             .set_default("log_level", "info")?
             .set_default("api_port", 9877)?
+            .set_default("tickets_dir", Option::<String>::None)?
+            .set_default("mailbox_dir", Option::<String>::None)?
             // Optional file
             .add_source(File::with_name(".eket/config/eket").required(false))
             // Env overrides: EKET_REDIS_HOST, EKET_LOG_LEVEL, etc.

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use std::env;
+use eket_core::config::EketConfig;
 use std::path::PathBuf;
 
 #[tokio::main]
@@ -12,23 +12,18 @@ async fn main() -> Result<()> {
         .with_target(false)
         .init();
 
-    let port: u16 = env::var("EKET_SERVER_PORT")
+    let cfg = EketConfig::load().unwrap_or_default();
+
+    let port: u16 = std::env::var("EKET_SERVER_PORT")
         .ok()
         .and_then(|v| v.parse().ok())
-        .unwrap_or(9877);
+        .unwrap_or(cfg.api_port);
 
-    let db_path = env::var("EKET_DB_PATH")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| {
-            dirs::home_dir()
-                .unwrap_or_else(|| PathBuf::from("."))
-                .join(".eket")
-                .join("eket.db")
-        });
+    let db_path = PathBuf::from(&cfg.sqlite.path);
 
-    let tickets_dir = env::var("EKET_TICKETS_DIR")
+    let tickets_dir = cfg.tickets_dir
         .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("jira/tickets"));
+        .unwrap_or_else(|| PathBuf::from("jira/tickets"));
 
     eket_server::start(port, db_path, tickets_dir).await
 }
