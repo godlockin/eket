@@ -63,6 +63,29 @@ do_install() {
 
   # 移除 .gitkeep（不需要）
   rm -f "$SKILL_DEST/references/.gitkeep"
+
+  # ─── Rust binary 构建（可选）─────────────────
+  if [ "${EKET_SKIP_RUST_BUILD:-}" = "1" ]; then
+    echo "  EKET_SKIP_RUST_BUILD=1，跳过 Rust 构建"
+  elif command -v cargo >/dev/null 2>&1; then
+    local rust_dir="$PROJECT_ROOT/rust"
+    if [ -d "$rust_dir" ]; then
+      echo "  → 构建 Rust binary（cargo build --release）..."
+      if (cd "$rust_dir" && cargo build --release 2>&1); then
+        local bin_src="$rust_dir/target/release/eket"
+        if [ -f "$bin_src" ]; then
+          mkdir -p "$HOME/.local/bin"
+          cp "$bin_src" "$HOME/.local/bin/eket"
+          echo -e "  ${GREEN}✓ eket binary 已更新到 ~/.local/bin/eket${NC}"
+        fi
+      else
+        echo -e "${YELLOW}  ⚠ Rust 构建失败，跳过 binary 安装${NC}"
+      fi
+    fi
+  else
+    echo -e "${YELLOW}  跳过 Rust binary 构建（未找到 cargo）。${NC}"
+    echo "  使用 'setup.sh' 安装 Rust 工具链：bash scripts/setup.sh"
+  fi
 }
 
 # ─────────────────────────────────────────────

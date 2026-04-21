@@ -22,6 +22,18 @@ pub struct GateReviewArgs {
     /// Output structured JSON
     #[arg(long)]
     pub json: bool,
+
+    /// Auto-approve: immediately output APPROVE decision without running checks
+    #[arg(long)]
+    pub auto_approve: bool,
+
+    /// Force veto with given reason: immediately output VETO decision
+    #[arg(long)]
+    pub force_veto: Option<String>,
+
+    /// Dry run: run all checks but don't write any files
+    #[arg(long)]
+    pub dry_run: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -51,7 +63,37 @@ pub fn parse_gh_checks_output(output: &str) -> Vec<CheckResult> {
 }
 
 pub async fn run(args: GateReviewArgs) -> Result<()> {
-    let result = run_gate_review(args.pr_url.as_deref(), args.ticket_id.as_deref());
+    // --auto-approve: short-circuit, output APPROVE immediately
+    if args.auto_approve {
+        let result = json!({
+            "decision": "APPROVE",
+            "reason": "auto-approved",
+            "pass": true,
+            "ticket_id": args.ticket_id,
+        });
+        println!("{}", serde_json::to_string_pretty(&result)?);
+        return Ok(());
+    }
+
+    // --force-veto: short-circuit, output VETO immediately
+    if let Some(ref reason) = args.force_veto {
+        let result = json!({
+            "decision": "VETO",
+            "reason": reason,
+            "pass": false,
+            "ticket_id": args.ticket_id,
+        });
+        println!("{}", serde_json::to_string_pretty(&result)?);
+        return Ok(());
+    }
+
+    let mut result = run_gate_review(args.pr_url.as_deref(), args.ticket_id.as_deref());
+
+    // --dry-run: note it in output (no file writes occur anyway in current impl)
+    if args.dry_run {
+        result["dry_run"] = json!(true);
+    }
+
     println!("{}", serde_json::to_string_pretty(&result)?);
     Ok(())
 }
@@ -124,5 +166,22 @@ mod tests {
         let checks = parse_gh_checks_output(mock_output);
         assert_eq!(checks.len(), 2);
         assert_eq!(checks[1].status, "fail");
+    }
+
+    #[tokio::test]
+    async fn auto_approve_short_circuits() {
+        let args = GateReviewArgs {
+            pr_url: None,
+            ticket_id: Some("TASK-001".to_string()),
+            db_path: None,
+            json: false,
+            auto_approve: true,
+            force_veto: None,
+            dry_run: false,
+        };
+        // Just verify it doesn't call gh (no pr_url needed)
+        // We can't capture stdout easily, but run() should succeed
+        let result = run(args).await;
+        assert!(result.is_ok());
     }
 }
