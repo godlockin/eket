@@ -154,112 +154,125 @@ Phase 3 — Master 汇总综合报告
 
 ## Quick Start（外部项目使用）
 
+### Rust CLI（推荐，~21ms/cmd）
+
+1. 编译安装：`cd rust && cargo build --release && cp target/release/eket ~/.local/bin/`
+2. 系统诊断：`eket system:doctor`
+3. 注册 Slaver：`eket slaver:register --role backend --skills rust`
+4. 领取任务：`eket task:claim`
+5. 完成任务：`eket task:complete TASK-NNN`
+6. 启动 API server：`eket server`（:9877）
+
+### Node.js（Web Dashboard / LLM）
+
 1. 安装：`./scripts/setup.sh --level=2`
-2. 启动 Master：`node dist/index.js instance:start --auto`
-3. 领取任务：`node dist/index.js task:claim`
-4. 系统诊断：`node dist/index.js system:doctor`
-5. Web 仪表盘：`node dist/index.js web:dashboard --port 3000`
+2. 启动全栈：`node dist/index.js server:start`（自动拉起 Rust server）
+3. Web 仪表盘：`node dist/index.js web:dashboard --port 3000`
 
 ## Commands
 
-### 实例管理
+### Rust CLI（eket binary）
 
 ```bash
-# AI 自动模式（自动选择角色）
+# 系统诊断
+eket system:doctor
+
+# 任务管理
+eket task:create "ticket title" [--type feature] [--priority P1] [--blocked-by TASK-X]
+eket task:claim [TASK-NNN]           # 原子领取，<21ms
+eket task:complete TASK-NNN          # Saga 5步完成
+eket task:resume TASK-NNN            # 从 checkpoint 恢复
+eket task:progress                   # DAG 进度 + 关键路径
+
+# Master 命令
+eket master:heartbeat                # 扫描 ready → 分发（长期运行）
+eket master:poll                     # 处理 TaskResult/Heartbeat
+
+# Slaver 命令
+eket slaver:register --role backend --skills rust,python
+eket slaver:poll                     # 长轮询 mailbox（Ctrl+C 退出）
+
+# 知识库
+eket knowledge:index --dir jira/tickets/
+eket knowledge:search "tokio async"
+eket recommend TASK-NNN
+
+# 团队 & 任务
+eket team:status
+eket task:handoff TASK-NNN --to slaver_2
+eket gate:review TASK-NNN
+eket submit:pr
+
+# HTTP API
+eket server [--port 9877] [--db-path ~/.eket/eket.db]
+```
+
+### Node.js（Web 层）
+
+```bash
+# AI 自动模式
 node dist/index.js instance:start --auto
 
-# 人工模式（手动指定角色）
+# 人工模式
 node dist/index.js instance:start --human --role frontend_dev
-
-# 列出所有可用角色
-node dist/index.js instance:start --list-roles
-
-# 设置当前实例角色
 node dist/index.js instance:set-role <role>
 ```
 
-### 任务管理
+### 任务管理（Node.js 兼容层）
 
 ```bash
-# 领取任务（自动匹配角色）
-node dist/index.js task:claim
-
-# 领取指定 ticket
-node dist/index.js task:claim <ticket-id>
-
-# 初始化项目
+node dist/index.js task:claim [ticket-id]
 node dist/index.js project:init
 ```
 
 ### 系统诊断
 
 ```bash
-# 完整系统诊断（推荐首次运行）
-node dist/index.js system:doctor
-
-# 快速系统检查
+eket system:doctor                           # Rust 诊断
+node dist/index.js system:doctor             # 整合诊断（含 Rust 状态）
 node dist/index.js system:check
 ```
 
-### Redis 操作
+### Redis / SQLite 操作
 
 ```bash
-# 检查 Redis 连接状态
 node dist/index.js redis:check
-
-# 列出所有已注册 Slaver
 node dist/index.js redis:list-slavers
-```
-
-### SQLite 操作
-
-```bash
-# 检查 SQLite 连接
 node dist/index.js sqlite:check
-
-# 列出所有回顾记录
 node dist/index.js sqlite:list-retros
-
-# 搜索知识库
 node dist/index.js sqlite:search "<keyword>"
-
-# 生成项目报告
 node dist/index.js sqlite:report
 ```
 
 ### 监控服务
 
 ```bash
-# 启动 Web 仪表盘
+# Web 仪表盘（需 Rust server 已启动）
 node dist/index.js web:dashboard --port 3000
 
-# 启动 HTTP Hook 服务器（Agent 生命周期事件）
+# HTTP Hook 服务器（Agent 生命周期事件）
 node dist/index.js hooks:start --port 8899
 
-# 启动 OpenCLAW API 网关（需要 OPENCLAW_API_KEY）
+# OpenCLAW API 网关（需要 OPENCLAW_API_KEY）
 node dist/index.js gateway:start --port 8080
 ```
 
-### 心跳
+### 心跳（Rust 推荐）
 
 ```bash
-# 启动心跳（保持 Slaver 在线状态）
-node dist/index.js heartbeat:start <slaverId>
+# Rust：长期运行 Master 心跳（扫描+分发）
+eket master:heartbeat
 
-# 查看心跳状态
+# Node.js 兼容
+node dist/index.js heartbeat:start <slaverId>
 node dist/index.js heartbeat:status
 ```
 
-### 消息队列 & Agent Pool
+### 消息队列 & Agent Pool（Node.js 层）
 
 ```bash
-# 测试消息队列连通性
 node dist/index.js queue:test
-
-# 查看 Agent Pool 状态
 node dist/index.js pool:status
-
-# 按角色选择 Agent
 node dist/index.js pool:select -r <role>
 ```
 
@@ -267,95 +280,88 @@ node dist/index.js pool:select -r <role>
 
 参考 [references/dev-commands.md](references/dev-commands.md)
 
-快速：
-
 ```bash
-# 构建（TypeScript → dist/）
+# Rust
+cd rust && cargo build --release
+cargo test --workspace
+bash tests/e2e_smoke.sh
+
+# Node.js
 cd node && npm run build
-
-# 运行所有测试
-cd node && npm test
-
-# 运行单个测试文件
-npm test -- --testPathPattern=<pattern>
-
-# 开发模式（无需构建）
-npm run dev -- <command>
-
-# 代码检查
-npm run lint
-npm run lint:fix
-
-# 格式化
-npm run format
-
-# 清理构建产物
-npm run clean
+npm test
+npm run lint && npm run format
 ```
 
 ## Architecture
 
 参考 [references/architecture.md](references/architecture.md)
 
-三级降级：Level 3(Redis+SQLite) → Level 2(Node+文件队列) → Level 1(Shell)
+四级降级：Shell(L0) → Rust(L1) → Node.js(L2) → Shell fallback(L3)
 
 ```
-Level 3: Redis + SQLite     # 生产级高并发，完整功能
-    ↓ Redis 不可用
-Level 2: Node.js + 文件队列  # .eket/data/queue/*.json（去重+归档）
-    ↓ Node.js 不可用
-Level 1: Shell 脚本          # lib/adapters/hybrid-adapter.sh 基础模式
+Level 0: Shell   lib/adapters/hybrid-adapter.sh    ← 100% 可用
+Level 1: Rust    eket binary + axum :9877           ← 高性能核心 NEW
+Level 2: Node.js web-server → 代理 Rust API         ← Web UI / LLM
+Level 3: Shell fallback（Node 不可用时）
 ```
 
-**核心模块**：
-- `core/master-election.ts` — 三级 Master 选举（Redis SETNX / SQLite / File mkdir）
-- `core/connection-manager.ts` — 四级降级连接管理
-- `core/message-queue.ts` — 消息队列（Redis Pub/Sub + 文件降级）
-- `core/circuit-breaker.ts` — 断路器（closed/open/half_open）
-- `core/cache-layer.ts` — LRU 内存缓存 + Redis 二级缓存
-- `core/agent-pool.ts` — Agent Pool 管理（负载均衡、角色选择）
-- `core/workflow-engine.ts` — 工作流引擎（预定义协作流程）
-- `core/event-bus.ts` — 事件总线（DomainEvent、死信队列）
-- `core/alerting.ts` — 四级告警 + 多渠道通知
+**Rust 核心模块**：
+- `eket-core/election.rs` — 三级 Master 选举（Redis SETNX / SQLite / File）
+- `eket-core/queue.rs` — 消息队列（Redis + 文件降级）
+- `eket-core/circuit_breaker.rs` — 断路器（closed/open/half_open）
+- `eket-core/cache.rs` — L1 moka + L2 Redis 二级缓存
+- `eket-engine/workflow.rs` — 工作流状态机（tokio async）
+- `eket-engine/agent_pool.rs` — Agent Pool（轮询/角色匹配）
+- `eket-engine/event_bus.rs` — 事件总线（broadcast，死信队列）
+- `eket-engine/monitors.rs` — HeartbeatMonitor + StaleCleaner
+- `eket-server/lib.rs` — axum HTTP API（/health /api/v1/*）
 
 ## Setup Guide
 
 参考 [references/setup-guide.md](references/setup-guide.md)
 
 ```bash
-./scripts/setup.sh           # 交互式安装
-./scripts/setup.sh --all     # 全部安装
-./scripts/setup.sh --level=2 # 只装到 Node.js（推荐）
-./scripts/setup.sh --level=1 # 仅 Shell 基础版
+# Rust（推荐）
+cd rust && cargo build --release
+cp target/release/eket ~/.local/bin/
+
+# Node.js（Web 层）
+./scripts/setup.sh --level=2
+
+# Skill 更新
+./scripts/install-skill.sh --update
 ```
 
 **初始化新项目**：
 
 ```bash
-# 从框架初始化新项目
 ./scripts/init-project.sh <project-name> /path/to/project
-
-# 初始化三仓库（需 Git 平台 token）
 ./scripts/init-three-repos.sh <project-name> <org> <github|gitlab|gitee>
-
-# 启用 Node.js 高级功能
-./scripts/enable-advanced.sh
 ```
 
 ## Environment Variables
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
-| `OPENCLAW_API_KEY` | OpenCLAW Gateway API Key（≥16 字符） | 无 |
 | `EKET_REDIS_HOST` | Redis 主机 | `localhost` |
 | `EKET_REDIS_PORT` | Redis 端口 | `6379` |
 | `EKET_SQLITE_PATH` | SQLite 数据库路径 | `~/.eket/data/sqlite/eket.db` |
+| `EKET_TICKETS_DIR` | Ticket 目录 | `./jira/tickets` |
+| `EKET_MAILBOX_DIR` | Mailbox 目录 | `~/.eket/mailbox` |
+| `EKET_SERVER_PORT` | Rust HTTP server 端口 | `9877` |
+| `OPENCLAW_API_KEY` | OpenCLAW Gateway API Key（≥16 字符） | 无 |
 | `EKET_REMOTE_REDIS_HOST` | 远程 Redis | 无 |
-| `EKET_LOG_LEVEL` | 日志级别（debug/info/warn/error） | `info` |
+| `EKET_LOG_LEVEL` | 日志级别（debug/info/warn/error） | `warn` |
 
 ## Error Handling
 
-所有命令返回 `Result<T>` 类型，失败时输出错误码并以非零退出：
+**Rust**：返回 `Result<T, EketError>`，CLI 输出 JSON + exit(1)：
+
+```rust
+// 失败示例：{"success": false, "error": "ticket TASK-042 not found"}
+```
+
+**TypeScript（保留层）**：
 
 ```typescript
 // 错误码定义：node/src/types/index.ts → EketErrorCode 枚举
@@ -365,15 +371,16 @@ Level 1: Shell 脚本          # lib/adapters/hybrid-adapter.sh 基础模式
 ## Branch Strategy
 
 ```
-feature/{ticket-id}-{desc}  →  PR  →  testing  →  测试通过  →  PR  →  main
+feature/{ticket-id}-{desc}  →  PR  →  testing  →  测试通过  →  PR  →  miao  →  main
 ```
 
 - `main`：严格保护，仅 Master 合并
 - `testing`：保护，PR 合并需测试通过
+- `miao`：预发布分支
 - `feature/*`：开放，Slaver 开发使用
 
 ## References
 
-- [architecture.md](references/architecture.md) — 三级降级架构、核心模块表、Master-Slaver 协作流程
-- [dev-commands.md](references/dev-commands.md) — 构建/测试/发布完整命令参考
+- [architecture.md](references/architecture.md) — 四级降级架构、Rust/Node 模块表、Master-Slaver 协作流程
+- [dev-commands.md](references/dev-commands.md) — Rust + Node.js 构建/测试/发布完整命令参考
 - [setup-guide.md](references/setup-guide.md) — 四层安装详细说明、环境变量表、常见问题
