@@ -268,7 +268,10 @@ pub fn topological_sort(dag: &DagResponse) -> Result<Vec<String>, String> {
         if let Some(dependents) = adj.get(&id) {
             let mut next: Vec<String> = Vec::new();
             for dep in dependents {
-                let d = in_degree.get_mut(dep).unwrap();
+                let d = match in_degree.get_mut(dep) {
+                    Some(v) => v,
+                    None => continue, // stale/orphan dependency edge — skip safely
+                };
                 *d -= 1;
                 if *d == 0 {
                     next.push(dep.clone());
