@@ -151,7 +151,7 @@ async fn get_task(
                 created_at: r.created_at,
                 updated_at: r.updated_at,
             };
-            Ok(Json(serde_json::to_value(item).unwrap()))
+            Ok(Json(serde_json::to_value(item).map_err(internal_error)?))
         }
         None => Err(not_found("not found")),
     }
@@ -209,7 +209,7 @@ async fn get_agent(
                 status: r.status,
                 last_seen: r.last_seen,
             };
-            Ok(Json(serde_json::to_value(item).unwrap()))
+            Ok(Json(serde_json::to_value(item).map_err(internal_error)?))
         }
         None => Err(not_found("not found")),
     }
