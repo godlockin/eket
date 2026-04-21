@@ -1,6 +1,6 @@
 # EKET Framework
 
-**EKET (Elite Knowledge & Engineering Team) - AI Multi-Agent Collaborative Development Framework | Version 2.3.0**
+**EKET (Elite Knowledge & Engineering Team) - Human-AI Special Forces Team Coordination Protocol | Version 2.3.0**
 **Last Update**: 2026-04-16
 
 [English](README.md) | [中文说明](README_zh-CN.md)
@@ -9,25 +9,26 @@
 [![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)](https://www.gnu.org/software/bash/)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-blue.svg)](https://nodejs.org/)
 
-> **EKET (Elite Knowledge & Engineering Team)** is a **Multi-Agent Collaborative Development Framework** built specifically for AI Agents.
+> **EKET (Elite Knowledge & Engineering Team)** is a **Human-AI Special Forces Team Coordination Protocol** — not a solo tool, not a large team platform.
 >
-> It organizes advanced LLMs (like Gemini, Claude, GPT, or AI inside tools like Cursor) into a fully-equipped virtual engineering team. Through a highly structured **Master-Slaver Architecture**, EKET realizes full-lifecycle automated software production—from **requirements analysis**, **task planning**, and **workflow breakdown**, to **coding**, **unit testing**, and **code reviews**.
+> The target formation: **1–5 humans** setting direction, making decisions, and reviewing output — plus **N AI Slavers** handling execution at scale. A human Slaver and an AI Slaver follow the exact same protocol: claim a ticket, deliver, get reviewed. The protocol doesn't care which kind you are.
 >
-> 💡 **Core Philosophy: Serverless State Machine & Graceful Degradation**. EKET persists task states, message buses, and memory engines entirely within the local file system and Git repository. Using a progressive three-level architecture ("Pure Shell -> Node.js -> Redis+SQLite"), it automatically downgrades based on environmental dependencies, ensuring that full multi-agent collaboration works out of the box even without any external services.
+> 💡 **Core Philosophy: Human judgment × AI execution density**. You need very few humans when agents handle execution volume. EKET persists task states, message buses, and memory engines entirely within the local file system and Git — three physically separate repos (confluence / jira / code). Using a progressive three-level architecture ("Pure Shell → Node.js → Redis+SQLite"), it automatically downgrades based on available infrastructure, ensuring reliable multi-agent delivery even without cloud services.
 
 ## 🎯 Vision & Mission
 
-- **Vision**: Return software engineering to pure design and creation. By utilizing powerful multi-agent collaboration to handle the tedious processes of coding, testing, and reviewing, we aim to build a 24/7 virtual R&D center where "you only need to point the direction, without intervening in the code details."
-- **Mission**: Provide a standard, reliable, gracefully degradable AI collaboration protocol. We overcome the "hallucination" limits of LLMs by introducing strict engineering workflows (upfront requirements analysis, strict role isolation, TDD, mandatory PR reviews), injecting industrial-grade usability and robustness into automated AI programming.
+- **Vision**: A coordination protocol for human-AI special forces teams: 1–5 humans setting direction, N AI agents handling execution at scale. The same protocol works whether a Slaver is human or AI — both claim tickets, deliver, and get reviewed identically.
+- **Mission**: Make AI agents production-grade collaborators, not toys. Through strict role isolation (Master controls direction, Slavers own execution), file-system-native state persistence, and graceful degradation from Rust → Shell, EKET ensures reliable multi-agent software delivery even without cloud infrastructure.
 
 ## 🌟 Core Concepts & Features
 
-- 🤖 **"Virtual Engineering Team" Mechanism**: Clear division of responsibilities. A Master (Product Manager/Tech Lead) manages requirements and code merging, while delegating tasks to multiple specialized Slavers (e.g., `frontend_dev`, `backend_dev`, `qa_engineer`) executing in parallel, preventing boundary crossing and hallucination accumulation.
-- ⚙️ **Industrial-Grade Constraints**: AI generation is no longer chaotic. Built-in, strict engineering standards such as Feature branch workflows, TDD (Test-Driven Development), and mandatory Pre-coding Analysis Reports ensure output quality.
-- 🧠 **Multi-Level Persistent Memory Engine**: Layered memory management (short-term session cache, long-term project experience dictionary, and Confluence global architecture external brain) allows the team to understand your project better over time.
+- 🤖 **Special Forces Team Model**: 1–5 humans provide direction and final judgment. N AI Slavers execute tickets in parallel. A human Slaver and an AI Slaver are interchangeable — same ticket schema, same mailbox protocol, same PR review gate. Master can be human or AI.
+- 🗂️ **Three-Repo Physical Separation**: `repo-confluence/` (knowledge base, architecture docs, Skills), `repo-jira/` (ticket lifecycle, task states, acceptance criteria), and `repo-code/` (actual code deliverables) are three independent Git repos with independent permissions. The monorepo you see here is the framework template — real deployments split them physically. Communication happens via mailbox files, file queues, and SSE.
+- ⚙️ **Industrial-Grade Constraints**: Built-in strict engineering standards — Feature branch workflows, TDD, mandatory pre-coding Analysis Reports, required PR reviews — prevent hallucination accumulation and ensure output quality.
+- 🧠 **Multi-Level Persistent Memory Engine**: Layered memory management (short-term session cache, long-term project experience dictionary, Confluence global architecture knowledge base) lets the team understand your project better over time.
 - 🛡️ **Three-Level Elastic Runtime (Graceful Degradation)**:
-  - **Level 1 (Pure Shell)**: Zero dependencies, instant startup. Runs purely on any restricted machine.
-  - **Level 2 (Node.js)**: Includes Web Dashboard and a robust queue mechanism preventing concurrent file conflicts. Targeted at most local development scenarios.
+  - **Level 1 (Pure Shell)**: Zero dependencies, instant startup. Runs on any restricted machine.
+  - **Level 2 (Node.js)**: Web Dashboard and robust queue mechanism preventing concurrent file conflicts. Targeted at most local development scenarios.
   - **Level 3 (Hybrid Full-Stack)**: Connects to Redis/SQLite for high availability, designed for high-concurrency production scenarios with multi-role agent clusters.
 
 ---

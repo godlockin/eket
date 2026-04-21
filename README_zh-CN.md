@@ -1,6 +1,6 @@
 # EKET Framework
 
-**EKET (Elite Knowledge & Engineering Team) - AI 多智能体协作开发框架 | Version 2.3.0**
+**EKET (Elite Knowledge & Engineering Team) - 人机特种部队协作协议 | Version 2.3.0**
 **最后更新**: 2026-04-16
 
 [English](README.md) | [中文说明](README_zh-CN.md)
@@ -9,22 +9,23 @@
 [![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)](https://www.gnu.org/software/bash/)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-blue.svg)](https://nodejs.org/)
 
-> **EKET (Elite Knowledge & Engineering Team)** 是一款专为 AI 智能体 (AI Agents) 打造的**多智能体协作开发框架**。
+> **EKET (Elite Knowledge & Engineering Team)** 是一套**人机特种部队协作协议** — 既非个人工具，也非大型团队平台。
 >
-> 它可以直接将多个先进的大模型（如 Gemini、Claude、GPT 甚至 Cursor 等工具里的 AI）组织成一个配置完备的虚拟工程团队。通过高度结构化的 **Master-Slaver 架构**，EKET 实现了从**需求分析**、**任务梳理**、**工作流拆解**，再到**代码编写**、**单元测试**及 **Code Review** 的全生命周期自动化软件生产。
+> 目标编制：**1–5 名人类**负责指明方向、做出决策、审查产出 — 加上 **N 个 AI Slaver** 大规模并行执行。人类 Slaver 和 AI Slaver 遵循完全相同的协议：认领 ticket、交付成果、接受 Review。协议本身不区分执行者是人还是 AI。
 >
-> 💡 **核心设计理念：Serverless 状态流转与渐进式架构**。EKET 将任务状态、消息总线和记忆引擎全部沉淀至本地文件系统和代码仓库（Git）中。采用“纯 Shell -> Node.js -> Redis+SQLite”的三级渐进架构（Graceful Degradation），系统根据环境依赖情况自动智能降级，确保哪怕在没有任何三方底座下，依然能实现完整的 AI 智能体协同。
+> 💡 **核心理念：人类判断力 × AI 执行密度**。当 Agent 承担执行量时，你只需极少数人类。EKET 将任务状态、消息总线和记忆引擎全部沉淀至本地文件系统和 Git — 三个物理分离的仓库（confluence / jira / code）。采用”纯 Shell → Node.js → Redis+SQLite”的三级渐进架构（Graceful Degradation），根据基础设施可用性自动降级，确保即便没有云服务，也能可靠地完成多智能体软件交付。
 
 ## 🎯 愿景与使命 (Vision & Mission)
 
-- **愿景 (Vision)**：让软件工程回归纯粹的设计与创造。通过强大的多 Agent 协作将繁琐的编码、测试与审查流程实现全托管，打造一个“无需干预细节、只需指明方向”的全天候虚拟研发中心。
-- **使命 (Mission)**：提供一套标准、可靠、可降级的 AI 协作开发协议。打破大模型的“幻觉”局限，通过引入强工程化的流程规范（需求前置分析、角色强隔离、TDD 模式、强制 PR Review），为 AI 自动编程注入工业级的可用性与稳健性。
+- **愿景 (Vision)**：为人机特种部队团队提供协作协议：1–5 名人类指明方向，N 个 AI Agent 大规模执行。无论 Slaver 是人类还是 AI，同一套协议均适用 — 认领 ticket、交付、接受 Review，流程完全一致。
+- **使命 (Mission)**：让 AI Agent 成为生产级协作者，而非玩具。通过严格的角色隔离（Master 掌控方向，Slaver 负责执行）、文件系统原生状态持久化，以及从 Rust → Shell 的优雅降级，EKET 确保即使没有云基础设施，也能可靠地进行多智能体软件交付。
 
 ## 🌟 核心理念与特性
 
-- 🤖 **“虚拟工程团队”机制**：明确的分工边界。由一个 Master（产品经理/Tech Leader）统管需求解析与合并代码，下发给集群中多个角色化的 Slaver（如 `frontend_dev`、`backend_dev`、`qa_engineer`）并行实现，防止越权与幻觉累加。
-- ⚙️ **工业级开发规范约束**：AI 不再是杂乱无章的生成。内置严格遵循 Feature 分支流转、TDD 测试驱动开发、写代码前必先输出 Analysis Report 的工业级标准，保障输出质量。
-- 🧠 **内置多级持久化记忆引擎**：分层记忆管理（短期会话缓存、长期项目经验字典、以及 Confluence 全局架构外脑），越用越懂你的项目。
+- 🤖 **特种部队模型**：1–5 名人类提供方向和最终判断，N 个 AI Slaver 并行执行 ticket。人类 Slaver 与 AI Slaver 可互换 — 相同的 ticket schema、相同的 mailbox 协议、相同的 PR Review 关卡。Master 可以是人类或 AI。
+- 🗂️ **三仓库物理分离**：`repo-confluence/`（知识库、架构文档、Skills）、`repo-jira/`（ticket 生命周期、任务状态、验收标准）和 `repo-code/`（实际代码交付物）是三个独立的 Git 仓库，拥有独立权限。当前 monorepo 是框架模板 — 真实部署时需物理拆分。各仓库间通过 mailbox 文件、文件队列和 SSE 通信。
+- ⚙️ **工业级开发规范约束**：内置严格的工程标准 — Feature 分支流转、TDD、写代码前必输出 Analysis Report、强制 PR Review — 防止幻觉累加，保障输出质量。
+- 🧠 **内置多级持久化记忆引擎**：分层记忆管理（短期会话缓存、长期项目经验字典、Confluence 全局架构知识库），越用越懂你的项目。
 - 🛡️ **极其强悍的弹性生命力（三级运行态）**：
   - **Level 1 (纯 Shell)**：零依赖极速起步，能在任意受限机器上纯净运行。
   - **Level 2 (Node.js)**：自带 Web Dashboard、文件防拆错队列机制，面向大多数本地开发场景。
