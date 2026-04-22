@@ -12,6 +12,7 @@
 ///   - 赢得 Redis 时 INCR eket:master:epoch
 ///   - 非 Redis master 每 60s 尝试升级到 Redis
 ///   - 升级成功广播 MasterChanged 到 eket:master:changed
+
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
