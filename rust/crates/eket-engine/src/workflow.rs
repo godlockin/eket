@@ -4,7 +4,7 @@
 /// 状态：pending → running → (paused ↔ running) → completed / failed
 ///
 /// 关键设计：
-/// - WorkflowInstance 存于 Arc<RwLock<HashMap>>（并发安全）
+/// - WorkflowInstance 存于 DashMap（并发安全，无全局锁）
 /// - 步骤超时通过 tokio::time::timeout（无 timer 泄漏）
 /// - JudgmentPoint：oneshot 通道，外部 resolve_judgment() 发信号
 /// - kill-switch：每个实例持有 AbortHandle，cancel 时立即终止
@@ -13,6 +13,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
+use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 use tokio::sync::{oneshot, RwLock};
 use tracing::{info, warn};
@@ -126,10 +127,12 @@ type JudgmentSender = oneshot::Sender<bool>;
 pub struct WorkflowEngine {
     pub(crate) instance_id: String,
     pub(crate) definitions: Arc<RwLock<HashMap<String, WorkflowDefinition>>>,
-    pub(crate) instances: Arc<RwLock<HashMap<String, WorkflowInstance>>>,
-    pub(crate) executors: Arc<RwLock<HashMap<String, StepExecutor>>>,
-    pub(crate) pending_judgments: Arc<RwLock<HashMap<String, JudgmentSender>>>,
-    kill_handles: Arc<RwLock<HashMap<String, tokio::task::AbortHandle>>>,
+    /// DashMap: concurrent insert/get/remove without global lock.
+    /// Each instance wrapped in Arc<RwLock<>> to protect per-instance mutation.
+    pub(crate) instances: Arc<DashMap<String, Arc<RwLock<WorkflowInstance>>>>,
+    pub(crate) executors: Arc<DashMap<String, StepExecutor>>,
+    pub(crate) pending_judgments: Arc<DashMap<String, JudgmentSender>>,
+    kill_handles: Arc<DashMap<String, tokio::task::AbortHandle>>,
     event_bus: Option<EventBus>,
     default_timeout_ms: u64,
 }
@@ -139,10 +142,10 @@ impl WorkflowEngine {
         Self {
             instance_id: instance_id.into(),
             definitions: Arc::new(RwLock::new(HashMap::new())),
-            instances: Arc::new(RwLock::new(HashMap::new())),
-            executors: Arc::new(RwLock::new(HashMap::new())),
-            pending_judgments: Arc::new(RwLock::new(HashMap::new())),
-            kill_handles: Arc::new(RwLock::new(HashMap::new())),
+            instances: Arc::new(DashMap::new()),
+            executors: Arc::new(DashMap::new()),
+            pending_judgments: Arc::new(DashMap::new()),
+            kill_handles: Arc::new(DashMap::new()),
             event_bus,
             default_timeout_ms: 300_000,
         }
@@ -153,7 +156,7 @@ impl WorkflowEngine {
     }
 
     pub async fn register_step(&self, step_id: impl Into<String>, executor: StepExecutor) {
-        self.executors.write().await.insert(step_id.into(), executor);
+        self.executors.insert(step_id.into(), executor);
     }
 
     pub async fn start_workflow(
@@ -187,7 +190,7 @@ impl WorkflowEngine {
             error: None,
         };
 
-        self.instances.write().await.insert(workflow_id.clone(), instance);
+        self.instances.insert(workflow_id.clone(), Arc::new(RwLock::new(instance)));
         self.emit(crate::event_bus::events::WORKFLOW_STARTED, serde_json::json!({
             "workflow_id": workflow_id, "definition_id": definition_id
         })).await;
@@ -195,18 +198,20 @@ impl WorkflowEngine {
         let runner = self.make_runner(workflow_id.clone(), def);
         let join_handle = tokio::spawn(runner);
         let handle = join_handle.abort_handle();
-        self.kill_handles.write().await.insert(workflow_id.clone(), handle);
+        self.kill_handles.insert(workflow_id.clone(), handle);
 
         info!("[Workflow] {} started", workflow_id);
         Ok(workflow_id)
     }
 
     pub async fn cancel_workflow(&self, workflow_id: &str) {
-        if let Some(handle) = self.kill_handles.write().await.remove(workflow_id) {
+        if let Some((_, handle)) = self.kill_handles.remove(workflow_id) {
             handle.abort();
         }
-        let mut instances = self.instances.write().await;
-        if let Some(inst) = instances.get_mut(workflow_id) {
+        // Get Arc, drop DashMap ref, then lock instance
+        let inst_arc = self.instances.get(workflow_id).map(|r| r.value().clone());
+        if let Some(arc) = inst_arc {
+            let mut inst = arc.write().await;
             inst.status = WorkflowStatus::Cancelled;
             inst.finished_at = Some(chrono::Utc::now());
         }
@@ -214,8 +219,7 @@ impl WorkflowEngine {
     }
 
     pub async fn resolve_judgment(&self, judgment_id: &str, approved: bool) -> bool {
-        let mut pending = self.pending_judgments.write().await;
-        if let Some(tx) = pending.remove(judgment_id) {
+        if let Some((_, tx)) = self.pending_judgments.remove(judgment_id) {
             let _ = tx.send(approved);
             true
         } else {
@@ -224,7 +228,10 @@ impl WorkflowEngine {
     }
 
     pub async fn get_instance(&self, workflow_id: &str) -> Option<WorkflowInstance> {
-        self.instances.read().await.get(workflow_id).cloned()
+        // Get Arc, drop DashMap ref, then read
+        let arc = { self.instances.get(workflow_id)?.value().clone() };
+        let inst = arc.read().await.clone();
+        Some(inst)
     }
 
     fn make_runner(&self, workflow_id: String, def: WorkflowDefinition) -> impl std::future::Future<Output = ()> {
@@ -240,15 +247,22 @@ impl WorkflowEngine {
                 def.steps.iter().map(|s| (s.id.clone(), s.clone())).collect();
             let mut current_step_id = def.entry_step_id.clone();
 
+            // Helper: get instance Arc without holding DashMap ref across await
+            macro_rules! get_inst_arc {
+                () => {{
+                    instances.get(&workflow_id).map(|r| r.value().clone())
+                }};
+            }
+
             loop {
                 let step = match step_map.get(&current_step_id) {
                     Some(s) => s.clone(),
                     None => {
-                        let mut inst = instances.write().await;
-                        if let Some(i) = inst.get_mut(&workflow_id) {
-                            i.status = WorkflowStatus::Failed;
-                            i.error = Some(format!("Unknown step: {current_step_id}"));
-                            i.finished_at = Some(chrono::Utc::now());
+                        if let Some(arc) = get_inst_arc!() {
+                            let mut inst = arc.write().await;
+                            inst.status = WorkflowStatus::Failed;
+                            inst.error = Some(format!("Unknown step: {current_step_id}"));
+                            inst.finished_at = Some(chrono::Utc::now());
                         }
                         break;
                     }
@@ -258,7 +272,7 @@ impl WorkflowEngine {
                 if step.judgment_required {
                     let judgment_id = Uuid::new_v4().to_string();
                     let (tx, rx) = oneshot::channel::<bool>();
-                    pending_judgments.write().await.insert(judgment_id.clone(), tx);
+                    pending_judgments.insert(judgment_id.clone(), tx);
 
                     if let Some(ref bus) = event_bus {
                         bus.publish(DomainEvent::new("step.judgment_required", serde_json::json!({
@@ -266,24 +280,23 @@ impl WorkflowEngine {
                         }), None)).await;
                     }
 
-                    {
-                        let mut inst = instances.write().await;
-                        if let Some(i) = inst.get_mut(&workflow_id) { i.status = WorkflowStatus::Paused; }
+                    if let Some(arc) = get_inst_arc!() {
+                        arc.write().await.status = WorkflowStatus::Paused;
                     }
 
                     let jt = step.judgment_timeout_ms.or(step.timeout_ms).unwrap_or(default_timeout);
                     let approved = match tokio::time::timeout(Duration::from_millis(jt), rx).await {
                         Ok(Ok(v)) => v,
                         _ => {
-                            pending_judgments.write().await.remove(&judgment_id);
+                            pending_judgments.remove(&judgment_id);
                             match step.judgment_fallback {
                                 JudgmentFallback::Skip => true,
                                 JudgmentFallback::FailWorkflow => {
-                                    let mut inst = instances.write().await;
-                                    if let Some(i) = inst.get_mut(&workflow_id) {
-                                        i.status = WorkflowStatus::Failed;
-                                        i.error = Some("Judgment timeout".into());
-                                        i.finished_at = Some(chrono::Utc::now());
+                                    if let Some(arc) = get_inst_arc!() {
+                                        let mut inst = arc.write().await;
+                                        inst.status = WorkflowStatus::Failed;
+                                        inst.error = Some("Judgment timeout".into());
+                                        inst.finished_at = Some(chrono::Utc::now());
                                     }
                                     break;
                                 }
@@ -295,10 +308,10 @@ impl WorkflowEngine {
                         }
                     };
 
-                    {
-                        let mut inst = instances.write().await;
-                        if let Some(i) = inst.get_mut(&workflow_id) {
-                            if i.status == WorkflowStatus::Paused { i.status = WorkflowStatus::Running; }
+                    if let Some(arc) = get_inst_arc!() {
+                        let mut inst = arc.write().await;
+                        if inst.status == WorkflowStatus::Paused {
+                            inst.status = WorkflowStatus::Running;
                         }
                     }
 
@@ -307,19 +320,23 @@ impl WorkflowEngine {
 
                 // Check cancelled
                 {
-                    let inst = instances.read().await;
-                    if let Some(i) = inst.get(&workflow_id) {
-                        if i.status == WorkflowStatus::Cancelled { break; }
-                    }
+                    let cancelled = if let Some(arc) = get_inst_arc!() {
+                        arc.read().await.status == WorkflowStatus::Cancelled
+                    } else {
+                        false
+                    };
+                    if cancelled { break; }
                 }
 
                 let context = {
-                    let mut inst = instances.write().await;
-                    if let Some(i) = inst.get_mut(&workflow_id) {
-                        i.current_step_id = Some(current_step_id.clone());
-                        i.context.current_step_id = Some(current_step_id.clone());
-                        i.context.clone()
-                    } else { break; }
+                    if let Some(arc) = get_inst_arc!() {
+                        let mut inst = arc.write().await;
+                        inst.current_step_id = Some(current_step_id.clone());
+                        inst.context.current_step_id = Some(current_step_id.clone());
+                        inst.context.clone()
+                    } else {
+                        break;
+                    }
                 };
 
                 if let Some(ref bus) = event_bus {
@@ -329,7 +346,8 @@ impl WorkflowEngine {
                 }
 
                 let timeout_ms = step.timeout_ms.unwrap_or(default_timeout);
-                let executor = executors.read().await.get(&current_step_id).cloned();
+                // Get executor Arc, immediately drop DashMap ref before await
+                let executor = executors.get(&current_step_id).map(|r| r.value().clone());
 
                 let result = match executor {
                     Some(exec) => {
@@ -356,24 +374,21 @@ impl WorkflowEngine {
                     }
                     match result.next_step_id {
                         Some(next) => {
-                            // Propagate step output into context.data for next step
-                            {
-                                let mut inst = instances.write().await;
-                                if let Some(i) = inst.get_mut(&workflow_id) {
-                                    i.context.data.insert(
-                                        format!("{current_step_id}.output"),
-                                        result.output.clone(),
-                                    );
-                                    i.context.previous_step_id = Some(current_step_id.clone());
-                                }
+                            if let Some(arc) = get_inst_arc!() {
+                                let mut inst = arc.write().await;
+                                inst.context.data.insert(
+                                    format!("{current_step_id}.output"),
+                                    result.output.clone(),
+                                );
+                                inst.context.previous_step_id = Some(current_step_id.clone());
                             }
                             current_step_id = next;
                         }
                         None => {
-                            let mut inst = instances.write().await;
-                            if let Some(i) = inst.get_mut(&workflow_id) {
-                                i.status = WorkflowStatus::Completed;
-                                i.finished_at = Some(chrono::Utc::now());
+                            if let Some(arc) = get_inst_arc!() {
+                                let mut inst = arc.write().await;
+                                inst.status = WorkflowStatus::Completed;
+                                inst.finished_at = Some(chrono::Utc::now());
                             }
                             if let Some(ref bus) = event_bus {
                                 bus.publish(DomainEvent::new(crate::event_bus::events::WORKFLOW_COMPLETED, serde_json::json!({
@@ -385,11 +400,11 @@ impl WorkflowEngine {
                         }
                     }
                 } else {
-                    let mut inst = instances.write().await;
-                    if let Some(i) = inst.get_mut(&workflow_id) {
-                        i.status = WorkflowStatus::Failed;
-                        i.error = result.error.clone();
-                        i.finished_at = Some(chrono::Utc::now());
+                    if let Some(arc) = get_inst_arc!() {
+                        let mut inst = arc.write().await;
+                        inst.status = WorkflowStatus::Failed;
+                        inst.error = result.error.clone();
+                        inst.finished_at = Some(chrono::Utc::now());
                     }
                     if let Some(ref bus) = event_bus {
                         bus.publish(DomainEvent::new(crate::event_bus::events::WORKFLOW_FAILED, serde_json::json!({
@@ -401,7 +416,7 @@ impl WorkflowEngine {
                 }
             }
 
-            kill_handles.write().await.remove(&workflow_id);
+            kill_handles.remove(&workflow_id);
         }
     }
 
@@ -809,7 +824,7 @@ mod tests {
         let wf = engine.start_workflow("j", HashMap::new()).await.unwrap();
         tokio::time::sleep(Duration::from_millis(50)).await;
 
-        let jids: Vec<String> = engine.pending_judgments.read().await.keys().cloned().collect();
+        let jids: Vec<String> = engine.pending_judgments.iter().map(|r| r.key().clone()).collect();
         if let Some(jid) = jids.first() {
             engine.resolve_judgment(jid, true).await;
         }
