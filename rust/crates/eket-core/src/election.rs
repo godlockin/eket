@@ -6,6 +6,12 @@
 /// 3. 文件系统 mkdir（最终降级）
 ///
 /// 选出后持续续租（tokio interval），租约到期前续租失败则主动退位
+///
+/// TASK-191: 降级后恢复升级
+///   - ElectionResult 携带 level + epoch
+///   - 赢得 Redis 时 INCR eket:master:epoch
+///   - 非 Redis master 每 60s 尝试升级到 Redis
+///   - 升级成功广播 MasterChanged 到 eket:master:changed
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -22,9 +28,14 @@ use crate::redis::EketRedisClient;
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const REDIS_LOCK_KEY: &str = "eket:master:lock";
+const REDIS_EPOCH_KEY: &str = "eket:master:epoch";
 const REDIS_LEASE_TTL_SECS: u64 = 30;
 const RENEW_INTERVAL_SECS: u64 = 15; // TTL/2 — ensures renewal before expiry
 const MAX_RENEW_FAILURES: u32 = 3;   // resign after 3 consecutive failures → prevent split brain
+/// How often a non-Redis master polls to upgrade to Redis
+const UPGRADE_CHECK_INTERVAL_SECS: u64 = 60;
+/// Redis pub/sub channel for master-changed notifications
+const MASTER_CHANGED_CHANNEL: &str = "eket:master:changed";
 /// Cap concurrent spawn_blocking SQLite calls to avoid exhausting the r2d2 pool (max_size=8)
 const SQLITE_ELECTION_CONCURRENCY: usize = 4;
 
@@ -39,11 +50,12 @@ fn sqlite_semaphore() -> Arc<Semaphore> {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// Ordered by authority: File < Sqlite < Redis (derived Ord uses declaration order)
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ElectionLevel {
-    Redis,
-    Sqlite,
     File,
+    Sqlite,
+    Redis,
 }
 
 #[derive(Debug, Clone)]
@@ -51,6 +63,8 @@ pub struct ElectionResult {
     pub is_master: bool,
     pub instance_id: String,
     pub level: ElectionLevel,
+    /// Monotonically increasing epoch (Redis INCR); 0 when Redis unavailable
+    pub epoch: u64,
 }
 
 // ─── MasterElection ───────────────────────────────────────────────────────────
@@ -62,6 +76,8 @@ pub struct MasterElection {
     project_root: PathBuf,
     /// Lease renewer abort handle (Some when we hold the lock)
     renewer: Arc<Mutex<Option<tokio::task::AbortHandle>>>,
+    /// Upgrade poller handle (non-Redis masters poll for Redis availability)
+    upgrade_handle: Arc<Mutex<Option<tokio::task::AbortHandle>>>,
 }
 
 impl MasterElection {
@@ -83,6 +99,7 @@ impl MasterElection {
             sqlite_pool,
             project_root: project_root.as_ref().to_path_buf(),
             renewer: Arc::new(Mutex::new(None)),
+            upgrade_handle: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -121,6 +138,8 @@ impl MasterElection {
                 Ok(result) => {
                     if result.is_master {
                         self.start_renewer_sqlite(pool.clone()).await;
+                        // Start upgrade poller to recover to Redis when it comes back
+                        self.start_upgrade_poller().await;
                     }
                     return Ok(result);
                 }
@@ -131,15 +150,30 @@ impl MasterElection {
         }
 
         // Level 3: File
-        self.elect_file().await
+        let result = self.elect_file().await?;
+        if result.is_master {
+            // Start upgrade poller to recover to Redis/SQLite when available
+            self.start_upgrade_poller().await;
+        }
+        Ok(result)
     }
 
     /// 主动释放 Master 身份
     pub async fn resign(&self) {
+        // Abort upgrade poller first
+        let mut ug = self.upgrade_handle.lock().await;
+        if let Some(handle) = ug.take() {
+            handle.abort();
+        }
+        drop(ug);
+
         let mut guard = self.renewer.lock().await;
         if let Some(handle) = guard.take() {
             handle.abort();
         }
+        // Delete the file lock so other instances can win
+        let lock_path = self.project_root.join(".eket/master/lock");
+        tokio::fs::remove_file(&lock_path).await.ok();
         info!("[Election] {} resigned", self.instance_id);
     }
 
@@ -150,16 +184,21 @@ impl MasterElection {
             .setnx(REDIS_LOCK_KEY, &self.instance_id, REDIS_LEASE_TTL_SECS)
             .await?;
 
-        if won {
+        let epoch = if won {
             info!("[Election] {} won via Redis", self.instance_id);
+            // Atomic increment: each new Redis-master gets a unique, increasing epoch.
+            // Existing instances see epoch bump → know a new master exists.
+            redis.incr(REDIS_EPOCH_KEY).await.unwrap_or(0)
         } else {
             info!("[Election] {} is slaver (Redis lock held)", self.instance_id);
-        }
+            0
+        };
 
         Ok(ElectionResult {
             is_master: won,
             instance_id: self.instance_id.clone(),
             level: ElectionLevel::Redis,
+            epoch,
         })
     }
 
@@ -230,6 +269,7 @@ impl MasterElection {
             is_master: won,
             instance_id: self.instance_id.clone(),
             level: ElectionLevel::Sqlite,
+            epoch: 0,
         })
     }
 
@@ -297,7 +337,70 @@ impl MasterElection {
             is_master: won,
             instance_id: self.instance_id.clone(),
             level: ElectionLevel::File,
+            epoch: 0,
         })
+    }
+
+    // ── Upgrade Polling ───────────────────────────────────────────────────────
+
+    /// Start background poller: when Redis comes back, attempt to upgrade from SQLite/File.
+    /// On success: INCR epoch, publish MasterChanged to eket:master:changed, abort old renewer.
+    ///
+    /// Called by elect() after winning a non-Redis (SQLite or File) election.
+    pub async fn start_upgrade_poller(&self) {
+        let redis = match self.redis.clone() {
+            Some(r) => r,
+            None => return, // no Redis configured → nothing to upgrade to
+        };
+
+        let id = self.instance_id.clone();
+        let renewer = self.renewer.clone();
+        let upgrade_handle_ref = self.upgrade_handle.clone();
+
+        let handle = tokio::spawn(async move {
+            let mut interval =
+                tokio::time::interval(Duration::from_secs(UPGRADE_CHECK_INTERVAL_SECS));
+            loop {
+                interval.tick().await;
+
+                if !redis.is_available() {
+                    continue;
+                }
+
+                // Attempt Redis election
+                let won = redis
+                    .setnx(REDIS_LOCK_KEY, &id, REDIS_LEASE_TTL_SECS)
+                    .await
+                    .unwrap_or(false);
+
+                if won {
+                    let epoch = redis.incr(REDIS_EPOCH_KEY).await.unwrap_or(0);
+                    info!(
+                        "[Election] {} upgraded to Redis (epoch={epoch}), broadcasting MasterChanged",
+                        id
+                    );
+
+                    // Broadcast so other instances (still on lower level) notice a new Redis master
+                    let event =
+                        format!(r#"{{"instance_id":"{id}","level":"Redis","epoch":{epoch}}}"#);
+                    let _ = redis.publish(MASTER_CHANGED_CHANNEL, &event).await;
+
+                    // Abort the old SQLite/File renewer — the upgraded instance's caller
+                    // should start a Redis renewer (e.g. via start_renewer_redis).
+                    let mut rn = renewer.lock().await;
+                    if let Some(h) = rn.take() {
+                        h.abort();
+                    }
+
+                    // Abort self (upgrade poller no longer needed)
+                    let mut ug = upgrade_handle_ref.lock().await;
+                    ug.take();
+                    break;
+                }
+            }
+        });
+
+        *self.upgrade_handle.lock().await = Some(handle.abort_handle());
     }
 }
 
@@ -321,6 +424,7 @@ mod tests {
         let result = e1.elect().await.unwrap();
         assert!(result.is_master);
         assert_eq!(result.level, ElectionLevel::Sqlite);
+        assert_eq!(result.epoch, 0); // no Redis → epoch 0
     }
 
     #[tokio::test]
@@ -336,6 +440,7 @@ mod tests {
         assert!(r1.is_master);
         assert!(!r2.is_master);
         assert_eq!(r1.level, ElectionLevel::File);
+        assert_eq!(r1.epoch, 0);
     }
 
     #[tokio::test]
@@ -346,8 +451,7 @@ mod tests {
         assert!(r1.is_master);
 
         e1.resign().await;
-        // Remove marker manually to simulate real release
-        let _ = tokio::fs::remove_file(dir.path().join(".eket/master/lock")).await;
+        // resign() deletes the lock file
 
         let e2 = MasterElection::new(None, None, dir.path());
         let r2 = e2.elect().await.unwrap();
@@ -401,5 +505,21 @@ mod tests {
         let e1 = make_election(dir.path());
         let e2 = make_election(dir.path());
         assert_ne!(e1.instance_id(), e2.instance_id());
+    }
+
+    #[tokio::test]
+    async fn election_level_ordering() {
+        // File < Sqlite < Redis
+        assert!(ElectionLevel::File < ElectionLevel::Sqlite);
+        assert!(ElectionLevel::Sqlite < ElectionLevel::Redis);
+        assert!(ElectionLevel::File < ElectionLevel::Redis);
+    }
+
+    #[tokio::test]
+    async fn file_result_has_zero_epoch() {
+        let dir = TempDir::new().unwrap();
+        let e = MasterElection::new(None, None, dir.path());
+        let r = e.elect().await.unwrap();
+        assert_eq!(r.epoch, 0);
     }
 }
