@@ -15,8 +15,8 @@
 #   ./scripts/setup.sh --full       # 全部安装，非交互
 #
 # 完全非交互（curl | bash 场景）：
-#   curl -fsSL https://raw.githubusercontent.com/your-org/eket/main/scripts/setup.sh | bash -s -- --full -y
-#   curl -fsSL https://raw.githubusercontent.com/your-org/eket/main/scripts/setup.sh | bash -s -- --minimal
+#   curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/setup.sh | bash -s -- --full -y
+#   curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/setup.sh | bash -s -- --minimal
 #
 # 环境变量：
 #   EKET_SKIP_RUST_BUILD=1   完全跳过 Rust/binary 安装（CI 场景）
@@ -158,7 +158,7 @@ level2_install() {
 # ─────────────────────────────────────────────
 download_prebuilt_binary() {
   local version="${EKET_VERSION:-latest}"
-  local base_url="https://github.com/your-org/eket/releases"
+  local base_url="https://github.com/godlockin/eket/releases"
 
   # 检测平台
   local os arch
