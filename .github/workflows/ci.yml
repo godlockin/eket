@@ -147,3 +147,35 @@ jobs:
 
       - name: Test (jest)
         run: npm test
+
+  # ============================================================
+  # Job 5: Rust — check / test / clippy
+  # ============================================================
+  rust:
+    name: Rust (check / test / clippy)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('rust/Cargo.lock') }}
+
+      - name: Check
+        run: cd rust && cargo check
+
+      - name: Test
+        run: cd rust && cargo test
+
+      - name: Clippy
+        run: cd rust && cargo clippy -- -D warnings

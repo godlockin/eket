@@ -1,7 +1,14 @@
 /// Message Queue — 对应 TS: message-queue.ts
 ///
-/// Mode auto: Redis available → redis pubsub；否则降级到文件队列
+/// Mode auto: Redis available → redis list queue；否则降级到文件队列
 /// 文件队列：.eket/data/queue/<channel>/<id>.json，原子写 + 目录轮询
+///
+/// ## Semantic Queue Modes (RedisQueue)
+///
+/// | Mode      | Push          | Poll              | Use case              |
+/// |-----------|---------------|-------------------|-----------------------|
+/// | TaskQueue | LPUSH         | BRPOP (5s)        | Task dispatch, 1:1    |
+/// | EventBus  | PUBLISH       | SUBSCRIBE (async) | Master broadcast, 1:N |
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -14,6 +21,7 @@ use tracing::{debug, info, warn};
 
 use crate::error::{EketError, EketResult};
 use crate::redis::EketRedisClient;
+use fred::interfaces::{ClientLike, EventInterface, PubsubInterface};
 
 // ─── Message ──────────────────────────────────────────────────────────────────
 
@@ -68,20 +76,36 @@ impl Message {
     }
 }
 
-// ─── Mode ─────────────────────────────────────────────────────────────────────
+// ─── Backend Mode ─────────────────────────────────────────────────────────────
 
+/// Infrastructure backend selection (auto-detected at startup)
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum QueueMode {
+pub enum BackendMode {
     Redis,
     File,
 }
 
-// ─── MessageQueue ─────────────────────────────────────────────────────────────
+// ─── Semantic Queue Mode ──────────────────────────────────────────────────────
+
+/// Semantic queue mode — controls which Redis wire protocol `RedisQueue` uses.
+///
+/// Default is `TaskQueue` for backward compatibility.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum QueueMode {
+    /// LPUSH/BRPOP — task dispatch, guaranteed single-Slaver consumption
+    TaskQueue,
+    /// PUBLISH/SUBSCRIBE — event notification, Master broadcast fanout
+    EventBus,
+}
+
+// ─── MessageHandler ───────────────────────────────────────────────────────────
 
 pub type MessageHandler = Arc<dyn Fn(Message) -> futures::future::BoxFuture<'static, ()> + Send + Sync>;
 
+// ─── MessageQueue ─────────────────────────────────────────────────────────────
+
 pub struct MessageQueue {
-    mode: QueueMode,
+    mode: BackendMode,
     redis: Option<Arc<EketRedisClient>>,
     queue_dir: PathBuf,
     /// In-process broadcast for file-mode subscriptions
@@ -97,8 +121,8 @@ impl MessageQueue {
         queue_dir: impl AsRef<Path>,
     ) -> Self {
         let mode = match &redis {
-            Some(r) if r.is_available() => QueueMode::Redis,
-            _ => QueueMode::File,
+            Some(r) if r.is_available() => BackendMode::Redis,
+            _ => BackendMode::File,
         };
         info!("MessageQueue mode: {:?}", mode);
         let (tx, _) = broadcast::channel(1024);
@@ -111,7 +135,7 @@ impl MessageQueue {
         }
     }
 
-    pub fn mode(&self) -> &QueueMode {
+    pub fn mode(&self) -> &BackendMode {
         &self.mode
     }
 
@@ -119,8 +143,8 @@ impl MessageQueue {
     /// 对应 TS: MessageQueue.publish()
     pub async fn publish(&self, msg: Message) -> EketResult<()> {
         match &self.mode {
-            QueueMode::Redis => self.publish_redis(msg).await,
-            QueueMode::File => self.publish_file(msg).await,
+            BackendMode::Redis => self.publish_redis(msg).await,
+            BackendMode::File => self.publish_file(msg).await,
         }
     }
 
@@ -128,8 +152,8 @@ impl MessageQueue {
     /// 对应 TS: MessageQueue.subscribe()
     pub async fn subscribe(&self, channel: String, handler: MessageHandler) -> EketResult<()> {
         match &self.mode {
-            QueueMode::Redis => self.subscribe_redis(channel, handler).await,
-            QueueMode::File => self.subscribe_file(channel, handler).await,
+            BackendMode::Redis => self.subscribe_redis(channel, handler).await,
+            BackendMode::File => self.subscribe_file(channel, handler).await,
         }
     }
 
@@ -253,6 +277,113 @@ impl MessageQueue {
     }
 }
 
+// ─── RedisQueue ───────────────────────────────────────────────────────────────
+
+/// Semantic Redis queue that unifies task dispatch and event broadcast under a
+/// single `push`/`poll` interface.
+///
+/// | Mode      | push()  | poll()           |
+/// |-----------|---------|------------------|
+/// | TaskQueue | LPUSH   | BRPOP (5s)       |
+/// | EventBus  | PUBLISH | SUBSCRIBE (async)|
+pub struct RedisQueue {
+    redis: Arc<EketRedisClient>,
+    mode: QueueMode,
+}
+
+impl RedisQueue {
+    /// Create with explicit mode.
+    pub fn new(redis: Arc<EketRedisClient>, mode: QueueMode) -> Self {
+        Self { redis, mode }
+    }
+
+    /// Create in TaskQueue mode — backward-compatible default.
+    pub fn new_task_queue(redis: Arc<EketRedisClient>) -> Self {
+        Self::new(redis, QueueMode::TaskQueue)
+    }
+
+    /// Create in EventBus mode.
+    pub fn new_event_bus(redis: Arc<EketRedisClient>) -> Self {
+        Self::new(redis, QueueMode::EventBus)
+    }
+
+    pub fn queue_mode(&self) -> &QueueMode {
+        &self.mode
+    }
+
+    /// Push a message to `key`.
+    ///
+    /// - `TaskQueue` → `LPUSH key message`
+    /// - `EventBus`  → `PUBLISH channel message`
+    pub async fn push(&self, key: &str, message: &str) -> EketResult<()> {
+        match &self.mode {
+            QueueMode::TaskQueue => {
+                self.redis.lpush(key, message).await?;
+                debug!("RedisQueue(TaskQueue) LPUSH {key}");
+                Ok(())
+            }
+            QueueMode::EventBus => {
+                let receivers = self.redis.publish(key, message).await?;
+                debug!("RedisQueue(EventBus) PUBLISH {key} → {receivers} subscriber(s)");
+                Ok(())
+            }
+        }
+    }
+
+    /// Poll / receive from `key`.
+    ///
+    /// - `TaskQueue` → `BRPOP key 5` (blocks up to 5 s) → returns message or `None` on timeout.
+    /// - `EventBus`  → spawns a background SUBSCRIBE loop, delivers each message to `handler`.
+    ///   Returns `Ok(None)` immediately (fire-and-forget subscription).
+    pub async fn poll(
+        &self,
+        key: &str,
+        handler: Option<MessageHandler>,
+    ) -> EketResult<Option<String>> {
+        match &self.mode {
+            QueueMode::TaskQueue => {
+                let result = self.redis.brpop(key, 5.0).await?;
+                debug!("RedisQueue(TaskQueue) BRPOP {key} → {:?}", result.as_deref());
+                Ok(result)
+            }
+            QueueMode::EventBus => {
+                let handler = handler.ok_or_else(|| {
+                    EketError::Other("EventBus poll requires a handler".into())
+                })?;
+                let subscriber = self.redis.new_subscriber();
+                let _jh = subscriber.connect();
+                subscriber.wait_for_connect().await
+                    .map_err(|e| EketError::Redis(e.to_string()))?;
+                let key = key.to_string();
+                tokio::spawn(async move {
+                    if let Err(e) = subscriber.subscribe(&key).await {
+                        warn!("SUBSCRIBE {key} failed: {e}");
+                        return;
+                    }
+                    let mut rx = subscriber.message_rx();
+                    loop {
+                        match rx.recv().await {
+                            Ok(frame) => {
+                                let json = frame.value.as_str().map(|s| s.to_string()).unwrap_or_default();
+                                if let Ok(msg) = serde_json::from_str::<Message>(&json) {
+                                    handler(msg).await;
+                                } else {
+                                    warn!("EventBus: invalid JSON on channel {}", frame.channel);
+                                }
+                            }
+                            Err(e) => {
+                                warn!("EventBus recv error: {e}");
+                                break;
+                            }
+                        }
+                    }
+                });
+                Ok(None)
+            }
+        }
+    }
+}
+
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
@@ -265,7 +396,7 @@ mod tests {
     async fn file_queue_publish_subscribe() {
         let dir = TempDir::new().unwrap();
         let q = MessageQueue::new_auto(None, dir.path()).await;
-        assert_eq!(q.mode(), &QueueMode::File);
+        assert_eq!(q.mode(), &BackendMode::File);
 
         let counter = Arc::new(AtomicU32::new(0));
         let counter2 = counter.clone();
@@ -350,5 +481,19 @@ mod tests {
 
         tokio::time::sleep(Duration::from_millis(500)).await;
         assert_eq!(counter.load(Ordering::Relaxed), 0, "no delivery after unsubscribe");
+    }
+
+    #[tokio::test]
+    async fn redis_queue_mode_defaults_to_task_queue() {
+        let redis = Arc::new(EketRedisClient::new_unavailable());
+        let q = RedisQueue::new_task_queue(redis);
+        assert_eq!(q.queue_mode(), &QueueMode::TaskQueue);
+    }
+
+    #[tokio::test]
+    async fn redis_queue_event_bus_mode() {
+        let redis = Arc::new(EketRedisClient::new_unavailable());
+        let q = RedisQueue::new_event_bus(redis);
+        assert_eq!(q.queue_mode(), &QueueMode::EventBus);
     }
 }

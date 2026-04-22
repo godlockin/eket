@@ -138,7 +138,13 @@ impl AgentMailbox {
             return Ok(Vec::new());
         }
 
-        let data = tokio::fs::read_to_string(&inbox_path)
+        // Atomic rename to .processing to prevent cross-process race
+        let processing_path = inbox_path.with_extension("json.processing");
+        if let Err(e) = tokio::fs::rename(&inbox_path, &processing_path).await {
+            return Err(format!("rename to .processing failed: {e}"));
+        }
+
+        let data = tokio::fs::read_to_string(&processing_path)
             .await
             .map_err(|e| format!("read failed: {e}"))?;
 
@@ -158,9 +164,12 @@ impl AgentMailbox {
 
         let json = serde_json::to_string_pretty(&messages)
             .map_err(|e| format!("serialize: {e}"))?;
+        // Write remaining (all-read) messages back atomically, then remove processing file
         let tmp = inbox_path.with_extension("json.tmp");
         tokio::fs::write(&tmp, &json).await.ok();
         tokio::fs::rename(&tmp, &inbox_path).await.ok();
+        // Remove the .processing sentinel
+        tokio::fs::remove_file(&processing_path).await.ok();
 
         Ok(unread)
     }

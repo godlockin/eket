@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# EKET Setup Script v1.0.0
+# EKET Setup Script v1.1.0
 # 用途：分层安装 EKET 框架运行环境
 #
 # 用法：
@@ -11,6 +11,17 @@
 #   ./scripts/setup.sh --level=4    # 装到 Level 4（含 SQLite）
 #   ./scripts/setup.sh --all        # 全部安装（等同 --level=4）
 #   ./scripts/setup.sh --yes|-y     # 所有可选层自动确认
+#   ./scripts/setup.sh --minimal    # 仅 Level 1（Shell 基础），非交互
+#   ./scripts/setup.sh --full       # 全部安装，非交互
+#
+# 完全非交互（curl | bash 场景）：
+#   curl -fsSL https://raw.githubusercontent.com/your-org/eket/main/scripts/setup.sh | bash -s -- --full -y
+#   curl -fsSL https://raw.githubusercontent.com/your-org/eket/main/scripts/setup.sh | bash -s -- --minimal
+#
+# 环境变量：
+#   EKET_SKIP_RUST_BUILD=1   完全跳过 Rust/binary 安装（CI 场景）
+#   EKET_PREFER_BUILD=1      强制本地 cargo build（跳过预编译下载）
+#   EKET_VERSION=v0.1.0      指定预编译 binary 版本（默认 latest）
 #
 
 set -euo pipefail
@@ -24,6 +35,8 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m'
+
+INSTALL_MODE=""  # "" = interactive, "minimal" = level1 only, "full" = all levels
 
 # ─────────────────────────────────────────────
 # Level 1: Shell 基础环境（始终运行）
@@ -141,6 +154,50 @@ level2_install() {
 }
 
 # ─────────────────────────────────────────────
+# Level 1.5: 预编译 binary 下载
+# ─────────────────────────────────────────────
+download_prebuilt_binary() {
+  local version="${EKET_VERSION:-latest}"
+  local base_url="https://github.com/your-org/eket/releases"
+
+  # 检测平台
+  local os arch
+  case "$(uname -s)" in
+    Linux*)  os="linux" ;;
+    Darwin*) os="macos" ;;
+    *)       echo -e "${YELLOW}  ⚠ 不支持的平台，跳过预编译下载${NC}"; return 1 ;;
+  esac
+  case "$(uname -m)" in
+    arm64|aarch64) arch="arm64" ;;
+    x86_64)        arch="x64"   ;;
+    *)             echo -e "${YELLOW}  ⚠ 不支持的架构，跳过预编译下载${NC}"; return 1 ;;
+  esac
+
+  local artifact="eket-${os}-${arch}"
+  local download_url
+  if [ "$version" = "latest" ]; then
+    download_url="${base_url}/latest/download/${artifact}"
+  else
+    download_url="${base_url}/download/${version}/${artifact}"
+  fi
+
+  echo "  → 下载预编译 binary：$download_url"
+  local tmp_bin
+  tmp_bin=$(mktemp)
+  if curl -fsSL "$download_url" -o "$tmp_bin" 2>/dev/null; then
+    chmod +x "$tmp_bin"
+    mkdir -p "$HOME/.local/bin"
+    mv "$tmp_bin" "$HOME/.local/bin/eket"
+    echo -e "  ${GREEN}✓ eket binary 已下载到 ~/.local/bin/eket${NC}"
+    return 0
+  else
+    rm -f "$tmp_bin"
+    echo -e "${YELLOW}  ⚠ 预编译下载失败（可能尚无 release），回退到本地编译${NC}"
+    return 1
+  fi
+}
+
+# ─────────────────────────────────────────────
 # Level 1.5: Rust 工具链
 # ─────────────────────────────────────────────
 check_rust() {
@@ -224,15 +281,42 @@ build_eket_binary() {
 }
 
 level_rust_install() {
-  echo -e "${BLUE}[Level 1.5] Rust 工具链${NC}"
+  echo -e "${BLUE}[Level 1.5] Rust 工具链 / eket binary${NC}"
 
   # CI 环境跳过
   if [ "${EKET_SKIP_RUST_BUILD:-}" = "1" ]; then
-    echo "  EKET_SKIP_RUST_BUILD=1，跳过 Rust 构建"
+    echo "  EKET_SKIP_RUST_BUILD=1，跳过"
     echo -e "${GREEN}✓ Level 1.5 跳过（CI 模式）${NC}\n"
     return
   fi
 
+  # 优先尝试预编译 binary（快速，无需 Rust 工具链）
+  if [ "${EKET_PREFER_BUILD:-}" != "1" ]; then
+    if download_prebuilt_binary; then
+      # PATH 检查 + 自动写入（复用 build_eket_binary 中的逻辑）
+      if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+        echo -e "${YELLOW}  ⚠ ~/.local/bin 不在 PATH，自动写入 shell 配置${NC}"
+        local shell_rc=""
+        if [[ "$SHELL" == */zsh ]]; then shell_rc="$HOME/.zshrc"
+        elif [[ "$SHELL" == */bash ]]; then shell_rc="$HOME/.bashrc"
+        fi
+        if [ -n "$shell_rc" ]; then
+          if ! grep -q 'HOME/.local/bin' "$shell_rc" 2>/dev/null; then
+            { echo ''; echo '# Added by EKET setup'; echo 'export PATH="$HOME/.local/bin:$PATH"'; } >> "$shell_rc"
+            echo -e "  ${GREEN}✓ 已写入 $shell_rc（新终端自动生效）${NC}"
+          fi
+          export PATH="$HOME/.local/bin:$PATH"
+          echo "  ✓ 当前终端已生效"
+        else
+          echo "  请手动添加：export PATH=\"\$HOME/.local/bin:\$PATH\""
+        fi
+      fi
+      echo -e "${GREEN}✓ Level 1.5 完成（预编译）${NC}\n"
+      return
+    fi
+  fi
+
+  # 回退：本地编译（现有逻辑）
   if check_rust; then
     build_eket_binary || true
   else
@@ -309,6 +393,8 @@ main() {
       --level=*) target_level="${arg#--level=}" ;;
       --all)     target_level=4 ;;
       --yes|-y)  auto_yes=true ;;
+      --minimal) INSTALL_MODE="minimal"; auto_yes=true ;;
+      --full)    INSTALL_MODE="full";    auto_yes=true; target_level=4 ;;
       --check-rust)
         echo -e "${BLUE}Rust 工具链检查${NC}"
         check_rust && exit 0 || exit 1
@@ -326,6 +412,14 @@ main() {
 
   # Level 1 始终运行
   level1_install
+
+  # --minimal 模式：仅 Level 1，跳过其余
+  if [ "$INSTALL_MODE" = "minimal" ]; then
+    echo -e "${GREEN}═══════════════════════════════════${NC}"
+    echo -e "${GREEN}  EKET 安装完成（minimal 模式）！${NC}"
+    echo -e "${GREEN}═══════════════════════════════════${NC}"
+    exit 0
+  fi
 
   # Level 1.5: Rust（可选，交互式）
   # --level=1 也提供 Rust 提示，只是不强制

@@ -209,24 +209,37 @@ export class EketServer {
 
     this.app.use('/', createHealthRouter(lazyDeps));
 
-    // Rust API proxy — check once at startup, proxy /api/v1/* if alive
+    // Rust API proxy — route-level whitelist only (prevents dead-code shadowing Node handlers)
+    const RUST_PROXY_ROUTES: Array<{ method: string; path: string }> = [
+      { method: 'GET',   path: '/api/v1/tasks' },
+      { method: 'GET',   path: '/api/v1/tasks/:id' },
+      { method: 'PATCH', path: '/api/v1/tasks/:id/status' },
+      { method: 'GET',   path: '/api/v1/agents' },
+      { method: 'GET',   path: '/api/v1/agents/:id' },
+      { method: 'GET',   path: '/api/v1/dag' },
+      { method: 'GET',   path: '/health' },
+      { method: 'GET',   path: '/ready' },
+      { method: 'GET',   path: '/live' },
+    ];
+
     const rustAlive = await isRustServerAlive();
     if (rustAlive) {
-      logger.info('rust_api_proxy_enabled', { target: RUST_API_URL });
-      console.log(`[EKET] Rust API server detected at ${RUST_API_URL} — proxying /api/v1/*`);
-      this.app.use(
-        '/api/v1',
-        createProxyMiddleware({
-          target: RUST_API_URL,
-          changeOrigin: true,
-          on: {
-            error: (err, _req, _res, _next) => {
-              logger.warn('rust_proxy_error', { error: (err as Error).message });
-              console.warn('[EKET] Rust proxy error, falling through to Node handler:', (err as Error).message);
-            },
+      logger.info('rust_api_proxy_enabled', { target: RUST_API_URL, routes: RUST_PROXY_ROUTES.length });
+      console.log(`[EKET] Rust API server detected at ${RUST_API_URL} — proxying ${RUST_PROXY_ROUTES.length} whitelisted routes`);
+      const rustProxy = createProxyMiddleware({
+        target: RUST_API_URL,
+        changeOrigin: true,
+        timeout: 5000,
+        on: {
+          error: (err, _req, _res, _next) => {
+            logger.warn('rust_proxy_error', { error: (err as Error).message });
+            console.warn('[EKET] Rust proxy error:', (err as Error).message);
           },
-        })
-      );
+        },
+      });
+      for (const route of RUST_PROXY_ROUTES) {
+        (this.app as unknown as Record<string, (path: string, handler: unknown) => void>)[route.method.toLowerCase()](route.path, rustProxy);
+      }
     } else {
       logger.info('rust_api_proxy_disabled', { reason: 'server not reachable', target: RUST_API_URL });
       console.log('[EKET] Rust API server not detected — using Node.js handlers (fallback mode)');

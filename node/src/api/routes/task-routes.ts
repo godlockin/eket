@@ -70,16 +70,16 @@ export function createTaskRouter(deps: TaskRouterDeps): Router {
     }
   );
 
-  // GET /tasks/:task_id
+  // GET /tasks/:id
   router.get(
-    '/tasks/:task_id',
+    '/tasks/:id',
     authenticate,
     async (req: Request, res: Response) => {
       try {
-        const { task_id } = req.params;
+        const { id } = req.params;
 
         if (redis) {
-          const taskData = await redisHelper!.hgetall(`task:${task_id}`);
+          const taskData = await redisHelper!.hgetall(`task:${id}`);
           if (!taskData || Object.keys(taskData).length === 0) {
             res.status(404).json({
               success: false,
@@ -112,17 +112,17 @@ export function createTaskRouter(deps: TaskRouterDeps): Router {
     }
   );
 
-  // PATCH /tasks/:task_id
+  // PATCH /tasks/:id/status
   router.patch(
-    '/tasks/:task_id',
+    '/tasks/:id/status',
     authenticate,
     async (req: Request, res: Response) => {
       try {
-        const { task_id } = req.params;
+        const { id } = req.params;
         const updates = req.body as { status?: string; progress?: number; notes?: string };
 
         if (redis) {
-          const taskData = await redisHelper!.hgetall(`task:${task_id}`);
+          const taskData = await redisHelper!.hgetall(`task:${id}`);
           if (!taskData || Object.keys(taskData).length === 0) {
             res.status(404).json({
               success: false,
@@ -137,7 +137,7 @@ export function createTaskRouter(deps: TaskRouterDeps): Router {
             updated_at: new Date().toISOString(),
           };
 
-          await redisHelper!.hset(`task:${task_id}`, updatedTask);
+          await redisHelper!.hset(`task:${id}`, updatedTask);
 
           res.json({ success: true, task: updatedTask });
         } else {
@@ -156,17 +156,17 @@ export function createTaskRouter(deps: TaskRouterDeps): Router {
     }
   );
 
-  // POST /tasks/:task_id/claim
+  // POST /tasks/:id/claim
   router.post(
-    '/tasks/:task_id/claim',
+    '/tasks/:id/claim',
     authenticate,
     async (req: Request, res: Response) => {
       try {
-        const { task_id } = req.params;
+        const { id } = req.params;
         const { instance_id } = req.body as { instance_id: string };
 
         if (redis) {
-          const taskData = await redisHelper!.hgetall(`task:${task_id}`);
+          const taskData = await redisHelper!.hgetall(`task:${id}`);
           if (!taskData || Object.keys(taskData).length === 0) {
             res.status(404).json({
               success: false,
@@ -194,9 +194,9 @@ export function createTaskRouter(deps: TaskRouterDeps): Router {
             updated_at: new Date().toISOString(),
           };
 
-          await redisHelper!.hset(`task:${task_id}`, updatedTask);
+          await redisHelper!.hset(`task:${id}`, updatedTask);
 
-          logger.info('task_claimed', { task_id, instance_id });
+          logger.info('task_claimed', { task_id: id, instance_id });
 
           res.json({ success: true, task: updatedTask });
         } else {

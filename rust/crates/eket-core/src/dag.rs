@@ -768,3 +768,140 @@ mod tests {
         assert!(!regex_is_task_file("TASK-.md"));
     }
 }
+
+// ─── 执行层 ───────────────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum FailBehavior {
+    Block, // 中止后续所有层
+    Warn,  // 记录错误，继续执行
+    Skip,  // 跳过该节点，继续
+}
+
+#[derive(Debug, Clone)]
+pub struct NodeResult {
+    pub node_id: String,
+    pub success: bool,
+    pub output: Option<String>,
+    pub duration_ms: u64,
+    pub error: Option<String>,
+}
+
+#[derive(Debug)]
+pub struct ExecutionReport {
+    pub layers_completed: usize,
+    pub total_nodes: usize,
+    pub failed_nodes: Vec<String>,
+    pub total_duration_ms: u64,
+}
+
+pub struct DagExecutor;
+
+impl DagExecutor {
+    /// 按 Kahn 分层，同层节点并行执行
+    pub async fn run<F, Fut>(
+        graph: &DagResponse,
+        fail_behavior: FailBehavior,
+        handler: F,
+    ) -> ExecutionReport
+    where
+        F: Fn(String) -> Fut + Send + Sync + Clone + 'static,
+        Fut: std::future::Future<Output = NodeResult> + Send,
+    {
+        let node_ids: HashSet<String> = graph.nodes.iter().map(|n| n.id.clone()).collect();
+        let mut in_degree: HashMap<String, usize> = HashMap::new();
+        let mut adj: HashMap<String, Vec<String>> = HashMap::new(); // target → [sources]
+
+        for node in &graph.nodes {
+            in_degree.entry(node.id.clone()).or_insert(0);
+            adj.entry(node.id.clone()).or_insert_with(Vec::new);
+        }
+
+        for edge in &graph.edges {
+            if !node_ids.contains(&edge.source) || !node_ids.contains(&edge.target) {
+                continue;
+            }
+            *in_degree.entry(edge.source.clone()).or_insert(0) += 1;
+            adj.entry(edge.target.clone())
+                .or_default()
+                .push(edge.source.clone());
+        }
+
+        let total_nodes = graph.nodes.len();
+        let mut failed_nodes: Vec<String> = Vec::new();
+        let mut layers_completed: usize = 0;
+        let total_start = std::time::Instant::now();
+
+        loop {
+            // 当前层：in_degree == 0 的所有节点
+            let mut layer: Vec<String> = in_degree
+                .iter()
+                .filter(|(_, &d)| d == 0)
+                .map(|(id, _)| id.clone())
+                .collect();
+
+            if layer.is_empty() {
+                break;
+            }
+            layer.sort();
+
+            // 从 in_degree 移除当前层（标记为"已调度"）
+            for id in &layer {
+                in_degree.remove(id);
+            }
+
+            // 并行执行当前层
+            let handles: Vec<_> = layer
+                .iter()
+                .map(|id| {
+                    let h = handler.clone();
+                    let node_id = id.clone();
+                    tokio::spawn(async move { h(node_id).await })
+                })
+                .collect();
+
+            let results = futures::future::join_all(handles).await;
+
+            let mut layer_failed = false;
+            for res in results {
+                if let Ok(node_result) = res {
+                    if !node_result.success {
+                        layer_failed = true;
+                        failed_nodes.push(node_result.node_id);
+                    }
+                }
+            }
+
+            layers_completed += 1;
+
+            if layer_failed && fail_behavior == FailBehavior::Block {
+                return ExecutionReport {
+                    layers_completed,
+                    total_nodes,
+                    failed_nodes,
+                    total_duration_ms: total_start.elapsed().as_millis() as u64,
+                };
+            }
+
+            // 更新下一层 in_degree
+            for id in &layer {
+                if let Some(dependents) = adj.get(id) {
+                    for dep in dependents {
+                        if let Some(d) = in_degree.get_mut(dep) {
+                            if *d > 0 {
+                                *d -= 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        ExecutionReport {
+            layers_completed,
+            total_nodes,
+            failed_nodes,
+            total_duration_ms: total_start.elapsed().as_millis() as u64,
+        }
+    }
+}
