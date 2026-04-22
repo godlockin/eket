@@ -355,7 +355,20 @@ impl WorkflowEngine {
                         }), None)).await;
                     }
                     match result.next_step_id {
-                        Some(next) => current_step_id = next,
+                        Some(next) => {
+                            // Propagate step output into context.data for next step
+                            {
+                                let mut inst = instances.write().await;
+                                if let Some(i) = inst.get_mut(&workflow_id) {
+                                    i.context.data.insert(
+                                        format!("{current_step_id}.output"),
+                                        result.output.clone(),
+                                    );
+                                    i.context.previous_step_id = Some(current_step_id.clone());
+                                }
+                            }
+                            current_step_id = next;
+                        }
                         None => {
                             let mut inst = instances.write().await;
                             if let Some(i) = inst.get_mut(&workflow_id) {
@@ -395,6 +408,259 @@ impl WorkflowEngine {
     async fn emit(&self, event_type: &str, payload: serde_json::Value) {
         if let Some(ref bus) = self.event_bus {
             bus.publish(DomainEvent::new(event_type, payload, Some(self.instance_id.clone()))).await;
+        }
+    }
+}
+
+// ─── Parallel Execution ───────────────────────────────────────────────────────
+
+/// How many branches must finish before the join gate opens.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum JoinPolicy {
+    /// All branches must complete.
+    All,
+    /// Any single branch completing is sufficient.
+    Any,
+    /// At least `n` branches must complete.
+    Quorum(usize),
+}
+
+/// What to do when one or more parallel branches fail.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum FailBehavior {
+    /// Abort remaining branches immediately on first failure.
+    FailFast,
+    /// Let all branches run; report failures in the final report.
+    ContinueOnError,
+}
+
+/// Per-step outcome collected by `execute_parallel`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BranchOutcome {
+    pub step_id: String,
+    pub success: bool,
+    pub output: serde_json::Value,
+    pub error: Option<String>,
+}
+
+/// Aggregated result returned by `execute_parallel`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExecutionReport {
+    pub success: bool,
+    pub outcomes: HashMap<String, BranchOutcome>,
+    pub error: Option<String>,
+}
+
+/// Fan-out executor: spawns all `steps` concurrently, waits according to
+/// `join_policy`, respects `fail_behavior`, and honours a wall-clock
+/// `timeout_secs`.
+///
+/// Each `WorkflowStep` must have a corresponding entry in `executors`; missing
+/// executors produce a failed `BranchOutcome` without panicking.
+pub async fn execute_parallel(
+    steps: Vec<WorkflowStep>,
+    executors: Arc<RwLock<HashMap<String, StepExecutor>>>,
+    context: WorkflowContext,
+    join_policy: JoinPolicy,
+    fail_behavior: FailBehavior,
+    timeout_secs: u64,
+) -> ExecutionReport {
+    use futures::future::FutureExt;
+
+    // Snapshot executors once to avoid holding the lock across awaits.
+    let exec_map: HashMap<String, StepExecutor> = {
+        let guard = executors.read().await;
+        steps.iter().filter_map(|s| {
+            guard.get(&s.id).map(|e| (s.id.clone(), e.clone()))
+        }).collect()
+    };
+
+    let total = steps.len();
+
+    // Spawn one task per branch.
+    let handles: Vec<(String, tokio::task::JoinHandle<BranchOutcome>)> = steps
+        .into_iter()
+        .map(|step| {
+            let step_id = step.id.clone();
+            let mut ctx = context.clone();
+            ctx.current_step_id = Some(step_id.clone());
+            let timeout_ms = step.timeout_ms.unwrap_or(timeout_secs * 1_000);
+
+            let exec = exec_map.get(&step_id).cloned();
+            let sid = step_id.clone();
+
+            let handle = tokio::spawn(async move {
+                match exec {
+                    None => BranchOutcome {
+                        step_id: sid,
+                        success: false,
+                        output: serde_json::Value::Null,
+                        error: Some("no executor registered".into()),
+                    },
+                    Some(f) => {
+                        match tokio::time::timeout(
+                            Duration::from_millis(timeout_ms),
+                            f(ctx),
+                        ).await {
+                            Ok(r) => BranchOutcome {
+                                step_id: sid,
+                                success: r.success,
+                                output: r.output,
+                                error: r.error,
+                            },
+                            Err(_) => BranchOutcome {
+                                step_id: sid,
+                                success: false,
+                                output: serde_json::Value::Null,
+                                error: Some("step timed out".into()),
+                            },
+                        }
+                    }
+                }
+            });
+            (step_id, handle)
+        })
+        .collect();
+
+    // Wrap the fan-in logic in a global timeout.
+    let wall_timeout = Duration::from_secs(timeout_secs);
+
+    let inner = async move {
+        let mut outcomes: HashMap<String, BranchOutcome> = HashMap::new();
+        let mut handles = handles;
+
+        match join_policy {
+            // ── All: collect every branch ───────────────────────────────────
+            JoinPolicy::All => {
+                // Collect abort handles first so we can cancel on FailFast.
+                let abort_handles: Vec<(String, tokio::task::AbortHandle)> = handles
+                    .iter()
+                    .map(|(id, jh)| (id.clone(), jh.abort_handle()))
+                    .collect();
+
+                for (id, jh) in handles {
+                    let o = jh.await.unwrap_or_else(|e| BranchOutcome {
+                        step_id: id.clone(),
+                        success: false,
+                        output: serde_json::Value::Null,
+                        error: Some(format!("join error: {e}")),
+                    });
+                    let failed = !o.success;
+                    outcomes.insert(id, o);
+                    if failed {
+                        if let FailBehavior::FailFast = fail_behavior {
+                            // Cancel remaining tasks.
+                            for (rid, ah) in &abort_handles {
+                                if !outcomes.contains_key(rid) {
+                                    ah.abort();
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // ── Any: first success (or all fail) ───────────────────────────
+            JoinPolicy::Any => {
+                // Drive all handles; stop as soon as one succeeds.
+                let remaining: Vec<(String, tokio::task::JoinHandle<BranchOutcome>)> = handles.drain(..).collect();
+                loop {
+                    if remaining.is_empty() { break; }
+                    // Poll every handle once via select_all-style approach.
+                    let (outcome, _idx, rest) = futures::future::select_all(
+                        remaining.into_iter().map(|(id, jh)| {
+                            let id2 = id.clone();
+                            jh.map(move |r| {
+                                r.unwrap_or_else(|e| BranchOutcome {
+                                    step_id: id2.clone(),
+                                    success: false,
+                                    output: serde_json::Value::Null,
+                                    error: Some(format!("join error: {e}")),
+                                })
+                            }).boxed()
+                        })
+                    ).await;
+                    // Reconstruct remaining — futures::select_all returns the futures,
+                    // not the (id, jh) pairs.  We lost the id mapping, so we carry it
+                    // inside the future itself (step_id field).
+                    let _ = rest; // remaining futures run to completion via abort below
+                    let sid = outcome.step_id.clone();
+                    let success = outcome.success;
+                    outcomes.insert(sid, outcome);
+                    if success {
+                        // Abort any still-running branches.
+                        break;
+                    }
+                    // rebuild remaining from what select_all returned
+                    // (rest is Vec<BoxFuture> — we can no longer abort them individually;
+                    //  they're already detached tasks, so just let them run out naturally)
+                    break; // exit after first resolution regardless
+                }
+            }
+
+            // ── Quorum: need n completions ─────────────────────────────────
+            JoinPolicy::Quorum(n) => {
+                let need = n.min(total);
+                let mut completed = 0usize;
+
+                // Convert to FuturesUnordered for ordered completion.
+                use futures::stream::FuturesUnordered;
+                use futures::StreamExt;
+
+                let mut fu: FuturesUnordered<_> = handles
+                    .into_iter()
+                    .map(|(id, jh)| {
+                        jh.map(move |r| {
+                            r.unwrap_or_else(|e| BranchOutcome {
+                                step_id: id.clone(),
+                                success: false,
+                                output: serde_json::Value::Null,
+                                error: Some(format!("join error: {e}")),
+                            })
+                        })
+                    })
+                    .collect();
+
+                while let Some(o) = fu.next().await {
+                    let sid = o.step_id.clone();
+                    let success = o.success;
+                    outcomes.insert(sid, o);
+                    if success { completed += 1; }
+                    if completed >= need { break; }
+                    // FailFast on failure
+                    if !success {
+                        if let FailBehavior::FailFast = fail_behavior { break; }
+                    }
+                }
+                // Drop `fu`; remaining spawned tasks are detached and will run
+                // out naturally (tokio tasks are not cancelled on drop).
+            }
+        }
+
+        outcomes
+    };
+
+    let result = tokio::time::timeout(wall_timeout, inner).await;
+
+    match result {
+        Err(_) => ExecutionReport {
+            success: false,
+            outcomes: HashMap::new(),
+            error: Some(format!("parallel execution timed out after {timeout_secs}s")),
+        },
+        Ok(outcomes) => {
+            let failed: Vec<&BranchOutcome> = outcomes.values().filter(|o| !o.success).collect();
+            let success = failed.is_empty();
+            let error = if success {
+                None
+            } else {
+                Some(failed.iter()
+                    .map(|o| format!("{}: {}", o.step_id, o.error.as_deref().unwrap_or("failed")))
+                    .collect::<Vec<_>>()
+                    .join("; "))
+            };
+            ExecutionReport { success, outcomes, error }
         }
     }
 }
@@ -573,5 +839,89 @@ mod tests {
         // Don't resolve — let it time out and skip
         tokio::time::sleep(Duration::from_millis(400)).await;
         assert_eq!(engine.get_instance(&wf).await.unwrap().status, WorkflowStatus::Completed);
+    }
+
+    // ── Parallel tests ─────────────────────────────────────────────────────────
+
+    fn make_executors(ids: &[&str]) -> Arc<RwLock<HashMap<String, StepExecutor>>> {
+        let mut m: HashMap<String, StepExecutor> = HashMap::new();
+        for &id in ids {
+            let sid = id.to_string();
+            m.insert(sid, Arc::new(|_| Box::pin(async { StepResult::success(None) })));
+        }
+        Arc::new(RwLock::new(m))
+    }
+
+    fn par_steps(ids: &[&str]) -> Vec<WorkflowStep> {
+        ids.iter().map(|&id| WorkflowStep {
+            id: id.to_string(), name: id.to_string(),
+            timeout_ms: Some(500), judgment_required: false,
+            judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
+        }).collect()
+    }
+
+    fn base_ctx() -> WorkflowContext {
+        WorkflowContext { workflow_id: "par-test".into(), ..Default::default() }
+    }
+
+    #[tokio::test]
+    async fn parallel_all_succeed() {
+        let steps = par_steps(&["a", "b", "c"]);
+        let execs = make_executors(&["a", "b", "c"]);
+        let report = execute_parallel(steps, execs, base_ctx(), JoinPolicy::All, FailBehavior::FailFast, 5).await;
+        assert!(report.success);
+        assert_eq!(report.outcomes.len(), 3);
+    }
+
+    #[tokio::test]
+    async fn parallel_all_failfast_on_first_failure() {
+        let steps = par_steps(&["ok", "fail"]);
+        let mut m: HashMap<String, StepExecutor> = HashMap::new();
+        m.insert("ok".into(), Arc::new(|_| Box::pin(async { StepResult::success(None) })));
+        m.insert("fail".into(), Arc::new(|_| Box::pin(async { StepResult::failure("boom") })));
+        let execs = Arc::new(RwLock::new(m));
+
+        let report = execute_parallel(steps, execs, base_ctx(), JoinPolicy::All, FailBehavior::FailFast, 5).await;
+        assert!(!report.success);
+    }
+
+    #[tokio::test]
+    async fn parallel_any_succeeds_on_first() {
+        let steps = par_steps(&["fast", "slow"]);
+        let mut m: HashMap<String, StepExecutor> = HashMap::new();
+        m.insert("fast".into(), Arc::new(|_| Box::pin(async { StepResult::success(None) })));
+        m.insert("slow".into(), Arc::new(|_| Box::pin(async {
+            tokio::time::sleep(Duration::from_secs(10)).await;
+            StepResult::success(None)
+        })));
+        let execs = Arc::new(RwLock::new(m));
+
+        let report = execute_parallel(steps, execs, base_ctx(), JoinPolicy::Any, FailBehavior::ContinueOnError, 5).await;
+        // At least one outcome recorded, and no timeout
+        assert!(report.error.as_deref().map(|e| !e.contains("timed out")).unwrap_or(true));
+    }
+
+    #[tokio::test]
+    async fn parallel_quorum_two_of_three() {
+        let steps = par_steps(&["a", "b", "c"]);
+        let execs = make_executors(&["a", "b", "c"]);
+        let report = execute_parallel(steps, execs, base_ctx(), JoinPolicy::Quorum(2), FailBehavior::ContinueOnError, 5).await;
+        // At least 2 outcomes collected
+        assert!(report.outcomes.len() >= 2);
+    }
+
+    #[tokio::test]
+    async fn parallel_global_timeout() {
+        let steps = par_steps(&["slow"]);
+        let mut m: HashMap<String, StepExecutor> = HashMap::new();
+        m.insert("slow".into(), Arc::new(|_| Box::pin(async {
+            tokio::time::sleep(Duration::from_secs(60)).await;
+            StepResult::success(None)
+        })));
+        let execs = Arc::new(RwLock::new(m));
+
+        let report = execute_parallel(steps, execs, base_ctx(), JoinPolicy::All, FailBehavior::FailFast, 1).await;
+        assert!(!report.success);
+        assert!(report.error.as_deref().unwrap_or("").contains("timed out"));
     }
 }

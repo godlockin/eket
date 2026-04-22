@@ -450,3 +450,26 @@ done
 ```
 
 That's the complete minimal implementation. Any language, any runtime — these six steps make you a valid EKET participant.
+
+## §10 Submodule 版本指针协议
+
+**原则**：Slaver 只推自己所在的子仓库；主项目指针由 Master 统一更新。
+
+### Slaver 工作流
+1. 在子仓库（通常 jira 或 code）完成提交并 push
+2. **不需要**回到主项目更新指针
+
+### Master 工作流
+1. 定期（每个 sprint 末 或 重要里程碑后）更新主项目指针
+2. 操作：
+   ```bash
+   cd {project}
+   git submodule update --remote --merge
+   git add {project}-confluence {project}-jira {project}-code
+   git commit -m "chore: 更新 submodule 指针至最新"
+   git push origin main
+   ```
+
+### 为何不让 Slaver 更新指针
+- 主项目指针更新若与其他 Slaver 并发，容易产生冲突
+- Master 作为中央协调者，统一决定"当前稳定版本"指向哪个 commit

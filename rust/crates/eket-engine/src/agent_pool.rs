@@ -76,6 +76,7 @@ type RrIndex = HashMap<String, usize>;
 
 pub struct AgentPool {
     agents: Arc<RwLock<HashMap<String, AgentInstance>>>,
+    #[allow(dead_code)]
     rr_index: Arc<RwLock<RrIndex>>,
     /// Health check interval
     health_interval: Duration,
@@ -131,7 +132,10 @@ impl AgentPool {
                 a.role == role
                     && a.status != AgentStatus::Offline
                     && a.available_slots() > 0
-                    && required_skills.iter().all(|s| a.skills.contains(&s.to_string()))
+                    && required_skills.iter().all(|s| {
+                        let s_lower = s.to_lowercase();
+                        a.skills.iter().any(|sk| sk.to_lowercase() == s_lower)
+                    })
             })
             .collect();
 

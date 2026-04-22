@@ -156,6 +156,7 @@ export function createSystemRouter(deps: SystemRouterDeps): Router {
     }
   );
 
+  // NOTE: PR routes intentionally stay in Node (GitHub API + LLM calls)
   // POST /prs
   router.post(
     '/prs',
