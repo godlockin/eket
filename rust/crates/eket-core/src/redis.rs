@@ -196,6 +196,18 @@ impl EketRedisClient {
         Ok(result.map(|(_, v)| v))
     }
 
+    /// INCR — atomic increment, returns new value
+    pub async fn incr(&self, key: &str) -> EketResult<u64> {
+        self.require_available()?;
+        self.inner
+            .incr::<u64, _>(key)
+            .await
+            .map_err(|e| {
+                self.mark_unavailable();
+                EketError::Redis(e.to_string())
+            })
+    }
+
     /// PUBLISH — pub/sub fanout
     pub async fn publish(&self, channel: &str, message: &str) -> EketResult<i64> {
         self.require_available()?;

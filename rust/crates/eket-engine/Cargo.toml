@@ -17,6 +17,7 @@ chrono = { workspace = true }
 futures = "0.3"
 rusqlite = { workspace = true }
 tantivy = { workspace = true }
+dashmap = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["test-util"] }

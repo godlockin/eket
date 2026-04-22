@@ -20,7 +20,12 @@ import { createRedisClient, type RedisClient } from '../core/redis-client.js';
 import { logger } from '../utils/logger.js';
 
 import { RedisHelper } from './redis-helper.js';
-import { setupCORS, setupRateLimiting, setupRequestLogging, setupBodyParsing } from './middleware/setup-middleware.js';
+import {
+  setupCORS,
+  setupRateLimiting,
+  setupRequestLogging,
+  setupBodyParsing,
+} from './middleware/setup-middleware.js';
 import { createAgentRouter } from './routes/agent-routes.js';
 import { createTaskRouter } from './routes/task-routes.js';
 import { createHealthRouter, createSystemRouter } from './routes/system-routes.js';
@@ -35,9 +40,7 @@ export type {
   PRReview,
   PRMerge,
 } from './server-types.js';
-import type {
-  EketServerConfig,
-} from './server-types.js';
+import type { EketServerConfig } from './server-types.js';
 
 // Extend Express Request to carry authenticated instance_id
 declare global {
@@ -66,6 +69,46 @@ async function isRustServerAlive(): Promise<boolean> {
     return false;
   }
 }
+
+// ============================================================================
+// Circuit Breaker
+// ============================================================================
+
+class RustProxyCircuitBreaker {
+  private failures = 0;
+  private readonly threshold = 5;
+  private openUntil: number | null = null;
+  private readonly halfOpenInterval = 30_000;
+
+  isOpen(): boolean {
+    if (this.openUntil === null) return false;
+    if (Date.now() >= this.openUntil) {
+      // half-open: allow one probe
+      this.openUntil = null;
+      return false;
+    }
+    return true;
+  }
+
+  recordFailure(): void {
+    this.failures += 1;
+    if (this.failures >= this.threshold) {
+      this.openUntil = Date.now() + this.halfOpenInterval;
+      logger.warn('rust_circuit_breaker_opened', { failures: this.failures });
+    }
+  }
+
+  recordSuccess(): void {
+    this.failures = 0;
+    this.openUntil = null;
+  }
+
+  get state(): { circuitOpen: boolean; failures: number } {
+    return { circuitOpen: this.isOpen(), failures: this.failures };
+  }
+}
+
+const rustCircuitBreaker = new RustProxyCircuitBreaker();
 
 // ============================================================================
 // EKET Server Class
@@ -197,9 +240,15 @@ export class EketServer {
     // Lazy deps: getters read instance fields at request time (after start())
     const server = this;
     const lazyDeps = {
-      get redisHelper() { return server.redisHelper; },
-      get redis() { return server.redis; },
-      get wss() { return server.wss; },
+      get redisHelper() {
+        return server.redisHelper;
+      },
+      get redis() {
+        return server.redis;
+      },
+      get wss() {
+        return server.wss;
+      },
       config: this.config,
       startTime: this.startTime,
       wsClients: this.wsClients,
@@ -209,42 +258,104 @@ export class EketServer {
 
     this.app.use('/', createHealthRouter(lazyDeps));
 
-    // Rust API proxy — route-level whitelist only (prevents dead-code shadowing Node handlers)
+    // -------------------------------------------------------------------------
+    // Rust API proxy — circuit breaker + dynamic fallback to Node handlers
+    //
+    // Key insight: providing `on.error` disables http-proxy-middleware's default
+    // `errorResponsePlugin` (which writes a 502 body). Instead we store each
+    // request's Express `next` in `_cbNext` and call it from `on.error` so the
+    // request falls through to the Node handlers registered below.
+    //
+    // States:
+    //   CB open  → skip proxy entirely → next() → Node handler
+    //   CB closed, proxy OK  → recordSuccess, response sent by Rust
+    //   CB closed, proxy err → on.error → recordFailure + next() → Node handler
+    // -------------------------------------------------------------------------
     const RUST_PROXY_ROUTES: Array<{ method: string; path: string }> = [
-      { method: 'GET',   path: '/api/v1/tasks' },
-      { method: 'GET',   path: '/api/v1/tasks/:id' },
+      { method: 'GET', path: '/api/v1/tasks' },
+      { method: 'GET', path: '/api/v1/tasks/:id' },
       { method: 'PATCH', path: '/api/v1/tasks/:id/status' },
-      { method: 'GET',   path: '/api/v1/agents' },
-      { method: 'GET',   path: '/api/v1/agents/:id' },
-      { method: 'GET',   path: '/api/v1/dag' },
-      { method: 'GET',   path: '/health' },
-      { method: 'GET',   path: '/ready' },
-      { method: 'GET',   path: '/live' },
+      { method: 'GET', path: '/api/v1/agents' },
+      { method: 'GET', path: '/api/v1/agents/:id' },
+      { method: 'GET', path: '/api/v1/dag' },
+      { method: 'GET', path: '/health' },
+      { method: 'GET', path: '/ready' },
+      { method: 'GET', path: '/live' },
     ];
 
-    const rustAlive = await isRustServerAlive();
-    if (rustAlive) {
-      logger.info('rust_api_proxy_enabled', { target: RUST_API_URL, routes: RUST_PROXY_ROUTES.length });
-      console.log(`[EKET] Rust API server detected at ${RUST_API_URL} — proxying ${RUST_PROXY_ROUTES.length} whitelisted routes`);
-      const rustProxy = createProxyMiddleware({
-        target: RUST_API_URL,
-        changeOrigin: true,
-        timeout: 5000,
-        on: {
-          error: (err, _req, _res, _next) => {
-            logger.warn('rust_proxy_error', { error: (err as Error).message });
-            console.warn('[EKET] Rust proxy error:', (err as Error).message);
-          },
+    // /api/v1/rust-status — always available, reflects live CB state
+    this.app.get('/api/v1/rust-status', async (_req: Request, res: Response) => {
+      const alive = await isRustServerAlive();
+      res.json({ alive, ...rustCircuitBreaker.state });
+    });
+
+    const rustAliveAtStartup = await isRustServerAlive();
+    logger.info('rust_api_proxy_setup', {
+      target: RUST_API_URL,
+      routes: RUST_PROXY_ROUTES.length,
+      alive: rustAliveAtStartup,
+    });
+    console.log(
+      `[EKET] Rust API server ${rustAliveAtStartup ? 'detected' : 'not detected'} at ${RUST_API_URL} — registering ${RUST_PROXY_ROUTES.length} routes with circuit breaker`,
+    );
+
+    // Per-request next() slot; `on.error` (no Express `next` param) uses this
+    // to fall through to Node handler instead of sending a 502.
+    let _cbNext: NextFunction | null = null;
+
+    const rustProxy = createProxyMiddleware({
+      target: RUST_API_URL,
+      changeOrigin: true,
+      timeout: 5000,
+      on: {
+        // Providing on.error disables the default errorResponsePlugin, so no
+        // 502 body is written — we handle the error by falling through to Node.
+        error: (err: Error) => {
+          const errCode = (err as NodeJS.ErrnoException).code;
+          logger.warn('rust_proxy_error', { error: err.message, code: errCode });
+          rustCircuitBreaker.recordFailure();
+          if (_cbNext) {
+            const fn = _cbNext;
+            _cbNext = null;
+            fn();
+          }
         },
+        proxyRes: (proxyRes: { statusCode?: number }) => {
+          const status = proxyRes.statusCode ?? 0;
+          if (status >= 502 && status <= 503) {
+            rustCircuitBreaker.recordFailure();
+            logger.warn('rust_proxy_bad_status', { status });
+          } else if (status < 500) {
+            rustCircuitBreaker.recordSuccess();
+          }
+        },
+      },
+    });
+
+    for (const route of RUST_PROXY_ROUTES) {
+      const method = route.method.toLowerCase() as 'get' | 'patch' | 'post' | 'put' | 'delete';
+      this.app[method](route.path, (req: Request, res: Response, next: NextFunction) => {
+        // CB open → skip proxy entirely, let Node handler below respond
+        if (rustCircuitBreaker.isOpen()) {
+          logger.debug('rust_circuit_open_fallback', { path: req.path });
+          next();
+          return;
+        }
+        // CB closed → attempt proxy; store next so on.error can call it
+        _cbNext = next;
+        (rustProxy as express.RequestHandler)(req, res, (err?: unknown) => {
+          _cbNext = null;
+          if (err) {
+            rustCircuitBreaker.recordFailure();
+            next(err as Error);
+          } else {
+            next();
+          }
+        });
       });
-      for (const route of RUST_PROXY_ROUTES) {
-        (this.app as unknown as Record<string, (path: string, handler: unknown) => void>)[route.method.toLowerCase()](route.path, rustProxy);
-      }
-    } else {
-      logger.info('rust_api_proxy_disabled', { reason: 'server not reachable', target: RUST_API_URL });
-      console.log('[EKET] Rust API server not detected — using Node.js handlers (fallback mode)');
     }
 
+    // Node handlers — fallback when proxy is skipped (CB open) or fails
     this.app.use('/api/v1', createSystemRouter(lazyDeps));
     this.app.use('/api/v1', createAgentRouter(lazyDeps));
     this.app.use('/api/v1', createTaskRouter(lazyDeps));
@@ -275,13 +386,14 @@ export class EketServer {
       try {
         const dag = parseTicketsDag(ticketsDir);
         const nodeMap = new Map(dag.nodes.map((n) => [n.id, n]));
-        const dagLines = dag.edges.length === 0
-          ? ['(no dependencies found)']
-          : dag.edges.map((e) => {
-              const src = nodeMap.get(e.source);
-              const tgt = nodeMap.get(e.target);
-              return `  ${e.source} (${src?.status ?? '?'}) → depends on → ${e.target} (${tgt?.status ?? '?'})`;
-            });
+        const dagLines =
+          dag.edges.length === 0
+            ? ['(no dependencies found)']
+            : dag.edges.map((e) => {
+                const src = nodeMap.get(e.source);
+                const tgt = nodeMap.get(e.target);
+                return `  ${e.source} (${src?.status ?? '?'}) → depends on → ${e.target} (${tgt?.status ?? '?'})`;
+              });
         const html = `<pre>${dagLines.join('\n')}</pre>`;
         res.send(html);
       } catch (err) {
