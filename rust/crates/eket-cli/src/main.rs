@@ -98,6 +98,22 @@ enum Commands {
     /// Master poll: read master mailbox and process slaver reports (long-running)
     #[command(name = "master:poll")]
     MasterPoll(commands::master_poll::MasterPollArgs),
+
+    /// Run pending DB schema migrations
+    #[command(name = "db:migrate")]
+    DbMigrate(commands::db_commands::DbMigrateArgs),
+
+    /// Show applied DB migration status
+    #[command(name = "db:status")]
+    DbStatus(commands::db_commands::DbStatusArgs),
+
+    /// Show version info as JSON
+    #[command(name = "version")]
+    Version,
+
+    /// Show project repository and ticket status
+    #[command(name = "project:status")]
+    ProjectStatus(commands::project_status::ProjectStatusArgs),
 }
 
 #[tokio::main]
@@ -133,5 +149,15 @@ async fn main() -> Result<()> {
         Commands::TaskHandoff(args) => commands::handoff::run(args).await,
         Commands::MasterHeartbeat(args) => commands::master_heartbeat::run(args).await,
         Commands::MasterPoll(args) => commands::master_poll::run(args).await,
+        Commands::DbMigrate(args) => commands::db_commands::run_migrate(args).await,
+        Commands::DbStatus(args) => commands::db_commands::run_status(args).await,
+        Commands::Version => {
+            let info = serde_json::json!({
+                "version": env!("CARGO_PKG_VERSION"),
+            });
+            println!("{}", serde_json::to_string_pretty(&info).unwrap());
+            Ok(())
+        }
+        Commands::ProjectStatus(args) => commands::project_status::run(args).await,
     }
 }

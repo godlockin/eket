@@ -24,6 +24,10 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 dirs = { workspace = true }
 anyhow = { workspace = true }
+tokio-stream = { version = "0.1", features = ["sync"] }
+async-trait = { workspace = true }
+chrono = { workspace = true }
+rusqlite = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3"
