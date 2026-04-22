@@ -1,5 +1,6 @@
 // eket-engine: 工作流引擎 / Agent Pool / Mailbox / EventBus
 pub mod knowledge;
+pub mod knowledge_base;
 pub mod recommender;
 pub mod event_bus;
 pub mod monitors;

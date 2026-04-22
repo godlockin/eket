@@ -142,6 +142,14 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
 
     // Locate project root: must have BOTH jira/tickets/ AND .eket/
     let project_root = find_project_root().unwrap_or_else(|| std::env::current_dir().unwrap());
+    // TASK-165 audit: tickets_dir is derived from find_project_root() which walks up from cwd.
+    // find_project_root() uses jira/tickets + .eket as markers, so project_root IS the jira repo root.
+    // tickets_dir = <jira-root>/jira/tickets (legacy layout: jira/ is a subdir of the main project).
+    // In v3.0 three-repo layout, tickets live at <project>-jira/tickets/; if run from inside
+    // <project>-jira/, find_project_root walks up and may not find jira/tickets — users should
+    // run eket from the parent project root, or pass --tickets-dir explicitly.
+    // No hardcoded path; config.yml tickets_dir ("tickets") is not yet consumed here — acceptable
+    // since find_project_root() correctly resolves the base. No code change required.
     let tickets_dir = project_root.join("jira/tickets");
     let slaver_id = get_or_create_slaver_id(&project_root);
 

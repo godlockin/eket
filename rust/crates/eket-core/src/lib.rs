@@ -2,6 +2,7 @@
 // SQLite client, Redis client, Config, Error types, CircuitBreaker, Queue, Election
 
 pub mod cache;
+pub mod migrations;
 pub mod circuit_breaker;
 pub mod dag;
 pub mod config;

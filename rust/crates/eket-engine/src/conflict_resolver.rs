@@ -111,7 +111,7 @@ impl ConflictResolver {
     /// 优先级冲突：返回需重新分配的 assignee
     pub async fn handle_priority_conflict(
         &self,
-        ticket_id: &str,
+        _ticket_id: &str,
         _old_priority: &str,
         new_priority: &str,
         current_assignee: Option<&str>,
