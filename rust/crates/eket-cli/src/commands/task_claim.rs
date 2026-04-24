@@ -5,7 +5,6 @@
 /// 2. 原子 claim：SQLite BEGIN IMMEDIATE + ticket file update（防双领）
 /// 3. 写 .eket/ACTIVE_CONTEXT.md
 /// 4. 输出 JSON 结果（兼容 TS 版本格式）
-
 use anyhow::Result;
 use clap::Args;
 use eket_core::{
@@ -106,13 +105,7 @@ fn write_active_context(
 /// Uses BEGIN IMMEDIATE to serialize concurrent claims.
 fn try_atomic_claim(client: &SqliteClient, ticket_id: &str, slaver_id: &str) -> bool {
     // Use SQLite transaction to atomically check+update status
-    match client.claim_ticket_atomic(ticket_id, slaver_id) {
-        Ok(claimed) => claimed,
-        Err(_) => {
-            // SQLite unavailable → fall through (best-effort, ticket file is still updated)
-            true
-        }
-    }
+    client.claim_ticket_atomic(ticket_id, slaver_id).unwrap_or(true)
 }
 
 // ─── Role filter ──────────────────────────────────────────────────────────────

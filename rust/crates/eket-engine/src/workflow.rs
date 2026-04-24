@@ -8,7 +8,6 @@
 /// - 步骤超时通过 tokio::time::timeout（无 timer 泄漏）
 /// - JudgmentPoint：oneshot 通道，外部 resolve_judgment() 发信号
 /// - kill-switch：每个实例持有 AbortHandle，cancel 时立即终止
-
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
@@ -89,15 +88,14 @@ pub struct WorkflowStep {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default)]
 pub enum JudgmentFallback {
+    #[default]
     EscalateToMaster,
     Skip,
     FailWorkflow,
 }
 
-impl Default for JudgmentFallback {
-    fn default() -> Self { Self::EscalateToMaster }
-}
 
 #[derive(Debug, Clone)]
 pub struct WorkflowDefinition {
@@ -579,9 +577,8 @@ pub async fn execute_parallel(
             // ── Any: first success (or all fail) ───────────────────────────
             JoinPolicy::Any => {
                 // Drive all handles; stop as soon as one succeeds.
-                let remaining: Vec<(String, tokio::task::JoinHandle<BranchOutcome>)> = handles.drain(..).collect();
-                loop {
-                    if remaining.is_empty() { break; }
+                let remaining: Vec<(String, tokio::task::JoinHandle<BranchOutcome>)> = std::mem::take(&mut handles);
+                if !remaining.is_empty() {
                     // Poll every handle once via select_all-style approach.
                     let (outcome, _idx, rest) = futures::future::select_all(
                         remaining.into_iter().map(|(id, jh)| {
@@ -601,16 +598,10 @@ pub async fn execute_parallel(
                     // inside the future itself (step_id field).
                     let _ = rest; // remaining futures run to completion via abort below
                     let sid = outcome.step_id.clone();
-                    let success = outcome.success;
                     outcomes.insert(sid, outcome);
-                    if success {
-                        // Abort any still-running branches.
-                        break;
-                    }
-                    // rebuild remaining from what select_all returned
                     // (rest is Vec<BoxFuture> — we can no longer abort them individually;
                     //  they're already detached tasks, so just let them run out naturally)
-                    break; // exit after first resolution regardless
+                    // exit after first resolution regardless
                 }
             }
 

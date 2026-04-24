@@ -9,7 +9,6 @@
 /// 与 TS 版本差异：
 /// - TS 使用 proper-lockfile（进程级文件锁）；Rust 用 tokio::sync::Mutex per-agent
 /// - TS 支持加密（encrypt/decrypt）；Rust 版本预留 encrypted 字段，不加密
-
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;

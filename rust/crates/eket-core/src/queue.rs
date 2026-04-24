@@ -9,7 +9,6 @@
 /// |-----------|---------------|-------------------|-----------------------|
 /// | TaskQueue | LPUSH         | BRPOP (5s)        | Task dispatch, 1:1    |
 /// | EventBus  | PUBLISH       | SUBSCRIBE (async) | Master broadcast, 1:N |
-
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -41,16 +40,15 @@ pub struct Message {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum MessagePriority {
     Urgent,
     High,
+    #[default]
     Normal,
     Low,
 }
 
-impl Default for MessagePriority {
-    fn default() -> Self { Self::Normal }
-}
 
 impl Message {
     pub fn new(
