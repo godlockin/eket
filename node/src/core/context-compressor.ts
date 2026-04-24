@@ -59,10 +59,10 @@ export class ContextCompressor {
   }
 
   private async getRoot(): Promise<string> {
-    if (this.projectRootOverride) return this.projectRootOverride;
-    if (this.projectRoot) return this.projectRoot;
+    if (this.projectRootOverride) {return this.projectRootOverride;}
+    if (this.projectRoot) {return this.projectRoot;}
     const root = await findProjectRoot();
-    if (!root) throw new Error('EKET project root not found');
+    if (!root) {throw new Error('EKET project root not found');}
     this.projectRoot = root;
     return root;
   }
@@ -90,7 +90,7 @@ export class ContextCompressor {
     try {
       const root = await this.getRoot();
       const summaryPath = path.join(root, '.eket', 'sessions', ticketId, 'summary.md');
-      if (!fs.existsSync(summaryPath)) return null;
+      if (!fs.existsSync(summaryPath)) {return null;}
       return fs.readFileSync(summaryPath, 'utf-8');
     } catch {
       return null;

@@ -9,7 +9,6 @@
 // Imports (used for re-export + pre-initialized registry)
 // ============================================================================
 
-import { SkillsRegistry, createSkillsRegistry } from './registry.js';
 
 // algorithm
 import { autoMLMonitorSkill } from './algorithm/automl-monitor.js';
@@ -73,6 +72,7 @@ import { riskAssessmentSkill } from './planning/risk-assessment.js';
 import { roadmapPrioritizationSkill } from './planning/roadmap-prioritization.js';
 import { sprintPlanningSkill } from './planning/sprint-planning.js';
 import { TicketBreakdownSkill } from './planning/ticket-breakdown.js';
+import { SkillsRegistry, createSkillsRegistry } from './registry.js';
 // requirements
 import { acceptanceCriteriaSkill } from './requirements/acceptance-criteria.js';
 import { RequirementDecompositionSkill } from './requirements/requirement_decomposition.js';

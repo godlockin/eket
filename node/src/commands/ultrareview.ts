@@ -10,10 +10,12 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { Command } from 'commander';
+
 import { WorktreeManager } from '../core/worktree-manager.js';
-import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import type { ReviewerResult, UltrareviewReport } from '../types/index.js';
+import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 
 // ============================================================================
 // Reviewer definitions
@@ -117,7 +119,7 @@ function analyzeArchitectureIssues(
   // Check for large files in changed set
   for (const file of files) {
     const absPath = path.resolve(process.cwd(), file);
-    if (!fs.existsSync(absPath)) continue;
+    if (!fs.existsSync(absPath)) {continue;}
     try {
       const lines = fs.readFileSync(absPath, 'utf-8').split('\n').length;
       if (lines > 400) {
@@ -235,7 +237,7 @@ export async function runUltrareview(prNumber: number): Promise<UltrareviewRepor
   const topIssues = Array.from(issueMap.values()).sort((a, b) => {
     const sa = severityOrder[a.severity] ?? 3;
     const sb = severityOrder[b.severity] ?? 3;
-    if (sa !== sb) return sa - sb;
+    if (sa !== sb) {return sa - sb;}
     return b.reviewers.length - a.reviewers.length;
   });
 
