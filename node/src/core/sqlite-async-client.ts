@@ -323,7 +323,7 @@ function runWorker() {
               const existing = db!.prepare(
                 "SELECT assigned_to FROM task_history WHERE ticket_id = ? AND status = 'in_progress'"
               ).get(ctTicketId) as { assigned_to: string } | undefined;
-              if (existing) return false;
+              if (existing) {return false;}
               db!.prepare(
                 "INSERT INTO task_history (ticket_id, status, assigned_to, started_at) VALUES (?, 'in_progress', ?, CURRENT_TIMESTAMP)"
               ).run(ctTicketId, ctSlaverId);

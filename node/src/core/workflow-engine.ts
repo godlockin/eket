@@ -10,10 +10,11 @@
  */
 
 import { execFile } from 'child_process';
-import { promisify } from 'util';
 import { writeFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { promisify } from 'util';
+
 import { EketError, EketErrorCode } from '../types/index.js';
 import type {
   WorkflowDefinition,

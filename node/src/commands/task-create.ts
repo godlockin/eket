@@ -10,8 +10,8 @@ import * as readline from 'readline';
 
 import { Command } from 'commander';
 
-import { findProjectRoot } from '../utils/process-cleanup.js';
 import { DependencyInferrer } from '../core/dependency-inferrer.js';
+import { findProjectRoot } from '../utils/process-cleanup.js';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,16 +32,16 @@ export interface InferredFields {
 
 export function inferType(description: string): TicketType {
   const lower = description.toLowerCase();
-  if (/bug|fix|错误|修复|crash|崩溃|报错/.test(lower)) return 'bug';
-  if (/重构|refactor|cleanup|clean up/.test(lower)) return 'refactor';
-  if (/文档|doc|readme|changelog|注释/.test(lower)) return 'chore';
+  if (/bug|fix|错误|修复|crash|崩溃|报错/.test(lower)) {return 'bug';}
+  if (/重构|refactor|cleanup|clean up/.test(lower)) {return 'refactor';}
+  if (/文档|doc|readme|changelog|注释/.test(lower)) {return 'chore';}
   return 'feature';
 }
 
 export function inferPriority(description: string): TicketPriority {
   const lower = description.toLowerCase();
-  if (/紧急|p0|生产|production|urgent|critical|线上/.test(lower)) return 'P0';
-  if (/重要|p1|important/.test(lower)) return 'P1';
+  if (/紧急|p0|生产|production|urgent|critical|线上/.test(lower)) {return 'P0';}
+  if (/重要|p1|important/.test(lower)) {return 'P1';}
   return 'P2';
 }
 
@@ -69,14 +69,14 @@ export function checkCompleteness(detail: string, acceptanceCriteria: string): C
 // ─── Next ticket number ───────────────────────────────────────────────────────
 
 export function getNextTicketNumber(ticketsDir: string): number {
-  if (!fs.existsSync(ticketsDir)) return 1;
+  if (!fs.existsSync(ticketsDir)) {return 1;}
   const files = fs.readdirSync(ticketsDir);
   let max = 0;
   for (const f of files) {
     const m = f.match(/^TASK-(\d+)\.md$/);
     if (m) {
       const n = parseInt(m[1], 10);
-      if (n > max) max = n;
+      if (n > max) {max = n;}
     }
   }
   return max + 1;
@@ -136,8 +136,8 @@ export function writeTicketFile(fields: InferredFields & { deps?: string[] }, ta
 export async function inferDependencies(
   content: string,
   ticketsDir: string,
-): Promise<import('../core/dependency-inferrer.js').DependencyCandidate[]> {
-  if (!fs.existsSync(ticketsDir)) return [];
+): Promise<Array<import('../core/dependency-inferrer.js').DependencyCandidate>> {
+  if (!fs.existsSync(ticketsDir)) {return [];}
   const files = fs.readdirSync(ticketsDir)
     .filter((f) => /^TASK-\d+\.md$/.test(f))
     .map((f) => ({ name: f, mtime: fs.statSync(path.join(ticketsDir, f)).mtimeMs }))
@@ -223,16 +223,14 @@ export async function runTaskCreate(description: string, rl: readline.Interface,
     const confirmedDeps: string[] = [];
     let skipAll = false;
     for (const cand of inferredDeps) {
-      if (skipAll) break;
+      if (skipAll) {break;}
       console.log(`- ${cand.ticketId}（置信度 ${cand.confidence}）：匹配关键词: ${cand.reason}`);
       const ans = await question(rl, `确认加入依赖？[Y/n/s(跳过所有)] `);
       const trimmed = ans.trim().toLowerCase();
       if (trimmed === 's') { skipAll = true; break; }
-      if (trimmed === '' || trimmed === 'y') confirmedDeps.push(cand.ticketId);
+      if (trimmed === '' || trimmed === 'y') {confirmedDeps.push(cand.ticketId);}
     }
     if (confirmedDeps.length > 0) {
-      // Patch formatTicket result: replace "依赖: 无" with confirmed deps
-      fields.background = fields.background; // no-op, deps injected via metadata below
       // Store deps in a custom property we handle in formatTicket
       (fields as InferredFields & { deps?: string[] }).deps = confirmedDeps;
     }

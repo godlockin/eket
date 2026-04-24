@@ -14,11 +14,13 @@
  * 7. 更新心跳
  */
 
-import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
-import { printError, logInfo, logWarning } from '../utils/error-handler.js';
+
+import { Command } from 'commander';
+
 import { appendTaskMessage } from '../core/task-logger.js';
+import { printError, logInfo, logWarning } from '../utils/error-handler.js';
 
 // Color codes
 const COLORS = {
@@ -64,9 +66,9 @@ function getSlaverInstanceInfo(): { instanceId: string; role: string; specialty:
     const roleMatch = content.match(/role:\s*(\S+)/);
     const specialtyMatch = content.match(/specialty:\s*(\S+)/);
 
-    if (instanceIdMatch) instanceId = instanceIdMatch[1];
-    if (roleMatch) role = roleMatch[1];
-    if (specialtyMatch) specialty = specialtyMatch[1];
+    if (instanceIdMatch) {instanceId = instanceIdMatch[1];}
+    if (roleMatch) {role = roleMatch[1];}
+    if (specialtyMatch) {specialty = specialtyMatch[1];}
   }
 
   return { instanceId, role, specialty };
@@ -89,7 +91,7 @@ function checkSlaverStatus(instanceId: string): SlaverStatus {
   if (fs.existsSync(jiraDir)) {
     for (const dir of ['feature', 'bugfix', 'task', 'fix']) {
       const typeDir = path.join(jiraDir, dir);
-      if (!fs.existsSync(typeDir)) continue;
+      if (!fs.existsSync(typeDir)) {continue;}
 
       const files = fs.readdirSync(typeDir).filter(f => f.endsWith('.md'));
 
@@ -151,7 +153,7 @@ function checkSlaverStatus(instanceId: string): SlaverStatus {
   if (fs.existsSync(jiraDir)) {
     for (const dir of ['feature', 'bugfix', 'task', 'fix']) {
       const typeDir = path.join(jiraDir, dir);
-      if (!fs.existsSync(typeDir)) continue;
+      if (!fs.existsSync(typeDir)) {continue;}
 
       const files = fs.readdirSync(typeDir).filter(f => f.endsWith('.md'));
 
@@ -370,7 +372,7 @@ function checkReadyTasks(specialty: string): number {
 
   for (const dir of ['feature', 'bugfix', 'task', 'fix']) {
     const typeDir = path.join(jiraDir, dir);
-    if (!fs.existsSync(typeDir)) continue;
+    if (!fs.existsSync(typeDir)) {continue;}
 
     const files = fs.readdirSync(typeDir).filter(f => f.endsWith('.md'));
 

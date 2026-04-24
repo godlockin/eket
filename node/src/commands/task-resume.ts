@@ -14,10 +14,48 @@ import * as path from 'path';
 
 import { Command } from 'commander';
 
-import { resumeWithFallback } from '../core/session-resume.js';
+import { resumeWithFallback as _resumeWithFallbackCore } from '../core/session-resume.js';
+import { createSQLiteManager } from '../core/sqlite-manager.js';
 import { EketError } from '../types/index.js';
 import { printError } from '../utils/error-handler.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
+
+/**
+ * TASK-064: resumeWithFallback — session resume 降级策略
+ * 若 session 不存在或已过期，清除检查点并回退到新 session
+ */
+export async function resumeWithFallback(
+  opts: { ticketId: string; slaverId: string; sessionId: string | undefined },
+  attemptResume?: (sessionId: string) => Promise<void>
+): Promise<void> {
+  const { ticketId, slaverId, sessionId } = opts;
+
+  const tryFallback = async (): Promise<void> => {
+    console.warn('WARN: session resume failed, falling back to fresh session');
+    const db = createSQLiteManager();
+    await db.connect();
+    await db.deleteCheckpoint(ticketId, slaverId);
+    await db.close();
+  };
+
+  if (!sessionId) {
+    await tryFallback();
+    return;
+  }
+
+  if (!attemptResume) {return;}
+
+  try {
+    await attemptResume(sessionId);
+  } catch (e) {
+    const msg = (e as Error).message ?? '';
+    if (/session|not found/i.test(msg)) {
+      await tryFallback();
+    } else {
+      throw e;
+    }
+  }
+}
 
 interface ResumeOptions {
   slaver: string;
@@ -42,12 +80,12 @@ function formatResumeInfo(row: {
       savedAt?: string;
     };
     const parts: string[] = [];
-    if (state.lastAction) parts.push(`  最后操作: ${state.lastAction}`);
+    if (state.lastAction) {parts.push(`  最后操作: ${state.lastAction}`);}
     if (state.filesChanged && state.filesChanged.length > 0) {
       parts.push(`  已变更文件: ${state.filesChanged.join(', ')}`);
     }
-    if (state.notes) parts.push(`  备注: ${state.notes}`);
-    if (state.savedAt) parts.push(`  保存时间: ${state.savedAt}`);
+    if (state.notes) {parts.push(`  备注: ${state.notes}`);}
+    if (state.savedAt) {parts.push(`  保存时间: ${state.savedAt}`);}
     stateInfo = parts.join('\n');
   } catch {
     stateInfo = `  state_json: ${row.state_json}`;
@@ -87,7 +125,7 @@ Examples:
     .action(async (options: ResumeOptions) => {
       try {
         // 调用 resumeWithFallback 获取检查点（SQLite 不可用时返回 null）
-        const checkpoint = await resumeWithFallback(options.slaver);
+        const checkpoint = await _resumeWithFallbackCore(options.slaver);
 
         if (!checkpoint) {
           console.log(
