@@ -4,9 +4,10 @@
  * 启动 EKET Protocol HTTP Server (满血版)
  */
 
+import { spawn } from 'child_process';
+
 import { Command } from 'commander';
 import ora from 'ora';
-import { spawn } from 'child_process';
 
 import { createEketServer, type EketServerConfig } from '../api/eket-server.js';
 import { printError } from '../utils/error-handler.js';
@@ -35,7 +36,7 @@ async function waitForRustServer(url: string, maxWaitMs = 3000): Promise<boolean
   while (Date.now() - start < maxWaitMs) {
     try {
       const r = await fetch(`${url}/health`, { signal: AbortSignal.timeout(300) });
-      if (r.ok) return true;
+      if (r.ok) {return true;}
     } catch {
       // not ready yet
     }

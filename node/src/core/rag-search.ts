@@ -19,7 +19,7 @@ export interface SearchStrategy {
 
 // --- 余弦相似度（纯 JS）---
 function cosineSimilarity(a: number[], b: number[]): number {
-  if (a.length !== b.length || a.length === 0) return 0;
+  if (a.length !== b.length || a.length === 0) {return 0;}
   let dot = 0;
   let normA = 0;
   let normB = 0;
@@ -58,7 +58,7 @@ export class KeywordSearchStrategy implements SearchStrategy {
 
   async search(query: string, topK: number): Promise<SearchResult[]> {
     const result = this.db.searchFTS(query, topK);
-    if (!result.success || !result.data) return [];
+    if (!result.success || !result.data) {return [];}
     return result.data.map((row, i) => ({
       docId: row.docId,
       content: row.content,
@@ -76,7 +76,7 @@ export class VectorSearchStrategy implements SearchStrategy {
 
   async search(query: string, topK: number): Promise<SearchResult[]> {
     const result = this.db.getAllEmbeddings();
-    if (!result.success || !result.data || result.data.length === 0) return [];
+    if (!result.success || !result.data || result.data.length === 0) {return [];}
 
     const queryVec = hashEmbedding(query);
     const scored = result.data.map((row) => ({

@@ -10,8 +10,9 @@
 import inquirer from 'inquirer';
 import ora from 'ora';
 
-import { startInstance } from './start-instance.js';
 import { logSuccess } from '../utils/error-handler.js';
+
+import { startInstance } from './start-instance.js';
 
 interface Choice {
   name: string;

@@ -108,7 +108,7 @@ fn extract_yaml_path(content: &str, key: &str) -> Option<String> {
     for line in content.lines() {
         let trimmed = line.trim();
         if trimmed.starts_with(&format!("{key}:")) || trimmed.starts_with(&format!("{key}_path:")) {
-            let val = trimmed.splitn(2, ':').nth(1)?.trim().trim_matches('"').trim_matches('\'');
+            let val = trimmed.split_once(':')?.1.trim().trim_matches('"').trim_matches('\'');
             if !val.is_empty() {
                 return Some(val.to_string());
             }

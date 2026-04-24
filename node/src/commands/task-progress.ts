@@ -7,6 +7,7 @@
  *   node dist/index.js task:progress --ticket <id> --phase <analysis|implement|test|pr> --todos <n> --done <n>
  */
 import { Command } from 'commander';
+
 import { sseBus } from '../core/sse-bus.js';
 
 export type ProgressPhase = 'analysis' | 'implement' | 'test' | 'pr';

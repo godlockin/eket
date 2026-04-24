@@ -1,6 +1,6 @@
 export type ModelTier = 'haiku' | 'sonnet' | 'opus';
 
-const DEFAULT_RULES: { tags: string[]; model: ModelTier }[] = [
+const DEFAULT_RULES: Array<{ tags: string[]; model: ModelTier }> = [
   { tags: ['classify', 'route', 'triage', 'lint', 'check'], model: 'haiku' },
   { tags: ['implement', 'code', 'feature', 'refactor', 'build'], model: 'opus' },
 ];

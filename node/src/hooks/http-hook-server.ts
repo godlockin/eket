@@ -30,13 +30,14 @@ import * as zlib from 'zlib';
 // Pipeline imports (DAG middleware - TASK-107)
 // ============================================================================
 import { PipelineExecutor } from '../core/middleware-pipeline.js';
-import { createPreToolUsePipeline } from './pipelines/pre-tool-use.js';
+
+import { createCompactPipeline } from './pipelines/compact.js';
+import { createMiscPipeline } from './pipelines/misc.js';
+import { createPermissionPipeline } from './pipelines/permission.js';
 import { createPostToolUsePipeline } from './pipelines/post-tool-use.js';
+import { createPreToolUsePipeline } from './pipelines/pre-tool-use.js';
 import { createSessionPipeline } from './pipelines/session.js';
 import { createTaskPipeline } from './pipelines/task.js';
-import { createCompactPipeline } from './pipelines/compact.js';
-import { createPermissionPipeline } from './pipelines/permission.js';
-import { createMiscPipeline } from './pipelines/misc.js';
 
 // ============================================================================
 // JWT 工具函数

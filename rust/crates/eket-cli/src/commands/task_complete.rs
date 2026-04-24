@@ -8,7 +8,6 @@
 ///   5. RecordCompletion — db.update_ticket_status + update_ticket_assignee
 ///
 /// --rollback mode: bypass saga, set status → todo, notify master failed
-
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -467,7 +466,7 @@ mod tests {
         String::new()
     }
 
-    fn args(dir: &TempDir, ticket_id: &str, root: &PathBuf) -> CompleteArgs {
+    fn args(dir: &TempDir, ticket_id: &str, root: &Path) -> CompleteArgs {
         CompleteArgs {
             ticket_id: ticket_id.into(),
             slaver_id: Some("slaver_test".into()),
@@ -475,7 +474,7 @@ mod tests {
             rollback: false,
             mailbox_dir: Some(dir.path().join("mailbox")),
             db_path: Some(":memory:".into()),
-            project_root: Some(root.clone()),
+            project_root: Some(root.to_path_buf()),
         }
     }
 

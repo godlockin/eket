@@ -7,8 +7,8 @@ import * as path from 'path';
 
 import { Command } from 'commander';
 
-import { SQLiteClient } from '../core/sqlite-client.js';
 import { RAGService } from '../core/rag-search.js';
+import { SQLiteClient } from '../core/sqlite-client.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
 export function registerKnowledgeSearch(program: Command): void {

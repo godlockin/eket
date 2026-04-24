@@ -20,7 +20,7 @@ export interface SagaResult<T> {
 }
 
 export class SagaExecutor<T> {
-  private steps: SagaStep<T>[] = [];
+  private steps: Array<SagaStep<T>> = [];
 
   addStep(step: SagaStep<T>): this {
     this.steps.push(step);
@@ -29,7 +29,7 @@ export class SagaExecutor<T> {
 
   async execute(initialState: T): Promise<SagaResult<T>> {
     let state = initialState;
-    const completed: SagaStep<T>[] = [];
+    const completed: Array<SagaStep<T>> = [];
     const compensationErrors: Array<{ step: string; error: Error }> = [];
 
     for (const step of this.steps) {

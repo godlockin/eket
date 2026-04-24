@@ -25,15 +25,12 @@ pub async fn run_status(_args: DbStatusArgs) -> Result<()> {
     let runner = MigrationRunner::new(&conn);
 
     // ensure table exists before querying
-    let applied = match runner.status() {
-        Ok(rows) => rows,
-        Err(_) => vec![],
-    };
+    let applied = runner.status().unwrap_or_default();
 
     if applied.is_empty() {
         println!("No migrations applied yet.");
     } else {
-        println!("{:<8} {:<30} {}", "VERSION", "NAME", "APPLIED_AT");
+        println!("{:<8} {:<30} APPLIED_AT", "VERSION", "NAME");
         println!("{}", "-".repeat(64));
         for (ver, name, applied_at) in &applied {
             println!("{:<8} {:<30} {}", ver, name, applied_at);

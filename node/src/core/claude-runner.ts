@@ -6,8 +6,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { resolveModel, getModelDisplayName, type ModelTier } from './model-router.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
+
+import { resolveModel, getModelDisplayName, type ModelTier } from './model-router.js';
 
 // ============================================================================
 // Types

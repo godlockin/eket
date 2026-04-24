@@ -10,9 +10,9 @@
  *   node dist/index.js gate:review                # 扫描所有 gate_review 状态的 tickets
  */
 
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as crypto from 'crypto';
 
 import { Command } from 'commander';
 
@@ -108,7 +108,7 @@ function parseTicket(filePath: string): Result<TicketParseResult> {
     const depLines = (depsMatch[1] ?? '').match(/-\s*(\S+)/g) || [];
     for (const line of depLines) {
       const dep = line.replace(/^-\s*/, '').trim();
-      if (dep) dependencies.push(dep);
+      if (dep) {dependencies.push(dep);}
     }
   }
 
@@ -138,7 +138,7 @@ function parseTicket(filePath: string): Result<TicketParseResult> {
 
 function findTicketFile(projectRoot: string, ticketId: string): string | null {
   const jiraDir = path.join(projectRoot, 'jira');
-  if (!fs.existsSync(jiraDir)) return null;
+  if (!fs.existsSync(jiraDir)) {return null;}
 
   // Search common locations
   const searchDirs = [
@@ -156,9 +156,9 @@ function findTicketFile(projectRoot: string, ticketId: string): string | null {
 
   const upper = ticketId.toUpperCase();
   for (const dir of searchDirs) {
-    if (!fs.existsSync(dir)) continue;
+    if (!fs.existsSync(dir)) {continue;}
     const candidate = path.join(dir, `${upper}.md`);
-    if (fs.existsSync(candidate)) return candidate;
+    if (fs.existsSync(candidate)) {return candidate;}
   }
   return null;
 }
@@ -169,12 +169,12 @@ function findTicketFile(projectRoot: string, ticketId: string): string | null {
 
 function findGateReviewTickets(projectRoot: string): string[] {
   const jiraDir = path.join(projectRoot, 'jira');
-  if (!fs.existsSync(jiraDir)) return [];
+  if (!fs.existsSync(jiraDir)) {return [];}
 
   const results: string[] = [];
 
   function scanDir(dir: string): void {
-    if (!fs.existsSync(dir)) return;
+    if (!fs.existsSync(dir)) {return;}
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       if (entry.isDirectory()) {
@@ -324,8 +324,8 @@ function writeReviewReport(
   }
 
   const statusIcon = (s: 'pass' | 'warn' | 'fail') => {
-    if (s === 'pass') return '✅';
-    if (s === 'warn') return '⚠️';
+    if (s === 'pass') {return '✅';}
+    if (s === 'warn') {return '⚠️';}
     return '❌';
   };
 

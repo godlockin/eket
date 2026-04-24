@@ -235,7 +235,7 @@ pub fn topological_sort(dag: &DagResponse) -> Result<Vec<String>, String> {
 
     for node in &dag.nodes {
         in_degree.entry(node.id.clone()).or_insert(0);
-        adj.entry(node.id.clone()).or_insert_with(Vec::new);
+        adj.entry(node.id.clone()).or_default();
     }
 
     for edge in &dag.edges {
@@ -346,11 +346,10 @@ pub fn detect_cycle(dag: &DagResponse) -> Option<Vec<String>> {
 
     let node_ids: Vec<String> = dag.nodes.iter().map(|n| n.id.clone()).collect();
     for id in &node_ids {
-        if !visited.contains(id) {
-            if dfs(id, &adj, &mut visited, &mut rec_stack, &mut cycle) {
+        if !visited.contains(id)
+            && dfs(id, &adj, &mut visited, &mut rec_stack, &mut cycle) {
                 return Some(cycle);
             }
-        }
     }
     None
 }
@@ -814,7 +813,7 @@ impl DagExecutor {
 
         for node in &graph.nodes {
             in_degree.entry(node.id.clone()).or_insert(0);
-            adj.entry(node.id.clone()).or_insert_with(Vec::new);
+            adj.entry(node.id.clone()).or_default();
         }
 
         for edge in &graph.edges {
@@ -863,12 +862,10 @@ impl DagExecutor {
             let results = futures::future::join_all(handles).await;
 
             let mut layer_failed = false;
-            for res in results {
-                if let Ok(node_result) = res {
-                    if !node_result.success {
-                        layer_failed = true;
-                        failed_nodes.push(node_result.node_id);
-                    }
+            for node_result in results.into_iter().flatten() {
+                if !node_result.success {
+                    layer_failed = true;
+                    failed_nodes.push(node_result.node_id);
                 }
             }
 

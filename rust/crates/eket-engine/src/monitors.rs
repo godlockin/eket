@@ -2,7 +2,6 @@
 ///
 /// HeartbeatMonitor: 定期扫描所有实例，TTL 超时则标记 offline + 发布事件
 /// StaleCleaner:     定期扫描 in_progress ticket，文件 mtime 超时则重置为 todo
-
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;

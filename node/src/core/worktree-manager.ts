@@ -12,6 +12,7 @@
 import * as fs from 'fs/promises';
 import * as http from 'http';
 import * as path from 'path';
+
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 
 // ============================================================================
@@ -226,7 +227,7 @@ export class WorktreeManager {
    * 删除 worktree 及其分支。
    * force=true 时强制删除未合并的 worktree。
    */
-  async removeWorktree(ticketId: string, force: boolean = false): Promise<void> {
+  async removeWorktree(ticketId: string, force = false): Promise<void> {
     const index = await this.readIndex();
     const info = index[ticketId];
     if (!info) {

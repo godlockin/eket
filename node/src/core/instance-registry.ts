@@ -796,7 +796,7 @@ export class InstanceRegistry {
    */
   async getCurrentLevel(instanceId: string): Promise<Result<1 | 2 | 3>> {
     const result = await this.getInstance(instanceId);
-    if (!result.success) return result as Result<1 | 2 | 3>;
+    if (!result.success) {return result as Result<1 | 2 | 3>;}
     if (!result.data) {
       return {
         success: false,
