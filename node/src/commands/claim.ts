@@ -11,17 +11,22 @@ import * as path from 'path';
 import { Command } from 'commander';
 import ora from 'ora';
 
-import { createInstanceRegistry } from '../core/instance-registry.js';
-import { createSQLiteManager } from '../core/sqlite-manager.js';
-import { createTaskAssigner, type AssignmentResult } from '../core/task-assigner.js';
-import { WorktreeManager } from '../core/worktree-manager.js';
+import { contextCompressor } from '../core/context-compressor.js';
 import { EnvelopeManager } from '../core/envelope-manager.js';
+import { createInstanceRegistry } from '../core/instance-registry.js';
+import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
+import { SagaExecutor } from '../core/saga-executor.js';
 import { SkillStacker } from '../core/skill-stacker.js';
+import { createSQLiteManager } from '../core/sqlite-manager.js';
+import { sseBus } from '../core/sse-bus.js';
+import { createTaskAssigner, type AssignmentResult } from '../core/task-assigner.js';
+import { appendTaskMessage, injectActiveContext as injectActiveContextData } from '../core/task-logger.js';
+import { reviewTicket } from '../core/ticket-reviewer.js';
+import { WorktreeManager } from '../core/worktree-manager.js';
 import type { Instance, Ticket } from '../types/index.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
-import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
 import {
   loadConfig,
   getTickets,
@@ -29,11 +34,7 @@ import {
   initializeProfile,
   sendClaimMessage,
 } from './claim-helpers.js';
-import { appendTaskMessage, injectActiveContext as injectActiveContextData } from '../core/task-logger.js';
-import { contextCompressor } from '../core/context-compressor.js';
-import { reviewTicket } from '../core/ticket-reviewer.js';
-import { SagaExecutor } from '../core/saga-executor.js';
-import { sseBus } from '../core/sse-bus.js';
+
 
 /**
  * 获取或生成持久化 Slaver ID（P4修复）
@@ -47,7 +48,7 @@ function getOrCreateSlaverId(projectRoot: string): string {
   try {
     if (fs.existsSync(slaveridPath)) {
       const id = fs.readFileSync(slaveridPath, 'utf-8').trim();
-      if (id) return id;
+      if (id) {return id;}
     }
     const newId = `slaver_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     fs.mkdirSync(path.dirname(slaveridPath), { recursive: true });
@@ -201,7 +202,7 @@ async function updateTicketStatus(
  */
 export function getIsolationMode(): 'worktree' | 'none' {
   const val = process.env.EKET_ISOLATION;
-  if (val === 'none') return 'none';
+  if (val === 'none') {return 'none';}
   return 'worktree';
 }
 

@@ -11,8 +11,8 @@
 import { EketError, EketErrorCode } from '../types/index.js';
 
 import type { SkillAdapter, AnyAdapterConfig } from './adapters/types.js';
-import type { Skill, SkillRegistry, SkillRegistryConfig } from './types.js';
 import { loadSkillIndex } from './index-loader.js';
+import type { Skill, SkillRegistry, SkillRegistryConfig } from './types.js';
 
 /**
  * Skills 注册表实现

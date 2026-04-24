@@ -12,8 +12,9 @@ import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-import type { SkillMeta } from './types.js';
 import { createSQLiteClient } from '../core/sqlite-client.js';
+
+import type { SkillMeta } from './types.js';
 
 // ============================================================================
 // Public Types
@@ -52,7 +53,7 @@ function collectJsonFiles(dir: string): string[] {
     return results;
   }
   for (const entry of entries) {
-    if (entry === 'node_modules') continue;
+    if (entry === 'node_modules') {continue;}
     const full = join(dir, entry);
     let st;
     try {
@@ -73,7 +74,7 @@ function collectJsonFiles(dir: string): string[] {
  * 验证对象是否满足 SkillMeta 最低结构
  */
 function isSkillMeta(obj: unknown): obj is SkillMeta {
-  if (!obj || typeof obj !== 'object') return false;
+  if (!obj || typeof obj !== 'object') {return false;}
   const o = obj as Record<string, unknown>;
   return (
     typeof o['id'] === 'string' &&
@@ -100,7 +101,7 @@ async function loadHotEdgesFromSQLite(): Promise<Array<{ source: string; target:
        WHERE active = 1 AND weight >= 0.6
        ORDER BY weight DESC`
     );
-    if (!result.success || !result.data) return [];
+    if (!result.success || !result.data) {return [];}
     return (result.data as Array<{ source_id: string; target_id: string; weight: number }>).map((r) => ({
       source: r.source_id,
       target: r.target_id,
@@ -117,7 +118,7 @@ async function loadHotEdgesFromSQLite(): Promise<Array<{ source: string; target:
 function buildModelRouteTable(nodes: SkillMeta[]): Record<string, 1 | 2 | 3> {
   const domainLevels: Record<string, number[]> = {};
   for (const node of nodes) {
-    if (!domainLevels[node.domain]) domainLevels[node.domain] = [];
+    if (!domainLevels[node.domain]) {domainLevels[node.domain] = [];}
     domainLevels[node.domain].push(node.level);
   }
   const table: Record<string, 1 | 2 | 3> = {};
@@ -138,7 +139,7 @@ function buildModelRouteTable(nodes: SkillMeta[]): Record<string, 1 | 2 | 3> {
  * 幂等：二次调用直接返回已有单例。
  */
 export async function loadSkillIndex(): Promise<SkillIndex> {
-  if (_index) return _index;
+  if (_index) {return _index;}
 
   const t0 = Date.now();
 

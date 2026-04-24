@@ -12,6 +12,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { sseBus } from './sse-bus.js';
 
 // ============================================================================
@@ -52,7 +53,7 @@ function parseClaimedAt(content: string): Date | null {
     const m = content.match(re);
     if (m?.[1] && !m[1].startsWith('<!--')) {
       const d = new Date(m[1]);
-      if (!isNaN(d.getTime())) return d;
+      if (!isNaN(d.getTime())) {return d;}
     }
   }
   return null;
@@ -88,7 +89,7 @@ function appendTimeoutLog(filePath: string, message: string): void {
  * 写审计日志到 confluence/memory/stale-task-audit.md
  */
 function writeAuditLog(projectRoot: string, entries: string[]): void {
-  if (entries.length === 0) return;
+  if (entries.length === 0) {return;}
 
   const memoryDir = path.join(projectRoot, 'confluence', 'memory');
   fs.mkdirSync(memoryDir, { recursive: true });
@@ -145,7 +146,7 @@ export function failStaleTasks(config: StaleTaskCleanerConfig): StaleTaskResult 
     // Process in_progress and blocked tickets (blocked can escalate to failed)
     const statusMatch = content.match(/\*\*(状态|status)\*\*:\s*(\S+)/i);
     const status = statusMatch?.[2]?.toLowerCase();
-    if (status !== 'in_progress' && status !== 'blocked') continue;
+    if (status !== 'in_progress' && status !== 'blocked') {continue;}
 
     const ticketId = file.replace('.md', '');
     const claimedAt = parseClaimedAt(content);

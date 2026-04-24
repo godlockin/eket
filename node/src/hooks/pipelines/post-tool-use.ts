@@ -6,6 +6,7 @@
  */
 
 import { PipelineExecutor, MiddlewareNode } from '../../core/middleware-pipeline.js';
+
 import type { HttpHookPayload, HttpHookResponse } from '../http-hook-server.js';
 
 export interface PostToolUseState extends Record<string, unknown> {
@@ -14,7 +15,7 @@ export interface PostToolUseState extends Record<string, unknown> {
 }
 
 export function createPostToolUsePipeline(): PipelineExecutor<PostToolUseState> {
-  const nodes: MiddlewareNode<PostToolUseState>[] = [
+  const nodes: Array<MiddlewareNode<PostToolUseState>> = [
     {
       id: 'MetricsNode',
       deps: [],

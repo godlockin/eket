@@ -92,9 +92,9 @@ pub async fn run(args: SlaverRegisterArgs) -> Result<()> {
 }
 
 fn expand_tilde(path: &str) -> String {
-    if path.starts_with("~/") {
+    if let Some(rest) = path.strip_prefix("~/") {
         if let Some(home) = dirs_home() {
-            return format!("{}/{}", home, &path[2..]);
+            return format!("{home}/{rest}");
         }
     }
     path.to_string()

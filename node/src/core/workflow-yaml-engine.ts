@@ -63,8 +63,8 @@ export function topologicalSort(nodes: WorkflowNode[]): WorkflowNode[][] {
   const dependents = new Map<string, string[]>(); // id → who depends on it
 
   for (const n of nodes) {
-    if (!inDegree.has(n.id)) inDegree.set(n.id, 0);
-    if (!dependents.has(n.id)) dependents.set(n.id, []);
+    if (!inDegree.has(n.id)) {inDegree.set(n.id, 0);}
+    if (!dependents.has(n.id)) {dependents.set(n.id, []);}
     for (const dep of n.depends_on ?? []) {
       inDegree.set(n.id, (inDegree.get(n.id) ?? 0) + 1);
       dependents.get(dep)?.push(n.id) ?? dependents.set(dep, [n.id]);
@@ -119,14 +119,14 @@ export function evaluateWhen(
   const parts = varPath.slice(1).split('.'); // remove leading $
   let value: unknown = ctx;
   for (const p of parts) {
-    if (value == null || typeof value !== 'object') return false;
+    if (value == null || typeof value !== 'object') {return false;}
     value = (value as Record<string, unknown>)[p];
   }
 
   const actual = String(value ?? '');
 
-  if (op === '==') return actual === expected;
-  if (op === '!=') return actual !== expected;
+  if (op === '==') {return actual === expected;}
+  if (op === '!=') {return actual !== expected;}
   return false;
 }
 

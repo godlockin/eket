@@ -31,9 +31,11 @@ impl EketRedisClient {
     /// 创建并连接 Redis（失败时不 panic，标记为不可用）
     pub async fn connect(host: &str, port: u16, password: Option<&str>) -> Self {
         let server = ServerConfig::new_centralized(host, port);
-        let mut config = RedisConfig::default();
-        config.server = server;
-        config.password = password.map(|p| p.to_string());
+        let config = RedisConfig {
+            server,
+            password: password.map(|p| p.to_string()),
+            ..Default::default()
+        };
 
         let client = RedisClient::new(config.clone(), None, None, None);
         // fred v9: connect() returns a JoinHandle, wait_for_connect() does the actual wait

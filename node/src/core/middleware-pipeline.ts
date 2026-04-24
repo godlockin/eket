@@ -57,8 +57,8 @@ function topologicalSort(nodes: MiddlewareNode[]): string[][] {
   const inDegree = new Map<string, number>();
   const dependents = new Map<string, string[]>(); // dep → 依赖 dep 的节点列表
   for (const n of nodes) {
-    if (!inDegree.has(n.id)) inDegree.set(n.id, 0);
-    if (!dependents.has(n.id)) dependents.set(n.id, []);
+    if (!inDegree.has(n.id)) {inDegree.set(n.id, 0);}
+    if (!dependents.has(n.id)) {dependents.set(n.id, []);}
   }
   for (const n of nodes) {
     for (const dep of n.deps) {
@@ -68,7 +68,7 @@ function topologicalSort(nodes: MiddlewareNode[]): string[][] {
   }
 
   const layers: string[][] = [];
-  let remaining = new Set(nodes.map((n) => n.id));
+  const remaining = new Set(nodes.map((n) => n.id));
 
   while (remaining.size > 0) {
     // 找出当前所有入度为 0 的节点
@@ -98,7 +98,7 @@ function topologicalSort(nodes: MiddlewareNode[]): string[][] {
 export class PipelineExecutor<T = Record<string, unknown>> {
   private readonly nodes: Map<string, MiddlewareNode<T>>;
 
-  constructor(nodes: MiddlewareNode<T>[]) {
+  constructor(nodes: Array<MiddlewareNode<T>>) {
     this.nodes = new Map(nodes.map((n) => [n.id, n]));
   }
 
@@ -111,7 +111,7 @@ export class PipelineExecutor<T = Record<string, unknown>> {
     let blocked: string | undefined;
 
     for (const layer of layers) {
-      if (blocked !== undefined) break;
+      if (blocked !== undefined) {break;}
 
       // 过滤掉本层中已 skip 的节点
       const toRun = layer.filter((id) => !skipped.includes(id));
@@ -205,7 +205,7 @@ export interface PreToolUseState extends Record<string, unknown> {
  * GuardrailNode ∥ SecurityNode ∥ EnvConfigNode → AuditLogNode（串行）
  */
 export function createPreToolUsePipeline(): PipelineExecutor<PreToolUseState> {
-  const nodes: MiddlewareNode<PreToolUseState>[] = [
+  const nodes: Array<MiddlewareNode<PreToolUseState>> = [
     {
       id: 'GuardrailNode',
       deps: [],

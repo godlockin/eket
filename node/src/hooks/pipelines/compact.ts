@@ -6,6 +6,7 @@
  */
 
 import { PipelineExecutor, MiddlewareNode } from '../../core/middleware-pipeline.js';
+
 import type { HttpHookPayload, HttpHookResponse } from '../http-hook-server.js';
 
 export interface CompactState extends Record<string, unknown> {
@@ -14,7 +15,7 @@ export interface CompactState extends Record<string, unknown> {
 }
 
 export function createCompactPipeline(): PipelineExecutor<CompactState> {
-  const nodes: MiddlewareNode<CompactState>[] = [
+  const nodes: Array<MiddlewareNode<CompactState>> = [
     {
       id: 'SummarizationNode',
       deps: [],

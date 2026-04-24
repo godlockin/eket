@@ -7,7 +7,6 @@
 /// 4. 环检测（若有依赖）
 /// 5. 生成 ticket markdown，原子写文件
 /// 6. 输出 JSON
-
 use anyhow::Result;
 use clap::Parser;
 use eket_core::dag::{detect_cycle, parse_tickets_dag, DagEdge, DagNode};
@@ -57,9 +56,8 @@ fn infer_type(title: &str) -> &'static str {
         "test"
     } else if lower.contains("docs") || lower.contains("doc") {
         "docs"
-    } else if lower.contains("feat") || lower.contains("add") || lower.contains("新增") {
-        "feature"
     } else {
+        // default: feature (also covers feat/add/新增)
         "feature"
     }
 }

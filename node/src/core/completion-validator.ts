@@ -90,11 +90,11 @@ export class CompletionValidator {
   }
 
   private collectMarkdownFiles(dir: string, result: string[]): void {
-    if (!existsSync(dir)) return;
+    if (!existsSync(dir)) {return;}
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, entry.name);
-      if (entry.isDirectory()) this.collectMarkdownFiles(full, result);
-      else if (entry.name.endsWith('.md')) result.push(full);
+      if (entry.isDirectory()) {this.collectMarkdownFiles(full, result);}
+      else if (entry.name.endsWith('.md')) {result.push(full);}
     }
   }
 }

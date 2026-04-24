@@ -13,9 +13,11 @@
  * 6. 更新心跳
  */
 
-import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { Command } from 'commander';
+
 import { printError, logInfo, logWarning } from '../utils/error-handler.js';
 
 // Color codes
@@ -58,8 +60,8 @@ function getMasterInstanceInfo(): { instanceId: string; role: string } {
     const instanceIdMatch = content.match(/instance_id:\s*(\S+)/);
     const roleMatch = content.match(/role:\s*(\S+)/);
 
-    if (instanceIdMatch) instanceId = instanceIdMatch[1];
-    if (roleMatch) role = roleMatch[1];
+    if (instanceIdMatch) {instanceId = instanceIdMatch[1];}
+    if (roleMatch) {role = roleMatch[1];}
   }
 
   return { instanceId, role };
@@ -291,8 +293,8 @@ function checkSlaverStatus(): void {
     const statusMatch = content.match(/status:\s*(\S+)/);
     const status = statusMatch ? statusMatch[1] : 'unknown';
 
-    if (status === 'idle') idleCount++;
-    if (status === 'busy' || status === 'working' || status === 'active') busyCount++;
+    if (status === 'idle') {idleCount++;}
+    if (status === 'busy' || status === 'working' || status === 'active') {busyCount++;}
 
     // 检查超时
     const stat = fs.statSync(filePath);

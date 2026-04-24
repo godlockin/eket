@@ -4,9 +4,10 @@
  * DAG: GuardrailNode ∥ SecurityNode ∥ EnvConfigNode ∥ ParalysisCheckNode → AuditLogNode
  */
 
-import { PipelineExecutor, MiddlewareNode } from '../../core/middleware-pipeline.js';
-import type { HttpHookPayload, HttpHookResponse } from '../http-hook-server.js';
 import { globalParalysisDetector } from '../../core/analysis-paralysis-detector.js';
+import { PipelineExecutor, MiddlewareNode } from '../../core/middleware-pipeline.js';
+
+import type { HttpHookPayload, HttpHookResponse } from '../http-hook-server.js';
 
 export interface PreToolUseState extends Record<string, unknown> {
   payload: HttpHookPayload;
@@ -14,7 +15,7 @@ export interface PreToolUseState extends Record<string, unknown> {
 }
 
 export function createPreToolUsePipeline(): PipelineExecutor<PreToolUseState> {
-  const nodes: MiddlewareNode<PreToolUseState>[] = [
+  const nodes: Array<MiddlewareNode<PreToolUseState>> = [
     {
       id: 'GuardrailNode',
       deps: [],

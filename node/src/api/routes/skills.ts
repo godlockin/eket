@@ -8,8 +8,9 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { SkillsRegistry } from '../../skills/index.js';
+
 import { SQLiteClient } from '../../core/sqlite-client.js';
+import { SkillsRegistry } from '../../skills/index.js';
 
 export const SkillsRouter = Router();
 export const AgentSkillsRouter = Router({ mergeParams: true });

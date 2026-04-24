@@ -36,20 +36,20 @@ export function parseTicketFile(content: string, ticketId: string): { node: DagN
     label = h1Match[1].trim();
   } else {
     const titleMatch = content.match(/\*\*标题\*\*\s*:\s*(.+)/);
-    if (titleMatch) label = titleMatch[1].trim();
+    if (titleMatch) {label = titleMatch[1].trim();}
   }
 
   // Status
   let status = 'unknown';
   const statusMatch = content.match(/\*\*状态\*\*\s*:\s*(\S+)/);
-  if (statusMatch) status = statusMatch[1].trim();
+  if (statusMatch) {status = statusMatch[1].trim();}
 
   // Assignee
   let assignee: string | undefined;
   const assigneeMatch = content.match(/\*\*负责人\*\*\s*:\s*(.+)/);
   if (assigneeMatch) {
     const raw = assigneeMatch[1].trim();
-    if (raw && raw !== '待认领') assignee = raw;
+    if (raw && raw !== '待认领') {assignee = raw;}
   }
 
   // blocked_by: [TASK-X, TASK-Y] or []
@@ -60,7 +60,7 @@ export function parseTicketFile(content: string, ticketId: string): { node: DagN
     if (inner) {
       inner.split(',').forEach((s) => {
         const id = s.trim();
-        if (id) blockedBy.push(id);
+        if (id) {blockedBy.push(id);}
       });
     }
   }

@@ -11,6 +11,7 @@ import { WebSocket } from 'ws';
 import type { RedisClient } from '../../core/redis-client.js';
 import type { Message } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
+
 import type { RedisHelper } from '../redis-helper.js';
 import type { AgentDetails, AgentRegistration, EketServerConfig } from '../server-types.js';
 

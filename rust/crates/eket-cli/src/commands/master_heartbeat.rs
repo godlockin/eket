@@ -10,7 +10,7 @@ use eket_engine::{
     protocol::{ProtocolSender, TaskAssignPayload},
 };
 use serde_json::json;
-use std::{collections::HashSet, path::PathBuf, sync::Arc};
+use std::{collections::HashSet, path::{Path, PathBuf}, sync::Arc};
 
 #[derive(Args, Debug)]
 pub struct MasterHeartbeatArgs {
@@ -60,7 +60,7 @@ pub async fn run(args: MasterHeartbeatArgs) -> Result<()> {
 
 /// One heartbeat cycle: scan ready tickets → assign to idle slavers.
 /// Extracted for testability.
-pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tickets_dir: &PathBuf) {
+pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tickets_dir: &Path) {
     // 1. Collect completed / failed ticket IDs from DB
     let completed: HashSet<String> = client
         .list_tickets(Some("done"), None, None)
@@ -120,9 +120,9 @@ pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tick
 }
 
 fn expand_tilde(path: &str) -> String {
-    if path.starts_with("~/") {
+    if let Some(rest) = path.strip_prefix("~/") {
         if let Ok(home) = std::env::var("HOME") {
-            return format!("{}/{}", home, &path[2..]);
+            return format!("{home}/{rest}");
         }
     }
     path.to_string()
@@ -166,7 +166,7 @@ mod tests {
         client.upsert_instance("slaver-1", "slaver", &[], "idle").unwrap();
 
         let mailbox = Arc::new(AgentMailbox::new(mailbox_dir.path()));
-        check_once(&client, &mailbox, &ticket_dir.path().to_path_buf()).await;
+        check_once(&client, &mailbox, ticket_dir.path()).await;
 
         let row = client.get_ticket_row("TASK-1").unwrap().unwrap();
         assert_eq!(row.status, "in_progress", "ticket should be in_progress");
@@ -188,7 +188,7 @@ mod tests {
         // deliberately no slaver registered
 
         let mailbox = Arc::new(AgentMailbox::new(mailbox_dir.path()));
-        check_once(&client, &mailbox, &ticket_dir.path().to_path_buf()).await;
+        check_once(&client, &mailbox, ticket_dir.path()).await;
 
         let row = client.get_ticket_row("TASK-2").unwrap().unwrap();
         assert_eq!(row.status, "todo", "ticket should remain todo when no idle slaver");
@@ -211,7 +211,7 @@ mod tests {
         client.upsert_instance("slaver-3", "slaver", &[], "idle").unwrap();
 
         let mailbox = Arc::new(AgentMailbox::new(mailbox_dir.path()));
-        check_once(&client, &mailbox, &ticket_dir.path().to_path_buf()).await;
+        check_once(&client, &mailbox, ticket_dir.path()).await;
 
         // TASK-3 must remain todo — blocked by TASK-4 which is not done
         let row3 = client.get_ticket_row("TASK-3").unwrap().unwrap();

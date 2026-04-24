@@ -33,16 +33,16 @@ jobs:
         run: |
           TASK_ID=$(echo "$PR_TITLE" | grep -oE 'TASK-[0-9]+' | head -1)
 
-          echo "pr_num=$PR_NUM" >> $GITHUB_OUTPUT
-          echo "task_id=$TASK_ID" >> $GITHUB_OUTPUT
+          echo "pr_num=$PR_NUM" >> "$GITHUB_OUTPUT"
+          echo "task_id=$TASK_ID" >> "$GITHUB_OUTPUT"
 
           if [ -z "$TASK_ID" ]; then
             echo "No TASK-xxx found in PR title, skipping retro"
-            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          echo "skip=false" >> $GITHUB_OUTPUT
+          echo "skip=false" >> "$GITHUB_OUTPUT"
 
           # Extract PR info
           gh pr view "$PR_NUM" --json title,body,reviews,commits > /tmp/pr-data.json
@@ -104,7 +104,7 @@ jobs:
 
           RETRO_FILE="confluence/memory/lessons/${YYYYMM}-PR${PR_NUM}-${TASK_ID}.md"
           cp /tmp/retro-output.md "$RETRO_FILE"
-          echo "retro_file=$RETRO_FILE" >> $GITHUB_OUTPUT
+          echo "retro_file=$RETRO_FILE" >> "$GITHUB_OUTPUT"
 
       - name: Commit retro file
         if: steps.extract.outputs.skip != 'true'
