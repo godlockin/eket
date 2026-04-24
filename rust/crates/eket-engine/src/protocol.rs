@@ -3,7 +3,6 @@
 /// 基于 AgentMailbox 的类型化消息协议层。
 /// 每条 ProtocolMessage 序列化为 MailboxMessage.payload，
 /// message_type 统一使用 Custom("protocol:<kind>")。
-
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
@@ -296,7 +295,7 @@ mod tests {
     #[tokio::test]
     async fn parse_unknown_kind_returns_err() {
         let dir = TempDir::new().unwrap();
-        let mailbox = Arc::new(AgentMailbox::new(dir.path()));
+        let _mailbox = Arc::new(AgentMailbox::new(dir.path()));
 
         // 手动构造 payload with unknown kind
         let bad_payload = serde_json::json!({ "kind": "nonsense", "data": {} });
