@@ -11,6 +11,7 @@
 import { EketError, EketErrorCode } from '../types/index.js';
 
 import type { SkillAdapter, AnyAdapterConfig } from './adapters/types.js';
+import { loadSkillIndex } from './index-loader.js';
 import type { Skill, SkillRegistry, SkillRegistryConfig } from './types.js';
 
 /**
@@ -48,6 +49,11 @@ export class SkillsRegistry implements SkillRegistry {
     };
 
     this.log('SkillsRegistry initialized');
+
+    // 非阻塞启动：异步构建 SkillIndex（Layer 0）
+    loadSkillIndex().catch((err: unknown) => {
+      this.log(`SkillIndex load failed (non-fatal): ${(err as Error).message}`, 'warn');
+    });
   }
 
   /**

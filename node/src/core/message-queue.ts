@@ -10,10 +10,11 @@ import { OptimizedFileQueueManager } from '../core/optimized-file-queue.js';
 import { RedisClient } from '../core/redis-client.js';
 import type { Message, ProgressReport, Result, SelfCheckItem } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
-import { SLAVER_HARD_RULES } from './slaver-rules.js';
+
 
 import { writeToMailbox as writeAgentMailbox } from './agent-mailbox.js';
 import { createRetryExecutor, type RetryExecutor } from './circuit-breaker.js';
+import { SLAVER_HARD_RULES } from './slaver-rules.js';
 
 export interface MessageQueueConfig {
   mode: 'redis' | 'file' | 'auto';

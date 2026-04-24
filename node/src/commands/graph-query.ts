@@ -2,10 +2,12 @@
  * EKET Framework - graph:query command (TASK-044)
  */
 
-import { Command } from 'commander';
-import Database from 'better-sqlite3';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+
+import Database from 'better-sqlite3';
+import { Command } from 'commander';
+
 import {
   initEventGraphSchema,
   queryBlockedHotspots,
