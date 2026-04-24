@@ -6,6 +6,7 @@
  */
 
 import { PipelineExecutor, MiddlewareNode } from '../../core/middleware-pipeline.js';
+
 import type { HttpHookPayload, HttpHookResponse } from '../http-hook-server.js';
 
 export interface TaskState extends Record<string, unknown> {
@@ -14,7 +15,7 @@ export interface TaskState extends Record<string, unknown> {
 }
 
 export function createTaskPipeline(): PipelineExecutor<TaskState> {
-  const nodes: MiddlewareNode<TaskState>[] = [
+  const nodes: Array<MiddlewareNode<TaskState>> = [
     {
       id: 'FeedbackNode',
       deps: [],

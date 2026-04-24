@@ -10,16 +10,17 @@ import * as path from 'path';
 
 import { Command } from 'commander';
 
-import { WorktreeManager } from '../core/worktree-manager.js';
-import { createSQLiteClient } from '../core/sqlite-client.js';
 import { CompletionValidator } from '../core/completion-validator.js';
-import { printError, logSuccess } from '../utils/error-handler.js';
-import { findProjectRoot } from '../utils/process-cleanup.js';
-import { getIsolationMode } from './claim.js';
-import { execFileNoThrow } from '../utils/execFileNoThrow.js';
-import type { SkillFeedback, SlaveResult } from '../types/index.js';
-import { sseBus } from '../core/sse-bus.js';
 import { contextCompressor } from '../core/context-compressor.js';
+import { createSQLiteClient } from '../core/sqlite-client.js';
+import { sseBus } from '../core/sse-bus.js';
+import { WorktreeManager } from '../core/worktree-manager.js';
+import type { SkillFeedback, SlaveResult } from '../types/index.js';
+import { printError, logSuccess } from '../utils/error-handler.js';
+import { execFileNoThrow } from '../utils/execFileNoThrow.js';
+import { findProjectRoot } from '../utils/process-cleanup.js';
+
+import { getIsolationMode } from './claim.js';
 
 // Try to load SkillIndex for activatedSkills detection (graceful degradation)
 let _getSkillIndex: (() => import('../skills/index-loader.js').SkillIndex) | null = null;
@@ -34,8 +35,8 @@ let _getSkillIndex: (() => import('../skills/index-loader.js').SkillIndex) | nul
  * 推断 Scope-risk：从 git diff --stat 获取变更文件数
  */
 export function inferScopeRisk(fileCount: number): 'low' | 'medium' | 'high' {
-  if (fileCount <= 5) return 'low';
-  if (fileCount <= 15) return 'medium';
+  if (fileCount <= 5) {return 'low';}
+  if (fileCount <= 15) {return 'medium';}
   return 'high';
 }
 
@@ -45,7 +46,7 @@ export function inferScopeRisk(fileCount: number): 'low' | 'medium' | 'high' {
 export async function getChangedFileCount(): Promise<number> {
   const result = await execFileNoThrow('git', ['diff', 'HEAD~1', '--stat']);
   const output = result.stdout.trim();
-  if (!output) return 0;
+  if (!output) {return 0;}
   const lastLine = output.split('\n').pop() ?? '';
   const match = lastLine.match(/(\d+)\s+file/);
   return match ? parseInt(match[1], 10) : 0;
@@ -173,12 +174,12 @@ function updateTicketStatus(projectRoot: string, ticketId: string, status: strin
  * 获取当前 slaverId
  */
 function getSlaverId(projectRoot: string): string {
-  if (process.env.EKET_SLAVER_ID) return process.env.EKET_SLAVER_ID;
+  if (process.env.EKET_SLAVER_ID) {return process.env.EKET_SLAVER_ID;}
   const slaveridPath = path.join(projectRoot, '.eket', 'slaver-id');
   try {
     if (fs.existsSync(slaveridPath)) {
       const id = fs.readFileSync(slaveridPath, 'utf-8').trim();
-      if (id) return id;
+      if (id) {return id;}
     }
   } catch {
     // ignore
@@ -215,7 +216,7 @@ async function reportSkillFeedback(
 
     // Load instance state for levelChanges
     let actualLevel: 1 | 2 | 3 = 1;
-    let levelChanges: import('../types/index.js').LevelChange[] = [];
+    let levelChanges: Array<import('../types/index.js').LevelChange> = [];
     try {
       const { createInstanceRegistry } = await import('../core/instance-registry.js');
       const registry = createInstanceRegistry();
@@ -256,7 +257,7 @@ async function reportSkillFeedback(
 async function getChangedFiles(): Promise<string[]> {
   const result = await execFileNoThrow('git', ['diff', 'HEAD~1', '--name-only']);
   const output = result.stdout.trim();
-  if (!output) return [];
+  if (!output) {return [];}
   return output.split('\n').filter(Boolean);
 }
 

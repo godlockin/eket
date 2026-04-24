@@ -1,46 +1,38 @@
-# TASK-141: SSE 端点实现（axum Sse<S>）
+# TASK-141: SSE 5态事件流补完（原 TASK-109）
 
 ## 元数据
+- **状态**: backlog
 - **类型**: feature
-- **优先级**: P0
-- **状态**: ready
-- **创建**: 2026-04-21
-- **依赖**: 无
+- **优先级**: P1
+- **创建时间**: 2026-04-21
+- **依赖**: 无（EventBus 基础设施已存在）
 
 ## 背景
 
-Node.js `sse-bus.ts` / `sse-event-bus.ts` 暴露 14 种事件类型的 Server-Sent Events 流，供 Web Dashboard 实时订阅。Rust `eket-server` 完全没有 SSE 路由，导致 Dashboard 无法获得实时状态更新。
+原 TASK-109 在 Rust 重构 round 中被删除，但实际只完成 30%：
+- ✅ 基础设施：`rust/crates/eket-engine/src/event_bus.rs`（299 行，tokio broadcast + 死信队列 + 重试）
+- ❌ SSE HTTP 端点：axum 路由里 grep `text/event-stream` 零匹配
+- ❌ 5 种标准事件类型：只有 `mailbox.rs::Message::TaskCompleted` 一个
+- ⚠️ `task:progress` CLI：Rust 版语义错位——只展示 ticket 完成统计 + 关键路径，**不是 Slaver 中途上报**
+- ✅ Master heartbeat：`master_heartbeat.rs` 已有，但未订阅事件流
+
+**目的**：用 SSE push 替代 dashboard 轮询和 Master 定时扫描，降低延迟 + 减负。
 
 ## 验收标准
 
-- [ ] `GET /sse/events` 端点，返回 `text/event-stream`
-- [ ] 支持以下事件类型：
-  - `task_started` / `task_completed` / `task_failed` / `task_blocked`
-  - `agent_registered` / `agent_heartbeat` / `agent_offline`
-  - `master_elected` / `master_failover`
-  - `queue_overflow` / `queue_drained`
-  - `review_requested` / `review_approved` / `review_rejected`
-- [ ] 基于 `tokio::sync::broadcast` channel 实现内部 fanout
-- [ ] 客户端断开时自动清理 sender
-- [ ] `GET /sse/events?filter=task_*` 支持事件类型过滤
+1. **5 种标准事件类型**（在 `eket-engine/src/events.rs` 新增 enum）：
+   - `task_started` / `task_running` / `task_completed` / `task_failed` / `task_timed_out`
+2. **SSE 端点**：`GET /api/v1/events?slaver=<id>&ticket=<id>`
+   - 用 `axum::response::sse::Sse` + `tokio_stream`
+   - 支持过滤、断线重连（Last-Event-ID）
+3. **Slaver 中途上报 CLI**：`eket task:progress-report --phase <phase> --done <n> --total <m>`
+   - 与现有 `task_progress.rs`（统计型）做区分，可改名为 `task_progress_stats`
+4. **Master heartbeat 订阅**：`master_heartbeat.rs` 订阅 task_completed/failed 事件，替代部分轮询
+5. **测试**：≥ 5 单测（事件序列化、SSE stream、Last-Event-ID 重连、Slaver 上报、Master 订阅）
+6. **文档**：`rust/docs/SSE-EVENTS.md` 含事件 schema + 端点契约
 
-## 技术要点
+## 技术提示
 
-```rust
-// axum SSE
-use axum::response::sse::{Event, Sse};
-use futures::stream::{self, Stream};
-use tokio::sync::broadcast;
-
-async fn sse_handler(
-    State(bus): State<Arc<EventBus>>,
-) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-    let rx = bus.subscribe();
-    let stream = BroadcastStream::new(rx)
-        .map(|msg| Ok(Event::default().data(msg.unwrap().to_json())));
-    Sse::new(stream).keep_alive(KeepAlive::default())
-}
-```
-
-## 负责人
-待认领（推荐：后端工程师 + Rust 工程师）
+- 原 TS 票完整内容：`git show e5ac393b:jira/tickets/TASK-109.md`
+- axum SSE 示例：`https://docs.rs/axum/latest/axum/response/sse/`
+- 与 `event_bus.rs` 的关系：5 态事件作为 DomainEvent 的特化类型

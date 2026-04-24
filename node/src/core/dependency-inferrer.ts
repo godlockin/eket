@@ -25,22 +25,22 @@ export class DependencyInferrer {
     // CamelCase class/interface names
     const camelCase = content.match(/\b[A-Z][a-zA-Z]+\b/g) ?? [];
     for (const t of camelCase) {
-      if (!COMMON_WORDS.has(t)) terms.add(t);
+      if (!COMMON_WORDS.has(t)) {terms.add(t);}
     }
 
     // .ts file references
     const tsFiles = content.match(/\b\w+\.ts\b/g) ?? [];
-    for (const t of tsFiles) terms.add(t);
+    for (const t of tsFiles) {terms.add(t);}
 
     // function calls (camelCase followed by '()')
     const funcCalls = content.match(/\b[a-z][a-zA-Z]+(?=\()/g) ?? [];
     for (const t of funcCalls) {
-      if (!COMMON_WORDS.has(t)) terms.add(t);
+      if (!COMMON_WORDS.has(t)) {terms.add(t);}
     }
 
     // TASK-xxx references already in content
     const taskRefs = content.match(/\bTASK-\w+\b/g) ?? [];
-    for (const t of taskRefs) terms.add(t);
+    for (const t of taskRefs) {terms.add(t);}
 
     return Array.from(terms);
   }
@@ -50,7 +50,7 @@ export class DependencyInferrer {
     existingTickets: Array<{ id: string; content: string }>,
   ): Promise<DependencyCandidate[]> {
     const newTerms = this.extractTechnicalTerms(newTicketContent);
-    if (newTerms.length === 0 || existingTickets.length === 0) return [];
+    if (newTerms.length === 0 || existingTickets.length === 0) {return [];}
 
     const newTermSet = new Set(newTerms);
     const candidates: DependencyCandidate[] = [];
@@ -59,10 +59,10 @@ export class DependencyInferrer {
       const existingTerms = this.extractTechnicalTerms(ticket.content);
       const matched = existingTerms.filter((t) => newTermSet.has(t));
 
-      if (matched.length === 0) continue;
+      if (matched.length === 0) {continue;}
 
       const confidence = Math.min(matched.length / newTerms.length, 1);
-      if (confidence < 0.6) continue;
+      if (confidence < 0.6) {continue;}
 
       candidates.push({
         ticketId: ticket.id,

@@ -13,45 +13,46 @@
  */
 
 import { createRequire } from 'module';
+
 import { Command } from 'commander';
 import ora from 'ora';
 
 import { OpenCLAWGateway } from './api/openclaw-gateway.js';
 import { createWebDashboardServer } from './api/web-server.js';
 import { registerAlerts } from './commands/alerts.js';
-import { registerSkillExtractCommand } from './commands/skill-extract.js';
-import { registerKnowledgeIndex } from './commands/knowledge-index.js';
-import { registerKnowledgeSearch } from './commands/knowledge-search.js';
 import { registerClaim } from './commands/claim.js';
 import { registerComplete } from './commands/complete.js';
-import { registerTaskProgress } from './commands/task-progress.js';
-import { registerHandoff } from './commands/handoff.js';
-import { registerTaskResume } from './commands/task-resume.js';
-import { registerTaskCreate } from './commands/task-create.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { registerGateReview } from './commands/gate-review.js';
-import { registerMasterHeartbeat } from './commands/master-heartbeat.js';
-import { registerUltrareview } from './commands/ultrareview.js';
 import { registerGraphQueryCommand } from './commands/graph-query.js';
+import { registerHandoff } from './commands/handoff.js';
 import { runInitWizard } from './commands/init-wizard.js';
 import { runInteractiveStartCLI } from './commands/interactive-start.js';
+import { registerKnowledgeIndex } from './commands/knowledge-index.js';
+import { registerKnowledgeSearch } from './commands/knowledge-search.js';
+import { registerMasterHeartbeat } from './commands/master-heartbeat.js';
 import { registerMasterPoll } from './commands/master-poll.js';
 import { registerRecommend } from './commands/recommend.js';
-import { registerCompletion } from './utils/completion.js';
 import { registerSetRole } from './commands/set-role.js';
+import { registerSkillExtractCommand } from './commands/skill-extract.js';
 import { registerSlaverPoll } from './commands/slaver-poll.js';
 import { registerSlaverRegister } from './commands/slaver-register.js';
 import { startInstance, listAvailableRoles } from './commands/start-instance.js';
 import { registerSubmitPR } from './commands/submit-pr.js';
-import { registerWorkflowCommands } from './commands/workflow.js';
+import { registerTaskCreate } from './commands/task-create.js';
+import { registerTaskProgress } from './commands/task-progress.js';
+import { registerTaskResume } from './commands/task-resume.js';
 import { registerTeamStatus } from './commands/team-status.js';
+import { registerUltrareview } from './commands/ultrareview.js';
+import { registerWorkflowCommands } from './commands/workflow.js';
 import { createAgentPoolManager } from './core/agent-pool.js';
 import { createHeartbeatManager, createSlaverMonitor } from './core/heartbeat-monitor.js';
 import { createMessageQueue, createMessage } from './core/message-queue.js';
 import { createRedisClient } from './core/redis-client.js';
 import { createSQLiteManager } from './core/sqlite-manager.js';
-import { createHttpHookServer } from './hooks/http-hook-server.js';
 import { WORKFLOW_TEMPLATES, getWorkflowTemplate, type WorkflowTemplateName } from './core/workflow-engine.js';
+import { createHttpHookServer } from './hooks/http-hook-server.js';
+import { registerCompletion } from './utils/completion.js';
 import { printError, logSuccess, logWarning } from './utils/error-handler.js';
 
 // 运维就绪性模块导入

@@ -1,39 +1,34 @@
-# TASK-142: Hook HTTP Server（pre-tool-use 等 5 个端点）
+# TASK-142: task:resume 降级策略 + 测试补完
 
 ## 元数据
-- **类型**: feature
-- **优先级**: P0
-- **状态**: ready
-- **创建**: 2026-04-21
-- **依赖**: 无
+- **状态**: backlog
+- **类型**: feature / test
+- **优先级**: P3
+- **创建时间**: 2026-04-21
 
 ## 背景
 
-Node.js `http-hook-server.ts` 暴露 5 个 webhook 端点，让 Master 可以观察 Slaver 的工具调用行为并做介入决策。这是 Master 监控 Slaver 的核心机制，Rust 中完全缺失。
+base 版本 `node/src/commands/task-resume.ts` 含 `resumeWithFallback` 函数 +
+`task-resume-fallback.test.ts`（82 行测试，覆盖 Redis 不可用时降级到 SQLite-only 删除 checkpoint）。
+
+Rust 版 `rust/crates/eket-cli/src/commands/task_resume.rs`（114 行）：
+- ✅ 基本 resume：`SqliteClient.get_checkpoint` → resumable / not_found / error
+- ❌ 无 fallback 逻辑，grep `fallback|degrad` 零匹配
+- 只有 2 个 #[test]，未覆盖 Redis 失效路径
+
+**前置问题**：Rust 端是否完全去 Redis 化？
+- 若是：fallback 概念可弃，但需明确写入 ADR 说明"SQLite-first，无 Redis 依赖"
+- 若否：必须补 fallback 逻辑 + 测试
 
 ## 验收标准
 
-- [ ] `POST /hooks/pre-tool-use` — Slaver 调用工具前通知 Master
-- [ ] `POST /hooks/post-tool-use` — 工具调用完成后通知
-- [ ] `POST /hooks/teammate-idle` — Slaver 空闲通知
-- [ ] `POST /hooks/task-completed` — 任务完成通知
-- [ ] `POST /hooks/permission-request` — 权限申请（Master 审批）
-- [ ] 响应体包含 `{ allow: bool, reason?: string }`
-- [ ] Master 可注册自定义 hook handler（配置文件或 CLI flag）
-- [ ] 超时处理：Slaver 等待 hook 响应最多 5s，超时默认放行
+1. ADR：明确 Redis 在 Rust EKET 中的角色（必需 / 可选 / 废弃）
+2. 若 Redis 仍可选：补 `task_resume.rs` 的 Redis-fail 降级路径 + ≥ 3 单测
+3. 若 Redis 废弃：在 `rust/docs/REDIS-DEPRECATION.md` 写明，并清理 deps
+4. 至少 5 个 task_resume 单测：正常路径 / checkpoint 缺失 / DB 错误 / metadata 损坏 / 并发 resume
 
-## 请求 Schema
+## 技术提示
 
-```json
-{
-  "hook_type": "pre-tool-use",
-  "agent_id": "slaver_rust_01",
-  "ticket_id": "TASK-200",
-  "tool_name": "bash",
-  "tool_input": { "command": "rm -rf /" },
-  "timestamp": "2026-04-21T10:00:00Z"
-}
-```
-
-## 负责人
-待认领（推荐：后端工程师 + Rust 工程师）
+- 原 TS fallback 实现：`git show e5ac393b:node/src/commands/task-resume.ts | sed -n '/resumeWithFallback/,/^}/p'`
+- 原测试：`git show e5ac393b:node/tests/commands/task-resume-fallback.test.ts`
+- Rust 测试位置：`rust/crates/eket-cli/src/commands/task_resume.rs:71` (#[cfg(test)] 模块内扩展)

@@ -102,9 +102,9 @@ pub async fn run(args: SlaverPollArgs) -> Result<()> {
 }
 
 fn expand_tilde(path: &str) -> String {
-    if path.starts_with("~/") {
-        if let Some(home) = std::env::var("HOME").ok() {
-            return format!("{}/{}", home, &path[2..]);
+    if let Some(rest) = path.strip_prefix("~/") {
+        if let Ok(home) = std::env::var("HOME") {
+            return format!("{home}/{rest}");
         }
     }
     path.to_string()

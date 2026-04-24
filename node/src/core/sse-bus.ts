@@ -5,6 +5,7 @@
  * SSE 格式：event: <type>\ndata: <JSON>\n\n
  */
 import type { Response } from 'express';
+
 import type { TaskEvent } from '../types/index.js';
 import { logger } from '../utils/logger.js';
 
@@ -48,7 +49,7 @@ export class SseBus {
     const dead: Response[] = [];
     for (const [res, filter] of this.clients.entries()) {
       // Filter: if client has slaverId filter, only send matching events
-      if (filter !== undefined && filter !== event.slaverId) continue;
+      if (filter !== undefined && filter !== event.slaverId) {continue;}
 
       if (res.writableEnded) {
         dead.push(res);

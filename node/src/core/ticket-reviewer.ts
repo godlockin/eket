@@ -36,7 +36,7 @@ function extractSection(content: string, sectionName: string): string | null {
     }
   }
 
-  if (!inSection) return null;
+  if (!inSection) {return null;}
   return sectionLines.join('\n').trim();
 }
 
@@ -66,7 +66,7 @@ function findTicketFile(projectRoot: string, ticketId: string): string | null {
   const dirs = ['', 'feature', 'bugfix', 'task', 'improvement'];
   for (const dir of dirs) {
     const p = dir ? path.join(base, dir, `${ticketId}.md`) : path.join(base, `${ticketId}.md`);
-    if (fs.existsSync(p)) return p;
+    if (fs.existsSync(p)) {return p;}
   }
   return null;
 }

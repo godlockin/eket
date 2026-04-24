@@ -810,7 +810,7 @@ export class SQLiteClient {
     try {
       const rows = this.db
         .prepare('SELECT skill_id FROM agent_skills WHERE agent_id = ? ORDER BY skill_id')
-        .all(agentId) as { skill_id: string }[];
+        .all(agentId) as Array<{ skill_id: string }>;
       return { success: true, data: rows.map((r) => r.skill_id) };
     } catch (e) {
       return {
@@ -858,7 +858,7 @@ export class SQLiteClient {
   /**
    * FTS5 全文检索
    */
-  searchFTS(query: string, limit = 10): Result<{ docId: string; content: string; sourcePath: string }[]> {
+  searchFTS(query: string, limit = 10): Result<Array<{ docId: string; content: string; sourcePath: string }>> {
     if (!this.db) {
       return {
         success: false,
@@ -868,7 +868,7 @@ export class SQLiteClient {
     try {
       const rows = this.db.prepare(
         `SELECT doc_id, content, source_path FROM knowledge_fts WHERE knowledge_fts MATCH ? LIMIT ?`,
-      ).all(query, limit) as { doc_id: string; content: string; source_path: string }[];
+      ).all(query, limit) as Array<{ doc_id: string; content: string; source_path: string }>;
       return {
         success: true,
         data: rows.map((r) => ({ docId: r.doc_id, content: r.content, sourcePath: r.source_path })),
@@ -884,7 +884,7 @@ export class SQLiteClient {
   /**
    * 获取所有向量（用于余弦检索）
    */
-  getAllEmbeddings(): Result<{ docId: string; content: string; embedding: number[] }[]> {
+  getAllEmbeddings(): Result<Array<{ docId: string; content: string; embedding: number[] }>> {
     if (!this.db) {
       return {
         success: false,
@@ -892,7 +892,7 @@ export class SQLiteClient {
       };
     }
     try {
-      const rows = this.db.prepare(`SELECT doc_id, content, embedding FROM knowledge_embeddings`).all() as { doc_id: string; content: string; embedding: string }[];
+      const rows = this.db.prepare(`SELECT doc_id, content, embedding FROM knowledge_embeddings`).all() as Array<{ doc_id: string; content: string; embedding: string }>;
       return {
         success: true,
         data: rows.map((r) => ({ docId: r.doc_id, content: r.content, embedding: JSON.parse(r.embedding) as number[] })),
@@ -960,11 +960,11 @@ export class SQLiteClient {
         const ticket = db.prepare(
           `SELECT id FROM tickets WHERE status = 'ready' ORDER BY priority DESC, created_at ASC LIMIT 1`
         ).get() as { id: string } | undefined;
-        if (!ticket) return null;
+        if (!ticket) {return null;}
         const result = db.prepare(
           `UPDATE tickets SET status = 'in_progress', assignee = ?, claimed_at = datetime('now') WHERE id = ? AND status = 'ready'`
         ).run(slaverId, ticket.id);
-        if (result.changes !== 1) return null;
+        if (result.changes !== 1) {return null;}
         return db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticket.id) as TicketRow | undefined ?? null;
       });
       return { success: true, data: claimTxn() };
@@ -1177,7 +1177,7 @@ export class SQLiteClient {
         id: string; type: 'skill' | 'expert'; domain: string; level: 1 | 2 | 3;
         model_hint: string | null; triggers: string | null;
       } | undefined;
-      if (!row) return Promise.resolve(null);
+      if (!row) {return Promise.resolve(null);}
       return Promise.resolve({
         id: row.id,
         type: row.type,

@@ -6,6 +6,7 @@
  */
 
 import { PipelineExecutor, MiddlewareNode } from '../../core/middleware-pipeline.js';
+
 import type { HttpHookPayload, HttpHookResponse } from '../http-hook-server.js';
 
 export interface SessionState extends Record<string, unknown> {
@@ -14,7 +15,7 @@ export interface SessionState extends Record<string, unknown> {
 }
 
 export function createSessionPipeline(): PipelineExecutor<SessionState> {
-  const nodes: MiddlewareNode<SessionState>[] = [
+  const nodes: Array<MiddlewareNode<SessionState>> = [
     {
       id: 'IndexLoadNode',
       deps: [],

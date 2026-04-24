@@ -2,7 +2,6 @@
 ///
 /// 读取 markdown ticket 文件中的元数据字段（**状态**: xxx 格式）
 /// 用于 task:claim 和 task:complete 命令
-
 use std::path::{Path, PathBuf};
 
 use crate::error::{EketError, EketResult};
@@ -28,7 +27,7 @@ impl TicketFile {
     pub fn read(path: impl AsRef<Path>) -> EketResult<Self> {
         let path = path.as_ref();
         let raw = std::fs::read_to_string(path)
-            .map_err(|e| EketError::Io(e))?;
+            .map_err(EketError::Io)?;
 
         let id = path
             .file_stem()

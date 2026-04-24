@@ -8,8 +8,8 @@ import * as path from 'path';
 
 import { Command } from 'commander';
 
-import { SQLiteClient } from '../core/sqlite-client.js';
 import { hashEmbedding } from '../core/rag-search.js';
+import { SQLiteClient } from '../core/sqlite-client.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
 const MAX_CHUNK = 500;
@@ -26,13 +26,13 @@ function chunkText(text: string): string[] {
       current = current ? current + '\n\n' + para : para;
     }
   }
-  if (current.trim()) chunks.push(current.trim());
+  if (current.trim()) {chunks.push(current.trim());}
   return chunks.filter((c) => c.length > 0);
 }
 
 function walkMd(dir: string): string[] {
   const files: string[] = [];
-  if (!fs.existsSync(dir)) return files;
+  if (!fs.existsSync(dir)) {return files;}
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
