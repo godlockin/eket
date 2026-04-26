@@ -114,6 +114,10 @@ enum Commands {
     /// Show project repository and ticket status
     #[command(name = "project:status")]
     ProjectStatus(commands::project_status::ProjectStatusArgs),
+
+    /// Show workflow definition and step budgets
+    #[command(name = "workflow:status")]
+    WorkflowStatus(commands::workflow_status::WorkflowStatusArgs),
 }
 
 #[tokio::main]
@@ -159,5 +163,6 @@ async fn main() -> Result<()> {
             Ok(())
         }
         Commands::ProjectStatus(args) => commands::project_status::run(args).await,
+        Commands::WorkflowStatus(args) => commands::workflow_status::run(args).await,
     }
 }
