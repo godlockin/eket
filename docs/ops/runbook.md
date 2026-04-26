@@ -1,6 +1,6 @@
 # EKET Framework 运维手册
 
-**版本**: 2.0.0
+**版本**: 2.0.0（Node.js 层参考，Rust 层运维见 `eket server` / `eket system:doctor`）
 **最后更新**: 2026-04-02
 
 ---
