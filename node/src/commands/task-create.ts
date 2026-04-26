@@ -11,6 +11,7 @@ import * as readline from 'readline';
 import { Command } from 'commander';
 
 import { DependencyInferrer } from '../core/dependency-inferrer.js';
+import { getAllExpertIds, getDefaultExpertIds } from '../core/expert-loader.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -26,6 +27,7 @@ export interface InferredFields {
   detail: string;
   acceptanceCriteria: string;
   clarifications: Array<{ question: string; answer: string }>;
+  assignedExperts: string[];  // expert IDs from EXPERT_PATH_MAP
 }
 
 // ─── Inference ────────────────────────────────────────────────────────────────
@@ -96,6 +98,10 @@ export function formatTicket(fields: InferredFields & { deps?: string[] }, taskI
         .join('\n\n') + '\n'
     : '';
 
+  const expertsLine = fields.assignedExperts && fields.assignedExperts.length > 0
+    ? fields.assignedExperts.join(', ')
+    : '无';
+
   return `# ${taskId}: ${fields.title}
 
 ## 元数据
@@ -105,6 +111,7 @@ export function formatTicket(fields: InferredFields & { deps?: string[] }, taskI
 - **负责人**: 待领取
 - **创建时间**: ${new Date().toISOString().slice(0, 10)}
 - **依赖**: ${fields.deps && fields.deps.length > 0 ? fields.deps.join(', ') : '无'}
+- **assigned_experts**: ${expertsLine}
 
 ${fields.background}
 
@@ -121,6 +128,7 @@ ${clarificationSection}
 **类型**: ${typeLabel}
 **技能要求**: TypeScript
 **依赖**: ${fields.deps && fields.deps.length > 0 ? fields.deps.join(', ') : '无'}
+**assigned_experts**: ${expertsLine}
 `;
 }
 
@@ -182,6 +190,7 @@ export async function runTaskCreate(description: string, rl: readline.Interface,
     detail: description,
     acceptanceCriteria: '',
     clarifications: [],
+    assignedExperts: [],
   };
 
   const gaps = checkCompleteness(fields.detail, fields.acceptanceCriteria);
@@ -233,6 +242,38 @@ export async function runTaskCreate(description: string, rl: readline.Interface,
     if (confirmedDeps.length > 0) {
       // Store deps in a custom property we handle in formatTicket
       (fields as InferredFields & { deps?: string[] }).deps = confirmedDeps;
+    }
+  }
+
+  // ─── Expert assignment ───────────────────────────────────────────────────────
+  {
+    const defaultIds = getDefaultExpertIds();
+    console.log('\n[专家指派]');
+    console.log(`默认专家（直接回车跳过自定义）：${defaultIds.join(', ')}`);
+    const ans = await question(rl, '指派专家 [回车=使用默认 / 输入ID逗号分隔 / n=不指派]：\n> ');
+    const trimmed = ans.trim().toLowerCase();
+    if (trimmed === '' || trimmed === 'default') {
+      fields.assignedExperts = defaultIds;
+    } else if (trimmed === 'n' || trimmed === 'none' || trimmed === '无') {
+      fields.assignedExperts = [];
+    } else {
+      // Validate each ID
+      const allIds = getAllExpertIds();
+      const requested = trimmed.split(',').map((s) => s.trim()).filter(Boolean);
+      const valid: string[] = [];
+      const invalid: string[] = [];
+      for (const id of requested) {
+        if (allIds.includes(id)) { valid.push(id); }
+        else { invalid.push(id); }
+      }
+      if (invalid.length > 0) {
+        console.log(`⚠️ 未知专家 ID（将忽略）：${invalid.join(', ')}`);
+        console.log(`可用 ID 列表：${allIds.join(', ')}`);
+      }
+      fields.assignedExperts = valid;
+    }
+    if (fields.assignedExperts.length > 0) {
+      console.log(`✅ 已指派专家：${fields.assignedExperts.join(', ')}`);
     }
   }
 
