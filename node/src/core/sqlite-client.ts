@@ -262,6 +262,14 @@ export class SQLiteClient {
 
       CREATE INDEX IF NOT EXISTS idx_checkpoint_slaver ON execution_checkpoints(slaver_id);
 
+      -- TASK-199: TaskCheckpoint断点续传表（CAS版本控制）
+      CREATE TABLE IF NOT EXISTS task_checkpoints (
+        task_id    TEXT    PRIMARY KEY,
+        data       TEXT    NOT NULL,
+        version    INTEGER NOT NULL DEFAULT 0,
+        updated_at INTEGER NOT NULL
+      );
+
       -- 任务消息表（结构化存储 LLM 执行消息）
       CREATE TABLE IF NOT EXISTS task_messages (
         id        INTEGER PRIMARY KEY AUTOINCREMENT,

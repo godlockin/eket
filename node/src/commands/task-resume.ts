@@ -16,6 +16,8 @@ import { Command } from 'commander';
 
 import { resumeWithFallback as _resumeWithFallbackCore } from '../core/session-resume.js';
 import { createSQLiteManager } from '../core/sqlite-manager.js';
+import { createTaskCheckpointStore } from '../core/task-checkpoint.js';
+import { SQLiteClient } from '../core/sqlite-client.js';
 import { EketError } from '../types/index.js';
 import { printError } from '../utils/error-handler.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
@@ -170,5 +172,70 @@ Examples:
         printError(new EketError('RESUME_FAILED', `task:resume failed: ${errorMessage}`));
         process.exit(1);
       }
+    });
+}
+
+/**
+ * TASK-199: 注册 task:resume <TASK-NNN> 命令（TaskCheckpoint断点续传）
+ *
+ * 用法: node dist/index.js task:resume-checkpoint TASK-199
+ *
+ * 查询 task_checkpoints 表，输出恢复状态（stepIndex, executedToolCalls等）。
+ */
+export function registerTaskResumeCheckpoint(program: Command): void {
+  program
+    .command('task:resume-checkpoint <taskId>')
+    .description('从 TaskCheckpoint 断点恢复执行（TASK-199: CAS版本控制）')
+    .addHelpText(
+      'after',
+      `
+Examples:
+  node dist/index.js task:resume-checkpoint TASK-199
+  node dist/index.js task:resume-checkpoint task-42
+`
+    )
+    .action(async (taskId: string) => {
+      const client = new SQLiteClient();
+      const connectResult = client.connect();
+      if (!connectResult.success) {
+        printError(new EketError('SQLITE_NOT_CONNECTED', 'Failed to connect to SQLite'));
+        process.exit(1);
+      }
+      const rawDb = client.getDB();
+      if (!rawDb) {
+        printError(new EketError('SQLITE_NOT_CONNECTED', 'No raw DB available'));
+        process.exit(1);
+      }
+      const store = createTaskCheckpointStore(rawDb);
+      const result = store.loadCheckpoint(taskId);
+      client.close();
+
+      if (!result.success) {
+        printError(result.error);
+        process.exit(1);
+      }
+
+      const checkpoint = result.data;
+      if (!checkpoint) {
+        console.log(
+          `[task:resume-checkpoint] 无检查点记录 "${taskId}"，请从头执行或运行 task:claim`
+        );
+        return;
+      }
+
+      console.log([
+        `[task:resume-checkpoint] 找到断点：`,
+        `  TaskID:       ${checkpoint.taskId}`,
+        `  StepIndex:    ${checkpoint.stepIndex}  (从此turn继续)`,
+        `  Version:      ${checkpoint.version}`,
+        `  AgentItems:   ${checkpoint.agentFacingItems.length} 条`,
+        `  FullHistory:  ${checkpoint.fullHistoryItems.length} 条`,
+        `  已执行Tools:  ${checkpoint.executedToolCalls.length > 0 ? checkpoint.executedToolCalls.join(', ') : '无'}`,
+        `  UpdatedAt:    ${new Date(checkpoint.updatedAt).toISOString()}`,
+        ``,
+        `建议操作：`,
+        `  从 stepIndex=${checkpoint.stepIndex} 继续执行，已执行工具自动幂等skip`,
+        `  如需从头执行: node dist/index.js task:delete-checkpoint ${checkpoint.taskId}`,
+      ].join('\n'));
     });
 }

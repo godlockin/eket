@@ -14,6 +14,7 @@ pub mod redis;
 pub mod registry;
 pub mod saga;
 pub mod ticket;
+pub mod tracing;
 pub mod types;
 
 pub use error::{EketError, EketResult};

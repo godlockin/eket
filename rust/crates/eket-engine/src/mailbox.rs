@@ -18,6 +18,8 @@ use tokio::sync::Mutex;
 use tracing::debug;
 use uuid::Uuid;
 
+use crate::context_filter::MailboxContextFilter;
+
 // ─── Message Types ────────────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -171,6 +173,16 @@ impl AgentMailbox {
         tokio::fs::remove_file(&processing_path).await.ok();
 
         Ok(unread)
+    }
+
+    /// Read unread messages with context filter applied
+    pub async fn read_messages_filtered(
+        &self,
+        agent_id: &str,
+        filter: &MailboxContextFilter,
+    ) -> Result<Vec<MailboxMessage>, String> {
+        let messages = self.read_messages(agent_id).await?;
+        Ok(filter.filter(&messages))
     }
 
     /// Clear all messages for an agent
