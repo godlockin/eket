@@ -1,7 +1,7 @@
 # EKET Framework
 
-**EKET (Elite Knowledge & Engineering Team) - 人机特种部队协作协议 | Version 2.3.0**
-**最后更新**: 2026-04-16
+**EKET (Elite Knowledge & Engineering Team) — 人机特种部队协作协议 | Version 2.14.0-beta**
+**最后更新**: 2026-04-26
 
 [English](README.md) | [中文说明](README_zh-CN.md)
 
@@ -62,7 +62,7 @@ cd eket
 
 ## 📚 三级架构 - 渐进增强设计
 
-EKET 采用**渐进式三级架构**，确保在不同环境下都能稳定运行：
+EKET 采用**渐进式四级架构**，确保在不同环境下都能稳定运行：
 
 ### Level 1: Shell + 文档 (基础版) ⭐⭐⭐⭐⭐
 
@@ -422,6 +422,8 @@ node node/benchmarks/simple-benchmark.js
 
 ## 🎯 版本历史
 
+- **v2.14.0-beta** (2026-04-26) — 红队审查: 14个bug修复 (1 P0 + 7 P1 + 6 P2); Rust 253测试 + Node 1519测试
+- **v2.13.0** (2026-04-21) — Rust迁移完成; axum API服务; 四级降级架构
 - **v2.3.0** (2026-04-08) - Round 3 自举完成，测试通过率 87%，性能验证
 - **v2.2.0** (2026-04-07) - Round 2 大规模优化，35,775+ 行代码
 - **v2.1.1** (2026-04-06) - Round 1 自举系统首次运行
