@@ -83,28 +83,25 @@ describe('TaskCheckpointStore', () => {
   });
 
   describe('CAS conflict rejection', () => {
-    it('throws CheckpointCASError when version mismatch on update', () => {
+    it('returns casConflict result when version mismatch on update (TASK-220)', () => {
       const cp = createEmptyCheckpoint('TASK-3');
       store.saveCheckpoint(cp);
 
       const staleCp: TaskCheckpoint = { ...cp, version: 0, stepIndex: 99 };
-      expect(() => store.saveCheckpoint(staleCp)).toThrow(CheckpointCASError);
+      const result = store.saveCheckpoint(staleCp);
+      expect(result.success).toBe(false);
+      expect((result as { casConflict?: boolean }).casConflict).toBe(true);
     });
 
-    it('CheckpointCASError contains taskId and versions', () => {
+    it('casConflict result contains error message with taskId (TASK-220)', () => {
       const cp = createEmptyCheckpoint('TASK-4');
       store.saveCheckpoint(cp);
 
-      try {
-        store.saveCheckpoint({ ...cp, version: 0 });
-        throw new Error('Expected CheckpointCASError but did not throw');
-      } catch (e) {
-        expect(e).toBeInstanceOf(CheckpointCASError);
-        const err = e as CheckpointCASError;
-        expect(err.taskId).toBe('TASK-4');
-        expect(err.expectedVersion).toBe(0);
-        expect(err.actualVersion).toBe(1);
-      }
+      const result = store.saveCheckpoint({ ...cp, version: 0 });
+      expect(result.success).toBe(false);
+      const r = result as { casConflict?: boolean; error?: string };
+      expect(r.casConflict).toBe(true);
+      expect(r.error).toMatch(/TASK-4/);
     });
 
     it('allows sequential updates if versions match', () => {
