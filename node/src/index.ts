@@ -28,6 +28,7 @@ import { registerGraphQueryCommand } from './commands/graph-query.js';
 import { registerHandoff } from './commands/handoff.js';
 import { runInitWizard } from './commands/init-wizard.js';
 import { runInteractiveStartCLI } from './commands/interactive-start.js';
+import { registerKnowledge } from './commands/knowledge.js';
 import { registerKnowledgeIndex } from './commands/knowledge-index.js';
 import { registerKnowledgeSearch } from './commands/knowledge-search.js';
 import { registerMasterHeartbeat } from './commands/master-heartbeat.js';
@@ -939,6 +940,8 @@ Related Commands:
   // 注册知识库检索命令（RAG, TASK-074）
   registerKnowledgeIndex(program);
   registerKnowledgeSearch(program);
+  // 注册知识库索引 + GC 命令（TASK-210）
+  registerKnowledge(program);
 
 
   // 注册 alerts 命令
