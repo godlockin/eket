@@ -41,7 +41,7 @@ import { startInstance, listAvailableRoles } from './commands/start-instance.js'
 import { registerSubmitPR } from './commands/submit-pr.js';
 import { registerTaskCreate } from './commands/task-create.js';
 import { registerTaskProgress } from './commands/task-progress.js';
-import { registerTaskResume } from './commands/task-resume.js';
+import { registerTaskResume, registerTaskResumeCheckpoint } from './commands/task-resume.js';
 import { registerTeamStatus } from './commands/team-status.js';
 import { registerUltrareview } from './commands/ultrareview.js';
 import { registerWorkflowCommands } from './commands/workflow.js';
@@ -614,6 +614,8 @@ Related Commands:
 
   // 注册 task:resume 命令
   registerTaskResume(program);
+  // TASK-199: TaskCheckpoint断点续传
+  registerTaskResumeCheckpoint(program);
 
   // 注册 task:create 命令
   registerTaskCreate(program);
