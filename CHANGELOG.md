@@ -5,6 +5,33 @@ All notable changes to the EKET Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased — Rust Migration] - 2026-04-26
+
+> 版本号策略调整：Rust 迁移完成后将发布 v3.0.0。
+> 以下变更已合并至 `miao` 分支，尚未正式打 tag。
+
+### Added (Rust Engine)
+- `eket-engine`: WorkflowStep `context_budget` 字段 + 4 阶段裁剪管道
+- `eket-engine`: `StepSnapshotStore` FTS5 全文搜索 + SQLite 持久化
+- `eket-engine`: `MailboxContextFilter` Recency Decay 三阶段过滤
+- `eket-engine`: `SpanContext` 零成本 tracing（`NoOpSpan` / `TracingSpan`）
+- `eket-engine`: 借鉴 GenericAgent / context-mode / MemOS / claude-context
+
+### Fixed (Red Team TASK-214~221)
+- P0: `std::sync::Mutex` → `tokio::sync::Mutex`（防止 tokio 线程阻塞）
+- P1: archive-before-insert 顺序修复；ContextBudget 写回 inst.context
+- P1: JoinPolicy Any/Quorum 调用 `abort()` 防任务泄漏
+- P1: 连续去重范围修正；Levenshtein 滚动数组防 OOM
+- P1: `include_fields` 豁免 METADATA_KEYS；EscalateToMaster zombie 修复
+- P1: CAS 冲突返回 Result 而非 throw
+- P2: FTS5 DELETE+UPDATE 触发器；文件 SQLite；空 query 早返回；重复 step ID 校验；空 model 启动 fast-fail
+
+### Tests
+- Rust: 244 → 253 passed (+9)
+- Node.js: 1519 passed（稳定）
+
+---
+
 ## [2.14.0-beta] - 2026-04-19
 
 ### Changed
