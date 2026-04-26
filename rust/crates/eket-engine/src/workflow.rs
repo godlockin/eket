@@ -19,6 +19,7 @@ use tracing::{debug, info, warn};
 use uuid::Uuid;
 
 use crate::event_bus::{DomainEvent, EventBus};
+use crate::step_snapshot::{archive_and_compress_context, StepSnapshotStore};
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -174,10 +175,14 @@ pub struct WorkflowEngine {
     kill_handles: Arc<DashMap<String, tokio::task::AbortHandle>>,
     event_bus: Option<EventBus>,
     default_timeout_ms: u64,
+    /// Per-workflow-id step snapshot store (ToC snapshot mode, TASK-211).
+    snapshot_store: Arc<std::sync::Mutex<StepSnapshotStore>>,
 }
 
 impl WorkflowEngine {
     pub fn new(instance_id: impl Into<String>, event_bus: Option<EventBus>) -> Self {
+        let snapshot_store = StepSnapshotStore::new_in_memory()
+            .expect("failed to init in-memory step snapshot store");
         Self {
             instance_id: instance_id.into(),
             definitions: Arc::new(RwLock::new(HashMap::new())),
@@ -187,6 +192,7 @@ impl WorkflowEngine {
             kill_handles: Arc::new(DashMap::new()),
             event_bus,
             default_timeout_ms: 300_000,
+            snapshot_store: Arc::new(std::sync::Mutex::new(snapshot_store)),
         }
     }
 
@@ -234,7 +240,7 @@ impl WorkflowEngine {
             "workflow_id": workflow_id, "definition_id": definition_id
         })).await;
 
-        let runner = self.make_runner(workflow_id.clone(), def);
+        let runner = self.make_runner(workflow_id.clone(), def, self.snapshot_store.clone());
         let join_handle = tokio::spawn(runner);
         let handle = join_handle.abort_handle();
         self.kill_handles.insert(workflow_id.clone(), handle);
@@ -273,7 +279,7 @@ impl WorkflowEngine {
         Some(inst)
     }
 
-    fn make_runner(&self, workflow_id: String, def: WorkflowDefinition) -> impl std::future::Future<Output = ()> {
+    fn make_runner(&self, workflow_id: String, def: WorkflowDefinition, snapshot_store: Arc<std::sync::Mutex<StepSnapshotStore>>) -> impl std::future::Future<Output = ()> {
         let instances = self.instances.clone();
         let executors = self.executors.clone();
         let pending_judgments = self.pending_judgments.clone();
@@ -427,6 +433,18 @@ impl WorkflowEngine {
                         Some(next) => {
                             if let Some(arc) = get_inst_arc!() {
                                 let mut inst = arc.write().await;
+                                // ToC snapshot: archive completed step, compress context
+                                {
+                                    let completed_step = current_step_id.clone();
+                                    if let Ok(ref store) = snapshot_store.lock() {
+                                        let _ = archive_and_compress_context(
+                                            store,
+                                            &workflow_id,
+                                            &completed_step,
+                                            &mut inst.context.data,
+                                        );
+                                    }
+                                }
                                 inst.context.data.insert(
                                     format!("{current_step_id}.output"),
                                     result.output.clone(),
