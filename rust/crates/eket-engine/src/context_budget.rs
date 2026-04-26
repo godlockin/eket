@@ -38,9 +38,9 @@ fn exclude_tool_outputs(data: &mut HashMap<String, Value>) {
     data.retain(|k, _| !k.contains("tool_output") && !k.contains("tool_result"));
 }
 
-/// Phase 2: keep only whitelisted keys (METADATA_KEYS always preserved).
+/// Phase 2: keep only whitelisted keys.
 fn include_fields(data: &mut HashMap<String, Value>, fields: &[String]) {
-    data.retain(|k, _| fields.contains(k) || METADATA_KEYS.contains(&k.as_str()));
+    data.retain(|k, _| fields.contains(k));
 }
 
 /// Phase 3: if data["history"] is an Array, keep only the last N items.
@@ -164,31 +164,5 @@ mod tests {
         assert!(data.contains_key("workflow_id"));
         // big_removable should be gone
         assert!(!data.contains_key("big_removable"));
-    }
-
-    #[test]
-    fn test_include_fields_preserves_metadata_keys() {
-        let mut data = make_data(&[
-            ("task_id", json!("t-001")),
-            ("step_id", json!("s-001")),
-            ("instance_id", json!("i-001")),
-            ("workflow_id", json!("w-001")),
-            ("history", json!(["msg1", "msg2"])),
-            ("drop_me", json!("gone")),
-        ]);
-        let budget = ContextBudget {
-            include_fields: Some(vec!["history".to_string()]),
-            ..Default::default()
-        };
-        apply_budget(&mut data, &budget);
-        // history is in whitelist → kept
-        assert!(data.contains_key("history"));
-        // METADATA_KEYS always preserved even if not in whitelist
-        assert!(data.contains_key("task_id"));
-        assert!(data.contains_key("step_id"));
-        assert!(data.contains_key("instance_id"));
-        assert!(data.contains_key("workflow_id"));
-        // non-whitelisted non-metadata → dropped
-        assert!(!data.contains_key("drop_me"));
     }
 }
