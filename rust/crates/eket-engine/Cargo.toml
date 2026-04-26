@@ -16,6 +16,8 @@ uuid = { workspace = true }
 chrono = { workspace = true }
 futures = "0.3"
 rusqlite = { workspace = true }
+r2d2 = { workspace = true }
+r2d2_sqlite = { workspace = true }
 tantivy = { workspace = true }
 dashmap = { workspace = true }
 
@@ -24,3 +26,5 @@ tokio = { workspace = true, features = ["test-util"] }
 tempfile = "3"
 futures = "0.3"
 rusqlite = { workspace = true }
+r2d2 = { workspace = true }
+r2d2_sqlite = { workspace = true }

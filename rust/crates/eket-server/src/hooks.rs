@@ -197,12 +197,14 @@ mod tests {
         let db_path = tmp.path().join("test.db");
         let pool = create_pool(db_path.to_str().unwrap()).expect("db");
         let db = Arc::new(SqliteClient::new(pool));
+        let (event_tx, _) = tokio::sync::broadcast::channel(16);
         AppState {
             db,
             tickets_dir: PathBuf::new(),
             start_time: std::time::Instant::now(),
             event_bus: EventBus::new(16),
             hook_registry: HookRegistry::new(),
+            event_tx,
         }
     }
 

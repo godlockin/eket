@@ -17,3 +17,8 @@ pub mod master_poll;
 pub mod db_commands;
 pub mod project_status;
 pub mod workflow_status;
+pub mod ticket_index;
+pub mod dependency_analyze;
+pub mod slaver_set_role;
+pub mod skill_extract;
+pub mod alerts_list;
