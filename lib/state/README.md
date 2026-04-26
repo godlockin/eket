@@ -1,6 +1,6 @@
 # lib/state/ — Shell 权威写入层
 
-**状态**: Skeleton — Phase 0 / Task 0.3
+**状态**: ✅ 已实现（2026-04-26 更新；Phase 0 已完成）
 **职责**: EKET Shell 引擎对共享 FS 状态的**唯一**写入入口
 
 ---
@@ -100,13 +100,11 @@ state_transition_ticket "FEAT-001" "done"
 
 ## 实现状态
 
-| 文件 | 状态 |
-|------|------|
-| writer.sh | 🟡 Skeleton |
-| reader.sh | ⚪ 未开始 |
-| schema.sh | 🟡 Skeleton |
-| lock.sh | 🟡 Skeleton |
-| atomic.sh | 🟡 Skeleton |
-| audit.sh | 🟡 Skeleton |
-
-实际函数实现见各 `.sh` 文件内 TODO。
+| 文件 | 状态 | 行数 |
+|------|------|------|
+| writer.sh | ✅ 已实现 | 406 |
+| schema.sh | ✅ 已实现 | 132 |
+| lock.sh | ✅ 已实现 | 122 |
+| atomic.sh | ✅ 已实现 | 57 |
+| audit.sh | ✅ 已实现 | 43 |
+| preflight.sh | ✅ 已实现 | 155 |
