@@ -75,27 +75,30 @@ export class EnvModelProvider implements ModelProvider {
     const roleKey = `EKET_${normalized.toUpperCase()}_MODEL`;
     const specificModel = this.env[roleKey];
     if (specificModel) {
-      return this.buildConfig(specificModel);
+      return this.buildConfig(specificModel, role);
     }
 
     // Slaver sub-roles (e.g. "backend_slaver", "frontend_slaver")
     if (normalized.includes('slaver')) {
       const slaverModel = this.env['EKET_SLAVER_MODEL'];
       if (slaverModel) {
-        return this.buildConfig(slaverModel);
+        return this.buildConfig(slaverModel, role);
       }
     }
 
     // Default fallback
     const defaultModel = this.env['EKET_DEFAULT_MODEL'];
     if (defaultModel) {
-      return this.buildConfig(defaultModel);
+      return this.buildConfig(defaultModel, role);
     }
 
     return null;
   }
 
-  private buildConfig(model: string): AgentModelConfig {
+  private buildConfig(model: string, role?: string): AgentModelConfig {
+    if (!model || model.trim() === '') {
+      throw new Error(`EKET model config error: empty model string for role '${role ?? 'unknown'}'`);
+    }
     return {
       model,
       provider: DEFAULT_PROVIDER,
