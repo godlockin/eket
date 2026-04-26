@@ -35,6 +35,9 @@ pub enum EketError {
     #[error("Circuit breaker open: {service}")]
     CircuitBreakerOpen { service: String },
 
+    #[error("Invalid input: {0}")]
+    InvalidInput(String),
+
     #[error("{0}")]
     Other(String),
 }
