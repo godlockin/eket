@@ -67,9 +67,59 @@ fn write_active_context(
     ticket: &TicketFile,
     slaver_id: &str,
 ) -> Result<()> {
+    use eket_core::skill_index::{
+        default_search_roots, load_skill_index,
+        parse_assigned_experts, load_expert_profiles, format_expert_section,
+    };
+
     let dir = project_root.join(".eket");
     std::fs::create_dir_all(&dir)?;
     let now = chrono::Utc::now().to_rfc3339();
+
+    // ── Model routing via skill index ──
+    let skill_roots = default_search_roots(project_root);
+    let skill_idx = load_skill_index(&skill_roots);
+    let domain = ticket.id
+        .split('-')
+        .next()
+        .unwrap_or("default")
+        .to_lowercase();
+    let recommended_level = skill_idx.model_route_table
+        .get(&domain)
+        .or_else(|| skill_idx.model_route_table.get("default"))
+        .copied()
+        .unwrap_or(2);
+    let level_name = match recommended_level { 3 => "opus", 2 => "sonnet", _ => "haiku" };
+
+    // ── Expert profile injection ──
+    let ticket_path = {
+        let base = project_root.join("jira").join("tickets");
+        let candidates = [
+            base.join(format!("{}.md", ticket.id)),
+            base.join("feature").join(format!("{}.md", ticket.id)),
+            base.join("bugfix").join(format!("{}.md", ticket.id)),
+            base.join("task").join(format!("{}.md", ticket.id)),
+        ];
+        candidates.iter().find(|p| p.exists()).cloned()
+    };
+
+    let expert_section = if let Some(tp) = ticket_path {
+        if let Ok(content) = std::fs::read_to_string(&tp) {
+            let ids = parse_assigned_experts(&content);
+            if !ids.is_empty() {
+                eprintln!("[experts] Loading: {}", ids.join(", "));
+                let profiles = load_expert_profiles(&ids);
+                format_expert_section(&profiles)
+            } else {
+                String::new()
+            }
+        } else {
+            String::new()
+        }
+    } else {
+        String::new()
+    };
+
     let content = format!(
         r#"# EKET Active Context
 
@@ -86,13 +136,26 @@ fn write_active_context(
 - **Slaver ID**: {slaver_id}
 - **Started At**: {now}
 
+## Model Recommendation
+
+- **Domain**: `{domain}`
+- **Recommended Level**: {level} ({level_name})
+
 ## Commands
 
 - `eket task:complete {id}` — 完成任务
 - `eket system:doctor` — 系统诊断
-"#,
+{expert_section}"#,
         id = ticket.id,
         title = ticket.title,
+        domain = domain,
+        level = recommended_level,
+        level_name = level_name,
+        expert_section = if expert_section.is_empty() {
+            String::new()
+        } else {
+            format!("\n{}", expert_section)
+        },
     );
     std::fs::write(dir.join("ACTIVE_CONTEXT.md"), content)?;
     Ok(())
