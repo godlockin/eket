@@ -29,3 +29,30 @@
 - `retrospectives/`：`{YYYYMMDD}-{TASK-ID}.md` 或 `sprint-{N}-retro.md`
 - `lessons/`：`{主题}.md`（lowercase-kebab）
 - `research/`：`{主题}.md`（lowercase-kebab）
+
+---
+
+## L0-L4 分层规范（对标 GenericAgent）
+
+EKET 采用五层记忆架构，防止无限膨胀：
+
+| 层级 | 名称 | 内容 | 载体 | 大小上限 |
+|------|------|------|------|---------|
+| **L0** | 导航索引 | 所有文件的一行摘要指针 | `memory-index.md` | ≤50行 |
+| **L1** | 热记忆 | 当前任务上下文、活跃规则 | Agent 工作内存（context window） | ~8K tokens |
+| **L2** | 温记忆 | 本目录 `.md` 文件（patterns/pitfalls/lessons/…） | `confluence/memory/` | 每文件 ≤500行 |
+| **L3** | 冷记忆 | 全文索引 + FTS5 向量 | SQLite（`.eket/data/sqlite/eket.db`） | 无硬限制 |
+| **L4** | 归档 | 超期/低引用文件压缩归档 | `confluence/memory/archive/`（可选） | 按需 |
+
+### 防膨胀机制
+
+- **L0 自动重建**：`node dist/index.js knowledge:index --rebuild`
+- **超50行警告**：自动列出最旧 10 个候选 GC 文件
+- **GC 流程**：`knowledge:gc --dry-run` → 确认 → `knowledge:gc --execute`（删除 90天+ 未修改文件，自动重建 L0）
+- **写入准则**：每个 `.md` 文件只存一个主题，超过 200 行考虑拆分
+
+### 何时触发 GC
+
+1. `knowledge:index --rebuild` 报 `[WARN] memory index exceeds 50 lines`
+2. 月度维护时主动检查
+3. `confluence/memory/` 总文件数 > 80

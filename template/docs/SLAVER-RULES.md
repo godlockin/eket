@@ -309,4 +309,57 @@ Followup: <可选后续建议>
 
 ---
 
+---
+
+## 12. 知识沉淀红线 — Execution Proof 强制要求
+
+> **凡写入 `confluence/memory/` 的技术结论，必须附带 Execution Proof 元数据，否则视为无效知识并被系统拒绝写入。**
+
+### 12.1 强制规则
+
+- **禁止**在无 proof 情况下向 `confluence/memory/` 写入任何新文件
+- **禁止**在 `--strict` 模式下追加已有无 proof 文件的内容
+- proof 必须来源于**真实执行**，不得捏造 exit_code=0 或伪造 task_id
+
+### 12.2 Proof 元数据格式
+
+每个知识文件必须在 YAML front-matter 中包含 `proof` 块：
+
+```markdown
+---
+title: <知识标题>
+proof:
+  task_id: TASK-XXX          # 来源 ticket（必填）
+  exit_code: 0               # 只允许 0，即成功执行（必填）
+  timestamp: 2026-04-26T10:00:00Z  # ISO 8601（必填）
+  tool_name: npm test        # 产生结论的工具/命令（可选）
+  ci_url: https://ci.example.com/123  # CI 链接（可选）
+---
+
+# 知识内容
+...
+```
+
+### 12.3 写入流程
+
+1. **执行验证步骤**（测试/命令/CI）— 记录 exit_code
+2. **获取 task_id** — 对应当前 ticket ID
+3. **填写 proof front-matter** — timestamp 用当前时间
+4. **运行 `knowledge:index`** — 系统自动校验 proof 完整性
+5. 校验失败 → exit(1) + 结构化错误信息 → 禁止写入
+
+### 12.4 向后兼容
+
+- 已有无 proof 的 legacy 文件：可读取/搜索（不阻断检索）
+- `--strict` 模式下：legacy 文件拒绝追加，必须补充 proof 后才能更新
+- 新文件：无论模式，必须有 proof（`--proof-required` 默认 `true`）
+
+### 12.5 违规后果
+
+- 知识写入失败，`knowledge:index` exit(1)
+- 违规行为记录在 ticket 复盘中
+- 连续违规上报 Master
+
+---
+
 > 📄 更多执行流程：[`template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`](SLAVER-HEARTBEAT-CHECKLIST.md) | [`template/docs/SLAVER-AUTO-EXEC-GUIDE.md`](SLAVER-AUTO-EXEC-GUIDE.md)

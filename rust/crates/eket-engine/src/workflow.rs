@@ -15,7 +15,7 @@ use std::time::Duration;
 use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 use tokio::sync::{oneshot, RwLock};
-use tracing::{info, warn};
+use tracing::{debug, info, warn};
 use uuid::Uuid;
 
 use crate::event_bus::{DomainEvent, EventBus};
@@ -77,17 +77,54 @@ pub struct WorkflowContext {
     pub retry_count: u32,
 }
 
-#[derive(Debug, Clone)]
+/// Per-step context budget configuration.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ContextBudget {
+    pub max_tokens: Option<usize>,
+    pub keep_recent_n: Option<usize>,
+    pub exclude_tool_outputs: bool,
+    pub include_fields: Option<Vec<String>>,
+}
+
+/// Estimate token count from a string: chars / 4.
+pub fn estimate_tokens(s: &str) -> usize {
+    s.chars().count() / 4
+}
+
+/// Recursively estimate token count from a JSON value.
+pub fn estimate_value_tokens(v: &serde_json::Value) -> usize {
+    match v {
+        serde_json::Value::Null => 1,
+        serde_json::Value::Bool(_) => 1,
+        serde_json::Value::Number(n) => estimate_tokens(&n.to_string()).max(1),
+        serde_json::Value::String(s) => estimate_tokens(s).max(1),
+        serde_json::Value::Array(arr) => arr.iter().map(estimate_value_tokens).sum::<usize>() + 2,
+        serde_json::Value::Object(map) => {
+            map.iter()
+                .map(|(k, v)| estimate_tokens(k).max(1) + estimate_value_tokens(v))
+                .sum::<usize>()
+                + 2
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub struct WorkflowStep {
     pub id: String,
     pub name: String,
     pub timeout_ms: Option<u64>,
+    #[serde(default)]
     pub judgment_required: bool,
+    #[serde(default)]
     pub judgment_fallback: JudgmentFallback,
     pub judgment_timeout_ms: Option<u64>,
+    #[serde(default)]
+    pub context_budget: Option<ContextBudget>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 #[derive(Default)]
 pub enum JudgmentFallback {
     #[default]
@@ -97,14 +134,18 @@ pub enum JudgmentFallback {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub struct WorkflowDefinition {
     pub id: String,
     pub name: String,
     pub steps: Vec<WorkflowStep>,
     pub entry_step_id: String,
+    #[serde(default = "default_timeout_ms")]
     pub default_timeout_ms: u64,
 }
+
+fn default_timeout_ms() -> u64 { 300_000 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkflowInstance {
@@ -335,6 +376,18 @@ impl WorkflowEngine {
                     } else {
                         break;
                     }
+                };
+
+                // Apply context budget for this step (TASK-207)
+                let context = if let Some(ref budget) = step.context_budget {
+                    let mut ctx = context;
+                    let before_tokens: usize = ctx.data.iter().map(|(_, v)| crate::workflow::estimate_value_tokens(v)).sum();
+                    crate::context_budget::apply_budget(&mut ctx.data, budget);
+                    let after_tokens: usize = ctx.data.iter().map(|(_, v)| crate::workflow::estimate_value_tokens(v)).sum();
+                    debug!("context budget applied: {} tokens → {} tokens (step={})", before_tokens, after_tokens, current_step_id);
+                    ctx
+                } else {
+                    context
                 };
 
                 if let Some(ref bus) = event_bus {
@@ -691,6 +744,7 @@ mod tests {
                 id: id.to_string(), name: id.to_string(),
                 timeout_ms: Some(500), judgment_required: false,
                 judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
+                context_budget: None,
             }).collect(),
             entry_step_id: entry,
             default_timeout_ms: 500,
@@ -749,6 +803,7 @@ mod tests {
                 id: "slow".into(), name: "slow".into(),
                 timeout_ms: Some(10_000), judgment_required: false,
                 judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
+                context_budget: None,
             }],
             entry_step_id: "slow".into(), default_timeout_ms: 10_000,
         };
@@ -781,6 +836,7 @@ mod tests {
                 id: "slow".into(), name: "slow".into(),
                 timeout_ms: Some(50), judgment_required: false,
                 judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
+                context_budget: None,
             }],
             entry_step_id: "slow".into(), default_timeout_ms: 50,
         };
@@ -802,9 +858,9 @@ mod tests {
             id: "j".into(), name: "j".into(),
             steps: vec![
                 WorkflowStep { id: "gate".into(), name: "gate".into(), timeout_ms: Some(5_000),
-                    judgment_required: true, judgment_fallback: JudgmentFallback::Skip, judgment_timeout_ms: Some(2_000) },
+                    judgment_required: true, judgment_fallback: JudgmentFallback::Skip, judgment_timeout_ms: Some(2_000), context_budget: None },
                 WorkflowStep { id: "after".into(), name: "after".into(), timeout_ms: Some(500),
-                    judgment_required: false, judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None },
+                    judgment_required: false, judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None, context_budget: None },
             ],
             entry_step_id: "gate".into(), default_timeout_ms: 5_000,
         };
@@ -831,9 +887,9 @@ mod tests {
             id: "jt".into(), name: "jt".into(),
             steps: vec![
                 WorkflowStep { id: "gate".into(), name: "gate".into(), timeout_ms: Some(5_000),
-                    judgment_required: true, judgment_fallback: JudgmentFallback::Skip, judgment_timeout_ms: Some(50) },
+                    judgment_required: true, judgment_fallback: JudgmentFallback::Skip, judgment_timeout_ms: Some(50), context_budget: None },
                 WorkflowStep { id: "after".into(), name: "after".into(), timeout_ms: Some(500),
-                    judgment_required: false, judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None },
+                    judgment_required: false, judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None, context_budget: None },
             ],
             entry_step_id: "gate".into(), default_timeout_ms: 5_000,
         };
@@ -863,6 +919,7 @@ mod tests {
             id: id.to_string(), name: id.to_string(),
             timeout_ms: Some(500), judgment_required: false,
             judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
+            context_budget: None,
         }).collect()
     }
 
@@ -929,5 +986,176 @@ mod tests {
         let report = execute_parallel(steps, execs, base_ctx(), JoinPolicy::All, FailBehavior::FailFast, 1).await;
         assert!(!report.success);
         assert!(report.error.as_deref().unwrap_or("").contains("timed out"));
+    }
+
+    // ── ContextBudget / token estimator tests ──────────────────────────────────
+
+    #[test]
+    fn estimate_tokens_empty() {
+        assert_eq!(estimate_tokens(""), 0);
+    }
+
+    #[test]
+    fn estimate_tokens_short() {
+        // "hello" = 5 chars → 5/4 = 1
+        assert_eq!(estimate_tokens("hello"), 1);
+    }
+
+    #[test]
+    fn estimate_tokens_long() {
+        let s = "a".repeat(100);
+        assert_eq!(estimate_tokens(&s), 25);
+    }
+
+    #[test]
+    fn estimate_value_tokens_null() {
+        assert_eq!(estimate_value_tokens(&serde_json::Value::Null), 1);
+    }
+
+    #[test]
+    fn estimate_value_tokens_string() {
+        let v = serde_json::json!("hello world");
+        // "hello world" = 11 chars → 11/4 = 2
+        assert_eq!(estimate_value_tokens(&v), 2);
+    }
+
+    #[test]
+    fn estimate_value_tokens_object() {
+        let v = serde_json::json!({ "key": "value" });
+        // key=3chars→0+2overhead + value=5chars→1 → total = max(1,0)+1+2 = 4
+        let tokens = estimate_value_tokens(&v);
+        assert!(tokens > 0);
+    }
+
+    #[test]
+    fn estimate_value_tokens_array() {
+        let v = serde_json::json!([1, 2, 3]);
+        let tokens = estimate_value_tokens(&v);
+        assert!(tokens >= 2); // at least the 2 overhead tokens
+    }
+
+    // ── TASK-208: WorkflowDefinition serde roundtrip ───────────────────────────
+
+    #[test]
+    fn workflow_definition_budget_roundtrip() {
+        let def = WorkflowDefinition {
+            id: "wf-1".into(),
+            name: "My Workflow".into(),
+            entry_step_id: "analyze".into(),
+            default_timeout_ms: 60_000,
+            steps: vec![
+                WorkflowStep {
+                    id: "analyze".into(),
+                    name: "Analyze".into(),
+                    timeout_ms: Some(5_000),
+                    judgment_required: false,
+                    judgment_fallback: JudgmentFallback::EscalateToMaster,
+                    judgment_timeout_ms: None,
+                    context_budget: Some(ContextBudget {
+                        max_tokens: Some(2000),
+                        keep_recent_n: Some(10),
+                        exclude_tool_outputs: false,
+                        include_fields: None,
+                    }),
+                },
+                WorkflowStep {
+                    id: "review".into(),
+                    name: "Review".into(),
+                    timeout_ms: None,
+                    judgment_required: true,
+                    judgment_fallback: JudgmentFallback::Skip,
+                    judgment_timeout_ms: Some(30_000),
+                    context_budget: None,
+                },
+            ],
+        };
+
+        let json = serde_json::to_string(&def).expect("serialize");
+        let de: WorkflowDefinition = serde_json::from_str(&json).expect("deserialize");
+
+        assert_eq!(de.id, def.id);
+        assert_eq!(de.steps.len(), 2);
+        let budget = de.steps[0].context_budget.as_ref().expect("budget present");
+        assert_eq!(budget.max_tokens, Some(2000));
+        assert_eq!(budget.keep_recent_n, Some(10));
+        assert!(de.steps[1].context_budget.is_none());
+        assert_eq!(de.steps[1].judgment_fallback, JudgmentFallback::Skip);
+    }
+
+    #[test]
+    fn context_budget_default() {
+        let b = ContextBudget::default();
+        assert!(b.max_tokens.is_none());
+        assert!(b.keep_recent_n.is_none());
+        assert!(!b.exclude_tool_outputs);
+        assert!(b.include_fields.is_none());
+    }
+
+    // ── Integration test: budget applied at step transition ────────────────────
+
+    #[tokio::test]
+    async fn context_budget_truncates_large_history_on_step_transition() {
+        let engine = make_engine();
+
+        // Step s2 has a budget that keeps only 2 history items
+        let budget_step = WorkflowStep {
+            id: "s2".into(), name: "s2".into(),
+            timeout_ms: Some(500), judgment_required: false,
+            judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
+            context_budget: Some(ContextBudget {
+                keep_recent_n: Some(2),
+                ..Default::default()
+            }),
+        };
+        let def = WorkflowDefinition {
+            id: "budget-test".into(), name: "budget-test".into(),
+            steps: vec![
+                WorkflowStep {
+                    id: "s1".into(), name: "s1".into(),
+                    timeout_ms: Some(500), judgment_required: false,
+                    judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
+                    context_budget: None,
+                },
+                budget_step,
+            ],
+            entry_step_id: "s1".into(), default_timeout_ms: 500,
+        };
+        engine.register_definition(def).await;
+
+        // s1 succeeds and transitions to s2
+        engine.register_step("s1", Arc::new(|_| Box::pin(async {
+            StepResult::success(Some("s2".into()))
+        }))).await;
+
+        // s2 captures the context it receives and verifies history is truncated
+        let captured: Arc<tokio::sync::Mutex<Option<Vec<serde_json::Value>>>> =
+            Arc::new(tokio::sync::Mutex::new(None));
+        let cap2 = captured.clone();
+        engine.register_step("s2", Arc::new(move |ctx: WorkflowContext| {
+            let cap = cap2.clone();
+            Box::pin(async move {
+                let history = ctx.data.get("history")
+                    .and_then(|v| v.as_array())
+                    .cloned()
+                    .unwrap_or_default();
+                *cap.lock().await = Some(history);
+                StepResult::success(None)
+            })
+        })).await;
+
+        // Start with 5-item history
+        let mut initial: HashMap<String, serde_json::Value> = HashMap::new();
+        initial.insert("history".into(), serde_json::json!([1, 2, 3, 4, 5]));
+
+        let wf = engine.start_workflow("budget-test", initial).await.unwrap();
+        tokio::time::sleep(Duration::from_millis(200)).await;
+
+        assert_eq!(engine.get_instance(&wf).await.unwrap().status, WorkflowStatus::Completed);
+
+        // s2 should have received only 2 items (keep_recent_n=2)
+        let hist = captured.lock().await.clone().expect("s2 never ran");
+        assert_eq!(hist.len(), 2, "expected 2 history items after budget, got {}", hist.len());
+        assert_eq!(hist[0], serde_json::json!(4));
+        assert_eq!(hist[1], serde_json::json!(5));
     }
 }

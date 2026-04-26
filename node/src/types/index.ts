@@ -4,6 +4,36 @@
  */
 
 // ============================================================================
+// Knowledge Proof Types (TASK-209)
+// ============================================================================
+
+export interface KnowledgeProof {
+  task_id: string;       // 来源 ticket
+  exit_code: 0;          // 只允许 0（成功）
+  timestamp: string;     // ISO 8601
+  tool_name?: string;    // 产生结论的工具/命令
+  ci_url?: string;       // 可选：CI 链接
+}
+
+export interface KnowledgeValidationError {
+  field: string;
+  message: string;
+  received?: unknown;
+}
+
+export interface KnowledgeValidationResult {
+  valid: boolean;
+  errors: KnowledgeValidationError[];
+}
+
+/** Minimal shape used by knowledge:index proof validation */
+export interface KnowledgeIndexEntry {
+  content: string;
+  proof: KnowledgeProof;
+  tags?: string[];
+}
+
+// ============================================================================
 // Job Types
 // ============================================================================
 
@@ -835,6 +865,8 @@ export interface KnowledgeEntry {
   updatedAt: number;
   relatedTickets?: string[];
   metadata?: Record<string, unknown>;
+  /** Execution Proof Anchor (TASK-209) — required for new entries in strict mode */
+  proof?: KnowledgeProof;
 }
 
 /**
