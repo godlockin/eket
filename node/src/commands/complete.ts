@@ -16,6 +16,7 @@ import { createSQLiteClient } from '../core/sqlite-client.js';
 import { sseBus } from '../core/sse-bus.js';
 import { WorktreeManager } from '../core/worktree-manager.js';
 import type { SkillFeedback, SlaveResult } from '../types/index.js';
+import { validateTicketOutput } from '../types/ticket-output.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
@@ -298,6 +299,22 @@ async function runCompletionValidation(
 }
 
 /**
+ * Validate ticket output payload via TicketOutputSchema (TASK-198).
+ * Hard-blocks completion if validation fails — prints structured errors and exits.
+ */
+export function assertTicketOutputValid(payload: unknown): void {
+  const result = validateTicketOutput(payload);
+  if (!result.success) {
+    console.error('\n[ticket-output-schema] ❌ Validation failed — ticket NOT marked done.\n');
+    for (const err of result.errors) {
+      console.error(`  • ${err.path}: ${err.message}`);
+    }
+    console.error('\nFix the above fields and retry task:complete.\n');
+    process.exit(1);
+  }
+}
+
+/**
  * Build and write SlaveResult to .eket/results/<ticketId>.json
  */
 export async function writeSlaveResult(
@@ -349,8 +366,31 @@ export function registerComplete(program: Command): void {
   program
     .command('task:complete <ticketId>')
     .description('Mark task as complete, merge worktree and clean up')
-    .action(async (ticketId: string) => {
+    .option(
+      '--output <json>',
+      'TicketOutput payload JSON (required for schema validation: knowledgeNotes, status, etc.)'
+    )
+    .action(async (ticketId: string, opts: { output?: string }) => {
       console.log(`\n=== Complete Task: ${ticketId} ===\n`);
+
+      // ── TASK-198: TicketOutputSchema validation ──────────────────────────
+      if (opts.output !== undefined) {
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(opts.output);
+        } catch {
+          console.error('[ticket-output-schema] ❌ --output is not valid JSON');
+          process.exit(1);
+        }
+        assertTicketOutputValid(parsed);
+        console.log('[ticket-output-schema] ✅ Output schema validated');
+      } else {
+        // Warn but don't block — allows existing flows to work
+        console.warn(
+          '[ticket-output-schema] ⚠️  --output not provided. Pass --output \'{"status":"completed","knowledgeNotes":["..."],"blockers":[]}\' to enforce schema.'
+        );
+      }
+      // ─────────────────────────────────────────────────────────────────────
 
       const projectRoot = await findProjectRoot();
       if (!projectRoot) {

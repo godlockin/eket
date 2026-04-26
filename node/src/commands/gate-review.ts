@@ -18,6 +18,12 @@ import { Command } from 'commander';
 
 import { EketErrorClass, EketErrorCode, type Result } from '../types/index.js';
 import { printError } from '../utils/error-handler.js';
+import {
+  DEFAULT_GUARDRAILS,
+  runGuardrails,
+  type GuardrailInput,
+  type GuardrailResult,
+} from '../core/guardrail.js';
 
 // ============================================================================
 // Types
@@ -44,6 +50,8 @@ export interface GateReviewReport {
     resubmitConditions: string[];
   };
   approveRisks?: string[];
+  /** Parallel guardrail results (TASK-203) */
+  guardrailResults?: GuardrailResult[];
 }
 
 interface TicketParseResult {
@@ -554,6 +562,36 @@ export async function gateReview(
   });
 
   printReport(report);
+
+  // ── Parallel guardrail checks (TASK-203) ────────────────────────────────
+  const guardrailInput: GuardrailInput = {
+    ticketId: ticket.id,
+    ticketContent: ticket.content,
+    // CI / coverage / notes / PR fields are advisory from ticket content parsing.
+    // Callers may extend by passing enriched input via options in future iterations.
+    ciStatus: 'unknown',
+    knowledgeNotes: (() => {
+      const m = ticket.content.match(/##\s*(?:知识沉淀|knowledge.notes?)[^\n]*\n([\s\S]*?)(?=\n##|\n---|\n\*\*|$)/i);
+      if (!m || !m[1]) {return [];}
+      const lines = m[1].trim().split('\n').filter((l) => l.trim().length > 0);
+      return lines;
+    })(),
+  };
+
+  const guardrailResults = await runGuardrails(DEFAULT_GUARDRAILS, guardrailInput);
+  report.guardrailResults = guardrailResults;
+
+  const failedGuardrails = guardrailResults.filter((r) => !r.passed);
+  if (failedGuardrails.length > 0) {
+    console.log(`\n   ⚡ 并行验收门禁结果 (${failedGuardrails.length}/${guardrailResults.length} 未通过):`);
+    for (const gr of guardrailResults) {
+      const sym = gr.passed ? '✓' : '✗';
+      console.log(`     [${sym}] ${gr.guardrailName}${gr.reason ? ': ' + gr.reason : ''}`);
+    }
+  } else {
+    console.log(`\n   ✅ 并行验收门禁：全部通过 (${guardrailResults.length}/${guardrailResults.length})`);
+  }
+  // ────────────────────────────────────────────────────────────────────────
 
   if (!options.dryRun) {
     const reportFile = writeReviewReport(projectRoot, ticket, report);
