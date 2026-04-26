@@ -151,6 +151,48 @@ export interface ExecutionCheckpoint {
 }
 
 // ============================================================================
+// TaskCheckpoint Types (TASK-199: RunState-inspired断点续传)
+// ============================================================================
+
+/**
+ * 单条消息 item（agent视图 or 完整历史）
+ */
+export interface CheckpointItem {
+  role: 'user' | 'assistant' | 'tool_result';
+  content: string;
+  toolCallId?: string;
+  toolName?: string;
+  timestamp?: number;
+}
+
+/**
+ * TaskCheckpoint — 三层结构借鉴 openai-agents RunState
+ */
+export interface TaskCheckpoint {
+  taskId: string;
+  /** step index: 已完成turn数，resume时从stepIndex继续 */
+  stepIndex: number;
+  /** 模型视图（不含系统事件/guardrail结果，直接喂给LLM） */
+  agentFacingItems: CheckpointItem[];
+  /** 完整历史（含工具调用/guardrail结果，用于审计） */
+  fullHistoryItems: CheckpointItem[];
+  /** 已执行的 tool_call_id 集合（幂等去重key） */
+  executedToolCalls: string[];
+  /** CAS版本号，防并发覆盖 */
+  version: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/** DB行格式（task_checkpoints表） */
+export interface TaskCheckpointRow {
+  task_id: string;
+  data: string; // JSON序列化TaskCheckpoint
+  version: number;
+  updated_at: number;
+}
+
+// ============================================================================
 // Handoff Types
 // ============================================================================
 

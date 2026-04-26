@@ -7,31 +7,6 @@ use crate::mailbox::{MailboxMessage, MailboxMessageType};
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
-/// Exponential decay configuration for recency weighting.
-#[derive(Debug, Clone)]
-pub struct DecayConfig {
-    /// Half-life in seconds (messages: 3d=259200s, knowledge: 14d=1209600s)
-    pub half_life_secs: u64,
-    /// Minimum weight floor (default 0.1)
-    pub floor: f32,
-}
-
-impl Default for DecayConfig {
-    fn default() -> Self {
-        Self {
-            half_life_secs: 259_200, // 3 days
-            floor: 0.1,
-        }
-    }
-}
-
-/// Compute decay weight: floor + (1 - floor) * 0.5^(age / half_life)
-pub fn decay(age_secs: u64, config: &DecayConfig) -> f32 {
-    let exponent = age_secs as f64 / config.half_life_secs as f64;
-    let weight = config.floor as f64 + (1.0 - config.floor as f64) * 0.5_f64.powf(exponent);
-    weight as f32
-}
-
 #[derive(Debug, Clone)]
 pub struct MailboxContextFilter {
     /// Phase 1: drop messages older than this many positions from end
@@ -41,8 +16,6 @@ pub struct MailboxContextFilter {
     pub relevance_threshold: f32,
     /// Phase 3: sliding window size (number of messages to keep)
     pub window_size: usize,
-    /// Optional decay config; None = original hard-threshold behavior
-    pub decay_config: Option<DecayConfig>,
 }
 
 impl Default for MailboxContextFilter {
@@ -51,7 +24,6 @@ impl Default for MailboxContextFilter {
             max_age_turns: 50,
             relevance_threshold: 0.3,
             window_size: 20,
-            decay_config: None,
         }
     }
 }
@@ -88,49 +60,31 @@ fn similarity(a: &str, b: &str) -> f32 {
     if max_len == 0 {
         return 1.0;
     }
-    // Fast path: length ratio > 1.2x → definitely different
-    let min_len = a.len().min(b.len());
-    if min_len == 0 || (max_len as f32 / min_len as f32) > 1.2 {
-        return 0.0;
-    }
-    // Long text: use simple hash comparison instead of full Levenshtein
-    if a.len() > 500 || b.len() > 500 {
-        use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash, Hasher};
-        let hash_str = |s: &str| {
-            let mut h = DefaultHasher::new();
-            s.hash(&mut h);
-            h.finish()
-        };
-        return if hash_str(a) == hash_str(b) { 1.0 } else { 0.0 };
-    }
     let dist = levenshtein(a, b);
     1.0 - (dist as f32 / max_len as f32)
 }
 
-/// Rolling-array Levenshtein (2 rows only, O(min(m,n)) space)
 fn levenshtein(a: &str, b: &str) -> usize {
     let a: Vec<char> = a.chars().collect();
     let b: Vec<char> = b.chars().collect();
     let (m, n) = (a.len(), b.len());
-    // Ensure `a` is the shorter string to minimize memory
-    if m > n {
-        return levenshtein(&b.iter().collect::<String>(), &a.iter().collect::<String>());
+    let mut dp = vec![vec![0usize; n + 1]; m + 1];
+    for i in 0..=m {
+        dp[i][0] = i;
     }
-    let mut prev: Vec<usize> = (0..=m).collect();
-    let mut curr = vec![0usize; m + 1];
-    for j in 1..=n {
-        curr[0] = j;
-        for i in 1..=m {
-            curr[i] = if a[i - 1] == b[j - 1] {
-                prev[i - 1]
+    for j in 0..=n {
+        dp[0][j] = j;
+    }
+    for i in 1..=m {
+        for j in 1..=n {
+            dp[i][j] = if a[i - 1] == b[j - 1] {
+                dp[i - 1][j - 1]
             } else {
-                1 + prev[i - 1].min(prev[i]).min(curr[i - 1])
+                1 + dp[i - 1][j].min(dp[i][j - 1]).min(dp[i - 1][j - 1])
             };
         }
-        std::mem::swap(&mut prev, &mut curr);
     }
-    prev[m]
+    dp[m][n]
 }
 
 fn payload_text(msg: &MailboxMessage) -> String {
@@ -145,14 +99,7 @@ impl MailboxContextFilter {
             max_age_turns,
             relevance_threshold,
             window_size,
-            decay_config: None,
         }
-    }
-
-    /// Builder: enable recency decay with given half-life and floor.
-    pub fn with_decay(mut self, half_life_secs: u64, floor: f32) -> Self {
-        self.decay_config = Some(DecayConfig { half_life_secs, floor });
-        self
     }
 
     pub fn filter(&self, messages: &[MailboxMessage]) -> Vec<MailboxMessage> {
@@ -184,18 +131,7 @@ impl MailboxContextFilter {
                     .and_then(|v| v.as_f64())
                     .map(|v| v as f32)
                     .unwrap_or(1.0);
-                // Apply decay if configured
-                let effective_score = if let Some(ref dc) = self.decay_config {
-                    let age_secs = msg
-                        .payload
-                        .get("age_secs")
-                        .and_then(|v| v.as_u64())
-                        .unwrap_or(0);
-                    score * decay(age_secs, dc)
-                } else {
-                    score
-                };
-                effective_score >= self.relevance_threshold
+                score >= self.relevance_threshold
             })
             .map(|(_, m)| m.clone())
             .collect()
@@ -209,14 +145,12 @@ impl MailboxContextFilter {
                 result.push(msg.clone());
                 continue;
             }
-            // Check only the IMMEDIATELY preceding message (consecutive same-sender dedup)
-            if let Some(prev) = result.last() {
-                if prev.from == msg.from {
-                    let sim = similarity(&payload_text(prev), &payload_text(msg));
-                    if sim > 0.85 {
-                        // Skip duplicate
-                        continue;
-                    }
+            // Check last message from same sender
+            if let Some(prev) = result.iter().rev().find(|m| m.from == msg.from) {
+                let sim = similarity(&payload_text(prev), &payload_text(msg));
+                if sim > 0.85 {
+                    // Skip duplicate
+                    continue;
                 }
             }
             result.push(msg.clone());
@@ -441,101 +375,6 @@ mod tests {
 
         let result = filter.phase3_sliding_window(&messages);
         assert!(result.iter().any(|m| m.payload.get("tool_result").is_some()));
-    }
-
-    // ── Decay tests ────────────────────────────────────────────────────────
-
-    fn with_age_secs(from: &str, score: f64, age_secs: u64) -> MailboxMessage {
-        msg(
-            from,
-            MailboxMessageType::Custom("chat".into()),
-            json!({"relevance_score": score, "age_secs": age_secs, "text": "content"}),
-        )
-    }
-
-    #[test]
-    fn decay_within_half_life_gt_half() {
-        let config = DecayConfig { half_life_secs: 3600, floor: 0.1 };
-        let w = decay(1800, &config); // half of half-life → ~0.577
-        assert!(w > 0.5, "weight within half-life should be > 0.5, got {w}");
-    }
-
-    #[test]
-    fn decay_three_half_lives_near_floor() {
-        let config = DecayConfig { half_life_secs: 3600, floor: 0.1 };
-        let w = decay(10800, &config); // 3× half-life → 0.1 + 0.9×0.125 ≈ 0.2125
-        assert!(w < 0.25, "weight at 3× half-life should be near floor, got {w}");
-    }
-
-    #[test]
-    fn decay_config_none_behavior_unchanged() {
-        // Without decay, filter uses raw relevance_score
-        let filter = MailboxContextFilter::new(100, 0.5, 100);
-        let messages = vec![
-            with_age_secs("a", 0.8, 999999), // high age_secs but no decay applied
-            with_age_secs("b", 0.2, 0),      // low score, dropped
-        ];
-        let result = filter.phase1_relevance(&messages);
-        assert_eq!(result.len(), 1);
-        assert_eq!(result[0].payload["relevance_score"].as_f64().unwrap(), 0.8);
-    }
-
-    #[test]
-    fn decay_drops_old_message_with_low_effective_score() {
-        // half_life=3600, floor=0.1, age=7200 (2 half-lives) → decay≈0.325
-        // score=0.8 → effective=0.8×0.325≈0.26 < threshold=0.3 → dropped
-        let filter = MailboxContextFilter::new(100, 0.3, 100)
-            .with_decay(3600, 0.1);
-        let messages = vec![
-            with_age_secs("a", 0.8, 7200),
-        ];
-        let result = filter.phase1_relevance(&messages);
-        assert_eq!(result.len(), 0, "old message with low effective_score should be dropped");
-    }
-
-    #[test]
-    fn decay_preserves_p0_messages_unaffected() {
-        let filter = MailboxContextFilter::new(100, 0.9, 100)
-            .with_decay(1, 0.0); // extreme decay
-        let mut ta = task_assigned("master");
-        ta.payload = json!({"task": "do something", "age_secs": 999999999});
-        let messages = vec![ta];
-        let result = filter.phase1_relevance(&messages);
-        assert_eq!(result.len(), 1, "TaskAssigned must never be filtered by decay");
-    }
-
-    #[test]
-    fn phase2_non_consecutive_same_sender_not_deduped() {
-        // A → B → A(similar): the second A should NOT be dropped (non-consecutive)
-        let filter = MailboxContextFilter::default();
-        let messages = vec![
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"text": "ping ping ping"})),
-            msg("b", MailboxMessageType::Custom("chat".into()), json!({"text": "other sender"})),
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"text": "ping ping ping"})),
-        ];
-        let result = filter.phase2_dedup(&messages);
-        // Second A is non-consecutive (B is between), must NOT be deduped
-        assert_eq!(result.len(), 3);
-    }
-
-    #[test]
-    fn similarity_large_text_no_oom() {
-        // 4000-char strings must not OOM and must complete quickly
-        let a = "x".repeat(4000);
-        let b = "x".repeat(4000);
-        let sim = similarity(&a, &b);
-        assert_eq!(sim, 1.0); // exact match via hash
-        let c = "y".repeat(4000);
-        let sim2 = similarity(&a, &c);
-        assert_eq!(sim2, 0.0); // hash mismatch → 0.0
-    }
-
-    #[test]
-    fn similarity_length_ratio_fast_path() {
-        let a = "hello";
-        let b = "hello world this is much longer than 20 percent";
-        let sim = similarity(a, b);
-        assert_eq!(sim, 0.0); // length ratio > 1.2x
     }
 
     // ── Full pipeline test ─────────────────────────────────────────────────
