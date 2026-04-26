@@ -7,6 +7,31 @@ use crate::mailbox::{MailboxMessage, MailboxMessageType};
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
+/// Exponential decay configuration for recency weighting.
+#[derive(Debug, Clone)]
+pub struct DecayConfig {
+    /// Half-life in seconds (messages: 3d=259200s, knowledge: 14d=1209600s)
+    pub half_life_secs: u64,
+    /// Minimum weight floor (default 0.1)
+    pub floor: f32,
+}
+
+impl Default for DecayConfig {
+    fn default() -> Self {
+        Self {
+            half_life_secs: 259_200, // 3 days
+            floor: 0.1,
+        }
+    }
+}
+
+/// Compute decay weight: floor + (1 - floor) * 0.5^(age / half_life)
+pub fn decay(age_secs: u64, config: &DecayConfig) -> f32 {
+    let exponent = age_secs as f64 / config.half_life_secs as f64;
+    let weight = config.floor as f64 + (1.0 - config.floor as f64) * 0.5_f64.powf(exponent);
+    weight as f32
+}
+
 #[derive(Debug, Clone)]
 pub struct MailboxContextFilter {
     /// Phase 1: drop messages older than this many positions from end
@@ -16,6 +41,8 @@ pub struct MailboxContextFilter {
     pub relevance_threshold: f32,
     /// Phase 3: sliding window size (number of messages to keep)
     pub window_size: usize,
+    /// Optional decay config; None = original hard-threshold behavior
+    pub decay_config: Option<DecayConfig>,
 }
 
 impl Default for MailboxContextFilter {
@@ -24,6 +51,7 @@ impl Default for MailboxContextFilter {
             max_age_turns: 50,
             relevance_threshold: 0.3,
             window_size: 20,
+            decay_config: None,
         }
     }
 }
@@ -99,7 +127,14 @@ impl MailboxContextFilter {
             max_age_turns,
             relevance_threshold,
             window_size,
+            decay_config: None,
         }
+    }
+
+    /// Builder: enable recency decay with given half-life and floor.
+    pub fn with_decay(mut self, half_life_secs: u64, floor: f32) -> Self {
+        self.decay_config = Some(DecayConfig { half_life_secs, floor });
+        self
     }
 
     pub fn filter(&self, messages: &[MailboxMessage]) -> Vec<MailboxMessage> {
@@ -131,7 +166,18 @@ impl MailboxContextFilter {
                     .and_then(|v| v.as_f64())
                     .map(|v| v as f32)
                     .unwrap_or(1.0);
-                score >= self.relevance_threshold
+                // Apply decay if configured
+                let effective_score = if let Some(ref dc) = self.decay_config {
+                    let age_secs = msg
+                        .payload
+                        .get("age_secs")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or(0);
+                    score * decay(age_secs, dc)
+                } else {
+                    score
+                };
+                effective_score >= self.relevance_threshold
             })
             .map(|(_, m)| m.clone())
             .collect()
@@ -375,6 +421,67 @@ mod tests {
 
         let result = filter.phase3_sliding_window(&messages);
         assert!(result.iter().any(|m| m.payload.get("tool_result").is_some()));
+    }
+
+    // ── Decay tests ────────────────────────────────────────────────────────
+
+    fn with_age_secs(from: &str, score: f64, age_secs: u64) -> MailboxMessage {
+        msg(
+            from,
+            MailboxMessageType::Custom("chat".into()),
+            json!({"relevance_score": score, "age_secs": age_secs, "text": "content"}),
+        )
+    }
+
+    #[test]
+    fn decay_within_half_life_gt_half() {
+        let config = DecayConfig { half_life_secs: 3600, floor: 0.1 };
+        let w = decay(1800, &config); // half of half-life → ~0.577
+        assert!(w > 0.5, "weight within half-life should be > 0.5, got {w}");
+    }
+
+    #[test]
+    fn decay_three_half_lives_near_floor() {
+        let config = DecayConfig { half_life_secs: 3600, floor: 0.1 };
+        let w = decay(10800, &config); // 3× half-life → 0.1 + 0.9×0.125 ≈ 0.2125
+        assert!(w < 0.25, "weight at 3× half-life should be near floor, got {w}");
+    }
+
+    #[test]
+    fn decay_config_none_behavior_unchanged() {
+        // Without decay, filter uses raw relevance_score
+        let filter = MailboxContextFilter::new(100, 0.5, 100);
+        let messages = vec![
+            with_age_secs("a", 0.8, 999999), // high age_secs but no decay applied
+            with_age_secs("b", 0.2, 0),      // low score, dropped
+        ];
+        let result = filter.phase1_relevance(&messages);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].payload["relevance_score"].as_f64().unwrap(), 0.8);
+    }
+
+    #[test]
+    fn decay_drops_old_message_with_low_effective_score() {
+        // half_life=3600, floor=0.1, age=7200 (2 half-lives) → decay≈0.325
+        // score=0.8 → effective=0.8×0.325≈0.26 < threshold=0.3 → dropped
+        let filter = MailboxContextFilter::new(100, 0.3, 100)
+            .with_decay(3600, 0.1);
+        let messages = vec![
+            with_age_secs("a", 0.8, 7200),
+        ];
+        let result = filter.phase1_relevance(&messages);
+        assert_eq!(result.len(), 0, "old message with low effective_score should be dropped");
+    }
+
+    #[test]
+    fn decay_preserves_p0_messages_unaffected() {
+        let filter = MailboxContextFilter::new(100, 0.9, 100)
+            .with_decay(1, 0.0); // extreme decay
+        let mut ta = task_assigned("master");
+        ta.payload = json!({"task": "do something", "age_secs": 999999999});
+        let messages = vec![ta];
+        let result = filter.phase1_relevance(&messages);
+        assert_eq!(result.len(), 1, "TaskAssigned must never be filtered by decay");
     }
 
     // ── Full pipeline test ─────────────────────────────────────────────────
