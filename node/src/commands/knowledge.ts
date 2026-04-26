@@ -12,7 +12,9 @@
  *   删除候选文件（二次确认）+ 自动 --rebuild 索引
  */
 
+import * as crypto from 'crypto';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import * as readline from 'readline';
 
@@ -22,6 +24,53 @@ import { findProjectRoot } from '../utils/process-cleanup.js';
 
 const MAX_INDEX_LINES = 50;
 const GC_DAYS = 90;
+const STATE_FILE = '.eket-index-state.json';
+const STATE_VERSION = 1;
+
+// ── IndexState ─────────────────────────────────────────────────────────────────
+
+export interface IndexFileState {
+  sha256: string;
+  indexed_at: string;
+  entry_count: number;
+}
+
+export interface IndexState {
+  version: number;
+  files: Record<string, IndexFileState>;
+  last_full_rebuild: string | null;
+}
+
+export function emptyState(): IndexState {
+  return { version: STATE_VERSION, files: {}, last_full_rebuild: null };
+}
+
+export function loadState(dir: string): IndexState {
+  const statePath = path.join(dir, STATE_FILE);
+  try {
+    const raw = fs.readFileSync(statePath, 'utf-8');
+    const parsed = JSON.parse(raw) as IndexState;
+    if (parsed.version !== STATE_VERSION) {return emptyState();}
+    return parsed;
+  } catch {
+    return emptyState();
+  }
+}
+
+export function saveState(dir: string, state: IndexState): void {
+  const statePath = path.join(dir, STATE_FILE);
+  const tmp = path.join(os.tmpdir(), `eket-state-${Date.now()}-${process.pid}.json`);
+  fs.writeFileSync(tmp, JSON.stringify(state, null, 2), 'utf-8');
+  // atomic rename-based write (lock-free safe on single-process use)
+  fs.renameSync(tmp, statePath);
+}
+
+export function hashFileContent(absPath: string): string {
+  const content = fs.readFileSync(absPath);
+  return crypto.createHash('sha256').update(content).digest('hex');
+}
+
+
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -117,7 +166,21 @@ export function buildIndexLines(metas: MemoryFileMeta[]): string[] {
 
 // ── index command ─────────────────────────────────────────────────────────────
 
-export async function rebuildIndex(memoryDir: string): Promise<{ lines: number; warned: boolean }> {
+export interface RebuildResult {
+  lines: number;
+  warned: boolean;
+}
+
+export interface IncrementalResult {
+  changed: number;
+  unchanged: number;
+  deleted: number;
+  lines: number;
+  warned: boolean;
+  elapsedMs: number;
+}
+
+export async function rebuildIndex(memoryDir: string): Promise<RebuildResult & { state?: IndexState }> {
   const metas = loadMemoryMeta(memoryDir);
   const lines = buildIndexLines(metas);
 
@@ -126,7 +189,6 @@ export async function rebuildIndex(memoryDir: string): Promise<{ lines: number; 
     console.warn(
       `[WARN] memory index exceeds ${MAX_INDEX_LINES} lines (${lines.length} lines). Run knowledge:gc to prune.`,
     );
-    // Show top 10 oldest candidates
     const oldest = [...metas]
       .sort((a, b) => a.mtime.getTime() - b.mtime.getTime())
       .slice(0, 10);
@@ -150,7 +212,114 @@ export async function rebuildIndex(memoryDir: string): Promise<{ lines: number; 
   const outPath = path.join(memoryDir, 'memory-index.md');
   fs.writeFileSync(outPath, output, 'utf-8');
   console.log(`[knowledge:index] 生成 ${outPath}（${lines.length} 条目）`);
-  return { lines: lines.length, warned };
+
+  // Build new state from all files
+  const now = new Date().toISOString();
+  const newState: IndexState = {
+    version: STATE_VERSION,
+    files: {},
+    last_full_rebuild: now,
+  };
+  for (const m of metas) {
+    newState.files[m.relPath] = {
+      sha256: hashFileContent(m.absPath),
+      indexed_at: now,
+      entry_count: 1,
+    };
+  }
+  saveState(memoryDir, newState);
+
+  return { lines: lines.length, warned, state: newState };
+}
+
+export async function incrementalIndex(memoryDir: string): Promise<IncrementalResult> {
+  const t0 = Date.now();
+  const state = loadState(memoryDir);
+
+  // Scan current files
+  const currentFiles = walkMd(memoryDir).filter(
+    (f) => path.basename(f) !== 'memory-index.md',
+  );
+  const relToAbs = new Map<string, string>();
+  for (const f of currentFiles) {
+    relToAbs.set(path.relative(memoryDir, f), f);
+  }
+
+  const previousPaths = new Set(Object.keys(state.files));
+  const currentPaths = new Set(relToAbs.keys());
+
+  // Detect deleted
+  const deleted: string[] = [];
+  for (const p of previousPaths) {
+    if (!currentPaths.has(p)) {deleted.push(p);}
+  }
+
+  // Detect changed/new
+  const toProcess: string[] = [];
+  let unchanged = 0;
+  for (const relPath of currentPaths) {
+    const absPath = relToAbs.get(relPath)!;
+    const hash = hashFileContent(absPath);
+    const prev = state.files[relPath];
+    if (!prev || prev.sha256 !== hash) {
+      toProcess.push(relPath);
+    } else {
+      unchanged++;
+    }
+  }
+
+  // Apply deletions from state
+  const newStateFiles: Record<string, IndexFileState> = { ...state.files };
+  for (const d of deleted) {
+    delete newStateFiles[d];
+  }
+
+  // Re-index changed/new files (update metadata + state entry)
+  const now = new Date().toISOString();
+  for (const relPath of toProcess) {
+    const absPath = relToAbs.get(relPath)!;
+    const hash = hashFileContent(absPath);
+    newStateFiles[relPath] = {
+      sha256: hash,
+      indexed_at: now,
+      entry_count: 1,
+    };
+  }
+
+  // Rebuild full index output using all current files
+  const metas = loadMemoryMeta(memoryDir);
+  const lines = buildIndexLines(metas);
+  const warned = lines.length > MAX_INDEX_LINES;
+
+  const header = [
+    `<!-- AUTO-GENERATED by knowledge:index — DO NOT EDIT -->`,
+    `<!-- Generated: ${now} | Files: ${metas.length} -->`,
+    ``,
+    `# Memory Index`,
+    ``,
+    `> Format: \`filename: first-line-summary #tag1 #tag2\``,
+    ``,
+  ];
+  const output = [...header, ...lines].join('\n') + '\n';
+  const outPath = path.join(memoryDir, 'memory-index.md');
+  fs.writeFileSync(outPath, output, 'utf-8');
+
+  const newState: IndexState = {
+    version: STATE_VERSION,
+    files: newStateFiles,
+    last_full_rebuild: state.last_full_rebuild,
+  };
+  saveState(memoryDir, newState);
+
+  const elapsedMs = Date.now() - t0;
+  return {
+    changed: toProcess.length,
+    unchanged,
+    deleted: deleted.length,
+    lines: lines.length,
+    warned,
+    elapsedMs,
+  };
 }
 
 // ── gc command ───────────────────────────────────────────────────────────────
@@ -205,17 +374,20 @@ export function registerKnowledge(program: Command): void {
     .description('扫描 confluence/memory/**/*.md，生成 memory-index.md（≤50行）')
     .option('--rebuild', '重建索引', false)
     .action(async (opts: { rebuild: boolean }) => {
-      if (!opts.rebuild) {
-        console.error('[knowledge:index] 需要 --rebuild 选项');
-        process.exit(1);
-      }
       const projectRoot = await findProjectRoot();
       if (!projectRoot) {
         console.error('[knowledge:index] 未找到项目根目录');
         process.exit(1);
       }
       const memoryDir = path.join(projectRoot, 'confluence', 'memory');
-      await rebuildIndex(memoryDir);
+      if (opts.rebuild) {
+        await rebuildIndex(memoryDir);
+      } else {
+        const result = await incrementalIndex(memoryDir);
+        console.log(
+          `[knowledge:index] Indexed ${result.changed} changed files (${result.unchanged} unchanged, ${result.deleted} deleted) in ${result.elapsedMs}ms`,
+        );
+      }
     });
 
   // knowledge:gc
