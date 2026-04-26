@@ -1,4 +1,81 @@
-/// Workflow Engine — 对应 TS: workflow-engine.ts
+// ─── Ticket Lifecycle State Machine (TASK-228) ───────────────────────────────
+
+/// Ticket lifecycle states (distinct from `WorkflowStatus` which is per-step).
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum WorkflowState {
+    Backlog,
+    Analysis,
+    Ready,
+    InProgress,
+    Review,
+    Done,
+    Blocked,
+    Cancelled,
+}
+
+impl std::fmt::Display for WorkflowState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Self::Backlog => "backlog",
+            Self::Analysis => "analysis",
+            Self::Ready => "ready",
+            Self::InProgress => "in_progress",
+            Self::Review => "review",
+            Self::Done => "done",
+            Self::Blocked => "blocked",
+            Self::Cancelled => "cancelled",
+        };
+        write!(f, "{s}")
+    }
+}
+
+impl std::str::FromStr for WorkflowState {
+    type Err = eket_core::error::EketError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "backlog" => Ok(Self::Backlog),
+            "analysis" => Ok(Self::Analysis),
+            "ready" => Ok(Self::Ready),
+            "in_progress" => Ok(Self::InProgress),
+            "review" => Ok(Self::Review),
+            "done" => Ok(Self::Done),
+            "blocked" => Ok(Self::Blocked),
+            "cancelled" => Ok(Self::Cancelled),
+            other => Err(eket_core::error::EketError::InvalidInput(format!("unknown WorkflowState: {other}"))),
+        }
+    }
+}
+
+/// Validates ticket lifecycle transitions.
+pub struct WorkflowTransition;
+
+impl WorkflowTransition {
+    pub fn validate(from: &WorkflowState, to: &WorkflowState) -> Result<(), eket_core::error::EketError> {
+        let valid = matches!(
+            (from, to),
+            (WorkflowState::Backlog, WorkflowState::Analysis)
+                | (WorkflowState::Analysis, WorkflowState::Ready)
+                | (WorkflowState::Ready, WorkflowState::InProgress)
+                | (WorkflowState::InProgress, WorkflowState::Review)
+                | (WorkflowState::Review, WorkflowState::Done)
+                | (WorkflowState::Review, WorkflowState::InProgress)
+                | (WorkflowState::InProgress, WorkflowState::Blocked)
+                | (WorkflowState::Blocked, WorkflowState::Ready)
+                | (_, WorkflowState::Cancelled)
+        );
+        if valid {
+            Ok(())
+        } else {
+            Err(eket_core::error::EketError::InvalidTransition {
+                from: from.to_string(),
+                to: to.to_string(),
+            })
+        }
+    }
+}
+
+// ─── Workflow Engine — 对应 TS: workflow-engine.ts
 ///
 /// tokio async 状态机实现
 /// 状态：pending → running → (paused ↔ running) → completed / failed

@@ -10,6 +10,8 @@ use clap::Args;
 use eket_core::{
     config::EketConfig,
     db::{create_pool, SqliteClient},
+    guardrail::GuardrailRunner,
+    middleware_pipeline::{Pipeline, PipelineCtx},
     ticket::{find_ticket, scan_todo_tickets, TicketFile},
     types::{ExecutionCheckpoint, TicketStatus},
 };
@@ -288,6 +290,41 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
 
     // Determine rules path (SLAVER-RULES.md)
     let rules_path = find_rules_path(&project_root);
+
+    // Run Pipeline with GuardrailMiddleware (TASK-233)
+    // Build pipeline: always include default claim guardrails; optionally add SlaverRulesGuardrail
+    let mut pipeline = Pipeline::new()
+        .add(crate::guardrail_middleware::GuardrailMiddleware::new(
+            GuardrailRunner::default_for_claim(),
+        ));
+
+    if !rules_path.is_empty() {
+        if let Some(slaver_guardrail) =
+            crate::slaver_rules::load_slaver_rules_guardrail(&rules_path)
+        {
+            let inner_runner = eket_core::guardrail::GuardrailRunner::from_checks(vec![
+                Box::new(slaver_guardrail),
+            ]);
+            pipeline = pipeline.add(crate::guardrail_middleware::GuardrailMiddleware::new(
+                inner_runner,
+            ));
+        }
+    }
+
+    let mut pipe_ctx = PipelineCtx::new("claim");
+    pipe_ctx.ticket_id = Some(ticket.id.clone());
+    pipe_ctx.slaver_id = Some(slaver_id.clone());
+    if let Err(e) = pipeline.run_pre(&mut pipe_ctx).await {
+        tracing::warn!("Pipeline pre() error: {e}");
+    }
+    if let Some(violations) = pipe_ctx.metadata.get("guardrail_violations") {
+        if let Some(arr) = violations.as_array() {
+            if !arr.is_empty() {
+                tracing::warn!("Guardrail violations: {:?}", arr);
+            }
+        }
+    }
+    let _ = pipeline.run_post(&mut pipe_ctx).await;
 
     // Output JSON (compatible with TS version — includes type, assignee, worktree_path, rules_path)
     let report = json!({

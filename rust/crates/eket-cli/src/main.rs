@@ -3,6 +3,8 @@ use clap::{Parser, Subcommand};
 use tracing_subscriber::{fmt, EnvFilter};
 
 mod commands;
+pub mod slaver_rules;
+pub mod guardrail_middleware;
 
 #[derive(Parser)]
 #[command(
@@ -118,6 +120,26 @@ enum Commands {
     /// Show workflow definition and step budgets
     #[command(name = "workflow:status")]
     WorkflowStatus(commands::workflow_status::WorkflowStatusArgs),
+
+    /// Scan tickets dir and index metadata into SQLite ticket_index table
+    #[command(name = "ticket:index")]
+    TicketIndex(commands::ticket_index::TicketIndexArgs),
+
+    /// Analyze ticket dependencies via TF-IDF similarity
+    #[command(name = "dependency:analyze")]
+    DependencyAnalyze(commands::dependency_analyze::DependencyAnalyzeArgs),
+
+    /// Set slaver role (writes to .eket/slaver-role + SQLite)
+    #[command(name = "slaver:set-role")]
+    SlaverSetRole(commands::slaver_set_role::SlaverSetRoleArgs),
+
+    /// Extract skills/domain from active ticket context
+    #[command(name = "skill:extract")]
+    SkillExtract,
+
+    /// List alerts from SQLite alerts table
+    #[command(name = "alerts:list")]
+    AlertsList,
 }
 
 #[tokio::main]
@@ -164,5 +186,10 @@ async fn main() -> Result<()> {
         }
         Commands::ProjectStatus(args) => commands::project_status::run(args).await,
         Commands::WorkflowStatus(args) => commands::workflow_status::run(args).await,
+        Commands::TicketIndex(args) => commands::ticket_index::run(args).await,
+        Commands::DependencyAnalyze(args) => commands::dependency_analyze::run(args).await,
+        Commands::SlaverSetRole(args) => commands::slaver_set_role::run(args).await,
+        Commands::SkillExtract => commands::skill_extract::run().await,
+        Commands::AlertsList => commands::alerts_list::run().await,
     }
 }

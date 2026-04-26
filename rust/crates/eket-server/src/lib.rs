@@ -3,6 +3,7 @@
 
 pub mod auth;
 pub mod hooks;
+pub mod ws;
 
 use std::convert::Infallible;
 use std::path::PathBuf;
@@ -26,6 +27,7 @@ use tracing::info;
 
 use eket_core::dag::parse_tickets_dag;
 use eket_core::db::{create_pool, SqliteClient};
+use eket_engine::ticket_engine::WorkflowEvent;
 
 // ─── SSE EventType ────────────────────────────────────────────────────────────
 
@@ -90,7 +92,6 @@ impl EventBus {
     }
 
     pub fn publish(&self, msg: SseMessage) {
-        // ignore send error (no subscribers)
         let _ = self.tx.send(msg);
     }
 
@@ -108,6 +109,8 @@ pub struct AppState {
     pub start_time: std::time::Instant,
     pub event_bus: Arc<EventBus>,
     pub hook_registry: Arc<hooks::HookRegistry>,
+    /// Broadcast sender for WorkflowEvent — WS subscribers call .subscribe()
+    pub event_tx: broadcast::Sender<WorkflowEvent>,
 }
 
 // ─── SSE query params ─────────────────────────────────────────────────────────
@@ -413,7 +416,6 @@ async fn sse_handler(
         match msg {
             Ok(m) => {
                 let event_name = m.event_type.as_str();
-                // prefix filter: e.g. "task_*" matches any event starting with "task_"
                 if let Some(ref prefix) = filter_prefix {
                     let pat = prefix.trim_end_matches('*');
                     if !event_name.starts_with(pat) {
@@ -422,7 +424,6 @@ async fn sse_handler(
                 }
                 Some(Ok(Event::default().event(event_name).data(m.data)))
             }
-            // lagged receiver — skip
             Err(_) => None,
         }
     });
@@ -452,6 +453,7 @@ pub fn build_router(state: AppState, auth_config: Arc<auth::AuthConfig>) -> Rout
         .route("/ready", get(ready_handler))
         .route("/health", get(health))
         .route("/sse/events", get(sse_handler))
+        .route("/ws", get(ws::ws_handler))
         .route("/api/v1/tasks", get(list_tasks))
         .route("/api/v1/tasks/:id", get(get_task))
         .route("/api/v1/tasks/:id/status", patch(update_task_status))
@@ -482,12 +484,14 @@ pub async fn start(port: u16, db_path: PathBuf, tickets_dir: PathBuf) -> Result<
     let pool = create_pool(&db_path_str)?;
     let db = Arc::new(SqliteClient::new(pool));
     let event_bus = EventBus::new(256);
+    let (event_tx, _) = broadcast::channel::<WorkflowEvent>(256);
     let state = AppState {
         db,
         tickets_dir,
         start_time: std::time::Instant::now(),
         event_bus,
         hook_registry: hooks::HookRegistry::new(),
+        event_tx,
     };
     let auth_token = std::env::var("EKET_AUTH_TOKEN").ok();
     if auth_token.is_some() {
@@ -518,12 +522,14 @@ mod tests {
         let db_path = tmp.path().join("test.db");
         let pool = create_pool(db_path.to_str().unwrap()).expect("db");
         let db = Arc::new(SqliteClient::new(pool));
+        let (event_tx, _) = broadcast::channel(16);
         AppState {
             db,
             tickets_dir: tmp.path().to_path_buf(),
             start_time: std::time::Instant::now(),
             event_bus: EventBus::new(256),
             hook_registry: hooks::HookRegistry::new(),
+            event_tx,
         }
     }
 
@@ -620,5 +626,79 @@ mod tests {
             .unwrap();
         let resp: Response = app.oneshot(req).await.unwrap();
         assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+    }
+
+    // ─── WebSocket tests ─────────────────────────────────────────────────────
+
+    #[tokio::test]
+    async fn ws_handshake() {
+        use std::time::Duration;
+        use tokio::net::TcpListener;
+
+        let tmp = TempDir::new().unwrap();
+        let app = build_router(make_state(&tmp), no_auth());
+
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+
+        tokio::spawn(async move {
+            axum::serve(listener, app).await.unwrap();
+        });
+
+        tokio::time::sleep(Duration::from_millis(50)).await;
+
+        let url = format!("ws://127.0.0.1:{}/ws", addr.port());
+        // connect_async performs the full WS handshake (101 Switching Protocols)
+        let result = tokio_tungstenite::connect_async(&url).await;
+        assert!(result.is_ok(), "WS handshake failed: {result:?}");
+    }
+
+    #[tokio::test]
+    async fn ws_event_on_transition() {
+        use std::time::Duration;
+        use tokio::net::TcpListener;
+        use tokio_tungstenite::tungstenite::Message as TungMessage;
+
+        let tmp = TempDir::new().unwrap();
+        let state = make_state(&tmp);
+        let tx = state.event_tx.clone();
+        let app = build_router(state, no_auth());
+
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+
+        tokio::spawn(async move {
+            axum::serve(listener, app).await.unwrap();
+        });
+
+        tokio::time::sleep(Duration::from_millis(50)).await;
+
+        let url = format!("ws://127.0.0.1:{}/ws", addr.port());
+        let (mut ws_stream, _) =
+            tokio_tungstenite::connect_async(&url).await.expect("ws connect");
+
+        let event = WorkflowEvent {
+            ticket_id: "TASK-234".to_string(),
+            from: eket_engine::workflow::WorkflowState::Backlog,
+            to: eket_engine::workflow::WorkflowState::Analysis,
+            timestamp: "2026-04-26T00:00:00Z".to_string(),
+        };
+        tx.send(event).unwrap();
+
+        let msg = tokio::time::timeout(
+            Duration::from_secs(1),
+            futures_util::StreamExt::next(&mut ws_stream),
+        )
+        .await
+        .expect("timeout waiting for ws message")
+        .unwrap()
+        .unwrap();
+
+        let text = match msg {
+            TungMessage::Text(t) => t.to_string(),
+            other => panic!("expected text message, got: {other:?}"),
+        };
+        let v: serde_json::Value = serde_json::from_str(&text).unwrap();
+        assert_eq!(v["ticket_id"], "TASK-234");
     }
 }

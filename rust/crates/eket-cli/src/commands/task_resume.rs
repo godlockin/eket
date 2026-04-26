@@ -1,17 +1,19 @@
-/// task:resume — Resume a ticket from execution checkpoint
+/// task:resume — Resume a ticket from execution checkpoint (TASK-229)
+///
+/// Uses `TicketEngine::recover()` to query SQLite execution_checkpoints
+/// and returns a JSON `RecoveryResult`.
 use anyhow::Result;
 use clap::Args;
-use eket_core::db::{create_pool, SqliteClient};
-use serde_json::json;
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
+use std::sync::Arc;
+
+use eket_engine::ticket_engine::{RecoveryResult, TicketEngine};
 
 #[derive(Args, Debug)]
 pub struct TaskResumeArgs {
-    /// Ticket ID to resume
+    /// Ticket ID to resume (e.g. TASK-042)
     pub ticket_id: String,
-
-    /// Slaver ID to look up checkpoint for
-    #[arg(long)]
-    pub slaver_id: Option<String>,
 
     /// SQLite DB path
     #[arg(long)]
@@ -19,96 +21,102 @@ pub struct TaskResumeArgs {
 }
 
 pub async fn run(args: TaskResumeArgs) -> Result<()> {
-    let db_path = args
-        .db_path
-        .clone()
-        .unwrap_or_else(|| ".eket/eket.db".to_string());
+    let db_path = args.db_path.clone().unwrap_or_else(|| ".eket/eket.db".to_string());
 
-    let slaver_id = args.slaver_id.clone().unwrap_or_else(|| {
-        std::env::var("EKET_SLAVER_ID").unwrap_or_else(|_| "unknown".to_string())
-    });
+    let pool = build_pool(&db_path)?;
+    let engine = TicketEngine::new(pool);
 
-    let report = match create_pool(&db_path) {
-        Err(e) => json!({
-            "status": "error",
-            "ticket_id": args.ticket_id,
-            "error": format!("db error: {e}"),
-        }),
-        Ok(pool) => {
-            let client = SqliteClient::new(pool);
-            match client.get_checkpoint(&args.ticket_id, &slaver_id) {
-                Err(e) => json!({
-                    "status": "error",
-                    "ticket_id": args.ticket_id,
-                    "error": format!("{e}"),
-                }),
-                Ok(None) => json!({
-                    "status": "not_found",
-                    "ticket_id": args.ticket_id,
-                    "checkpoint": null,
-                }),
-                Ok(Some(cp)) => json!({
-                    "status": "resumable",
-                    "ticket_id": args.ticket_id,
-                    "checkpoint": {
-                        "ticket_id": cp.ticket_id,
-                        "slaver_id": cp.slaver_id,
-                        "phase": cp.phase,
-                        "session_id": cp.session_id,
-                        "metadata": cp.metadata,
-                        "created_at": cp.created_at.to_rfc3339(),
-                        "updated_at": cp.updated_at.to_rfc3339(),
-                    }
-                }),
-            }
-        }
-    };
+    let result: RecoveryResult = engine
+        .recover(&args.ticket_id)
+        .await
+        .map_err(|e| anyhow::anyhow!("{e}"))?;
 
-    println!("{}", serde_json::to_string_pretty(&report)?);
+    println!("{}", serde_json::to_string_pretty(&result)?);
     Ok(())
+}
+
+fn build_pool(db_path: &str) -> Result<Arc<Pool<SqliteConnectionManager>>> {
+    use std::path::Path;
+    if db_path != ":memory:" {
+        if let Some(parent) = Path::new(db_path).parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+    }
+    let manager = SqliteConnectionManager::file(db_path)
+        .with_flags(
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE
+                | rusqlite::OpenFlags::SQLITE_OPEN_CREATE
+                | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+        )
+        .with_init(|conn| {
+            conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")?;
+            Ok(())
+        });
+    let pool = Pool::builder().max_size(4).build(manager)?;
+    Ok(Arc::new(pool))
 }
 
 #[cfg(test)]
 mod tests {
-    use eket_core::{
-        db::{create_pool, SqliteClient},
-        types::ExecutionCheckpoint,
-    };
+    use super::*;
+    use chrono::Utc;
+    use r2d2_sqlite::SqliteConnectionManager;
     use tempfile::tempdir;
 
-    #[test]
-    fn resume_not_found() {
-        let dir = tempdir().unwrap();
-        let db_path = dir.path().join("test.db").to_string_lossy().to_string();
-        let pool = create_pool(&db_path).unwrap();
-        let client = SqliteClient::new(pool);
-
-        let result = client.get_checkpoint("TASK-999", "slaver_1").unwrap();
-        assert!(result.is_none());
+    fn make_pool_with_checkpoints(db_path: &str) -> Arc<Pool<SqliteConnectionManager>> {
+        let pool = build_pool(db_path).unwrap();
+        {
+            let conn = pool.get().unwrap();
+            conn.execute_batch(
+                "CREATE TABLE IF NOT EXISTS execution_checkpoints (
+                    ticket_id  TEXT NOT NULL,
+                    slaver_id  TEXT NOT NULL,
+                    phase      TEXT NOT NULL,
+                    session_id TEXT,
+                    metadata   TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (ticket_id, slaver_id)
+                )",
+            )
+            .unwrap();
+        }
+        pool
     }
 
-    #[test]
-    fn resume_with_checkpoint() {
+    #[tokio::test]
+    async fn resume_not_found() {
         let dir = tempdir().unwrap();
         let db_path = dir.path().join("test.db").to_string_lossy().to_string();
-        let pool = create_pool(&db_path).unwrap();
-        let client = SqliteClient::new(pool);
+        let pool = make_pool_with_checkpoints(&db_path);
+        let engine = TicketEngine::new(pool);
 
-        let cp = ExecutionCheckpoint {
-            ticket_id: "TASK-042".to_string(),
-            slaver_id: "slaver_1".to_string(),
-            phase: "analysis".to_string(),
-            session_id: Some("sess-abc".to_string()),
-            metadata: Some(serde_json::json!({"step": 2})),
-            created_at: chrono::Utc::now(),
-            updated_at: chrono::Utc::now(),
-        };
-        client.save_checkpoint(&cp).unwrap();
+        let result = engine.recover("TASK-999").await.unwrap();
+        assert!(!result.recovered);
+        assert!(result.state.is_none());
+    }
 
-        let found = client.get_checkpoint("TASK-042", "slaver_1").unwrap();
-        assert!(found.is_some());
-        let found = found.unwrap();
-        assert_eq!(found.phase, "analysis");
-        assert_eq!(found.session_id, Some("sess-abc".to_string()));
+    #[tokio::test]
+    async fn resume_with_checkpoint() {
+        let dir = tempdir().unwrap();
+        let db_path = dir.path().join("test.db").to_string_lossy().to_string();
+        let pool = make_pool_with_checkpoints(&db_path);
+
+        {
+            let conn = pool.get().unwrap();
+            let now = Utc::now().to_rfc3339();
+            conn.execute(
+                "INSERT INTO execution_checkpoints \
+                 (ticket_id, slaver_id, phase, session_id, metadata, created_at, updated_at) \
+                 VALUES (?1, ?2, ?3, NULL, NULL, ?4, ?5)",
+                rusqlite::params!["TASK-042", "slaver_1", "in_progress", now, now],
+            )
+            .unwrap();
+        }
+
+        let engine = TicketEngine::new(pool);
+        let result = engine.recover("TASK-042").await.unwrap();
+        assert!(result.recovered);
+        assert!(result.reason.contains("in_progress"));
     }
 }
