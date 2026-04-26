@@ -16,3 +16,4 @@ pub mod master_heartbeat;
 pub mod master_poll;
 pub mod db_commands;
 pub mod project_status;
+pub mod workflow_status;
