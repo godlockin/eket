@@ -29,8 +29,9 @@ import { registerHandoff } from './commands/handoff.js';
 import { runInitWizard } from './commands/init-wizard.js';
 import { runInteractiveStartCLI } from './commands/interactive-start.js';
 import { registerKnowledge } from './commands/knowledge.js';
-import { registerKnowledgeIndex } from './commands/knowledge-index.js';
-import { registerKnowledgeSearch } from './commands/knowledge-search.js';
+// registerKnowledgeIndex/Search superseded by registerKnowledge (TASK-210)
+// import { registerKnowledgeIndex } from './commands/knowledge-index.js';
+// import { registerKnowledgeSearch } from './commands/knowledge-search.js';
 import { registerMasterHeartbeat } from './commands/master-heartbeat.js';
 import { registerMasterPoll } from './commands/master-poll.js';
 import { registerRecommend } from './commands/recommend.js';
@@ -933,9 +934,9 @@ Related Commands:
   // 注册 skill:extract / skill:list 命令（Skill 自动生成）
   registerSkillExtractCommand(program);
 
-  // 注册知识库检索命令（RAG, TASK-074）
-  registerKnowledgeIndex(program);
-  registerKnowledgeSearch(program);
+  // 注册知识库检索命令（RAG, TASK-074 → superseded by TASK-210）
+  // registerKnowledgeIndex(program);  // conflicts with registerKnowledge
+  // registerKnowledgeSearch(program); // conflicts with registerKnowledge
   // 注册知识库索引 + GC 命令（TASK-210）
   registerKnowledge(program);
 

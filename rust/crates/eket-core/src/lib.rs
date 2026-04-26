@@ -13,6 +13,7 @@ pub mod queue;
 pub mod redis;
 pub mod registry;
 pub mod saga;
+pub mod skill_index;
 pub mod ticket;
 pub mod tracing;
 pub mod types;
