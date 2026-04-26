@@ -87,11 +87,7 @@ export {
   LoggingInterceptor,
   ValidationInterceptor,
   CachingInterceptor,
-  // 内置 Skills
-  RequirementDecompositionSkill,
-  FrontendDevelopmentSkill,
-  UnitTestSkill,
-  DockerBuildSkill,
+  // 内置 Skills (已移除 — skill 实现体已删除，仅保留 JSON 元数据)
 } from './skills/index.js';
 
 // ============================================================================
