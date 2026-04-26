@@ -1,8 +1,8 @@
-# 文档债 / 技术债清理 — 实战方法论
+# 代码库与文档维护 — 实战方法论
 
-**创建时间**: 2026-04-15
-**来源**: EKET Round 23 实战经验（PR #49~#54）
-**适用范围**: 所有长期迭代项目的文档/技术债清理
+**更新**: 2026-04-26（合并 doc-reorganization.md）
+**来源**: EKET Round 23~24 实战经验（PR #49~#54）
+**适用范围**: 所有长期迭代项目的文档/技术债清理与重组
 
 ---
 
@@ -200,4 +200,41 @@ ls outbox/review_requests/                               # 过期 review request
 **参见**：
 - [EKET-PROJECT-HYGIENE.md](EKET-PROJECT-HYGIENE.md) — EKET 特有卫生规则
 - [MULTI-AGENT-COLLAB-LESSONS.md](MULTI-AGENT-COLLAB-LESSONS.md) — 多智能体协作经验
+<<<<<<<< HEAD:confluence/memory/DOC-DEBT-CLEANUP.md
 - [BORROWED-WISDOM.md](BORROWED-WISDOM.md) — 完整知识库索引
+========
+- [BORROWED-WISDOM.md](../research/borrowed-wisdom.md) — 完整知识库索引
+
+---
+
+## 8. 大规模文档重组附加经验 {#reorganization}
+
+*来源：Round 23~24，docs/ 语义化重组（-33,875行）+ confluence/memory/ 结构化*
+
+### 8.1 两步法：先结构重组，后内容审计
+
+- Step 1：只移动文件/重命名目录（`git mv`），不修改任何内容
+- Step 2：审计内容质量（冗余/过时/缺失），做增删改
+- 两步合并 = 无法判断文件消失是"移走了"还是"删掉了"
+
+### 8.2 单一权威源原则
+
+规范正文只存一份（如 `EKET-PROTOCOL.md` 在 `template/docs/`）。
+`docs/reference/` 存放导航文档（≤20 行），指向权威源，**不维护副本**。
+副本必然落后于原文，且搜索时无法判断哪个最新。
+
+### 8.3 避免存根文件遗留空 TODO
+
+- 症状：建了文件，只有标题和 `TODO`，下一个 instance 不知是占位还是遗忘
+- 规则：**要么当场完成，要么不建文件**；必须建时写 `STATUS: PLACEHOLDER，预计完成于 [ticket]`
+- 检查命令：`grep -r "^TODO\|^## TODO" confluence/memory/ --include="*.md" -l`
+
+### 8.4 数字编号目录反模式
+
+`docs/01/`、`docs/02/` 在搜索结果中不可读，目录名应直接表达语义：
+`architecture/`、`reference/`、`guides/`。
+
+### 8.5 新建目录必须有 README
+
+哪怕 2 行，说明"放什么 / 不放什么"。无 README 的目录 = 隐式规则 = 下次错放文件。
+>>>>>>>> 09c0c1b2f (docs: 整理 confluence/memory/ — 合并碎片文件 + 重建 memory-index):confluence/memory/codebase-maintenance.md
