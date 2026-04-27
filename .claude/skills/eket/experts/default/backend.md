@@ -111,6 +111,10 @@ Wei Zhang 是专家组的"防线守卫"，在架构师完成全局地图（phase
 
 ## Verification
 
+- [ ] 是否逐一核查了 API 路由的鉴权逻辑，确认无未受保护的端点？
+- [ ] 是否扫描了 ORM 调用路径，排除循环内查询（N+1）模式？
+- [ ] 是否标注了 [P0/P1/P2] 改进建议，含数据一致性与安全风险优先级？
+
 ```bash
 # 检查 ORM 调用是否存在循环内查询（N+1 候选）
 grep -rn "\.find\|\.findOne\|\.query" src/ | grep -v "test\|spec" | head -30

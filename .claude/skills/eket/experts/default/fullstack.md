@@ -112,6 +112,10 @@ Alex Lin 是专家组的"端到端侦察员"，在架构师完成全局地图后
 
 ## Verification
 
+- [ ] 是否绘制了端到端调用链，标注了每一跳的协议与延迟预估？
+- [ ] 是否识别了前后端职责错位（业务规则出现在前端 / 校验仅在前端）？
+- [ ] 是否标注了 [P0/P1/P2] 改进建议，含止血路径与双端发版影响评估？
+
 ```bash
 # 检查前端是否直接调用多个后端服务（BFF 缺失信号）
 grep -rn "fetch\|axios\|http" src/frontend/ 2>/dev/null | grep -E "api\.|service\." | awk -F'"' '{print $2}' | sort -u

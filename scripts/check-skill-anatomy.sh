@@ -170,9 +170,9 @@ check_file() {
   if [ "$is_minimal" = "0" ]; then
     local fm_count
     fm_count=$(awk '
-      /^---$/ { block++; next }
-      block == 1 && /^(description|rationalizations_count):/ { c++ }
-      block >= 2 { exit }
+      /^```yaml/ { block=1; next }
+      block && /^```/ { block=0; next }
+      block && /^(description|rationalizations_count):/ { c++ }
       END { print c+0 }
     ' "$file")
     if [ "$fm_count" -lt 2 ]; then

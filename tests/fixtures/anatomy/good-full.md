@@ -1,8 +1,8 @@
----
+```yaml
 id: fixture.good.001
 description: 用于 check-skill-anatomy --self-test 的完整通过 fixture
 rationalizations_count: 3
----
+```
 
 ## Overview
 

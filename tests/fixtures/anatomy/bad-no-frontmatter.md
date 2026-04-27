@@ -1,7 +1,7 @@
----
+```yaml
 id: fixture.bad-no-frontmatter.001
 some_other_field: present
----
+```
 
 ## Overview
 
