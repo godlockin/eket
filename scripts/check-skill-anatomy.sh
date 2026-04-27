@@ -88,7 +88,7 @@ if [ ${#FILES[@]} -eq 0 ] && (( ALL_SCAN == 0 )); then
   exit 2
 fi
 
-for f in "${FILES[@]}"; do
+for f in "${FILES[@]+"${FILES[@]}"}"; do
   if [ ! -f "$f" ]; then
     echo "${RED}✗${NC} 文件不存在: $f" >&2
     exit 2
