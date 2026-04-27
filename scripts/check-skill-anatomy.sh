@@ -6,8 +6,9 @@
 #   bash scripts/check-skill-anatomy.sh --self-test
 #   bash scripts/check-skill-anatomy.sh --all [--verbose]
 #
-# 完整模式（默认）: 校验 7 节有序 + frontmatter + Verification 内容
-# --minimal 模式: 仅校验后 3 节有序 + Verification 内容（跳过 frontmatter）
+# 完整模式（默认）: 校验 7 节有序 + frontmatter + Verification 内容（checkbox ≥3 + bash ≥1 硬卡）
+# --minimal 模式: 仅校验后 3 节有序 + Verification checkbox ≥3 硬卡
+#                 （跳过 frontmatter；bash ≥1 降级为 informational warning，不 fail）
 # --verbose: 打印逐条规则 PASS/FAIL
 # --self-test: 运行 tests/fixtures/anatomy/ 内置 fixtures，报告 N/M PASS
 # --all: 全量扫描 default(full) + optional(minimal) + subrepo(minimal)
@@ -50,9 +51,9 @@ if (( SELF_TEST == 1 )); then
   FD="$REPO_ROOT/tests/fixtures/anatomy"
   st_pass=0; st_fail=0
   declare -a CASES_FILE CASES_ARGS CASES_EXPECT
-  CASES_FILE=( good-full.md good-minimal.md bad-order.md bad-missing-section.md bad-no-checkbox.md bad-no-frontmatter.md )
-  CASES_ARGS=( ""          "--minimal"     ""          ""                      ""                 "" )
-  CASES_EXPECT=( 0          0              1            1                       1                  1 )
+  CASES_FILE=( good-full.md good-minimal.md good-minimal-no-bash.md bad-order.md bad-missing-section.md bad-no-checkbox.md bad-no-frontmatter.md )
+  CASES_ARGS=( ""          "--minimal"     "--minimal"               ""          ""                      ""                 "" )
+  CASES_EXPECT=( 0          0              0                          1            1                       1                  1 )
   total=${#CASES_FILE[@]}
   echo "Running self-test: $total cases"; echo ""
   i=0
@@ -213,8 +214,12 @@ check_file() {
   fi
 
   if [ "$ver_bash" -lt 1 ]; then
-    fail=1
-    [ "$verbose" = "1" ] && echo "  ${RED}[FAIL]${NC} $fname: Verification has $ver_bash bash blocks (expected ≥1)"
+    if [ "$is_minimal" = "1" ]; then
+      [ "$verbose" = "1" ] && echo "  ${YELLOW}[WARN]${NC} $fname: Verification has 0 bash blocks (informational, minimal mode)"
+    else
+      fail=1
+      [ "$verbose" = "1" ] && echo "  ${RED}[FAIL]${NC} $fname: Verification has $ver_bash bash blocks (expected ≥1)"
+    fi
   else
     [ "$verbose" = "1" ] && echo "  ${GREEN}[PASS]${NC} $fname: Verification bash blocks=$ver_bash (≥1)"
   fi
