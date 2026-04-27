@@ -40,6 +40,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 
 ---
 
+## 技能/专家文档统一 7 节式规范
+
+所有 `.claude/skills/eket/experts/` 下的专家文件遵循统一 anatomy（详见 `template/docs/SKILL-ANATOMY-TEMPLATE.md`）：
+
+| 文件类型 | 要求节数 | 校验命令 |
+|---------|---------|---------|
+| default 专家（7 位） | 7 节 full（含 frontmatter）| `bash scripts/check-skill-anatomy.sh <file>` |
+| optional 专家（53 位）| 3 节 minimal | `bash scripts/check-skill-anatomy.sh --minimal <file>` |
+| 新建 Skill 文件 | 7 节 full | `bash scripts/check-skill-anatomy.sh <file>` |
+
+**核心节序**（full）：Overview → When to Use → When NOT to Use → Process → Common Rationalizations → Red Flags → Verification。
+**minimal 模式**：仅强制后 3 节（Common Rationalizations / Red Flags / Verification），用于 codemod 注入的 TODO skeleton。
+
+**关键命令**：
+
+```bash
+# 单文件校验
+bash scripts/check-skill-anatomy.sh .claude/skills/eket/experts/default/architect.md
+
+# 全量扫描（default + optional + subrepo）
+bash scripts/check-skill-anatomy.sh --all
+
+# 给 53 位 optional 专家批量注入 3 节 TODO 骨架（INDEX.md 自动排除）
+bash scripts/codemod-inject-3sections.sh --exclude=INDEX.md \
+  ~/working/sourcecode/research/eket-experts-extended/experts
+```
+
+**索引文件**：`default/INDEX.md` 与 `optional/INDEX.md` 不参与 anatomy-check（不是专家 persona），脚本会自动跳过。
+
+CI 联动：`.github/workflows/anatomy-check.yml` 在 PR 上跑 self-test、default 全量、`--all` informational 三项。
+
+---
+
 ## EKET Agent Framework
 
 本项目使用 **EKET Agent Framework** 进行 AI 驱动的开发。Claude Code 作为智能体实例在此系统中运行。

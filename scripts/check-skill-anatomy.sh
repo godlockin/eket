@@ -4,11 +4,15 @@
 # 用法:
 #   bash scripts/check-skill-anatomy.sh [--minimal] [--verbose] <file>...
 #   bash scripts/check-skill-anatomy.sh --self-test
+#   bash scripts/check-skill-anatomy.sh --all [--verbose]
 #
 # 完整模式（默认）: 校验 7 节有序 + frontmatter + Verification 内容
 # --minimal 模式: 仅校验后 3 节有序 + Verification 内容（跳过 frontmatter）
 # --verbose: 打印逐条规则 PASS/FAIL
 # --self-test: 运行 tests/fixtures/anatomy/ 内置 fixtures，报告 N/M PASS
+# --all: 全量扫描 default(full) + optional(minimal) + subrepo(minimal)
+#        subrepo 不可达走 [SKIP]（非 exit 1），CI 环境鲁棒
+#        INDEX.md 自动排除（不应 anatomy-check）
 #
 # 退出码:
 #   0   全部通过
@@ -27,6 +31,7 @@ NC=$'\033[0m'
 MINIMAL=0
 VERBOSE=0
 SELF_TEST=0
+ALL_SCAN=0
 FILES=()
 
 for arg in "$@"; do
@@ -34,6 +39,7 @@ for arg in "$@"; do
     --minimal)   MINIMAL=1 ;;
     --verbose)   VERBOSE=1 ;;
     --self-test) SELF_TEST=1 ;;
+    --all)       ALL_SCAN=1 ;;
     --*)         echo "${RED}✗${NC} 未知参数: $arg" >&2; exit 2 ;;
     *)           FILES+=("$arg") ;;
   esac
@@ -77,7 +83,7 @@ if (( SELF_TEST == 1 )); then
 fi
 
 # ── validate args ──────────────────────────────────────────────────────────────
-if [ ${#FILES[@]} -eq 0 ]; then
+if [ ${#FILES[@]} -eq 0 ] && (( ALL_SCAN == 0 )); then
   echo "${RED}✗${NC} 用法: $0 [--minimal] [--verbose] <file>..." >&2
   exit 2
 fi
@@ -215,6 +221,74 @@ check_file() {
 
   return $fail
 }
+
+# ── --all scan ─────────────────────────────────────────────────────────────────
+if (( ALL_SCAN == 1 )); then
+  default_dir="$REPO_ROOT/.claude/skills/eket/experts/default"
+  optional_dir="$REPO_ROOT/.claude/skills/eket/experts/optional"
+  subrepo_dir="$REPO_ROOT/../eket-experts-extended/experts"
+
+  default_pass=0; default_total=0
+  optional_pass=0; optional_total=0
+
+  echo "═══ --all 扫描 ═══"; echo ""
+  echo "[default] $default_dir"
+  if [ -d "$default_dir" ]; then
+    for f in "$default_dir"/*.md; do
+      [ -f "$f" ] || continue
+      [ "$(basename "$f")" = "INDEX.md" ] && continue
+      default_total=$((default_total + 1))
+      if check_file "$f" "0" "0" >/dev/null 2>&1; then
+        default_pass=$((default_pass + 1))
+        echo "  ${GREEN}✓${NC} $(basename "$f")"
+      else
+        echo "  ${RED}✗${NC} $(basename "$f")"
+      fi
+    done
+  else
+    echo "  [SKIP] default dir not found"
+  fi
+
+  echo ""; echo "[optional] $optional_dir"
+  if [ -d "$optional_dir" ]; then
+    while IFS= read -r f; do
+      [ "$(basename "$f")" = "INDEX.md" ] && continue
+      optional_total=$((optional_total + 1))
+      if check_file "$f" "1" "0" >/dev/null 2>&1; then
+        optional_pass=$((optional_pass + 1))
+      else
+        echo "  ${RED}✗${NC} ${f#$optional_dir/}"
+      fi
+    done < <(find "$optional_dir" -name "*.md" -type f | sort)
+  else
+    echo "  [SKIP] optional dir not found"
+  fi
+
+  echo ""; echo "[subrepo] $subrepo_dir"
+  if [ -d "$subrepo_dir" ]; then
+    while IFS= read -r f; do
+      [ "$(basename "$f")" = "INDEX.md" ] && continue
+      optional_total=$((optional_total + 1))
+      if check_file "$f" "1" "0" >/dev/null 2>&1; then
+        optional_pass=$((optional_pass + 1))
+      else
+        echo "  ${RED}✗${NC} ${f#$subrepo_dir/}"
+      fi
+    done < <(find "$subrepo_dir" -name "*.md" -type f | sort)
+  else
+    echo "  [SKIP] subrepo not reachable: $subrepo_dir"
+  fi
+
+  echo ""; echo "═══ --all 汇总 ═══"
+  echo "  default: ${default_pass}/${default_total} PASS"
+  echo "  optional: ${optional_pass}/${optional_total} PASS"
+
+  # Hard gate: default 必须 100% PASS；optional informational
+  if [ "$default_total" -gt 0 ] && [ "$default_pass" -ne "$default_total" ]; then
+    exit 1
+  fi
+  exit 0
+fi
 
 # ── main loop ──────────────────────────────────────────────────────────────────
 overall_fail=0

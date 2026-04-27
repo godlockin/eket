@@ -3,19 +3,23 @@
 # Injects 3-section TODO skeleton (Common Rationalizations / Red Flags / Verification)
 # after the LAST ``` in each target .md file.
 #
-# Usage: ./scripts/codemod-inject-3sections.sh [--dry-run] <dir-or-file> [<dir-or-file> ...]
+# Usage: ./scripts/codemod-inject-3sections.sh [--dry-run] [--exclude=NAME ...] <dir-or-file> [<dir-or-file> ...]
 #
-# --dry-run   List files that would be modified; do not write.
+# --dry-run        List files that would be modified; do not write.
+# --exclude=NAME   Skip files whose basename equals NAME (repeatable, e.g. --exclude=INDEX.md)
 # Idempotent: files already containing "## Common Rationalizations" are skipped.
 
 set -euo pipefail
 
 DRY_RUN=false
 TARGETS=()
+EXCLUDE_NAMES=()
 
 for arg in "$@"; do
   if [[ "$arg" == "--dry-run" ]]; then
     DRY_RUN=true
+  elif [[ "$arg" == --exclude=* ]]; then
+    EXCLUDE_NAMES+=("${arg#--exclude=}")
   else
     TARGETS+=("$arg")
   fi
@@ -83,6 +87,18 @@ injected_count=0
 todo_total=0
 
 for file in "${FILES[@]}"; do
+  # Exclude check (--exclude=NAME)
+  bn="$(basename "$file")"
+  skip_excluded=false
+  for ex in "${EXCLUDE_NAMES[@]}"; do
+    if [[ "$bn" == "$ex" ]]; then
+      echo "[SKIP] excluded by --exclude=$ex: $file"
+      skip_excluded=true
+      break
+    fi
+  done
+  $skip_excluded && continue
+
   # Idempotence check
   if grep -q "^## Common Rationalizations" "$file" 2>/dev/null; then
     echo "[SKIP] already has section: $file"

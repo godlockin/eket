@@ -18,3 +18,6 @@ jobs:
 
       - name: Full-mode check on default experts
         run: bash scripts/check-skill-anatomy.sh .claude/skills/eket/experts/default/*.md
+
+      - name: All-mode informational scan (default hard-gate, optional/subrepo soft via SKIP)
+        run: bash scripts/check-skill-anatomy.sh --all
