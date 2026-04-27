@@ -1,0 +1,20 @@
+name: anatomy-check
+
+on: [pull_request]
+
+jobs:
+  check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Self-test (fixtures)
+        run: bash scripts/check-skill-anatomy.sh --self-test
+
+      - name: Full-mode check on default experts
+        run: bash scripts/check-skill-anatomy.sh .claude/skills/eket/experts/default/*.md
