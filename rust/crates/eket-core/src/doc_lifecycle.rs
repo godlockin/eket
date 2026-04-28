@@ -5,7 +5,6 @@
 ///   2. ~/.eket/templates/
 ///   3. Built-in strings
 use async_trait::async_trait;
-use chrono::Datelike;
 use handlebars::Handlebars;
 use serde_json::json;
 use std::path::{Path, PathBuf};
@@ -33,10 +32,6 @@ pub enum DocEvent {
         project_root: PathBuf,
     },
     ExpertReviewed { topic: String, project_root: PathBuf },
-    RoadmapUpdated { project_id: String, quarter: Option<String>, project_root: PathBuf },
-    SpikeStarted { spike_id: String, title: String, epic_id: Option<String>, project_root: PathBuf },
-    SpikeCompleted { spike_id: String, outcome: String, project_root: PathBuf },
-    DesignDocCreated { doc_type: String, doc_id: String, title: String, project_root: PathBuf },
 }
 
 // ─── TemplateRenderer ─────────────────────────────────────────────────────────
@@ -105,18 +100,6 @@ fn builtin_template(name: &str) -> Option<&'static str> {
         }
         "jira/epic.md.hbs" => {
             Some(include_str!("../../../../templates/jira/epic.md.hbs"))
-        }
-        "confluence/roadmap.md.hbs" => {
-            Some(include_str!("../../../../templates/confluence/roadmap.md.hbs"))
-        }
-        "confluence/spike-plan.md.hbs" => {
-            Some(include_str!("../../../../templates/confluence/spike-plan.md.hbs"))
-        }
-        "confluence/spike-findings.md.hbs" => {
-            Some(include_str!("../../../../templates/confluence/spike-findings.md.hbs"))
-        }
-        "confluence/design.md.hbs" => {
-            Some(include_str!("../../../../templates/confluence/design.md.hbs"))
         }
         _ => None,
     }
@@ -229,62 +212,6 @@ pub async fn handle_event(
                 &review_path,
             )?;
         }
-
-        DocEvent::RoadmapUpdated { ref project_id, ref quarter, ref project_root } => {
-            let q = quarter.clone().unwrap_or_else(|| current_quarter());
-            let roadmap_path = project_root
-                .join("confluence")
-                .join("roadmap")
-                .join(format!("{project_id}.md"));
-            let section_marker = format!("<!-- eket:section:{q} -->");
-            if roadmap_path.exists() {
-                // append quarter section if absent
-                let section_content = format!(
-                    "\n{section_marker}\n## {q}\n\n### 目标\n\nTODO\n\n### Epic 列表\n\n| Epic | 优先级 | 状态 | 负责人 |\n|------|--------|------|--------|\n| TODO | P0 | planning | - |\n\n### 里程碑\n\n| 里程碑 | 目标日期 | 交付物 |\n|--------|---------|--------|\n| TODO | YYYY-MM-DD | TODO |\n"
-                );
-                append_section_if_absent(&roadmap_path, &section_marker, &section_content)?;
-            } else {
-                let data = json!({ "project_id": project_id, "quarter": q, "timestamp": timestamp });
-                write_rendered(renderer, "confluence/roadmap.md.hbs", &data, project_root, &roadmap_path)?;
-            }
-        }
-
-        DocEvent::SpikeStarted { ref spike_id, ref title, ref epic_id, ref project_root } => {
-            let spike_dir = project_root.join("confluence").join("spikes").join(spike_id);
-            std::fs::create_dir_all(&spike_dir)?;
-            let plan_path = spike_dir.join("plan.md");
-            let data = json!({
-                "spike_id": spike_id,
-                "title": title,
-                "epic_id": epic_id.as_deref().unwrap_or("N/A"),
-                "timestamp": timestamp,
-            });
-            write_rendered(renderer, "confluence/spike-plan.md.hbs", &data, project_root, &plan_path)?;
-        }
-
-        DocEvent::SpikeCompleted { ref spike_id, ref outcome, ref project_root } => {
-            let findings_path = project_root
-                .join("confluence")
-                .join("spikes")
-                .join(spike_id)
-                .join("findings.md");
-            let data = json!({ "spike_id": spike_id, "outcome": outcome, "timestamp": timestamp });
-            write_rendered(renderer, "confluence/spike-findings.md.hbs", &data, project_root, &findings_path)?;
-        }
-
-        DocEvent::DesignDocCreated { ref doc_type, ref doc_id, ref title, ref project_root } => {
-            let doc_path = project_root
-                .join("confluence")
-                .join(doc_type)
-                .join(format!("{doc_id}.md"));
-            let data = json!({
-                "doc_type": doc_type,
-                "doc_id": doc_id,
-                "title": title,
-                "timestamp": timestamp,
-            });
-            write_rendered(renderer, "confluence/design.md.hbs", &data, project_root, &doc_path)?;
-        }
     }
 
     Ok(())
@@ -334,12 +261,6 @@ fn slugify(s: &str) -> String {
     s.chars()
         .map(|c| if c.is_alphanumeric() || c == '-' { c.to_ascii_lowercase() } else { '-' })
         .collect()
-}
-
-fn current_quarter() -> String {
-    let now = chrono::Utc::now();
-    let q = (now.month0() / 3) + 1;
-    format!("Q{}-{}", q, now.year())
 }
 
 // ─── DocLifecycleMiddleware ───────────────────────────────────────────────────

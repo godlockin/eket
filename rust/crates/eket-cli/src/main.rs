@@ -156,26 +156,6 @@ enum Commands {
     /// Generate / refresh architecture plan for an epic
     #[command(name = "epic:plan")]
     EpicPlan(commands::epic_plan::EpicPlanArgs),
-
-    /// Create or update project roadmap quarter section
-    #[command(name = "roadmap:update")]
-    RoadmapUpdate(commands::roadmap_update::RoadmapUpdateArgs),
-
-    /// Create a spike ticket and plan document
-    #[command(name = "spike:create")]
-    SpikeCreate(commands::spike_create::SpikeCreateArgs),
-
-    /// Complete a spike and write findings document
-    #[command(name = "spike:complete")]
-    SpikeComplete(commands::spike_complete::SpikeCompleteArgs),
-
-    /// Create a design/adr/runbook/onboarding document
-    #[command(name = "doc:create")]
-    DocCreate(commands::doc_create::DocCreateArgs),
-
-    /// Compose expert team by skills or epic type
-    #[command(name = "expert:compose")]
-    ExpertCompose(commands::expert_compose::ExpertComposeArgs),
 }
 
 #[tokio::main]
@@ -231,10 +211,5 @@ async fn main() -> Result<()> {
         Commands::DocStatus(args) => commands::doc_status::run(args).await,
         Commands::EpicCreate(args) => commands::epic_create::run(args).await,
         Commands::EpicPlan(args) => commands::epic_plan::run(args).await,
-        Commands::RoadmapUpdate(args) => commands::roadmap_update::run(args).await,
-        Commands::SpikeCreate(args) => commands::spike_create::run(args).await,
-        Commands::SpikeComplete(args) => commands::spike_complete::run(args).await,
-        Commands::DocCreate(args) => commands::doc_create::run(args).await,
-        Commands::ExpertCompose(args) => commands::expert_compose::run(args).await,
     }
 }
