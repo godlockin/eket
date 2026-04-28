@@ -116,4 +116,7 @@ jobs:
         run: ruff check eket_sdk/ tests/
 
       - name: Security audit (pip-audit)
-        run: pip-audit --desc
+        # CVE-2026-3219: pip self-vulnerability disclosed 2026-04-28, no fix version yet.
+        # Track: https://github.com/pypa/pip/security/advisories
+        # Remove --ignore-vuln once pip releases a patched version.
+        run: pip-audit --desc --ignore-vuln CVE-2026-3219
