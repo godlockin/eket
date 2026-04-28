@@ -184,7 +184,7 @@ export class EketServer {
 
   private loadSchemas(): void {
     try {
-      const schemasDir = path.join(this.config.projectRoot, 'docs/protocol/schemas');
+      const schemasDir = path.join(this.config.projectRoot, 'docs/reference/schemas');
 
       // Load agent_registration.json
       const agentRegPath = path.join(schemasDir, 'agent_registration.json');
