@@ -14,6 +14,7 @@ use eket_core::{
     middleware_pipeline::{Pipeline, PipelineCtx},
     ticket::{find_ticket, scan_todo_tickets, TicketFile},
     types::{ExecutionCheckpoint, TicketStatus},
+    expert_skill_bridge::ExpertSkillBridge,
 };
 use serde_json::json;
 use std::path::{Path, PathBuf};
@@ -122,6 +123,41 @@ fn write_active_context(
         String::new()
     };
 
+    // ── Expert role-based skills injection ──
+    let role_skills_section = {
+        // 读取角色 ID：EKET_SLAVER_ROLE env 或 .eket/slaver-role 文件
+        let role_id = std::env::var("EKET_SLAVER_ROLE").ok().or_else(|| {
+            std::fs::read_to_string(project_root.join(".eket/slaver-role"))
+                .ok()
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+        });
+
+        if let Some(rid) = role_id {
+            let experts_dir = std::env::var("EKET_EXPERTS_DIR")
+                .map(std::path::PathBuf::from)
+                .unwrap_or_else(|_| {
+                    dirs::home_dir()
+                        .unwrap_or_else(|| std::path::PathBuf::from("/tmp"))
+                        .join(".claude/skills/eket/experts/default")
+                });
+            match ExpertSkillBridge::load_from_dir(&experts_dir) {
+                Ok(bridge) => {
+                    let skills = bridge.skills_for_expert(&rid);
+                    if skills.is_empty() {
+                        String::new()
+                    } else {
+                        let list = skills.iter().map(|s| format!("- {}", s)).collect::<Vec<_>>().join("\n");
+                        format!("\n## Available Skills\n<!-- 基于专家角色 {} 自动注入 -->\n{}\n", rid, list)
+                    }
+                }
+                Err(_) => String::new(),
+            }
+        } else {
+            String::new()
+        }
+    };
+
     let content = format!(
         r#"# EKET Active Context
 
@@ -147,7 +183,7 @@ fn write_active_context(
 
 - `eket task:complete {id}` — 完成任务
 - `eket system:doctor` — 系统诊断
-{expert_section}"#,
+{expert_section}{role_skills_section}"#,
         id = ticket.id,
         title = ticket.title,
         domain = domain,
@@ -158,6 +194,7 @@ fn write_active_context(
         } else {
             format!("\n{}", expert_section)
         },
+        role_skills_section = role_skills_section,
     );
     std::fs::write(dir.join("ACTIVE_CONTEXT.md"), content)?;
     Ok(())
