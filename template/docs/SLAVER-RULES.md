@@ -158,7 +158,7 @@ echo "exit code: $?"  # 必须为 0
 
 ---
 
-## 6. Slaver Hard Rules（3 条）
+## 6. Slaver Hard Rules（5 条）
 
 ### Rule 1：禁止横向协助
 
@@ -191,6 +191,24 @@ echo "exit code: $?"  # 必须为 0
   ```
 - **未上报视为心跳超时**，触发 Master 的超时处理流程
 - 示例：预估 2 小时的 ticket → 每 12 分钟上报；预估 6 小时 → 每 30 分钟上报
+
+### Rule 4：Rule of 500 — 净变更 > 500 行禁止逐行手改
+
+执行重构 / 大批量替换时，提交前先在本地跑：
+```bash
+bash scripts/check-pr-size.sh --base=origin/<target-branch>
+```
+若净变更 > 500 行：
+- **禁止**继续逐行 Edit；必须切换 codemod / AST 工具完成
+- 否则上报 BLOCKED 给 Master，申请 `Approved-Large-PR-By` 豁免，并写明无法 codemod 的根因
+
+### Rule 5：PR Sizing — 单 PR 控制 ~100 行净变更
+
+提交 PR 前必须自检 `bash scripts/check-pr-size.sh`：
+- ≤ 100 行：silent pass，可直接提交
+- 100 ~ 500 行：在 PR description 解释拆分困难
+- \> 500 行：必须先获得 Master 审批，在 PR body 写入 trailer `Approved-Large-PR-By: <master-id>`
+- **禁止**为绕过阈值人为拆 commit 但合并到同一个 PR；CI 计算的是 PR 级 diff 总和
 
 ---
 
@@ -244,11 +262,27 @@ PR 被 Master 批准合并后，在关闭 session 前执行。
 {一句话描述}
 ```
 
-### 知识沉淀（Soft Rule）
+### 知识沉淀（Hard Rule — TASK-095 起强制执行）
 
-如果复盘内容具有**通用价值**（不只适用于本 ticket，而是适用于整个框架的任何 Slaver），应同时写入 `confluence/memory/`：
-- 技术踩坑 → `confluence/memory/` 新增或更新对应文件
-- 框架经验 → 追加到 `confluence/memory/BORROWED-WISDOM.md`
+如果复盘内容具有**通用价值**（不只适用于本 ticket，而是适用于整个框架的任何 Slaver），**必须**写入 `confluence/memory/` 对应子目录：
+
+| 内容类型 | 写入位置 | 文件命名 |
+|----------|----------|---------|
+| 可复用架构/解法模式 | `confluence/memory/patterns/` | `<模式名>.md` |
+| 踩坑记录与解法 | `confluence/memory/pitfalls/` | `<问题名>.md` |
+| 新引入的领域术语 | `confluence/memory/glossary/terms.md` | 追加条目 |
+| 外部项目借鉴 | `confluence/memory/BORROWED-WISDOM.md` | 追加 Section |
+
+**文件格式**（详见 `confluence/memory/README.md`）：
+```markdown
+# [Pattern/Pitfall 名称]
+**场景/症状**：...
+**方案/根因**：...
+**解法**：...（pitfall 专有）
+**来源**：TASK-XXX
+```
+
+**完成后检查**：运行 `bash scripts/check-memory-entry.sh <TASK-ID>` 确认已沉淀。
 
 > 单次任务的教训 = 局部记忆；沉淀到 `confluence/memory/` = 组织记忆，对所有未来 Slaver 可见。
 
@@ -271,6 +305,78 @@ Slaver 操作范围受以下命令白名单约束：
 - 修改 `jira/tickets/` 中 Master 填写的字段（验收标准、优先级、依赖）
 
 详见：[`template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`](SLAVER-HEARTBEAT-CHECKLIST.md)
+
+---
+
+## Commit Trailer 规范
+
+每个 ticket 完成时的最终 commit **必须**包含决策上下文 trailer（由框架自动生成）：
+
+```
+Confidence: high | medium | low
+Rejected-approaches: <逗号分隔方案，可为 none>
+Directive: <关键决策一句话>
+Scope-risk: low | medium | high
+Followup: <可选后续建议>
+```
+
+**语义**：
+- Confidence：实现信心（high=无升降级，medium=升级1次，low=升级2+次）
+- Rejected-approaches：在执行中明确放弃的方案
+- Scope-risk：变更影响范围（按文件数自动推断：≤5=low，6~15=medium，16+=high）
+
+---
+
+---
+
+## 12. 知识沉淀红线 — Execution Proof 强制要求
+
+> **凡写入 `confluence/memory/` 的技术结论，必须附带 Execution Proof 元数据，否则视为无效知识并被系统拒绝写入。**
+
+### 12.1 强制规则
+
+- **禁止**在无 proof 情况下向 `confluence/memory/` 写入任何新文件
+- **禁止**在 `--strict` 模式下追加已有无 proof 文件的内容
+- proof 必须来源于**真实执行**，不得捏造 exit_code=0 或伪造 task_id
+
+### 12.2 Proof 元数据格式
+
+每个知识文件必须在 YAML front-matter 中包含 `proof` 块：
+
+```markdown
+---
+title: <知识标题>
+proof:
+  task_id: TASK-XXX          # 来源 ticket（必填）
+  exit_code: 0               # 只允许 0，即成功执行（必填）
+  timestamp: 2026-04-26T10:00:00Z  # ISO 8601（必填）
+  tool_name: npm test        # 产生结论的工具/命令（可选）
+  ci_url: https://ci.example.com/123  # CI 链接（可选）
+---
+
+# 知识内容
+...
+```
+
+### 12.3 写入流程
+
+1. **执行验证步骤**（测试/命令/CI）— 记录 exit_code
+2. **获取 task_id** — 对应当前 ticket ID
+3. **填写 proof front-matter** — timestamp 用当前时间
+4. **运行 `knowledge:index`** — 系统自动校验 proof 完整性
+5. 校验失败 → exit(1) + 结构化错误信息 → 禁止写入
+
+### 12.4 向后兼容
+
+- 已有无 proof 的 legacy 文件：可读取/搜索（不阻断检索）
+- `--strict` 模式下：legacy 文件拒绝追加，必须补充 proof 后才能更新
+- 新文件：无论模式，必须有 proof（`--proof-required` 默认 `true`）
+
+### 12.5 违规后果
+
+- 知识写入失败，`knowledge:index` exit(1)
+- 违规行为记录在 ticket 复盘中
+- 连续违规上报 Master
 
 ---
 
