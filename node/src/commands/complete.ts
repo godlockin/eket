@@ -362,6 +362,75 @@ export async function writeSlaveResult(
 }
 
 
+/**
+ * 从 ticket 文件解析标题
+ */
+function getTicketTitle(projectRoot: string, ticketId: string): string {
+  const jiraPath = path.join(projectRoot, 'jira', 'tickets');
+  const dirs = ['feature', 'bugfix', 'task', 'improvement', ''];
+  for (const dir of dirs) {
+    const ticketFile = dir
+      ? path.join(jiraPath, dir, `${ticketId}.md`)
+      : path.join(jiraPath, `${ticketId}.md`);
+    if (fs.existsSync(ticketFile)) {
+      try {
+        const content = fs.readFileSync(ticketFile, 'utf-8');
+        // Match "**标题**: <title>" or first "# TASK-NNN: <title>"
+        const titleMatch = content.match(/\*\*标题\*\*:\s*(.+)/) ?? content.match(/^#\s+\S+:\s+(.+)/m);
+        if (titleMatch) {return titleMatch[1].trim();}
+      } catch { /* ignore */ }
+    }
+  }
+  return ticketId;
+}
+
+/**
+ * 写复盘文件到 confluence/memory/retrospectives/（幂等）
+ */
+async function writeRetro(ticketId: string, title: string, slaverId: string, projectRoot: string): Promise<void> {
+  try {
+    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const retroDir = path.join(projectRoot, 'confluence', 'memory', 'retrospectives');
+    const retroPath = path.join(retroDir, `${date}-${ticketId}.md`);
+
+    // 幂等：已存在则跳过
+    if (fs.existsSync(retroPath)) {return;}
+
+    await fs.promises.mkdir(retroDir, { recursive: true });
+
+    const content = `# 复盘：${ticketId} — ${title}
+
+<!-- eket:doc:retrospective -->
+**完成时间**: ${new Date().toISOString()}
+**执行者**: ${slaverId}
+
+## 做了什么
+
+<!-- 从 ticket 执行日志自动生成 -->
+
+## 3Q 复盘
+
+**Q1 哪些做得好？**
+TODO
+
+**Q2 哪些可以改进？**
+TODO
+
+**Q3 下次怎么做？**
+TODO
+
+## 知识沉淀
+
+- [ ] TODO
+`;
+
+    await fs.promises.writeFile(retroPath, content, 'utf-8');
+    console.log(`[doc] retro written: ${retroPath}`);
+  } catch (e: unknown) {
+    console.warn('[WARN] retro write failed:', e);
+  }
+}
+
 export function registerComplete(program: Command): void {
   program
     .command('task:complete <ticketId>')
@@ -411,6 +480,7 @@ export function registerComplete(program: Command): void {
         updateTicketStatus(projectRoot, ticketId, 'done');
         await reportSkillFeedback(projectRoot, ticketId, slaverId);
         await appendCommitTrailer(ticketId, slaverId);
+        await writeRetro(ticketId, getTicketTitle(projectRoot, ticketId), slaverId, projectRoot);
         logSuccess('Task completed', [`Task: ${ticketId}`, 'Isolation: none']);
         sseBus.publish({ type: 'task_completed', ticketId, slaverId, timestamp: new Date().toISOString() });
         return;
@@ -491,6 +561,9 @@ export function registerComplete(program: Command): void {
 
       // Write SlaveResult (TASK-121)
       await writeSlaveResult(projectRoot, ticketId, slaverId);
+
+      // Write retro (TASK-DOC-006)
+      await writeRetro(ticketId, getTicketTitle(projectRoot, ticketId), slaverId, projectRoot);
 
       logSuccess('Task completed', [
         `Task: ${ticketId}`,

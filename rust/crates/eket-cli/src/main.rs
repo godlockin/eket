@@ -57,6 +57,10 @@ enum Commands {
     #[command(name = "task:create")]
     TaskCreate(commands::task_create::TaskCreateArgs),
 
+    /// Record test results for a ticket
+    #[command(name = "task:test")]
+    TaskTest(commands::task_test::TaskTestArgs),
+
     /// Start HTTP API server
     #[command(name = "server")]
     Server(commands::server::ServerArgs),
@@ -140,6 +144,18 @@ enum Commands {
     /// List alerts from SQLite alerts table
     #[command(name = "alerts:list")]
     AlertsList,
+
+    /// Check EPIC document completeness (epic.md, analysis, plan, retros)
+    #[command(name = "doc:status")]
+    DocStatus(commands::doc_status::DocStatusArgs),
+
+    /// Create a new epic with scaffold docs
+    #[command(name = "epic:create")]
+    EpicCreate(commands::epic_create::EpicCreateArgs),
+
+    /// Generate / refresh architecture plan for an epic
+    #[command(name = "epic:plan")]
+    EpicPlan(commands::epic_plan::EpicPlanArgs),
 }
 
 #[tokio::main]
@@ -164,6 +180,7 @@ async fn main() -> Result<()> {
             commands::task_complete::run(ticket_id, no_trailer).await
         }
         Commands::TaskCreate(args) => commands::task_create::run(args).await,
+        Commands::TaskTest(args) => commands::task_test::run(args).await,
         Commands::Server(args) => commands::server::run(args).await,
         Commands::SlaverRegister(args) => commands::slaver_register::run(args).await,
         Commands::SlaverPoll(args) => commands::slaver_poll::run(args).await,
@@ -191,5 +208,8 @@ async fn main() -> Result<()> {
         Commands::SlaverSetRole(args) => commands::slaver_set_role::run(args).await,
         Commands::SkillExtract => commands::skill_extract::run().await,
         Commands::AlertsList => commands::alerts_list::run().await,
+        Commands::DocStatus(args) => commands::doc_status::run(args).await,
+        Commands::EpicCreate(args) => commands::epic_create::run(args).await,
+        Commands::EpicPlan(args) => commands::epic_plan::run(args).await,
     }
 }

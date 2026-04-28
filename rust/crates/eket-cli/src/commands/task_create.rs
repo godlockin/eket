@@ -37,6 +37,10 @@ pub struct TaskCreateArgs {
     #[arg(long, default_value = "")]
     pub assignee: String,
 
+    /// Associate with EPIC ID (e.g. EPIC-001)
+    #[arg(long)]
+    pub epic: Option<String>,
+
     /// tickets 目录路径（默认自动探测）
     #[arg(long)]
     pub tickets_dir: Option<PathBuf>,
@@ -239,6 +243,34 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
         .map_err(|e| anyhow::anyhow!("Failed to create ticket file {}: {}", file_path.display(), e))?;
     file.write_all(content.as_bytes())?;
 
+    // 6b. If --epic given, link ticket into EPIC plan
+    if let Some(ref epic_id) = args.epic {
+        // Find project root (parent of jira/)
+        let project_root = tickets_dir
+            .parent() // jira/
+            .and_then(|p| p.parent()); // project root
+        if let Some(root) = project_root {
+            let plan_path = root
+                .join("confluence")
+                .join("architecture")
+                .join(format!("{epic_id}-plan.md"));
+            if plan_path.exists() {
+                let marker = "<!-- eket:section:tickets -->";
+                let existing = std::fs::read_to_string(&plan_path)?;
+                if existing.contains(marker) {
+                    // Replace marker with marker + new ticket line
+                    let replacement =
+                        format!("{marker}\n- {ticket_id}: {title}", title = args.title);
+                    let updated = existing.replacen(marker, &replacement, 1);
+                    std::fs::write(&plan_path, updated)?;
+                }
+                // If marker absent, skip silently (plan format unexpected)
+            } else {
+                eprintln!("[WARN] EPIC plan not found for {epic_id}, skipping");
+            }
+        }
+    }
+
     // 7. Output JSON
     let report = json!({
         "status": "created",
@@ -248,6 +280,7 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
         "type": ticket_type,
         "priority": priority,
         "blocked_by": blocked_by,
+        "epic": args.epic,
     });
     println!("{}", serde_json::to_string_pretty(&report)?);
     Ok(())
@@ -268,6 +301,7 @@ mod tests {
             priority: Some("P2".to_string()),
             blocked_by: blocked_by.to_string(),
             assignee: String::new(),
+            epic: None,
             tickets_dir: Some(dir.path().to_path_buf()),
         }
     }
@@ -380,6 +414,7 @@ mod tests {
             priority: None,
             blocked_by: String::new(),
             assignee: String::new(),
+            epic: None,
             tickets_dir: Some(dir.path().to_path_buf()),
         };
         run(args).await.unwrap();
@@ -397,6 +432,7 @@ mod tests {
             priority: None,
             blocked_by: String::new(),
             assignee: String::new(),
+            epic: None,
             tickets_dir: Some(dir.path().to_path_buf()),
         };
         run(args).await.unwrap();
