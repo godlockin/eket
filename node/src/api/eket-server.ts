@@ -1165,7 +1165,8 @@ export class EketServer {
   private registerSSERoutes(): void {
     // GET /api/v1/stream/:channelId — Server-Sent Events endpoint
     this.app.get('/api/v1/stream/:channelId', (req: Request, res: Response) => {
-      const { channelId } = req.params;
+      const { channelId: rawChannelId } = req.params;
+      const channelId = Array.isArray(rawChannelId) ? rawChannelId[0] : rawChannelId;
       if (!channelId) {
         res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Missing channelId' } });
         return;
