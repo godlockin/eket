@@ -15,6 +15,9 @@
 #        subrepo 不可达走 [SKIP]（非 exit 1），CI 环境鲁棒
 #        INDEX.md 自动排除（不应 anatomy-check）
 #
+# **INDEX.md 在所有调用模式下自动 skip**（不仅是 --all）：main loop / --all / glob *.md
+# 调用方均安全。INDEX.md 是索引文件、非 persona，不计入 pass/fail 统计。
+#
 # 退出码:
 #   0   全部通过
 #   1   anatomy 违规
@@ -51,9 +54,9 @@ if (( SELF_TEST == 1 )); then
   FD="$REPO_ROOT/tests/fixtures/anatomy"
   st_pass=0; st_fail=0
   declare -a CASES_FILE CASES_ARGS CASES_EXPECT
-  CASES_FILE=( good-full.md good-minimal.md good-minimal-no-bash.md bad-order.md bad-missing-section.md bad-no-checkbox.md bad-no-frontmatter.md )
-  CASES_ARGS=( ""          "--minimal"     "--minimal"               ""          ""                      ""                 "" )
-  CASES_EXPECT=( 0          0              0                          1            1                       1                  1 )
+  CASES_FILE=( good-full.md good-minimal.md good-minimal-no-bash.md bad-order.md bad-missing-section.md bad-no-checkbox.md bad-no-frontmatter.md INDEX.md )
+  CASES_ARGS=( ""          "--minimal"     "--minimal"               ""          ""                      ""                 ""                    "" )
+  CASES_EXPECT=( 0          0              0                          1            1                       1                  1                     0 )
   total=${#CASES_FILE[@]}
   echo "Running self-test: $total cases"; echo ""
   i=0
@@ -300,7 +303,11 @@ overall_fail=0
 pass_count=0
 fail_count=0
 
-for f in "${FILES[@]}"; do
+for f in "${FILES[@]+"${FILES[@]}"}"; do
+  if [ "$(basename "$f")" = "INDEX.md" ]; then
+    [ "$VERBOSE" = "1" ] && echo "  [SKIP] $f (INDEX.md not subject to anatomy check)"
+    continue
+  fi
   if check_file "$f" "$MINIMAL" "$VERBOSE"; then
     echo "${GREEN}✓ PASS${NC}: $(basename "$f")"
     pass_count=$((pass_count + 1))
