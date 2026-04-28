@@ -26,8 +26,3 @@ pub mod alerts_list;
 pub mod epic_create;
 pub mod epic_plan;
 pub mod doc_status;
-pub mod roadmap_update;
-pub mod spike_create;
-pub mod spike_complete;
-pub mod doc_create;
-pub mod expert_compose;
