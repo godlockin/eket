@@ -330,6 +330,19 @@ pub async fn run_complete(args: CompleteArgs) -> Result<()> {
         return Ok(());
     }
 
+    // ── Pre-saga: doc warn ────────────────────────────────────────────────────
+    {
+        let tickets_dir = project_root.join("jira/tickets");
+        let ticket_path_glob = tickets_dir.join(format!("{}.md", args.ticket_id));
+        let ticket_content = std::fs::read_to_string(&ticket_path_glob).unwrap_or_default();
+        if !ticket_content.contains("<!-- eket:section:分析记录 -->") {
+            eprintln!(
+                "[WARN] ticket {} 缺少分析记录，建议先 task:claim 后记录分析思路",
+                args.ticket_id
+            );
+        }
+    }
+
     // ── Saga mode ────────────────────────────────────────────────────────────
     let initial_state = CompleteState {
         ticket_id: args.ticket_id.clone(),
@@ -358,6 +371,24 @@ pub async fn run_complete(args: CompleteArgs) -> Result<()> {
         .collect();
 
     if result.success {
+        // Doc lifecycle: write retrospective
+        {
+            use eket_core::doc_lifecycle::{DocEvent, TemplateRenderer, handle_event};
+            let tickets_dir = result.state.project_root.join("jira/tickets");
+            let title = eket_core::ticket::find_ticket(&tickets_dir, &args.ticket_id)
+                .map(|t| t.title)
+                .unwrap_or_else(|_| args.ticket_id.clone());
+            let event = DocEvent::TaskCompleted {
+                ticket_id: args.ticket_id.clone(),
+                title,
+                slaver_id: slaver_id.clone(),
+                project_root: result.state.project_root.clone(),
+            };
+            if let Err(e) = handle_event(event, &TemplateRenderer::new()).await {
+                eprintln!("[WARN] doc_lifecycle complete: {e}");
+            }
+        }
+
         let report = json!({
             "status": "completed",
             "ticket_id": args.ticket_id,

@@ -288,6 +288,19 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
     // Write ACTIVE_CONTEXT.md
     let _ = write_active_context(&project_root, &ticket, &slaver_id);
 
+    // Doc lifecycle: append 分析记录 section to ticket
+    {
+        use eket_core::doc_lifecycle::{DocEvent, TemplateRenderer, handle_event};
+        let event = DocEvent::TaskClaimed {
+            ticket_id: ticket.id.clone(),
+            slaver_id: slaver_id.clone(),
+            project_root: project_root.clone(),
+        };
+        if let Err(e) = handle_event(event, &TemplateRenderer::new()).await {
+            eprintln!("[WARN] doc_lifecycle claim: {e}");
+        }
+    }
+
     // Determine rules path (SLAVER-RULES.md)
     let rules_path = find_rules_path(&project_root);
 
