@@ -68,7 +68,7 @@
 
 ### 分支与 PR 规则
 
-- **[seed] 2026-04-15** — PR 目标分支层级：`feature/*` → `testing` → `miao` → `main`。跨级 PR 直接 VETO。
+- **[seed] 2026-04-15** — PR 目标分支层级：`feature/*` → `testing` → `main` → `miao`。跨级 PR 直接 VETO。
 - **[seed] 2026-04-15** — PR 描述必须包含真实 `npm test` 输出（文本，不是截图），且 CI check 为绿色（参见 CLAUDE.md Anti-Hallucination 规则）。
 
 ---
