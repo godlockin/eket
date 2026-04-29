@@ -20,7 +20,6 @@ import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
 import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
-import { resolveAndPersistModel } from '../core/claude-runner.js';
 import {
   loadConfig,
   getTickets,
@@ -335,14 +334,14 @@ Related Commands:
       messageSpinner.succeed('Message sent');
 
       // 11. 追加执行日志到 ticket（TASK-078）
-      const slaverId = `agent_${role}_${process.pid}`;
-      await appendTaskMessage(selectedTicket.id, '领取任务', slaverId);
+      const runtimeAgentId = `agent_${role}_${process.pid}`;
+      await appendTaskMessage(selectedTicket.id, '领取任务', runtimeAgentId);
 
       // 12. 刷新活跃上下文（TASK-079）
       await injectActiveContext({
         ticketId: selectedTicket.id,
         role,
-        slaverId,
+        slaverId: runtimeAgentId,
         claimedAt: new Date().toISOString(),
         status: 'in_progress',
       });
