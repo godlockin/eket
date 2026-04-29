@@ -1,7 +1,13 @@
-# TASK-231: docs / Confluence 重组回灌 main
+# TASK-231: docs / Confluence 重组回灌 main【已拆分】
+
+> **2026-04-29 拆分**: slaver-005 执行时发现 §2.3 漏报 confluence/memory/ 冲突簇。本 ticket 拆为：
+> - **TASK-231a** (5 commit, 无冲突, todo): 安全段，可立即启动
+> - **TASK-231b** (3 commit, 复杂冲突, blocked-on-master): 待 Master 决冲突矩阵
+>
+> 本 ticket 状态改 superseded，保留作为历史档案。
 
 ## 元数据
-- **状态**: todo
+- **状态**: superseded（被 TASK-231a / TASK-231b 取代）
 - **类型**: docs
 - **优先级**: P1
 - **agent_type**: docs
