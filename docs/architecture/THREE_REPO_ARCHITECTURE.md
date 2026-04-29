@@ -245,7 +245,7 @@ main                    # 主分支，生产环境
 ### 分支流转
 
 ```
-feature/login-form ──→ testing ──→ main
+feature/login-form ──→ testing ──→ main ──→ miao
        │                    │
        │                    └──→ 生产部署
        │
