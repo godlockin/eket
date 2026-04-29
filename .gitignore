@@ -73,3 +73,6 @@ jira/.eket_master_marker
 
 # Git worktrees
 .worktrees/
+
+# Rust build artifacts
+rust/target/
