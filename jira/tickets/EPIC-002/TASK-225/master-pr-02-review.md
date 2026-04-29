@@ -20,7 +20,7 @@
 
 ## 关于分支基底 miao
 
-slaver-002 正确发现子仓主干分支名为 `miao`（非 `master`），与 EPIC-002 三仓策略文档对齐（branch strategy: feature/* → testing → miao → main）。决策对，不视作偏差。
+slaver-002 正确发现子仓主干分支名为 `miao`（非 `master`），与 EPIC-002 三仓策略文档对齐（branch strategy: feature/* → testing → main → miao）。决策对，不视作偏差。
 
 ## 进度
 
