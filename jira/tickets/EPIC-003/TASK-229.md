@@ -55,6 +55,14 @@ EPIC-002 收尾推 main → miao（PR #143）时发现 miao 比 main 超前 **50
 - ❌ 不做实际 merge / cherry-pick / rebase
 - ❌ 决策由 Master 在调研报告基础上做，本 ticket 只产出选项
 
+## observability
+- logs: ["epic003.investigation.report_published"]
+- metrics: ["main_miao_commit_drift", "main_miao_file_drift"]
+
+## rollback_plan
+
+纯文档 ticket，单 PR 单 commit，revert PR 即可。无运行时副作用。
+
 ## test_strategy
 
 - 仅文档产出，无测试
