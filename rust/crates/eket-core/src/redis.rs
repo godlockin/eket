@@ -2,6 +2,8 @@
 ///
 /// 使用 fred v9（async Redis），连接失败时标记不可用（降级到 file queue）
 use fred::prelude::*;
+use fred::clients::SubscriberClient;
+use fred::interfaces::{ClientLike, PubsubInterface};
 use tracing::{info, warn};
 
 use crate::error::{EketError, EketResult};
@@ -9,28 +11,33 @@ use crate::error::{EketError, EketResult};
 pub struct EketRedisClient {
     inner: RedisClient,
     available: std::sync::atomic::AtomicBool,
+    /// Stored config for creating pubsub subscriber clients
+    config: RedisConfig,
 }
 
 impl EketRedisClient {
     /// Create a permanently-unavailable stub (for tests / offline mode).
-    #[cfg(test)]
     pub fn new_unavailable() -> Self {
         use fred::prelude::*;
-        let client = RedisClient::new(RedisConfig::default(), None, None, None);
+        let config = RedisConfig::default();
+        let client = RedisClient::new(config.clone(), None, None, None);
         Self {
             inner: client,
             available: std::sync::atomic::AtomicBool::new(false),
+            config,
         }
     }
 
     /// 创建并连接 Redis（失败时不 panic，标记为不可用）
     pub async fn connect(host: &str, port: u16, password: Option<&str>) -> Self {
         let server = ServerConfig::new_centralized(host, port);
-        let mut config = RedisConfig::default();
-        config.server = server;
-        config.password = password.map(|p| p.to_string());
+        let config = RedisConfig {
+            server,
+            password: password.map(|p| p.to_string()),
+            ..Default::default()
+        };
 
-        let client = RedisClient::new(config, None, None, None);
+        let client = RedisClient::new(config.clone(), None, None, None);
         // fred v9: connect() returns a JoinHandle, wait_for_connect() does the actual wait
         let _jh = client.connect();
         let connected = tokio::time::timeout(
@@ -45,6 +52,7 @@ impl EketRedisClient {
                 Self {
                     inner: client,
                     available: std::sync::atomic::AtomicBool::new(true),
+                    config,
                 }
             }
             Ok(Err(e)) => {
@@ -52,6 +60,7 @@ impl EketRedisClient {
                 Self {
                     inner: client,
                     available: std::sync::atomic::AtomicBool::new(false),
+                    config,
                 }
             }
             Err(_timeout) => {
@@ -59,6 +68,7 @@ impl EketRedisClient {
                 Self {
                     inner: client,
                     available: std::sync::atomic::AtomicBool::new(false),
+                    config,
                 }
             }
         }
@@ -173,6 +183,49 @@ impl EketRedisClient {
         } else {
             Ok(())
         }
+    }
+
+    /// BRPOP — blocking dequeue, timeout_secs 0 = block forever
+    pub async fn brpop(&self, key: &str, timeout_secs: f64) -> EketResult<Option<String>> {
+        self.require_available()?;
+        let result: Option<(String, String)> = self.inner
+            .brpop(key, timeout_secs)
+            .await
+            .map_err(|e| {
+                self.mark_unavailable();
+                EketError::Redis(e.to_string())
+            })?;
+        Ok(result.map(|(_, v)| v))
+    }
+
+    /// INCR — atomic increment, returns new value
+    pub async fn incr(&self, key: &str) -> EketResult<u64> {
+        self.require_available()?;
+        self.inner
+            .incr::<u64, _>(key)
+            .await
+            .map_err(|e| {
+                self.mark_unavailable();
+                EketError::Redis(e.to_string())
+            })
+    }
+
+    /// PUBLISH — pub/sub fanout
+    pub async fn publish(&self, channel: &str, message: &str) -> EketResult<i64> {
+        self.require_available()?;
+        self.inner
+            .publish(channel, message)
+            .await
+            .map_err(|e| {
+                self.mark_unavailable();
+                EketError::Redis(e.to_string())
+            })
+    }
+
+    /// Create a new SubscriberClient using the same connection config.
+    /// Caller is responsible for calling connect() + manage() on the returned client.
+    pub fn new_subscriber(&self) -> SubscriberClient {
+        SubscriberClient::new(self.config.clone(), None, None, None)
     }
 }
 

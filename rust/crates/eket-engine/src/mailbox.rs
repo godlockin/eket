@@ -9,7 +9,6 @@
 /// 与 TS 版本差异：
 /// - TS 使用 proper-lockfile（进程级文件锁）；Rust 用 tokio::sync::Mutex per-agent
 /// - TS 支持加密（encrypt/decrypt）；Rust 版本预留 encrypted 字段，不加密
-
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -18,6 +17,8 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 use tracing::debug;
 use uuid::Uuid;
+
+use crate::context_filter::MailboxContextFilter;
 
 // ─── Message Types ────────────────────────────────────────────────────────────
 
@@ -138,7 +139,13 @@ impl AgentMailbox {
             return Ok(Vec::new());
         }
 
-        let data = tokio::fs::read_to_string(&inbox_path)
+        // Atomic rename to .processing to prevent cross-process race
+        let processing_path = inbox_path.with_extension("json.processing");
+        if let Err(e) = tokio::fs::rename(&inbox_path, &processing_path).await {
+            return Err(format!("rename to .processing failed: {e}"));
+        }
+
+        let data = tokio::fs::read_to_string(&processing_path)
             .await
             .map_err(|e| format!("read failed: {e}"))?;
 
@@ -158,11 +165,24 @@ impl AgentMailbox {
 
         let json = serde_json::to_string_pretty(&messages)
             .map_err(|e| format!("serialize: {e}"))?;
+        // Write remaining (all-read) messages back atomically, then remove processing file
         let tmp = inbox_path.with_extension("json.tmp");
         tokio::fs::write(&tmp, &json).await.ok();
         tokio::fs::rename(&tmp, &inbox_path).await.ok();
+        // Remove the .processing sentinel
+        tokio::fs::remove_file(&processing_path).await.ok();
 
         Ok(unread)
+    }
+
+    /// Read unread messages with context filter applied
+    pub async fn read_messages_filtered(
+        &self,
+        agent_id: &str,
+        filter: &MailboxContextFilter,
+    ) -> Result<Vec<MailboxMessage>, String> {
+        let messages = self.read_messages(agent_id).await?;
+        Ok(filter.filter(&messages))
     }
 
     /// Clear all messages for an agent
