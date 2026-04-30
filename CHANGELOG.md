@@ -5,6 +5,83 @@ All notable changes to the EKET Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased — Rust Migration] - 2026-04-26
+
+> 版本号策略调整：Rust 迁移完成后将发布 v3.0.0。
+> 以下变更已合并至 `miao` 分支，尚未正式打 tag。
+
+### Added (Rust Engine)
+- `eket-engine`: WorkflowStep `context_budget` 字段 + 4 阶段裁剪管道
+- `eket-engine`: `StepSnapshotStore` FTS5 全文搜索 + SQLite 持久化
+- `eket-engine`: `MailboxContextFilter` Recency Decay 三阶段过滤
+- `eket-engine`: `SpanContext` 零成本 tracing（`NoOpSpan` / `TracingSpan`）
+- `eket-engine`: 借鉴 GenericAgent / context-mode / MemOS / claude-context
+
+### Fixed (Red Team TASK-214~221)
+- P0: `std::sync::Mutex` → `tokio::sync::Mutex`（防止 tokio 线程阻塞）
+- P1: archive-before-insert 顺序修复；ContextBudget 写回 inst.context
+- P1: JoinPolicy Any/Quorum 调用 `abort()` 防任务泄漏
+- P1: 连续去重范围修正；Levenshtein 滚动数组防 OOM
+- P1: `include_fields` 豁免 METADATA_KEYS；EscalateToMaster zombie 修复
+- P1: CAS 冲突返回 Result 而非 throw
+- P2: FTS5 DELETE+UPDATE 触发器；文件 SQLite；空 query 早返回；重复 step ID 校验；空 model 启动 fast-fail
+
+### Tests
+- Rust: 244 → 253 passed (+9)
+- Node.js: 1519 passed（稳定）
+
+---
+
+## [2.14.0-beta] - 2026-04-19
+
+### Changed
+- Version graduation: alpha → beta（毕业条件全满足）
+- 新增 RELEASE-POLICY.md（docs/roadmap/）
+- node/package.json 版本从 2.9.2 升至 2.14.0-beta
+
+## [2.13.1] - 2026-04-19
+
+### Changed
+- docs/: conference-style 重组，明确 06-sop vs template/docs 边界（TASK-093）
+- docs/archive: 建立 INDEX，过时文档加 DEPRECATED 标记
+- docs/protocol → protocol/ 合并，清理重复目录
+
+### Fixed
+- HTTP-003 Input Validation：enum 校验缺失 + 错误消息格式（TASK-094）
+- JSON Schema 文件缺失导致 agent registration 校验跳过
+
+## [2.13.0] - 2026-04-19
+
+### Added
+- confluence/memory/ 知识沉淀机制激活：patterns/pitfalls/glossary（TASK-095）
+- k6/ 性能基准集成进 npm bench scripts（TASK-091）
+- web/ 确认为 Node dashboard 前端，补充说明（TASK-092）
+
+### Removed
+- docs-site/ Docusaurus 文档站（TASK-089）
+- template/scripts/ 孤儿目录（TASK-088）
+- 根目录垃圾文件、node/template 残留、node/src/api/examples 双轨
+
+## [2.12.0] - 2026-04-19
+
+### Added
+- SSEEventBus 实现 + canProceed() 断路器触发（TASK-082/083）
+- workflow:run/validate commands + model routing（TASK-080/081）
+- appendTaskMessage + injectActiveContext（TASK-078/079）
+- resumeWithFallback + SQLite claimTask（TASK-076/077）
+
+### Fixed
+- master-election relinquish marker / SQLite 修复（TASK-054）
+- message-queue Redis subscriber 连接泄漏（TASK-055）
+- python-sdk token=None / 枚举降级 / datetime 废弃警告（TASK-056）
+- skills auto-registry 接入，index.ts 导出断层（TASK-057）
+- index.ts createRequire 同步模块加载（TASK-058/059）
+- broadcast auto-merge 静默失败（TASK-060）
+
+### Changed
+- governance: 强制执行 Master/Slaver 规则
+- ci: shell/python 检查 job，hardening lint/audit gates
+
 ## [2.4.0] - 2026-04-09
 
 ### 🧹 清账 Round 13a — 测试 100% + 降级架构补全

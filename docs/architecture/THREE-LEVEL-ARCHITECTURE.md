@@ -1,6 +1,9 @@
 # EKET 三级架构设计
 
-**版本**: v2.3.0
+> ⚠️ **已过时（2026-04-26）**：EKET 已迁移至四级架构（Shell / Rust / Node.js / Shell fallback）。
+> 本文档保留作历史参考。最新架构见 [`README.md`](../../README.md) 和 [`DEGRADATION-STRATEGY.md`](DEGRADATION-STRATEGY.md)。
+
+**版本**: v2.3.0（已冻结）
 **最后更新**: 2026-04-08
 
 ---
