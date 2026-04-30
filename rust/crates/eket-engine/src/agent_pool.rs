@@ -5,7 +5,6 @@
 /// - 负载均衡（轮询 + 最小负载）
 /// - 健康检查 + 自动剔除离线 Agent（heartbeat TTL）
 /// - tokio actor 模式：所有状态封装在 Arc<RwLock<>>
-
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -76,6 +75,7 @@ type RrIndex = HashMap<String, usize>;
 
 pub struct AgentPool {
     agents: Arc<RwLock<HashMap<String, AgentInstance>>>,
+    #[allow(dead_code)]
     rr_index: Arc<RwLock<RrIndex>>,
     /// Health check interval
     health_interval: Duration,
@@ -131,7 +131,10 @@ impl AgentPool {
                 a.role == role
                     && a.status != AgentStatus::Offline
                     && a.available_slots() > 0
-                    && required_skills.iter().all(|s| a.skills.contains(&s.to_string()))
+                    && required_skills.iter().all(|s| {
+                        let s_lower = s.to_lowercase();
+                        a.skills.iter().any(|sk| sk.to_lowercase() == s_lower)
+                    })
             })
             .collect();
 

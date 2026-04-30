@@ -34,7 +34,7 @@ pub struct InstanceRow {
     pub role: String,
     pub skills: Vec<String>,
     pub status: String,
-    pub last_seen: Option<i64>,
+    pub last_seen: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -391,7 +391,7 @@ impl SqliteClient {
     ) -> EketResult<()> {
         let conn = self.pool.get()?;
         let skills_json = serde_json::to_string(skills).unwrap_or_else(|_| "[]".to_owned());
-        let now_ts = chrono::Utc::now().timestamp();
+        let now_rfc3339 = chrono::Utc::now().to_rfc3339();
         conn.execute(
             "INSERT INTO slaver_instances (id, role, skills_json, status, last_seen, metadata_json)
              VALUES (?1, ?2, ?3, ?4, ?5, '{}')
@@ -400,7 +400,7 @@ impl SqliteClient {
                skills_json = excluded.skills_json,
                status = excluded.status,
                last_seen = excluded.last_seen",
-            params![id, role, skills_json, status, now_ts],
+            params![id, role, skills_json, status, now_rfc3339],
         )?;
         Ok(())
     }
@@ -453,13 +453,13 @@ impl SqliteClient {
         Ok(rows > 0)
     }
 
-    /// Update instance last_seen to current Unix timestamp.
+    /// Update instance last_seen to current time in ISO 8601 format.
     pub fn update_instance_last_seen(&self, id: &str) -> EketResult<bool> {
         let conn = self.pool.get()?;
-        let now_ts = chrono::Utc::now().timestamp();
+        let now_rfc3339 = chrono::Utc::now().to_rfc3339();
         let rows = conn.execute(
             "UPDATE slaver_instances SET last_seen = ?1 WHERE id = ?2",
-            params![now_ts, id],
+            params![now_rfc3339, id],
         )?;
         Ok(rows > 0)
     }
@@ -606,7 +606,7 @@ fn map_instance_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<InstanceRow> {
         role: row.get(1)?,
         skills,
         status: row.get(3)?,
-        last_seen: row.get(4)?,
+        last_seen: row.get::<_, Option<String>>(4)?,
     })
 }
 
