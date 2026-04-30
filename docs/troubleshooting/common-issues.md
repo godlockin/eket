@@ -1,6 +1,6 @@
 # EKET Framework 故障排查指南
 
-**版本**: 2.0.0
+**版本**: 2.0.0（Node.js 层参考，部分命令已迁移至 Rust — `eket system:doctor`）
 **最后更新**: 2026-04-02
 
 ---
