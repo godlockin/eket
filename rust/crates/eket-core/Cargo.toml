@@ -7,6 +7,7 @@ edition.workspace = true
 tokio = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+serde_yaml = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 config = { workspace = true }
@@ -20,6 +21,7 @@ uuid = { workspace = true }
 dirs = { workspace = true }
 async-trait = { workspace = true }
 futures = "0.3"
+handlebars = "6"
 hostname = "0.3"
 moka = { workspace = true }
 

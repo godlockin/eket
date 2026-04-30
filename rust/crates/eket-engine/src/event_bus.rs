@@ -7,7 +7,6 @@
 /// - broadcast::channel(1024)：固定容量，订阅者可能 lag
 /// - 每个事件类型独立 channel（避免不同订阅者争抢）
 /// - 死信队列：超过 max_retry 次失败的事件写到 dead_letters
-
 use std::collections::HashMap;
 use std::sync::Arc;
 use serde::{Deserialize, Serialize};
