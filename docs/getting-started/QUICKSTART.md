@@ -1,55 +1,79 @@
 # EKET 快速开始指南
 
-**版本**: 2.0.0
-**最后更新**: 2026-04-06
+**版本**: 2.14.0-beta
+**最后更新**: 2026-04-26
 
 ---
 
-## 5 分钟快速开始
+## 选择模式
+
+| 模式 | 适合场景 | 启动时间 | 内存 |
+|------|---------|---------|------|
+| **Rust CLI**（推荐） | 日常开发、CI | ~8ms | ~12MB |
+| **Shell** | 零依赖、受限环境 | 即时 | <10MB |
+| **Node.js** | Web Dashboard、LLM 集成 | ~1.5s | ~120MB |
+
+---
+
+## 方式一：Rust CLI（推荐，~21ms/cmd）
 
 ### 前置要求
 
-- Node.js >= 18.0.0
-- npm >= 9.0.0
+- Rust >= 1.75（`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`）
 - Git >= 2.30.0
 
-### 步骤 1: 克隆项目
+### 步骤
 
 ```bash
-git clone <eket-repo-url> my-project
-cd my-project
+git clone <eket-repo-url> my-project && cd my-project
+
+# 编译
+cd rust && cargo build --release
+cp target/release/eket ~/.local/bin/ && cd ..
+
+# 验证连通性
+eket system:doctor
+
+# 注册 Slaver 并开始工作
+eket slaver:register --role backend --skills rust
+eket task:claim
 ```
 
-### 步骤 2: 安装依赖
+---
+
+## 方式二：Shell（零依赖）
+
+### 前置要求
+
+- Bash >= 4.0，Git >= 2.30.0（无其他依赖）
+
+### 步骤
 
 ```bash
-cd node && npm install && cd ..
-./scripts/enable-advanced.sh
+git clone <eket-repo-url> my-project && cd my-project
+./scripts/eket-start.sh --role master
 ```
 
-### 步骤 3: 运行初始化向导
+---
+
+## 方式三：Node.js Web 层
+
+### 前置要求
+
+- Node.js >= 18.0.0，npm >= 9.0.0，Git >= 2.30.0
+
+### 步骤
 
 ```bash
-node node/dist/index.js init
-```
+git clone <eket-repo-url> my-project && cd my-project
 
-### 步骤 4: 初始化三仓库
+cd node && npm install && npm run build && cd ..
 
-```bash
-./scripts/init-three-repos.sh
-```
+# 启动（自动拉起 Rust server + Node web 层）
+node node/dist/index.js server:start
 
-### 步骤 5: 启动 Agent
-
-```bash
-# 查看帮助
-/eket-help
-
-# 启动实例
-/eket-start
-
-# 或启用自动模式
-/eket-start -a
+# Web 监控面板
+node node/dist/index.js web:dashboard --port 3000
 ```
 
 ---
