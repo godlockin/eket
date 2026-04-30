@@ -100,7 +100,7 @@ Remote Redis → Local Redis → SQLite → File System
    └─ 领取任务：node dist/index.js task:claim [id]
    └─ 分析设计（编写分析报告）
    └─ TDD 开发：写失败测试 → 实现 → 通过
-   └─ 提交 PR（feature/* → testing → miao → main）
+   └─ 提交 PR（feature/* → testing → main → miao）
 
 6. 代码审核（Master）
    └─ 检查 PR 验证证据（真实 npm test stdout）
