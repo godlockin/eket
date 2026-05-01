@@ -2,6 +2,10 @@
 ///
 /// HeartbeatMonitor: 定期扫描所有实例，TTL 超时则标记 offline + 发布事件
 /// StaleCleaner:     定期扫描 in_progress ticket，文件 mtime 超时则重置为 todo
+<<<<<<< HEAD
+=======
+
+>>>>>>> c4fd2af4b (feat(TASK-003): complete)
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
@@ -61,6 +65,7 @@ impl HeartbeatMonitor {
     }
 
     pub async fn check_once(&self) {
+<<<<<<< HEAD
         // list_instances reads last_seen as i64 (unix ts), but InstanceRegistry stores as RFC3339.
         // Use direct SQL to handle both formats.
         struct RawInst {
@@ -94,6 +99,12 @@ impl HeartbeatMonitor {
             }
             Err(e) => {
                 warn!("[HeartbeatMonitor] spawn_blocking failed: {e}");
+=======
+        let instances = match self.db.list_instances(None) {
+            Ok(v) => v,
+            Err(e) => {
+                warn!("[HeartbeatMonitor] list_instances failed: {e}");
+>>>>>>> c4fd2af4b (feat(TASK-003): complete)
                 return;
             }
         };
@@ -105,6 +116,7 @@ impl HeartbeatMonitor {
             if inst.status == "offline" {
                 continue;
             }
+<<<<<<< HEAD
             // Parse last_seen: try i64 first, then RFC3339
             let last_seen_ts: Option<i64> = inst.last_seen_str.as_deref().and_then(|s| {
                 s.parse::<i64>().ok().or_else(|| {
@@ -119,6 +131,12 @@ impl HeartbeatMonitor {
                 None => true,
             };
 
+=======
+            let stale = match inst.last_seen {
+                Some(ts) => now_ts - ts > ttl_secs,
+                None => true, // no last_seen = assume stale
+            };
+>>>>>>> c4fd2af4b (feat(TASK-003): complete)
             if stale {
                 debug!("[HeartbeatMonitor] marking offline: {}", inst.id);
                 if let Err(e) = self.registry.mark_offline(&inst.id).await {
@@ -298,6 +316,7 @@ mod tests {
         ));
         monitor.check_once().await;
 
+<<<<<<< HEAD
         // Check via direct SQL
         let status: String = tokio::task::spawn_blocking({
             let db2 = Arc::clone(&db);
@@ -314,6 +333,11 @@ mod tests {
         .await
         .unwrap();
         assert_eq!(status, "offline", "stale instance must be marked offline");
+=======
+        // Verify status = offline via direct DB query
+        let inst = db.get_instance("inst-stale").unwrap().unwrap();
+        assert_eq!(inst.status, "offline", "stale instance must be marked offline");
+>>>>>>> c4fd2af4b (feat(TASK-003): complete)
     }
 
     #[tokio::test]
@@ -331,6 +355,7 @@ mod tests {
         ));
         monitor.check_once().await;
 
+<<<<<<< HEAD
         // Check via direct SQL (registry stores last_seen as RFC3339, db.get_instance expects i64)
         let status: String = tokio::task::spawn_blocking({
             let db2 = Arc::clone(&db);
@@ -347,6 +372,10 @@ mod tests {
         .await
         .unwrap();
         assert_ne!(status, "offline", "fresh instance must not be marked offline");
+=======
+        let inst = db.get_instance("inst-fresh").unwrap().unwrap();
+        assert_ne!(inst.status, "offline", "fresh instance must not be marked offline");
+>>>>>>> c4fd2af4b (feat(TASK-003): complete)
     }
 
     #[tokio::test]
@@ -382,6 +411,7 @@ mod tests {
         // Should not error or double-publish
         monitor.check_once().await;
 
+<<<<<<< HEAD
         let status: String = tokio::task::spawn_blocking({
             let db2 = Arc::clone(&db);
             move || {
@@ -397,6 +427,10 @@ mod tests {
         .await
         .unwrap();
         assert_eq!(status, "offline");
+=======
+        let inst = db.get_instance("inst-already-off").unwrap().unwrap();
+        assert_eq!(inst.status, "offline");
+>>>>>>> c4fd2af4b (feat(TASK-003): complete)
     }
 
     // ── StaleCleaner ─────────────────────────────────────────────────────────
