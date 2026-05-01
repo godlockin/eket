@@ -103,7 +103,51 @@ git diff origin/main origin/miao | wc -l      # 应为 0
 | `git reset --hard` | `git revert`（创建反向 commit，保留历史） |
 | `git rebase` 公共分支 | `git merge`（保留完整历史） |
 
-## 5. 历史教训
+## 5. 非代码内容更新 SOP（docs / memory / skill）
+
+> **场景**：修改 `confluence/memory/`、`.claude/skills/eket/SKILL.md`、`README`、`template/` 等非代码文件时。
+
+### 正确流程
+
+```bash
+# 1. 创建 feature 分支（即使是纯文档改动）
+git checkout miao && git pull origin miao
+git checkout -b feature/docs-<brief-desc>
+
+# 2. 在 feature 分支上做修改并提交
+# ...修改文件...
+git add <files> && git commit -m "docs: ..."
+
+# 3. PR 合入 miao（或直接 merge，文档类可简化）
+git checkout miao && git merge feature/docs-<brief-desc> && git push origin miao
+
+# 4. 同步三分支（MUST，不能遗漏）
+git checkout testing && git merge origin/miao --no-edit && git push origin testing
+git checkout main    && git merge origin/testing --no-edit && git push origin main
+git checkout miao    # 回到工作分支
+```
+
+### SKILL.md 专项规则
+
+```
+修改顺序（严格）：
+  1. 改源文件：eket/.claude/skills/eket/SKILL.md  ← 唯一正确入口
+  2. commit + push
+  3. 部署到本地：bash scripts/install-skill.sh --update
+  ❌ 禁止直接改 ~/.claude/skills/eket/SKILL.md（部署目标，改了也会被覆盖）
+```
+
+### 常见违规（本次复盘）
+
+| 违规 | 后果 | 修正 |
+|------|------|------|
+| 直接在 `miao` 上提交，不走 feature 分支 | 分支污染，三分支不对齐 | 所有改动必须走 feature/* |
+| 先改 `~/.claude/...` 再补同步 | 源文件滞后，安装脚本覆盖掉改动 | 永远改源文件 |
+| 改完不同步三分支 | `testing`/`main` 落后，需人工提醒 | 每次 push miao 后立即执行三分支 SOP |
+
+---
+
+## 6. 历史教训
 
 ### EPIC-003 回灌教训
 
