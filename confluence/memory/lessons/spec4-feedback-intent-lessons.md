@@ -2,6 +2,8 @@
 
 **项目**：akea search — 多层意图聚合 + 反馈系统（12 Tasks, 32 Tests）
 
+> ⚠️ 本文来自外部项目 akea search（Python/FastAPI），通用原则可参考，技术细节不直接适用于 EKET 主栈（Rust/Node.js）。
+
 ## 1. SQLite In-Memory + TestClient 线程隔离
 
 详见 → `pitfalls/sqlite-inmemory-testclient-thread.md`
@@ -44,7 +46,7 @@
 
 ## 5. Write Tool 大文件静默失败
 
-详见 → `context-token-budget-guide.md` §2
+详见 → `../context-token-budget-guide.md` §2
 
 **TL;DR**：`Write` 含 >~8k tokens content 会 `InputValidationError: missing 'content'`。分块写入（首次 Write ~150 行，后续 Edit 追加 <500 行/块）。
 
