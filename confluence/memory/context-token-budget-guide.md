@@ -90,4 +90,4 @@ Agent 接近上下文极限时的症状：
 
 **参见**：
 - [agent-prompt-template.md](agent-prompt-template.md) — 防卡死规则含输出限制
-- [MULTI-AGENT-COLLAB-LESSONS.md](MULTI-AGENT-COLLAB-LESSONS.md) — 分析瘫痪模式
+- [lessons/multi-agent-collab-lessons.md](lessons/multi-agent-collab-lessons.md) — 分析瘫痪模式
