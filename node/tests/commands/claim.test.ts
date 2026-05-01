@@ -32,8 +32,8 @@ describe('claimTask concurrent safety', () => {
     // Both share same DB file - connect B to same db
     clientB.connect();
 
-    const resultA = clientA.claimTask('TICKET-001', 'slaver_A');
-    const resultB = clientB.claimTask('TICKET-001', 'slaver_B');
+    const resultA = clientA.claimTaskById('TICKET-001', 'slaver_A');
+    const resultB = clientB.claimTaskById('TICKET-001', 'slaver_B');
 
     expect(resultA.success).toBe(true);
     expect(resultB.success).toBe(true);
@@ -50,8 +50,8 @@ describe('claimTask concurrent safety', () => {
     const client = new SQLiteClient(dbPath);
     client.connect();
 
-    const first = client.claimTask('TICKET-002', 'slaver_X');
-    const second = client.claimTask('TICKET-002', 'slaver_Y');
+    const first = client.claimTaskById('TICKET-002', 'slaver_X');
+    const second = client.claimTaskById('TICKET-002', 'slaver_Y');
 
     expect(first.success).toBe(true);
     expect(first.data).toBe(true);
@@ -64,7 +64,7 @@ describe('claimTask concurrent safety', () => {
   it('claimTask fails gracefully when db not connected', () => {
     const client = new SQLiteClient(dbPath);
     // Not connected
-    const result = client.claimTask('TICKET-003', 'slaver_Z');
+    const result = client.claimTaskById('TICKET-003', 'slaver_Z');
     expect(result.success).toBe(false);
     expect(result.error?.message).toContain('not connected');
   });
@@ -73,8 +73,8 @@ describe('claimTask concurrent safety', () => {
     const client = new SQLiteClient(dbPath);
     client.connect();
 
-    const r1 = client.claimTask('TICKET-A', 'slaver_1');
-    const r2 = client.claimTask('TICKET-B', 'slaver_2');
+    const r1 = client.claimTaskById('TICKET-A', 'slaver_1');
+    const r2 = client.claimTaskById('TICKET-B', 'slaver_2');
 
     expect(r1.success).toBe(true);
     expect(r1.data).toBe(true);
