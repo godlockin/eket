@@ -1,6 +1,6 @@
 ---
 name: eket
-description: EKET AI 智能体协作框架 - Master-Slaver 多智能体开发框架 (v2.9.2 / Round 25 Rust core 重构进行中)
+description: EKET AI 智能体协作框架 - Master-Slaver 多智能体开发框架 (v2.9.2 / Node.js ≥20 / EPIC-004 完成)
 ---
 
 # EKET Framework
@@ -322,20 +322,23 @@ Level 1: Shell 脚本          # lib/adapters/hybrid-adapter.sh 基础模式
 所有命令返回 `Result<T>` 类型，失败时输出错误码并以非零退出：
 
 ```typescript
-// 错误码定义：node/src/types/index.ts → EketErrorCode 枚举
+// 错误码定义：node/src/types/common.ts → EketErrorCode 枚举（barrel re-export via index.ts）
 // 失败示例：[ERROR] REDIS_CONNECTION_FAILED: Cannot connect to Redis at localhost:6379
 ```
 
 ## Branch Strategy
 
 ```
-feature/{ticket-id}-{desc}  →  PR  →  testing  →  测试通过  →  PR  →  miao  →  PR  →  main
+feature/{ticket-id}-{desc}  →  PR  →  testing  →  main  →  miao
 ```
 
-- `main`：发布快照，版本节点，仅接受来自 `miao` 的 PR
-- `miao`：稳定主干，长期集成，PR + CI + 1 review 必须
+- `main`：稳定主干，长期集成，PR + CI 必须
 - `testing`：测试集成，CI 覆盖
+- `miao`：发布快照，接收 main 同步（`git merge -X ours`）
 - `feature/*`：开放，Slaver 开发使用
+
+**三分支同步**：`bash scripts/sync-branches.sh`（main→testing→miao 一键对齐）
+**Drift 检测**：`bash scripts/check-branch-drift.sh`（内容感知，非 commit 计数）
 
 ## References
 
