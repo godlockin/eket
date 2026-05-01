@@ -101,6 +101,74 @@ cd rust && cargo build --release           # 首次编译（~2.5 分钟）
 
 可用子命令完整列表：`./target/release/eket --help` 或看 `rust/crates/eket-cli/src/commands/`
 
+### Rust CLI 完整命令速查
+
+```bash
+# 任务
+eket task:claim [TASK-NNN]
+eket task:complete TASK-NNN [--no-trailer]
+eket task:create "title" [--type feature] [--priority P1] [--blocked-by TASK-X]
+eket task:test TASK-NNN
+eket task:resume TASK-NNN
+eket task:progress
+eket task:handoff TASK-NNN --to slaver_2
+
+# Master
+eket master:heartbeat
+eket master:poll
+
+# Slaver
+eket slaver:register --role backend --skills rust,python
+eket slaver:poll
+eket slaver:set-role <role>
+
+# 知识库
+eket knowledge:index --dir jira/tickets/
+eket knowledge:search "keyword"
+eket recommend TASK-NNN
+
+# 团队 & 项目
+eket team:status
+eket project:status
+eket workflow:status
+
+# 数据库
+eket db:migrate
+eket db:status
+
+# 票据 & 依赖
+eket ticket:index
+eket dependency:analyze
+
+# 文档体系
+eket doc:status [--epic EPIC-NNN]   # 检查 EPIC 文档完整性
+eket doc:create <type>              # type: design|adr|runbook|onboarding
+
+# EPIC / Sprint
+eket epic:create <EPIC-ID> "title"  # 创建 EPIC + confluence/requirements/<EPIC>-analysis.md
+eket epic:plan <EPIC-ID>            # 生成/刷新架构计划 confluence/architecture/<EPIC>-plan.md
+
+# Roadmap / Spike
+eket roadmap:update
+eket spike:create "title"
+eket spike:complete SPIKE-NNN
+
+# 专家系统
+eket expert:compose --skills tdd,systematic-debugging
+eket expert:compose --epic EPIC-001
+eket expert:skills <expert-id>
+eket expert:search "keyword" [--pkg default|extended] [--limit 10]
+
+# 其他
+eket gate:review TASK-NNN
+eket submit:pr
+eket skill:extract
+eket alerts:list
+eket system:doctor
+eket server [--port 9877]
+eket version
+```
+
 ## Commands
 
 ### 实例管理
