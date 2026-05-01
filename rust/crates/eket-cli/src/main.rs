@@ -3,6 +3,8 @@ use clap::{Parser, Subcommand};
 use tracing_subscriber::{fmt, EnvFilter};
 
 mod commands;
+pub mod slaver_rules;
+pub mod guardrail_middleware;
 
 #[derive(Parser)]
 #[command(
@@ -54,6 +56,10 @@ enum Commands {
     /// Create a new ticket
     #[command(name = "task:create")]
     TaskCreate(commands::task_create::TaskCreateArgs),
+
+    /// Record test results for a ticket
+    #[command(name = "task:test")]
+    TaskTest(commands::task_test::TaskTestArgs),
 
     /// Start HTTP API server
     #[command(name = "server")]
@@ -118,6 +124,58 @@ enum Commands {
     /// Show workflow definition and step budgets
     #[command(name = "workflow:status")]
     WorkflowStatus(commands::workflow_status::WorkflowStatusArgs),
+
+    /// Scan tickets dir and index metadata into SQLite ticket_index table
+    #[command(name = "ticket:index")]
+    TicketIndex(commands::ticket_index::TicketIndexArgs),
+
+    /// Analyze ticket dependencies via TF-IDF similarity
+    #[command(name = "dependency:analyze")]
+    DependencyAnalyze(commands::dependency_analyze::DependencyAnalyzeArgs),
+
+    /// Set slaver role (writes to .eket/slaver-role + SQLite)
+    #[command(name = "slaver:set-role")]
+    SlaverSetRole(commands::slaver_set_role::SlaverSetRoleArgs),
+
+    /// Extract skills/domain from active ticket context
+    #[command(name = "skill:extract")]
+    SkillExtract,
+
+    /// List alerts from SQLite alerts table
+    #[command(name = "alerts:list")]
+    AlertsList,
+
+    /// Check EPIC document completeness (epic.md, analysis, plan, retros)
+    #[command(name = "doc:status")]
+    DocStatus(commands::doc_status::DocStatusArgs),
+
+    /// Create a new epic with scaffold docs
+    #[command(name = "epic:create")]
+    EpicCreate(commands::epic_create::EpicCreateArgs),
+
+    /// Generate / refresh architecture plan for an epic
+    #[command(name = "epic:plan")]
+    EpicPlan(commands::epic_plan::EpicPlanArgs),
+
+    /// Create or update project roadmap quarter section
+    #[command(name = "roadmap:update")]
+    RoadmapUpdate(commands::roadmap_update::RoadmapUpdateArgs),
+
+    /// Create a spike ticket and plan document
+    #[command(name = "spike:create")]
+    SpikeCreate(commands::spike_create::SpikeCreateArgs),
+
+    /// Complete a spike and write findings document
+    #[command(name = "spike:complete")]
+    SpikeComplete(commands::spike_complete::SpikeCompleteArgs),
+
+    /// Create a design/adr/runbook/onboarding document
+    #[command(name = "doc:create")]
+    DocCreate(commands::doc_create::DocCreateArgs),
+
+    /// Compose expert team by skills or epic type
+    #[command(name = "expert:compose")]
+    ExpertCompose(commands::expert_compose::ExpertComposeArgs),
 }
 
 #[tokio::main]
@@ -142,6 +200,7 @@ async fn main() -> Result<()> {
             commands::task_complete::run(ticket_id, no_trailer).await
         }
         Commands::TaskCreate(args) => commands::task_create::run(args).await,
+        Commands::TaskTest(args) => commands::task_test::run(args).await,
         Commands::Server(args) => commands::server::run(args).await,
         Commands::SlaverRegister(args) => commands::slaver_register::run(args).await,
         Commands::SlaverPoll(args) => commands::slaver_poll::run(args).await,
@@ -164,5 +223,18 @@ async fn main() -> Result<()> {
         }
         Commands::ProjectStatus(args) => commands::project_status::run(args).await,
         Commands::WorkflowStatus(args) => commands::workflow_status::run(args).await,
+        Commands::TicketIndex(args) => commands::ticket_index::run(args).await,
+        Commands::DependencyAnalyze(args) => commands::dependency_analyze::run(args).await,
+        Commands::SlaverSetRole(args) => commands::slaver_set_role::run(args).await,
+        Commands::SkillExtract => commands::skill_extract::run().await,
+        Commands::AlertsList => commands::alerts_list::run().await,
+        Commands::DocStatus(args) => commands::doc_status::run(args).await,
+        Commands::EpicCreate(args) => commands::epic_create::run(args).await,
+        Commands::EpicPlan(args) => commands::epic_plan::run(args).await,
+        Commands::RoadmapUpdate(args) => commands::roadmap_update::run(args).await,
+        Commands::SpikeCreate(args) => commands::spike_create::run(args).await,
+        Commands::SpikeComplete(args) => commands::spike_complete::run(args).await,
+        Commands::DocCreate(args) => commands::doc_create::run(args).await,
+        Commands::ExpertCompose(args) => commands::expert_compose::run(args).await,
     }
 }

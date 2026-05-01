@@ -15,6 +15,9 @@
 | 重构/迁移 | 4 | 架构 / 并发 / 回滚策略 / QA |
 | 生产事故根因分析 | 5 | SRE / 安全 / 性能 / 架构 / 数据 |
 | 日常 ticket 拆解 | 可跳过 | —— |
+| Spike 技术调研 | 2-3 | 架构师 + 领域专家（backend/ai/devops 视 spike 方向） |
+| Roadmap 季度规划 | 3 | 架构师 + 产品经理 + DevOps（或全栈） |
+| 设计/ADR 评审 | 3 | 架构师 + 后端 + 相关领域专家 |
 
 **不召唤**：单一已知模式的实现任务（CRUD / 文案修改 / 配置项）。召唤专家组 = 承认存在**不确定性**。
 
@@ -237,3 +240,71 @@ test_strategy:
 - 本 Playbook §3.2 的 `test_strategy` → 对应 RULES §3 "PR 必须附真实 npm test stdout"
 - 本 Playbook §4.2 留痕要求 → 对应 RULES §2 "禁止伪造测试结果"
 - 本 Playbook §4.3 分歧解决不得私下消除 → 对应 RULES §2 "禁止自我闭环审查"
+
+---
+
+## §6 Spike 技术调研流程
+
+### 6.1 何时开 Spike
+
+满足以下任一条件时，**必须**先开 Spike，禁止直接拆 ticket：
+- 技术方案存在 ≥2 个可行路径，无法直接决策
+- 引入新技术/框架，团队没有实际使用经验
+- 性能/安全边界不明确，需要实验数据支撑
+
+### 6.2 Spike 流程
+
+```
+1. Master 执行 `eket spike:create SPIKE-NNN "调研主题" [--epic EPIC-ID]`
+   → 自动创建 confluence/spikes/SPIKE-NNN/plan.md + jira ticket
+2. 填写 plan.md：问题陈述 / 调研范围 / 成功标准
+3. 分配给对应专家角色的 Slaver（时间盒 ≤3天）
+4. Slaver 完成后执行 `eket spike:complete SPIKE-NNN --outcome adopt|reject|defer`
+   → 自动创建 findings.md
+5. Master 读 findings.md，决策后：
+   - adopt → 基于结论创建实现 tickets
+   - reject → 记录到 confluence/memory/pitfalls/
+   - defer → 加入 backlog
+```
+
+### 6.3 Spike 专家组搭配
+
+| Spike 方向 | 必选专家 | 可选专家（按需） |
+|-----------|---------|----------------|
+| 后端技术选型 | 架构师 | 后端工程师、DevOps |
+| 前端框架调研 | 架构师 | 前端工程师、全栈 |
+| AI/ML 可行性 | 架构师 | AI/ML（扩展包） |
+| 安全方案 | 架构师 | 安全工程师（扩展包） |
+| 性能优化 | 架构师 | 后端工程师 |
+
+### 6.4 时间盒规则
+
+- **硬限制**：≤72小时（3个工作日）
+- 超时未产出 findings → 自动升级为 BLOCKED，Master 介入
+- findings 结论必须是 adopt / reject / defer 三选一，禁止模糊结论
+
+---
+
+## §7 Roadmap 季度规划流程
+
+### 7.1 触发时机
+- 每季度初（Q1/Q2/Q3/Q4 第一周）
+- 重大架构变更后
+- 新业务方向确定后
+
+### 7.2 流程
+
+```
+1. Master 执行 `eket roadmap:update <PROJECT_ID> --quarter Q2-2026`
+   → 创建/更新 confluence/roadmap/<PROJECT_ID>.md
+2. 召唤专家组（架构师 + 产品经理 + DevOps/全栈）
+3. 专家组填写：
+   - 季度目标（OKR 对齐）
+   - Epic 优先级列表
+   - 里程碑时间线
+   - 风险与依赖
+4. Master 审核后更新 jira/epics/ 状态
+```
+
+### 7.3 Roadmap 文档位置
+`confluence/roadmap/<PROJECT_ID>.md`（按季度追加 section，不覆盖历史）
