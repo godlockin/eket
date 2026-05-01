@@ -1,71 +1,108 @@
 /**
  * EKET Framework - Instance Types
- * Version: 0.7.2
- *
- * Instance 注册表类型定义，支持人类和 AI 混合控制
  */
 
-/**
- * Instance 控制器类型
- * - ai: AI 控制的 Instance（自动执行任务）
- * - human: 人类控制的 Instance（通过 Claude Code 手动操作）
- */
+import type { AgentRole } from './common.js';
+import type { LevelChange, SkillFeedback } from './skill.js';
+
+// ============================================================================
+// Instance Types (Phase 4.1)
+// ============================================================================
+
+export interface Instance {
+  id: string;
+  type: 'human' | 'ai';
+  agent_type: AgentRole;
+  skills: string[];
+  status: 'idle' | 'busy' | 'offline';
+  currentTaskId?: string;
+  currentLoad: number;
+  lastHeartbeat?: number;
+  metadata?: Record<string, unknown>;
+  updatedAt?: number;
+  currentLevel?: 1 | 2 | 3;
+  levelChanges?: LevelChange[];
+}
+
+export interface InstanceRegistryConfig {
+  redisPrefix?: string;
+  heartbeatTimeout?: number;
+}
+
+// ============================================================================
+// SlaveResult & Aggregation (TASK-121)
+// ============================================================================
+
+export interface SlaveResult {
+  ticketId: string;
+  slaverId: string;
+  completedAt: number;
+  prNumber?: number;
+  prUrl?: string;
+  filesChanged: string[];
+  testsAdded: number;
+  testsPassed: number;
+  keyDecisions: string[];
+  deferredIssues: string[];
+  skillFeedback?: SkillFeedback;
+}
+
+export interface FileConflict {
+  file: string;
+  tickets: string[];
+}
+
+export interface AggregatedResult {
+  tickets: string[];
+  allFilesChanged: string[];
+  conflicts: FileConflict[];
+  totalTestsAdded: number;
+  totalTestsPassed: number;
+}
+
+// ============================================================================
+// Loop Context (TASK-120)
+// ============================================================================
+
+export interface LoopContext {
+  attempt: number;
+  lastFailReason: string;
+}
+
+// ============================================================================
+// Instance Registry Types (v0.7.2)
+// ============================================================================
+
 export type InstanceController = 'ai' | 'human';
-
-/**
- * Instance 角色
- * - master: 主控制节点，负责任务拆解和 Review
- * - slaver: 执行节点，负责任务执行
- */
 export type InstanceRole = 'master' | 'slaver';
-
-/**
- * Instance 状态
- * - initializing: 初始化中
- * - idle: 空闲，可领取任务
- * - busy: 忙碌，正在执行任务
- * - offline: 离线
- */
 export type InstanceStatus = 'initializing' | 'idle' | 'busy' | 'offline';
 
-/**
- * Instance 配置信息
- */
 export interface InstanceConfig {
   controller: InstanceController;
   role: InstanceRole;
-  agent_type: string; // product_manager, frontend_dev, backend_dev, etc.
+  agent_type: string;
   skills: string[];
-  auto_mode?: boolean; // 是否启用自动模式
+  auto_mode?: boolean;
 }
 
-/**
- * Instance 完整信息（注册表存储）
- */
 export interface InstanceInfo {
-  id: string; // 唯一标识符，如 agent_frontend_dev_001
+  id: string;
   controller: InstanceController;
   role: InstanceRole;
-  agent_type: string; // 具体代理类型
-  skills: string[]; // 技能列表
+  agent_type: string;
+  skills: string[];
   status: InstanceStatus;
-  currentTask?: string; // 当前任务 ID
-  startedAt: number; // 启动时间戳
-  lastHeartbeat: number; // 最后心跳时间戳
+  currentTask?: string;
+  startedAt: number;
+  lastHeartbeat: number;
 }
 
-/**
- * Instance 注册结果
- */
 export interface InstanceRegistryResult {
   success: boolean;
   instanceId?: string;
   error?: string;
 }
 
-/**
- * Instance 查询选项
- */
 export interface InstanceQueryOptions {
   role?: InstanceRole;
   controller?: InstanceController;
@@ -73,9 +110,6 @@ export interface InstanceQueryOptions {
   agent_type?: string;
 }
 
-/**
- * Instance 状态更新数据
- */
 export interface InstanceStatusUpdate {
   status: InstanceStatus;
   currentTask?: string;

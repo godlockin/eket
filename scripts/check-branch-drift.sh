@@ -31,16 +31,27 @@ check_drift() {
   local file_diff
   file_diff=$(git diff --shortstat "origin/$branch_a" "origin/$branch_b" 2>/dev/null || echo "")
 
+  # Primary signal: content diff. If content is identical, commit divergence is harmless
+  # (e.g. cherry-pick history causes different SHAs for same content)
+  local content_identical=false
+  if [[ -z "$file_diff" ]]; then
+    content_identical=true
+  fi
+
   if [[ $max_drift -gt $threshold ]]; then
-    if [[ "$severity" == "error" ]]; then
+    if $content_identical; then
+      echo -e "${GREEN}OK${NC}: $branch_a ↔ $branch_b content identical (commit history diverges: $max_drift, threshold: $threshold)"
+      echo "  → $branch_a..$branch_b: $a_to_b | $branch_b..$branch_a: $b_to_a"
+      echo "  → Content: identical (history divergence only, safe to ignore)"
+    elif [[ "$severity" == "error" ]]; then
       echo -e "${RED}FAIL${NC}: $branch_a ↔ $branch_b drift = $max_drift commits (threshold: $threshold)"
       echo "  → $branch_a..$branch_b: $a_to_b | $branch_b..$branch_a: $b_to_a"
-      [[ -n "$file_diff" ]] && echo "  → Content: $file_diff"
+      echo "  → Content: $file_diff"
       EXIT_CODE=1
     else
       echo -e "${YELLOW}WARN${NC}: $branch_a ↔ $branch_b drift = $max_drift commits (threshold: $threshold)"
       echo "  → $branch_a..$branch_b: $a_to_b | $branch_b..$branch_a: $b_to_a"
-      [[ -n "$file_diff" ]] && echo "  → Content: $file_diff"
+      echo "  → Content: $file_diff"
     fi
   else
     echo -e "${GREEN}OK${NC}: $branch_a ↔ $branch_b drift = $max_drift commits (threshold: $threshold)"

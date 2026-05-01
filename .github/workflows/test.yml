@@ -9,6 +9,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['22', '24']
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
@@ -16,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
           cache-dependency-path: node/package-lock.json
 
@@ -32,6 +36,6 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-node${{ matrix.node-version }}
           path: node/coverage/
           retention-days: 7
