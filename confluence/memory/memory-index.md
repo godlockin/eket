@@ -31,5 +31,7 @@ retrospectives/2026/20260421-rust-migration-review.md: EKET Rust 迁移综合 Re
 retrospectives/2026/README.md: 2026 归档回顾 Stubs
 branch-strategy-guide.md: 分支策略指南（拓扑/决策矩阵/三分支对齐SOP/危险操作） #git #branch #sop
 worktree-agent-guide.md: Worktree Agent 产物丢失根因分析与最佳实践 #worktree #agent #git #pitfall
+EPIC-004-improvement-lessons.md: EPIC-004 持续改进经验教训（Worktree 丢失/防卡死/Post-Process/分支清理） #epic #lessons #worktree #anti-hang
+agent-prompt-template.md: Agent Prompt 防卡死模板（Bash timeout/SSH push/心跳监控SOP） #agent #anti-hang #template
 retrospectives/INBOX/README.md: Retrospectives INBOX
 retrospectives/sprint-001-retro.md: Sprint 001 回顾
