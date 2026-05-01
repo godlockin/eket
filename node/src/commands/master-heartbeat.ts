@@ -774,6 +774,41 @@ export function printTimelines(report: HeartbeatReport): void {
 }
 
 // ============================================================================
+// Skill Feedback Processing (TASK-104b)
+// ============================================================================
+
+/**
+ * 查询最近 1h 未处理反馈，更新 skill_graph 边权重
+ */
+async function processSkillFeedback(projectRoot: string): Promise<void> {
+  try {
+    const dbPath = path.join(projectRoot, '.eket', 'eket.db');
+    const client = createSQLiteClient(dbPath);
+    await client.connect();
+
+    const records = await client.getUnprocessedFeedback(1);
+    for (const record of records) {
+      const { feedback } = record;
+      const nodes = [...feedback.activatedSkills, ...feedback.activatedExperts];
+      // 两两更新边权重
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          await client.updateEdgeWeight(nodes[i], nodes[j], 0.1);
+          await client.updateEdgeWeight(nodes[j], nodes[i], 0.1);
+        }
+      }
+      await client.markFeedbackProcessed(record.id);
+      console.log(`[skill-graph] Processed feedback for ${feedback.ticketId}, updated ${nodes.length} nodes`);
+    }
+
+    await client.close();
+  } catch (e: unknown) {
+    // Non-fatal
+    console.warn(`[skill-graph] Feedback processing failed: ${(e as Error).message ?? e}`);
+  }
+}
+
+// ============================================================================
 // Command Registration
 // ============================================================================
 
@@ -788,7 +823,7 @@ export function registerMasterHeartbeat(program: Command): void {
     .option('--timeline', '输出每个 ticket 的执行时间线')
     .option('--project-root <path>', '项目根目录（默认: 当前目录）', process.cwd())
     .action(
-      (options: { json?: boolean; brief?: boolean; timeline?: boolean; projectRoot: string }) => {
+      async (options: { json?: boolean; brief?: boolean; timeline?: boolean; projectRoot: string }) => {
         try {
           const projectRoot = path.resolve(options.projectRoot);
 
@@ -828,6 +863,9 @@ export function registerMasterHeartbeat(program: Command): void {
           } else {
             printReport(report);
           }
+
+          // Process skill_graph feedback (TASK-104b)
+          await processSkillFeedback(path.resolve(options.projectRoot));
 
           // Exit with non-zero if RED (P0 inbox or stale slavers)
           if (report.health === 'RED') {
