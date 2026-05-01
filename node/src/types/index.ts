@@ -48,6 +48,27 @@ export interface SlaverHeartbeat {
 }
 
 // ============================================================================
+// Skill Graph Types (TASK-104b)
+// ============================================================================
+
+export interface SkillNodeRecord {
+  id: string;
+  type: 'skill' | 'expert';
+  domain: string;
+  level: 1 | 2 | 3;
+  model_hint?: string;
+  triggers?: string[];
+}
+
+export interface SkillEdgeRecord {
+  source_id: string;
+  target_id: string;
+  weight: number;
+  co_activation_count: number;
+  last_activated_at: string;
+}
+
+// ============================================================================
 // SQLite Types
 // ============================================================================
 
@@ -280,6 +301,8 @@ export interface Instance {
   lastHeartbeat?: number;
   metadata?: Record<string, unknown>;
   updatedAt?: number; // Added for compatibility
+  currentLevel?: 1 | 2 | 3;
+  levelChanges?: LevelChange[];
 }
 
 export interface InstanceRegistryConfig {
@@ -1260,4 +1283,169 @@ export interface ProgressReport {
     checklist: SelfCheckItem[];
     analysisParalysisFlag: boolean;
   };
+}
+
+// ============================================================================
+// SSE Task Event Types (TASK-109)
+// ============================================================================
+
+export type TaskEventType =
+  | 'task_started'
+  | 'task_running'
+  | 'task_completed'
+  | 'task_failed'
+  | 'task_timed_out';
+
+export interface TaskEvent {
+  type: TaskEventType;
+  ticketId: string;
+  slaverId: string;
+  timestamp: string;
+  payload?: Record<string, unknown>;
+}
+
+/**
+ * Task Message — 结构化存储 Slaver 执行过程中的 LLM 消息
+ */
+export interface TaskMessage {
+  id?: number;
+  task_id: string;
+  seq: number;
+  type: 'text' | 'tool_use' | 'tool_result' | 'thinking' | 'error';
+  tool?: string | null;
+  content?: string | null;
+  input_json?: string | null;
+  output?: string | null;
+  created_at?: string;
+}
+
+/**
+ * Task Envelope — Master 派发任务时附带的完整上下文，跨 session 不丢失
+ */
+export interface TaskEnvelope {
+  ticketId: string;
+  mode: 'default' | 'ultrawork' | 'debug';
+  requiredSkills: string[];
+  contextSnapshot?: string;
+  dispatchedAt: number;
+}
+
+/**
+ * Ultrareview — 多 Agent 独立代码审查结果 (TASK-119)
+ */
+export interface ReviewerResult {
+  reviewerId: string;
+  focus: string;
+  issues: Array<{ severity: 'critical' | 'warning' | 'info'; message: string; file?: string }>;
+  score: number; // 0-100
+}
+
+export interface UltrareviewReport {
+  prNumber: number;
+  overallScore: number;
+  reviewers: ReviewerResult[];
+  topIssues: Array<{ severity: string; message: string; reviewers: string[] }>;
+  recommendation: 'approve' | 'request-changes' | 'comment';
+  generatedAt: number;
+}
+
+// ============================================================================
+// Loop Context (TASK-120)
+// ============================================================================
+
+export interface LoopContext {
+  attempt: number;
+  lastFailReason: string;
+}
+
+// Base state note: pipeline states may include _loopContext when inside a loop node
+// _loopContext?: LoopContext
+
+// ============================================================================
+// Skill Feedback Types (TASK-104b)
+// ============================================================================
+
+export interface LevelChange {
+  from: number;
+  to: number;
+  reason: string;
+  at: string; // ISO timestamp
+}
+
+export interface SkillFeedback {
+  ticketId: string;
+  slaverId: string;
+  recommendedLevel: 1 | 2 | 3;
+  actualLevel: 1 | 2 | 3;
+  activatedSkills: string[];
+  activatedExperts: string[];
+  levelChanges: LevelChange[];
+  completedAt: string;
+}
+
+// ============================================================================
+// SlaveResult & Aggregation (TASK-121)
+// ============================================================================
+
+export interface SlaveResult {
+  ticketId: string;
+  slaverId: string;
+  completedAt: number;
+  prNumber?: number;
+  prUrl?: string;
+  filesChanged: string[];
+  testsAdded: number;
+  testsPassed: number;
+  keyDecisions: string[];
+  deferredIssues: string[];
+  skillFeedback?: SkillFeedback;
+}
+
+export interface FileConflict {
+  file: string;
+  tickets: string[];
+}
+
+export interface AggregatedResult {
+  tickets: string[];
+  allFilesChanged: string[];
+  conflicts: FileConflict[];
+  totalTestsAdded: number;
+  totalTestsPassed: number;
+}
+
+// ============================================================================
+// Completion Validator Types (TASK-116)
+// ============================================================================
+
+export interface ValidationCheck {
+  dimension: 'architecture' | 'code-style' | 'acceptance-criteria';
+  passed: boolean;
+  message: string;
+  source: string;
+}
+
+export interface ValidationReport {
+  passed: boolean;
+  checks: ValidationCheck[];
+  summary: string;
+}
+
+/**
+ * Ultrareview — 多 Agent 独立代码审查结果 (TASK-119)
+ */
+export interface ReviewerResult {
+  reviewerId: string;
+  focus: string;
+  issues: Array<{ severity: 'critical' | 'warning' | 'info'; message: string; file?: string }>;
+  score: number; // 0-100
+}
+
+export interface UltrareviewReport {
+  prNumber: number;
+  overallScore: number;
+  reviewers: ReviewerResult[];
+  topIssues: Array<{ severity: string; message: string; reviewers: string[] }>;
+  recommendation: 'approve' | 'request-changes' | 'comment';
+  generatedAt: number;
 }
