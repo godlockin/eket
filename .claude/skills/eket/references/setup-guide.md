@@ -42,7 +42,7 @@ eket system:doctor     # SQLite + Redis 连通性诊断
 
 ### Level 2: Node.js 环境（Web Dashboard / LLM proxy）
 
-**前置条件**：Node.js ≥18
+**前置条件**：Node.js ≥20
 
 ```bash
 cd node
