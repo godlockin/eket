@@ -76,7 +76,8 @@ async function logAccessAudit(
  */
 type LockOptions = {
   stale?: number;
-  update?: number;
+  update?: number | undefined;
+  realpath?: boolean;
   retries?: {
     retries: number;
     minTimeout: number;
@@ -95,7 +96,8 @@ const MAX_LOCK_RETRIES = 10;
  */
 const LOCK_OPTIONS: LockOptions = {
   stale: 5000, // 5 秒后认为锁已过期
-  update: 2000, // 每 2 秒更新锁
+  update: undefined, // 禁用 update interval，避免测试中 setInterval 泄漏
+  realpath: false, // 禁用 realpath 解析，避免 macOS symlink 问题和异步泄漏
   retries: {
     retries: MAX_LOCK_RETRIES,
     minTimeout: 5,
