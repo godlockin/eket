@@ -12,26 +12,16 @@
 ///   - 赢得 Redis 时 INCR eket:master:epoch
 ///   - 非 Redis master 每 60s 尝试升级到 Redis
 ///   - 升级成功广播 MasterChanged 到 eket:master:changed
-///
-/// TASK-223: SQLite master renewal loop
-///   - start_renewer_sqlite 用 oneshot channel 实现 stop 信号
-///   - resign() 发送 stop 信号，停止续约 loop
-///   - 续约失败时 warn + break（resign）
-///
-/// TASK-235: pub/sub events
-///   - Redis master 当选时 publish {"event":"elected",...} 到 eket:master:changed
-///   - resign() 时 publish {"event":"resigned",...}
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 
 use tokio::sync::{Mutex, Semaphore};
-use tracing::{debug, info, warn};
+use tracing::{info, warn};
 use uuid::Uuid;
 
 use crate::db::DbPool;
 use crate::error::{EketError, EketResult};
-use crate::pubsub::RedisPubSub;
 use crate::redis::EketRedisClient;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -40,7 +30,7 @@ const REDIS_LOCK_KEY: &str = "eket:master:lock";
 const REDIS_EPOCH_KEY: &str = "eket:master:epoch";
 const REDIS_LEASE_TTL_SECS: u64 = 30;
 const RENEW_INTERVAL_SECS: u64 = 15; // TTL/2 — ensures renewal before expiry
-const MAX_RENEW_FAILURES: u32 = 3; // resign after 3 consecutive failures → prevent split brain
+const MAX_RENEW_FAILURES: u32 = 3;   // resign after 3 consecutive failures → prevent split brain
 /// How often a non-Redis master polls to upgrade to Redis
 const UPGRADE_CHECK_INTERVAL_SECS: u64 = 60;
 /// Redis pub/sub channel for master-changed notifications
@@ -76,31 +66,6 @@ pub struct ElectionResult {
     pub epoch: u64,
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/// Update last_seen timestamp for given master instance in SQLite.
-/// Used by the SQLite renewal loop. Extracted as standalone fn for testability.
-pub(crate) async fn update_heartbeat(pool: &DbPool, master_id: &str) -> EketResult<()> {
-    let pool = pool.clone();
-    let id = master_id.to_string();
-    if let Ok(permit) = sqlite_semaphore().acquire_owned().await {
-        tokio::task::spawn_blocking(move || -> EketResult<()> {
-            let _guard = permit;
-            let conn = pool.get()?;
-            let now = chrono::Utc::now().to_rfc3339();
-            conn.execute(
-                "UPDATE instances SET last_seen = ?1 WHERE id = ?2",
-                rusqlite::params![now, id],
-            )?;
-            Ok(())
-        })
-        .await
-        .map_err(|e| EketError::Other(e.to_string()))?
-    } else {
-        Err(EketError::Other("SQLite semaphore closed".to_string()))
-    }
-}
-
 // ─── MasterElection ───────────────────────────────────────────────────────────
 
 pub struct MasterElection {
@@ -112,12 +77,6 @@ pub struct MasterElection {
     renewer: Arc<Mutex<Option<tokio::task::AbortHandle>>>,
     /// Upgrade poller handle (non-Redis masters poll for Redis availability)
     upgrade_handle: Arc<Mutex<Option<tokio::task::AbortHandle>>>,
-    /// TASK-223: Oneshot sender to stop the SQLite renewal loop on resign
-    sqlite_stop_tx: Arc<Mutex<Option<tokio::sync::oneshot::Sender<()>>>>,
-    /// TASK-230: Oneshot sender to stop the File renewal loop on resign
-    file_stop_tx: Arc<Mutex<Option<tokio::sync::oneshot::Sender<()>>>>,
-    /// TASK-235: Optional pub/sub for broadcasting election events (best-effort)
-    pubsub: Option<Arc<RedisPubSub>>,
 }
 
 impl MasterElection {
@@ -133,9 +92,6 @@ impl MasterElection {
         let rand = Uuid::new_v4().to_string()[..8].to_string();
         let instance_id = format!("instance_{hostname}_{pid}_{rand}");
 
-        // TASK-235: Build pubsub facade if Redis is configured
-        let pubsub = redis.as_ref().map(|r| Arc::new(RedisPubSub::new(r.clone())));
-
         Self {
             instance_id,
             redis,
@@ -143,9 +99,6 @@ impl MasterElection {
             project_root: project_root.as_ref().to_path_buf(),
             renewer: Arc::new(Mutex::new(None)),
             upgrade_handle: Arc::new(Mutex::new(None)),
-            sqlite_stop_tx: Arc::new(Mutex::new(None)),
-            file_stop_tx: Arc::new(Mutex::new(None)),
-            pubsub,
         }
     }
 
@@ -198,7 +151,6 @@ impl MasterElection {
         // Level 3: File
         let result = self.elect_file().await?;
         if result.is_master {
-            self.start_renewer_file().await;
             // Start upgrade poller to recover to Redis/SQLite when available
             self.start_upgrade_poller().await;
         }
@@ -214,40 +166,14 @@ impl MasterElection {
         }
         drop(ug);
 
-        // TASK-223: Stop SQLite renewal loop via oneshot signal
-        let mut stop_guard = self.sqlite_stop_tx.lock().await;
-        if let Some(tx) = stop_guard.take() {
-            let _ = tx.send(());
-        }
-        drop(stop_guard);
-
-        // TASK-230: Stop File renewal loop
-        let mut file_stop = self.file_stop_tx.lock().await;
-        if let Some(tx) = file_stop.take() {
-            let _ = tx.send(());
-        }
-        drop(file_stop);
-
         let mut guard = self.renewer.lock().await;
         if let Some(handle) = guard.take() {
             handle.abort();
         }
-        drop(guard);
-
         // Delete the file lock so other instances can win
         let lock_path = self.project_root.join(".eket/master/lock");
         tokio::fs::remove_file(&lock_path).await.ok();
         info!("[Election] {} resigned", self.instance_id);
-
-        // TASK-235: Publish resigned event (best-effort, silent on failure)
-        if let Some(ps) = &self.pubsub {
-            let ts = chrono::Utc::now().to_rfc3339();
-            let event = format!(
-                r#"{{"event":"resigned","master_id":"{}","timestamp":"{}"}}"#,
-                self.instance_id, ts
-            );
-            let _ = ps.publish(MASTER_CHANGED_CHANNEL, &event).await;
-        }
     }
 
     // ── Level 1: Redis ────────────────────────────────────────────────────────
@@ -266,18 +192,6 @@ impl MasterElection {
             info!("[Election] {} is slaver (Redis lock held)", self.instance_id);
             0
         };
-
-        // TASK-235: Publish elected event (best-effort, silent on failure)
-        if won {
-            if let Some(ps) = &self.pubsub {
-                let ts = chrono::Utc::now().to_rfc3339();
-                let event = format!(
-                    r#"{{"event":"elected","master_id":"{}","epoch":{},"timestamp":"{}"}}"#,
-                    self.instance_id, epoch, ts
-                );
-                let _ = ps.publish(MASTER_CHANGED_CHANNEL, &event).await;
-            }
-        }
 
         Ok(ElectionResult {
             is_master: won,
@@ -358,33 +272,28 @@ impl MasterElection {
         })
     }
 
-    /// TASK-223: SQLite renewal loop with oneshot stop signal + failure resign.
     async fn start_renewer_sqlite(&self, pool: DbPool) {
         let id = self.instance_id.clone();
-        let (stop_tx, mut stop_rx) = tokio::sync::oneshot::channel::<()>();
-
-        // Store stop sender so resign() can signal the loop
-        *self.sqlite_stop_tx.lock().await = Some(stop_tx);
 
         let handle = tokio::spawn(async move {
             let mut interval = tokio::time::interval(Duration::from_secs(RENEW_INTERVAL_SECS));
             loop {
-                tokio::select! {
-                    _ = interval.tick() => {
-                        match update_heartbeat(&pool, &id).await {
-                            Ok(_) => {
-                                debug!("[election] sqlite master heartbeat renewed for {id}");
-                            }
-                            Err(e) => {
-                                warn!("[election] sqlite master renewal failed, resigning: {e}");
-                                break;
-                            }
-                        }
-                    }
-                    _ = &mut stop_rx => {
-                        debug!("[election] sqlite renewal loop stopped by resign signal for {id}");
-                        break;
-                    }
+                interval.tick().await;
+                let pool2 = pool.clone();
+                let id2 = id.clone();
+                // Acquire semaphore before spawn_blocking
+                if let Ok(permit) = sqlite_semaphore().acquire_owned().await {
+                    let _ = tokio::task::spawn_blocking(move || -> EketResult<()> {
+                        let _guard = permit;
+                        let conn = pool2.get()?;
+                        let now = chrono::Utc::now().to_rfc3339();
+                        conn.execute(
+                            "UPDATE instances SET last_seen = ?1 WHERE id = ?2",
+                            rusqlite::params![now, id2],
+                        )?;
+                        Ok(())
+                    })
+                    .await;
                 }
             }
         });
@@ -429,36 +338,6 @@ impl MasterElection {
             level: ElectionLevel::File,
             epoch: 0,
         })
-    }
-
-    /// TASK-230: File-level renewal loop.
-    async fn start_renewer_file(&self) {
-        let id = self.instance_id.clone();
-        let lock_path = self.project_root.join(".eket/master/lock");
-        let (stop_tx, mut stop_rx) = tokio::sync::oneshot::channel::<()>();
-
-        *self.file_stop_tx.lock().await = Some(stop_tx);
-
-        let handle = tokio::spawn(async move {
-            let mut interval = tokio::time::interval(Duration::from_secs(RENEW_INTERVAL_SECS));
-            loop {
-                tokio::select! {
-                    _ = interval.tick() => {
-                        if let Err(e) = tokio::fs::write(&lock_path, id.as_bytes()).await {
-                            warn!("[election] file master renewal failed: {e}");
-                            break;
-                        }
-                        debug!("[election] file master lock renewed for {id}");
-                    }
-                    _ = &mut stop_rx => {
-                        debug!("[election] file renewal loop stopped for {id}");
-                        break;
-                    }
-                }
-            }
-        });
-
-        *self.renewer.lock().await = Some(handle.abort_handle());
     }
 
     // ── Upgrade Polling ───────────────────────────────────────────────────────
@@ -544,12 +423,13 @@ mod tests {
         let result = e1.elect().await.unwrap();
         assert!(result.is_master);
         assert_eq!(result.level, ElectionLevel::Sqlite);
-        assert_eq!(result.epoch, 0);
+        assert_eq!(result.epoch, 0); // no Redis → epoch 0
     }
 
     #[tokio::test]
     async fn file_election_first_wins() {
         let dir = TempDir::new().unwrap();
+        // No SQLite pool → file election
         let e1 = MasterElection::new(None, None, dir.path());
         let e2 = MasterElection::new(None, None, dir.path());
 
@@ -570,6 +450,7 @@ mod tests {
         assert!(r1.is_master);
 
         e1.resign().await;
+        // resign() deletes the lock file
 
         let e2 = MasterElection::new(None, None, dir.path());
         let r2 = e2.elect().await.unwrap();
@@ -598,15 +479,22 @@ mod tests {
 
     #[tokio::test]
     async fn sqlite_election_uses_unique_role_key() {
+        // SQLite election: both instances can "win" INSERT because IDs differ.
+        // The uniqueness at SQLite level is instance ID. Both return is_master=true
+        // when using separate in-memory DBs (which is the intended per-process behavior).
+        // For true mutual exclusion at SQLite level, a shared DB file is required.
         let dir = TempDir::new().unwrap();
         let e1 = make_election(dir.path());
         let r1 = e1.elect().await.unwrap();
         assert!(r1.is_master);
         assert_eq!(r1.level, ElectionLevel::Sqlite);
 
+        // Second instance with fresh pool (different in-memory DB) → also wins at SQLite
+        // This is expected: SQLite election only provides mutual exclusion when sharing same DB
         let pool2 = create_pool(":memory:").unwrap();
         let e2 = MasterElection::new(None, Some(pool2), dir.path());
         let r2 = e2.elect().await.unwrap();
+        // r2 will win too (different in-memory DB) — this is the expected SQLite semantics
         assert_eq!(r2.level, ElectionLevel::Sqlite);
     }
 
@@ -620,6 +508,7 @@ mod tests {
 
     #[tokio::test]
     async fn election_level_ordering() {
+        // File < Sqlite < Redis
         assert!(ElectionLevel::File < ElectionLevel::Sqlite);
         assert!(ElectionLevel::Sqlite < ElectionLevel::Redis);
         assert!(ElectionLevel::File < ElectionLevel::Redis);
@@ -631,71 +520,5 @@ mod tests {
         let e = MasterElection::new(None, None, dir.path());
         let r = e.elect().await.unwrap();
         assert_eq!(r.epoch, 0);
-    }
-
-    #[tokio::test]
-    async fn sqlite_master_renewal() {
-        let dir = TempDir::new().unwrap();
-        let pool = create_pool(":memory:").unwrap();
-        let e = MasterElection::new(None, Some(pool.clone()), dir.path());
-        let result = e.elect().await.unwrap();
-        assert!(result.is_master);
-
-        let initial_last_seen: String = {
-            let conn = pool.get().unwrap();
-            conn.query_row(
-                "SELECT last_seen FROM instances WHERE id = ?1",
-                rusqlite::params![e.instance_id()],
-                |row| row.get(0),
-            )
-            .unwrap()
-        };
-
-        tokio::time::sleep(Duration::from_millis(10)).await;
-        update_heartbeat(&pool, e.instance_id()).await.unwrap();
-
-        let updated_last_seen: String = {
-            let conn = pool.get().unwrap();
-            conn.query_row(
-                "SELECT last_seen FROM instances WHERE id = ?1",
-                rusqlite::params![e.instance_id()],
-                |row| row.get(0),
-            )
-            .unwrap()
-        };
-
-        assert_ne!(
-            initial_last_seen, updated_last_seen,
-            "heartbeat should update last_seen timestamp"
-        );
-
-        e.resign().await;
-    }
-
-    #[tokio::test]
-    async fn sqlite_master_resign_stops_renewal() {
-        let dir = TempDir::new().unwrap();
-        let pool = create_pool(":memory:").unwrap();
-        let e = MasterElection::new(None, Some(pool.clone()), dir.path());
-        let result = e.elect().await.unwrap();
-        assert!(result.is_master);
-
-        assert!(e.renewer.lock().await.is_some());
-        assert!(e.sqlite_stop_tx.lock().await.is_some());
-
-        e.resign().await;
-
-        assert!(e.renewer.lock().await.is_none());
-        assert!(e.sqlite_stop_tx.lock().await.is_none());
-    }
-
-    /// TASK-235: resign() with no Redis pubsub configured should not panic
-    #[tokio::test]
-    async fn resign_without_redis_no_panic() {
-        let dir = TempDir::new().unwrap();
-        let e = MasterElection::new(None, None, dir.path());
-        let r = e.elect().await.unwrap();
-        assert!(r.is_master);
-        e.resign().await; // pubsub is None — must not panic
     }
 }

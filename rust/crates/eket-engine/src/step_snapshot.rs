@@ -3,7 +3,6 @@
 /// 历史步骤数据归档到 SQLite（FTS5 索引），context 只保留 ToC 索引。
 /// 对应 TASK-211。
 use std::collections::HashMap;
-use std::path::Path;
 
 use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection};
@@ -49,8 +48,8 @@ impl StepSnapshotStore {
         Ok(store)
     }
 
-    pub fn new(db_path: &Path) -> EketResult<Self> {
-        let conn = Connection::open(db_path)?;
+    pub fn new(path: &str) -> EketResult<Self> {
+        let conn = Connection::open(path)?;
         let store = Self { conn };
         store.init_table()?;
         Ok(store)
@@ -86,20 +85,6 @@ impl StepSnapshotStore {
             AFTER INSERT ON workflow_step_snapshots BEGIN
                 INSERT INTO workflow_step_snapshots_fts(rowid, summary, tags)
                 VALUES (new.id, new.summary, new.tags);
-            END;
-
-            -- 触发器：删除时清理 FTS
-            CREATE TRIGGER IF NOT EXISTS wss_fts_delete
-            AFTER DELETE ON workflow_step_snapshots BEGIN
-                DELETE FROM workflow_step_snapshots_fts WHERE rowid = old.rowid;
-            END;
-
-            -- 触发器：更新时同步 FTS
-            CREATE TRIGGER IF NOT EXISTS wss_fts_update
-            AFTER UPDATE ON workflow_step_snapshots BEGIN
-                DELETE FROM workflow_step_snapshots_fts WHERE rowid = old.rowid;
-                INSERT INTO workflow_step_snapshots_fts(rowid, summary, tags)
-                VALUES (new.rowid, new.summary, new.tags);
             END;
             ",
         )?;
@@ -151,9 +136,6 @@ impl StepSnapshotStore {
         workflow_id: &str,
         query: &str,
     ) -> EketResult<Vec<StepSnapshot>> {
-        if query.trim().is_empty() {
-            return Ok(vec![]);
-        }
         let mut stmt = self.conn.prepare(
             "SELECT s.workflow_id, s.step_id, s.summary, s.tags, s.full_data, s.created_at
              FROM workflow_step_snapshots s

@@ -28,7 +28,7 @@ export async function appendTaskMessage(
   author: string
 ): Promise<void> {
   const projectRoot = await findProjectRoot();
-  if (!projectRoot) return;
+  if (!projectRoot) {return;}
 
   const ticketFile = findTicketFile(projectRoot, ticketId);
   if (!ticketFile) {
@@ -85,7 +85,7 @@ export interface ActiveContextData {
  */
 export async function injectActiveContext(data: ActiveContextData): Promise<void> {
   const projectRoot = await findProjectRoot();
-  if (!projectRoot) return;
+  if (!projectRoot) {return;}
 
   const ekeDir = path.join(projectRoot, '.eket');
   fs.mkdirSync(ekeDir, { recursive: true });
@@ -125,6 +125,6 @@ export async function injectActiveContext(data: ActiveContextData): Promise<void
  */
 export function readActiveContext(projectRoot: string): string | null {
   const contextPath = path.join(projectRoot, '.eket', 'ACTIVE_CONTEXT.md');
-  if (!fs.existsSync(contextPath)) return null;
+  if (!fs.existsSync(contextPath)) {return null;}
   return fs.readFileSync(contextPath, 'utf-8');
 }
