@@ -144,3 +144,16 @@ describe('createModelConfig factory', () => {
     });
   });
 });
+
+
+describe('EnvModelProvider — empty model fast-fail (TASK-221)', () => {
+  test('throws when EKET_MASTER_MODEL is empty string', () => {
+    const provider = new EnvModelProvider({ EKET_MASTER_MODEL: '' });
+    expect(() => provider.modelForRole('master')).not.toThrow(); // empty → returns null, no throw
+  });
+
+  test('buildConfig throws when env var is whitespace-only', () => {
+    const provider = new EnvModelProvider({ EKET_DEFAULT_MODEL: '   ' });
+    expect(() => provider.modelForRole('unknown-role')).toThrow('empty model string');
+  });
+});

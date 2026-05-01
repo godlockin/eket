@@ -69,7 +69,9 @@ export class TaskCheckpointStore {
 
       return { success: true, data: undefined };
     } catch (e: unknown) {
-      if (e instanceof CheckpointCASError) {throw e;}
+      if (e instanceof CheckpointCASError) {
+        return { success: false, error: e.message, casConflict: true } as unknown as Result<void>;
+      }
       return {
         success: false,
         error: new EketError(
