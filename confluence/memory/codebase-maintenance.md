@@ -200,9 +200,6 @@ ls outbox/review_requests/                               # 过期 review request
 **参见**：
 - [EKET-PROJECT-HYGIENE.md](EKET-PROJECT-HYGIENE.md) — EKET 特有卫生规则
 - [MULTI-AGENT-COLLAB-LESSONS.md](MULTI-AGENT-COLLAB-LESSONS.md) — 多智能体协作经验
-<<<<<<<< HEAD:confluence/memory/DOC-DEBT-CLEANUP.md
-- [BORROWED-WISDOM.md](BORROWED-WISDOM.md) — 完整知识库索引
-========
 - [BORROWED-WISDOM.md](../research/borrowed-wisdom.md) — 完整知识库索引
 
 ---
@@ -237,4 +234,3 @@ ls outbox/review_requests/                               # 过期 review request
 ### 8.5 新建目录必须有 README
 
 哪怕 2 行，说明"放什么 / 不放什么"。无 README 的目录 = 隐式规则 = 下次错放文件。
->>>>>>>> 09c0c1b2f (docs: 整理 confluence/memory/ — 合并碎片文件 + 重建 memory-index):confluence/memory/codebase-maintenance.md
