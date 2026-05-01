@@ -4,6 +4,36 @@
  */
 
 // ============================================================================
+// Knowledge Proof Types (TASK-209)
+// ============================================================================
+
+export interface KnowledgeProof {
+  task_id: string;       // 来源 ticket
+  exit_code: 0;          // 只允许 0（成功）
+  timestamp: string;     // ISO 8601
+  tool_name?: string;    // 产生结论的工具/命令
+  ci_url?: string;       // 可选：CI 链接
+}
+
+export interface KnowledgeValidationError {
+  field: string;
+  message: string;
+  received?: unknown;
+}
+
+export interface KnowledgeValidationResult {
+  valid: boolean;
+  errors: KnowledgeValidationError[];
+}
+
+/** Minimal shape used by knowledge:index proof validation */
+export interface KnowledgeIndexEntry {
+  content: string;
+  proof: KnowledgeProof;
+  tags?: string[];
+}
+
+// ============================================================================
 // Job Types
 // ============================================================================
 
@@ -148,6 +178,48 @@ export interface ExecutionCheckpoint {
   phase: 'analysis' | 'implement' | 'test' | 'pr';
   stateJson: string;
   createdAt?: string;
+}
+
+// ============================================================================
+// TaskCheckpoint Types (TASK-199: RunState-inspired断点续传)
+// ============================================================================
+
+/**
+ * 单条消息 item（agent视图 or 完整历史）
+ */
+export interface CheckpointItem {
+  role: 'user' | 'assistant' | 'tool_result';
+  content: string;
+  toolCallId?: string;
+  toolName?: string;
+  timestamp?: number;
+}
+
+/**
+ * TaskCheckpoint — 三层结构借鉴 openai-agents RunState
+ */
+export interface TaskCheckpoint {
+  taskId: string;
+  /** step index: 已完成turn数，resume时从stepIndex继续 */
+  stepIndex: number;
+  /** 模型视图（不含系统事件/guardrail结果，直接喂给LLM） */
+  agentFacingItems: CheckpointItem[];
+  /** 完整历史（含工具调用/guardrail结果，用于审计） */
+  fullHistoryItems: CheckpointItem[];
+  /** 已执行的 tool_call_id 集合（幂等去重key） */
+  executedToolCalls: string[];
+  /** CAS版本号，防并发覆盖 */
+  version: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/** DB行格式（task_checkpoints表） */
+export interface TaskCheckpointRow {
+  task_id: string;
+  data: string; // JSON序列化TaskCheckpoint
+  version: number;
+  updated_at: number;
 }
 
 // ============================================================================
@@ -771,6 +843,8 @@ export interface KnowledgeEntry {
   updatedAt: number;
   relatedTickets?: string[];
   metadata?: Record<string, unknown>;
+  /** Execution Proof Anchor (TASK-209) — required for new entries in strict mode */
+  proof?: KnowledgeProof;
 }
 
 /**
@@ -1431,21 +1505,3 @@ export interface ValidationReport {
   summary: string;
 }
 
-/**
- * Ultrareview — 多 Agent 独立代码审查结果 (TASK-119)
- */
-export interface ReviewerResult {
-  reviewerId: string;
-  focus: string;
-  issues: Array<{ severity: 'critical' | 'warning' | 'info'; message: string; file?: string }>;
-  score: number; // 0-100
-}
-
-export interface UltrareviewReport {
-  prNumber: number;
-  overallScore: number;
-  reviewers: ReviewerResult[];
-  topIssues: Array<{ severity: string; message: string; reviewers: string[] }>;
-  recommendation: 'approve' | 'request-changes' | 'comment';
-  generatedAt: number;
-}

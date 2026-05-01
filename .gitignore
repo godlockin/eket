@@ -73,3 +73,11 @@ jira/.eket_master_marker
 
 # Git worktrees
 .worktrees/
+rust/target/
+
+# Docusaurus build output
+docs-site/.docusaurus/
+docs-site/build/
+
+# knowledge:index state (build artifact)
+confluence/memory/.eket-index-state.json

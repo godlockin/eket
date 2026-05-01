@@ -10,16 +10,18 @@ import * as path from 'path';
 
 import { Command } from 'commander';
 
-import { WorktreeManager } from '../core/worktree-manager.js';
-import { createSQLiteClient } from '../core/sqlite-client.js';
 import { CompletionValidator } from '../core/completion-validator.js';
-import { printError, logSuccess } from '../utils/error-handler.js';
-import { findProjectRoot } from '../utils/process-cleanup.js';
-import { getIsolationMode } from './claim.js';
-import { execFileNoThrow } from '../utils/execFileNoThrow.js';
-import type { SkillFeedback, SlaveResult } from '../types/index.js';
-import { sseBus } from '../core/sse-bus.js';
 import { contextCompressor } from '../core/context-compressor.js';
+import { createSQLiteClient } from '../core/sqlite-client.js';
+import { sseBus } from '../core/sse-bus.js';
+import { WorktreeManager } from '../core/worktree-manager.js';
+import type { SkillFeedback, SlaveResult } from '../types/index.js';
+import { validateTicketOutput } from '../types/ticket-output.js';
+import { printError, logSuccess } from '../utils/error-handler.js';
+import { execFileNoThrow } from '../utils/execFileNoThrow.js';
+import { findProjectRoot } from '../utils/process-cleanup.js';
+
+import { getIsolationMode } from './claim.js';
 
 // Try to load SkillIndex for activatedSkills detection (graceful degradation)
 let _getSkillIndex: (() => import('../skills/index-loader.js').SkillIndex) | null = null;
@@ -34,8 +36,8 @@ let _getSkillIndex: (() => import('../skills/index-loader.js').SkillIndex) | nul
  * 推断 Scope-risk：从 git diff --stat 获取变更文件数
  */
 export function inferScopeRisk(fileCount: number): 'low' | 'medium' | 'high' {
-  if (fileCount <= 5) return 'low';
-  if (fileCount <= 15) return 'medium';
+  if (fileCount <= 5) {return 'low';}
+  if (fileCount <= 15) {return 'medium';}
   return 'high';
 }
 
@@ -45,7 +47,7 @@ export function inferScopeRisk(fileCount: number): 'low' | 'medium' | 'high' {
 export async function getChangedFileCount(): Promise<number> {
   const result = await execFileNoThrow('git', ['diff', 'HEAD~1', '--stat']);
   const output = result.stdout.trim();
-  if (!output) return 0;
+  if (!output) {return 0;}
   const lastLine = output.split('\n').pop() ?? '';
   const match = lastLine.match(/(\d+)\s+file/);
   return match ? parseInt(match[1], 10) : 0;
@@ -173,12 +175,12 @@ function updateTicketStatus(projectRoot: string, ticketId: string, status: strin
  * 获取当前 slaverId
  */
 function getSlaverId(projectRoot: string): string {
-  if (process.env.EKET_SLAVER_ID) return process.env.EKET_SLAVER_ID;
+  if (process.env.EKET_SLAVER_ID) {return process.env.EKET_SLAVER_ID;}
   const slaveridPath = path.join(projectRoot, '.eket', 'slaver-id');
   try {
     if (fs.existsSync(slaveridPath)) {
       const id = fs.readFileSync(slaveridPath, 'utf-8').trim();
-      if (id) return id;
+      if (id) {return id;}
     }
   } catch {
     // ignore
@@ -215,7 +217,7 @@ async function reportSkillFeedback(
 
     // Load instance state for levelChanges
     let actualLevel: 1 | 2 | 3 = 1;
-    let levelChanges: import('../types/index.js').LevelChange[] = [];
+    let levelChanges: Array<import('../types/index.js').LevelChange> = [];
     try {
       const { createInstanceRegistry } = await import('../core/instance-registry.js');
       const registry = createInstanceRegistry();
@@ -256,7 +258,7 @@ async function reportSkillFeedback(
 async function getChangedFiles(): Promise<string[]> {
   const result = await execFileNoThrow('git', ['diff', 'HEAD~1', '--name-only']);
   const output = result.stdout.trim();
-  if (!output) return [];
+  if (!output) {return [];}
   return output.split('\n').filter(Boolean);
 }
 
@@ -293,6 +295,22 @@ async function runCompletionValidation(
     }
   } catch (e: unknown) {
     console.warn(`[completion-validator] Failed (non-fatal): ${(e as Error).message ?? e}`);
+  }
+}
+
+/**
+ * Validate ticket output payload via TicketOutputSchema (TASK-198).
+ * Hard-blocks completion if validation fails — prints structured errors and exits.
+ */
+export function assertTicketOutputValid(payload: unknown): void {
+  const result = validateTicketOutput(payload);
+  if (!result.success) {
+    console.error('\n[ticket-output-schema] ❌ Validation failed — ticket NOT marked done.\n');
+    for (const err of result.errors) {
+      console.error(`  • ${err.path}: ${err.message}`);
+    }
+    console.error('\nFix the above fields and retry task:complete.\n');
+    process.exit(1);
   }
 }
 
@@ -348,8 +366,31 @@ export function registerComplete(program: Command): void {
   program
     .command('task:complete <ticketId>')
     .description('Mark task as complete, merge worktree and clean up')
-    .action(async (ticketId: string) => {
+    .option(
+      '--output <json>',
+      'TicketOutput payload JSON (required for schema validation: knowledgeNotes, status, etc.)'
+    )
+    .action(async (ticketId: string, opts: { output?: string }) => {
       console.log(`\n=== Complete Task: ${ticketId} ===\n`);
+
+      // ── TASK-198: TicketOutputSchema validation ──────────────────────────
+      if (opts.output !== undefined) {
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(opts.output);
+        } catch {
+          console.error('[ticket-output-schema] ❌ --output is not valid JSON');
+          process.exit(1);
+        }
+        assertTicketOutputValid(parsed);
+        console.log('[ticket-output-schema] ✅ Output schema validated');
+      } else {
+        // Warn but don't block — allows existing flows to work
+        console.warn(
+          '[ticket-output-schema] ⚠️  --output not provided. Pass --output \'{"status":"completed","knowledgeNotes":["..."],"blockers":[]}\' to enforce schema.'
+        );
+      }
+      // ─────────────────────────────────────────────────────────────────────
 
       const projectRoot = await findProjectRoot();
       if (!projectRoot) {

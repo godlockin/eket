@@ -24,7 +24,7 @@ export async function audit(
   op: string,
   target: string,
   actor: string = getNodeId(),
-  details: string = ''
+  details = ''
 ): Promise<void> {
   const ts = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
   const safeDetails = details.replace(/\|/g, '\\|');
