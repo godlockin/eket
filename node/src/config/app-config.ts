@@ -132,6 +132,11 @@ export interface AppConfig {
     rateLimitWindow: number;
     rateLimitMaxRequests: number;
   };
+
+  // 隔离配置
+  isolation: {
+    mode: 'worktree' | 'none';
+  };
 }
 
 // ============================================================================
@@ -175,6 +180,9 @@ const DEFAULT_CONFIG: AppConfig = {
     rateLimitWindow: 900000, // 15 minutes
     rateLimitMaxRequests: 100,
   },
+  isolation: {
+    mode: 'worktree',
+  },
 };
 
 // ============================================================================
@@ -204,6 +212,7 @@ export class ConfigManager {
       logging: { ...DEFAULT_CONFIG.logging },
       performance: { ...DEFAULT_CONFIG.performance },
       security: { ...DEFAULT_CONFIG.security },
+      isolation: { ...DEFAULT_CONFIG.isolation },
     };
 
     // 2. 加载 YAML 配置（如果存在）
@@ -449,6 +458,14 @@ export class ConfigManager {
         ...DEFAULT_CONFIG.security,
         apiKey: env.EKET_API_KEY,
       };
+    }
+
+    // 隔离模式
+    if (env.EKET_ISOLATION) {
+      const mode = env.EKET_ISOLATION as 'worktree' | 'none';
+      if (mode === 'worktree' || mode === 'none') {
+        config.isolation = { mode };
+      }
     }
 
     return config;
