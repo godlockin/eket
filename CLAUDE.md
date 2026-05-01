@@ -99,4 +99,4 @@ ESM 规范：内部导入必须带 `.js` 扩展名。测试：`node/tests/`，Je
 
 ---
 
-> 使用其他大模型时请读 `AGENTS.md`。分支策略：`feature/*` → `testing` → `main` → `miao`。
+> 使用其他大模型时请读 `AGENTS.md`。分支策略：`feature/*` → `testing` → `main` → `miao`。详细分支策略见 `confluence/memory/branch-strategy-guide.md`。
