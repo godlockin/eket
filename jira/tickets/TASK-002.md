@@ -2,7 +2,7 @@
 
 **类型**: Bug Fix
 **优先级**: P0
-**状态**: completed
+**状态**: todo
 **gate_review_veto_count**: 0
 **veto_reason**:
 **resubmit_conditions**:
