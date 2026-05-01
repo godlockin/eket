@@ -33,6 +33,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **红线**：连续读取 5+ 文件无写操作 = 分析瘫痪，立刻写代码或报 BLOCKED
 - **红线**：ticket 完成后必须执行复盘，经验写入 ticket + 通用知识沉淀到 `confluence/memory/`
 
+### 分支红线（Master + Slaver 共同遵守）
+
+- **红线**：任何改动（含文档/memory/skill）必须在 `feature/*` 分支上完成，禁止直接向 `miao`/`testing`/`main` 提交
+- **红线**：每次 push 后必须同步三分支：`feature → miao → testing → main`，禁止遗漏
+- **红线**：`SKILL.md` 只能改源文件 `eket/.claude/skills/eket/SKILL.md`，改完执行 `bash scripts/install-skill.sh --update` 部署；禁止直接改 `~/.claude/skills/eket/SKILL.md`
+
 ### Ticket 职责边界
 
 | Master 填写 | Slaver 填写 |
