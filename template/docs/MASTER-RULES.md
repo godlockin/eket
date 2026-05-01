@@ -176,7 +176,24 @@ ls outbox/review_requests/                               # 积压 review request
 
 ---
 
-## 7. 任务拆解后必须立即初始化 Slaver 团队
+## 7. 决策 SLA（Service Level Agreement）
+
+### 响应时限
+- Ticket 标记 `BLOCKED ON MASTER DECISION` 后，Master 须在 **24 小时内** 做出决策
+- 决策项 ≤ 4 个 → 直接在 ticket 注释里写出决策
+- 决策项 > 4 个 → 先拆分 ticket，降低单次决策复杂度
+
+### 超时处理
+- 超过 24 小时未决策 → Slaver 可使用**保守默认方案**继续执行
+- 使用默认方案时须在 PR 中标注 `[DEFAULT-DECISION]`
+- Master 后续可要求修改，但不得因此否决 Slaver 的主动推进
+
+### 来源
+EPIC-003 TASK-231b 教训：4 个二选一决策阻塞了多天，严重影响 EPIC 交付节奏。
+
+---
+
+## 8. 任务拆解后必须立即初始化 Slaver 团队
 
 Master 在任务拆解后**必须立即初始化 Slaver 团队**，将任务状态设为 `ready`。
 **禁止**创建任务后不初始化执行团队，导致任务积压在 `backlog` 或 `analysis` 状态。
