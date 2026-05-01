@@ -98,50 +98,7 @@ fn resolve_expert_id(bridge: &ExpertSkillBridge, id: &str) -> Option<String> {
 pub async fn run(args: ExpertComposeArgs) -> Result<()> {
     match args.command {
         ExpertSubCmd::Search { keyword, pkg, limit } => {
-            let all_dirs = resolve_all_expert_dirs();
-            if all_dirs.is_empty() {
-                println!("{}", json!({"error": "No expert dirs found", "hint": "Check ~/.claude/skills/eket/experts/"}));
-                return Ok(());
-            }
-            let search_dirs: Vec<(PathBuf, String)> = if let Some(ref pf) = pkg {
-                all_dirs.into_iter().filter(|(_, p)| p == pf).collect()
-            } else {
-                all_dirs
-            };
-
-            let bridge = match ExpertSkillBridge::load_from_dirs(&search_dirs) {
-                Ok(b) => b,
-                Err(e) => { println!("{}", json!({"error": e.to_string()})); return Ok(()); }
-            };
-
-            let results = bridge.search(&keyword);
-            let total = results.len();
-            let shown: Vec<serde_json::Value> = results.into_iter().take(limit).map(|r| {
-                let load_hint = if r.expert.source_pkg == "extended" {
-                    format!("eket expert:search \"{keyword}\" --pkg extended  # then load via EKET_EXPERTS_DIR or submodule")
-                } else {
-                    format!("eket expert:skills {}", r.expert.id)
-                };
-                json!({
-                    "id":       r.expert.id,
-                    "name":     r.expert.name_cn,
-                    "role":     r.expert.role,
-                    "emoji":    r.expert.emoji,
-                    "domain":   r.expert.domain,
-                    "pkg":      r.expert.source_pkg,
-                    "score":    r.score,
-                    "matched":  r.matched_fields,
-                    "skills":   r.expert.skills.as_ref().map(|s| &s.primary),
-                    "load_hint": load_hint,
-                })
-            }).collect();
-
-            println!("{}", serde_json::to_string_pretty(&json!({
-                "keyword": keyword,
-                "total_matches": total,
-                "shown": shown.len(),
-                "results": shown,
-            }))?);
+            return run_search(keyword, pkg, limit).await;
         }
 
         ExpertSubCmd::Compose { skills, domain: _, epic } => {
@@ -165,24 +122,77 @@ pub async fn run(args: ExpertComposeArgs) -> Result<()> {
         }
 
         ExpertSubCmd::Skills { expert_id } => {
-            let experts_dir = resolve_experts_dir();
-            let bridge = match ExpertSkillBridge::load_from_dir(&experts_dir) {
-                Ok(b) => b,
-                Err(e) => { println!("{}", json!({"error": e.to_string()})); return Ok(()); }
-            };
-            let resolved = resolve_expert_id(&bridge, &expert_id).unwrap_or_else(|| expert_id.clone());
-            let primary = bridge.skills_for_expert(&resolved);
-            let contextual: Vec<serde_json::Value> = bridge.all_experts().into_iter()
-                .find(|p| p.id == resolved)
-                .and_then(|p| p.skills.as_ref())
-                .map(|s| s.contextual.iter().map(|cs| json!({"skill": cs.skill, "when": cs.when})).collect())
-                .unwrap_or_default();
-            if primary.is_empty() && contextual.is_empty() {
-                println!("{}", json!({"error": format!("Expert '{}' not found or has no skills", expert_id)}));
-                return Ok(());
-            }
-            println!("{}", serde_json::to_string_pretty(&json!({"expert_id": resolved, "primary": primary, "contextual": contextual}))?);
+            return run_skills(expert_id).await;
         }
     }
+    Ok(())
+}
+
+pub async fn run_search(keyword: String, pkg: Option<String>, limit: usize) -> Result<()> {
+    let all_dirs = resolve_all_expert_dirs();
+    if all_dirs.is_empty() {
+        println!("{}", json!({"error": "No expert dirs found", "hint": "Check ~/.claude/skills/eket/experts/"}));
+        return Ok(());
+    }
+    let search_dirs: Vec<(PathBuf, String)> = if let Some(ref pf) = pkg {
+        all_dirs.into_iter().filter(|(_, p)| p == pf).collect()
+    } else {
+        all_dirs
+    };
+
+    let bridge = match ExpertSkillBridge::load_from_dirs(&search_dirs) {
+        Ok(b) => b,
+        Err(e) => { println!("{}", json!({"error": e.to_string()})); return Ok(()); }
+    };
+
+    let results = bridge.search(&keyword);
+    let total = results.len();
+    let shown: Vec<serde_json::Value> = results.into_iter().take(limit).map(|r| {
+        let load_hint = if r.expert.source_pkg == "extended" {
+            format!("eket expert:search \"{keyword}\" --pkg extended  # then load via EKET_EXPERTS_DIR or submodule")
+        } else {
+            format!("eket expert:skills {}", r.expert.id)
+        };
+        json!({
+            "id":       r.expert.id,
+            "name":     r.expert.name_cn,
+            "role":     r.expert.role,
+            "emoji":    r.expert.emoji,
+            "domain":   r.expert.domain,
+            "pkg":      r.expert.source_pkg,
+            "score":    r.score,
+            "matched":  r.matched_fields,
+            "skills":   r.expert.skills.as_ref().map(|s| &s.primary),
+            "load_hint": load_hint,
+        })
+    }).collect();
+
+    println!("{}", serde_json::to_string_pretty(&json!({
+        "keyword": keyword,
+        "total_matches": total,
+        "shown": shown.len(),
+        "results": shown,
+    }))?);
+    Ok(())
+}
+
+pub async fn run_skills(expert_id: String) -> Result<()> {
+    let experts_dir = resolve_experts_dir();
+    let bridge = match ExpertSkillBridge::load_from_dir(&experts_dir) {
+        Ok(b) => b,
+        Err(e) => { println!("{}", json!({"error": e.to_string()})); return Ok(()); }
+    };
+    let resolved = resolve_expert_id(&bridge, &expert_id).unwrap_or_else(|| expert_id.clone());
+    let primary = bridge.skills_for_expert(&resolved);
+    let contextual: Vec<serde_json::Value> = bridge.all_experts().into_iter()
+        .find(|p| p.id == resolved)
+        .and_then(|p| p.skills.as_ref())
+        .map(|s| s.contextual.iter().map(|cs| json!({"skill": cs.skill, "when": cs.when})).collect())
+        .unwrap_or_default();
+    if primary.is_empty() && contextual.is_empty() {
+        println!("{}", json!({"error": format!("Expert '{}' not found or has no skills", expert_id)}));
+        return Ok(());
+    }
+    println!("{}", serde_json::to_string_pretty(&json!({"expert_id": resolved, "primary": primary, "contextual": contextual}))?);
     Ok(())
 }
