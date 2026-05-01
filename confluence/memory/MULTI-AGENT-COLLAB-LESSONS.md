@@ -215,6 +215,10 @@ Master（协调）
 | .git/index.lock 死锁 | 多 Agent 并行在同一 Git 目录操作 | **串行执行**或独立 worktree；重派前先 TaskStop 旧 Agent + rm lock |
 | 僵尸 Agent 叠加 | 旧 Agent 未停止就派新 Agent | 重派前必须 TaskStop 全部旧 Agent → rm lock → git status 确认 |
 | Cherry-pick 历史分叉 | Cherry-pick 后 merge 回源分支 | 大批量回灌优先用 merge 而非 cherry-pick；回灌后按流向逆序 merge 对齐 |
+| Worktree CWD 不切换 | `isolation: "worktree"` agent 操作主目录而非 worktree | 不依赖自动 worktree 隔离；手动 `git worktree add` + 绝对路径 |
+| Agent 卡死/静默退出 | API 429、上下文溢出、HTTPS push 挂起 | Prompt 含防卡死规则 + Master 15 分钟心跳检查 |
+| 同文件并行修改 | 多 agent 同时改同一文件 | Master 检查文件范围重叠，有重叠就串行 |
+| --theirs 覆盖独有内容 | merge 解冲突无脑取一方 | 双方有独有贡献时必须手动合并，不可二选一 |
 
 ---
 
