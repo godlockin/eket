@@ -22,7 +22,7 @@ chmod +x lib/adapters/hybrid-adapter.sh
 
 ### Level 2: Node.js 环境（推荐）
 
-**前置条件**：Node.js ≥18
+**前置条件**：Node.js ≥20
 
 **安装内容**：
 
