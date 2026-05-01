@@ -176,6 +176,20 @@ enum Commands {
     /// Compose expert team by skills or epic type
     #[command(name = "expert:compose")]
     ExpertCompose(commands::expert_compose::ExpertComposeArgs),
+
+    /// Search experts across default+extended packages
+    #[command(name = "expert:search")]
+    ExpertSearch {
+        keyword: String,
+        #[arg(long)]
+        pkg: Option<String>,
+        #[arg(long, default_value = "10")]
+        limit: usize,
+    },
+
+    /// Show skills for an expert
+    #[command(name = "expert:skills")]
+    ExpertSkills { expert_id: String },
 }
 
 #[tokio::main]
@@ -236,5 +250,11 @@ async fn main() -> Result<()> {
         Commands::SpikeComplete(args) => commands::spike_complete::run(args).await,
         Commands::DocCreate(args) => commands::doc_create::run(args).await,
         Commands::ExpertCompose(args) => commands::expert_compose::run(args).await,
+        Commands::ExpertSearch { keyword, pkg, limit } => {
+            commands::expert_compose::run_search(keyword, pkg, limit).await
+        }
+        Commands::ExpertSkills { expert_id } => {
+            commands::expert_compose::run_skills(expert_id).await
+        }
     }
 }
