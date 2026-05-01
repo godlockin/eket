@@ -57,7 +57,15 @@ echo "匹配 Agent Profile..."
 AGENT_PROFILE=""
 AGENT_SKILLS=""
 
-if [[ "$LABELS" == *"frontend"* ]] || [[ "$LABELS" == *"ui"* ]] || [[ "$LABELS" == *"react"* ]] || [[ "$LABELS" == *"vue"* ]]; then
+if [[ "$LABELS" == *"architect"* ]] || [[ "$LABELS" == *"architecture"* ]]; then
+    AGENT_PROFILE="architect"
+    AGENT_SKILLS="design/system_architecture design/module_boundary design/tech_selection documentation/technical_doc"
+    echo "  ✓ 匹配到：系统架构师 Agent"
+elif [[ "$LABELS" == *"product"* ]] || [[ "$LABELS" == *"pm"* ]] || [[ "$LABELS" == *"prd"* ]]; then
+    AGENT_PROFILE="product"
+    AGENT_SKILLS="design/user_story_design design/feature_completeness_review design/priority_decision documentation/acceptance_criteria"
+    echo "  ✓ 匹配到：产品经理 Agent"
+elif [[ "$LABELS" == *"frontend"* ]] || [[ "$LABELS" == *"ui"* ]] || [[ "$LABELS" == *"react"* ]] || [[ "$LABELS" == *"vue"* ]]; then
     AGENT_PROFILE="frontend_dev"
     AGENT_SKILLS="development/frontend_development development/test_development testing/unit_test"
     echo "  ✓ 匹配到：前端开发 Agent"
@@ -65,10 +73,18 @@ elif [[ "$LABELS" == *"backend"* ]] || [[ "$LABELS" == *"api"* ]] || [[ "$LABELS
     AGENT_PROFILE="backend_dev"
     AGENT_SKILLS="development/backend_development design/api_design design/database_design testing/unit_test"
     echo "  ✓ 匹配到：后端开发 Agent"
-elif [[ "$LABELS" == *"design"* ]] || [[ "$LABELS" == *"ux"* ]] || [[ "$LABELS" == *"ui"* ]]; then
+elif [[ "$LABELS" == *"fullstack"* ]] || [[ "$LABELS" == *"full-stack"* ]]; then
+    AGENT_PROFILE="fullstack"
+    AGENT_SKILLS="development/frontend_development development/backend_development design/api_design testing/unit_test"
+    echo "  ✓ 匹配到：全栈工程师 Agent"
+elif [[ "$LABELS" == *"ux"* ]] || [[ "$LABELS" == *"user-experience"* ]]; then
+    AGENT_PROFILE="ux"
+    AGENT_SKILLS="design/user_journey_analysis design/interaction_design design/usability_heuristics design/accessibility_review"
+    echo "  ✓ 匹配到：UI/UX 设计师 Agent"
+elif [[ "$LABELS" == *"design"* ]]; then
     AGENT_PROFILE="designer"
     AGENT_SKILLS="design/ui_ux_design design/icon_design documentation/technical_doc"
-    echo "  ✓ 匹配到：设计师 Agent"
+    echo "  ✓ 匹配到：设计师 Agent（legacy designer，建议改用 ux 标签）"
 elif [[ "$LABELS" == *"test"* ]] || [[ "$LABELS" == *"qa"* ]]; then
     AGENT_PROFILE="tester"
     AGENT_SKILLS="testing/unit_test testing/e2e_test testing/integration_test development/test_development"
@@ -76,7 +92,7 @@ elif [[ "$LABELS" == *"test"* ]] || [[ "$LABELS" == *"qa"* ]]; then
 elif [[ "$LABELS" == *"devops"* ]] || [[ "$LABELS" == *"deploy"* ]] || [[ "$LABELS" == *"docker"* ]]; then
     AGENT_PROFILE="devops"
     AGENT_SKILLS="devops/docker_build devops/kubernetes_deploy devops/ci_cd_setup devops/monitoring_setup"
-    echo "  ✓ 匹配到：运维 Agent"
+    echo "  ✓ 匹配到：运维 Agent（已迁出 default 7 位，路由保留兼容老 ticket label）"
 elif [[ "$LABELS" == *"docs"* ]] || [[ "$LABELS" == *"documentation"* ]]; then
     AGENT_PROFILE="doc_monitor"
     AGENT_SKILLS="documentation/api_documentation documentation/user_guide documentation/technical_doc"

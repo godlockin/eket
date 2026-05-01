@@ -91,7 +91,7 @@ Master 每完成一个任务节点后，必须依次回答以下 4 个问题：
 
 ---
 
-## 6. Master Hard Rules（7 条）
+## 6. Master Hard Rules（9 条）
 
 **以下为 Master 强制行为规则：**
 
@@ -146,6 +146,33 @@ ls outbox/review_requests/                               # 积压 review request
 
 是否有同类文档可更新而不是新建？文档类型对应归属目录是否正确？
 （规范见 `confluence/memory/EKET-PROJECT-HYGIENE.md`）
+
+### Rule 8：Rule of 500 — 大重构必须工具化
+
+单次重构**净变更 > 500 行**（去 generated / migration / lock / 注释 / 空白）时：
+- **禁止**逐行手改，必须使用 codemod / AST 工具（`jscodeshift`、`ts-morph`、`comby`、`ruff` rewrite 等）
+- PR description 必须注明所用工具及命令复现步骤
+- 例外：PR body 含 `Approved-Large-PR-By: <master-id>` 显式审批后允许人工，但必须在 PR description 解释为何无法 codemod
+
+**Master 审 PR 时若 PR 含 `Approved-Large-PR-By: <master-id>` trailer，必须**：
+1. 二次确认 trailer **不在** quote 块（`>`）或 fenced code 块（` ``` `）内
+2. 在 PR review 评论中明确写出"已确认大型 PR 豁免"，留下决策痕迹
+3. 若 trailer 中 `master-id` 非本人，必须 **reject** 并要求 Slaver 联系正确的 Master
+
+> CI 校验：`scripts/check-pr-size.sh` 在净变更 > 500 行且无有效审批 trailer 时直接 fail。
+
+### Rule 9：PR Sizing — 单 PR ~100 行上限
+
+单个 PR **净变更 ≤ ~100 行**（同样剔除 generated / migration / lock / 注释 / 空白）：
+- ≤ 100 行：silent pass
+- 100 ~ 500 行：warn（pass，但 Reviewer 须提示"考虑拆分"）
+- \> 500 行：fail（除非 PR body 含 `Approved-Large-PR-By: <master-id>`）
+- 超限 PR 必须由 Master 在 review 阶段**显式批准** + 在 PR body 写入 trailer 后方可合并
+
+**豁免 trailer 格式**：`Approved-Large-PR-By: master-001`
+（`master-id` 须符合 `master-[0-9a-z_-]+`，且不得位于 quote / code 块内）
+
+> CI 校验见 `scripts/check-pr-size.sh`；`--dry-run` 可输出逐文件行数细目供申诉。
 
 ---
 

@@ -291,7 +291,7 @@ PR written to outbox/review_requests/
        ↓
 Master reviews code → approves or requests changes
        ↓
-Master merges to testing branch, then to main
+Master merges to testing branch, then to main, then to miao (downstream mirror)
        ↓
 Ticket status updated → done
 ```

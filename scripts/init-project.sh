@@ -764,22 +764,28 @@ EOF
         echo "----------------------------------------"
         echo ""
 
-        echo "选择 Slaver 专家角色:"
-        echo "  1) frontend_dev - 前端开发 (React/Vue/TypeScript)"
-        echo "  2) backend_dev - 后端开发 (Node.js/Python/Go)"
-        echo "  3) fullstack - 全栈开发"
-        echo "  4) tester - 测试工程师"
-        echo "  5) devops - 运维工程师"
+        echo "选择 Slaver 专家角色（对齐 default 7 位）:"
+        echo "  1) architect  - 系统架构师"
+        echo "  2) backend    - 后端工程师 (Node.js/Python/Go) [兼容 backend_dev]"
+        echo "  3) frontend   - 前端工程师 (React/Vue/TypeScript) [兼容 frontend_dev]"
+        echo "  4) fullstack  - 全栈工程师"
+        echo "  5) product    - 产品经理"
+        echo "  6) tester     - 测试工程师"
+        echo "  7) ux         - UI/UX 设计师"
         echo ""
-        read -p "选择 [1-5]，默认 1: " SLAVER_ROLE_CHOICE
+        echo "  注：devops 已迁出 default（属 optional 扩展专家），如需请走 load-agent-profile.sh 标签路由（兼容保留）"
+        echo ""
+        read -p "选择 [1-7]，默认 4 (fullstack): " SLAVER_ROLE_CHOICE
 
         case "$SLAVER_ROLE_CHOICE" in
-            1) AGENT_TYPE="frontend_dev" ;;
-            2) AGENT_TYPE="backend_dev" ;;
-            3) AGENT_TYPE="fullstack" ;;
-            4) AGENT_TYPE="tester" ;;
-            5) AGENT_TYPE="devops" ;;
-            *) AGENT_TYPE="frontend_dev" ;;
+            1) AGENT_TYPE="architect" ;;
+            2) AGENT_TYPE="backend" ;;
+            3) AGENT_TYPE="frontend" ;;
+            4) AGENT_TYPE="fullstack" ;;
+            5) AGENT_TYPE="product" ;;
+            6) AGENT_TYPE="tester" ;;
+            7) AGENT_TYPE="ux" ;;
+            *) AGENT_TYPE="fullstack" ;;
         esac
         echo -e "${GREEN}✓${NC} 已选择角色：$AGENT_TYPE"
 
@@ -920,9 +926,17 @@ skills:
   - "technical_design"
 EOF
 
-        # 根据角色添加特定 skills
+        # 根据角色添加特定 skills（对齐 default 7 位；frontend_dev/backend_dev 老命名作 alias 兼容）
         case "$AGENT_TYPE" in
-            frontend_dev)
+            architect)
+                cat >> ".eket/state/profiles/${AGENT_TYPE}.yml" << 'EOF'
+  - "system_architecture"
+  - "module_boundary"
+  - "tech_selection"
+  - "architecture_review"
+EOF
+                ;;
+            frontend|frontend_dev)
                 cat >> ".eket/state/profiles/${AGENT_TYPE}.yml" << 'EOF'
   - "react_development"
   - "typescript"
@@ -931,7 +945,7 @@ EOF
   - "e2e_testing"
 EOF
                 ;;
-            backend_dev)
+            backend|backend_dev)
                 cat >> ".eket/state/profiles/${AGENT_TYPE}.yml" << 'EOF'
   - "api_design"
   - "database_design"
@@ -945,6 +959,30 @@ EOF
   - "api_design"
   - "database_design"
   - "fullstack_testing"
+EOF
+                ;;
+            product)
+                cat >> ".eket/state/profiles/${AGENT_TYPE}.yml" << 'EOF'
+  - "user_story_design"
+  - "feature_completeness_review"
+  - "priority_decision"
+  - "acceptance_criteria"
+EOF
+                ;;
+            tester)
+                cat >> ".eket/state/profiles/${AGENT_TYPE}.yml" << 'EOF'
+  - "test_pyramid"
+  - "unit_testing"
+  - "e2e_testing"
+  - "flaky_triage"
+EOF
+                ;;
+            ux)
+                cat >> ".eket/state/profiles/${AGENT_TYPE}.yml" << 'EOF'
+  - "user_journey_analysis"
+  - "interaction_design"
+  - "usability_heuristics"
+  - "accessibility_review"
 EOF
                 ;;
         esac

@@ -1,0 +1,33 @@
+name: pr-size-check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  check-pr-size:
+    runs-on: ubuntu-latest
+    # 上线 1 周观察期，continue-on-error 保证不 block merge
+    continue-on-error: true
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Write PR body to file
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: printf '%s' "$PR_BODY" > /tmp/pr_body.md
+
+      - name: Check PR size
+        run: |
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          git fetch origin "$BASE_REF"
+          bash scripts/check-pr-size.sh \
+            --base="origin/$BASE_REF" \
+            --pr-body-file=/tmp/pr_body.md

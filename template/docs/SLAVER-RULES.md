@@ -158,7 +158,7 @@ echo "exit code: $?"  # 必须为 0
 
 ---
 
-## 6. Slaver Hard Rules（3 条）
+## 6. Slaver Hard Rules（5 条）
 
 ### Rule 1：禁止横向协助
 
@@ -191,6 +191,24 @@ echo "exit code: $?"  # 必须为 0
   ```
 - **未上报视为心跳超时**，触发 Master 的超时处理流程
 - 示例：预估 2 小时的 ticket → 每 12 分钟上报；预估 6 小时 → 每 30 分钟上报
+
+### Rule 4：Rule of 500 — 净变更 > 500 行禁止逐行手改
+
+执行重构 / 大批量替换时，提交前先在本地跑：
+```bash
+bash scripts/check-pr-size.sh --base=origin/<target-branch>
+```
+若净变更 > 500 行：
+- **禁止**继续逐行 Edit；必须切换 codemod / AST 工具完成
+- 否则上报 BLOCKED 给 Master，申请 `Approved-Large-PR-By` 豁免，并写明无法 codemod 的根因
+
+### Rule 5：PR Sizing — 单 PR 控制 ~100 行净变更
+
+提交 PR 前必须自检 `bash scripts/check-pr-size.sh`：
+- ≤ 100 行：silent pass，可直接提交
+- 100 ~ 500 行：在 PR description 解释拆分困难
+- \> 500 行：必须先获得 Master 审批，在 PR body 写入 trailer `Approved-Large-PR-By: <master-id>`
+- **禁止**为绕过阈值人为拆 commit 但合并到同一个 PR；CI 计算的是 PR 级 diff 总和
 
 ---
 
