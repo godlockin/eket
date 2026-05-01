@@ -1,0 +1,2177 @@
+- generic [ref=e2]:
+  - region
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner [ref=e6]:
+      - heading "Navigation Menu" [level=2] [ref=e7]
+      - generic [ref=e8]:
+        - link "Homepage" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - img [ref=e11]
+        - generic [ref=e13]:
+          - navigation "Global" [ref=e16]:
+            - list [ref=e17]:
+              - listitem [ref=e18]:
+                - button "Platform" [ref=e20] [cursor=pointer]:
+                  - text: Platform
+                  - img [ref=e21]
+              - listitem [ref=e23]:
+                - button "Solutions" [ref=e25] [cursor=pointer]:
+                  - text: Solutions
+                  - img [ref=e26]
+              - listitem [ref=e28]:
+                - button "Resources" [ref=e30] [cursor=pointer]:
+                  - text: Resources
+                  - img [ref=e31]
+              - listitem [ref=e33]:
+                - button "Open Source" [ref=e35] [cursor=pointer]:
+                  - text: Open Source
+                  - img [ref=e36]
+              - listitem [ref=e38]:
+                - button "Enterprise" [ref=e40] [cursor=pointer]:
+                  - text: Enterprise
+                  - img [ref=e41]
+              - listitem [ref=e43]:
+                - link "Pricing" [ref=e44] [cursor=pointer]:
+                  - /url: https://github.com/pricing
+                  - generic [ref=e45]: Pricing
+          - generic [ref=e46]:
+            - button "Search or jump to…" [ref=e49] [cursor=pointer]:
+              - img [ref=e51]
+            - link "Sign in" [ref=e54] [cursor=pointer]:
+              - /url: /login?return_to=https%3A%2F%2Fgithub.com%2Fbytedance%2Fdeer-flow
+            - link "Sign up" [ref=e55] [cursor=pointer]:
+              - /url: /signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F%3Cuser-name%3E%2F%3Crepo-name%3E&source=header-repo&source_repo=bytedance%2Fdeer-flow
+            - button "Appearance settings" [ref=e58] [cursor=pointer]:
+              - img
+  - main [ref=e62]:
+    - generic [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e66]:
+          - img [ref=e67]
+          - link "bytedance" [ref=e70] [cursor=pointer]:
+            - /url: /bytedance
+          - generic [ref=e71]: /
+          - strong [ref=e72]:
+            - link "deer-flow" [ref=e73] [cursor=pointer]:
+              - /url: /bytedance/deer-flow
+          - generic [ref=e74]: Public
+        - generic [ref=e75]:
+          - list:
+            - listitem [ref=e76]:
+              - link "You must be signed in to change notification settings" [ref=e77] [cursor=pointer]:
+                - /url: /login?return_to=%2Fbytedance%2Fdeer-flow
+                - img [ref=e78]
+                - text: Notifications
+            - listitem [ref=e80]:
+              - link "Fork 8.1k" [ref=e81] [cursor=pointer]:
+                - /url: /login?return_to=%2Fbytedance%2Fdeer-flow
+                - img [ref=e82]
+                - text: Fork
+                - generic "8,115" [ref=e84]: 8.1k
+            - listitem [ref=e85]:
+              - link "You must be signed in to star a repository" [ref=e87] [cursor=pointer]:
+                - /url: /login?return_to=%2Fbytedance%2Fdeer-flow
+                - img [ref=e88]
+                - text: Star
+                - generic "62685 users starred this repository" [ref=e90]: 62.7k
+      - navigation "Repository" [ref=e91]:
+        - list [ref=e92]:
+          - listitem [ref=e93]:
+            - link "Code" [ref=e94] [cursor=pointer]:
+              - /url: /bytedance/deer-flow
+              - img [ref=e95]
+              - generic [ref=e97]: Code
+          - listitem [ref=e98]:
+            - link "Issues 457" [ref=e99] [cursor=pointer]:
+              - /url: /bytedance/deer-flow/issues
+              - img [ref=e100]
+              - generic [ref=e103]: Issues
+              - generic "457" [ref=e104]
+          - listitem [ref=e105]:
+            - link "Pull requests 212" [ref=e106] [cursor=pointer]:
+              - /url: /bytedance/deer-flow/pulls
+              - img [ref=e107]
+              - generic [ref=e109]: Pull requests
+              - generic "212" [ref=e110]
+          - listitem [ref=e111]:
+            - link "Discussions" [ref=e112] [cursor=pointer]:
+              - /url: /bytedance/deer-flow/discussions
+              - img [ref=e113]
+              - generic [ref=e115]: Discussions
+          - listitem [ref=e116]:
+            - link "Actions" [ref=e117] [cursor=pointer]:
+              - /url: /bytedance/deer-flow/actions
+              - img [ref=e118]
+              - generic [ref=e120]: Actions
+          - listitem [ref=e121]:
+            - link "Projects" [ref=e122] [cursor=pointer]:
+              - /url: /bytedance/deer-flow/projects
+              - img [ref=e123]
+              - generic [ref=e125]: Projects
+          - listitem [ref=e126]:
+            - link "Security and quality" [ref=e127] [cursor=pointer]:
+              - /url: /bytedance/deer-flow/security
+              - img [ref=e128]
+              - generic [ref=e130]: Security and quality
+          - listitem [ref=e131]:
+            - link "Insights" [ref=e132] [cursor=pointer]:
+              - /url: /bytedance/deer-flow/pulse
+              - img [ref=e133]
+              - generic [ref=e135]: Insights
+    - generic [ref=e148]:
+      - heading "bytedance/deer-flow" [level=1] [ref=e150]
+      - generic [ref=e151]:
+        - generic [ref=e154]:
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - button "main branch" [ref=e158] [cursor=pointer]:
+                - generic [ref=e159]:
+                  - generic [ref=e161]:
+                    - img [ref=e163]
+                    - generic [ref=e166]: main
+                  - generic:
+                    - img
+              - generic [ref=e167]:
+                - link "Branches" [ref=e168] [cursor=pointer]:
+                  - /url: /bytedance/deer-flow/branches
+                  - generic [ref=e169]:
+                    - generic:
+                      - img
+                    - generic [ref=e170]: Branches
+                - link "Tags" [ref=e171] [cursor=pointer]:
+                  - /url: /bytedance/deer-flow/tags
+                  - generic [ref=e172]:
+                    - generic:
+                      - img
+                    - generic [ref=e173]: Tags
+            - button "Code" [ref=e175] [cursor=pointer]:
+              - generic [ref=e176]:
+                - generic:
+                  - img
+                - generic [ref=e177]: Code
+                - generic:
+                  - img
+          - generic [ref=e178]:
+            - generic [ref=e179]:
+              - heading "Folders and files" [level=2] [ref=e180]
+              - table "Folders and files" [ref=e181]:
+                - rowgroup:
+                  - row "Name Last commit message Last commit date":
+                    - columnheader "Name"
+                    - columnheader "Last commit message":
+                      - generic "Last commit message"
+                    - columnheader "Last commit date":
+                      - generic "Last commit date"
+                - rowgroup [ref=e182]:
+                  - row "Latest commit History 1,932 Commits" [ref=e183]:
+                    - cell "Latest commit History 1,932 Commits" [ref=e184]:
+                      - generic [ref=e185]:
+                        - heading "Latest commit" [level=2] [ref=e186]
+                        - generic [ref=e189]:
+                          - heading "History" [level=2] [ref=e190]
+                          - link "1,932 Commits" [ref=e191] [cursor=pointer]:
+                            - /url: /bytedance/deer-flow/commits/main/
+                            - generic [ref=e192]:
+                              - generic:
+                                - img
+                              - generic [ref=e193]: 1,932 Commits
+                  - row ".agent/skills/smoke-test, (Directory)" [ref=e194]:
+                    - cell ".agent/skills/smoke-test, (Directory)" [ref=e195]:
+                      - generic [ref=e196]:
+                        - img [ref=e197]
+                        - link ".agent/skills/smoke-test, (Directory)" [ref=e202] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/tree/main/.agent/skills/smoke-test
+                          - text: .agent/skills/smoke-test
+                    - cell [ref=e203]
+                    - cell [ref=e205]
+                  - row ".github, (Directory)" [ref=e208]:
+                    - cell ".github, (Directory)" [ref=e209]:
+                      - generic [ref=e210]:
+                        - img [ref=e211]
+                        - link ".github, (Directory)" [ref=e216] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/tree/main/.github
+                          - text: .github
+                    - cell [ref=e217]
+                    - cell [ref=e219]
+                  - row "backend, (Directory)" [ref=e222]:
+                    - cell "backend, (Directory)" [ref=e223]:
+                      - generic [ref=e224]:
+                        - img [ref=e225]
+                        - link "backend, (Directory)" [ref=e230] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/tree/main/backend
+                          - text: backend
+                    - cell [ref=e231]
+                    - cell [ref=e233]
+                  - row "docker, (Directory)" [ref=e236]:
+                    - cell "docker, (Directory)" [ref=e237]:
+                      - generic [ref=e238]:
+                        - img [ref=e239]
+                        - link "docker, (Directory)" [ref=e244] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/tree/main/docker
+                          - text: docker
+                    - cell [ref=e245]
+                    - cell [ref=e247]
+                  - row "docs, (Directory)" [ref=e250]:
+                    - cell "docs, (Directory)" [ref=e251]:
+                      - generic [ref=e252]:
+                        - img [ref=e253]
+                        - link "docs, (Directory)" [ref=e258] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/tree/main/docs
+                          - text: docs
+                    - cell [ref=e259]
+                    - cell [ref=e261]
+                  - row "frontend, (Directory)" [ref=e264]:
+                    - cell "frontend, (Directory)" [ref=e265]:
+                      - generic [ref=e266]:
+                        - img [ref=e267]
+                        - link "frontend, (Directory)" [ref=e272] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/tree/main/frontend
+                          - text: frontend
+                    - cell [ref=e273]
+                    - cell [ref=e275]
+                  - row "pr-build, (Directory)" [ref=e278]:
+                    - cell "pr-build, (Directory)" [ref=e279]:
+                      - generic [ref=e280]:
+                        - img [ref=e281]
+                        - link "pr-build, (Directory)" [ref=e286] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/tree/main/pr-build
+                          - text: pr-build
+                    - cell [ref=e287]
+                    - cell [ref=e289]
+                  - row "scripts, (Directory)" [ref=e292]:
+                    - cell "scripts, (Directory)" [ref=e293]:
+                      - generic [ref=e294]:
+                        - img [ref=e295]
+                        - link "scripts, (Directory)" [ref=e300] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/tree/main/scripts
+                          - text: scripts
+                    - cell [ref=e301]
+                    - cell [ref=e303]
+                  - row "skills/public, (Directory)" [ref=e306]:
+                    - cell "skills/public, (Directory)" [ref=e307]:
+                      - generic [ref=e308]:
+                        - img [ref=e309]
+                        - link "skills/public, (Directory)" [ref=e314] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/tree/main/skills/public
+                          - text: skills/public
+                    - cell [ref=e315]
+                    - cell [ref=e317]
+                  - row ".dockerignore, (File)" [ref=e320]:
+                    - cell ".dockerignore, (File)" [ref=e321]:
+                      - generic [ref=e322]:
+                        - img [ref=e323]
+                        - link ".dockerignore, (File)" [ref=e328] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/.dockerignore
+                          - text: .dockerignore
+                    - cell [ref=e329]
+                    - cell [ref=e331]
+                  - row ".env.example, (File)" [ref=e334]:
+                    - cell ".env.example, (File)" [ref=e335]:
+                      - generic [ref=e336]:
+                        - img [ref=e337]
+                        - link ".env.example, (File)" [ref=e342] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/.env.example
+                          - text: .env.example
+                    - cell [ref=e343]
+                    - cell [ref=e345]
+                  - row ".gitattributes, (File)" [ref=e348]:
+                    - cell ".gitattributes, (File)" [ref=e349]:
+                      - generic [ref=e350]:
+                        - img [ref=e351]
+                        - link ".gitattributes, (File)" [ref=e356] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/.gitattributes
+                          - text: .gitattributes
+                    - cell [ref=e357]
+                    - cell [ref=e359]
+                  - row ".gitignore, (File)" [ref=e362]:
+                    - cell ".gitignore, (File)" [ref=e363]:
+                      - generic [ref=e364]:
+                        - img [ref=e365]
+                        - link ".gitignore, (File)" [ref=e370] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/.gitignore
+                          - text: .gitignore
+                    - cell [ref=e371]
+                    - cell [ref=e373]
+                  - row "CODE_OF_CONDUCT.md, (File)" [ref=e376]:
+                    - cell "CODE_OF_CONDUCT.md, (File)" [ref=e377]:
+                      - generic [ref=e378]:
+                        - img [ref=e379]
+                        - link "CODE_OF_CONDUCT.md, (File)" [ref=e384] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/CODE_OF_CONDUCT.md
+                          - text: CODE_OF_CONDUCT.md
+                    - cell [ref=e385]
+                    - cell [ref=e387]
+                  - row "CONTRIBUTING.md, (File)" [ref=e390]:
+                    - cell "CONTRIBUTING.md, (File)" [ref=e391]:
+                      - generic [ref=e392]:
+                        - img [ref=e393]
+                        - link "CONTRIBUTING.md, (File)" [ref=e398] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/CONTRIBUTING.md
+                          - text: CONTRIBUTING.md
+                    - cell [ref=e399]
+                    - cell [ref=e401]
+                  - row "Install.md, (File)" [ref=e404]:
+                    - cell "Install.md, (File)" [ref=e405]:
+                      - generic [ref=e406]:
+                        - img [ref=e407]
+                        - link "Install.md, (File)" [ref=e412] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/Install.md
+                          - text: Install.md
+                    - cell [ref=e413]
+                    - cell [ref=e415]
+                  - row "LICENSE, (File)" [ref=e418]:
+                    - cell "LICENSE, (File)" [ref=e419]:
+                      - generic [ref=e420]:
+                        - img [ref=e421]
+                        - link "LICENSE, (File)" [ref=e426] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/LICENSE
+                          - text: LICENSE
+                    - cell [ref=e427]
+                    - cell [ref=e429]
+                  - row "Makefile, (File)" [ref=e432]:
+                    - cell "Makefile, (File)" [ref=e433]:
+                      - generic [ref=e434]:
+                        - img [ref=e435]
+                        - link "Makefile, (File)" [ref=e440] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/Makefile
+                          - text: Makefile
+                    - cell [ref=e441]
+                    - cell [ref=e443]
+                  - row "README.md, (File)" [ref=e446]:
+                    - cell "README.md, (File)" [ref=e447]:
+                      - generic [ref=e448]:
+                        - img [ref=e449]
+                        - link "README.md, (File)" [ref=e454] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/README.md
+                          - text: README.md
+                    - cell [ref=e455]
+                    - cell [ref=e457]
+                  - row "README_fr.md, (File)" [ref=e460]:
+                    - cell "README_fr.md, (File)" [ref=e461]:
+                      - generic [ref=e462]:
+                        - img [ref=e463]
+                        - link "README_fr.md, (File)" [ref=e468] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/README_fr.md
+                          - text: README_fr.md
+                    - cell [ref=e469]
+                    - cell [ref=e471]
+                  - row "README_ja.md, (File)" [ref=e474]:
+                    - cell "README_ja.md, (File)" [ref=e475]:
+                      - generic [ref=e476]:
+                        - img [ref=e477]
+                        - link "README_ja.md, (File)" [ref=e482] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/README_ja.md
+                          - text: README_ja.md
+                    - cell [ref=e483]
+                    - cell [ref=e485]
+                  - row "README_ru.md, (File)" [ref=e488]:
+                    - cell "README_ru.md, (File)" [ref=e489]:
+                      - generic [ref=e490]:
+                        - img [ref=e491]
+                        - link "README_ru.md, (File)" [ref=e496] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/README_ru.md
+                          - text: README_ru.md
+                    - cell [ref=e497]
+                    - cell [ref=e499]
+                  - row "README_zh.md, (File)" [ref=e502]:
+                    - cell "README_zh.md, (File)" [ref=e503]:
+                      - generic [ref=e504]:
+                        - img [ref=e505]
+                        - link "README_zh.md, (File)" [ref=e510] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/README_zh.md
+                          - text: README_zh.md
+                    - cell [ref=e511]
+                    - cell [ref=e513]
+                  - row "SECURITY.md, (File)" [ref=e516]:
+                    - cell "SECURITY.md, (File)" [ref=e517]:
+                      - generic [ref=e518]:
+                        - img [ref=e519]
+                        - link "SECURITY.md, (File)" [ref=e524] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/SECURITY.md
+                          - text: SECURITY.md
+                    - cell [ref=e525]
+                    - cell [ref=e527]
+                  - row "config.example.yaml, (File)" [ref=e530]:
+                    - cell "config.example.yaml, (File)" [ref=e531]:
+                      - generic [ref=e532]:
+                        - img [ref=e533]
+                        - link "config.example.yaml, (File)" [ref=e538] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/config.example.yaml
+                          - text: config.example.yaml
+                    - cell [ref=e539]
+                    - cell [ref=e541]
+                  - row "deer-flow.code-workspace, (File)" [ref=e544]:
+                    - cell "deer-flow.code-workspace, (File)" [ref=e545]:
+                      - generic [ref=e546]:
+                        - img [ref=e547]
+                        - link "deer-flow.code-workspace, (File)" [ref=e552] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/deer-flow.code-workspace
+                          - text: deer-flow.code-workspace
+                    - cell [ref=e553]
+                    - cell [ref=e555]
+                  - row "extensions_config.example.json, (File)" [ref=e558]:
+                    - cell "extensions_config.example.json, (File)" [ref=e559]:
+                      - generic [ref=e560]:
+                        - img [ref=e561]
+                        - link "extensions_config.example.json, (File)" [ref=e566] [cursor=pointer]:
+                          - /url: /bytedance/deer-flow/blob/main/extensions_config.example.json
+                          - text: extensions_config.example.json
+                    - cell [ref=e567]
+                    - cell [ref=e569]
+            - generic [ref=e573]:
+              - generic [ref=e574]:
+                - heading "Repository files navigation" [level=2] [ref=e575]
+                - navigation "Repository files" [ref=e576]:
+                  - list [ref=e577]:
+                    - listitem [ref=e578]:
+                      - link "README" [ref=e579] [cursor=pointer]:
+                        - /url: "#"
+                        - img [ref=e581]
+                        - generic [ref=e583]: README
+                    - listitem [ref=e584]:
+                      - link "Code of conduct" [ref=e585] [cursor=pointer]:
+                        - /url: "#"
+                        - img [ref=e587]
+                        - generic [ref=e589]: Code of conduct
+                    - listitem [ref=e590]:
+                      - link "Contributing" [ref=e591] [cursor=pointer]:
+                        - /url: "#"
+                        - img [ref=e593]
+                        - generic [ref=e595]: Contributing
+                    - listitem [ref=e596]:
+                      - link "MIT license" [ref=e597] [cursor=pointer]:
+                        - /url: "#"
+                        - img [ref=e599]
+                        - generic [ref=e601]: MIT license
+                    - listitem [ref=e602]:
+                      - link "Security" [ref=e603] [cursor=pointer]:
+                        - /url: "#"
+                        - img [ref=e605]
+                        - generic [ref=e607]: Security
+                - button "Outline" [ref=e608] [cursor=pointer]:
+                  - img [ref=e609]
+              - article [ref=e612]:
+                - generic [ref=e613]:
+                  - heading "🦌 DeerFlow - 2.0" [level=1] [ref=e614]
+                  - 'link "Permalink: 🦌 DeerFlow - 2.0" [ref=e615] [cursor=pointer]':
+                    - /url: "#-deerflow---20"
+                    - img [ref=e616]
+                - paragraph [ref=e618]:
+                  - text: English |
+                  - link "中文" [ref=e619] [cursor=pointer]:
+                    - /url: /bytedance/deer-flow/blob/main/README_zh.md
+                  - text: "|"
+                  - link "日本語" [ref=e620] [cursor=pointer]:
+                    - /url: /bytedance/deer-flow/blob/main/README_ja.md
+                  - text: "|"
+                  - link "Français" [ref=e621] [cursor=pointer]:
+                    - /url: /bytedance/deer-flow/blob/main/README_fr.md
+                  - text: "|"
+                  - link "Русский" [ref=e622] [cursor=pointer]:
+                    - /url: /bytedance/deer-flow/blob/main/README_ru.md
+                - paragraph [ref=e623]:
+                  - link "Python" [ref=e624] [cursor=pointer]:
+                    - /url: /bytedance/deer-flow/blob/main/backend/pyproject.toml
+                    - img "Python" [ref=e625]
+                  - link "Node.js" [ref=e626] [cursor=pointer]:
+                    - /url: /bytedance/deer-flow/blob/main/Makefile
+                    - img "Node.js" [ref=e627]
+                  - 'link "License: MIT" [ref=e628] [cursor=pointer]':
+                    - /url: /bytedance/deer-flow/blob/main/LICENSE
+                    - 'img "License: MIT" [ref=e629]'
+                - paragraph [ref=e630]:
+                  - link "bytedance%2Fdeer-flow | Trendshift" [ref=e631] [cursor=pointer]:
+                    - /url: https://trendshift.io/repositories/14699
+                    - img "bytedance%2Fdeer-flow | Trendshift" [ref=e632]
+                - blockquote [ref=e633]:
+                  - paragraph [ref=e634]: "On February 28th, 2026, DeerFlow claimed the 🏆 #1 spot on GitHub Trending following the launch of version 2. Thanks a million to our incredible community — you made this happen! 💪🔥"
+                - paragraph [ref=e635]:
+                  - text: DeerFlow (
+                  - strong [ref=e636]: D
+                  - text: eep
+                  - strong [ref=e637]: E
+                  - text: xploration and
+                  - strong [ref=e638]: E
+                  - text: fficient
+                  - strong [ref=e639]: R
+                  - text: esearch
+                  - strong [ref=e640]: Flow
+                  - text: ) is an open-source
+                  - strong [ref=e641]: super agent harness
+                  - text: that orchestrates
+                  - strong [ref=e642]: sub-agents
+                  - text: ","
+                  - strong [ref=e643]: memory
+                  - text: ", and"
+                  - strong [ref=e644]: sandboxes
+                  - text: to do almost anything — powered by
+                  - strong [ref=e645]: extensible skills
+                  - text: .
+                - group [ref=e646]:
+                  - generic "deer-flow-720p.mp4" [ref=e647] [cursor=pointer]:
+                    - img [ref=e648]
+                    - text: deer-flow-720p.mp4
+                - generic [ref=e652]:
+                  - paragraph [ref=e653]:
+                    - img [ref=e654]
+                    - text: Note
+                  - paragraph [ref=e656]:
+                    - strong [ref=e657]: DeerFlow 2.0 is a ground-up rewrite.
+                    - text: It shares no code with v1. If you're looking for the original Deep Research framework, it's maintained on the
+                    - link "1.x branch" [ref=e658] [cursor=pointer]:
+                      - /url: https://github.com/bytedance/deer-flow/tree/main-1.x
+                      - code [ref=e659]: 1.x
+                      - text: branch
+                    - text: — contributions there are still welcome. Active development has moved to 2.0.
+                - generic [ref=e660]:
+                  - heading "Official Website" [level=2] [ref=e661]
+                  - 'link "Permalink: Official Website" [ref=e662] [cursor=pointer]':
+                    - /url: "#official-website"
+                    - img [ref=e663]
+                - paragraph [ref=e665]:
+                  - link "image" [ref=e666] [cursor=pointer]:
+                    - /url: https://deerflow.tech
+                    - img "image" [ref=e667]
+                - paragraph [ref=e668]:
+                  - text: Learn more and see
+                  - strong [ref=e669]: real demos
+                  - text: on our
+                  - link "official website" [ref=e670] [cursor=pointer]:
+                    - /url: https://deerflow.tech
+                    - strong [ref=e671]: official website
+                  - text: .
+                - generic [ref=e672]:
+                  - heading "Coding Plan from ByteDance Volcengine" [level=2] [ref=e673]
+                  - 'link "Permalink: Coding Plan from ByteDance Volcengine" [ref=e674] [cursor=pointer]':
+                    - /url: "#coding-plan-from-bytedance-volcengine"
+                    - img [ref=e675]
+                - link "英文方舟" [ref=e677] [cursor=pointer]:
+                  - /url: https://private-user-images.githubusercontent.com/1003147/564581194-2ecc7b9d-50be-4185-b1f7-5542d222fb2d.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY2MTg5NTEsIm5iZiI6MTc3NjYxODY1MSwicGF0aCI6Ii8xMDAzMTQ3LzU2NDU4MTE5NC0yZWNjN2I5ZC01MGJlLTQxODUtYjFmNy01NTQyZDIyMmZiMmQucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDQxOSUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjA0MTlUMTcxMDUxWiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9N2FhMTIwNDhiMjgyMGEwMTIzNWI4OGEwNTRkMGRmZTU1MTk4OTFlN2JjNWZkYzc1ZWMzMTgxYjdmYTliOTNmMiZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmcmVzcG9uc2UtY29udGVudC10eXBlPWltYWdlJTJGcG5nIn0.HdbHp3NWoNuGDOBCxqxc8GidtP8UTLkHypm06FdL6IA
+                  - img "英文方舟" [ref=e678]
+                - list [ref=e679]:
+                  - listitem [ref=e680]: We strongly recommend using Doubao-Seed-2.0-Code, DeepSeek v3.2 and Kimi 2.5 to run DeerFlow
+                  - listitem [ref=e681]:
+                    - link "Learn more" [ref=e682] [cursor=pointer]:
+                      - /url: https://www.byteplus.com/en/activity/codingplan?utm_campaign=deer_flow&utm_content=deer_flow&utm_medium=devrel&utm_source=OWO&utm_term=deer_flow
+                  - listitem [ref=e683]:
+                    - link "中国大陆地区的开发者请点击这里" [ref=e684] [cursor=pointer]:
+                      - /url: https://www.volcengine.com/activity/codingplan?utm_campaign=deer_flow&utm_content=deer_flow&utm_medium=devrel&utm_source=OWO&utm_term=deer_flow
+                - generic [ref=e685]:
+                  - heading "InfoQuest" [level=2] [ref=e686]
+                  - 'link "Permalink: InfoQuest" [ref=e687] [cursor=pointer]':
+                    - /url: "#infoquest"
+                    - img [ref=e688]
+                - paragraph [ref=e690]:
+                  - text: DeerFlow has newly integrated the intelligent search and crawling toolset independently developed by BytePlus--
+                  - link "InfoQuest (supports free online experience)" [ref=e691] [cursor=pointer]:
+                    - /url: https://docs.byteplus.com/en/docs/InfoQuest/What_is_Info_Quest
+                - link "InfoQuest_banner" [ref=e692] [cursor=pointer]:
+                  - /url: https://docs.byteplus.com/en/docs/InfoQuest/What_is_Info_Quest
+                  - img "InfoQuest_banner" [ref=e693]
+                - separator [ref=e694]
+                - generic [ref=e695]:
+                  - heading "Table of Contents" [level=2] [ref=e696]
+                  - 'link "Permalink: Table of Contents" [ref=e697] [cursor=pointer]':
+                    - /url: "#table-of-contents"
+                    - img [ref=e698]
+                - list [ref=e700]:
+                  - listitem [ref=e701]:
+                    - link "🦌 DeerFlow - 2.0" [ref=e702] [cursor=pointer]:
+                      - /url: "#-deerflow---20"
+                    - list [ref=e703]:
+                      - listitem [ref=e704]:
+                        - link "Official Website" [ref=e705] [cursor=pointer]:
+                          - /url: "#official-website"
+                      - listitem [ref=e706]:
+                        - link "Coding Plan from ByteDance Volcengine" [ref=e707] [cursor=pointer]:
+                          - /url: "#coding-plan-from-bytedance-volcengine"
+                      - listitem [ref=e708]:
+                        - link "InfoQuest" [ref=e709] [cursor=pointer]:
+                          - /url: "#infoquest"
+                      - listitem [ref=e710]:
+                        - link "Table of Contents" [ref=e711] [cursor=pointer]:
+                          - /url: "#table-of-contents"
+                      - listitem [ref=e712]:
+                        - link "One-Line Agent Setup" [ref=e713] [cursor=pointer]:
+                          - /url: "#one-line-agent-setup"
+                      - listitem [ref=e714]:
+                        - link "Quick Start" [ref=e715] [cursor=pointer]:
+                          - /url: "#quick-start"
+                        - list [ref=e716]:
+                          - listitem [ref=e717]:
+                            - link "Configuration" [ref=e718] [cursor=pointer]:
+                              - /url: "#configuration"
+                          - listitem [ref=e719]:
+                            - link "Running the Application" [ref=e720] [cursor=pointer]:
+                              - /url: "#running-the-application"
+                            - list [ref=e721]:
+                              - listitem [ref=e722]:
+                                - link "Deployment Sizing" [ref=e723] [cursor=pointer]:
+                                  - /url: "#deployment-sizing"
+                              - listitem [ref=e724]:
+                                - 'link "Option 1: Docker (Recommended)" [ref=e725] [cursor=pointer]':
+                                  - /url: "#option-1-docker-recommended"
+                              - listitem [ref=e726]:
+                                - 'link "Option 2: Local Development" [ref=e727] [cursor=pointer]':
+                                  - /url: "#option-2-local-development"
+                          - listitem [ref=e728]:
+                            - link "Advanced" [ref=e729] [cursor=pointer]:
+                              - /url: "#advanced"
+                            - list [ref=e730]:
+                              - listitem [ref=e731]:
+                                - link "Sandbox Mode" [ref=e732] [cursor=pointer]:
+                                  - /url: "#sandbox-mode"
+                              - listitem [ref=e733]:
+                                - link "MCP Server" [ref=e734] [cursor=pointer]:
+                                  - /url: "#mcp-server"
+                              - listitem [ref=e735]:
+                                - link "IM Channels" [ref=e736] [cursor=pointer]:
+                                  - /url: "#im-channels"
+                              - listitem [ref=e737]:
+                                - link "LangSmith Tracing" [ref=e738] [cursor=pointer]:
+                                  - /url: "#langsmith-tracing"
+                              - listitem [ref=e739]:
+                                - link "Langfuse Tracing" [ref=e740] [cursor=pointer]:
+                                  - /url: "#langfuse-tracing"
+                              - listitem [ref=e741]:
+                                - link "Using Both Providers" [ref=e742] [cursor=pointer]:
+                                  - /url: "#using-both-providers"
+                      - listitem [ref=e743]:
+                        - link "From Deep Research to Super Agent Harness" [ref=e744] [cursor=pointer]:
+                          - /url: "#from-deep-research-to-super-agent-harness"
+                      - listitem [ref=e745]:
+                        - link "Core Features" [ref=e746] [cursor=pointer]:
+                          - /url: "#core-features"
+                        - list [ref=e747]:
+                          - listitem [ref=e748]:
+                            - link "Skills & Tools" [ref=e749] [cursor=pointer]:
+                              - /url: "#skills--tools"
+                            - list [ref=e750]:
+                              - listitem [ref=e751]:
+                                - link "Claude Code Integration" [ref=e752] [cursor=pointer]:
+                                  - /url: "#claude-code-integration"
+                          - listitem [ref=e753]:
+                            - link "Sub-Agents" [ref=e754] [cursor=pointer]:
+                              - /url: "#sub-agents"
+                          - listitem [ref=e755]:
+                            - link "Sandbox & File System" [ref=e756] [cursor=pointer]:
+                              - /url: "#sandbox--file-system"
+                          - listitem [ref=e757]:
+                            - link "Context Engineering" [ref=e758] [cursor=pointer]:
+                              - /url: "#context-engineering"
+                          - listitem [ref=e759]:
+                            - link "Long-Term Memory" [ref=e760] [cursor=pointer]:
+                              - /url: "#long-term-memory"
+                      - listitem [ref=e761]:
+                        - link "Recommended Models" [ref=e762] [cursor=pointer]:
+                          - /url: "#recommended-models"
+                      - listitem [ref=e763]:
+                        - link "Embedded Python Client" [ref=e764] [cursor=pointer]:
+                          - /url: "#embedded-python-client"
+                      - listitem [ref=e765]:
+                        - link "Documentation" [ref=e766] [cursor=pointer]:
+                          - /url: "#documentation"
+                      - listitem [ref=e767]:
+                        - link "⚠️ Security Notice" [ref=e768] [cursor=pointer]:
+                          - /url: "#%EF%B8%8F-security-notice"
+                          - generic [ref=e769]: ⚠️
+                          - text: Security Notice
+                        - list [ref=e770]:
+                          - listitem [ref=e771]:
+                            - link "Improper Deployment May Introduce Security Risks" [ref=e772] [cursor=pointer]:
+                              - /url: "#improper-deployment-may-introduce-security-risks"
+                          - listitem [ref=e773]:
+                            - link "Security Recommendations" [ref=e774] [cursor=pointer]:
+                              - /url: "#security-recommendations"
+                      - listitem [ref=e775]:
+                        - link "Contributing" [ref=e776] [cursor=pointer]:
+                          - /url: "#contributing"
+                      - listitem [ref=e777]:
+                        - link "License" [ref=e778] [cursor=pointer]:
+                          - /url: "#license"
+                      - listitem [ref=e779]:
+                        - link "Acknowledgments" [ref=e780] [cursor=pointer]:
+                          - /url: "#acknowledgments"
+                        - list [ref=e781]:
+                          - listitem [ref=e782]:
+                            - link "Key Contributors" [ref=e783] [cursor=pointer]:
+                              - /url: "#key-contributors"
+                      - listitem [ref=e784]:
+                        - link "Star History" [ref=e785] [cursor=pointer]:
+                          - /url: "#star-history"
+                - generic [ref=e786]:
+                  - heading "One-Line Agent Setup" [level=2] [ref=e787]
+                  - 'link "Permalink: One-Line Agent Setup" [ref=e788] [cursor=pointer]':
+                    - /url: "#one-line-agent-setup"
+                    - img [ref=e789]
+                - paragraph [ref=e791]: "If you use Claude Code, Codex, Cursor, Windsurf, or another coding agent, you can hand it the setup instructions in one sentence:"
+                - generic [ref=e792]:
+                  - code [ref=e794]: Help me clone DeerFlow if needed, then bootstrap it for local development by following https://raw.githubusercontent.com/bytedance/deer-flow/main/Install.md
+                  - button "Copy" [ref=e796] [cursor=pointer]:
+                    - img [ref=e797]
+                - paragraph [ref=e800]: That prompt is intended for coding agents. It tells the agent to clone the repo if needed, choose Docker when available, and stop with the exact next command plus any missing config the user still needs to provide.
+                - generic [ref=e801]:
+                  - heading "Quick Start" [level=2] [ref=e802]
+                  - 'link "Permalink: Quick Start" [ref=e803] [cursor=pointer]':
+                    - /url: "#quick-start"
+                    - img [ref=e804]
+                - generic [ref=e806]:
+                  - heading "Configuration" [level=3] [ref=e807]
+                  - 'link "Permalink: Configuration" [ref=e808] [cursor=pointer]':
+                    - /url: "#configuration"
+                    - img [ref=e809]
+                - list [ref=e811]:
+                  - listitem [ref=e812]:
+                    - paragraph [ref=e813]:
+                      - strong [ref=e814]: Clone the DeerFlow repository
+                    - generic [ref=e815]:
+                      - generic [ref=e816]: git clone https://github.com/bytedance/deer-flow.git cd deer-flow
+                      - button "Copy" [ref=e818] [cursor=pointer]:
+                        - img [ref=e819]
+                  - listitem [ref=e822]:
+                    - paragraph [ref=e823]:
+                      - strong [ref=e824]: Run the setup wizard
+                    - paragraph [ref=e825]:
+                      - text: From the project root directory (
+                      - code [ref=e826]: deer-flow/
+                      - text: "), run:"
+                    - generic [ref=e827]:
+                      - generic [ref=e828]: make setup
+                      - button "Copy" [ref=e830] [cursor=pointer]:
+                        - img [ref=e831]
+                    - paragraph [ref=e834]:
+                      - text: This launches an interactive wizard that guides you through choosing an LLM provider, optional web search, and execution/safety preferences such as sandbox mode, bash access, and file-write tools. It generates a minimal
+                      - code [ref=e835]: config.yaml
+                      - text: and writes your keys to
+                      - code [ref=e836]: .env
+                      - text: . Takes about 2 minutes.
+                    - paragraph [ref=e837]: The wizard also lets you configure an optional web search provider, or skip it for now.
+                    - paragraph [ref=e838]:
+                      - text: Run
+                      - code [ref=e839]: make doctor
+                      - text: at any time to verify your setup and get actionable fix hints.
+                    - blockquote [ref=e840]:
+                      - paragraph [ref=e841]:
+                        - strong [ref=e842]: Advanced / manual configuration
+                        - text: ": If you prefer to edit"
+                        - code [ref=e843]: config.yaml
+                        - text: directly, run
+                        - code [ref=e844]: make config
+                        - text: instead to copy the full template. See
+                        - code [ref=e845]: config.example.yaml
+                        - text: for the complete reference including CLI-backed providers (Codex CLI, Claude Code OAuth), OpenRouter, Responses API, and more.
+                    - group [ref=e846]:
+                      - generic "Manual model configuration examples" [ref=e847] [cursor=pointer]
+                - generic [ref=e848]:
+                  - heading "Running the Application" [level=3] [ref=e849]
+                  - 'link "Permalink: Running the Application" [ref=e850] [cursor=pointer]':
+                    - /url: "#running-the-application"
+                    - img [ref=e851]
+                - generic [ref=e853]:
+                  - heading "Deployment Sizing" [level=4] [ref=e854]
+                  - 'link "Permalink: Deployment Sizing" [ref=e855] [cursor=pointer]':
+                    - /url: "#deployment-sizing"
+                    - img [ref=e856]
+                - paragraph [ref=e858]: "Use the table below as a practical starting point when choosing how to run DeerFlow:"
+                - table [ref=e860]:
+                  - rowgroup [ref=e861]:
+                    - row "Deployment target Starting point Recommended Notes" [ref=e862]:
+                      - columnheader "Deployment target" [ref=e863]
+                      - columnheader "Starting point" [ref=e864]
+                      - columnheader "Recommended" [ref=e865]
+                      - columnheader "Notes" [ref=e866]
+                  - rowgroup [ref=e867]:
+                    - row "Local evaluation / make dev 4 vCPU, 8 GB RAM, 20 GB free SSD 8 vCPU, 16 GB RAM Good for one developer or one light session with hosted model APIs. 2 vCPU / 4 GB is usually not enough." [ref=e868]:
+                      - cell "Local evaluation / make dev" [ref=e869]:
+                        - text: Local evaluation /
+                        - code [ref=e870]: make dev
+                      - cell "4 vCPU, 8 GB RAM, 20 GB free SSD" [ref=e871]
+                      - cell "8 vCPU, 16 GB RAM" [ref=e872]
+                      - cell "Good for one developer or one light session with hosted model APIs. 2 vCPU / 4 GB is usually not enough." [ref=e873]:
+                        - text: Good for one developer or one light session with hosted model APIs.
+                        - code [ref=e874]: 2 vCPU / 4 GB
+                        - text: is usually not enough.
+                    - row "Docker development / make docker-start 4 vCPU, 8 GB RAM, 25 GB free SSD 8 vCPU, 16 GB RAM Image builds, bind mounts, and sandbox containers need more headroom than pure local dev." [ref=e875]:
+                      - cell "Docker development / make docker-start" [ref=e876]:
+                        - text: Docker development /
+                        - code [ref=e877]: make docker-start
+                      - cell "4 vCPU, 8 GB RAM, 25 GB free SSD" [ref=e878]
+                      - cell "8 vCPU, 16 GB RAM" [ref=e879]
+                      - cell "Image builds, bind mounts, and sandbox containers need more headroom than pure local dev." [ref=e880]
+                    - row "Long-running server / make up 8 vCPU, 16 GB RAM, 40 GB free SSD 16 vCPU, 32 GB RAM Preferred for shared use, multi-agent runs, report generation, or heavier sandbox workloads." [ref=e881]:
+                      - cell "Long-running server / make up" [ref=e882]:
+                        - text: Long-running server /
+                        - code [ref=e883]: make up
+                      - cell "8 vCPU, 16 GB RAM, 40 GB free SSD" [ref=e884]
+                      - cell "16 vCPU, 32 GB RAM" [ref=e885]
+                      - cell "Preferred for shared use, multi-agent runs, report generation, or heavier sandbox workloads." [ref=e886]
+                - list [ref=e887]:
+                  - listitem [ref=e888]: These numbers cover DeerFlow itself. If you also host a local LLM, size that service separately.
+                  - listitem [ref=e889]: Linux plus Docker is the recommended deployment target for a persistent server. macOS and Windows are best treated as development or evaluation environments.
+                  - listitem [ref=e890]: If CPU or memory usage stays pinned, reduce concurrent runs first, then move to the next sizing tier.
+                - generic [ref=e891]:
+                  - 'heading "Option 1: Docker (Recommended)" [level=4] [ref=e892]'
+                  - 'link "Permalink: Option 1: Docker (Recommended)" [ref=e893] [cursor=pointer]':
+                    - /url: "#option-1-docker-recommended"
+                    - img [ref=e894]
+                - paragraph [ref=e896]:
+                  - strong [ref=e897]: Development
+                  - text: "(hot-reload, source mounts):"
+                - generic [ref=e898]:
+                  - generic [ref=e899]:
+                    - text: make docker-init
+                    - generic [ref=e900]: "# Pull sandbox image (only once or when image updates)"
+                    - text: make docker-start
+                    - generic [ref=e901]: "# Start services (auto-detects sandbox mode from config.yaml)"
+                  - button "Copy" [ref=e903] [cursor=pointer]:
+                    - img [ref=e904]
+                - paragraph [ref=e907]:
+                  - code [ref=e908]: make docker-start
+                  - text: starts
+                  - code [ref=e909]: provisioner
+                  - text: only when
+                  - code [ref=e910]: config.yaml
+                  - text: uses provisioner mode (
+                  - code [ref=e911]: "sandbox.use: deerflow.community.aio_sandbox:AioSandboxProvider"
+                  - text: with
+                  - code [ref=e912]: provisioner_url
+                  - text: ).
+                - paragraph [ref=e913]:
+                  - text: Docker builds use the upstream
+                  - code [ref=e914]: uv
+                  - text: registry by default. If you need faster mirrors in restricted networks, export
+                  - code [ref=e915]: UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+                  - text: and
+                  - code [ref=e916]: NPM_REGISTRY=https://registry.npmmirror.com
+                  - text: before running
+                  - code [ref=e917]: make docker-init
+                  - text: or
+                  - code [ref=e918]: make docker-start
+                  - text: .
+                - paragraph [ref=e919]:
+                  - text: Backend processes automatically pick up
+                  - code [ref=e920]: config.yaml
+                  - text: changes on the next config access, so model metadata updates do not require a manual restart during development.
+                - generic [ref=e921]:
+                  - paragraph [ref=e922]:
+                    - img [ref=e923]
+                    - text: Tip
+                  - paragraph [ref=e925]:
+                    - text: On Linux, if Docker-based commands fail with
+                    - code [ref=e926]: permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock
+                    - text: ", add your user to the"
+                    - code [ref=e927]: docker
+                    - text: group and re-login before retrying. See
+                    - link "CONTRIBUTING.md" [ref=e928] [cursor=pointer]:
+                      - /url: /bytedance/deer-flow/blob/main/CONTRIBUTING.md#linux-docker-daemon-permission-denied
+                    - text: for the full fix.
+                - paragraph [ref=e929]:
+                  - strong [ref=e930]: Production
+                  - text: "(builds images locally, mounts runtime config and data):"
+                - generic [ref=e931]:
+                  - generic [ref=e932]:
+                    - text: make up
+                    - generic [ref=e933]: "# Build images and start all production services"
+                    - text: make down
+                    - generic [ref=e934]: "# Stop and remove containers"
+                  - button "Copy" [ref=e936] [cursor=pointer]:
+                    - img [ref=e937]
+                - generic [ref=e940]:
+                  - paragraph [ref=e941]:
+                    - img [ref=e942]
+                    - text: Note
+                  - paragraph [ref=e944]:
+                    - text: The LangGraph agent server currently runs via
+                    - code [ref=e945]: langgraph dev
+                    - text: (the open-source CLI server).
+                - paragraph [ref=e946]:
+                  - text: "Access:"
+                  - link "http://localhost:2026" [ref=e947] [cursor=pointer]:
+                    - /url: http://localhost:2026
+                - paragraph [ref=e948]:
+                  - text: See
+                  - link "CONTRIBUTING.md" [ref=e949] [cursor=pointer]:
+                    - /url: /bytedance/deer-flow/blob/main/CONTRIBUTING.md
+                  - text: for detailed Docker development guide.
+                - generic [ref=e950]:
+                  - 'heading "Option 2: Local Development" [level=4] [ref=e951]'
+                  - 'link "Permalink: Option 2: Local Development" [ref=e952] [cursor=pointer]':
+                    - /url: "#option-2-local-development"
+                    - img [ref=e953]
+                - paragraph [ref=e955]: "If you prefer running services locally:"
+                - paragraph [ref=e956]:
+                  - text: "Prerequisite: complete the \"Configuration\" steps above first ("
+                  - code [ref=e957]: make setup
+                  - text: ).
+                  - code [ref=e958]: make dev
+                  - text: requires a valid
+                  - code [ref=e959]: config.yaml
+                  - text: in the project root (can be overridden via
+                  - code [ref=e960]: DEER_FLOW_CONFIG_PATH
+                  - text: ). Run
+                  - code [ref=e961]: make doctor
+                  - text: to verify your setup before starting. On Windows, run the local development flow from Git Bash. Native
+                  - code [ref=e962]: cmd.exe
+                  - text: and PowerShell shells are not supported for the bash-based service scripts, and WSL is not guaranteed because some scripts rely on Git for Windows utilities such as
+                  - code [ref=e963]: cygpath
+                  - text: .
+                - list [ref=e964]:
+                  - listitem [ref=e965]:
+                    - paragraph [ref=e966]:
+                      - strong [ref=e967]: Check prerequisites
+                      - text: ":"
+                    - generic [ref=e968]:
+                      - generic [ref=e969]:
+                        - text: make check
+                        - generic [ref=e970]: "# Verifies Node.js 22+, pnpm, uv, nginx"
+                      - button "Copy" [ref=e972] [cursor=pointer]:
+                        - img [ref=e973]
+                  - listitem [ref=e976]:
+                    - paragraph [ref=e977]:
+                      - strong [ref=e978]: Install dependencies
+                      - text: ":"
+                    - generic [ref=e979]:
+                      - generic [ref=e980]:
+                        - text: make install
+                        - generic [ref=e981]: "# Install backend + frontend dependencies"
+                      - button "Copy" [ref=e983] [cursor=pointer]:
+                        - img [ref=e984]
+                  - listitem [ref=e987]:
+                    - paragraph [ref=e988]:
+                      - strong [ref=e989]: (Optional) Pre-pull sandbox image
+                      - text: ":"
+                    - generic [ref=e990]:
+                      - generic [ref=e991]:
+                        - generic [ref=e992]: "# Recommended if using Docker/Container-based sandbox"
+                        - text: make setup-sandbox
+                      - button "Copy" [ref=e994] [cursor=pointer]:
+                        - img [ref=e995]
+                  - listitem [ref=e998]:
+                    - paragraph [ref=e999]:
+                      - strong [ref=e1000]: (Optional) Load sample memory data for local review
+                      - text: ":"
+                    - generic [ref=e1001]:
+                      - generic [ref=e1002]: python scripts/load_memory_sample.py
+                      - button "Copy" [ref=e1004] [cursor=pointer]:
+                        - img [ref=e1005]
+                    - paragraph [ref=e1008]:
+                      - text: This copies the sample fixture into the default local runtime memory file so reviewers can immediately test
+                      - code [ref=e1009]: Settings > Memory
+                      - text: . See
+                      - link "backend/docs/MEMORY_SETTINGS_REVIEW.md" [ref=e1010] [cursor=pointer]:
+                        - /url: /bytedance/deer-flow/blob/main/backend/docs/MEMORY_SETTINGS_REVIEW.md
+                      - text: for the shortest review flow.
+                  - listitem [ref=e1011]:
+                    - paragraph [ref=e1012]:
+                      - strong [ref=e1013]: Start services
+                      - text: ":"
+                    - generic [ref=e1014]:
+                      - generic [ref=e1015]: make dev
+                      - button "Copy" [ref=e1017] [cursor=pointer]:
+                        - img [ref=e1018]
+                  - listitem [ref=e1021]:
+                    - paragraph [ref=e1022]:
+                      - strong [ref=e1023]: Access
+                      - text: ":"
+                      - link "http://localhost:2026" [ref=e1024] [cursor=pointer]:
+                        - /url: http://localhost:2026
+                - generic [ref=e1025]:
+                  - heading "Startup Modes" [level=4] [ref=e1026]
+                  - 'link "Permalink: Startup Modes" [ref=e1027] [cursor=pointer]':
+                    - /url: "#startup-modes"
+                    - img [ref=e1028]
+                - paragraph [ref=e1030]: "DeerFlow supports multiple startup modes across two dimensions:"
+                - list [ref=e1031]:
+                  - listitem [ref=e1032]:
+                    - strong [ref=e1033]: Dev / Prod
+                    - text: — dev enables hot-reload; prod uses pre-built frontend
+                  - listitem [ref=e1034]:
+                    - strong [ref=e1035]: Standard / Gateway
+                    - text: — standard uses a separate LangGraph server (4 processes); Gateway mode (experimental) embeds the agent runtime in the Gateway API (3 processes)
+                - table [ref=e1037]:
+                  - rowgroup [ref=e1038]:
+                    - row "Local Foreground Local Daemon Docker Dev Docker Prod" [ref=e1039]:
+                      - columnheader [ref=e1040]
+                      - columnheader "Local Foreground" [ref=e1041]:
+                        - strong [ref=e1042]: Local Foreground
+                      - columnheader "Local Daemon" [ref=e1043]:
+                        - strong [ref=e1044]: Local Daemon
+                      - columnheader "Docker Dev" [ref=e1045]:
+                        - strong [ref=e1046]: Docker Dev
+                      - columnheader "Docker Prod" [ref=e1047]:
+                        - strong [ref=e1048]: Docker Prod
+                  - rowgroup [ref=e1049]:
+                    - row "Dev ./scripts/serve.sh --dev make dev ./scripts/serve.sh --dev --daemon make dev-daemon ./scripts/docker.sh start make docker-start —" [ref=e1050]:
+                      - cell "Dev" [ref=e1051]:
+                        - strong [ref=e1052]: Dev
+                      - cell "./scripts/serve.sh --dev make dev" [ref=e1053]:
+                        - code [ref=e1054]: ./scripts/serve.sh --dev
+                        - code [ref=e1055]: make dev
+                      - cell "./scripts/serve.sh --dev --daemon make dev-daemon" [ref=e1056]:
+                        - code [ref=e1057]: ./scripts/serve.sh --dev --daemon
+                        - code [ref=e1058]: make dev-daemon
+                      - cell "./scripts/docker.sh start make docker-start" [ref=e1059]:
+                        - code [ref=e1060]: ./scripts/docker.sh start
+                        - code [ref=e1061]: make docker-start
+                      - cell "—" [ref=e1062]
+                    - row "Dev + Gateway ./scripts/serve.sh --dev --gateway make dev-pro ./scripts/serve.sh --dev --gateway --daemon make dev-daemon-pro ./scripts/docker.sh start --gateway make docker-start-pro —" [ref=e1063]:
+                      - cell "Dev + Gateway" [ref=e1064]:
+                        - strong [ref=e1065]: Dev + Gateway
+                      - cell "./scripts/serve.sh --dev --gateway make dev-pro" [ref=e1066]:
+                        - code [ref=e1067]: ./scripts/serve.sh --dev --gateway
+                        - code [ref=e1068]: make dev-pro
+                      - cell "./scripts/serve.sh --dev --gateway --daemon make dev-daemon-pro" [ref=e1069]:
+                        - code [ref=e1070]: ./scripts/serve.sh --dev --gateway --daemon
+                        - code [ref=e1071]: make dev-daemon-pro
+                      - cell "./scripts/docker.sh start --gateway make docker-start-pro" [ref=e1072]:
+                        - code [ref=e1073]: ./scripts/docker.sh start --gateway
+                        - code [ref=e1074]: make docker-start-pro
+                      - cell "—" [ref=e1075]
+                    - row "Prod ./scripts/serve.sh --prod make start ./scripts/serve.sh --prod --daemon make start-daemon — ./scripts/deploy.sh make up" [ref=e1076]:
+                      - cell "Prod" [ref=e1077]:
+                        - strong [ref=e1078]: Prod
+                      - cell "./scripts/serve.sh --prod make start" [ref=e1079]:
+                        - code [ref=e1080]: ./scripts/serve.sh --prod
+                        - code [ref=e1081]: make start
+                      - cell "./scripts/serve.sh --prod --daemon make start-daemon" [ref=e1082]:
+                        - code [ref=e1083]: ./scripts/serve.sh --prod --daemon
+                        - code [ref=e1084]: make start-daemon
+                      - cell "—" [ref=e1085]
+                      - cell "./scripts/deploy.sh make up" [ref=e1086]:
+                        - code [ref=e1087]: ./scripts/deploy.sh
+                        - code [ref=e1088]: make up
+                    - row "Prod + Gateway ./scripts/serve.sh --prod --gateway make start-pro ./scripts/serve.sh --prod --gateway --daemon make start-daemon-pro — ./scripts/deploy.sh --gateway make up-pro" [ref=e1089]:
+                      - cell "Prod + Gateway" [ref=e1090]:
+                        - strong [ref=e1091]: Prod + Gateway
+                      - cell "./scripts/serve.sh --prod --gateway make start-pro" [ref=e1092]:
+                        - code [ref=e1093]: ./scripts/serve.sh --prod --gateway
+                        - code [ref=e1094]: make start-pro
+                      - cell "./scripts/serve.sh --prod --gateway --daemon make start-daemon-pro" [ref=e1095]:
+                        - code [ref=e1096]: ./scripts/serve.sh --prod --gateway --daemon
+                        - code [ref=e1097]: make start-daemon-pro
+                      - cell "—" [ref=e1098]
+                      - cell "./scripts/deploy.sh --gateway make up-pro" [ref=e1099]:
+                        - code [ref=e1100]: ./scripts/deploy.sh --gateway
+                        - code [ref=e1101]: make up-pro
+                - table [ref=e1103]:
+                  - rowgroup [ref=e1104]:
+                    - row "Action Local Docker Dev Docker Prod" [ref=e1105]:
+                      - columnheader "Action" [ref=e1106]
+                      - columnheader "Local" [ref=e1107]
+                      - columnheader "Docker Dev" [ref=e1108]
+                      - columnheader "Docker Prod" [ref=e1109]
+                  - rowgroup [ref=e1110]:
+                    - row "Stop ./scripts/serve.sh --stop make stop ./scripts/docker.sh stop make docker-stop ./scripts/deploy.sh down make down" [ref=e1111]:
+                      - cell "Stop" [ref=e1112]:
+                        - strong [ref=e1113]: Stop
+                      - cell "./scripts/serve.sh --stop make stop" [ref=e1114]:
+                        - code [ref=e1115]: ./scripts/serve.sh --stop
+                        - code [ref=e1116]: make stop
+                      - cell "./scripts/docker.sh stop make docker-stop" [ref=e1117]:
+                        - code [ref=e1118]: ./scripts/docker.sh stop
+                        - code [ref=e1119]: make docker-stop
+                      - cell "./scripts/deploy.sh down make down" [ref=e1120]:
+                        - code [ref=e1121]: ./scripts/deploy.sh down
+                        - code [ref=e1122]: make down
+                    - row "Restart ./scripts/serve.sh --restart [flags] ./scripts/docker.sh restart —" [ref=e1123]:
+                      - cell "Restart" [ref=e1124]:
+                        - strong [ref=e1125]: Restart
+                      - cell "./scripts/serve.sh --restart [flags]" [ref=e1126]:
+                        - code [ref=e1127]: ./scripts/serve.sh --restart [flags]
+                      - cell "./scripts/docker.sh restart" [ref=e1128]:
+                        - code [ref=e1129]: ./scripts/docker.sh restart
+                      - cell "—" [ref=e1130]
+                - blockquote [ref=e1131]:
+                  - paragraph [ref=e1132]:
+                    - strong [ref=e1133]: Gateway mode
+                    - text: eliminates the LangGraph server process — the Gateway API handles agent execution directly via async tasks, managing its own concurrency.
+                - generic [ref=e1134]:
+                  - heading "Why Gateway Mode?" [level=4] [ref=e1135]
+                  - 'link "Permalink: Why Gateway Mode?" [ref=e1136] [cursor=pointer]':
+                    - /url: "#why-gateway-mode"
+                    - img [ref=e1137]
+                - paragraph [ref=e1139]:
+                  - text: In standard mode, DeerFlow runs a dedicated
+                  - link "LangGraph Platform" [ref=e1140] [cursor=pointer]:
+                    - /url: https://langchain-ai.github.io/langgraph/
+                  - text: "server alongside the Gateway API. This architecture works well but has trade-offs:"
+                - table [ref=e1142]:
+                  - rowgroup [ref=e1143]:
+                    - row "Standard Mode Gateway Mode" [ref=e1144]:
+                      - columnheader [ref=e1145]
+                      - columnheader "Standard Mode" [ref=e1146]
+                      - columnheader "Gateway Mode" [ref=e1147]
+                  - rowgroup [ref=e1148]:
+                    - row "Architecture Gateway (REST API) + LangGraph (agent runtime) Gateway embeds agent runtime" [ref=e1149]:
+                      - cell "Architecture" [ref=e1150]:
+                        - strong [ref=e1151]: Architecture
+                      - cell "Gateway (REST API) + LangGraph (agent runtime)" [ref=e1152]
+                      - cell "Gateway embeds agent runtime" [ref=e1153]
+                    - row "Concurrency --n-jobs-per-worker per worker (requires license) --workers × async tasks (no per-worker cap)" [ref=e1154]:
+                      - cell "Concurrency" [ref=e1155]:
+                        - strong [ref=e1156]: Concurrency
+                      - cell "--n-jobs-per-worker per worker (requires license)" [ref=e1157]:
+                        - code [ref=e1158]: "--n-jobs-per-worker"
+                        - text: per worker (requires license)
+                      - cell "--workers × async tasks (no per-worker cap)" [ref=e1159]:
+                        - code [ref=e1160]: "--workers"
+                        - text: × async tasks (no per-worker cap)
+                    - row "Containers / Processes 4 (frontend, gateway, langgraph, nginx) 3 (frontend, gateway, nginx)" [ref=e1161]:
+                      - cell "Containers / Processes" [ref=e1162]:
+                        - strong [ref=e1163]: Containers / Processes
+                      - cell "4 (frontend, gateway, langgraph, nginx)" [ref=e1164]
+                      - cell "3 (frontend, gateway, nginx)" [ref=e1165]
+                    - row "Resource usage Higher (two Python runtimes) Lower (single Python runtime)" [ref=e1166]:
+                      - cell "Resource usage" [ref=e1167]:
+                        - strong [ref=e1168]: Resource usage
+                      - cell "Higher (two Python runtimes)" [ref=e1169]
+                      - cell "Lower (single Python runtime)" [ref=e1170]
+                    - row "LangGraph Platform license Required for production images Not required" [ref=e1171]:
+                      - cell "LangGraph Platform license" [ref=e1172]:
+                        - strong [ref=e1173]: LangGraph Platform license
+                      - cell "Required for production images" [ref=e1174]
+                      - cell "Not required" [ref=e1175]
+                    - row "Cold start Slower (two services to initialize) Faster" [ref=e1176]:
+                      - cell "Cold start" [ref=e1177]:
+                        - strong [ref=e1178]: Cold start
+                      - cell "Slower (two services to initialize)" [ref=e1179]
+                      - cell "Faster" [ref=e1180]
+                - paragraph [ref=e1181]: Both modes are functionally equivalent — the same agents, tools, and skills work in either mode.
+                - generic [ref=e1182]:
+                  - heading "Docker Production Deployment" [level=4] [ref=e1183]
+                  - 'link "Permalink: Docker Production Deployment" [ref=e1184] [cursor=pointer]':
+                    - /url: "#docker-production-deployment"
+                    - img [ref=e1185]
+                - paragraph [ref=e1187]:
+                  - code [ref=e1188]: deploy.sh
+                  - text: "supports building and starting separately. Images are mode-agnostic — runtime mode is selected at start time:"
+                - generic [ref=e1189]:
+                  - generic [ref=e1190]:
+                    - generic [ref=e1191]: "# One-step (build + start)"
+                    - text: deploy.sh
+                    - generic [ref=e1192]: "# standard mode (default)"
+                    - text: deploy.sh --gateway
+                    - generic [ref=e1193]: "# gateway mode"
+                    - generic [ref=e1194]: "# Two-step (build once, start with any mode)"
+                    - text: deploy.sh build
+                    - generic [ref=e1195]: "# build all images"
+                    - text: deploy.sh start
+                    - generic [ref=e1196]: "# start in standard mode"
+                    - text: deploy.sh start --gateway
+                    - generic [ref=e1197]: "# start in gateway mode"
+                    - generic [ref=e1198]: "# Stop"
+                    - text: deploy.sh down
+                  - button "Copy" [ref=e1200] [cursor=pointer]:
+                    - img [ref=e1201]
+                - generic [ref=e1204]:
+                  - heading "Advanced" [level=3] [ref=e1205]
+                  - 'link "Permalink: Advanced" [ref=e1206] [cursor=pointer]':
+                    - /url: "#advanced"
+                    - img [ref=e1207]
+                - generic [ref=e1209]:
+                  - heading "Sandbox Mode" [level=4] [ref=e1210]
+                  - 'link "Permalink: Sandbox Mode" [ref=e1211] [cursor=pointer]':
+                    - /url: "#sandbox-mode"
+                    - img [ref=e1212]
+                - paragraph [ref=e1214]: "DeerFlow supports multiple sandbox execution modes:"
+                - list [ref=e1215]:
+                  - listitem [ref=e1216]:
+                    - strong [ref=e1217]: Local Execution
+                    - text: (runs sandbox code directly on the host machine)
+                  - listitem [ref=e1218]:
+                    - strong [ref=e1219]: Docker Execution
+                    - text: (runs sandbox code in isolated Docker containers)
+                  - listitem [ref=e1220]:
+                    - strong [ref=e1221]: Docker Execution with Kubernetes
+                    - text: (runs sandbox code in Kubernetes pods via provisioner service)
+                - paragraph [ref=e1222]:
+                  - text: For Docker development, service startup follows
+                  - code [ref=e1223]: config.yaml
+                  - text: sandbox mode. In Local/Docker modes,
+                  - code [ref=e1224]: provisioner
+                  - text: is not started.
+                - paragraph [ref=e1225]:
+                  - text: See the
+                  - link "Sandbox Configuration Guide" [ref=e1226] [cursor=pointer]:
+                    - /url: /bytedance/deer-flow/blob/main/backend/docs/CONFIGURATION.md#sandbox
+                  - text: to configure your preferred mode.
+                - generic [ref=e1227]:
+                  - heading "MCP Server" [level=4] [ref=e1228]
+                  - 'link "Permalink: MCP Server" [ref=e1229] [cursor=pointer]':
+                    - /url: "#mcp-server"
+                    - img [ref=e1230]
+                - paragraph [ref=e1232]:
+                  - text: DeerFlow supports configurable MCP servers and skills to extend its capabilities. For HTTP/SSE MCP servers, OAuth token flows are supported (
+                  - code [ref=e1233]: client_credentials
+                  - text: ","
+                  - code [ref=e1234]: refresh_token
+                  - text: ). See the
+                  - link "MCP Server Guide" [ref=e1235] [cursor=pointer]:
+                    - /url: /bytedance/deer-flow/blob/main/backend/docs/MCP_SERVER.md
+                  - text: for detailed instructions.
+                - generic [ref=e1236]:
+                  - heading "IM Channels" [level=4] [ref=e1237]
+                  - 'link "Permalink: IM Channels" [ref=e1238] [cursor=pointer]':
+                    - /url: "#im-channels"
+                    - img [ref=e1239]
+                - paragraph [ref=e1241]: DeerFlow supports receiving tasks from messaging apps. Channels auto-start when configured — no public IP required for any of them.
+                - table [ref=e1243]:
+                  - rowgroup [ref=e1244]:
+                    - row "Channel Transport Difficulty" [ref=e1245]:
+                      - columnheader "Channel" [ref=e1246]
+                      - columnheader "Transport" [ref=e1247]
+                      - columnheader "Difficulty" [ref=e1248]
+                  - rowgroup [ref=e1249]:
+                    - row "Telegram Bot API (long-polling) Easy" [ref=e1250]:
+                      - cell "Telegram" [ref=e1251]
+                      - cell "Bot API (long-polling)" [ref=e1252]
+                      - cell "Easy" [ref=e1253]
+                    - row "Slack Socket Mode Moderate" [ref=e1254]:
+                      - cell "Slack" [ref=e1255]
+                      - cell "Socket Mode" [ref=e1256]
+                      - cell "Moderate" [ref=e1257]
+                    - row "Feishu / Lark WebSocket Moderate" [ref=e1258]:
+                      - cell "Feishu / Lark" [ref=e1259]
+                      - cell "WebSocket" [ref=e1260]
+                      - cell "Moderate" [ref=e1261]
+                    - row "WeChat Tencent iLink (long-polling) Moderate" [ref=e1262]:
+                      - cell "WeChat" [ref=e1263]
+                      - cell "Tencent iLink (long-polling)" [ref=e1264]
+                      - cell "Moderate" [ref=e1265]
+                    - row "WeCom WebSocket Moderate" [ref=e1266]:
+                      - cell "WeCom" [ref=e1267]
+                      - cell "WebSocket" [ref=e1268]
+                      - cell "Moderate" [ref=e1269]
+                - paragraph [ref=e1270]:
+                  - strong [ref=e1271]:
+                    - text: Configuration in
+                    - code [ref=e1272]: config.yaml
+                    - text: ":"
+                - generic [ref=e1273]:
+                  - generic [ref=e1274]:
+                    - text: "channels:"
+                    - generic [ref=e1275]: "# LangGraph Server URL (default: http://localhost:2024)"
+                    - text: "langgraph_url: http://localhost:2024"
+                    - generic [ref=e1276]: "# Gateway API URL (default: http://localhost:8001)"
+                    - text: "gateway_url: http://localhost:8001"
+                    - generic [ref=e1277]: "# Optional: global session defaults for all mobile channels"
+                    - text: "session: assistant_id: lead_agent"
+                    - generic [ref=e1278]: "# or a custom agent name; custom agents are routed via lead_agent + agent_name"
+                    - text: "config: recursion_limit: 100 context: thinking_enabled: true is_plan_mode: false subagent_enabled: false feishu: enabled: true app_id: $FEISHU_APP_ID app_secret: $FEISHU_APP_SECRET"
+                    - generic [ref=e1279]: "# domain: https://open.feishu.cn # China (default)"
+                    - generic [ref=e1280]: "# domain: https://open.larksuite.com # International"
+                    - text: "wecom: enabled: true bot_id: $WECOM_BOT_ID bot_secret: $WECOM_BOT_SECRET slack: enabled: true bot_token: $SLACK_BOT_TOKEN"
+                    - generic [ref=e1281]: "# xoxb-..."
+                    - text: "app_token: $SLACK_APP_TOKEN"
+                    - generic [ref=e1282]: "# xapp-... (Socket Mode)"
+                    - text: "allowed_users: []"
+                    - generic [ref=e1283]: "# empty = allow all"
+                    - text: "telegram: enabled: true bot_token: $TELEGRAM_BOT_TOKEN allowed_users: []"
+                    - generic [ref=e1284]: "# empty = allow all"
+                    - text: "wechat: enabled: false bot_token: $WECHAT_BOT_TOKEN ilink_bot_id: $WECHAT_ILINK_BOT_ID qrcode_login_enabled: true"
+                    - generic [ref=e1285]: "# optional: allow first-time QR bootstrap when bot_token is absent"
+                    - text: "allowed_users: []"
+                    - generic [ref=e1286]: "# empty = allow all"
+                    - text: "polling_timeout: 35 state_dir: ./.deer-flow/wechat/state max_inbound_image_bytes: 20971520 max_outbound_image_bytes: 20971520 max_inbound_file_bytes: 52428800 max_outbound_file_bytes: 52428800"
+                    - generic [ref=e1287]: "# Optional: per-channel / per-user session settings"
+                    - text: "session: assistant_id: mobile-agent"
+                    - generic [ref=e1288]: "# custom agent names are also supported here"
+                    - text: "context: thinking_enabled: false users:"
+                    - generic [ref=e1289]: "\"123456789\""
+                    - text: ": assistant_id: vip-agent config: recursion_limit: 150 context: thinking_enabled: true subagent_enabled: true"
+                  - button "Copy" [ref=e1291] [cursor=pointer]:
+                    - img [ref=e1292]
+                - paragraph [ref=e1295]: "Notes:"
+                - list [ref=e1296]:
+                  - listitem [ref=e1297]:
+                    - code [ref=e1298]: "assistant_id: lead_agent"
+                    - text: calls the default LangGraph assistant directly.
+                  - listitem [ref=e1299]:
+                    - text: If
+                    - code [ref=e1300]: assistant_id
+                    - text: is set to a custom agent name, DeerFlow still routes through
+                    - code [ref=e1301]: lead_agent
+                    - text: and injects that value as
+                    - code [ref=e1302]: agent_name
+                    - text: ", so the custom agent's SOUL/config takes effect for IM channels."
+                - paragraph [ref=e1303]:
+                  - text: Set the corresponding API keys in your
+                  - code [ref=e1304]: .env
+                  - text: "file:"
+                - generic [ref=e1305]:
+                  - generic [ref=e1306]:
+                    - generic [ref=e1307]: "# Telegram"
+                    - text: TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrSTUvwxYZ
+                    - generic [ref=e1308]: "# Slack"
+                    - text: SLACK_BOT_TOKEN=xoxb-... SLACK_APP_TOKEN=xapp-...
+                    - generic [ref=e1309]: "# Feishu / Lark"
+                    - text: FEISHU_APP_ID=cli_xxxx FEISHU_APP_SECRET=your_app_secret
+                    - generic [ref=e1310]: "# WeChat iLink"
+                    - text: WECHAT_BOT_TOKEN=your_ilink_bot_token WECHAT_ILINK_BOT_ID=your_ilink_bot_id
+                    - generic [ref=e1311]: "# WeCom"
+                    - text: WECOM_BOT_ID=your_bot_id WECOM_BOT_SECRET=your_bot_secret
+                  - button "Copy" [ref=e1313] [cursor=pointer]:
+                    - img [ref=e1314]
+                - paragraph [ref=e1317]:
+                  - strong [ref=e1318]: Telegram Setup
+                - list [ref=e1319]:
+                  - listitem [ref=e1320]:
+                    - text: Chat with
+                    - link "@BotFather" [ref=e1321] [cursor=pointer]:
+                      - /url: https://t.me/BotFather
+                    - text: ", send"
+                    - code [ref=e1322]: /newbot
+                    - text: ", and copy the HTTP API token."
+                  - listitem [ref=e1323]:
+                    - text: Set
+                    - code [ref=e1324]: TELEGRAM_BOT_TOKEN
+                    - text: in
+                    - code [ref=e1325]: .env
+                    - text: and enable the channel in
+                    - code [ref=e1326]: config.yaml
+                    - text: .
+                - paragraph [ref=e1327]:
+                  - strong [ref=e1328]: Slack Setup
+                - list [ref=e1329]:
+                  - listitem [ref=e1330]:
+                    - text: Create a Slack App at
+                    - link "api.slack.com/apps" [ref=e1331] [cursor=pointer]:
+                      - /url: https://api.slack.com/apps
+                    - text: → Create New App → From scratch.
+                  - listitem [ref=e1332]:
+                    - text: Under
+                    - strong [ref=e1333]: OAuth & Permissions
+                    - text: ", add Bot Token Scopes:"
+                    - code [ref=e1334]: app_mentions:read
+                    - text: ","
+                    - code [ref=e1335]: chat:write
+                    - text: ","
+                    - code [ref=e1336]: im:history
+                    - text: ","
+                    - code [ref=e1337]: im:read
+                    - text: ","
+                    - code [ref=e1338]: im:write
+                    - text: ","
+                    - code [ref=e1339]: files:write
+                    - text: .
+                  - listitem [ref=e1340]:
+                    - text: Enable
+                    - strong [ref=e1341]: Socket Mode
+                    - text: → generate an App-Level Token (
+                    - code [ref=e1342]: xapp-…
+                    - text: ) with
+                    - code [ref=e1343]: connections:write
+                    - text: scope.
+                  - listitem [ref=e1344]:
+                    - text: Under
+                    - strong [ref=e1345]: Event Subscriptions
+                    - text: ", subscribe to bot events:"
+                    - code [ref=e1346]: app_mention
+                    - text: ","
+                    - code [ref=e1347]: message.im
+                    - text: .
+                  - listitem [ref=e1348]:
+                    - text: Set
+                    - code [ref=e1349]: SLACK_BOT_TOKEN
+                    - text: and
+                    - code [ref=e1350]: SLACK_APP_TOKEN
+                    - text: in
+                    - code [ref=e1351]: .env
+                    - text: and enable the channel in
+                    - code [ref=e1352]: config.yaml
+                    - text: .
+                - paragraph [ref=e1353]:
+                  - strong [ref=e1354]: Feishu / Lark Setup
+                - list [ref=e1355]:
+                  - listitem [ref=e1356]:
+                    - text: Create an app on
+                    - link "Feishu Open Platform" [ref=e1357] [cursor=pointer]:
+                      - /url: https://open.feishu.cn/
+                    - text: → enable
+                    - strong [ref=e1358]: Bot
+                    - text: capability.
+                  - listitem [ref=e1359]:
+                    - text: "Add permissions:"
+                    - code [ref=e1360]: im:message
+                    - text: ","
+                    - code [ref=e1361]: im:message.p2p_msg:readonly
+                    - text: ","
+                    - code [ref=e1362]: im:resource
+                    - text: .
+                  - listitem [ref=e1363]:
+                    - text: Under
+                    - strong [ref=e1364]: Events
+                    - text: ", subscribe to"
+                    - code [ref=e1365]: im.message.receive_v1
+                    - text: and select
+                    - strong [ref=e1366]: Long Connection
+                    - text: mode.
+                  - listitem [ref=e1367]:
+                    - text: Copy the App ID and App Secret. Set
+                    - code [ref=e1368]: FEISHU_APP_ID
+                    - text: and
+                    - code [ref=e1369]: FEISHU_APP_SECRET
+                    - text: in
+                    - code [ref=e1370]: .env
+                    - text: and enable the channel in
+                    - code [ref=e1371]: config.yaml
+                    - text: .
+                - paragraph [ref=e1372]:
+                  - strong [ref=e1373]: WeChat Setup
+                - list [ref=e1374]:
+                  - listitem [ref=e1375]:
+                    - text: Enable the
+                    - code [ref=e1376]: wechat
+                    - text: channel in
+                    - code [ref=e1377]: config.yaml
+                    - text: .
+                  - listitem [ref=e1378]:
+                    - text: Either set
+                    - code [ref=e1379]: WECHAT_BOT_TOKEN
+                    - text: in
+                    - code [ref=e1380]: .env
+                    - text: ", or set"
+                    - code [ref=e1381]: "qrcode_login_enabled: true"
+                    - text: for first-time QR bootstrap.
+                  - listitem [ref=e1382]:
+                    - text: When
+                    - code [ref=e1383]: bot_token
+                    - text: is absent and QR bootstrap is enabled, watch backend logs for the QR content returned by iLink and complete the binding flow.
+                  - listitem [ref=e1384]:
+                    - text: After the QR flow succeeds, DeerFlow persists the acquired token under
+                    - code [ref=e1385]: state_dir
+                    - text: for later restarts.
+                  - listitem [ref=e1386]:
+                    - text: For Docker Compose deployments, keep
+                    - code [ref=e1387]: state_dir
+                    - text: on a persistent volume so the
+                    - code [ref=e1388]: get_updates_buf
+                    - text: cursor and saved auth state survive restarts.
+                - paragraph [ref=e1389]:
+                  - strong [ref=e1390]: WeCom Setup
+                - list [ref=e1391]:
+                  - listitem [ref=e1392]:
+                    - text: Create a bot on the WeCom AI Bot platform and obtain the
+                    - code [ref=e1393]: bot_id
+                    - text: and
+                    - code [ref=e1394]: bot_secret
+                    - text: .
+                  - listitem [ref=e1395]:
+                    - text: Enable
+                    - code [ref=e1396]: channels.wecom
+                    - text: in
+                    - code [ref=e1397]: config.yaml
+                    - text: and fill in
+                    - code [ref=e1398]: bot_id
+                    - text: /
+                    - code [ref=e1399]: bot_secret
+                    - text: .
+                  - listitem [ref=e1400]:
+                    - text: Set
+                    - code [ref=e1401]: WECOM_BOT_ID
+                    - text: and
+                    - code [ref=e1402]: WECOM_BOT_SECRET
+                    - text: in
+                    - code [ref=e1403]: .env
+                    - text: .
+                  - listitem [ref=e1404]:
+                    - text: Make sure backend dependencies include
+                    - code [ref=e1405]: wecom-aibot-python-sdk
+                    - text: . The channel uses a WebSocket long connection and does not require a public callback URL.
+                  - listitem [ref=e1406]: The current integration supports inbound text, image, and file messages. Final images/files generated by the agent are also sent back to the WeCom conversation.
+                - paragraph [ref=e1407]:
+                  - text: When DeerFlow runs in Docker Compose, IM channels execute inside the
+                  - code [ref=e1408]: gateway
+                  - text: container. In that case, do not point
+                  - code [ref=e1409]: channels.langgraph_url
+                  - text: or
+                  - code [ref=e1410]: channels.gateway_url
+                  - text: at
+                  - code [ref=e1411]: localhost
+                  - text: ; use container service names such as
+                  - code [ref=e1412]: http://langgraph:2024
+                  - text: and
+                  - code [ref=e1413]: http://gateway:8001
+                  - text: ", or set"
+                  - code [ref=e1414]: DEER_FLOW_CHANNELS_LANGGRAPH_URL
+                  - text: and
+                  - code [ref=e1415]: DEER_FLOW_CHANNELS_GATEWAY_URL
+                  - text: .
+                - paragraph [ref=e1416]:
+                  - strong [ref=e1417]: Commands
+                - paragraph [ref=e1418]: "Once a channel is connected, you can interact with DeerFlow directly from the chat:"
+                - table [ref=e1420]:
+                  - rowgroup [ref=e1421]:
+                    - row "Command Description" [ref=e1422]:
+                      - columnheader "Command" [ref=e1423]
+                      - columnheader "Description" [ref=e1424]
+                  - rowgroup [ref=e1425]:
+                    - row "/new Start a new conversation" [ref=e1426]:
+                      - cell "/new" [ref=e1427]:
+                        - code [ref=e1428]: /new
+                      - cell "Start a new conversation" [ref=e1429]
+                    - row "/status Show current thread info" [ref=e1430]:
+                      - cell "/status" [ref=e1431]:
+                        - code [ref=e1432]: /status
+                      - cell "Show current thread info" [ref=e1433]
+                    - row "/models List available models" [ref=e1434]:
+                      - cell "/models" [ref=e1435]:
+                        - code [ref=e1436]: /models
+                      - cell "List available models" [ref=e1437]
+                    - row "/memory View memory" [ref=e1438]:
+                      - cell "/memory" [ref=e1439]:
+                        - code [ref=e1440]: /memory
+                      - cell "View memory" [ref=e1441]
+                    - row "/help Show help" [ref=e1442]:
+                      - cell "/help" [ref=e1443]:
+                        - code [ref=e1444]: /help
+                      - cell "Show help" [ref=e1445]
+                - blockquote [ref=e1446]:
+                  - paragraph [ref=e1447]: Messages without a command prefix are treated as regular chat — DeerFlow creates a thread and responds conversationally.
+                - generic [ref=e1448]:
+                  - heading "LangSmith Tracing" [level=4] [ref=e1449]
+                  - 'link "Permalink: LangSmith Tracing" [ref=e1450] [cursor=pointer]':
+                    - /url: "#langsmith-tracing"
+                    - img [ref=e1451]
+                - paragraph [ref=e1453]:
+                  - text: DeerFlow has built-in
+                  - link "LangSmith" [ref=e1454] [cursor=pointer]:
+                    - /url: https://smith.langchain.com
+                  - text: integration for observability. When enabled, all LLM calls, agent runs, and tool executions are traced and visible in the LangSmith dashboard.
+                - paragraph [ref=e1455]:
+                  - text: Add the following to your
+                  - code [ref=e1456]: .env
+                  - text: "file:"
+                - generic [ref=e1457]:
+                  - generic [ref=e1458]: LANGSMITH_TRACING=true LANGSMITH_ENDPOINT=https://api.smith.langchain.com LANGSMITH_API_KEY=lsv2_pt_xxxxxxxxxxxxxxxx LANGSMITH_PROJECT=xxx
+                  - button "Copy" [ref=e1460] [cursor=pointer]:
+                    - img [ref=e1461]
+                - generic [ref=e1464]:
+                  - heading "Langfuse Tracing" [level=4] [ref=e1465]
+                  - 'link "Permalink: Langfuse Tracing" [ref=e1466] [cursor=pointer]':
+                    - /url: "#langfuse-tracing"
+                    - img [ref=e1467]
+                - paragraph [ref=e1469]:
+                  - text: DeerFlow also supports
+                  - link "Langfuse" [ref=e1470] [cursor=pointer]:
+                    - /url: https://langfuse.com
+                  - text: observability for LangChain-compatible runs.
+                - paragraph [ref=e1471]:
+                  - text: Add the following to your
+                  - code [ref=e1472]: .env
+                  - text: "file:"
+                - generic [ref=e1473]:
+                  - generic [ref=e1474]: LANGFUSE_TRACING=true LANGFUSE_PUBLIC_KEY=pk-lf-xxxxxxxxxxxxxxxx LANGFUSE_SECRET_KEY=sk-lf-xxxxxxxxxxxxxxxx LANGFUSE_BASE_URL=https://cloud.langfuse.com
+                  - button "Copy" [ref=e1476] [cursor=pointer]:
+                    - img [ref=e1477]
+                - paragraph [ref=e1480]:
+                  - text: If you are using a self-hosted Langfuse instance, set
+                  - code [ref=e1481]: LANGFUSE_BASE_URL
+                  - text: to your deployment URL.
+                - generic [ref=e1482]:
+                  - heading "Using Both Providers" [level=4] [ref=e1483]
+                  - 'link "Permalink: Using Both Providers" [ref=e1484] [cursor=pointer]':
+                    - /url: "#using-both-providers"
+                    - img [ref=e1485]
+                - paragraph [ref=e1487]: If both LangSmith and Langfuse are enabled, DeerFlow attaches both tracing callbacks and reports the same model activity to both systems.
+                - paragraph [ref=e1488]: If a provider is explicitly enabled but missing required credentials, or if its callback fails to initialize, DeerFlow fails fast when tracing is initialized during model creation and the error message names the provider that caused the failure.
+                - paragraph [ref=e1489]:
+                  - text: For Docker deployments, tracing is disabled by default. Set
+                  - code [ref=e1490]: LANGSMITH_TRACING=true
+                  - text: and
+                  - code [ref=e1491]: LANGSMITH_API_KEY
+                  - text: in your
+                  - code [ref=e1492]: .env
+                  - text: to enable it.
+                - generic [ref=e1493]:
+                  - heading "From Deep Research to Super Agent Harness" [level=2] [ref=e1494]
+                  - 'link "Permalink: From Deep Research to Super Agent Harness" [ref=e1495] [cursor=pointer]':
+                    - /url: "#from-deep-research-to-super-agent-harness"
+                    - img [ref=e1496]
+                - paragraph [ref=e1498]: "DeerFlow started as a Deep Research framework — and the community ran with it. Since launch, developers have pushed it far beyond research: building data pipelines, generating slide decks, spinning up dashboards, automating content workflows. Things we never anticipated."
+                - paragraph [ref=e1499]:
+                  - text: "That told us something important: DeerFlow wasn't just a research tool. It was a"
+                  - strong [ref=e1500]: harness
+                  - text: — a runtime that gives agents the infrastructure to actually get work done.
+                - paragraph [ref=e1501]: So we rebuilt it from scratch.
+                - paragraph [ref=e1502]: "DeerFlow 2.0 is no longer a framework you wire together. It's a super agent harness — batteries included, fully extensible. Built on LangGraph and LangChain, it ships with everything an agent needs out of the box: a filesystem, memory, skills, sandbox-aware execution, and the ability to plan and spawn sub-agents for complex, multi-step tasks."
+                - paragraph [ref=e1503]: Use it as-is. Or tear it apart and make it yours.
+                - generic [ref=e1504]:
+                  - heading "Core Features" [level=2] [ref=e1505]
+                  - 'link "Permalink: Core Features" [ref=e1506] [cursor=pointer]':
+                    - /url: "#core-features"
+                    - img [ref=e1507]
+                - generic [ref=e1509]:
+                  - heading "Skills & Tools" [level=3] [ref=e1510]
+                  - 'link "Permalink: Skills & Tools" [ref=e1511] [cursor=pointer]':
+                    - /url: "#skills--tools"
+                    - img [ref=e1512]
+                - paragraph [ref=e1514]:
+                  - text: Skills are what make DeerFlow do
+                  - emphasis [ref=e1515]: almost anything
+                  - text: .
+                - paragraph [ref=e1516]: "A standard Agent Skill is a structured capability module — a Markdown file that defines a workflow, best practices, and references to supporting resources. DeerFlow ships with built-in skills for research, report generation, slide creation, web pages, image and video generation, and more. But the real power is extensibility: add your own skills, replace the built-in ones, or combine them into compound workflows."
+                - paragraph [ref=e1517]: Skills are loaded progressively — only when the task needs them, not all at once. This keeps the context window lean and makes DeerFlow work well even with token-sensitive models.
+                - paragraph [ref=e1518]:
+                  - text: When you install
+                  - code [ref=e1519]: .skill
+                  - text: archives through the Gateway, DeerFlow accepts standard optional frontmatter metadata such as
+                  - code [ref=e1520]: version
+                  - text: ","
+                  - code [ref=e1521]: author
+                  - text: ", and"
+                  - code [ref=e1522]: compatibility
+                  - text: instead of rejecting otherwise valid external skills.
+                - paragraph [ref=e1523]: Tools follow the same philosophy. DeerFlow comes with a core toolset — web search, web fetch, file operations, bash execution — and supports custom tools via MCP servers and Python functions. Swap anything. Add anything.
+                - paragraph [ref=e1524]: Gateway-generated follow-up suggestions now normalize both plain-string model output and block/list-style rich content before parsing the JSON array response, so provider-specific content wrappers do not silently drop suggestions.
+                - generic [ref=e1525]:
+                  - code [ref=e1527]: "# Paths inside the sandbox container /mnt/skills/public ├── research/SKILL.md ├── report-generation/SKILL.md ├── slide-creation/SKILL.md ├── web-page/SKILL.md └── image-generation/SKILL.md /mnt/skills/custom └── your-custom-skill/SKILL.md ← yours"
+                  - button "Copy" [ref=e1529] [cursor=pointer]:
+                    - img [ref=e1530]
+                - generic [ref=e1533]:
+                  - heading "Claude Code Integration" [level=4] [ref=e1534]
+                  - 'link "Permalink: Claude Code Integration" [ref=e1535] [cursor=pointer]':
+                    - /url: "#claude-code-integration"
+                    - img [ref=e1536]
+                - paragraph [ref=e1538]:
+                  - text: The
+                  - code [ref=e1539]: claude-to-deerflow
+                  - text: skill lets you interact with a running DeerFlow instance directly from
+                  - link "Claude Code" [ref=e1540] [cursor=pointer]:
+                    - /url: https://docs.anthropic.com/en/docs/claude-code
+                  - text: . Send research tasks, check status, manage threads — all without leaving the terminal.
+                - paragraph [ref=e1541]:
+                  - strong [ref=e1542]: Install the skill
+                  - text: ":"
+                - generic [ref=e1543]:
+                  - generic [ref=e1544]: npx skills add https://github.com/bytedance/deer-flow --skill claude-to-deerflow
+                  - button "Copy" [ref=e1546] [cursor=pointer]:
+                    - img [ref=e1547]
+                - paragraph [ref=e1550]:
+                  - text: Then make sure DeerFlow is running (default at
+                  - code [ref=e1551]: http://localhost:2026
+                  - text: ) and use the
+                  - code [ref=e1552]: /claude-to-deerflow
+                  - text: command in Claude Code.
+                - paragraph [ref=e1553]:
+                  - strong [ref=e1554]: What you can do
+                  - text: ":"
+                - list [ref=e1555]:
+                  - listitem [ref=e1556]: Send messages to DeerFlow and get streaming responses
+                  - listitem [ref=e1557]: "Choose execution modes: flash (fast), standard, pro (planning), ultra (sub-agents)"
+                  - listitem [ref=e1558]: Check DeerFlow health, list models/skills/agents
+                  - listitem [ref=e1559]: Manage threads and conversation history
+                  - listitem [ref=e1560]: Upload files for analysis
+                - paragraph [ref=e1561]:
+                  - strong [ref=e1562]: Environment variables
+                  - text: "(optional, for custom endpoints):"
+                - generic [ref=e1563]:
+                  - generic [ref=e1564]:
+                    - text: DEERFLOW_URL=http://localhost:2026
+                    - generic [ref=e1565]: "# Unified proxy base URL"
+                    - text: DEERFLOW_GATEWAY_URL=http://localhost:2026
+                    - generic [ref=e1566]: "# Gateway API"
+                    - text: DEERFLOW_LANGGRAPH_URL=http://localhost:2026/api/langgraph
+                    - generic [ref=e1567]: "# LangGraph API"
+                  - button "Copy" [ref=e1569] [cursor=pointer]:
+                    - img [ref=e1570]
+                - paragraph [ref=e1573]:
+                  - text: See
+                  - link "skills/public/claude-to-deerflow/SKILL.md" [ref=e1574] [cursor=pointer]:
+                    - /url: /bytedance/deer-flow/blob/main/skills/public/claude-to-deerflow/SKILL.md
+                    - code [ref=e1575]: skills/public/claude-to-deerflow/SKILL.md
+                  - text: for the full API reference.
+                - generic [ref=e1576]:
+                  - heading "Sub-Agents" [level=3] [ref=e1577]
+                  - 'link "Permalink: Sub-Agents" [ref=e1578] [cursor=pointer]':
+                    - /url: "#sub-agents"
+                    - img [ref=e1579]
+                - paragraph [ref=e1581]: Complex tasks rarely fit in a single pass. DeerFlow decomposes them.
+                - paragraph [ref=e1582]: The lead agent can spawn sub-agents on the fly — each with its own scoped context, tools, and termination conditions. Sub-agents run in parallel when possible, report back structured results, and the lead agent synthesizes everything into a coherent output.
+                - paragraph [ref=e1583]: "This is how DeerFlow handles tasks that take minutes to hours: a research task might fan out into a dozen sub-agents, each exploring a different angle, then converge into a single report — or a website — or a slide deck with generated visuals. One harness, many hands."
+                - generic [ref=e1584]:
+                  - heading "Sandbox & File System" [level=3] [ref=e1585]
+                  - 'link "Permalink: Sandbox & File System" [ref=e1586] [cursor=pointer]':
+                    - /url: "#sandbox--file-system"
+                    - img [ref=e1587]
+                - paragraph [ref=e1589]:
+                  - text: DeerFlow doesn't just
+                  - emphasis [ref=e1590]: talk
+                  - text: about doing things. It has its own computer.
+                - paragraph [ref=e1591]: Each task gets its own execution environment with a full filesystem view — skills, workspace, uploads, outputs. The agent reads, writes, and edits files. It can view images and, when configured safely, execute shell commands.
+                - paragraph [ref=e1592]:
+                  - text: With
+                  - code [ref=e1593]: AioSandboxProvider
+                  - text: ", shell execution runs inside isolated containers. With"
+                  - code [ref=e1594]: LocalSandboxProvider
+                  - text: ", file tools still map to per-thread directories on the host, but host"
+                  - code [ref=e1595]: bash
+                  - text: is disabled by default because it is not a secure isolation boundary. Re-enable host bash only for fully trusted local workflows.
+                - paragraph [ref=e1596]: This is the difference between a chatbot with tool access and an agent with an actual execution environment.
+                - generic [ref=e1597]:
+                  - code [ref=e1599]: "# Paths inside the sandbox container /mnt/user-data/ ├── uploads/ ← your files ├── workspace/ ← agents' working directory └── outputs/ ← final deliverables"
+                  - button "Copy" [ref=e1601] [cursor=pointer]:
+                    - img [ref=e1602]
+                - generic [ref=e1605]:
+                  - heading "Context Engineering" [level=3] [ref=e1606]
+                  - 'link "Permalink: Context Engineering" [ref=e1607] [cursor=pointer]':
+                    - /url: "#context-engineering"
+                    - img [ref=e1608]
+                - paragraph [ref=e1610]:
+                  - strong [ref=e1611]: Isolated Sub-Agent Context
+                  - text: ": Each sub-agent runs in its own isolated context. This means that the sub-agent will not be able to see the context of the main agent or other sub-agents. This is important to ensure that the sub-agent is able to focus on the task at hand and not be distracted by the context of the main agent or other sub-agents."
+                - paragraph [ref=e1612]:
+                  - strong [ref=e1613]: Summarization
+                  - text: ": Within a session, DeerFlow manages context aggressively — summarizing completed sub-tasks, offloading intermediate results to the filesystem, compressing what's no longer immediately relevant. This lets it stay sharp across long, multi-step tasks without blowing the context window."
+                - paragraph [ref=e1614]:
+                  - strong [ref=e1615]: Strict Tool-Call Recovery
+                  - text: ": When a provider or middleware interrupts a tool-call loop, DeerFlow now strips provider-level raw tool-call metadata on forced-stop assistant messages and injects placeholder tool results for dangling calls before the next model invocation. This keeps OpenAI-compatible reasoning models that strictly validate"
+                  - code [ref=e1616]: tool_call_id
+                  - text: sequences from failing with malformed history errors.
+                - generic [ref=e1617]:
+                  - heading "Long-Term Memory" [level=3] [ref=e1618]
+                  - 'link "Permalink: Long-Term Memory" [ref=e1619] [cursor=pointer]':
+                    - /url: "#long-term-memory"
+                    - img [ref=e1620]
+                - paragraph [ref=e1622]: Most agents forget everything the moment a conversation ends. DeerFlow remembers.
+                - paragraph [ref=e1623]: Across sessions, DeerFlow builds a persistent memory of your profile, preferences, and accumulated knowledge. The more you use it, the better it knows you — your writing style, your technical stack, your recurring workflows. Memory is stored locally and stays under your control.
+                - paragraph [ref=e1624]: Memory updates now skip duplicate fact entries at apply time, so repeated preferences and context do not accumulate endlessly across sessions.
+                - generic [ref=e1625]:
+                  - heading "Recommended Models" [level=2] [ref=e1626]
+                  - 'link "Permalink: Recommended Models" [ref=e1627] [cursor=pointer]':
+                    - /url: "#recommended-models"
+                    - img [ref=e1628]
+                - paragraph [ref=e1630]: "DeerFlow is model-agnostic — it works with any LLM that implements the OpenAI-compatible API. That said, it performs best with models that support:"
+                - list [ref=e1631]:
+                  - listitem [ref=e1632]:
+                    - strong [ref=e1633]: Long context windows
+                    - text: (100k+ tokens) for deep research and multi-step tasks
+                  - listitem [ref=e1634]:
+                    - strong [ref=e1635]: Reasoning capabilities
+                    - text: for adaptive planning and complex decomposition
+                  - listitem [ref=e1636]:
+                    - strong [ref=e1637]: Multimodal inputs
+                    - text: for image understanding and video comprehension
+                  - listitem [ref=e1638]:
+                    - strong [ref=e1639]: Strong tool-use
+                    - text: for reliable function calling and structured outputs
+                - generic [ref=e1640]:
+                  - heading "Embedded Python Client" [level=2] [ref=e1641]
+                  - 'link "Permalink: Embedded Python Client" [ref=e1642] [cursor=pointer]':
+                    - /url: "#embedded-python-client"
+                    - img [ref=e1643]
+                - paragraph [ref=e1645]:
+                  - text: DeerFlow can be used as an embedded Python library without running the full HTTP services. The
+                  - code [ref=e1646]: DeerFlowClient
+                  - text: provides direct in-process access to all agent and Gateway capabilities, returning the same response schemas as the HTTP Gateway API. The HTTP Gateway also exposes
+                  - code [ref=e1647]: "DELETE /api/threads/{thread_id}"
+                  - text: "to remove DeerFlow-managed local thread data after the LangGraph thread itself has been deleted:"
+                - generic [ref=e1648]:
+                  - generic [ref=e1649]: "from deerflow.client import DeerFlowClient client = DeerFlowClient() # Chat response = client.chat(\"Analyze this paper for me\", thread_id=\"my-thread\") # Streaming (LangGraph SSE protocol: values, messages-tuple, end) for event in client.stream(\"hello\"): if event.type == \"messages-tuple\" and event.data.get(\"type\") == \"ai\": print(event.data[\"content\"]) # Configuration & management — returns Gateway-aligned dicts models = client.list_models() # {\"models\": [...]} skills = client.list_skills() # {\"skills\": [...]} client.update_skill(\"web-search\", enabled=True) client.upload_files(\"thread-1\", [\"./report.pdf\"]) # {\"success\": True, \"files\": [...]}"
+                  - button "Copy" [ref=e1651] [cursor=pointer]:
+                    - img [ref=e1652]
+                - paragraph [ref=e1655]:
+                  - text: All dict-returning methods are validated against Gateway Pydantic response models in CI (
+                  - code [ref=e1656]: TestGatewayConformance
+                  - text: ), ensuring the embedded client stays in sync with the HTTP API schemas. See
+                  - code [ref=e1657]: backend/packages/harness/deerflow/client.py
+                  - text: for full API documentation.
+                - generic [ref=e1658]:
+                  - heading "Documentation" [level=2] [ref=e1659]
+                  - 'link "Permalink: Documentation" [ref=e1660] [cursor=pointer]':
+                    - /url: "#documentation"
+                    - img [ref=e1661]
+                - list [ref=e1663]:
+                  - listitem [ref=e1664]:
+                    - link "Contributing Guide" [ref=e1665] [cursor=pointer]:
+                      - /url: /bytedance/deer-flow/blob/main/CONTRIBUTING.md
+                    - text: "- Development environment setup and workflow"
+                  - listitem [ref=e1666]:
+                    - link "Configuration Guide" [ref=e1667] [cursor=pointer]:
+                      - /url: /bytedance/deer-flow/blob/main/backend/docs/CONFIGURATION.md
+                    - text: "- Setup and configuration instructions"
+                  - listitem [ref=e1668]:
+                    - link "Architecture Overview" [ref=e1669] [cursor=pointer]:
+                      - /url: /bytedance/deer-flow/blob/main/backend/CLAUDE.md
+                    - text: "- Technical architecture details"
+                  - listitem [ref=e1670]:
+                    - link "Backend Architecture" [ref=e1671] [cursor=pointer]:
+                      - /url: /bytedance/deer-flow/blob/main/backend/README.md
+                    - text: "- Backend architecture and API reference"
+                - generic [ref=e1672]:
+                  - heading "⚠️ Security Notice" [level=2] [ref=e1673]:
+                    - generic [ref=e1674]: ⚠️
+                    - text: Security Notice
+                  - 'link "Permalink: ⚠️ Security Notice" [ref=e1675] [cursor=pointer]':
+                    - /url: "#️-security-notice"
+                    - img [ref=e1676]
+                - generic [ref=e1678]:
+                  - heading "Improper Deployment May Introduce Security Risks" [level=3] [ref=e1679]
+                  - 'link "Permalink: Improper Deployment May Introduce Security Risks" [ref=e1680] [cursor=pointer]':
+                    - /url: "#improper-deployment-may-introduce-security-risks"
+                    - img [ref=e1681]
+                - paragraph [ref=e1683]:
+                  - text: DeerFlow has key high-privilege capabilities including
+                  - strong [ref=e1684]: system command execution, resource operations, and business logic invocation
+                  - text: ", and is designed by default to be"
+                  - strong [ref=e1685]: deployed in a local trusted environment (accessible only via the 127.0.0.1 loopback interface)
+                  - text: ". If you deploy the agent in untrusted environments — such as LAN networks, public cloud servers, or other multi-endpoint accessible environments — without strict security measures, it may introduce security risks, including:"
+                - list [ref=e1686]:
+                  - listitem [ref=e1687]:
+                    - strong [ref=e1688]: Unauthorized illegal invocation
+                    - text: ": Agent functionality could be discovered by unauthorized third parties or malicious internet scanners, triggering bulk unauthorized requests that execute high-risk operations such as system commands and file read/write, potentially causing serious security consequences."
+                  - listitem [ref=e1689]:
+                    - strong [ref=e1690]: Compliance and legal risks
+                    - text: ": If the agent is illegally invoked to conduct cyberattacks, data theft, or other illegal activities, it may result in legal liability and compliance risks."
+                - generic [ref=e1691]:
+                  - heading "Security Recommendations" [level=3] [ref=e1692]
+                  - 'link "Permalink: Security Recommendations" [ref=e1693] [cursor=pointer]':
+                    - /url: "#security-recommendations"
+                    - img [ref=e1694]
+                - paragraph [ref=e1696]:
+                  - strong [ref=e1697]: "Note: We strongly recommend deploying DeerFlow in a local trusted network environment."
+                  - text: "If you need cross-device or cross-network deployment, you must implement strict security measures, such as:"
+                - list [ref=e1698]:
+                  - listitem [ref=e1699]:
+                    - strong [ref=e1700]: IP allowlist
+                    - text: ": Use"
+                    - code [ref=e1701]: iptables
+                    - text: ", or deploy hardware firewalls / switches with Access Control Lists (ACL), to"
+                    - strong [ref=e1702]: configure IP allowlist rules
+                    - text: and deny access from all other IP addresses.
+                  - listitem [ref=e1703]:
+                    - strong [ref=e1704]: Authentication gateway
+                    - text: ": Configure a reverse proxy (e.g., nginx) and"
+                    - strong [ref=e1705]: enable strong pre-authentication
+                    - text: ", blocking any unauthenticated access."
+                  - listitem [ref=e1706]:
+                    - strong [ref=e1707]: Network isolation
+                    - text: ": Where possible, place the agent and trusted devices in the"
+                    - strong [ref=e1708]: same dedicated VLAN
+                    - text: ", isolated from other network devices."
+                  - listitem [ref=e1709]:
+                    - strong [ref=e1710]: Stay updated
+                    - text: ": Continue to follow DeerFlow's security feature updates."
+                - generic [ref=e1711]:
+                  - heading "Contributing" [level=2] [ref=e1712]
+                  - 'link "Permalink: Contributing" [ref=e1713] [cursor=pointer]':
+                    - /url: "#contributing"
+                    - img [ref=e1714]
+                - paragraph [ref=e1716]:
+                  - text: We welcome contributions! Please see
+                  - link "CONTRIBUTING.md" [ref=e1717] [cursor=pointer]:
+                    - /url: /bytedance/deer-flow/blob/main/CONTRIBUTING.md
+                  - text: for development setup, workflow, and guidelines.
+                - paragraph [ref=e1718]:
+                  - text: Regression coverage includes Docker sandbox mode detection and provisioner kubeconfig-path handling tests in
+                  - code [ref=e1719]: backend/tests/
+                  - text: . Gateway artifact serving now forces active web content types (
+                  - code [ref=e1720]: text/html
+                  - text: ","
+                  - code [ref=e1721]: application/xhtml+xml
+                  - text: ","
+                  - code [ref=e1722]: image/svg+xml
+                  - text: ) to download as attachments instead of inline rendering, reducing XSS risk for generated artifacts.
+                - generic [ref=e1723]:
+                  - heading "License" [level=2] [ref=e1724]
+                  - 'link "Permalink: License" [ref=e1725] [cursor=pointer]':
+                    - /url: "#license"
+                    - img [ref=e1726]
+                - paragraph [ref=e1728]:
+                  - text: This project is open source and available under the
+                  - link "MIT License" [ref=e1729] [cursor=pointer]:
+                    - /url: /bytedance/deer-flow/blob/main/LICENSE
+                  - text: .
+                - generic [ref=e1730]:
+                  - heading "Acknowledgments" [level=2] [ref=e1731]
+                  - 'link "Permalink: Acknowledgments" [ref=e1732] [cursor=pointer]':
+                    - /url: "#acknowledgments"
+                    - img [ref=e1733]
+                - paragraph [ref=e1735]: DeerFlow is built upon the incredible work of the open-source community. We are deeply grateful to all the projects and contributors whose efforts have made DeerFlow possible. Truly, we stand on the shoulders of giants.
+                - paragraph [ref=e1736]: "We would like to extend our sincere appreciation to the following projects for their invaluable contributions:"
+                - list [ref=e1737]:
+                  - listitem [ref=e1738]:
+                    - strong [ref=e1739]:
+                      - link "LangChain" [ref=e1740] [cursor=pointer]:
+                        - /url: https://github.com/langchain-ai/langchain
+                    - text: ": Their exceptional framework powers our LLM interactions and chains, enabling seamless integration and functionality."
+                  - listitem [ref=e1741]:
+                    - strong [ref=e1742]:
+                      - link "LangGraph" [ref=e1743] [cursor=pointer]:
+                        - /url: https://github.com/langchain-ai/langgraph
+                    - text: ": Their innovative approach to multi-agent orchestration has been instrumental in enabling DeerFlow's sophisticated workflows."
+                - paragraph [ref=e1744]: These projects exemplify the transformative power of open-source collaboration, and we are proud to build upon their foundations.
+                - generic [ref=e1745]:
+                  - heading "Key Contributors" [level=3] [ref=e1746]
+                  - 'link "Permalink: Key Contributors" [ref=e1747] [cursor=pointer]':
+                    - /url: "#key-contributors"
+                    - img [ref=e1748]
+                - paragraph [ref=e1750]:
+                  - text: A heartfelt thank you goes out to the core authors of
+                  - code [ref=e1751]: DeerFlow
+                  - text: ", whose vision, passion, and dedication have brought this project to life:"
+                - list [ref=e1752]:
+                  - listitem [ref=e1753]:
+                    - strong [ref=e1754]:
+                      - link "Daniel Walnut" [ref=e1755] [cursor=pointer]:
+                        - /url: https://github.com/hetaoBackend/
+                  - listitem [ref=e1756]:
+                    - strong [ref=e1757]:
+                      - link "Henry Li" [ref=e1758] [cursor=pointer]:
+                        - /url: https://github.com/magiccube/
+                - paragraph [ref=e1759]: Your unwavering commitment and expertise have been the driving force behind DeerFlow's success. We are honored to have you at the helm of this journey.
+                - generic [ref=e1760]:
+                  - heading "Star History" [level=2] [ref=e1761]
+                  - 'link "Permalink: Star History" [ref=e1762] [cursor=pointer]':
+                    - /url: "#star-history"
+                    - img [ref=e1763]
+                - paragraph [ref=e1765]:
+                  - link "Star History Chart" [ref=e1766] [cursor=pointer]:
+                    - /url: https://star-history.com/#bytedance/deer-flow&Date
+                    - img "Star History Chart" [ref=e1767]
+        - generic [ref=e1771]:
+          - generic [ref=e1774]:
+            - heading "About" [level=2] [ref=e1775]
+            - paragraph [ref=e1776]: An open-source long-horizon SuperAgent harness that researches, codes, and creates. With the help of sandboxes, memories, tools, skill, subagents and message gateway, it handles different levels of tasks that could take minutes to hours.
+            - generic [ref=e1777]:
+              - img [ref=e1778]
+              - link "deerflow.tech" [ref=e1781] [cursor=pointer]:
+                - /url: https://deerflow.tech
+            - heading "Topics" [level=3] [ref=e1782]
+            - generic [ref=e1784]:
+              - link "nodejs" [ref=e1785] [cursor=pointer]:
+                - /url: /topics/nodejs
+              - link "python" [ref=e1786] [cursor=pointer]:
+                - /url: /topics/python
+              - link "agent" [ref=e1787] [cursor=pointer]:
+                - /url: /topics/agent
+              - link "typescript" [ref=e1788] [cursor=pointer]:
+                - /url: /topics/typescript
+              - link "ai" [ref=e1789] [cursor=pointer]:
+                - /url: /topics/ai
+              - link "podcast" [ref=e1790] [cursor=pointer]:
+                - /url: /topics/podcast
+              - link "multi-agent" [ref=e1791] [cursor=pointer]:
+                - /url: /topics/multi-agent
+              - link "superagent" [ref=e1792] [cursor=pointer]:
+                - /url: /topics/superagent
+              - link "harness" [ref=e1793] [cursor=pointer]:
+                - /url: /topics/harness
+              - link "ai-agents" [ref=e1794] [cursor=pointer]:
+                - /url: /topics/ai-agents
+              - link "llm" [ref=e1795] [cursor=pointer]:
+                - /url: /topics/llm
+              - link "langchain" [ref=e1796] [cursor=pointer]:
+                - /url: /topics/langchain
+              - link "agentic" [ref=e1797] [cursor=pointer]:
+                - /url: /topics/agentic
+              - link "langgraph" [ref=e1798] [cursor=pointer]:
+                - /url: /topics/langgraph
+              - link "agentic-framework" [ref=e1799] [cursor=pointer]:
+                - /url: /topics/agentic-framework
+              - link "agentic-workflow" [ref=e1800] [cursor=pointer]:
+                - /url: /topics/agentic-workflow
+              - link "deep-research" [ref=e1801] [cursor=pointer]:
+                - /url: /topics/deep-research
+              - link "langmanus" [ref=e1802] [cursor=pointer]:
+                - /url: /topics/langmanus
+            - heading "Resources" [level=3] [ref=e1803]
+            - link "Readme" [ref=e1805] [cursor=pointer]:
+              - /url: "#readme-ov-file"
+              - img [ref=e1806]
+              - text: Readme
+            - heading "License" [level=3] [ref=e1808]
+            - link "MIT license" [ref=e1810] [cursor=pointer]:
+              - /url: "#MIT-1-ov-file"
+              - img [ref=e1811]
+              - text: MIT license
+            - heading "Code of conduct" [level=3] [ref=e1813]
+            - link "Code of conduct" [ref=e1815] [cursor=pointer]:
+              - /url: "#coc-ov-file"
+              - img [ref=e1816]
+              - text: Code of conduct
+            - heading "Contributing" [level=3] [ref=e1818]
+            - link "Contributing" [ref=e1820] [cursor=pointer]:
+              - /url: "#contributing-ov-file"
+              - img [ref=e1821]
+              - text: Contributing
+            - heading "Security policy" [level=3] [ref=e1823]
+            - link "Security policy" [ref=e1825] [cursor=pointer]:
+              - /url: "#security-ov-file"
+              - img [ref=e1826]
+              - text: Security policy
+            - link "Activity" [ref=e1829] [cursor=pointer]:
+              - /url: /bytedance/deer-flow/activity
+              - img [ref=e1830]
+              - text: Activity
+            - link "Custom properties" [ref=e1833] [cursor=pointer]:
+              - /url: /bytedance/deer-flow/custom-properties
+              - img [ref=e1834]
+              - text: Custom properties
+            - heading "Stars" [level=3] [ref=e1836]
+            - link "62.7k stars" [ref=e1838] [cursor=pointer]:
+              - /url: /bytedance/deer-flow/stargazers
+              - img [ref=e1839]
+              - strong [ref=e1841]: 62.7k
+              - text: stars
+            - heading "Watchers" [level=3] [ref=e1842]
+            - link "277 watching" [ref=e1844] [cursor=pointer]:
+              - /url: /bytedance/deer-flow/watchers
+              - img [ref=e1845]
+              - strong [ref=e1847]: "277"
+              - text: watching
+            - heading "Forks" [level=3] [ref=e1848]
+            - link "8.1k forks" [ref=e1850] [cursor=pointer]:
+              - /url: /bytedance/deer-flow/forks
+              - img [ref=e1851]
+              - strong [ref=e1853]: 8.1k
+              - text: forks
+            - link "Report repository" [ref=e1855] [cursor=pointer]:
+              - /url: /contact/report-content?content_url=https%3A%2F%2Fgithub.com%2Fbytedance%2Fdeer-flow&report=bytedance+%28user%29
+          - generic [ref=e1857]:
+            - heading "Contributors 240" [level=2] [ref=e1858]:
+              - link "Contributors 240" [ref=e1859] [cursor=pointer]:
+                - /url: /bytedance/deer-flow/graphs/contributors
+                - text: Contributors
+                - generic "240" [ref=e1860]
+            - list [ref=e1861]:
+              - listitem [ref=e1862]:
+                - link "@MagicCube" [ref=e1863] [cursor=pointer]:
+                  - /url: https://github.com/MagicCube
+                  - img "@MagicCube" [ref=e1864]
+              - listitem [ref=e1865]:
+                - link "@WillemJiang" [ref=e1866] [cursor=pointer]:
+                  - /url: https://github.com/WillemJiang
+                  - img "@WillemJiang" [ref=e1867]
+              - listitem [ref=e1868]:
+                - link "@hetaoBackend" [ref=e1869] [cursor=pointer]:
+                  - /url: https://github.com/hetaoBackend
+                  - img "@hetaoBackend" [ref=e1870]
+              - listitem [ref=e1871]:
+                - link "@henry-byted" [ref=e1872] [cursor=pointer]:
+                  - /url: https://github.com/henry-byted
+                  - img "@henry-byted" [ref=e1873]
+              - listitem [ref=e1874]:
+                - link "@claude" [ref=e1875] [cursor=pointer]:
+                  - /url: https://github.com/claude
+                  - img "@claude" [ref=e1876]
+              - listitem [ref=e1877]:
+                - link "@cursoragent" [ref=e1878] [cursor=pointer]:
+                  - /url: https://github.com/cursoragent
+                  - img "@cursoragent" [ref=e1879]
+              - listitem [ref=e1880]:
+                - link "@Copilot" [ref=e1881] [cursor=pointer]:
+                  - /url: https://github.com/apps/copilot-pull-request-reviewer
+                  - img "@Copilot" [ref=e1882]
+              - listitem [ref=e1883]:
+                - link "@foreleven" [ref=e1884] [cursor=pointer]:
+                  - /url: https://github.com/foreleven
+                  - img "@foreleven" [ref=e1885]
+              - listitem [ref=e1886]:
+                - link "@dependabot[bot]" [ref=e1887] [cursor=pointer]:
+                  - /url: https://github.com/apps/dependabot
+                  - img "@dependabot[bot]" [ref=e1888]
+              - listitem [ref=e1889]:
+                - link "@LittleChenLiya" [ref=e1890] [cursor=pointer]:
+                  - /url: https://github.com/LittleChenLiya
+                  - img "@LittleChenLiya" [ref=e1891]
+              - listitem [ref=e1892]:
+                - link "@Copilot" [ref=e1893] [cursor=pointer]:
+                  - /url: https://github.com/apps/copilot-swe-agent
+                  - img "@Copilot" [ref=e1894]
+              - listitem [ref=e1895]:
+                - link "@willem-bd" [ref=e1896] [cursor=pointer]:
+                  - /url: https://github.com/willem-bd
+                  - img "@willem-bd" [ref=e1897]
+              - listitem [ref=e1898]:
+                - link "@syzhang622" [ref=e1899] [cursor=pointer]:
+                  - /url: https://github.com/syzhang622
+                  - img "@syzhang622" [ref=e1900]
+              - listitem [ref=e1901]:
+                - link "@LofiSu" [ref=e1902] [cursor=pointer]:
+                  - /url: https://github.com/LofiSu
+                  - img "@LofiSu" [ref=e1903]
+            - link "+ 226 contributors" [ref=e1905] [cursor=pointer]:
+              - /url: /bytedance/deer-flow/graphs/contributors
+          - generic [ref=e1907]:
+            - heading "Languages" [level=2] [ref=e1908]
+            - list [ref=e1918]:
+              - listitem [ref=e1919]:
+                - link "Python 69.0%" [ref=e1920] [cursor=pointer]:
+                  - /url: /bytedance/deer-flow/search?l=python
+                  - img [ref=e1921]
+                  - generic [ref=e1923]: Python
+                  - generic [ref=e1924]: 69.0%
+              - listitem [ref=e1925]:
+                - link "TypeScript 19.4%" [ref=e1926] [cursor=pointer]:
+                  - /url: /bytedance/deer-flow/search?l=typescript
+                  - img [ref=e1927]
+                  - generic [ref=e1929]: TypeScript
+                  - generic [ref=e1930]: 19.4%
+              - listitem [ref=e1931]:
+                - link "HTML 4.6%" [ref=e1932] [cursor=pointer]:
+                  - /url: /bytedance/deer-flow/search?l=html
+                  - img [ref=e1933]
+                  - generic [ref=e1935]: HTML
+                  - generic [ref=e1936]: 4.6%
+              - listitem [ref=e1937]:
+                - link "Shell 2.2%" [ref=e1938] [cursor=pointer]:
+                  - /url: /bytedance/deer-flow/search?l=shell
+                  - img [ref=e1939]
+                  - generic [ref=e1941]: Shell
+                  - generic [ref=e1942]: 2.2%
+              - listitem [ref=e1943]:
+                - link "CSS 2.1%" [ref=e1944] [cursor=pointer]:
+                  - /url: /bytedance/deer-flow/search?l=css
+                  - img [ref=e1945]
+                  - generic [ref=e1947]: CSS
+                  - generic [ref=e1948]: 2.1%
+              - listitem [ref=e1949]:
+                - link "JavaScript 1.7%" [ref=e1950] [cursor=pointer]:
+                  - /url: /bytedance/deer-flow/search?l=javascript
+                  - img [ref=e1951]
+                  - generic [ref=e1953]: JavaScript
+                  - generic [ref=e1954]: 1.7%
+              - listitem [ref=e1955]:
+                - generic [ref=e1956]:
+                  - img [ref=e1957]
+                  - generic [ref=e1959]: Other
+                  - generic [ref=e1960]: 1.0%
+  - contentinfo [ref=e1962]:
+    - heading "Footer" [level=2] [ref=e1963]
+    - generic [ref=e1964]:
+      - generic [ref=e1965]:
+        - link "GitHub Homepage" [ref=e1966] [cursor=pointer]:
+          - /url: https://github.com
+          - img [ref=e1967]
+        - generic [ref=e1969]: © 2026 GitHub, Inc.
+      - navigation "Footer" [ref=e1970]:
+        - heading "Footer navigation" [level=3] [ref=e1971]
+        - list "Footer navigation" [ref=e1972]:
+          - listitem [ref=e1973]:
+            - link "Terms" [ref=e1974] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+          - listitem [ref=e1975]:
+            - link "Privacy" [ref=e1976] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+          - listitem [ref=e1977]:
+            - link "Security" [ref=e1978] [cursor=pointer]:
+              - /url: https://github.com/security
+          - listitem [ref=e1979]:
+            - link "Status" [ref=e1980] [cursor=pointer]:
+              - /url: https://www.githubstatus.com/
+          - listitem [ref=e1981]:
+            - link "Community" [ref=e1982] [cursor=pointer]:
+              - /url: https://github.community/
+          - listitem [ref=e1983]:
+            - link "Docs" [ref=e1984] [cursor=pointer]:
+              - /url: https://docs.github.com/
+          - listitem [ref=e1985]:
+            - link "Contact" [ref=e1986] [cursor=pointer]:
+              - /url: https://support.github.com?tags=dotcom-footer
+          - listitem [ref=e1987]:
+            - button "Manage cookies" [ref=e1989] [cursor=pointer]
+          - listitem [ref=e1990]:
+            - button "Do not share my personal information" [ref=e1992] [cursor=pointer]
