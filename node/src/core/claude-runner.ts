@@ -6,8 +6,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { resolveModel, getModelDisplayName, type ModelTier } from './model-router.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
+
+import { resolveModel, getModelDisplayName, type ModelTier } from './model-router.js';
+import { createModelConfig } from './model-provider.js';
 
 // ============================================================================
 // Types
@@ -18,6 +20,12 @@ export interface ClaudeRunOptions {
   projectRoot: string;
   /** Override model tier; if not provided, reads from agent_profile.yml */
   model?: ModelTier;
+  /**
+   * Agent role for model routing (TASK-202).
+   * When provided, model is resolved via createModelConfig(role) first,
+   * then `model` tier override still wins if explicitly set.
+   */
+  role?: string;
   /** Extra args passed to claude CLI */
   extraArgs?: string[];
 }
@@ -144,8 +152,21 @@ export function resolveAndPersistModel(
  * Passes --model <model-display-name> to claude CLI.
  */
 export async function runClaude(options: ClaudeRunOptions): Promise<ClaudeRunResult> {
-  const tier = options.model ?? readModelFromProfile(options.projectRoot);
-  const modelName = getModelDisplayName(tier);
+  // Role-based routing (TASK-202): resolve model name from role if provided
+  let modelName: string;
+
+  if (options.model) {
+    // Explicit tier override always wins
+    modelName = getModelDisplayName(options.model);
+  } else if (options.role) {
+    // Use role-based config
+    const roleConfig = createModelConfig(options.role);
+    modelName = roleConfig.model;
+  } else {
+    // Legacy path: read from agent_profile.yml
+    const tier = readModelFromProfile(options.projectRoot);
+    modelName = getModelDisplayName(tier);
+  }
 
   const args = [
     '--model',

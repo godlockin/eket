@@ -1,7 +1,7 @@
 # TASK-231b: confluence/memory/ 重组回灌 main（3 commit, 复杂冲突）
 
 ## 元数据
-- **状态**: blocked-on-master-decision
+- **状态**: done
 - **类型**: docs
 - **优先级**: P2
 - **agent_type**: docs

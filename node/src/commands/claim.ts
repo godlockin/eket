@@ -11,15 +11,22 @@ import * as path from 'path';
 import { Command } from 'commander';
 import ora from 'ora';
 
+import { contextCompressor } from '../core/context-compressor.js';
+import { EnvelopeManager } from '../core/envelope-manager.js';
 import { createInstanceRegistry } from '../core/instance-registry.js';
+import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
+import { SagaExecutor } from '../core/saga-executor.js';
+import { SkillStacker } from '../core/skill-stacker.js';
 import { createSQLiteManager } from '../core/sqlite-manager.js';
+import { sseBus } from '../core/sse-bus.js';
 import { createTaskAssigner, type AssignmentResult } from '../core/task-assigner.js';
+import { appendTaskMessage, injectActiveContext as injectActiveContextData } from '../core/task-logger.js';
+import { reviewTicket } from '../core/ticket-reviewer.js';
+import { WorktreeManager } from '../core/worktree-manager.js';
 import type { Instance, Ticket } from '../types/index.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
-import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
-import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
 import {
   loadConfig,
   getTickets,
@@ -27,7 +34,7 @@ import {
   initializeProfile,
   sendClaimMessage,
 } from './claim-helpers.js';
-import { appendTaskMessage, injectActiveContext } from '../core/task-logger.js';
+
 
 /**
  * 获取或生成持久化 Slaver ID（P4修复）
@@ -41,7 +48,7 @@ function getOrCreateSlaverId(projectRoot: string): string {
   try {
     if (fs.existsSync(slaveridPath)) {
       const id = fs.readFileSync(slaveridPath, 'utf-8').trim();
-      if (id) return id;
+      if (id) {return id;}
     }
     const newId = `slaver_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     fs.mkdirSync(path.dirname(slaveridPath), { recursive: true });
@@ -57,6 +64,62 @@ interface ClaimOptions {
   auto: boolean;
   role?: string;
   assign?: boolean;
+}
+
+/**
+ * 构建 ACTIVE_CONTEXT.md 内容（TASK-069）
+ */
+export function buildActiveContextMd(
+  ticket: { id: string; title: string },
+  slaverId: string,
+  skills: string[],
+  role: string
+): string {
+  const now = new Date().toISOString();
+  const skillList = skills.length > 0 ? skills.map((s) => `- ${s}`).join('\n') : '- (none)';
+  return `# EKET Active Context
+
+> 此文件由 task:claim 自动生成，ticket 完成后删除。请勿手动编辑。
+> 生成时间: ${now}
+
+## Active Ticket
+
+- **ID**: ${ticket.id}
+- **Title**: ${ticket.title}
+
+## Identity
+
+- **Slaver ID**: ${slaverId}
+- **Role**: ${role}
+- **Started At**: ${now}
+
+## Available Commands
+
+- \`task:claim\` — 领取下一个任务
+- \`task:resume\` — 断点恢复
+- \`system:doctor\` — 系统诊断
+- \`heartbeat:start\` — 启动心跳
+
+## Active Skills
+
+${skillList}
+`;
+}
+
+/**
+ * 注入活跃上下文到 .eket/ACTIVE_CONTEXT.md（TASK-069，4-arg 版本供测试使用）
+ */
+export async function injectActiveContext(
+  projectRoot: string,
+  ticket: { id: string; title: string },
+  slaverId: string,
+  role: string
+): Promise<void> {
+  const skills: string[] = [];
+  const content = buildActiveContextMd(ticket, slaverId, skills, role);
+  const dir = path.join(projectRoot, '.eket');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'ACTIVE_CONTEXT.md'), content, 'utf-8');
 }
 
 /**
@@ -135,19 +198,12 @@ async function updateTicketStatus(
 }
 
 /**
- * 创建 worktree
+ * 获取 isolation 模式（读取环境变量，默认 "worktree"）
  */
-async function createWorktree(projectRoot: string, ticketId: string): Promise<string> {
-  const worktreeDir = path.join(projectRoot, '.eket', 'worktrees', ticketId);
-
-  // 确保目录存在
-  fs.mkdirSync(path.dirname(worktreeDir), { recursive: true });
-
-  // 调用 git worktree add (使用安全执行)
-  const branchName = ticketId.replace(/[^a-zA-Z0-9_-]/g, '_');
-  await execFileNoThrow('git', ['worktree', 'add', '-b', branchName, worktreeDir]);
-
-  return worktreeDir;
+export function getIsolationMode(): 'worktree' | 'none' {
+  const val = process.env.EKET_ISOLATION;
+  if (val === 'none') {return 'none';}
+  return 'worktree';
 }
 
 /**
@@ -246,6 +302,15 @@ Related Commands:
         return;
       }
 
+      // 4.5 加载 Layer 2 session summary（如果存在）
+      {
+        const summary = await contextCompressor.loadSummary(selectedTicket.id);
+        if (summary) {
+          console.log('[context] Loaded session summary from previous run');
+          console.log(summary);
+        }
+      }
+
       // 5. 任务分配（如果启用）
       // 5. 任务分配（如果启用）
       let assignedInstance: Instance | undefined;
@@ -299,11 +364,69 @@ Related Commands:
         }
       }
 
+      // 5.5 读取 TaskEnvelope + Skill Stacking（TASK-118）
+      {
+        try {
+          const eketDir = path.join(projectRoot, '.eket');
+          const envelopeManager = new EnvelopeManager(eketDir);
+          const envelope = await envelopeManager.readEnvelope(selectedTicket.id);
+          if (envelope) {
+            console.log(`[envelope] Found envelope for ${selectedTicket.id}, mode=${envelope.mode}`);
+            if (envelope.requiredSkills.length > 0) {
+              const skillsRoot = path.join(projectRoot, 'node', 'src', 'skills');
+              const stacker = new SkillStacker(skillsRoot);
+              const stackedCtx = await stacker.loadStack(envelope.requiredSkills);
+              console.log(`[skills] Loaded stack: [${stackedCtx.skillIds.join(', ')}]`);
+            }
+          } else {
+            // Parse required_skills from ticket markdown if no envelope
+            const rawRequired = (selectedTicket as { rawContent?: string }).rawContent ?? '';
+            const m = rawRequired.match(/required_skills[:\s]+\[([^\]]+)\]/);
+            if (m) {
+              const skillIds = m[1].split(',').map((s: string) => s.trim()).filter(Boolean);
+              if (skillIds.length > 0) {
+                const skillsRoot = path.join(projectRoot, 'node', 'src', 'skills');
+                const stacker = new SkillStacker(skillsRoot);
+                const stackedCtx = await stacker.loadStack(skillIds);
+                console.log(`[skills] Loaded stack: [${stackedCtx.skillIds.join(', ')}]`);
+              }
+            }
+          }
+        } catch { /* envelope/skill-stacker unavailable — continue */ }
+      }
+
       // 6. 匹配角色
       const roleSpinner = ora('Matching role...').start();
       const role =
         options.role || assignedInstance?.agent_type || (await matchRole(selectedTicket));
       roleSpinner.succeed(`Role matched: ${role}`);
+
+      // 6.05 推荐层级（TASK-104b）
+      {
+        let recommendedLevel: 1 | 2 | 3 = 1;
+        try {
+          const { getSkillIndex } = await import('../skills/index-loader.js');
+          const idx = getSkillIndex();
+          const domain = selectedTicket.id.replace(/-\d+.*$/, '').toLowerCase();
+          recommendedLevel = (idx.modelRouteTable[domain] ?? idx.modelRouteTable['default'] ?? 1) as 1 | 2 | 3;
+        } catch { /* SkillIndex not initialized — use default */ }
+        const levelNames: Record<number, string> = { 1: 'haiku', 2: 'sonnet', 3: 'opus' };
+        console.log(`[model] Recommended level: ${recommendedLevel} (${levelNames[recommendedLevel]})`);
+        // Write recommended level to instance
+        try {
+          const { createInstanceRegistry } = await import('../core/instance-registry.js');
+          const registry = createInstanceRegistry();
+          const result = await registry.getInstance(slaverId);
+          const instance = result && 'data' in result ? result.data : null;
+          if (instance) {
+            // Upgrade until we reach recommended level
+            while ((instance.currentLevel ?? 2) < recommendedLevel) {
+              await registry.upgradeModel(slaverId, `claim:recommended-level-${recommendedLevel}`);
+              instance.currentLevel = Math.min(3, (instance.currentLevel ?? 2) + 1) as 1 | 2 | 3;
+            }
+          }
+        } catch { /* registry unavailable */ }
+      }
 
       // 6.1 选择专项规则（TASK-045）
       const ticketType = selectedTicket.tags[0] ?? 'feature';
@@ -318,10 +441,107 @@ Related Commands:
       await updateTicketStatus(projectRoot, selectedTicket.id, 'in_progress');
       statusSpinner.succeed(`Task status updated: ${selectedTicket.id} -> in_progress`);
 
-      // 8. 创建 worktree
-      const worktreeSpinner = ora('Creating worktree...').start();
-      const worktreePath = await createWorktree(projectRoot, selectedTicket.id);
-      worktreeSpinner.succeed(`Worktree created: ${worktreePath}`);
+      // 8. 创建 worktree（isolation=worktree 时，使用 SagaExecutor 保证原子性）
+      let worktreePath = '';
+      const isolationMode = getIsolationMode();
+      if (isolationMode === 'worktree') {
+        const worktreeSpinner = ora('Creating worktree...').start();
+        interface WorktreeState { path: string }
+        const wm = new WorktreeManager({ projectRoot });
+        const worktreeSaga = new SagaExecutor<WorktreeState>();
+        worktreeSaga.addStep({
+          name: 'createWorktree',
+          forward: async (_state) => {
+            const created = await wm.createWorktree(selectedTicket.id, slaverId);
+            return { path: created };
+          },
+          compensate: async (_state) => {
+            try {
+              await wm.removeWorktree(selectedTicket.id, true);
+            } catch { /* ignore removal errors */ }
+          },
+        });
+        const sagaResult = await worktreeSaga.execute({ path: '' });
+        if (sagaResult.success) {
+          worktreePath = sagaResult.state.path;
+          worktreeSpinner.succeed(`[worktree] Created: ${worktreePath}`);
+        } else {
+          const errMsg = sagaResult.error?.message ?? 'unknown';
+          worktreeSpinner.warn(`Worktree creation skipped: ${errMsg}`);
+          // Saga failed → mark ticket blocked + write inbox feedback
+          await updateTicketStatus(projectRoot, selectedTicket.id, 'blocked');
+          const feedbackDir = path.join(projectRoot, 'inbox', 'human_feedback');
+          fs.mkdirSync(feedbackDir, { recursive: true });
+          const feedbackFile = path.join(feedbackDir, `blocked-${selectedTicket.id}-${slaverId}.md`);
+          fs.writeFileSync(feedbackFile, `# Blocked: ${selectedTicket.id}\n\n**Slaver ID**: ${slaverId}\n**Ticket**: ${selectedTicket.id}\n**Time**: ${new Date().toISOString()}\n**Status**: blocked\n\n## Reason\n\nWorktree creation saga failed: ${errMsg}\n`, 'utf-8');
+          console.log(`\n[feedback] Written: ${feedbackFile}`);
+        }
+      }
+
+      // 8.5 Slaver 自主 ticket 完整性 review（TASK-110b）
+      {
+        // Find ticket file path
+        const jiraBase = path.join(projectRoot, 'jira', 'tickets');
+        const searchDirs = ['', 'feature', 'bugfix', 'task', 'improvement'];
+        let ticketFilePath = '';
+        for (const dir of searchDirs) {
+          const candidate = dir
+            ? path.join(jiraBase, dir, `${selectedTicket.id}.md`)
+            : path.join(jiraBase, `${selectedTicket.id}.md`);
+          if (fs.existsSync(candidate)) {
+            ticketFilePath = candidate;
+            break;
+          }
+        }
+
+        if (ticketFilePath) {
+          const reviewSpinner = ora('Running ticket review...').start();
+          const reviewResult = await reviewTicket(ticketFilePath);
+
+          if (!reviewResult.passed) {
+            reviewSpinner.fail('Ticket review failed');
+            console.log('\n❌ Ticket 完整性检查不通过：');
+            reviewResult.issues.forEach((issue: string) => console.log(`  • ${issue}`));
+
+            // 删除刚创建的 worktree
+            if (worktreePath) {
+              try {
+                const wm = new WorktreeManager({ projectRoot });
+                await wm.removeWorktree(selectedTicket.id, true);
+                console.log('[worktree] Cleaned up due to review failure');
+              } catch { /* ignore */ }
+            }
+
+            // 更新 ticket 状态为 blocked
+            await updateTicketStatus(projectRoot, selectedTicket.id, 'blocked');
+
+            // 写 inbox/human_feedback/blocked-<ticketId>-<slaverId>.md
+            const feedbackDir = path.join(projectRoot, 'inbox', 'human_feedback');
+            fs.mkdirSync(feedbackDir, { recursive: true });
+            const feedbackFile = path.join(feedbackDir, `blocked-${selectedTicket.id}-${slaverId}.md`);
+            const feedbackContent = `# Blocked: ${selectedTicket.id}
+
+**Slaver ID**: ${slaverId}
+**Ticket**: ${selectedTicket.id}
+**Time**: ${new Date().toISOString()}
+**Status**: blocked
+
+## Issues
+
+${reviewResult.issues.map((i: string) => `- ${i}`).join('\n')}
+
+## Required Actions
+
+请 Master 补充 ticket 信息后重新分配此任务。
+`;
+            fs.writeFileSync(feedbackFile, feedbackContent, 'utf-8');
+            console.log(`\n[feedback] Written: ${feedbackFile}`);
+            process.exit(1);
+          }
+
+          reviewSpinner.succeed('✅ Ticket review passed，开始执行');
+        }
+      }
 
       // 9. 初始化 Profile
       const profileSpinner = ora('Initializing profile...').start();
@@ -334,14 +554,14 @@ Related Commands:
       messageSpinner.succeed('Message sent');
 
       // 11. 追加执行日志到 ticket（TASK-078）
-      const runtimeAgentId = `agent_${role}_${process.pid}`;
-      await appendTaskMessage(selectedTicket.id, '领取任务', runtimeAgentId);
+      const logSlaverId = `agent_${role}_${process.pid}`;
+      await appendTaskMessage(selectedTicket.id, '领取任务', logSlaverId);
 
       // 12. 刷新活跃上下文（TASK-079）
-      await injectActiveContext({
+      await injectActiveContextData({
         ticketId: selectedTicket.id,
         role,
-        slaverId: runtimeAgentId,
+        slaverId,
         claimedAt: new Date().toISOString(),
         status: 'in_progress',
       });
@@ -352,6 +572,15 @@ Related Commands:
         `Instance: ${assignedInstance?.id || 'local'}`,
         `Worktree: ${worktreePath}`,
       ]);
+
+      // Publish task_started SSE event (TASK-109)
+      sseBus.publish({
+        type: 'task_started',
+        ticketId: selectedTicket.id,
+        slaverId: logSlaverId,
+        timestamp: new Date().toISOString(),
+      });
+
       console.log('\nNext step: Run /eket-start to begin execution\n');
     });
 }

@@ -5,13 +5,14 @@
  * 支持简单的 YAML DAG 工作流定义，节点类型为 bash
  */
 
+import { execFile } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { promisify } from 'util';
 
 import { Command } from 'commander';
-import { execFile } from 'child_process';
 import { load } from 'js-yaml';
-import { promisify } from 'util';
+
 
 const execFileAsync = promisify(execFile);
 
@@ -63,14 +64,14 @@ function parseWorkflowYaml(content: string): WorkflowDefinition {
   const rawNodes = raw['nodes'];
   if (Array.isArray(rawNodes)) {
     for (const rawNode of rawNodes) {
-      if (!rawNode || typeof rawNode !== 'object') continue;
+      if (!rawNode || typeof rawNode !== 'object') {continue;}
       const n = rawNode as Record<string, unknown>;
       const node: Partial<WorkflowNode> & { id: string } = {
         id: String(n['id'] ?? ''),
       };
-      if (n['type'] !== undefined) node.type = n['type'] as WorkflowNode['type'];
-      if (n['name'] !== undefined) node.name = String(n['name']);
-      if (n['command'] !== undefined) node.command = String(n['command']);
+      if (n['type'] !== undefined) {node.type = n['type'] as WorkflowNode['type'];}
+      if (n['name'] !== undefined) {node.name = String(n['name']);}
+      if (n['command'] !== undefined) {node.command = String(n['command']);}
       if (n['on_failure'] !== undefined) {
         node.on_failure = n['on_failure'] as WorkflowNode['on_failure'];
       }
@@ -179,7 +180,7 @@ function detectCycle(nodes: WorkflowNode[]): string | null {
     inStack.add(id);
     for (const dep of graph.get(id) ?? []) {
       if (!visited.has(dep)) {
-        if (dfs(dep)) return true;
+        if (dfs(dep)) {return true;}
       } else if (inStack.has(dep)) {
         return true;
       }

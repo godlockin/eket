@@ -157,8 +157,12 @@ export class SyncSQLiteAdapter implements ISQLiteClient {
   /**
    * 原子事务领取 ticket（包装为异步）
    */
+  async claimTaskById(ticketId: string, slaverId: string): Promise<Result<boolean>> {
+    return this.client.claimTaskById(ticketId, slaverId);
+  }
+
   async claimTask(ticketId: string, slaverId: string): Promise<Result<boolean>> {
-    return this.client.claimTask(ticketId, slaverId);
+    return this.client.claimTaskById(ticketId, slaverId);
   }
 
   /**

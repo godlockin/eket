@@ -2,9 +2,11 @@
  * EKET Framework - skill:extract / skill:list commands (TASK-043)
  */
 
-import { Command } from 'commander';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+
+import { Command } from 'commander';
+
 import { generateSkillFile, type AutoSkill } from '../core/skill-generator.js';
 
 const __filename = fileURLToPath(import.meta.url);

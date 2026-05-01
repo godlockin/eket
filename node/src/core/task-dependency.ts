@@ -20,7 +20,7 @@ export function canProceed(
   completedIds: Set<string>,
   failedIds: Set<string>
 ): boolean {
-  if (blockedBy.length === 0) return true;
+  if (blockedBy.length === 0) {return true;}
   switch (triggerRule) {
     case 'all_success':
       return blockedBy.every((id) => completedIds.has(id));
@@ -39,7 +39,7 @@ export function canProceed(
 export function parseTriggerRule(ticketContent: string): TriggerRule {
   const m = ticketContent.match(/\*\*trigger_rule\*\*:\s*(\S+)/i);
   const val = m?.[1]?.toLowerCase();
-  if (val === 'one_success' || val === 'all_done') return val;
+  if (val === 'one_success' || val === 'all_done') {return val;}
   return 'all_success'; // 默认
 }
 

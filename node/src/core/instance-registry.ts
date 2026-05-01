@@ -700,6 +700,113 @@ export class InstanceRegistry {
   }
 
   /**
+   * 升级模型层级（上限 3），记录原因
+   */
+  async upgradeModel(instanceId: string, reason: string): Promise<Result<void>> {
+    const client = this.redis.getClient();
+    if (!client) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
+      };
+    }
+
+    try {
+      const key = `${this.config.redisPrefix}${instanceId}`;
+      const existingData = await client.get(key);
+      if (!existingData) {
+        return {
+          success: false,
+          error: new EketError(EketErrorCode.INSTANCE_NOT_FOUND, `Instance ${instanceId} not found`),
+        };
+      }
+
+      const instance = JSON.parse(existingData) as Instance;
+      const from = instance.currentLevel ?? 2;
+      const to = Math.min(3, from + 1) as 1 | 2 | 3;
+
+      if (from !== to) {
+        instance.currentLevel = to;
+        instance.levelChanges = [
+          ...(instance.levelChanges ?? []),
+          { from, to, reason, at: new Date().toISOString() },
+        ];
+        instance.updatedAt = Date.now();
+        await client.set(key, JSON.stringify(instance));
+      }
+
+      return { success: true, data: undefined };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      return {
+        success: false,
+        error: new EketError('INSTANCE_UPDATE_FAILED', `Failed to upgrade model: ${errorMessage}`),
+      };
+    }
+  }
+
+  /**
+   * 降级模型层级（下限 1），记录原因
+   */
+  async downgradeModel(instanceId: string, reason: string): Promise<Result<void>> {
+    const client = this.redis.getClient();
+    if (!client) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
+      };
+    }
+
+    try {
+      const key = `${this.config.redisPrefix}${instanceId}`;
+      const existingData = await client.get(key);
+      if (!existingData) {
+        return {
+          success: false,
+          error: new EketError(EketErrorCode.INSTANCE_NOT_FOUND, `Instance ${instanceId} not found`),
+        };
+      }
+
+      const instance = JSON.parse(existingData) as Instance;
+      const from = instance.currentLevel ?? 2;
+      const to = Math.max(1, from - 1) as 1 | 2 | 3;
+
+      if (from !== to) {
+        instance.currentLevel = to;
+        instance.levelChanges = [
+          ...(instance.levelChanges ?? []),
+          { from, to, reason, at: new Date().toISOString() },
+        ];
+        instance.updatedAt = Date.now();
+        await client.set(key, JSON.stringify(instance));
+      }
+
+      return { success: true, data: undefined };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      return {
+        success: false,
+        error: new EketError('INSTANCE_UPDATE_FAILED', `Failed to downgrade model: ${errorMessage}`),
+      };
+    }
+  }
+
+  /**
+   * 获取当前模型层级
+   */
+  async getCurrentLevel(instanceId: string): Promise<Result<1 | 2 | 3>> {
+    const result = await this.getInstance(instanceId);
+    if (!result.success) {return result as Result<1 | 2 | 3>;}
+    if (!result.data) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.INSTANCE_NOT_FOUND, `Instance ${instanceId} not found`),
+      };
+    }
+    return { success: true, data: result.data.currentLevel ?? 2 };
+  }
+
+  /**
    * 扫描 Redis keys（支持大量数据）
    */
   private async scanKeys(pattern: string, count = 100): Promise<string[]> {

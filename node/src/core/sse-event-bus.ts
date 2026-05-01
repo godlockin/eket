@@ -5,6 +5,7 @@
  * 支持 9 种事件类型，__dashboard__ 为全局广播频道。
  */
 import type { Response } from 'express';
+
 import { logger } from '../utils/logger.js';
 
 export type SSEEventType =
@@ -96,7 +97,7 @@ export class SSEEventBus {
 
   private _broadcast(channelId: string, event: SSEEvent): void {
     const subs = this.subscribers.get(channelId);
-    if (!subs || subs.size === 0) return;
+    if (!subs || subs.size === 0) {return;}
 
     const dead: Response[] = [];
     for (const res of subs) {

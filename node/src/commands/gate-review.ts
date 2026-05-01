@@ -10,14 +10,20 @@
  *   node dist/index.js gate:review                # 扫描所有 gate_review 状态的 tickets
  */
 
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as crypto from 'crypto';
 
 import { Command } from 'commander';
 
 import { EketErrorClass, EketErrorCode, type Result } from '../types/index.js';
 import { printError } from '../utils/error-handler.js';
+import {
+  DEFAULT_GUARDRAILS,
+  runGuardrails,
+  type GuardrailInput,
+  type GuardrailResult,
+} from '../core/guardrail.js';
 
 // ============================================================================
 // Types
@@ -44,6 +50,8 @@ export interface GateReviewReport {
     resubmitConditions: string[];
   };
   approveRisks?: string[];
+  /** Parallel guardrail results (TASK-203) */
+  guardrailResults?: GuardrailResult[];
 }
 
 interface TicketParseResult {
@@ -108,7 +116,7 @@ function parseTicket(filePath: string): Result<TicketParseResult> {
     const depLines = (depsMatch[1] ?? '').match(/-\s*(\S+)/g) || [];
     for (const line of depLines) {
       const dep = line.replace(/^-\s*/, '').trim();
-      if (dep) dependencies.push(dep);
+      if (dep) {dependencies.push(dep);}
     }
   }
 
@@ -138,7 +146,7 @@ function parseTicket(filePath: string): Result<TicketParseResult> {
 
 function findTicketFile(projectRoot: string, ticketId: string): string | null {
   const jiraDir = path.join(projectRoot, 'jira');
-  if (!fs.existsSync(jiraDir)) return null;
+  if (!fs.existsSync(jiraDir)) {return null;}
 
   // Search common locations
   const searchDirs = [
@@ -156,9 +164,9 @@ function findTicketFile(projectRoot: string, ticketId: string): string | null {
 
   const upper = ticketId.toUpperCase();
   for (const dir of searchDirs) {
-    if (!fs.existsSync(dir)) continue;
+    if (!fs.existsSync(dir)) {continue;}
     const candidate = path.join(dir, `${upper}.md`);
-    if (fs.existsSync(candidate)) return candidate;
+    if (fs.existsSync(candidate)) {return candidate;}
   }
   return null;
 }
@@ -169,12 +177,12 @@ function findTicketFile(projectRoot: string, ticketId: string): string | null {
 
 function findGateReviewTickets(projectRoot: string): string[] {
   const jiraDir = path.join(projectRoot, 'jira');
-  if (!fs.existsSync(jiraDir)) return [];
+  if (!fs.existsSync(jiraDir)) {return [];}
 
   const results: string[] = [];
 
   function scanDir(dir: string): void {
-    if (!fs.existsSync(dir)) return;
+    if (!fs.existsSync(dir)) {return;}
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       if (entry.isDirectory()) {
@@ -324,8 +332,8 @@ function writeReviewReport(
   }
 
   const statusIcon = (s: 'pass' | 'warn' | 'fail') => {
-    if (s === 'pass') return '✅';
-    if (s === 'warn') return '⚠️';
+    if (s === 'pass') {return '✅';}
+    if (s === 'warn') {return '⚠️';}
     return '❌';
   };
 
@@ -554,6 +562,36 @@ export async function gateReview(
   });
 
   printReport(report);
+
+  // ── Parallel guardrail checks (TASK-203) ────────────────────────────────
+  const guardrailInput: GuardrailInput = {
+    ticketId: ticket.id,
+    ticketContent: ticket.content,
+    // CI / coverage / notes / PR fields are advisory from ticket content parsing.
+    // Callers may extend by passing enriched input via options in future iterations.
+    ciStatus: 'unknown',
+    knowledgeNotes: (() => {
+      const m = ticket.content.match(/##\s*(?:知识沉淀|knowledge.notes?)[^\n]*\n([\s\S]*?)(?=\n##|\n---|\n\*\*|$)/i);
+      if (!m || !m[1]) {return [];}
+      const lines = m[1].trim().split('\n').filter((l) => l.trim().length > 0);
+      return lines;
+    })(),
+  };
+
+  const guardrailResults = await runGuardrails(DEFAULT_GUARDRAILS, guardrailInput);
+  report.guardrailResults = guardrailResults;
+
+  const failedGuardrails = guardrailResults.filter((r) => !r.passed);
+  if (failedGuardrails.length > 0) {
+    console.log(`\n   ⚡ 并行验收门禁结果 (${failedGuardrails.length}/${guardrailResults.length} 未通过):`);
+    for (const gr of guardrailResults) {
+      const sym = gr.passed ? '✓' : '✗';
+      console.log(`     [${sym}] ${gr.guardrailName}${gr.reason ? ': ' + gr.reason : ''}`);
+    }
+  } else {
+    console.log(`\n   ✅ 并行验收门禁：全部通过 (${guardrailResults.length}/${guardrailResults.length})`);
+  }
+  // ────────────────────────────────────────────────────────────────────────
 
   if (!options.dryRun) {
     const reportFile = writeReviewReport(projectRoot, ticket, report);

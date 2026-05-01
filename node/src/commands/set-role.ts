@@ -169,6 +169,8 @@ export function registerSetRole(program: Command): void {
           currentTaskId: undefined,
           currentLoad: 0,
           lastHeartbeat: Date.now(),
+          currentLevel: 2 as const,
+          levelChanges: [],
         };
 
         // 注册到注册表

@@ -12,10 +12,12 @@
  * 5. 显示可用命令
  */
 
-import { Command } from 'commander';
-import ora from 'ora';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { Command } from 'commander';
+import ora from 'ora';
+
 import { printError, logInfo } from '../utils/error-handler.js';
 import { logger } from '../utils/logger.js';
 
@@ -63,9 +65,9 @@ function getInstanceInfo(): SlaverStatus {
     const roleMatch = content.match(/role:\s*(\S+)/);
     const specialtyMatch = content.match(/specialty:\s*(\S+)/);
 
-    if (instanceIdMatch) instanceId = instanceIdMatch[1];
-    if (roleMatch) role = roleMatch[1];
-    if (specialtyMatch) specialty = specialtyMatch[1];
+    if (instanceIdMatch) {instanceId = instanceIdMatch[1];}
+    if (roleMatch) {role = roleMatch[1];}
+    if (specialtyMatch) {specialty = specialtyMatch[1];}
   }
 
   // 检查当前任务
@@ -148,7 +150,7 @@ function scanReadyTasks(_specialty: string): TicketInfo[] {
 
   for (const dir of ['feature', 'bugfix', 'task', 'fix']) {
     const typeDir = path.join(jiraDir, dir);
-    if (!fs.existsSync(typeDir)) continue;
+    if (!fs.existsSync(typeDir)) {continue;}
 
     const files = fs.readdirSync(typeDir).filter(f => f.endsWith('.md'));
 
@@ -193,8 +195,8 @@ function scanReadyTasks(_specialty: string): TicketInfo[] {
  * 检查角色匹配
  */
 function checkRoleMatch(ticketRole: string, specialty: string): boolean {
-  if (!ticketRole || ticketRole === 'fullstack') return true;
-  if (!specialty) return true;
+  if (!ticketRole || ticketRole === 'fullstack') {return true;}
+  if (!specialty) {return true;}
   return ticketRole.includes(specialty);
 }
 

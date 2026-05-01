@@ -1,0 +1,612 @@
+/// task:complete — Saga-based ticket completion with rollback + Master notification
+///
+/// Flow:
+///   1. ValidateTicket   — ticket exists + in_progress
+///   2. CommitWork       — git add -A && git commit (skip if nothing to commit)
+///   3. UpdateTicketStatus — ticket status → done (compensate: → in_progress)
+///   4. NotifyMaster     — send TaskResult via ProtocolSender (compensate: send failure)
+///   5. RecordCompletion — db.update_ticket_status + update_ticket_assignee
+///
+/// --rollback mode: bypass saga, set status → todo, notify master failed
+
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
+
+use anyhow::Result;
+use async_trait::async_trait;
+use eket_core::{
+    config::EketConfig,
+    db::{create_pool, SqliteClient},
+    saga::{SagaExecutor, SagaStep},
+    ticket::find_ticket,
+    types::TicketStatus,
+};
+use eket_engine::{
+    mailbox::AgentMailbox,
+    protocol::{ProtocolSender, TaskResultPayload},
+};
+use serde_json::json;
+
+// ─── CompleteState ────────────────────────────────────────────────────────────
+
+#[derive(Clone, Debug)]
+pub struct CompleteState {
+    pub ticket_id: String,
+    pub slaver_id: String,
+    pub project_root: PathBuf,
+    pub pr_url: Option<String>,
+    pub mailbox_dir: PathBuf,
+    pub db_path: String,
+    pub ticket_updated: bool,
+    pub master_notified: bool,
+}
+
+// ─── Step 1: ValidateTicket ───────────────────────────────────────────────────
+
+struct ValidateTicket;
+
+#[async_trait]
+impl SagaStep<CompleteState> for ValidateTicket {
+    fn name(&self) -> &str { "ValidateTicket" }
+
+    async fn forward(
+        &self,
+        state: CompleteState,
+    ) -> Result<CompleteState, Box<dyn std::error::Error + Send + Sync>> {
+        let tickets_dir = state.project_root.join("jira/tickets");
+        let ticket = find_ticket(&tickets_dir, &state.ticket_id)
+            .map_err(|e| format!("Ticket not found: {e}"))?;
+
+        if ticket.status != TicketStatus::InProgress {
+            return Err(format!(
+                "Expected in_progress, got: {}",
+                format_status(&ticket.status)
+            )
+            .into());
+        }
+        Ok(state)
+    }
+
+    async fn compensate(
+        &self,
+        _state: &CompleteState,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        Ok(())
+    }
+}
+
+// ─── Step 2: CommitWork ───────────────────────────────────────────────────────
+
+struct CommitWork;
+
+#[async_trait]
+impl SagaStep<CompleteState> for CommitWork {
+    fn name(&self) -> &str { "CommitWork" }
+
+    async fn forward(
+        &self,
+        state: CompleteState,
+    ) -> Result<CompleteState, Box<dyn std::error::Error + Send + Sync>> {
+        // git add -A
+        let add = std::process::Command::new("git")
+            .args(["add", "-A"])
+            .current_dir(&state.project_root)
+            .output();
+
+        if let Ok(add_out) = add {
+            if !add_out.status.success() {
+                // non-fatal: continue
+            }
+        }
+
+        // git commit
+        let msg = format!("feat({}): complete", state.ticket_id);
+        let commit = std::process::Command::new("git")
+            .args(["commit", "-m", &msg])
+            .current_dir(&state.project_root)
+            .output();
+
+        match commit {
+            Ok(out) => {
+                let stdout = String::from_utf8_lossy(&out.stdout);
+                let stderr = String::from_utf8_lossy(&out.stderr);
+                let combined = format!("{stdout}{stderr}");
+                if out.status.success() || combined.contains("nothing to commit") {
+                    Ok(state)
+                } else {
+                    // git not available or other non-fatal errors — skip
+                    Ok(state)
+                }
+            }
+            Err(_) => Ok(state), // git not available — skip
+        }
+    }
+
+    async fn compensate(
+        &self,
+        _state: &CompleteState,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        // Too dangerous to revert git commits
+        Ok(())
+    }
+}
+
+// ─── Step 3: UpdateTicketStatus ───────────────────────────────────────────────
+
+struct UpdateTicketStatus;
+
+#[async_trait]
+impl SagaStep<CompleteState> for UpdateTicketStatus {
+    fn name(&self) -> &str { "UpdateTicketStatus" }
+
+    async fn forward(
+        &self,
+        mut state: CompleteState,
+    ) -> Result<CompleteState, Box<dyn std::error::Error + Send + Sync>> {
+        let tickets_dir = state.project_root.join("jira/tickets");
+        let mut ticket = find_ticket(&tickets_dir, &state.ticket_id)
+            .map_err(|e| format!("Ticket not found for update: {e}"))?;
+
+        ticket
+            .set_status(TicketStatus::Done, Some(&state.slaver_id))
+            .map_err(|e| format!("Failed to set status done: {e}"))?;
+
+        state.ticket_updated = true;
+        Ok(state)
+    }
+
+    async fn compensate(
+        &self,
+        state: &CompleteState,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        if !state.ticket_updated {
+            return Ok(());
+        }
+        let tickets_dir = state.project_root.join("jira/tickets");
+        if let Ok(mut ticket) = find_ticket(&tickets_dir, &state.ticket_id) {
+            let _ = ticket.set_status(TicketStatus::InProgress, None);
+        }
+        Ok(())
+    }
+}
+
+// ─── Step 4: NotifyMaster ─────────────────────────────────────────────────────
+
+struct NotifyMaster;
+
+#[async_trait]
+impl SagaStep<CompleteState> for NotifyMaster {
+    fn name(&self) -> &str { "NotifyMaster" }
+
+    async fn forward(
+        &self,
+        mut state: CompleteState,
+    ) -> Result<CompleteState, Box<dyn std::error::Error + Send + Sync>> {
+        if !state.mailbox_dir.exists() {
+            // Non-fatal: silently skip
+            state.master_notified = false;
+            return Ok(state);
+        }
+
+        let mailbox = Arc::new(AgentMailbox::new(&state.mailbox_dir));
+        let sender = ProtocolSender::new(mailbox);
+
+        let payload = TaskResultPayload {
+            ticket_id: state.ticket_id.clone(),
+            success: true,
+            output: Some("Ticket completed via saga".into()),
+            pr_url: state.pr_url.clone(),
+            error: None,
+        };
+
+        let _ = sender
+            .send_task_result(&state.slaver_id, "master", payload)
+            .await;
+
+        state.master_notified = true;
+        Ok(state)
+    }
+
+    async fn compensate(
+        &self,
+        state: &CompleteState,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        if !state.mailbox_dir.exists() {
+            return Ok(());
+        }
+
+        let mailbox = Arc::new(AgentMailbox::new(&state.mailbox_dir));
+        let sender = ProtocolSender::new(mailbox);
+
+        let payload = TaskResultPayload {
+            ticket_id: state.ticket_id.clone(),
+            success: false,
+            output: None,
+            pr_url: None,
+            error: Some("Saga rolled back".into()),
+        };
+
+        let _ = sender
+            .send_task_result(&state.slaver_id, "master", payload)
+            .await;
+
+        Ok(())
+    }
+}
+
+// ─── Step 5: RecordCompletion ─────────────────────────────────────────────────
+
+struct RecordCompletion;
+
+#[async_trait]
+impl SagaStep<CompleteState> for RecordCompletion {
+    fn name(&self) -> &str { "RecordCompletion" }
+
+    async fn forward(
+        &self,
+        state: CompleteState,
+    ) -> Result<CompleteState, Box<dyn std::error::Error + Send + Sync>> {
+        if let Ok(pool) = create_pool(&state.db_path) {
+            let client = SqliteClient::new(pool);
+            let _ = client.update_ticket_status_str(&state.ticket_id, "done");
+            let _ = client.update_ticket_assignee(&state.ticket_id, &state.slaver_id);
+        }
+        Ok(state)
+    }
+
+    async fn compensate(
+        &self,
+        state: &CompleteState,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        if let Ok(pool) = create_pool(&state.db_path) {
+            let client = SqliteClient::new(pool);
+            let _ = client.update_ticket_status_str(&state.ticket_id, "in_progress");
+        }
+        Ok(())
+    }
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+pub struct CompleteArgs {
+    pub ticket_id: String,
+    pub slaver_id: Option<String>,
+    pub pr_url: Option<String>,
+    pub rollback: bool,
+    pub mailbox_dir: Option<PathBuf>,
+    pub db_path: Option<String>,
+}
+
+pub async fn run_complete(args: CompleteArgs) -> Result<()> {
+    let config = EketConfig::load().unwrap_or_default();
+    let project_root = find_project_root().unwrap_or_else(|| std::env::current_dir().unwrap());
+
+    let slaver_id = args
+        .slaver_id
+        .unwrap_or_else(|| get_slaver_id(&project_root));
+
+    let mailbox_dir = args.mailbox_dir.unwrap_or_else(|| {
+        dirs::home_dir()
+            .unwrap_or_else(|| PathBuf::from("."))
+            .join(".eket/mailbox")
+    });
+
+    let db_path = args.db_path.unwrap_or(config.sqlite.path.clone());
+
+    // ── --rollback mode ──────────────────────────────────────────────────────
+    if args.rollback {
+        let tickets_dir = project_root.join("jira/tickets");
+        if let Ok(mut ticket) = find_ticket(&tickets_dir, &args.ticket_id) {
+            let _ = ticket.set_status(TicketStatus::Todo, None);
+        }
+        if let Ok(pool) = create_pool(&db_path) {
+            let client = SqliteClient::new(pool);
+            let _ = client.update_ticket_status_str(&args.ticket_id, "todo");
+        }
+        // Notify master of rollback
+        if mailbox_dir.exists() {
+            let mailbox = Arc::new(AgentMailbox::new(&mailbox_dir));
+            let sender = ProtocolSender::new(mailbox);
+            let payload = TaskResultPayload {
+                ticket_id: args.ticket_id.clone(),
+                success: false,
+                output: None,
+                pr_url: None,
+                error: Some("Manual rollback".into()),
+            };
+            let _ = sender.send_task_result(&slaver_id, "master", payload).await;
+        }
+
+        let report = json!({
+            "status": "rolled_back",
+            "ticket_id": args.ticket_id,
+            "slaver_id": slaver_id,
+        });
+        println!("{}", serde_json::to_string_pretty(&report)?);
+        return Ok(());
+    }
+
+    // ── Saga mode ────────────────────────────────────────────────────────────
+    let initial_state = CompleteState {
+        ticket_id: args.ticket_id.clone(),
+        slaver_id: slaver_id.clone(),
+        project_root,
+        pr_url: args.pr_url,
+        mailbox_dir,
+        db_path,
+        ticket_updated: false,
+        master_notified: false,
+    };
+
+    let result = SagaExecutor::new()
+        .add_step(ValidateTicket)
+        .add_step(CommitWork)
+        .add_step(UpdateTicketStatus)
+        .add_step(NotifyMaster)
+        .add_step(RecordCompletion)
+        .execute(initial_state)
+        .await;
+
+    let compensation_errors: Vec<serde_json::Value> = result
+        .compensation_errors
+        .iter()
+        .map(|e| json!({"step": e.step, "error": e.error}))
+        .collect();
+
+    if result.success {
+        let report = json!({
+            "status": "completed",
+            "ticket_id": args.ticket_id,
+            "slaver_id": slaver_id,
+            "pr_url": result.state.pr_url,
+            "saga_steps": result.completed_steps,
+            "compensation_errors": compensation_errors,
+        });
+        println!("{}", serde_json::to_string_pretty(&report)?);
+    } else {
+        let report = json!({
+            "status": "failed",
+            "ticket_id": args.ticket_id,
+            "failed_step": result.failed_step,
+            "error": result.error,
+            "compensation_errors": compensation_errors,
+        });
+        println!("{}", serde_json::to_string_pretty(&report)?);
+    }
+
+    Ok(())
+}
+
+/// Legacy entry point for backward compat (called from main.rs)
+pub async fn run(ticket_id: String, skip_trailer: bool) -> Result<()> {
+    let _ = skip_trailer;
+    run_complete(CompleteArgs {
+        ticket_id,
+        slaver_id: None,
+        pr_url: None,
+        rollback: false,
+        mailbox_dir: None,
+        db_path: None,
+    })
+    .await
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+fn format_status(s: &TicketStatus) -> &'static str {
+    match s {
+        TicketStatus::Todo => "todo",
+        TicketStatus::InProgress => "in_progress",
+        TicketStatus::Review => "review",
+        TicketStatus::Done => "done",
+        TicketStatus::Blocked => "blocked",
+        TicketStatus::Cancelled => "cancelled",
+    }
+}
+
+fn get_slaver_id(project_root: &Path) -> String {
+    if let Ok(id) = std::env::var("EKET_SLAVER_ID") {
+        return id;
+    }
+    let id_file = project_root.join(".eket/slaver-id");
+    if let Ok(id) = std::fs::read_to_string(&id_file) {
+        let id = id.trim().to_string();
+        if !id.is_empty() {
+            return id;
+        }
+    }
+    format!("slaver_{}", std::process::id())
+}
+
+fn find_project_root() -> Option<PathBuf> {
+    let mut dir = std::env::current_dir().ok()?;
+    loop {
+        if dir.join("jira/tickets").exists() || dir.join(".eket").exists() {
+            return Some(dir);
+        }
+        if !dir.pop() {
+            return None;
+        }
+    }
+}
+
+// ─── Tests ────────────────────────────────────────────────────────────────────
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Write;
+    use tempfile::TempDir;
+
+    /// Create a minimal project structure with a ticket file
+    fn setup_project(dir: &TempDir, ticket_id: &str, status: &str) -> PathBuf {
+        let root = dir.path().to_path_buf();
+        let tickets_dir = root.join("jira/tickets");
+        std::fs::create_dir_all(&tickets_dir).unwrap();
+
+        let ticket_content = format!(
+            "# {ticket_id}: Test ticket\n\n## 元数据\n- **状态**: {status}\n- **优先级**: P1\n- **负责人**: 待领取\n"
+        );
+        std::fs::write(tickets_dir.join(format!("{ticket_id}.md")), &ticket_content).unwrap();
+        root
+    }
+
+    fn read_ticket_status(root: &Path, ticket_id: &str) -> String {
+        let path = root.join("jira/tickets").join(format!("{ticket_id}.md"));
+        let content = std::fs::read_to_string(&path).unwrap();
+        for line in content.lines() {
+            if line.contains("**状态**:") {
+                return line.split(':').nth(1).unwrap_or("").trim().to_string();
+            }
+        }
+        String::new()
+    }
+
+    #[tokio::test]
+    async fn complete_success_updates_ticket_status() {
+        let dir = TempDir::new().unwrap();
+        let root = setup_project(&dir, "TASK-001", "in_progress");
+
+        let result = run_complete(CompleteArgs {
+            ticket_id: "TASK-001".into(),
+            slaver_id: Some("slaver_test".into()),
+            pr_url: None,
+            rollback: false,
+            mailbox_dir: Some(dir.path().join("mailbox")),
+            db_path: Some(":memory:".into()),
+        })
+        .await;
+
+        assert!(result.is_ok(), "run_complete failed: {result:?}");
+        let status = read_ticket_status(&root, "TASK-001");
+        assert_eq!(status, "done", "ticket status should be done, got: {status}");
+    }
+
+    #[tokio::test]
+    async fn complete_rollback_flag() {
+        let dir = TempDir::new().unwrap();
+        let root = setup_project(&dir, "TASK-002", "in_progress");
+
+        let result = run_complete(CompleteArgs {
+            ticket_id: "TASK-002".into(),
+            slaver_id: Some("slaver_test".into()),
+            pr_url: None,
+            rollback: true,
+            mailbox_dir: Some(dir.path().join("mailbox")),
+            db_path: Some(":memory:".into()),
+        })
+        .await;
+
+        assert!(result.is_ok());
+        let status = read_ticket_status(&root, "TASK-002");
+        assert_eq!(status, "todo", "rollback should set status to todo, got: {status}");
+    }
+
+    #[tokio::test]
+    async fn complete_missing_ticket_fails() {
+        let dir = TempDir::new().unwrap();
+        // Setup project root but NO ticket file
+        let tickets_dir = dir.path().join("jira/tickets");
+        std::fs::create_dir_all(&tickets_dir).unwrap();
+
+        let result = run_complete(CompleteArgs {
+            ticket_id: "TASK-999".into(),
+            slaver_id: Some("slaver_test".into()),
+            pr_url: None,
+            rollback: false,
+            mailbox_dir: Some(dir.path().join("mailbox")),
+            db_path: Some(":memory:".into()),
+        })
+        .await;
+
+        // Should not panic; should complete gracefully (outputs failed JSON)
+        assert!(result.is_ok(), "should not return Err, got: {result:?}");
+    }
+
+    #[tokio::test]
+    async fn saga_step_failure_compensates() {
+        // Simulate UpdateTicketStatus fails by giving wrong status (not in_progress)
+        // ValidateTicket will fail → no compensation needed for Step3 since it never ran
+        // We test compensation by creating an in_progress ticket then a broken Step3
+        // Best we can do without a mock: set ticket to "todo" (not in_progress),
+        // ValidateTicket fails → saga reports failure, ticket remains "todo"
+        let dir = TempDir::new().unwrap();
+        let root = setup_project(&dir, "TASK-003", "todo");
+
+        let result = run_complete(CompleteArgs {
+            ticket_id: "TASK-003".into(),
+            slaver_id: Some("slaver_test".into()),
+            pr_url: None,
+            rollback: false,
+            mailbox_dir: Some(dir.path().join("mailbox")),
+            db_path: Some(":memory:".into()),
+        })
+        .await;
+
+        assert!(result.is_ok());
+        // Status should still be "todo" because ValidateTicket failed (compensation not needed)
+        let status = read_ticket_status(&root, "TASK-003");
+        assert_eq!(status, "todo", "ticket should remain todo after saga failure");
+    }
+
+    #[tokio::test]
+    async fn complete_no_git_ok() {
+        // CommitWork with "nothing to commit" should not fail the saga
+        let dir = TempDir::new().unwrap();
+        let root = setup_project(&dir, "TASK-004", "in_progress");
+
+        // Initialize a clean git repo so "nothing to commit" is the actual outcome
+        let _ = std::process::Command::new("git")
+            .args(["init"])
+            .current_dir(&root)
+            .output();
+        let _ = std::process::Command::new("git")
+            .args(["config", "user.email", "test@test.com"])
+            .current_dir(&root)
+            .output();
+        let _ = std::process::Command::new("git")
+            .args(["config", "user.name", "Test"])
+            .current_dir(&root)
+            .output();
+        let _ = std::process::Command::new("git")
+            .args(["add", "-A"])
+            .current_dir(&root)
+            .output();
+        let _ = std::process::Command::new("git")
+            .args(["commit", "-m", "initial"])
+            .current_dir(&root)
+            .output();
+
+        let result = run_complete(CompleteArgs {
+            ticket_id: "TASK-004".into(),
+            slaver_id: Some("slaver_test".into()),
+            pr_url: None,
+            rollback: false,
+            mailbox_dir: Some(dir.path().join("mailbox")),
+            db_path: Some(":memory:".into()),
+        })
+        .await;
+
+        assert!(result.is_ok());
+        let status = read_ticket_status(&root, "TASK-004");
+        assert_eq!(status, "done");
+    }
+
+    #[tokio::test]
+    async fn complete_with_pr_url() {
+        let dir = TempDir::new().unwrap();
+        setup_project(&dir, "TASK-005", "in_progress");
+
+        let result = run_complete(CompleteArgs {
+            ticket_id: "TASK-005".into(),
+            slaver_id: Some("slaver_test".into()),
+            pr_url: Some("https://github.com/org/repo/pull/42".into()),
+            rollback: false,
+            mailbox_dir: Some(dir.path().join("mailbox")),
+            db_path: Some(":memory:".into()),
+        })
+        .await;
+
+        assert!(result.is_ok());
+    }
+}

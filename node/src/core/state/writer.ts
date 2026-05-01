@@ -9,8 +9,8 @@
  * Phase: 0 / Task 0.4
  */
 
-import { hostname } from 'node:os';
 import { readFileSync, readdirSync, renameSync, existsSync, mkdirSync } from 'node:fs';
+import { hostname } from 'node:os';
 import { join } from 'node:path';
 
 import { atomicWrite } from './atomic.js';
@@ -489,7 +489,7 @@ export async function registerNode(profile: NodeProfile): Promise<void> {
   let content = '';
   for (const k of PROFILE_ALLOWED_KEYS) {
     const v = (finalProfile as Record<string, unknown>)[k];
-    if (v == null || v === '') continue;
+    if (v == null || v === '') {continue;}
     content += `${k}: ${v}\n`;
   }
 
@@ -568,7 +568,7 @@ export async function writeProjectStatus(status: ProjectStatus): Promise<void> {
       content += `  ${k}: []\n`;
     } else {
       content += `  ${k}:\n`;
-      for (const item of arr) content += `    - ${item}\n`;
+      for (const item of arr) {content += `    - ${item}\n`;}
     }
   }
   content += `\ncards:\n`;
@@ -578,7 +578,7 @@ export async function writeProjectStatus(status: ProjectStatus): Promise<void> {
       content += `  ${k}: []\n`;
     } else {
       content += `  ${k}:\n`;
-      for (const item of arr) content += `    - ${item}\n`;
+      for (const item of arr) {content += `    - ${item}\n`;}
     }
   }
   content += `\nprogress:\n`;
@@ -590,17 +590,17 @@ export async function writeProjectStatus(status: ProjectStatus): Promise<void> {
   content += `  completion_rate: ${rate}\n\n`;
 
   const risks = final.risks ?? [];
-  if (risks.length === 0) content += `risks: []\n`;
+  if (risks.length === 0) {content += `risks: []\n`;}
   else {
     content += `risks:\n`;
-    for (const r of risks) content += `  - ${r}\n`;
+    for (const r of risks) {content += `  - ${r}\n`;}
   }
 
   const actions = final.action_items ?? [];
-  if (actions.length === 0) content += `action_items: []\n`;
+  if (actions.length === 0) {content += `action_items: []\n`;}
   else {
     content += `action_items:\n`;
-    for (const a of actions) content += `  - ${a}\n`;
+    for (const a of actions) {content += `  - ${a}\n`;}
   }
 
   await withLock('project-status', async () => {

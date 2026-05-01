@@ -1,0 +1,119 @@
+name: PR Retrospective
+on:
+  pull_request:
+    types: [closed]
+    branches: [miao]
+
+jobs:
+  retro:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Extract PR data
+        id: extract
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          TASK_ID=$(echo "$PR_TITLE" | grep -oE 'TASK-[0-9]+' | head -1)
+
+          echo "pr_num=$PR_NUM" >> "$GITHUB_OUTPUT"
+          echo "task_id=$TASK_ID" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$TASK_ID" ]; then
+            echo "No TASK-xxx found in PR title, skipping retro"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+          # Extract PR info
+          gh pr view "$PR_NUM" --json title,body,reviews,commits > /tmp/pr-data.json
+
+          # Get commit messages
+          git log --format="%s%n%b" "${BASE_SHA}..${HEAD_SHA}" > /tmp/commits.txt
+
+          # Get ticket content if exists
+          TICKET_FILE="jira/tickets/${TASK_ID}.md"
+          if [ -f "$TICKET_FILE" ]; then
+            cp "$TICKET_FILE" /tmp/ticket.md
+          else
+            echo "No ticket file found" > /tmp/ticket.md
+          fi
+
+      - name: Generate retro with Claude
+        if: steps.extract.outputs.skip != 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PR_NUM: ${{ steps.extract.outputs.pr_num }}
+          TASK_ID: ${{ steps.extract.outputs.task_id }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          TODAY=$(date +%Y-%m-%d)
+          YYYYMM=$(date +%Y%m)
+
+          PROMPT="You are writing a structured retrospective for a completed PR in the EKET multi-agent framework project.
+
+          PR #${PR_NUM}: ${PR_TITLE}
+          Task: ${TASK_ID}
+
+          PR data:
+          $(cat /tmp/pr-data.json)
+
+          Commit messages:
+          $(cat /tmp/commits.txt)
+
+          Ticket content:
+          $(cat /tmp/ticket.md)
+
+          Write a concise retrospective in this exact markdown format:
+          # 复盘：${PR_TITLE}（PR #${PR_NUM}，${TASK_ID}）
+
+          **时间**: ${TODAY}
+          **自动生成**: GitHub Action pr-retro
+
+          ## 亮点
+          - [2-3 specific positive outcomes from this PR]
+
+          ## 踩坑
+          - [1-2 specific problems encountered, or '无' if none apparent]
+
+          ## 下次改进
+          - [1-2 concrete actionable improvements for future similar work]
+
+          Keep each bullet point specific and actionable. Under 100 words total."
+
+          echo "$PROMPT" | claude -p --output-format text > /tmp/retro-output.md
+
+          RETRO_FILE="confluence/memory/lessons/${YYYYMM}-PR${PR_NUM}-${TASK_ID}.md"
+          cp /tmp/retro-output.md "$RETRO_FILE"
+          echo "retro_file=$RETRO_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Commit retro file
+        if: steps.extract.outputs.skip != 'true'
+        env:
+          PR_NUM: ${{ steps.extract.outputs.pr_num }}
+          TASK_ID: ${{ steps.extract.outputs.task_id }}
+        run: |
+          git config user.name "eket-bot"
+          git config user.email "eket-bot@github-actions"
+          git add confluence/memory/lessons/
+          git diff --staged --quiet || git commit -m "retro: auto-generated for PR #${PR_NUM} (${TASK_ID})"
+          git push
