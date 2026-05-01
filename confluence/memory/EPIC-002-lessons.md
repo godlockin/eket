@@ -105,4 +105,4 @@ bash `set -u` 下 `${arr[@]}` 当数组为空时触发 unbound variable。修复
 
 **参见**：
 - [codebase-maintenance.md](codebase-maintenance.md) — 代码库与文档维护方法论
-- [MULTI-AGENT-COLLAB-LESSONS.md](MULTI-AGENT-COLLAB-LESSONS.md) — 多智能体协作经验
+- [lessons/multi-agent-collab-lessons.md](lessons/multi-agent-collab-lessons.md) — 多智能体协作经验

@@ -10,16 +10,23 @@ path = "src/main.rs"
 [dependencies]
 eket-core = { path = "../eket-core" }
 eket-engine = { path = "../eket-engine" }
+eket-server = { path = "../eket-server" }
 async-trait = { workspace = true }
 dirs = { workspace = true }
 tokio = { workspace = true, features = ["process"] }
 clap = { workspace = true }
+serde = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 anyhow = { workspace = true }
 chrono = { workspace = true }
 uuid = { workspace = true }
+rusqlite = { workspace = true }
+r2d2 = { workspace = true }
+r2d2_sqlite = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3.27.0"
+r2d2 = { workspace = true }
+r2d2_sqlite = { workspace = true }

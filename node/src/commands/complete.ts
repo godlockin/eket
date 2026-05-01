@@ -224,8 +224,8 @@ async function reportSkillFeedback(
       const result = await registry.getInstance(slaverId);
       const instance = result && 'data' in result ? result.data : null;
       if (instance) {
-        actualLevel = instance.currentLevel ?? 2;
-        levelChanges = instance.levelChanges ?? [];
+        actualLevel = instance.currentLevel;
+        levelChanges = instance.levelChanges;
       }
     } catch { /* registry unavailable */ }
 

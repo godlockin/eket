@@ -1,39 +1,23 @@
-# EKET 框架文档索引
+# EKET 文档中心
 
-本目录包含 EKET 框架的核心文档。
+## 目录结构
 
-## 文档列表
-
-### 用户指南
-
-| 文档 | 说明 |
+| 目录 | 说明 |
 |------|------|
-| [身份卡片系统](IDENTITY.md) | Master/Slaver 身份确认和职责说明 |
-| [Slaver 自动执行模式使用指南](../template/docs/SLAVER-AUTO-EXEC-GUIDE.md) | Slaver 自动执行模式配置和使用方法（v2.9.0-alpha） |
-| [Master 工作流程与 Skills 加载机制](../template/docs/MASTER-WORKFLOW.md) | Master 实例在各阶段加载 Skills 的机制和任务元数据定义（v2.0.0） |
-| [Master PR Review 流程规范](../template/docs/MASTER-PR-REVIEW-FLOW.md) | Master PR 审查完整流程和检查清单（v2.0.0） |
+| [getting-started/](getting-started/) | 快速上手：安装、使用、设计理念 |
+| [architecture/](architecture/) | 系统架构：三级降级、Master-Slaver、三仓库 |
+| [guides/](guides/) | 操作指南：Shell/Node/Full-Stack 模式 |
+| [reference/](reference/) | 参考文档：错误码、API、协议规范 |
+| [ops/](ops/) | 运维手册：runbook、备份恢复、分支保护 |
+| [performance/](performance/) | 性能测试与优化建议 |
+| [roadmap/](roadmap/) | 路线图与版本规划 |
+| [adr/](adr/) | Architecture Decision Records |
+| [archive/](archive/) | 历史归档（只进不出） |
 
-### 开发指南
+## 导航说明
 
-| 文档 | 说明 |
-|------|------|
-| 待添加 | 开发相关文档 |
-
-### 运维指南
-
-| 文档 | 说明 |
-|------|------|
-| 待添加 | 运维相关文档 |
-
-## 文档版本说明
-
-Master/Slaver 工作流文档现已迁移至 [`template/docs/`](../template/docs/)，版本升级至 v2.0+：
-
-- [`template/docs/SLAVER-AUTO-EXEC-GUIDE.md`](../template/docs/SLAVER-AUTO-EXEC-GUIDE.md): v2.9.0-alpha
-- [`template/docs/MASTER-WORKFLOW.md`](../template/docs/MASTER-WORKFLOW.md): v2.0.0
-- [`template/docs/MASTER-PR-REVIEW-FLOW.md`](../template/docs/MASTER-PR-REVIEW-FLOW.md): v2.0.0
-
----
-
-**维护者**: EKET Framework Team
-**最后更新**: 2026-04-15
+- **外部项目使用 EKET**：从 `getting-started/` 开始
+- **了解架构设计**：参考 `architecture/` 和 `adr/`
+- **框架开发贡献**：参考 `guides/` 和 `ops/`
+- **历史决策**：在 `archive/INDEX.md` 中检索
+- **内部运作规程（SOP/Rules）**：正本在 `template/docs/`（由 `init-project.sh` 复制到外部项目）；v0.8 时代的旧提案已归档至 `archive/v0.8-proposals/06-sop-proposals/`

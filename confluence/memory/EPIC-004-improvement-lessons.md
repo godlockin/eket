@@ -86,12 +86,7 @@
 
 **问题**：多次 EPIC 执行中 slaver agent 出现卡死（API 429、上下文溢出、npm test 超时、HTTPS git push 挂起），Master 无法感知 agent 已死。
 
-**规则**：
-- Agent prompt 必须包含防卡死规则（timeout、SSH push、进度输出）
-- Master 用 `run_in_background: true` 派 agent，15 分钟无通知就 `TaskOutput(block=false)` 检查
-- Agent 遇到 429/不可恢复错误立即报告，不要重试
-
-**参见**：`confluence/memory/agent-prompt-template.md`、MASTER-RULES.md §10
+→ 详见 [agent-prompt-template.md](agent-prompt-template.md)（含完整规则 + Master 心跳监控 SOP）
 
 ---
 
@@ -132,6 +127,6 @@
 
 **参见**：
 - [EPIC-003-backport-lessons.md](EPIC-003-backport-lessons.md) — 回灌经验
-- [MULTI-AGENT-COLLAB-LESSONS.md](MULTI-AGENT-COLLAB-LESSONS.md) — 多智能体协作经验（通用）
+- [lessons/multi-agent-collab-lessons.md](lessons/multi-agent-collab-lessons.md) — 多智能体协作经验（通用）
 - [worktree-agent-guide.md](worktree-agent-guide.md) — Worktree 最佳实践
 - [agent-prompt-template.md](agent-prompt-template.md) — 防卡死模板
