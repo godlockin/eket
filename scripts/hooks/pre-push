@@ -43,13 +43,18 @@ while read local_ref local_sha remote_ref remote_sha; do
     echo "  规范要求：所有改动（含文档/memory/skill）必须通过 feature/* 分支，"
     echo "  再 merge 进 $CURRENT。直接提交会导致三分支不对齐。"
     echo ""
-    echo "  如确认此次为刻意操作（如 hotfix），输入 'yes' 继续，否则中止："
-    read -r answer < /dev/tty
-    if [ "$answer" != "yes" ]; then
-      echo "  已中止 push。请创建 feature/* 分支后重新操作。"
-      exit 1
+    # 只在交互式 terminal 才询问，CI/自动化环境直接警告后放行
+    if [ -t 1 ] && [ -e /dev/tty ]; then
+      echo "  如确认此次为刻意操作（如 hotfix），输入 'yes' 继续，否则中止："
+      read -r answer < /dev/tty
+      if [ "$answer" != "yes" ]; then
+        echo "  已中止 push。请创建 feature/* 分支后重新操作。"
+        exit 1
+      fi
+      echo "  ⚠️  已强制推送，请记得手动同步三分支。"
+    else
+      echo "  ⚠️  非交互式环境，警告后继续推送。请记得手动同步三分支。"
     fi
-    echo "  ⚠️  已强制推送，请记得手动同步三分支。"
   fi
 done
 
