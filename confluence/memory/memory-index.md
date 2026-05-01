@@ -29,5 +29,6 @@ retrospectives/2026/20260418T050759Z-PR79-TASK-053.md: Retro stub — PR #79 (TA
 retrospectives/2026/20260418T114538Z-PR81-TASK-053.md: Retro stub — PR #81 (TASK-053)
 retrospectives/2026/20260421-rust-migration-review.md: EKET Rust 迁移综合 Review 反思
 retrospectives/2026/README.md: 2026 归档回顾 Stubs
+branch-strategy-guide.md: 分支策略指南（拓扑/决策矩阵/三分支对齐SOP/危险操作） #git #branch #sop
 retrospectives/INBOX/README.md: Retrospectives INBOX
 retrospectives/sprint-001-retro.md: Sprint 001 回顾
