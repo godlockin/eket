@@ -36,10 +36,20 @@ export function createAgentRouter(deps: AgentRouterDeps): Router {
       try {
         const body = req.body as AgentRegistration;
 
+        const VALID_AGENT_TYPES = ['claude_code', 'cursor', 'custom'];
+
         if (!body.role) {
           res.status(400).json({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Missing required field: role' },
+            error: { code: 'VALIDATION_ERROR', message: 'Invalid request body: missing required field "role"' },
+          });
+          return;
+        }
+
+        if (body.agent_type && !VALID_AGENT_TYPES.includes(body.agent_type)) {
+          res.status(400).json({
+            success: false,
+            error: { code: 'VALIDATION_ERROR', message: 'Invalid request body: invalid agent_type enum value' },
           });
           return;
         }
