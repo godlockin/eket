@@ -295,3 +295,25 @@ export type SkillEventListener = (event: SkillExecutionEvent) => void;
 
 // Re-export SkillDefinition from core types for convenience
 export type { SkillDefinition } from '../types/index.js';
+
+// ============================================================================
+// SkillMeta - File-level metadata for skill.json files (TASK-103a)
+// ============================================================================
+
+/**
+ * SkillMeta 接口
+ * 面向文件的 skill 元数据，对应各 skill 目录下的 skill.json 文件。
+ * 与 SkillNodeRecord（node/src/types/index.ts，TASK-102a）对应但职责不同：
+ * SkillMeta 描述单个 skill 的静态属性，SkillNodeRecord 描述运行时节点记录。
+ */
+export interface SkillMeta {
+  id: string;                    // e.g. 'security/threat-modeling'
+  type: 'skill' | 'expert';
+  domain: string;
+  level: 1 | 2 | 3;             // 1=Haiku  2=Sonnet  3=Opus
+  model_hint: 'haiku' | 'sonnet' | 'opus';
+  triggers: string[];            // 触发关键词
+  collaborates_with: string[];   // 常协作的其他 skill id
+  lazy: boolean;                 // 是否按需加载
+  description?: string;
+}

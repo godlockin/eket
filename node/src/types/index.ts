@@ -48,6 +48,27 @@ export interface SlaverHeartbeat {
 }
 
 // ============================================================================
+// Skill Graph Types (TASK-104b)
+// ============================================================================
+
+export interface SkillNodeRecord {
+  id: string;
+  type: 'skill' | 'expert';
+  domain: string;
+  level: 1 | 2 | 3;
+  model_hint?: string;
+  triggers?: string[];
+}
+
+export interface SkillEdgeRecord {
+  source_id: string;
+  target_id: string;
+  weight: number;
+  co_activation_count: number;
+  last_activated_at: string;
+}
+
+// ============================================================================
 // SQLite Types
 // ============================================================================
 
@@ -280,6 +301,8 @@ export interface Instance {
   lastHeartbeat?: number;
   metadata?: Record<string, unknown>;
   updatedAt?: number; // Added for compatibility
+  currentLevel?: 1 | 2 | 3;
+  levelChanges?: LevelChange[];
 }
 
 export interface InstanceRegistryConfig {
