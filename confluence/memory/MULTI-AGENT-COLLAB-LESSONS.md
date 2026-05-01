@@ -222,8 +222,46 @@ Master（协调）
 
 ---
 
+## 9. Rule Retention & Context Persistence {#rule-retention}
+
+*来源：EKET Round 21（TASK-031~034）+ Round 22 规划（TASK-035~041）*
+
+### 9.1 Agent 规则遗忘是系统性问题
+
+长时间运行的 Agent session（超过 ~100 轮对话）会逐渐忘记 CLAUDE.md 中的约束规则：越权操作、格式规范退化、心跳检查停止。根因：上下文窗口有限，规则文件的"相对权重"随对话增长下降。
+
+### 9.2 三层防御纵深
+
+| 层级 | 方案 | 原理 |
+|------|------|------|
+| Layer 1 | CLAUDE.md 拆分瘦身 | 减少初始 token 消耗，延缓遗忘 |
+| Layer 2 | 进度上报内嵌 mini-rules | 周期性重新注入规则 |
+| Layer 3b | Hook 脚本（机器执行） | 不依赖 Agent 记忆，系统级强制（唯一 100% 可靠） |
+
+### 9.3 @引用是惰性加载
+
+Claude Code 中 `@file` 链接不会自动展开。正确做法：写**强制读取指令**（"必须先读 XXX"），而非"详细规则见 XXX"。
+
+### 9.4 ESM + ts-jest mock 陷阱
+
+`jest.spyOn(module, 'fn')` 对 ESM named export 无效（只读 binding）。解决：验证副作用（console spy）或 DI 注入。
+
+### 9.5 Hook 上线必须 dry-run
+
+`EKET_HOOK_DRYRUN=true` 先收集误拦截数据，再切到真实阻断。
+
+### 9.6 dynamic import() 永不同步抛出
+
+需要同步判断模块是否存在 → 必须用 `createRequire`。`import()` 只适合异步加载且必须 `await`。
+
+### 9.7 Redis keyPrefix 双重叠加
+
+使用 ioredis `keyPrefix` 时，所有 key 常量必须**不含** keyPrefix 值，否则实际 key 会双重叠加。
+
+---
+
 **参见**：
-- [DOC-DEBT-CLEANUP.md](DOC-DEBT-CLEANUP.md) — 文档债清理方法论
+- [codebase-maintenance.md](codebase-maintenance.md) — 文档债清理方法论
 - [EKET-PROJECT-HYGIENE.md](EKET-PROJECT-HYGIENE.md) — EKET 特有卫生规则
 - [BORROWED-WISDOM.md](BORROWED-WISDOM.md) — 完整知识库索引
 - `docs/reports/ROUND3-MASTER-FINAL-REPORT.md` — Round 3 详细报告
