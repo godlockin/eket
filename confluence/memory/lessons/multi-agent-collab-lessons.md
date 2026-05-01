@@ -212,6 +212,9 @@ Master（协调）
 | 分析瘫痪 | Slaver 连续读取 5+ 文件没有任何产出 | Slaver 心跳检查：连续 5 次读文件无写入 → 立即开始写或报告 BLOCKED |
 | 合并冲突 | 多个 Slaver 修改同一文件 | 任务分配时划定文件范围；Master Review 阶段合并顺序控制 |
 | PR 幻觉 | Slaver 声称完成但产物为空/占位符 | 4-Level Artifact Verification (L1~L4) 强制执行 |
+| .git/index.lock 死锁 | 多 Agent 并行在同一 Git 目录操作 | **串行执行**或独立 worktree；重派前先 TaskStop 旧 Agent + rm lock |
+| 僵尸 Agent 叠加 | 旧 Agent 未停止就派新 Agent | 重派前必须 TaskStop 全部旧 Agent → rm lock → git status 确认 |
+| Cherry-pick 历史分叉 | Cherry-pick 后 merge 回源分支 | 大批量回灌优先用 merge 而非 cherry-pick；回灌后按流向逆序 merge 对齐 |
 
 ---
 
