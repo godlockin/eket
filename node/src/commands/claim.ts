@@ -320,7 +320,7 @@ Related Commands:
       const sqliteClient = createSQLiteManager();
       const sqliteConnected = await sqliteClient.connect();
       if (sqliteConnected.success) {
-        const claimResult = await sqliteClient.claimTask(selectedTicket.id, slaverId);
+        const claimResult = await sqliteClient.claimTaskById(selectedTicket.id, slaverId);
         await sqliteClient.close();
         if (claimResult.success && claimResult.data === false) {
           // 被其他 Slaver 抢占
@@ -420,9 +420,9 @@ Related Commands:
           const instance = result && 'data' in result ? result.data : null;
           if (instance) {
             // Upgrade until we reach recommended level
-            while ((instance.currentLevel ?? 2) < recommendedLevel) {
+            while (instance.currentLevel < recommendedLevel) {
               await registry.upgradeModel(slaverId, `claim:recommended-level-${recommendedLevel}`);
-              instance.currentLevel = Math.min(3, (instance.currentLevel ?? 2) + 1) as 1 | 2 | 3;
+              instance.currentLevel = Math.min(3, instance.currentLevel + 1) as 1 | 2 | 3;
             }
           }
         } catch { /* registry unavailable */ }

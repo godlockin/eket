@@ -1,0 +1,15 @@
+{
+  "keys": [
+    "assignee",
+    "instructions",
+    "priority",
+    "project_root",
+    "rules_path",
+    "slaver_id",
+    "status",
+    "ticket_id",
+    "title",
+    "type",
+    "worktree_path"
+  ]
+}
