@@ -88,49 +88,31 @@ fn similarity(a: &str, b: &str) -> f32 {
     if max_len == 0 {
         return 1.0;
     }
-    // Fast path: length ratio > 1.2x → definitely different
-    let min_len = a.len().min(b.len());
-    if min_len == 0 || (max_len as f32 / min_len as f32) > 1.2 {
-        return 0.0;
-    }
-    // Long text: use simple hash comparison instead of full Levenshtein
-    if a.len() > 500 || b.len() > 500 {
-        use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash, Hasher};
-        let hash_str = |s: &str| {
-            let mut h = DefaultHasher::new();
-            s.hash(&mut h);
-            h.finish()
-        };
-        return if hash_str(a) == hash_str(b) { 1.0 } else { 0.0 };
-    }
     let dist = levenshtein(a, b);
     1.0 - (dist as f32 / max_len as f32)
 }
 
-/// Rolling-array Levenshtein (2 rows only, O(min(m,n)) space)
 fn levenshtein(a: &str, b: &str) -> usize {
     let a: Vec<char> = a.chars().collect();
     let b: Vec<char> = b.chars().collect();
     let (m, n) = (a.len(), b.len());
-    // Ensure `a` is the shorter string to minimize memory
-    if m > n {
-        return levenshtein(&b.iter().collect::<String>(), &a.iter().collect::<String>());
+    let mut dp = vec![vec![0usize; n + 1]; m + 1];
+    for i in 0..=m {
+        dp[i][0] = i;
     }
-    let mut prev: Vec<usize> = (0..=m).collect();
-    let mut curr = vec![0usize; m + 1];
-    for j in 1..=n {
-        curr[0] = j;
-        for i in 1..=m {
-            curr[i] = if a[i - 1] == b[j - 1] {
-                prev[i - 1]
+    for j in 0..=n {
+        dp[0][j] = j;
+    }
+    for i in 1..=m {
+        for j in 1..=n {
+            dp[i][j] = if a[i - 1] == b[j - 1] {
+                dp[i - 1][j - 1]
             } else {
-                1 + prev[i - 1].min(prev[i]).min(curr[i - 1])
+                1 + dp[i - 1][j].min(dp[i][j - 1]).min(dp[i - 1][j - 1])
             };
         }
-        std::mem::swap(&mut prev, &mut curr);
     }
-    prev[m]
+    dp[m][n]
 }
 
 fn payload_text(msg: &MailboxMessage) -> String {
@@ -209,14 +191,12 @@ impl MailboxContextFilter {
                 result.push(msg.clone());
                 continue;
             }
-            // Check only the IMMEDIATELY preceding message (consecutive same-sender dedup)
-            if let Some(prev) = result.last() {
-                if prev.from == msg.from {
-                    let sim = similarity(&payload_text(prev), &payload_text(msg));
-                    if sim > 0.85 {
-                        // Skip duplicate
-                        continue;
-                    }
+            // Check last message from same sender
+            if let Some(prev) = result.iter().rev().find(|m| m.from == msg.from) {
+                let sim = similarity(&payload_text(prev), &payload_text(msg));
+                if sim > 0.85 {
+                    // Skip duplicate
+                    continue;
                 }
             }
             result.push(msg.clone());
@@ -502,40 +482,6 @@ mod tests {
         let messages = vec![ta];
         let result = filter.phase1_relevance(&messages);
         assert_eq!(result.len(), 1, "TaskAssigned must never be filtered by decay");
-    }
-
-    #[test]
-    fn phase2_non_consecutive_same_sender_not_deduped() {
-        // A → B → A(similar): the second A should NOT be dropped (non-consecutive)
-        let filter = MailboxContextFilter::default();
-        let messages = vec![
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"text": "ping ping ping"})),
-            msg("b", MailboxMessageType::Custom("chat".into()), json!({"text": "other sender"})),
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"text": "ping ping ping"})),
-        ];
-        let result = filter.phase2_dedup(&messages);
-        // Second A is non-consecutive (B is between), must NOT be deduped
-        assert_eq!(result.len(), 3);
-    }
-
-    #[test]
-    fn similarity_large_text_no_oom() {
-        // 4000-char strings must not OOM and must complete quickly
-        let a = "x".repeat(4000);
-        let b = "x".repeat(4000);
-        let sim = similarity(&a, &b);
-        assert_eq!(sim, 1.0); // exact match via hash
-        let c = "y".repeat(4000);
-        let sim2 = similarity(&a, &c);
-        assert_eq!(sim2, 0.0); // hash mismatch → 0.0
-    }
-
-    #[test]
-    fn similarity_length_ratio_fast_path() {
-        let a = "hello";
-        let b = "hello world this is much longer than 20 percent";
-        let sim = similarity(a, b);
-        assert_eq!(sim, 0.0); // length ratio > 1.2x
     }
 
     // ── Full pipeline test ─────────────────────────────────────────────────

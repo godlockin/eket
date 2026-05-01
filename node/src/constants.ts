@@ -251,7 +251,7 @@ export const CLUSTER_RETRY_DELAY = 100;
 export const CONSISTENT_HASH_REPLICAS = 150;
 
 /** Default hash function for consistent hashing */
-export const CONSISTENT_HASH_FUNCTION: 'sha1' = 'sha1';
+export const CONSISTENT_HASH_FUNCTION = 'sha1' as const;
 
 // ----------------------------------------------------------------------------
 // Message Queue Sharding Defaults
