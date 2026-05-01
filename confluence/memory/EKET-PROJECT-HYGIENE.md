@@ -156,4 +156,19 @@ grep -rn "v0\.[0-9]\." docs/ --include="*.md" | grep -v "archive\|CHANGELOG" | h
 **参见**：
 - [DOC-DEBT-CLEANUP.md](DOC-DEBT-CLEANUP.md) — 文档债清理通用方法论
 - [MULTI-AGENT-COLLAB-LESSONS.md](MULTI-AGENT-COLLAB-LESSONS.md) — 多智能体协作经验
-- [BORROWED-WISDOM.md](BORROWED-WISDOM.md) — 完整知识库索引
+- [BORROWED-WISDOM.md](../research/borrowed-wisdom.md) — 完整知识库索引
+
+---
+
+## 6. Skills 系统注册规范 {#skills-registry}
+
+*来源：TASK-048 Skills 工具库补全*
+
+### 6.1 批量 export 的类型冲突
+
+Skills 泛型参数各不相同，统一 `forEach` 注册时需 `as any` cast，用 `// eslint-disable` 标注并在技术债记录中说明原因（不是因为懒）。
+
+### 6.2 重复注册静默覆盖
+
+`skillRegistry.register()` 内部用 Map，重复注册会覆盖而非报错。
+**规则**：Skills 上线前必须校验 skill ID 唯一性（`grep -r "id:" node/src/skills/ | sort | uniq -d`）。
