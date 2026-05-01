@@ -4,6 +4,36 @@
  */
 
 // ============================================================================
+// Knowledge Proof Types (TASK-209)
+// ============================================================================
+
+export interface KnowledgeProof {
+  task_id: string;       // 来源 ticket
+  exit_code: 0;          // 只允许 0（成功）
+  timestamp: string;     // ISO 8601
+  tool_name?: string;    // 产生结论的工具/命令
+  ci_url?: string;       // 可选：CI 链接
+}
+
+export interface KnowledgeValidationError {
+  field: string;
+  message: string;
+  received?: unknown;
+}
+
+export interface KnowledgeValidationResult {
+  valid: boolean;
+  errors: KnowledgeValidationError[];
+}
+
+/** Minimal shape used by knowledge:index proof validation */
+export interface KnowledgeIndexEntry {
+  content: string;
+  proof: KnowledgeProof;
+  tags?: string[];
+}
+
+// ============================================================================
 // Job Types
 // ============================================================================
 
@@ -45,6 +75,27 @@ export interface SlaverHeartbeat {
   capacity: SlaverCapacity;                            // 容量信息
   currentTaskId?: string;
   lastTaskCompletedAt?: number;
+}
+
+// ============================================================================
+// Skill Graph Types (TASK-104b)
+// ============================================================================
+
+export interface SkillNodeRecord {
+  id: string;
+  type: 'skill' | 'expert';
+  domain: string;
+  level: 1 | 2 | 3;
+  model_hint?: string;
+  triggers?: string[];
+}
+
+export interface SkillEdgeRecord {
+  source_id: string;
+  target_id: string;
+  weight: number;
+  co_activation_count: number;
+  last_activated_at: string;
 }
 
 // ============================================================================
@@ -127,6 +178,48 @@ export interface ExecutionCheckpoint {
   phase: 'analysis' | 'implement' | 'test' | 'pr';
   stateJson: string;
   createdAt?: string;
+}
+
+// ============================================================================
+// TaskCheckpoint Types (TASK-199: RunState-inspired断点续传)
+// ============================================================================
+
+/**
+ * 单条消息 item（agent视图 or 完整历史）
+ */
+export interface CheckpointItem {
+  role: 'user' | 'assistant' | 'tool_result';
+  content: string;
+  toolCallId?: string;
+  toolName?: string;
+  timestamp?: number;
+}
+
+/**
+ * TaskCheckpoint — 三层结构借鉴 openai-agents RunState
+ */
+export interface TaskCheckpoint {
+  taskId: string;
+  /** step index: 已完成turn数，resume时从stepIndex继续 */
+  stepIndex: number;
+  /** 模型视图（不含系统事件/guardrail结果，直接喂给LLM） */
+  agentFacingItems: CheckpointItem[];
+  /** 完整历史（含工具调用/guardrail结果，用于审计） */
+  fullHistoryItems: CheckpointItem[];
+  /** 已执行的 tool_call_id 集合（幂等去重key） */
+  executedToolCalls: string[];
+  /** CAS版本号，防并发覆盖 */
+  version: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/** DB行格式（task_checkpoints表） */
+export interface TaskCheckpointRow {
+  task_id: string;
+  data: string; // JSON序列化TaskCheckpoint
+  version: number;
+  updated_at: number;
 }
 
 // ============================================================================
@@ -280,6 +373,8 @@ export interface Instance {
   lastHeartbeat?: number;
   metadata?: Record<string, unknown>;
   updatedAt?: number; // Added for compatibility
+  currentLevel?: 1 | 2 | 3;
+  levelChanges?: LevelChange[];
 }
 
 export interface InstanceRegistryConfig {
@@ -748,6 +843,8 @@ export interface KnowledgeEntry {
   updatedAt: number;
   relatedTickets?: string[];
   metadata?: Record<string, unknown>;
+  /** Execution Proof Anchor (TASK-209) — required for new entries in strict mode */
+  proof?: KnowledgeProof;
 }
 
 /**
@@ -1261,3 +1358,150 @@ export interface ProgressReport {
     analysisParalysisFlag: boolean;
   };
 }
+
+// ============================================================================
+// SSE Task Event Types (TASK-109)
+// ============================================================================
+
+export type TaskEventType =
+  | 'task_started'
+  | 'task_running'
+  | 'task_completed'
+  | 'task_failed'
+  | 'task_timed_out';
+
+export interface TaskEvent {
+  type: TaskEventType;
+  ticketId: string;
+  slaverId: string;
+  timestamp: string;
+  payload?: Record<string, unknown>;
+}
+
+/**
+ * Task Message — 结构化存储 Slaver 执行过程中的 LLM 消息
+ */
+export interface TaskMessage {
+  id?: number;
+  task_id: string;
+  seq: number;
+  type: 'text' | 'tool_use' | 'tool_result' | 'thinking' | 'error';
+  tool?: string | null;
+  content?: string | null;
+  input_json?: string | null;
+  output?: string | null;
+  created_at?: string;
+}
+
+/**
+ * Task Envelope — Master 派发任务时附带的完整上下文，跨 session 不丢失
+ */
+export interface TaskEnvelope {
+  ticketId: string;
+  mode: 'default' | 'ultrawork' | 'debug';
+  requiredSkills: string[];
+  contextSnapshot?: string;
+  dispatchedAt: number;
+}
+
+/**
+ * Ultrareview — 多 Agent 独立代码审查结果 (TASK-119)
+ */
+export interface ReviewerResult {
+  reviewerId: string;
+  focus: string;
+  issues: Array<{ severity: 'critical' | 'warning' | 'info'; message: string; file?: string }>;
+  score: number; // 0-100
+}
+
+export interface UltrareviewReport {
+  prNumber: number;
+  overallScore: number;
+  reviewers: ReviewerResult[];
+  topIssues: Array<{ severity: string; message: string; reviewers: string[] }>;
+  recommendation: 'approve' | 'request-changes' | 'comment';
+  generatedAt: number;
+}
+
+// ============================================================================
+// Loop Context (TASK-120)
+// ============================================================================
+
+export interface LoopContext {
+  attempt: number;
+  lastFailReason: string;
+}
+
+// Base state note: pipeline states may include _loopContext when inside a loop node
+// _loopContext?: LoopContext
+
+// ============================================================================
+// Skill Feedback Types (TASK-104b)
+// ============================================================================
+
+export interface LevelChange {
+  from: number;
+  to: number;
+  reason: string;
+  at: string; // ISO timestamp
+}
+
+export interface SkillFeedback {
+  ticketId: string;
+  slaverId: string;
+  recommendedLevel: 1 | 2 | 3;
+  actualLevel: 1 | 2 | 3;
+  activatedSkills: string[];
+  activatedExperts: string[];
+  levelChanges: LevelChange[];
+  completedAt: string;
+}
+
+// ============================================================================
+// SlaveResult & Aggregation (TASK-121)
+// ============================================================================
+
+export interface SlaveResult {
+  ticketId: string;
+  slaverId: string;
+  completedAt: number;
+  prNumber?: number;
+  prUrl?: string;
+  filesChanged: string[];
+  testsAdded: number;
+  testsPassed: number;
+  keyDecisions: string[];
+  deferredIssues: string[];
+  skillFeedback?: SkillFeedback;
+}
+
+export interface FileConflict {
+  file: string;
+  tickets: string[];
+}
+
+export interface AggregatedResult {
+  tickets: string[];
+  allFilesChanged: string[];
+  conflicts: FileConflict[];
+  totalTestsAdded: number;
+  totalTestsPassed: number;
+}
+
+// ============================================================================
+// Completion Validator Types (TASK-116)
+// ============================================================================
+
+export interface ValidationCheck {
+  dimension: 'architecture' | 'code-style' | 'acceptance-criteria';
+  passed: boolean;
+  message: string;
+  source: string;
+}
+
+export interface ValidationReport {
+  passed: boolean;
+  checks: ValidationCheck[];
+  summary: string;
+}
+

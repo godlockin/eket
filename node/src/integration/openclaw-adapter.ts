@@ -455,6 +455,8 @@ export class OpenCLAWIntegrationAdapter {
         currentLoad: 0,
         lastHeartbeat: Date.now(),
         updatedAt: Date.now(),
+        currentLevel: 2 as const,
+        levelChanges: [],
       };
 
       // 尝试连接并注册到 Instance Registry（Redis 可用时持久化）
