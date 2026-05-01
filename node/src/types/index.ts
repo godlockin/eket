@@ -108,8 +108,7 @@ export interface SkillEdgeRecord {
  *   - SQLiteClient      (sqlite-client.ts)       同步实现，方法返回 Result<T>（不符合此接口）
  *   - AsyncSQLiteClient (sqlite-async-client.ts)  异步实现，方法返回 Promise<Result<T>>，implements 此接口
  *
- * 接口以异步签名为准（Promise<Result<T>>），以便上层代码面向接口编程。
- * SQLiteClient 因方法签名不同（同步）不能直接 implements，需要通过包装器转换。
+ * Re-exports from domain-specific modules.
  */
 export interface ISQLiteClient {
   /** 连接数据库并初始化表 */
