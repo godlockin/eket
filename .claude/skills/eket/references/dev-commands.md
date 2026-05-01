@@ -33,6 +33,12 @@ npm run clean                                    # 清理 dist/
 ./scripts/enable-advanced.sh                     # 启用 Node.js 高级功能
 ./scripts/validate-config.sh                     # 配置验证
 ./scripts/analyze-existing.sh                    # 分析现有项目结构
+./scripts/sync-branches.sh                       # 三分支一键同步（main→testing→miao）
+./scripts/sync-branches.sh --dry-run             # 预览同步操作
+./scripts/check-branch-drift.sh                  # 分支内容 drift 检测
+./scripts/check-pr-size.sh                       # PR 体积检查（≤100行 pass / >500行 fail）
+./scripts/check-requirement-analysis.sh <EPIC>   # 需求分析交付物校验
+./scripts/check-skill-anatomy.sh --all           # Skill 文档格式校验
 ```
 
 ## 版本管理
