@@ -380,4 +380,44 @@ proof:
 
 ---
 
+## 13. 防卡死自检（Anti-Hang Self-Check）
+
+Slaver 启动后、执行任务前，必须完成以下自检：
+
+### 13.1 SSH Push 可用性确认
+
+```bash
+ssh -T git@github.com 2>&1 | head -1
+```
+- 输出包含 "successfully authenticated" → 通过
+- 否则 → 立即报告 BLOCKED，不要尝试 HTTPS push
+
+### 13.2 长命令 Timeout 设置
+
+所有可能超时的命令**必须**设 `timeout: 120000`（2 分钟）：
+- `npm test`
+- `npm run build`
+- `git push`
+- 任何网络请求相关命令
+
+### 13.3 不可恢复错误立即报告
+
+遇到以下情况**立即停止并报告 Master**，禁止循环重试：
+- HTTP 429 / rate limit
+- 认证失败（SSH key / token 过期）
+- 磁盘空间不足
+- OOM（Out of Memory）
+- merge conflict 涉及 > 3 个文件
+
+**报告格式**：
+```
+type: unrecoverable_error
+slaver_id: <id>
+ticket_id: <id>
+error_type: <429|auth_fail|disk_full|oom|merge_conflict>
+description: <一句话描述>
+```
+
+---
+
 > 📄 更多执行流程：[`template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`](SLAVER-HEARTBEAT-CHECKLIST.md) | [`template/docs/SLAVER-AUTO-EXEC-GUIDE.md`](SLAVER-AUTO-EXEC-GUIDE.md)
