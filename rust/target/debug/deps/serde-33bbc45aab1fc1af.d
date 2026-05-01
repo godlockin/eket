@@ -1,0 +1,14 @@
+/Users/chenchen/working/sourcecode/tools/dev-tools/eket/rust/target/debug/deps/serde-33bbc45aab1fc1af.d: /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/chenchen/working/sourcecode/tools/dev-tools/eket/rust/target/debug/build/serde-b6d2dac873c4e440/out/private.rs
+
+/Users/chenchen/working/sourcecode/tools/dev-tools/eket/rust/target/debug/deps/libserde-33bbc45aab1fc1af.rlib: /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/chenchen/working/sourcecode/tools/dev-tools/eket/rust/target/debug/build/serde-b6d2dac873c4e440/out/private.rs
+
+/Users/chenchen/working/sourcecode/tools/dev-tools/eket/rust/target/debug/deps/libserde-33bbc45aab1fc1af.rmeta: /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/chenchen/working/sourcecode/tools/dev-tools/eket/rust/target/debug/build/serde-b6d2dac873c4e440/out/private.rs
+
+/Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/Users/chenchen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/Users/chenchen/working/sourcecode/tools/dev-tools/eket/rust/target/debug/build/serde-b6d2dac873c4e440/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/chenchen/working/sourcecode/tools/dev-tools/eket/rust/target/debug/build/serde-b6d2dac873c4e440/out
