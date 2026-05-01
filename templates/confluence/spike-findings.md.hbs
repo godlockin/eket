@@ -1,1 +1,31 @@
-# spike-findings template
+# Spike 结论: {{spike_id}}
+
+<!-- eket:doc:spike-findings -->
+**完成时间**: {{timestamp}}
+**结论**: {{outcome}}（adopt / reject / defer）
+
+## 摘要
+
+TODO：一句话结论
+
+## 证据与发现
+
+TODO
+
+## 方案对比（如适用）
+
+| 方案 | 优点 | 缺点 | 推荐度 |
+|------|------|------|--------|
+| TODO | - | - | - |
+
+## 下一步行动
+
+{{#if (eq outcome "adopt")}}
+- [ ] 创建实现 ticket：eket task:create "实现 {{spike_id}} 结论" --epic {{spike_id}}
+{{/if}}
+{{#if (eq outcome "reject")}}
+- [ ] 记录原因到 confluence/memory/pitfalls/
+{{/if}}
+{{#if (eq outcome "defer")}}
+- [ ] 加入 backlog，设置 review 日期
+{{/if}}
