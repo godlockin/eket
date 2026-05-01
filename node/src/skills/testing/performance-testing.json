@@ -1,0 +1,19 @@
+{
+  "id": "testing/performance-testing",
+  "type": "skill",
+  "domain": "testing",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "performance test",
+    "load test",
+    "stress test",
+    "JMeter"
+  ],
+  "collaborates_with": [
+    "development/code-review-checklist",
+    "review/pr-review-checklist"
+  ],
+  "lazy": true,
+  "description": "Performance Testing"
+}

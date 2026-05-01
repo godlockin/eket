@@ -17,20 +17,21 @@ import jwt from 'jsonwebtoken';
 import { WebSocketServer, WebSocket } from 'ws';
 
 import { createRedisClient, type RedisClient } from '../core/redis-client.js';
+import { sseEventBus } from '../core/sse-event-bus.js';
+import { parseTicketsDag } from '../core/ticket-dag-parser.js';
 import { logger } from '../utils/logger.js';
 
-import { RedisHelper } from './redis-helper.js';
 import {
   setupCORS,
   setupRateLimiting,
   setupRequestLogging,
   setupBodyParsing,
 } from './middleware/setup-middleware.js';
+import { RedisHelper } from './redis-helper.js';
 import { createAgentRouter } from './routes/agent-routes.js';
-import { createTaskRouter } from './routes/task-routes.js';
 import { createHealthRouter, createSystemRouter } from './routes/system-routes.js';
-import { sseEventBus } from '../core/sse-event-bus.js';
-import { parseTicketsDag } from '../core/ticket-dag-parser.js';
+import { createTaskRouter } from './routes/task-routes.js';
+
 export type {
   EketServerConfig,
   AgentRegistration,
@@ -81,7 +82,7 @@ class RustProxyCircuitBreaker {
   private readonly halfOpenInterval = 30_000;
 
   isOpen(): boolean {
-    if (this.openUntil === null) return false;
+    if (this.openUntil === null) {return false;}
     if (Date.now() >= this.openUntil) {
       // half-open: allow one probe
       this.openUntil = null;

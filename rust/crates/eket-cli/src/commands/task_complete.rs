@@ -8,7 +8,6 @@
 ///   5. RecordCompletion — db.update_ticket_status + update_ticket_assignee
 ///
 /// --rollback mode: bypass saga, set status → todo, notify master failed
-
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -275,11 +274,16 @@ pub struct CompleteArgs {
     pub rollback: bool,
     pub mailbox_dir: Option<PathBuf>,
     pub db_path: Option<String>,
+    /// Override project root (used in tests)
+    pub project_root: Option<PathBuf>,
 }
 
 pub async fn run_complete(args: CompleteArgs) -> Result<()> {
     let config = EketConfig::load().unwrap_or_default();
-    let project_root = find_project_root().unwrap_or_else(|| std::env::current_dir().unwrap());
+    let project_root = args
+        .project_root
+        .or_else(find_project_root)
+        .unwrap_or_else(|| std::env::current_dir().unwrap());
 
     let slaver_id = args
         .slaver_id
@@ -326,6 +330,19 @@ pub async fn run_complete(args: CompleteArgs) -> Result<()> {
         return Ok(());
     }
 
+    // ── Pre-saga: doc warn ────────────────────────────────────────────────────
+    {
+        let tickets_dir = project_root.join("jira/tickets");
+        let ticket_path_glob = tickets_dir.join(format!("{}.md", args.ticket_id));
+        let ticket_content = std::fs::read_to_string(&ticket_path_glob).unwrap_or_default();
+        if !ticket_content.contains("<!-- eket:section:分析记录 -->") {
+            eprintln!(
+                "[WARN] ticket {} 缺少分析记录，建议先 task:claim 后记录分析思路",
+                args.ticket_id
+            );
+        }
+    }
+
     // ── Saga mode ────────────────────────────────────────────────────────────
     let initial_state = CompleteState {
         ticket_id: args.ticket_id.clone(),
@@ -354,6 +371,24 @@ pub async fn run_complete(args: CompleteArgs) -> Result<()> {
         .collect();
 
     if result.success {
+        // Doc lifecycle: write retrospective
+        {
+            use eket_core::doc_lifecycle::{DocEvent, TemplateRenderer, handle_event};
+            let tickets_dir = result.state.project_root.join("jira/tickets");
+            let title = eket_core::ticket::find_ticket(&tickets_dir, &args.ticket_id)
+                .map(|t| t.title)
+                .unwrap_or_else(|_| args.ticket_id.clone());
+            let event = DocEvent::TaskCompleted {
+                ticket_id: args.ticket_id.clone(),
+                title,
+                slaver_id: slaver_id.clone(),
+                project_root: result.state.project_root.clone(),
+            };
+            if let Err(e) = handle_event(event, &TemplateRenderer::new()).await {
+                eprintln!("[WARN] doc_lifecycle complete: {e}");
+            }
+        }
+
         let report = json!({
             "status": "completed",
             "ticket_id": args.ticket_id,
@@ -387,6 +422,7 @@ pub async fn run(ticket_id: String, skip_trailer: bool) -> Result<()> {
         rollback: false,
         mailbox_dir: None,
         db_path: None,
+        project_root: None,
     })
     .await
 }
@@ -435,7 +471,6 @@ fn find_project_root() -> Option<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::Write;
     use tempfile::TempDir;
 
     /// Create a minimal project structure with a ticket file
@@ -462,20 +497,24 @@ mod tests {
         String::new()
     }
 
-    #[tokio::test]
-    async fn complete_success_updates_ticket_status() {
-        let dir = TempDir::new().unwrap();
-        let root = setup_project(&dir, "TASK-001", "in_progress");
-
-        let result = run_complete(CompleteArgs {
-            ticket_id: "TASK-001".into(),
+    fn args(dir: &TempDir, ticket_id: &str, root: &Path) -> CompleteArgs {
+        CompleteArgs {
+            ticket_id: ticket_id.into(),
             slaver_id: Some("slaver_test".into()),
             pr_url: None,
             rollback: false,
             mailbox_dir: Some(dir.path().join("mailbox")),
             db_path: Some(":memory:".into()),
-        })
-        .await;
+            project_root: Some(root.to_path_buf()),
+        }
+    }
+
+    #[tokio::test]
+    async fn complete_success_updates_ticket_status() {
+        let dir = TempDir::new().unwrap();
+        let root = setup_project(&dir, "TASK-001", "in_progress");
+
+        let result = run_complete(args(&dir, "TASK-001", &root)).await;
 
         assert!(result.is_ok(), "run_complete failed: {result:?}");
         let status = read_ticket_status(&root, "TASK-001");
@@ -488,12 +527,8 @@ mod tests {
         let root = setup_project(&dir, "TASK-002", "in_progress");
 
         let result = run_complete(CompleteArgs {
-            ticket_id: "TASK-002".into(),
-            slaver_id: Some("slaver_test".into()),
-            pr_url: None,
             rollback: true,
-            mailbox_dir: Some(dir.path().join("mailbox")),
-            db_path: Some(":memory:".into()),
+            ..args(&dir, "TASK-002", &root)
         })
         .await;
 
@@ -505,8 +540,8 @@ mod tests {
     #[tokio::test]
     async fn complete_missing_ticket_fails() {
         let dir = TempDir::new().unwrap();
-        // Setup project root but NO ticket file
-        let tickets_dir = dir.path().join("jira/tickets");
+        let root = dir.path().to_path_buf();
+        let tickets_dir = root.join("jira/tickets");
         std::fs::create_dir_all(&tickets_dir).unwrap();
 
         let result = run_complete(CompleteArgs {
@@ -516,76 +551,49 @@ mod tests {
             rollback: false,
             mailbox_dir: Some(dir.path().join("mailbox")),
             db_path: Some(":memory:".into()),
+            project_root: Some(root),
         })
         .await;
 
-        // Should not panic; should complete gracefully (outputs failed JSON)
+        // Should not panic; outputs failed JSON, returns Ok
         assert!(result.is_ok(), "should not return Err, got: {result:?}");
     }
 
     #[tokio::test]
     async fn saga_step_failure_compensates() {
-        // Simulate UpdateTicketStatus fails by giving wrong status (not in_progress)
-        // ValidateTicket will fail → no compensation needed for Step3 since it never ran
-        // We test compensation by creating an in_progress ticket then a broken Step3
-        // Best we can do without a mock: set ticket to "todo" (not in_progress),
-        // ValidateTicket fails → saga reports failure, ticket remains "todo"
+        // ticket status = "todo" → ValidateTicket fails (expects in_progress)
+        // Step3 (UpdateTicketStatus) never ran → nothing to compensate
+        // ticket stays "todo"
         let dir = TempDir::new().unwrap();
         let root = setup_project(&dir, "TASK-003", "todo");
 
-        let result = run_complete(CompleteArgs {
-            ticket_id: "TASK-003".into(),
-            slaver_id: Some("slaver_test".into()),
-            pr_url: None,
-            rollback: false,
-            mailbox_dir: Some(dir.path().join("mailbox")),
-            db_path: Some(":memory:".into()),
-        })
-        .await;
+        let result = run_complete(args(&dir, "TASK-003", &root)).await;
 
         assert!(result.is_ok());
-        // Status should still be "todo" because ValidateTicket failed (compensation not needed)
         let status = read_ticket_status(&root, "TASK-003");
         assert_eq!(status, "todo", "ticket should remain todo after saga failure");
     }
 
     #[tokio::test]
     async fn complete_no_git_ok() {
-        // CommitWork with "nothing to commit" should not fail the saga
+        // git commit "nothing to commit" must NOT fail the saga
         let dir = TempDir::new().unwrap();
         let root = setup_project(&dir, "TASK-004", "in_progress");
 
-        // Initialize a clean git repo so "nothing to commit" is the actual outcome
-        let _ = std::process::Command::new("git")
-            .args(["init"])
-            .current_dir(&root)
-            .output();
+        // Init git repo + initial commit so subsequent commit = "nothing to commit"
+        let _ = std::process::Command::new("git").args(["init"]).current_dir(&root).output();
         let _ = std::process::Command::new("git")
             .args(["config", "user.email", "test@test.com"])
-            .current_dir(&root)
-            .output();
+            .current_dir(&root).output();
         let _ = std::process::Command::new("git")
             .args(["config", "user.name", "Test"])
-            .current_dir(&root)
-            .output();
-        let _ = std::process::Command::new("git")
-            .args(["add", "-A"])
-            .current_dir(&root)
-            .output();
+            .current_dir(&root).output();
+        let _ = std::process::Command::new("git").args(["add", "-A"]).current_dir(&root).output();
         let _ = std::process::Command::new("git")
             .args(["commit", "-m", "initial"])
-            .current_dir(&root)
-            .output();
+            .current_dir(&root).output();
 
-        let result = run_complete(CompleteArgs {
-            ticket_id: "TASK-004".into(),
-            slaver_id: Some("slaver_test".into()),
-            pr_url: None,
-            rollback: false,
-            mailbox_dir: Some(dir.path().join("mailbox")),
-            db_path: Some(":memory:".into()),
-        })
-        .await;
+        let result = run_complete(args(&dir, "TASK-004", &root)).await;
 
         assert!(result.is_ok());
         let status = read_ticket_status(&root, "TASK-004");
@@ -595,18 +603,16 @@ mod tests {
     #[tokio::test]
     async fn complete_with_pr_url() {
         let dir = TempDir::new().unwrap();
-        setup_project(&dir, "TASK-005", "in_progress");
+        let root = setup_project(&dir, "TASK-005", "in_progress");
 
         let result = run_complete(CompleteArgs {
-            ticket_id: "TASK-005".into(),
-            slaver_id: Some("slaver_test".into()),
             pr_url: Some("https://github.com/org/repo/pull/42".into()),
-            rollback: false,
-            mailbox_dir: Some(dir.path().join("mailbox")),
-            db_path: Some(":memory:".into()),
+            ..args(&dir, "TASK-005", &root)
         })
         .await;
 
         assert!(result.is_ok());
+        let status = read_ticket_status(&root, "TASK-005");
+        assert_eq!(status, "done");
     }
 }

@@ -1,0 +1,18 @@
+{
+  "id": "requirements/acceptance-criteria",
+  "type": "skill",
+  "domain": "requirements",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "acceptance criteria",
+    "AC",
+    "definition of done"
+  ],
+  "collaborates_with": [
+    "analysis/requirements-analysis",
+    "planning/ticket-breakdown"
+  ],
+  "lazy": true,
+  "description": "Acceptance Criteria"
+}

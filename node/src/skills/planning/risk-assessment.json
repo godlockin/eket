@@ -1,0 +1,18 @@
+{
+  "id": "planning/risk-assessment",
+  "type": "skill",
+  "domain": "planning",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "risk",
+    "mitigation",
+    "risk matrix"
+  ],
+  "collaborates_with": [
+    "requirements/acceptance-criteria",
+    "analysis/feasibility-study"
+  ],
+  "lazy": true,
+  "description": "Risk Assessment"
+}

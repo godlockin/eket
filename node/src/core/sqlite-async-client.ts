@@ -567,7 +567,7 @@ export class AsyncSQLiteClient implements ISQLiteClient {
     } catch { return { success: false, error: new EketError(EketErrorCode.SQLITE_OPERATION_FAILED, 'Operation failed') }; }
   }
 
-  async claimTask(ticketId: string, slaverId: string): Promise<Result<boolean>> {
+  async claimTaskById(ticketId: string, slaverId: string): Promise<Result<boolean>> {
     if (!this.isReady()) { return { success: false, error: new EketError(EketErrorCode.SQLITE_NOT_CONNECTED, 'Database not connected') }; }
     try {
       const claimed = await this.sendRequest('claimTask', { ticketId, slaverId });

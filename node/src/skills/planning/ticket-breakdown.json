@@ -1,0 +1,19 @@
+{
+  "id": "planning/ticket-breakdown",
+  "type": "skill",
+  "domain": "planning",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "ticket",
+    "task breakdown",
+    "story points",
+    "拆任务"
+  ],
+  "collaborates_with": [
+    "requirements/acceptance-criteria",
+    "analysis/feasibility-study"
+  ],
+  "lazy": true,
+  "description": "Ticket Breakdown"
+}

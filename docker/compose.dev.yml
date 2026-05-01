@@ -1,0 +1,52 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: eket-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: eket-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: eket
+      POSTGRES_USER: eket
+      POSTGRES_PASSWORD: eket_dev
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eket -d eket"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  sqliteweb:
+    image: coleifer/sqlite-web
+    container_name: eket-sqliteweb
+    ports:
+      - "8080:8080"
+    volumes:
+      - ${HOME}/.eket/data:/data
+    command: sqlite_web --host 0.0.0.0 --port 8080 /data/eket.db
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - postgres
+
+volumes:
+  redis-data:
+  postgres-data:

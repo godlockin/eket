@@ -1,0 +1,18 @@
+{
+  "id": "development/code-review-checklist",
+  "type": "skill",
+  "domain": "development",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "code review",
+    "review checklist",
+    "PR checklist"
+  ],
+  "collaborates_with": [
+    "review/code-smell-detection",
+    "testing/unit_test"
+  ],
+  "lazy": true,
+  "description": "Code Review Checklist"
+}

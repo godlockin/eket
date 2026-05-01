@@ -2,7 +2,7 @@
 
 **类型**: Refactor
 **优先级**: P1
-**状态**: in_progress
+**状态**: done
 **started_at**: 2026-04-07T00:00:00Z
 **gate_review_veto_count**: 0
 **veto_reason**:

@@ -1,0 +1,18 @@
+{
+  "id": "development/refactoring-guide",
+  "type": "skill",
+  "domain": "development",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "refactor",
+    "clean code",
+    "tech debt"
+  ],
+  "collaborates_with": [
+    "review/code-smell-detection",
+    "testing/unit_test"
+  ],
+  "lazy": true,
+  "description": "Refactoring Guide"
+}

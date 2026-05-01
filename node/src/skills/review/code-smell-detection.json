@@ -1,0 +1,18 @@
+{
+  "id": "review/code-smell-detection",
+  "type": "skill",
+  "domain": "review",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "code smell",
+    "anti-pattern",
+    "tech debt"
+  ],
+  "collaborates_with": [
+    "development/code-review-checklist",
+    "testing/test-strategy"
+  ],
+  "lazy": true,
+  "description": "Code Smell Detection"
+}

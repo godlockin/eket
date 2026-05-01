@@ -1,0 +1,19 @@
+{
+  "id": "design/database-schema",
+  "type": "skill",
+  "domain": "design",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "database",
+    "schema",
+    "ER diagram",
+    "table design"
+  ],
+  "collaborates_with": [
+    "requirements/user-story-mapping",
+    "development/code-review-checklist"
+  ],
+  "lazy": true,
+  "description": "Database Schema"
+}

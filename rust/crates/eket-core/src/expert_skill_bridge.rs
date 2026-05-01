@@ -30,6 +30,12 @@ pub struct ExpertProfile {
     pub emoji: String,
     pub domain: String,
     pub skills: Option<ExpertSkills>,
+    /// 来源包标记："default" | "extended" | 自定义路径
+    #[serde(skip_deserializing, default)]
+    pub source_pkg: String,
+    /// 文件路径（用于加载提示）
+    #[serde(skip_deserializing, default)]
+    pub file_path: String,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -48,29 +54,76 @@ pub struct ExpertSkillBridge {
 }
 
 impl ExpertSkillBridge {
-    /// 从目录解析所有专家 .md 文件（提取 YAML front matter）
+    /// 从单目录加载（保持向后兼容）
     pub fn load_from_dir(experts_dir: &Path) -> anyhow::Result<Self> {
+        let pkg = dir_to_pkg_name(experts_dir);
+        Self::load_from_dirs(&[(experts_dir.to_path_buf(), pkg)])
+    }
+
+    /// 从多个目录加载，每个目录带 pkg 标签；递归扫子目录
+    pub fn load_from_dirs(dirs: &[(std::path::PathBuf, String)]) -> anyhow::Result<Self> {
         let mut experts = HashMap::new();
-
-        let entries = std::fs::read_dir(experts_dir)
-            .map_err(|e| anyhow::anyhow!("Cannot read experts_dir {:?}: {e}", experts_dir))?;
-
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.extension().and_then(|e| e.to_str()) != Some("md") {
-                continue;
-            }
-            match parse_expert_md(&path) {
-                Ok(profile) => {
-                    experts.insert(profile.id.clone(), profile);
-                }
-                Err(e) => {
-                    tracing::warn!("Failed to parse {:?}: {e}", path);
-                }
-            }
+        for (dir, pkg) in dirs {
+            load_dir_recursive(dir, pkg, &mut experts);
         }
-
         Ok(Self { experts })
+    }
+
+    /// 全文搜索：在 id/name_cn/role/domain/skills 中模糊匹配 keyword
+    /// 返回 (score, ExpertProfile) 降序
+    pub fn search(&self, keyword: &str) -> Vec<SearchResult> {
+        let kw = keyword.to_lowercase();
+        let mut results: Vec<SearchResult> = self
+            .experts
+            .values()
+            .filter_map(|p| {
+                let mut score = 0u32;
+                let mut matched_fields: Vec<String> = vec![];
+
+                if p.id.to_lowercase().contains(&kw) {
+                    score += 10;
+                    matched_fields.push(format!("id:{}", p.id));
+                }
+                if p.name_cn.to_lowercase().contains(&kw) {
+                    score += 10;
+                    matched_fields.push(format!("name:{}", p.name_cn));
+                }
+                if p.role.to_lowercase().contains(&kw) {
+                    score += 8;
+                    matched_fields.push(format!("role:{}", p.role));
+                }
+                if p.domain.to_lowercase().contains(&kw) {
+                    score += 6;
+                    matched_fields.push(format!("domain:{}", p.domain));
+                }
+                if let Some(skills) = &p.skills {
+                    for s in &skills.primary {
+                        if s.to_lowercase().contains(&kw) {
+                            score += 5;
+                            matched_fields.push(format!("skill:{s}"));
+                        }
+                    }
+                    for cs in &skills.contextual {
+                        if cs.skill.to_lowercase().contains(&kw) {
+                            score += 3;
+                            matched_fields.push(format!("contextual_skill:{}", cs.skill));
+                        }
+                    }
+                }
+
+                if score == 0 {
+                    return None;
+                }
+                Some(SearchResult {
+                    expert: p.clone(),
+                    score,
+                    matched_fields,
+                })
+            })
+            .collect();
+
+        results.sort_by(|a, b| b.score.cmp(&a.score));
+        results
     }
 
     /// 获取专家的所有 primary skills
@@ -130,7 +183,59 @@ impl ExpertSkillBridge {
     }
 }
 
+// ─── Search Result ────────────────────────────────────────────────────────────
+
+#[derive(Debug, Serialize, Clone)]
+pub struct SearchResult {
+    pub expert: ExpertProfile,
+    pub score: u32,
+    pub matched_fields: Vec<String>,
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/// 目录路径 → pkg 标签（取最后两段）
+fn dir_to_pkg_name(dir: &Path) -> String {
+    let parts: Vec<&str> = dir
+        .components()
+        .filter_map(|c| c.as_os_str().to_str())
+        .collect();
+    match parts.len() {
+        0 => "unknown".into(),
+        1 => parts[0].into(),
+        n => format!("{}/{}", parts[n - 2], parts[n - 1]),
+    }
+}
+
+/// 递归扫目录加载 .md 专家文件（跳过 INDEX.md）
+fn load_dir_recursive(
+    dir: &Path,
+    pkg: &str,
+    experts: &mut HashMap<String, ExpertProfile>,
+) {
+    let Ok(entries) = std::fs::read_dir(dir) else { return };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            load_dir_recursive(&path, pkg, experts);
+        } else if path.extension().and_then(|e| e.to_str()) == Some("md") {
+            let fname = path.file_name().and_then(|f| f.to_str()).unwrap_or("");
+            if fname.eq_ignore_ascii_case("INDEX.md") {
+                continue;
+            }
+            match parse_expert_md(&path) {
+                Ok(mut profile) => {
+                    profile.source_pkg = pkg.to_string();
+                    profile.file_path = path.to_string_lossy().to_string();
+                    experts.insert(profile.id.clone(), profile);
+                }
+                Err(e) => {
+                    tracing::warn!("Failed to parse {:?}: {e}", path);
+                }
+            }
+        }
+    }
+}
 
 fn all_skills_for_profile(profile: &ExpertProfile) -> Vec<String> {
     let Some(skills) = &profile.skills else {

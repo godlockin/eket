@@ -129,5 +129,5 @@ async claimTask(...) { return this.claimTaskById(...); }
 ---
 
 **参见**：
-- [MULTI-AGENT-COLLAB-LESSONS.md](MULTI-AGENT-COLLAB-LESSONS.md) — 多智能体协作经验（通用）
+- [lessons/multi-agent-collab-lessons.md](lessons/multi-agent-collab-lessons.md) — 多智能体协作经验（通用）
 - [EPIC-002-closure-review.md](EPIC-002-closure-review.md) — EPIC-002 复盘

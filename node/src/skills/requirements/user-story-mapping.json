@@ -1,0 +1,18 @@
+{
+  "id": "requirements/user-story-mapping",
+  "type": "skill",
+  "domain": "requirements",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "user story",
+    "story map",
+    "journey map"
+  ],
+  "collaborates_with": [
+    "analysis/requirements-analysis",
+    "planning/ticket-breakdown"
+  ],
+  "lazy": true,
+  "description": "User Story Mapping"
+}

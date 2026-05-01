@@ -1,0 +1,19 @@
+{
+  "id": "planning/sprint-planning",
+  "type": "skill",
+  "domain": "planning",
+  "level": 2,
+  "model_hint": "sonnet",
+  "triggers": [
+    "sprint",
+    "planning",
+    "velocity",
+    "estimation"
+  ],
+  "collaborates_with": [
+    "requirements/acceptance-criteria",
+    "analysis/feasibility-study"
+  ],
+  "lazy": true,
+  "description": "Sprint Planning"
+}
