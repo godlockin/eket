@@ -12,6 +12,7 @@
 | [patterns/knowledge-system.md](patterns/knowledge-system.md) | EKET 知识沉淀系统 — L0~L4 分层、写入时机、GC 流程 |
 | [patterns/master-slaver-coordination.md](patterns/master-slaver-coordination.md) | Master-Slaver 协调模式 — 任务分发、状态同步、越权防护 |
 | [patterns/three-level-degradation.md](patterns/three-level-degradation.md) | 三级降级模式 — Shell → Node.js → Redis+SQLite 容灾链路 |
+| [patterns/multi-layer-intent-aggregation.md](patterns/multi-layer-intent-aggregation.md) | 多层意图聚合模式 — 4层模型、4注入点、冲突澄清流程 |
 
 ---
 
@@ -35,7 +36,7 @@
 | [lessons/research-methodology.md](lessons/research-methodology.md) | 跨项目研究方法论 — 借鉴过滤标准、研究流程、各轮要点速查 |
 | [lessons/codebase-maintenance.md](lessons/codebase-maintenance.md) | 代码库与文档维护 — 四类文档债、清理顺序、重组两步法、archive规范 |
 | [lessons/eket-project-hygiene.md](lessons/eket-project-hygiene.md) | EKET 项目卫生 — template/引用、僵尸ticket、三仓库归属、版本号同步、Skills注册 |
-| [lessons/spec4-feedback-intent-lessons.md](lessons/spec4-feedback-intent-lessons.md) | Spec 4 反馈+意图系统实战经验教训 — 线程隔离、import路径、slaver超时、None语义 |
+| [lessons/spec4-feedback-intent-lessons.md](lessons/spec4-feedback-intent-lessons.md) | Spec 4 反馈+意图系统实战经验教训 — 线程隔离、import路径、slaver超时、None语义（外部项目 Python/FastAPI） |
 
 ---
 
@@ -45,17 +46,6 @@
 |------|------|
 | [research/borrowed-wisdom.md](research/borrowed-wisdom.md) | EKET 借鉴知识库总索引 — 所有外部借鉴点汇总（713行，主文档） |
 | [research/round-22-archon-research.md](research/round-22-archon-research.md) | Archon 借鉴研究报告 Round 22 — DAG、模型路由、SSE体系 |
-
----
-
-## 📐 patterns/ — 可复用设计模式
-
-| 文件 | 摘要 |
-|------|------|
-| [patterns/knowledge-system.md](patterns/knowledge-system.md) | EKET 知识沉淀系统 — L0~L4 分层、写入时机、GC 流程 |
-| [patterns/master-slaver-coordination.md](patterns/master-slaver-coordination.md) | Master-Slaver 协调模式 — 任务分发、状态同步、越权防护 |
-| [patterns/three-level-degradation.md](patterns/three-level-degradation.md) | 三级降级模式 — Shell → Node.js → Redis+SQLite 容灾链路 |
-| [patterns/multi-layer-intent-aggregation.md](patterns/multi-layer-intent-aggregation.md) | 多层意图聚合模式 — 4层模型、4注入点、冲突澄清流程 |
 
 ---
 
@@ -79,5 +69,26 @@
 
 ---
 
-*文件总数：22 | 上次更新：2026-05-01*
+## 📋 EPIC 经验教训
 
+| 文件 | 摘要 |
+|------|------|
+| [EPIC-002-lessons.md](EPIC-002-lessons.md) | EPIC-002 综合经验教训 — PR收尾/rebase/CI/专家体系（addyosmani agent-skills引入） |
+| [EPIC-003-backport-lessons.md](EPIC-003-backport-lessons.md) | EPIC-003 回灌经验教训 — cherry-pick分叉、三分支对齐、历史债务处理 |
+| [EPIC-004-improvement-lessons.md](EPIC-004-improvement-lessons.md) | EPIC-004 持续改进经验教训 — Worktree丢失、防卡死、Post-Process、分支清理 |
+
+---
+
+## 🛠️ SOP 模板与指南
+
+| 文件 | 摘要 |
+|------|------|
+| [agent-prompt-template.md](agent-prompt-template.md) | Agent Prompt 防卡死模板 — Bash timeout/SSH push/心跳监控SOP（可直接复制使用） |
+| [worktree-agent-guide.md](worktree-agent-guide.md) | Worktree Agent 产物丢失根因分析与最佳实践 — CWD不可靠、checklist、merge-back步骤 |
+| [branch-strategy-guide.md](branch-strategy-guide.md) | 分支策略指南 — 拓扑/决策矩阵/三分支对齐SOP/危险操作 |
+| [ci-troubleshooting-playbook.md](ci-troubleshooting-playbook.md) | CI 故障排查手册 — 依赖/编译/测试/lint/PR体积/Actions |
+| [context-token-budget-guide.md](context-token-budget-guide.md) | Agent 上下文与 Token 预算管理 — 溢出预防/Write bug/节约规则 |
+
+---
+
+*文件总数：27 | 上次更新：2026-05-01*

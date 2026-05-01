@@ -154,9 +154,9 @@ grep -rn "v0\.[0-9]\." docs/ --include="*.md" | grep -v "archive\|CHANGELOG" | h
 ---
 
 **参见**：
-- [DOC-DEBT-CLEANUP.md](DOC-DEBT-CLEANUP.md) — 文档债清理通用方法论
-- [MULTI-AGENT-COLLAB-LESSONS.md](MULTI-AGENT-COLLAB-LESSONS.md) — 多智能体协作经验
-- [BORROWED-WISDOM.md](../research/borrowed-wisdom.md) — 完整知识库索引
+- [../codebase-maintenance.md](../codebase-maintenance.md) — 文档债清理通用方法论
+- [multi-agent-collab-lessons.md](multi-agent-collab-lessons.md) — 多智能体协作经验
+- [../research/borrowed-wisdom.md](../research/borrowed-wisdom.md) — 完整知识库索引
 
 ---
 

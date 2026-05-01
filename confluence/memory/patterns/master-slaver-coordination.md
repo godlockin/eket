@@ -17,4 +17,4 @@
 - Master 直接写代码 → 角色混乱，review 失效  
 - Slaver 横向 patch 其他 Slaver 的代码 → 引入未审查变更  
 
-**来源**：TASK-001（框架设计）、MULTI-AGENT-COLLAB-LESSONS.md §1/§4
+**来源**：TASK-001（框架设计）、lessons/multi-agent-collab-lessons.md §1/§4
