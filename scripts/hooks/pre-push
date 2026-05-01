@@ -1,0 +1,56 @@
+#!/bin/bash
+# pre-push hook: 检测直接向保护分支提交（非 feature/* 来源）
+#
+# 触发场景：git push origin <branch>
+# 规则：miao / testing / main 上的新 commit 必须来自 feature/* merge
+
+PROTECTED="miao testing main"
+CURRENT=$(git rev-parse --abbrev-ref HEAD)
+
+# 只检查推往保护分支的操作
+if ! echo "$PROTECTED" | grep -qw "$CURRENT"; then
+  exit 0
+fi
+
+# 读取 stdin（remote refs）
+while read local_ref local_sha remote_ref remote_sha; do
+  # 新分支/删除分支跳过
+  [ "$local_sha" = "0000000000000000000000000000000000000000" ] && continue
+  [ "$remote_sha" = "0000000000000000000000000000000000000000" ] && remote_sha=$(git hash-object -t tree /dev/null)
+
+  # 找出本次 push 新增的 commits
+  new_commits=$(git log --oneline "$remote_sha..$local_sha" 2>/dev/null)
+  if [ -z "$new_commits" ]; then
+    continue
+  fi
+
+  # 检查是否有非 merge commit 直接落在保护分支
+  # merge commit 的 parent 数 >= 2，直接 commit 的 parent 数 = 1
+  direct_commits=""
+  while IFS= read -r line; do
+    sha=$(echo "$line" | awk '{print $1}')
+    parent_count=$(git cat-file -p "$sha" | grep -c "^parent ")
+    if [ "$parent_count" -lt 2 ]; then
+      direct_commits="$direct_commits\n  $line"
+    fi
+  done <<< "$new_commits"
+
+  if [ -n "$direct_commits" ]; then
+    echo ""
+    echo "⚠️  [pre-push] 检测到直接向 '$CURRENT' 提交（非 merge commit）："
+    echo -e "$direct_commits"
+    echo ""
+    echo "  规范要求：所有改动（含文档/memory/skill）必须通过 feature/* 分支，"
+    echo "  再 merge 进 $CURRENT。直接提交会导致三分支不对齐。"
+    echo ""
+    echo "  如确认此次为刻意操作（如 hotfix），输入 'yes' 继续，否则中止："
+    read -r answer < /dev/tty
+    if [ "$answer" != "yes" ]; then
+      echo "  已中止 push。请创建 feature/* 分支后重新操作。"
+      exit 1
+    fi
+    echo "  ⚠️  已强制推送，请记得手动同步三分支。"
+  fi
+done
+
+exit 0
