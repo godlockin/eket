@@ -13,7 +13,7 @@
 >
 > 目标编制：**1–5 名人类**负责指明方向、做出决策、审查产出 — 加上 **N 个 AI Slaver** 大规模并行执行。人类 Slaver 和 AI Slaver 遵循完全相同的协议：认领 ticket、交付成果、接受 Review。协议本身不区分执行者是人还是 AI。
 >
-> 💡 **核心理念：人类判断力 × AI 执行密度**。当 Agent 承担执行量时，你只需极少数人类。EKET 将任务状态、消息总线和记忆引擎全部沉淀至本地文件系统和 Git — 三个物理分离的仓库（confluence / jira / code）。采用”纯 Shell → Node.js → Redis+SQLite”的三级渐进架构（Graceful Degradation），根据基础设施可用性自动降级，确保即便没有云服务，也能可靠地完成多智能体软件交付。
+> 💡 **核心理念：人类判断力 × AI 执行密度**。EKET 将任务状态、消息总线和记忆引擎全部沉淀至本地文件系统和 Git — 三个物理分离的仓库（confluence / jira / code）。采用**四级渐进架构**（Shell → Rust → Node.js → Shell fallback），根据基础设施可用性自动降级，确保即便没有云服务，也能可靠地完成多智能体软件交付。
 
 ## 🎯 愿景与使命 (Vision & Mission)
 
