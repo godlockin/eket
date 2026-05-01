@@ -1,0 +1,30 @@
+[
+  {
+    "name": "small-pr-silent-pass",
+    "mock_net_lines": 80,
+    "has_approval": false,
+    "expected_exit": 0,
+    "expected_output_substr": ""
+  },
+  {
+    "name": "medium-pr-warn-pass",
+    "mock_net_lines": 200,
+    "has_approval": false,
+    "expected_exit": 0,
+    "expected_output_substr": "WARN"
+  },
+  {
+    "name": "large-pr-no-approval-fail",
+    "mock_net_lines": 600,
+    "has_approval": false,
+    "expected_exit": 1,
+    "expected_output_substr": "FAIL"
+  },
+  {
+    "name": "large-pr-with-approval-pass",
+    "mock_net_lines": 600,
+    "has_approval": true,
+    "expected_exit": 0,
+    "expected_output_substr": "WARN"
+  }
+]
