@@ -13,6 +13,8 @@
 .DS_Store
 Thumbs.db
 .claude/settings.local.json
+# Claude Code worktrees
+.claude/worktrees/
 
 # 运行生成物
 outbox/

@@ -15,8 +15,12 @@ jobs:
   # Job 1: Node.js — Build / Test / Lint / Audit
   # ============================================================
   node:
-    name: Node.js (build / test / lint / audit)
+    name: Node.js ${{ matrix.node-version }} (build / test / lint / audit)
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['20', '24']
+      fail-fast: false
 
     steps:
       - name: Checkout code
@@ -25,7 +29,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
           cache-dependency-path: node/package-lock.json
 
@@ -50,7 +54,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: node-test-results
+          name: node-test-results-${{ matrix.node-version }}
           path: node/test-results/
           retention-days: 7
 

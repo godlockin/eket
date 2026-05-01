@@ -73,11 +73,18 @@ describe('AgentMailbox', () => {
   });
 
   afterEach(async () => {
-    // Clean up test inboxes
+    // Clean up test inboxes and any stale .lock files
     if (fs.existsSync(TEST_INBOX_DIR)) {
       const files = fs.readdirSync(TEST_INBOX_DIR);
       for (const file of files) {
-        fs.unlinkSync(path.join(TEST_INBOX_DIR, file));
+        const filePath = path.join(TEST_INBOX_DIR, file);
+        const stat = fs.statSync(filePath);
+        if (stat.isDirectory()) {
+          // .lock directories created by proper-lockfile
+          fs.rmSync(filePath, { recursive: true, force: true });
+        } else {
+          fs.unlinkSync(filePath);
+        }
       }
       fs.rmdirSync(TEST_INBOX_DIR);
     }

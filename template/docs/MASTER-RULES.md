@@ -176,32 +176,64 @@ ls outbox/review_requests/                               # 积压 review request
 
 ---
 
-## 7. 任务拆解后必须立即初始化 Slaver 团队
+## 7. 决策 SLA（Service Level Agreement）
+
+### 响应时限
+- Ticket 标记 `BLOCKED ON MASTER DECISION` 后，Master 须在 **24 小时内** 做出决策
+- 决策项 ≤ 4 个 → 直接在 ticket 注释里写出决策
+- 决策项 > 4 个 → 先拆分 ticket，降低单次决策复杂度
+
+### 超时处理
+- 超过 24 小时未决策 → Slaver 可使用**保守默认方案**继续执行
+- 使用默认方案时须在 PR 中标注 `[DEFAULT-DECISION]`
+- Master 后续可要求修改，但不得因此否决 Slaver 的主动推进
+
+### 来源
+EPIC-003 TASK-231b 教训：4 个二选一决策阻塞了多天，严重影响 EPIC 交付节奏。
+
+---
+
+## 8. 任务拆解后必须立即初始化 Slaver 团队
 
 Master 在任务拆解后**必须立即初始化 Slaver 团队**，将任务状态设为 `ready`。
 **禁止**创建任务后不初始化执行团队，导致任务积压在 `backlog` 或 `analysis` 状态。
 
 ---
 
----
+## 9. 阶段完成 Post-Process（强制）
 
-## 11. EPIC 收尾必须验证 main 同步
+**每个 EPIC / Sprint / 重大阶段完成后，Master 必须执行以下 post-process checklist：**
 
-**每个 EPIC 关闭前，Master 必须验证 main 与 miao 分支同步状态：**
+### 9.1 回归验证
+- [ ] `npm run build` 编译通过
+- [ ] `npm test` 全绿（0 failed）
+- [ ] `git diff origin/testing origin/main | wc -l` = 0（分支内容对齐）
+- [ ] `git diff origin/main origin/miao | wc -l` = 0（分支内容对齐）
+- [ ] CI workflow 正常运行（无红灯）
 
-1. 运行 `bash scripts/check-branch-drift.sh` — 确认 main↔miao drift ≤ 5
-2. 如 drift > 0 且有实际 content diff → 必须先合并同步再关闭 EPIC
-3. 在 closure-review.md 中记录验证结果
+### 9.2 分支同步
+- [ ] `main merge → testing`（上游追平下游）
+- [ ] `main merge → miao`（下游接收上游，用 `-X ours` 处理历史分叉冲突）
+- [ ] 推送所有分支到 origin
+- [ ] 清理已 merged 的 feature 分支（本地 + 远程）
 
-### PR 模板检查项（新增）
+### 9.3 经验教训沉淀
+- [ ] 创建 `confluence/memory/<EPIC-ID>-<topic>-lessons.md`，记录本阶段关键教训
+- [ ] 更新 `confluence/memory/MULTI-AGENT-COLLAB-LESSONS.md`（如有新的协作模式/失败模式）
+- [ ] 更新 `confluence/memory/memory-index.md` 索引
+- [ ] 如有流程改进，更新 `MASTER-RULES.md` 或 `SLAVER-RULES.md`
 
-所有 PR 描述中必须包含以下检查项：
+### 9.4 技术债登记
+- [ ] 扫描遗留问题（测试抖动、TODO、临时 workaround）
+- [ ] 按重要性排序，建卡到下一个 EPIC 或 maintenance backlog
+- [ ] 记录需要关注的外部 deadline（如依赖升级截止日）
 
-```markdown
-- [ ] 本 PR base = testing（非 main / 非 miao）
-```
+### 触发条件
+- EPIC 所有 ticket 标记 `done`
+- Sprint 目标达成
+- 重大回灌/合并操作完成
 
-违反者 Master 直接 reject，不进入 review 流程。
+**红线**：禁止宣布阶段完成但跳过 post-process。未执行 post-process 的阶段视为未完成。
 
 ---
 

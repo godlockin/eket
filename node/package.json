@@ -85,7 +85,7 @@
     "typescript-eslint": "^8.58.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8",
