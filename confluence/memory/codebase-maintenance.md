@@ -110,7 +110,7 @@ done
 
 **注意事项**：
 - 脚本可能有前导空格误报，每个 BROKEN 结果需人工验证
-- `template/` 目录下的引用参见 [EKET-PROJECT-HYGIENE.md](EKET-PROJECT-HYGIENE.md)
+- `template/` 目录下的引用参见 [lessons/eket-project-hygiene.md](lessons/eket-project-hygiene.md)
 
 ```bash
 # 检测特定被删文件的反向引用（删除前必做）
@@ -198,8 +198,8 @@ ls outbox/review_requests/                               # 过期 review request
 ---
 
 **参见**：
-- [EKET-PROJECT-HYGIENE.md](EKET-PROJECT-HYGIENE.md) — EKET 特有卫生规则
-- [MULTI-AGENT-COLLAB-LESSONS.md](MULTI-AGENT-COLLAB-LESSONS.md) — 多智能体协作经验
+- [lessons/eket-project-hygiene.md](lessons/eket-project-hygiene.md) — EKET 特有卫生规则
+- [lessons/multi-agent-collab-lessons.md](lessons/multi-agent-collab-lessons.md) — 多智能体协作经验
 - [BORROWED-WISDOM.md](../research/borrowed-wisdom.md) — 完整知识库索引
 
 ---
