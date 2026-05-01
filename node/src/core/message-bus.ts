@@ -5,8 +5,9 @@
 
 import { writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
-import { BaseMessage, type TypedMessage } from '../types/messages.js';
+
 import { EketErrorClass, EketErrorCode, type Result } from '../types/index.js';
+import { BaseMessage, type TypedMessage } from '../types/messages.js';
 
 /**
  * Validate and write a message to the shared inbox.

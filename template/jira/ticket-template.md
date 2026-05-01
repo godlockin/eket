@@ -27,6 +27,12 @@
 **所属 Sprint**: {{SPRINT_ID}}
 **所属 Milestone**: {{MILESTONE_ID}}
 **适配角色**: {{TARGET_ROLE}}  <!-- frontend_dev / backend_dev / fullstack / tester / devops -->
+**assigned_experts**: {{ASSIGNED_EXPERTS}}  <!-- 专家 ID 逗号分隔，claim 时自动注入 profile 到 ACTIVE_CONTEXT
+  默认：architect, backend, frontend, fullstack, tester, ux, product
+  可选：security, devops, dba, sre, mobile, performance, aiml, ml, nlp, data-analyst,
+        bigdata, ux-research, visual, brand, growth, seo, strategy, finance, legal,
+        compliance, mgmt, hr, recruiter, hrbp, coach, km, researcher, doc-writer ...
+  留空或填"无"则不加载专家 -->
 
 <!--
 ================================================================================
