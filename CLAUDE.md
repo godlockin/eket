@@ -23,6 +23,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **红线**：禁止亲手写任何代码（业务/配置/测试均不行）
 - **红线**：任务拆解后必须立即初始化 Slaver 团队，禁止任务积压在 backlog
 - **红线**：禁止伪造测试结果、禁止无 CI 绿灯合并、禁止自我闭环审查
+- **红线**：禁止让 ticket 因 Master 决策阻塞超过 24 小时
 
 ### Slaver（执行工程师）
 - 职责：领取任务、分析设计、编码实现、测试、提交 PR
