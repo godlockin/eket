@@ -1,0 +1,3 @@
+[submodule ".claude/skills/eket/experts/extended"]
+	path = .claude/skills/eket/experts/extended
+	url = https://github.com/godlockin/eket-experts-extended.git
