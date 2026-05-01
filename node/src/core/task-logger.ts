@@ -10,6 +10,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { findProjectRoot } from '../utils/process-cleanup.js';
+import {
+  parseAssignedExperts,
+  loadExpertProfiles,
+  formatExpertSection,
+} from './expert-loader.js';
 
 // ============================================================================
 // appendTaskMessage
@@ -81,6 +86,9 @@ export interface ActiveContextData {
  * 刷新 .eket/ACTIVE_CONTEXT.md，写入当前 Slaver 活跃上下文。
  * Slaver 启动时读取该文件，快速恢复工作现场。
  *
+ * 若 ticket 中含 assigned_experts 字段，自动加载对应 expert profile，
+ * 以 <details> 折叠块注入到上下文底部，Slaver 可直接参照专家视角工作。
+ *
  * @param data - 上下文数据
  */
 export async function injectActiveContext(data: ActiveContextData): Promise<void> {
@@ -89,6 +97,26 @@ export async function injectActiveContext(data: ActiveContextData): Promise<void
 
   const ekeDir = path.join(projectRoot, '.eket');
   fs.mkdirSync(ekeDir, { recursive: true });
+
+  // ── 读取 ticket，解析 assigned_experts ──
+  let expertSection = '';
+  try {
+    const ticketFile = findTicketFile(projectRoot, data.ticketId);
+    if (ticketFile) {
+      const ticketContent = fs.readFileSync(ticketFile, 'utf-8');
+      const expertIds = parseAssignedExperts(ticketContent);
+      if (expertIds.length > 0) {
+        const loaded = loadExpertProfiles(expertIds);
+        expertSection = formatExpertSection(loaded);
+        if (loaded.missing.length > 0) {
+          console.warn(`[experts] Profile not found for: ${loaded.missing.join(', ')}`);
+        }
+        console.log(`[experts] Loaded: [${expertIds.join(', ')}]`);
+      }
+    }
+  } catch {
+    // expert loading is best-effort, never block claim
+  }
 
   const contextPath = path.join(ekeDir, 'ACTIVE_CONTEXT.md');
   const content = `# ACTIVE_CONTEXT — Slaver 活跃上下文
@@ -114,8 +142,8 @@ export async function injectActiveContext(data: ActiveContextData): Promise<void
 
 1. 读取 ticket 文件，确认验收标准
 2. 检查依赖（blocked_by 字段）
-3. 撰写分析报告后开始编码
-`;
+3. 参照专家 profile（见下方）撰写分析报告后开始编码
+${expertSection ? '\n' + expertSection : ''}`;
 
   fs.writeFileSync(contextPath, content, 'utf-8');
 }

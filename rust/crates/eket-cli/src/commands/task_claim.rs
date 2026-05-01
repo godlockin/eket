@@ -10,11 +10,8 @@ use clap::Args;
 use eket_core::{
     config::EketConfig,
     db::{create_pool, SqliteClient},
-    guardrail::GuardrailRunner,
-    middleware_pipeline::{Pipeline, PipelineCtx},
     ticket::{find_ticket, scan_todo_tickets, TicketFile},
     types::{ExecutionCheckpoint, TicketStatus},
-    expert_skill_bridge::ExpertSkillBridge,
 };
 use serde_json::json;
 use std::path::{Path, PathBuf};
@@ -123,41 +120,6 @@ fn write_active_context(
         String::new()
     };
 
-    // ── Expert role-based skills injection ──
-    let role_skills_section = {
-        // 读取角色 ID：EKET_SLAVER_ROLE env 或 .eket/slaver-role 文件
-        let role_id = std::env::var("EKET_SLAVER_ROLE").ok().or_else(|| {
-            std::fs::read_to_string(project_root.join(".eket/slaver-role"))
-                .ok()
-                .map(|s| s.trim().to_string())
-                .filter(|s| !s.is_empty())
-        });
-
-        if let Some(rid) = role_id {
-            let experts_dir = std::env::var("EKET_EXPERTS_DIR")
-                .map(std::path::PathBuf::from)
-                .unwrap_or_else(|_| {
-                    dirs::home_dir()
-                        .unwrap_or_else(|| std::path::PathBuf::from("/tmp"))
-                        .join(".claude/skills/eket/experts/default")
-                });
-            match ExpertSkillBridge::load_from_dir(&experts_dir) {
-                Ok(bridge) => {
-                    let skills = bridge.skills_for_expert(&rid);
-                    if skills.is_empty() {
-                        String::new()
-                    } else {
-                        let list = skills.iter().map(|s| format!("- {}", s)).collect::<Vec<_>>().join("\n");
-                        format!("\n## Available Skills\n<!-- 基于专家角色 {} 自动注入 -->\n{}\n", rid, list)
-                    }
-                }
-                Err(_) => String::new(),
-            }
-        } else {
-            String::new()
-        }
-    };
-
     let content = format!(
         r#"# EKET Active Context
 
@@ -183,7 +145,7 @@ fn write_active_context(
 
 - `eket task:complete {id}` — 完成任务
 - `eket system:doctor` — 系统诊断
-{expert_section}{role_skills_section}"#,
+{expert_section}"#,
         id = ticket.id,
         title = ticket.title,
         domain = domain,
@@ -194,7 +156,6 @@ fn write_active_context(
         } else {
             format!("\n{}", expert_section)
         },
-        role_skills_section = role_skills_section,
     );
     std::fs::write(dir.join("ACTIVE_CONTEXT.md"), content)?;
     Ok(())
@@ -325,56 +286,8 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
     // Write ACTIVE_CONTEXT.md
     let _ = write_active_context(&project_root, &ticket, &slaver_id);
 
-    // Doc lifecycle: append 分析记录 section to ticket
-    {
-        use eket_core::doc_lifecycle::{DocEvent, TemplateRenderer, handle_event};
-        let event = DocEvent::TaskClaimed {
-            ticket_id: ticket.id.clone(),
-            slaver_id: slaver_id.clone(),
-            project_root: project_root.clone(),
-        };
-        if let Err(e) = handle_event(event, &TemplateRenderer::new()).await {
-            eprintln!("[WARN] doc_lifecycle claim: {e}");
-        }
-    }
-
     // Determine rules path (SLAVER-RULES.md)
     let rules_path = find_rules_path(&project_root);
-
-    // Run Pipeline with GuardrailMiddleware (TASK-233)
-    // Build pipeline: always include default claim guardrails; optionally add SlaverRulesGuardrail
-    let mut pipeline = Pipeline::new()
-        .add(crate::guardrail_middleware::GuardrailMiddleware::new(
-            GuardrailRunner::default_for_claim(),
-        ));
-
-    if !rules_path.is_empty() {
-        if let Some(slaver_guardrail) =
-            crate::slaver_rules::load_slaver_rules_guardrail(&rules_path)
-        {
-            let inner_runner = eket_core::guardrail::GuardrailRunner::from_checks(vec![
-                Box::new(slaver_guardrail),
-            ]);
-            pipeline = pipeline.add(crate::guardrail_middleware::GuardrailMiddleware::new(
-                inner_runner,
-            ));
-        }
-    }
-
-    let mut pipe_ctx = PipelineCtx::new("claim");
-    pipe_ctx.ticket_id = Some(ticket.id.clone());
-    pipe_ctx.slaver_id = Some(slaver_id.clone());
-    if let Err(e) = pipeline.run_pre(&mut pipe_ctx).await {
-        tracing::warn!("Pipeline pre() error: {e}");
-    }
-    if let Some(violations) = pipe_ctx.metadata.get("guardrail_violations") {
-        if let Some(arr) = violations.as_array() {
-            if !arr.is_empty() {
-                tracing::warn!("Guardrail violations: {:?}", arr);
-            }
-        }
-    }
-    let _ = pipeline.run_post(&mut pipe_ctx).await;
 
     // Output JSON (compatible with TS version — includes type, assignee, worktree_path, rules_path)
     let report = json!({
