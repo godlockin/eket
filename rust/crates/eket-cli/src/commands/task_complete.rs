@@ -389,6 +389,9 @@ pub async fn run_complete(args: CompleteArgs) -> Result<()> {
             }
         }
 
+        // Step 6: Generate ticket summary (rule-based, no LLM, idempotent)
+        generate_ticket_summary(&result.state.project_root, &args.ticket_id);
+
         let report = json!({
             "status": "completed",
             "ticket_id": args.ticket_id,
@@ -463,6 +466,111 @@ fn find_project_root() -> Option<PathBuf> {
         if !dir.pop() {
             return None;
         }
+    }
+}
+
+// ─── Step 6: Ticket Summary (rule-based, no LLM) ─────────────────────────────
+
+/// Extract a concise summary from ticket sections and append as `## Summary`.
+/// Idempotent: skips if `## Summary` already exists.
+/// Failures are silent (only warn), never block task:complete.
+fn generate_ticket_summary(project_root: &Path, ticket_id: &str) {
+    let ticket_path = project_root
+        .join("jira/tickets")
+        .join(format!("{ticket_id}.md"));
+
+    let content = match std::fs::read_to_string(&ticket_path) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("[WARN] summary: read ticket failed: {e}");
+            return;
+        }
+    };
+
+    // Idempotent guard
+    if content.contains("## Summary") {
+        return;
+    }
+
+    let title = extract_section(&content, "title_line")
+        .unwrap_or_else(|| ticket_id.to_string());
+    let test_result = extract_section(&content, "## 测试结果")
+        .or_else(|| extract_section(&content, "## 测试"))
+        .unwrap_or_else(|| "—".to_string());
+    let knowledge = extract_section(&content, "## 知识沉淀")
+        .or_else(|| extract_section(&content, "## 经验总结"))
+        .unwrap_or_else(|| "—".to_string());
+    let pr = extract_pr_link(&content).unwrap_or_else(|| "—".to_string());
+
+    let summary = format!(
+        "\n## Summary\n\n> 自动生成摘要（rule-based）\n\n| 项 | 内容 |\n|---|---|\n| Ticket | {title} |\n| 测试结果 | {test_result} |\n| PR | {pr} |\n| 知识沉淀 | {knowledge} |\n"
+    );
+
+    let new_content = format!("{content}{summary}");
+    if let Err(e) = std::fs::write(&ticket_path, new_content) {
+        eprintln!("[WARN] summary: write failed: {e}");
+    }
+}
+
+/// Extract the first line of a section (## heading), trimmed to 80 chars.
+fn extract_section(content: &str, heading: &str) -> Option<String> {
+    if heading == "title_line" {
+        // First non-empty, non-frontmatter line starting with #
+        return content
+            .lines()
+            .find(|l| l.starts_with("# "))
+            .map(|l| l.trim_start_matches("# ").trim().to_string())
+            .map(|s| truncate(&s, 80));
+    }
+
+    let mut in_section = false;
+    let mut lines: Vec<&str> = Vec::new();
+    for line in content.lines() {
+        if line.trim_start_matches('#').trim() == heading.trim_start_matches('#').trim()
+            || line == heading
+        {
+            in_section = true;
+            continue;
+        }
+        if in_section {
+            if line.starts_with("## ") {
+                break;
+            }
+            let trimmed = line.trim();
+            if !trimmed.is_empty() {
+                lines.push(trimmed);
+                if lines.len() >= 2 {
+                    break;
+                }
+            }
+        }
+    }
+
+    if lines.is_empty() {
+        None
+    } else {
+        Some(truncate(&lines.join(" / "), 80))
+    }
+}
+
+fn extract_pr_link(content: &str) -> Option<String> {
+    for line in content.lines() {
+        let lower = line.to_lowercase();
+        if (lower.contains("pr") || lower.contains("pull")) && lower.contains("http") {
+            if let Some(url) = line.split_whitespace().find(|w| w.starts_with("http")) {
+                return Some(truncate(url, 80));
+            }
+        }
+    }
+    None
+}
+
+fn truncate(s: &str, max: usize) -> String {
+    if s.chars().count() <= max {
+        s.to_string()
+    } else {
+        let t: String = s.chars().take(max - 1).collect();
+        format!("{t}…")
     }
 }
 
@@ -614,5 +722,58 @@ mod tests {
         assert!(result.is_ok());
         let status = read_ticket_status(&root, "TASK-005");
         assert_eq!(status, "done");
+    }
+
+    // ─── Summary tests ────────────────────────────────────────────────────────
+
+    #[test]
+    fn summary_appended_after_complete() {
+        let dir = TempDir::new().unwrap();
+        let root = dir.path().to_path_buf();
+        let tickets_dir = root.join("jira/tickets");
+        std::fs::create_dir_all(&tickets_dir).unwrap();
+
+        let content = "# TASK-S01: 测试摘要功能\n\n## 测试结果\n全部通过\n\n## 知识沉淀\n- 关键经验\n";
+        std::fs::write(tickets_dir.join("TASK-S01.md"), content).unwrap();
+
+        generate_ticket_summary(&root, "TASK-S01");
+
+        let updated = std::fs::read_to_string(tickets_dir.join("TASK-S01.md")).unwrap();
+        assert!(updated.contains("## Summary"), "Summary section should be added");
+        assert!(updated.contains("全部通过"), "Test result should appear in summary");
+    }
+
+    #[test]
+    fn summary_idempotent() {
+        let dir = TempDir::new().unwrap();
+        let root = dir.path().to_path_buf();
+        let tickets_dir = root.join("jira/tickets");
+        std::fs::create_dir_all(&tickets_dir).unwrap();
+
+        let content = "# TASK-S02: 幂等测试\n\n## Summary\n已有摘要\n";
+        std::fs::write(tickets_dir.join("TASK-S02.md"), content).unwrap();
+
+        generate_ticket_summary(&root, "TASK-S02");
+
+        let updated = std::fs::read_to_string(tickets_dir.join("TASK-S02.md")).unwrap();
+        // Should not duplicate
+        assert_eq!(updated.matches("## Summary").count(), 1, "Summary should not be duplicated");
+    }
+
+    #[test]
+    fn summary_missing_sections_uses_dash() {
+        let dir = TempDir::new().unwrap();
+        let root = dir.path().to_path_buf();
+        let tickets_dir = root.join("jira/tickets");
+        std::fs::create_dir_all(&tickets_dir).unwrap();
+
+        let content = "# TASK-S03: 最小 ticket\n\n## 元数据\n- **状态**: done\n";
+        std::fs::write(tickets_dir.join("TASK-S03.md"), content).unwrap();
+
+        generate_ticket_summary(&root, "TASK-S03");
+
+        let updated = std::fs::read_to_string(tickets_dir.join("TASK-S03.md")).unwrap();
+        assert!(updated.contains("## Summary"));
+        assert!(updated.contains("—"), "Missing sections should show dash");
     }
 }
