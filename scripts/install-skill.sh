@@ -147,6 +147,48 @@ do_status() {
 }
 
 # ─────────────────────────────────────────────
+# Context 优化检查
+# ─────────────────────────────────────────────
+check_global_claude_md() {
+  local claude_md="$HOME/.claude/CLAUDE.md"
+  local patterns_dir="$HOME/.claude/docs/patterns"
+  local threshold=8000
+
+  [ -f "$claude_md" ] || return 0
+
+  local size
+  size=$(wc -c < "$claude_md")
+
+  if [ "$size" -gt "$threshold" ]; then
+    echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${YELLOW}⚠  Context 优化建议${NC}"
+    echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    printf "  ~/.claude/CLAUDE.md 当前大小：%d chars（阈值 %d）\n" "$size" "$threshold"
+    echo "  每次 SessionStart 全量注入，消耗约 $((size / 4)) tokens。"
+    echo ""
+    echo "  建议：将代码示例外化到 ~/.claude/docs/patterns/"
+    echo "  参考已有示例："
+    if [ -d "$patterns_dir" ]; then
+      find "$patterns_dir" -name "*.md" | sort | while read -r f; do
+        local rel="${f#$HOME/.claude/}"
+        local sz
+        sz=$(wc -c < "$f")
+        printf "    ~/%s  (%d chars)\n" "$rel" "$sz"
+      done
+    else
+      echo "    $patterns_dir（尚未创建）"
+    fi
+    echo ""
+    echo "  操作步骤："
+    echo "    1. 将 CLAUDE.md 中的代码块移到 ~/.claude/docs/patterns/<topic>.md"
+    echo "    2. 在 CLAUDE.md 末尾加一行引用注释即可"
+    echo "    3. 目标：CLAUDE.md < ${threshold} chars"
+    echo ""
+  fi
+}
+
+# ─────────────────────────────────────────────
 # 主流程
 # ─────────────────────────────────────────────
 main() {
@@ -185,6 +227,8 @@ main() {
     echo ""
     echo "更新 skill："
     echo "  ./scripts/install-skill.sh --update"
+    echo ""
+    check_global_claude_md
   fi
 }
 
