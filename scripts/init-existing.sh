@@ -214,6 +214,25 @@ init_codebase_map() {
   else
     warn "未检测到 .git 目录，跳过 hook 安装"
   fi
+
+  # 冷启动：若 confluence/memory/ 已有内容，立即建 knowledge index
+  local memory_dir="$PROJECT_ROOT/confluence/memory"
+  local db_path="$PROJECT_ROOT/.eket/eket.db"
+  local md_count
+  md_count=$(find "$memory_dir" -name "*.md" 2>/dev/null | grep -v "codebase-map" | wc -l | tr -d ' ')
+  if [ "$md_count" -gt 0 ] && command -v eket >/dev/null 2>&1; then
+    info "发现 ${md_count} 个 memory 文件，建立知识索引..."
+    if eket knowledge:index --dir "$memory_dir" --db-path "$db_path" 2>/dev/null; then
+      ok "knowledge index 已建立（${md_count} 个文件）"
+      # 重置 complete 计数，避免立即触发重建
+      echo "0" > "$PROJECT_ROOT/.git/eket-complete-count" 2>/dev/null || true
+    else
+      warn "knowledge index 建立失败，可稍后运行：eket knowledge:index --dir confluence/memory/"
+    fi
+  elif [ "$md_count" -gt 0 ]; then
+    warn "发现 ${md_count} 个 memory 文件，但未找到 eket binary，跳过索引建立"
+    info "安装后手动运行：eket knowledge:index --dir confluence/memory/"
+  fi
 }
 
 # ─── Phase 6 ─────────────────────────────────────────────────────────────────
