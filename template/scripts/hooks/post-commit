@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# post-commit hook — 目标项目 codebase-map 更新警告
+# 由 eket init-existing.sh 安装到目标项目
+#
+# 行为：
+#   - 有文件添加/删除时触发
+#   - 若 codebase-map.md 未在本 commit 中更新，累计警告计数
+#   - 计数 ≥3 时阻断下次 push
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+MAP_FILE="$REPO_ROOT/confluence/memory/codebase-map.md"
+COUNTER_FILE="$REPO_ROOT/.git/eket-map-warn-count"
+PREPUSH_HOOK="$REPO_ROOT/.git/hooks/pre-push"
+
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+# codebase-map.md 本次已更新 → 重置计数
+CHANGED_FILES=$(git diff-tree --no-commit-id -r --name-only HEAD 2>/dev/null || true)
+if echo "$CHANGED_FILES" | grep -q "confluence/memory/codebase-map.md"; then
+  echo "0" > "$COUNTER_FILE"
+  exit 0
+fi
+
+# 检查触发条件：新增/删除文件
+NEW_OR_DELETED=$(git diff-tree --no-commit-id -r --diff-filter=AD --name-only HEAD 2>/dev/null | wc -l | tr -d ' ')
+if [[ "$NEW_OR_DELETED" -eq 0 ]]; then
+  exit 0
+fi
+
+# 累计计数
+CURRENT=0
+[[ -f "$COUNTER_FILE" ]] && CURRENT=$(cat "$COUNTER_FILE" 2>/dev/null || echo 0)
+CURRENT=$((CURRENT + 1))
+echo "$CURRENT" > "$COUNTER_FILE"
+
+# 输出警告
+echo ""
+echo -e "${YELLOW}⚠  Codebase Map 可能需要更新 [${CURRENT}/3]${NC}"
+echo "   本次 commit 有 ${NEW_OR_DELETED} 个文件添加/删除"
+echo "   运行：bash confluence/scripts/generate-codebase-map.sh"
+echo ""
+
+if [[ "$CURRENT" -ge 3 ]]; then
+  echo -e "${RED}🔴 已连续 ${CURRENT} 次未更新，下次 push 将被阻断${NC}"
+  cat > "$PREPUSH_HOOK" << 'PREPUSH_EOF'
+#!/usr/bin/env bash
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+COUNTER_FILE="$REPO_ROOT/.git/eket-map-warn-count"
+RED='\033[0;31m'; NC='\033[0m'
+COUNT=$(cat "$COUNTER_FILE" 2>/dev/null || echo 0)
+if [[ "$COUNT" -ge 3 ]]; then
+  echo -e "${RED}🔴 PUSH 被阻断：Codebase Map 已 ${COUNT} 次未更新${NC}"
+  echo "   bash confluence/scripts/generate-codebase-map.sh"
+  echo "   git add confluence/memory/codebase-map.md && git commit -m 'docs: refresh codebase-map'"
+  echo "   或：echo 0 > .git/eket-map-warn-count && git push"
+  exit 1
+fi
+PREPUSH_EOF
+  chmod +x "$PREPUSH_HOOK"
+else
+  echo "   再忽略 $((3 - CURRENT)) 次后将阻断 push"
+  echo ""
+fi

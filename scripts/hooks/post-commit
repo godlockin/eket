@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+# post-commit hook — eket 自身 codebase-map 更新警告
+# 安装：ln -sf "$(pwd)/scripts/hooks/post-commit" .git/hooks/post-commit
+#
+# 行为：
+#   - 检测 commit 是否涉及代码/文件变更
+#   - 若 codebase-map.md 未在本 commit 中更新，累计警告计数
+#   - 计数 ≥3 时阻断下次 push（通过写 .git/hooks/pre-push）
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+MAP_FILE="$REPO_ROOT/confluence/memory/codebase-map.md"
+COUNTER_FILE="$REPO_ROOT/.git/eket-map-warn-count"
+PREPUSH_HOOK="$REPO_ROOT/.git/hooks/pre-push"
+
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+# ─── 判断本次 commit 是否需要检查 ───────────────────────────────────────────
+# 仅当有实质性文件变更时检查（排除纯文档/ticket 更新）
+CHANGED_FILES=$(git diff-tree --no-commit-id -r --name-only HEAD 2>/dev/null || true)
+
+# 如果本 commit 包含了 codebase-map.md → 重置计数，退出
+if echo "$CHANGED_FILES" | grep -q "confluence/memory/codebase-map.md"; then
+  echo "0" > "$COUNTER_FILE"
+  exit 0
+fi
+
+# 检查是否有"需要更新 map"的变更：新文件添加/删除，或代码目录大量变更
+SIGNIFICANT=false
+
+# 新增或删除的文件
+NEW_OR_DELETED=$(git diff-tree --no-commit-id -r --diff-filter=AD --name-only HEAD 2>/dev/null | wc -l | tr -d ' ')
+if [[ "$NEW_OR_DELETED" -gt 0 ]]; then
+  SIGNIFICANT=true
+fi
+
+# 代码目录的变更（超过 3 个文件）
+CODE_CHANGES=$(echo "$CHANGED_FILES" | grep -E "^(rust|node/src|scripts|lib|sdk|template)/." | wc -l | tr -d ' ')
+if [[ "$CODE_CHANGES" -gt 3 ]]; then
+  SIGNIFICANT=true
+fi
+
+# 不显著变更 → 跳过
+if [[ "$SIGNIFICANT" == "false" ]]; then
+  exit 0
+fi
+
+# ─── 累计计数 ────────────────────────────────────────────────────────────────
+CURRENT=0
+if [[ -f "$COUNTER_FILE" ]]; then
+  CURRENT=$(cat "$COUNTER_FILE" 2>/dev/null || echo 0)
+fi
+CURRENT=$((CURRENT + 1))
+echo "$CURRENT" > "$COUNTER_FILE"
+
+# ─── 输出警告 ────────────────────────────────────────────────────────────────
+echo ""
+echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${YELLOW}  ⚠  Codebase Map 可能需要更新 [${CURRENT}/3]${NC}"
+echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+echo "  本次 commit 包含 ${NEW_OR_DELETED} 个新增/删除文件，${CODE_CHANGES} 个代码变更"
+echo "  建议运行：bash scripts/generate-codebase-map.sh --self"
+echo ""
+
+if [[ "$CURRENT" -ge 3 ]]; then
+  echo -e "${RED}  🔴 已连续 ${CURRENT} 次未更新 codebase-map，下次 push 将被阻断${NC}"
+  echo ""
+  # 写入 pre-push hook 阻断逻辑
+  cat > "$PREPUSH_HOOK" << 'PREPUSH_EOF'
+#!/usr/bin/env bash
+# 由 post-commit hook 自动生成 — codebase-map 未更新阻断
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+COUNTER_FILE="$REPO_ROOT/.git/eket-map-warn-count"
+RED='\033[0;31m'; YELLOW='\033[1;33m'; NC='\033[0m'
+
+COUNT=$(cat "$COUNTER_FILE" 2>/dev/null || echo 0)
+if [[ "$COUNT" -ge 3 ]]; then
+  echo ""
+  echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${RED}  🔴 PUSH 被阻断：Codebase Map 已 ${COUNT} 次未更新${NC}"
+  echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo ""
+  echo "  请先更新 codebase-map："
+  echo "    bash scripts/generate-codebase-map.sh --self"
+  echo "    git add confluence/memory/codebase-map.md"
+  echo "    git commit -m 'docs: refresh codebase-map'"
+  echo ""
+  echo "  或强制跳过（不推荐）："
+  echo "    echo 0 > .git/eket-map-warn-count && git push"
+  echo ""
+  exit 1
+fi
+PREPUSH_EOF
+  chmod +x "$PREPUSH_HOOK"
+else
+  echo -e "${YELLOW}  再忽略 $((3 - CURRENT)) 次后将阻断 push${NC}"
+  echo ""
+fi
