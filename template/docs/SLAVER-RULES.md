@@ -284,6 +284,12 @@ PR 被 Master 批准合并后，在关闭 session 前执行。
 
 **完成后检查**：运行 `bash scripts/check-memory-entry.sh <TASK-ID>` 确认已沉淀。
 
+**Codebase Map 更新**：如果本 ticket 新增/删除了文件或目录，PR 中**必须**包含：
+```bash
+bash confluence/scripts/generate-codebase-map.sh
+# 将更新后的 codebase-map.md 加入本次 PR commit
+```
+
 > 单次任务的教训 = 局部记忆；沉淀到 `confluence/memory/` = 组织记忆，对所有未来 Slaver 可见。
 
 ---
