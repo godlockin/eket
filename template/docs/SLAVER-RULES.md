@@ -94,7 +94,9 @@ IF 读取文件次数 >= 5 AND 无写操作:
 
 ### 预防策略
 
-- 领取 ticket 后，先写分析报告（`## 分析报告` 填入 ticket），再开始读代码
+- 领取 ticket 后，**先查阅 `eket task:claim` 输出的"相关经验教训"提示**，有命中则优先阅读对应 pitfall/pattern 文件
+- 无命中时也可手动检索：`eket knowledge:search "<关键词>"` 或直接翻 `confluence/memory/pitfalls/` 和 `confluence/memory/patterns/`
+- 再写分析报告（`## 分析报告` 填入 ticket），再开始读代码
 - 分析报告完成后，直接进入编码阶段，不再做额外探索
 - 遇到不确定点，先做假设+标注 TODO，提交后再迭代
 
