@@ -395,7 +395,115 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
     });
 
     println!("{}", serde_json::to_string_pretty(&report)?);
+
+    // ── Memory hint: 搜索相关 pitfalls/patterns，有命中时输出提示 ──────────────
+    let hints = search_memory_hints(&project_root, &ticket.title, ticket.id.as_str());
+    if !hints.is_empty() {
+        println!("\n💡 相关经验教训（来自 confluence/memory/）：");
+        for h in &hints {
+            println!("  • [{}] {}", h.category, h.title);
+            println!("    {}", h.snippet);
+            println!("    → {}", h.path);
+        }
+        println!();
+    }
+
     Ok(())
+}
+
+// ─── Memory hint search ───────────────────────────────────────────────────────
+
+struct MemoryHint {
+    category: String,  // pitfall / pattern / lesson
+    title: String,
+    snippet: String,
+    path: String,
+}
+
+/// 从 confluence/memory/{pitfalls,patterns,lessons}/ 搜索与 ticket 相关的条目。
+/// 匹配逻辑：ticket title 中的关键词与文件名或文件内容首 300 字符做 case-insensitive 子串匹配。
+/// 最多返回 3 条，静默失败（不影响主流程）。
+fn search_memory_hints(project_root: &Path, ticket_title: &str, ticket_id: &str) -> Vec<MemoryHint> {
+    let mut hints = Vec::new();
+
+    // 提取关键词：去除常见停用词，取前 8 个 token
+    let stopwords = ["the", "a", "an", "and", "or", "to", "in", "of", "for",
+                     "with", "add", "fix", "update", "refactor", "implement",
+                     "新增", "修改", "添加", "更新", "修复", "实现", "重构"];
+    let keywords: Vec<String> = ticket_title
+        .split_whitespace()
+        .chain(ticket_id.split('-'))
+        .map(|w| w.to_lowercase().trim_matches(|c: char| !c.is_alphanumeric()).to_string())
+        .filter(|w| w.len() >= 3 && !stopwords.contains(&w.as_str()))
+        .take(8)
+        .collect();
+
+    if keywords.is_empty() {
+        return hints;
+    }
+
+    let memory_root = project_root.join("confluence/memory");
+    let search_dirs = [
+        ("pitfall",  memory_root.join("pitfalls")),
+        ("pattern",  memory_root.join("patterns")),
+        ("lesson",   memory_root.join("lessons")),
+    ];
+
+    'outer: for (category, dir) in &search_dirs {
+        let Ok(entries) = std::fs::read_dir(dir) else { continue };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) != Some("md") { continue }
+
+            let filename = path.file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("")
+                .to_lowercase();
+
+            // 先匹配文件名
+            let name_match = keywords.iter().any(|kw| filename.contains(kw.as_str()));
+
+            // 再匹配文件头 400 字节（避免读大文件）
+            let content_match = if !name_match {
+                std::fs::read(&path).ok()
+                    .and_then(|b| {
+                        let preview = String::from_utf8_lossy(&b[..b.len().min(400)]).to_lowercase();
+                        Some(keywords.iter().any(|kw| preview.contains(kw.as_str())))
+                    })
+                    .unwrap_or(false)
+            } else { false };
+
+            if !name_match && !content_match { continue }
+
+            // 读文件取标题行 + 首段摘要
+            let Ok(content) = std::fs::read_to_string(&path) else { continue };
+            let title = content.lines()
+                .find(|l| l.starts_with('#'))
+                .unwrap_or(&filename)
+                .trim_start_matches('#').trim()
+                .to_string();
+            let snippet = content.lines()
+                .skip_while(|l| l.starts_with('#') || l.trim().is_empty())
+                .take(2)
+                .collect::<Vec<_>>()
+                .join(" ")
+                .chars().take(120).collect::<String>();
+            let rel_path = path.strip_prefix(project_root)
+                .map(|p| p.display().to_string())
+                .unwrap_or_else(|_| path.display().to_string());
+
+            hints.push(MemoryHint {
+                category: category.to_string(),
+                title,
+                snippet,
+                path: rel_path,
+            });
+
+            if hints.len() >= 3 { break 'outer; }
+        }
+    }
+
+    hints
 }
 
 fn find_rules_path(project_root: &Path) -> String {
