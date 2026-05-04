@@ -17,8 +17,8 @@
 **待 PR Review（pr_review）**:
 !`find jira/tickets -name "*.md" 2>/dev/null | xargs grep -l "^\*\*状态\*\*: pr_review" 2>/dev/null | sed 's|jira/tickets/||;s|\.md||' | sort | tr '\n' ' ' || echo "(无)"`
 
-**待合并的 PR（miao 为 base）**:
-!`gh pr list --base miao --state open --json number,title,headRefName 2>/dev/null | jq -r '.[] | "#\(.number) \(.title) [\(.headRefName)]"' | head -5 || echo "(无法获取 PR 列表，请检查 gh 认证)"`
+**待合并的 PR（testing 为 base）**:
+!`gh pr list --base testing --state open --json number,title,headRefName 2>/dev/null | jq -r '.[] | "#\(.number) \(.title) [\(.headRefName)]"' | head -5 || echo "(无法获取 PR 列表，请检查 gh 认证)"`
 
 **最新 inbox 消息**:
 !`ls -t inbox/human_input.md inbox/human_feedback/*.md 2>/dev/null | head -3 | xargs -I{} sh -c 'echo "--- {} ---"; head -3 "{}"' 2>/dev/null || echo "(inbox 为空)"`
