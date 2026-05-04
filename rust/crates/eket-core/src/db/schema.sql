@@ -71,12 +71,15 @@ CREATE INDEX IF NOT EXISTS idx_retros_ticket ON retros(ticket_id);
 
 -- Instance registry (slaver_instances)
 CREATE TABLE IF NOT EXISTS slaver_instances (
-    id            TEXT PRIMARY KEY,
-    role          TEXT NOT NULL,
-    skills_json   TEXT NOT NULL DEFAULT '[]',
-    status        TEXT NOT NULL DEFAULT 'idle',
-    last_seen     INTEGER,
-    metadata_json TEXT NOT NULL DEFAULT '{}'
+    id               TEXT PRIMARY KEY,
+    role             TEXT NOT NULL,
+    skills_json      TEXT NOT NULL DEFAULT '[]',
+    status           TEXT NOT NULL DEFAULT 'idle',
+    last_seen        INTEGER,
+    metadata_json    TEXT NOT NULL DEFAULT '{}',
+    completed_count  INTEGER NOT NULL DEFAULT 0,
+    failed_count     INTEGER NOT NULL DEFAULT 0,
+    total_latency_ms INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_slaver_instances_role ON slaver_instances(role);
