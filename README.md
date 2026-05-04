@@ -164,7 +164,7 @@ See [`CHANGELOG.md`](CHANGELOG.md) for full history.
 
 ## 🤝 Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md). Branch strategy: `feature/*` → `testing` → `miao` → `main`.
+Read [CONTRIBUTING.md](CONTRIBUTING.md). Branch strategy: `feature/*` → `testing` → `main` → `miao`.
 
 ## 📜 License
 
