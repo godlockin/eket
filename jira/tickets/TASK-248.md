@@ -1,6 +1,6 @@
 # TASK-248: expert:summon 命令 — 按 expertise 召唤或初始化专家 Slaver
 
-**状态**: ready
+**状态**: done
 **优先级**: P2
 **预估工时**: 360min
 **负责人**: —
