@@ -3,7 +3,7 @@ use anyhow::Result;
 use clap::Args;
 use eket_core::{
     dag::{parse_tickets_dag, ready_tickets},
-    db::{create_pool, SqliteClient},
+    db::{create_pool, InstanceRow, SqliteClient},
 };
 use eket_engine::{
     mailbox::AgentMailbox,
@@ -56,6 +56,116 @@ pub async fn run(args: MasterHeartbeatArgs) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Parse `required_expertise` from a ticket file.
+/// Looks for a line like: `required_expertise: [rust, devops]`
+/// Returns `vec!["any"]` if the field is absent or the file cannot be read.
+pub fn parse_required_expertise(tickets_dir: &Path, ticket_id: &str) -> Vec<String> {
+    let path = tickets_dir.join(format!("{ticket_id}.md"));
+    let Ok(content) = std::fs::read_to_string(&path) else {
+        return vec!["any".to_string()];
+    };
+
+    for line in content.lines() {
+        let trimmed = line.trim();
+        // Match patterns like:  required_expertise: [rust, devops]
+        // or:                   - **required_expertise**: [rust]
+        if let Some(rest) = trimmed
+            .strip_prefix("required_expertise:")
+            .or_else(|| {
+                trimmed
+                    .to_lowercase()
+                    .contains("required_expertise")
+                    .then(|| {
+                        // find the colon after the keyword
+                        trimmed.find(':').map(|i| &trimmed[i + 1..])
+                    })
+                    .flatten()
+                    .map(|_| {
+                        // re-do without lowercase conversion to preserve casing
+                        let lower = trimmed.to_lowercase();
+                        let pos = lower.find("required_expertise").unwrap();
+                        let after_key = &trimmed[pos + "required_expertise".len()..];
+                        after_key.trim_start_matches(|c: char| c == '*' || c == ' ' || c == ':')
+                    })
+            })
+        {
+            let rest = rest.trim();
+            // strip surrounding brackets
+            let inner = rest
+                .trim_start_matches('[')
+                .trim_end_matches(']')
+                .trim();
+            if inner.is_empty() {
+                return vec!["any".to_string()];
+            }
+            let skills: Vec<String> = inner
+                .split(',')
+                .map(|s| s.trim().to_lowercase())
+                .filter(|s| !s.is_empty())
+                .collect();
+            if skills.is_empty() {
+                return vec!["any".to_string()];
+            }
+            return skills;
+        }
+    }
+
+    vec!["any".to_string()]
+}
+
+/// Select the best matching idle slaver for the given `required` expertise list.
+///
+/// Scoring:
+/// - `required` is empty or contains "any" → return first idle (original behaviour)
+/// - `i.role` is in `required` → score 2
+/// - `i.skills` has any intersection with `required` → score 1
+/// - No match → `None`
+pub fn best_matching_slaver<'a>(
+    instances: &'a [InstanceRow],
+    required: &[String],
+) -> Option<&'a InstanceRow> {
+    let idle: Vec<&InstanceRow> = instances.iter().filter(|i| i.status == "idle").collect();
+
+    if idle.is_empty() {
+        return None;
+    }
+
+    // "any" / empty required → original first-idle logic
+    if required.is_empty() || required.iter().any(|r| r == "any") {
+        return idle.into_iter().next();
+    }
+
+    let required_set: HashSet<&str> = required.iter().map(|s| s.as_str()).collect();
+
+    let mut best: Option<(&InstanceRow, u32)> = None;
+    for inst in idle {
+        let role_score: u32 = if required_set.contains(inst.role.to_lowercase().as_str()) {
+            2
+        } else {
+            0
+        };
+        let skills_score: u32 = if inst
+            .skills
+            .iter()
+            .any(|s| required_set.contains(s.to_lowercase().as_str()))
+        {
+            1
+        } else {
+            0
+        };
+        let score = role_score + skills_score;
+        if score > 0 {
+            match best {
+                None => best = Some((inst, score)),
+                Some((_, prev)) if score > prev => best = Some((inst, score)),
+                _ => {}
+            }
+        }
+    }
+
+    best.map(|(inst, _)| inst)
 }
 
 /// One heartbeat cycle: scan ready tickets → assign to idle slavers.
@@ -119,16 +229,39 @@ pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tick
         }
     }
 
-    // 3. Assign each ticket to the first idle slaver
+    // 3. Assign each ticket to the best matching idle slaver
     let sender = ProtocolSender::new(mailbox.clone());
 
     for ticket_id in priority_tickets {
-        let instances = client.list_instances(Some("slaver")).unwrap_or_default();
-        let idle = instances.into_iter().find(|i| i.status == "idle");
+        let required = parse_required_expertise(tickets_dir, &ticket_id);
 
-        match idle {
+        let idle_instances: Vec<InstanceRow> = client
+            .list_instances(Some("slaver"))
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|i| i.status == "idle")
+            .collect();
+
+        let matched = best_matching_slaver(&idle_instances, &required);
+
+        match matched {
             None => {
-                tracing::warn!("[master:heartbeat] no idle slaver for ticket {ticket_id}");
+                if idle_instances.is_empty() {
+                    tracing::warn!("[master:heartbeat] no idle slaver for ticket {ticket_id}");
+                } else {
+                    // idle slavers exist but none match expertise
+                    tracing::warn!(
+                        "[master:heartbeat] no matching slaver for ticket {ticket_id} (required: {required:?})"
+                    );
+                    println!(
+                        "{}",
+                        json!({
+                            "event": "no_matching_slaver",
+                            "ticket_id": ticket_id,
+                            "required": required
+                        })
+                    );
+                }
             }
             Some(slaver) => {
                 let _ = client.update_ticket_status_str(&ticket_id, "in_progress");
@@ -221,16 +354,43 @@ mod tests {
         fs::write(dir.path().join(format!("{id}.md")), content).unwrap();
     }
 
+    /// Write a ticket file with `required_expertise` line.
+    fn make_ticket_file_with_expertise(
+        dir: &TempDir,
+        id: &str,
+        status: &str,
+        blocked_by: &[&str],
+        expertise: &[&str],
+    ) {
+        let inner = if blocked_by.is_empty() {
+            String::new()
+        } else {
+            blocked_by.join(", ")
+        };
+        let expertise_line = if expertise.is_empty() {
+            String::new()
+        } else {
+            format!("required_expertise: [{}]\n", expertise.join(", "))
+        };
+        let content = format!(
+            "# {id}: Test ticket\n- **状态**: {status}\n- blocked_by: [{inner}]\n{expertise_line}"
+        );
+        fs::write(dir.path().join(format!("{id}.md")), content).unwrap();
+    }
+
     /// 1. One todo ticket (no blocked_by) + one idle slaver → assigned
+    ///    Slaver has skills=["rust"], ticket requires rust.
     #[tokio::test]
     async fn heartbeat_assigns_ready_ticket() {
         let ticket_dir = TempDir::new().unwrap();
         let mailbox_dir = TempDir::new().unwrap();
         let client = make_client();
 
-        make_ticket_file(&ticket_dir, "TASK-1", "todo", &[]);
+        make_ticket_file_with_expertise(&ticket_dir, "TASK-1", "todo", &[], &["rust"]);
         client.create_ticket("TASK-1", "Test", "P1", "task").unwrap();
-        client.upsert_instance("slaver-1", "slaver", &[], "idle").unwrap();
+        client
+            .upsert_instance("slaver-1", "slaver", &["rust".to_string()], "idle")
+            .unwrap();
 
         let mailbox = Arc::new(AgentMailbox::new(mailbox_dir.path()));
         check_once(&client, &mailbox, ticket_dir.path()).await;
@@ -283,5 +443,96 @@ mod tests {
         // TASK-3 must remain todo — blocked by TASK-4 which is not done
         let row3 = client.get_ticket_row("TASK-3").unwrap().unwrap();
         assert_eq!(row3.status, "todo", "TASK-3 should remain todo (blocked by TASK-4)");
+    }
+
+    /// 4. Ticket requires rust, slaver has mismatched role/skills → ticket NOT assigned
+    #[tokio::test]
+    async fn heartbeat_skips_expertise_mismatch() {
+        let ticket_dir = TempDir::new().unwrap();
+        let mailbox_dir = TempDir::new().unwrap();
+        let client = make_client();
+
+        make_ticket_file_with_expertise(&ticket_dir, "TASK-5", "todo", &[], &["rust"]);
+        client.create_ticket("TASK-5", "Rust-only task", "P1", "task").unwrap();
+
+        // Slaver with frontend role and no skills — should NOT match "rust"
+        client
+            .upsert_instance("slaver-fe", "frontend", &[], "idle")
+            .unwrap();
+
+        let mailbox = Arc::new(AgentMailbox::new(mailbox_dir.path()));
+        check_once(&client, &mailbox, ticket_dir.path()).await;
+
+        let row = client.get_ticket_row("TASK-5").unwrap().unwrap();
+        assert_eq!(row.status, "todo", "ticket should remain todo: no matching slaver");
+        assert!(row.assignee.is_none(), "assignee should not be set");
+    }
+
+    // ── Unit tests for helpers ────────────────────────────────────────────────
+
+    #[test]
+    fn parse_expertise_finds_field() {
+        let dir = TempDir::new().unwrap();
+        fs::write(
+            dir.path().join("TASK-10.md"),
+            "# TASK-10\nrequired_expertise: [rust, devops]\n",
+        )
+        .unwrap();
+        let result = parse_required_expertise(dir.path(), "TASK-10");
+        assert_eq!(result, vec!["rust", "devops"]);
+    }
+
+    #[test]
+    fn parse_expertise_missing_field_returns_any() {
+        let dir = TempDir::new().unwrap();
+        fs::write(dir.path().join("TASK-11.md"), "# TASK-11\nno expertise here\n").unwrap();
+        let result = parse_required_expertise(dir.path(), "TASK-11");
+        assert_eq!(result, vec!["any"]);
+    }
+
+    #[test]
+    fn parse_expertise_missing_file_returns_any() {
+        let dir = TempDir::new().unwrap();
+        let result = parse_required_expertise(dir.path(), "TASK-NONEXISTENT");
+        assert_eq!(result, vec!["any"]);
+    }
+
+    #[test]
+    fn best_matching_any_returns_first_idle() {
+        let instances = vec![
+            InstanceRow { id: "a".into(), role: "slaver".into(), skills: vec![], status: "idle".into(), last_seen: None },
+            InstanceRow { id: "b".into(), role: "slaver".into(), skills: vec![], status: "idle".into(), last_seen: None },
+        ];
+        let result = best_matching_slaver(&instances, &["any".to_string()]);
+        assert_eq!(result.map(|i| i.id.as_str()), Some("a"));
+    }
+
+    #[test]
+    fn best_matching_role_wins_over_skills() {
+        let instances = vec![
+            InstanceRow { id: "skills-only".into(), role: "generic".into(), skills: vec!["rust".into()], status: "idle".into(), last_seen: None },
+            InstanceRow { id: "role-match".into(), role: "rust".into(), skills: vec![], status: "idle".into(), last_seen: None },
+        ];
+        let result = best_matching_slaver(&instances, &["rust".to_string()]);
+        assert_eq!(result.map(|i| i.id.as_str()), Some("role-match"));
+    }
+
+    #[test]
+    fn best_matching_no_match_returns_none() {
+        let instances = vec![
+            InstanceRow { id: "fe".into(), role: "frontend".into(), skills: vec!["js".into()], status: "idle".into(), last_seen: None },
+        ];
+        let result = best_matching_slaver(&instances, &["rust".to_string()]);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn best_matching_skips_busy_instances() {
+        let instances = vec![
+            InstanceRow { id: "busy-rust".into(), role: "rust".into(), skills: vec![], status: "busy".into(), last_seen: None },
+            InstanceRow { id: "idle-generic".into(), role: "generic".into(), skills: vec!["rust".into()], status: "idle".into(), last_seen: None },
+        ];
+        let result = best_matching_slaver(&instances, &["rust".to_string()]);
+        assert_eq!(result.map(|i| i.id.as_str()), Some("idle-generic"));
     }
 }
