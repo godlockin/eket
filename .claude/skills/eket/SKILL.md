@@ -18,9 +18,9 @@ Hybrid: Rust(Core/CLI/SQLite/EventBus) + Node.js(Hook Server/Dashboard) + Shell(
 
 | 命令 | 说明 |
 |------|------|
-| `eket task:claim [TASK-NNN]` | 原子领取任务 |
-| `eket task:complete TASK-NNN` | Saga 5步完成 |
-| `eket task:create "title"` | 创建 ticket |
+| `eket task:claim [TASK-NNN]` | 原子领取任务，自动创建 git worktree (.worktrees/TASK-NNN/) |
+| `eket task:complete TASK-NNN` | Saga完成：标记done + 清理worktree + 通知依赖解除 |
+| `eket task:create "title" --expertise rust,devops --effort 2d` | 创建ticket（专家标签必填，effort支持2d/0.5d/3h/480） |
 | `eket task:test TASK-NNN` | 追加测试结果 |
 | `eket task:resume TASK-NNN` | checkpoint 恢复 |
 | `eket task:progress` | DAG进度+关键路径 |
@@ -40,6 +40,16 @@ Hybrid: Rust(Core/CLI/SQLite/EventBus) + Node.js(Hook Server/Dashboard) + Shell(
 | `eket team:status` | 团队状态 |
 | `eket system:doctor` | 系统诊断 |
 | `eket server [--port 9877]` | 启动axum HTTP API |
+
+## 团队协作特性
+
+| 特性 | 说明 |
+|------|------|
+| **worktree 隔离** | `task:claim` 自动 `git worktree add .worktrees/TASK-NNN`，`task:complete` 自动清理 |
+| **专家标签** | `task:create` 必须传 `--expertise rust,devops`（或 `any`），`task:claim --role rust` 精准匹配 |
+| **依赖解除通知** | `task:complete` 后扫描 `blocked_by`，依赖全解除时写 `.eket/state/unblocked-queue.json`，heartbeat 优先分发 |
+| **卡大小检测** | `--effort 2d/0.5d/3h/480` 超阈值（默认1天）黄色 warn + 交互式子任务拆分向导 |
+| **knowledge 飞轮** | `task:claim` 自动推送相关 pitfalls/patterns；`task:complete` 触发 Curator 质量门；每5次 complete 重建索引 |
 
 ## Node.js 命令速查
 
