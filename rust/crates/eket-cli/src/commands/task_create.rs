@@ -1,18 +1,19 @@
-/// task:create — create a new ticket with cycle detection
+/// task:create — create a new ticket with cycle detection and size checking
 ///
 /// 核心流程：
 /// 1. 找到 tickets 目录
 /// 2. 计算下一个 TASK-NNN 编号
 /// 3. 解析 blocked_by 列表
 /// 4. 环检测（若有依赖）
-/// 5. 生成 ticket markdown，原子写文件
-/// 6. 输出 JSON
+/// 5. 卡大小检测（若传 --effort）
+/// 6. 生成 ticket markdown，原子写文件
+/// 7. 输出 JSON
 use anyhow::Result;
 use clap::Parser;
 use eket_core::dag::{detect_cycle, parse_tickets_dag, DagEdge, DagNode};
 use serde_json::json;
 use std::fs::OpenOptions;
-use std::io::Write as IoWrite;
+use std::io::{self, BufRead, Write as IoWrite};
 use std::path::{Path, PathBuf};
 
 // ─── Args ────────────────────────────────────────────────────────────────────
@@ -40,6 +41,24 @@ pub struct TaskCreateArgs {
     /// Associate with EPIC ID (e.g. EPIC-001)
     #[arg(long)]
     pub epic: Option<String>,
+
+    /// Required expertise tags, comma-separated.
+    /// Valid: rust, node, python, go, java, frontend, devops, qa, docs, ux, data, security, any
+    #[arg(
+        long,
+        value_delimiter = ',',
+        required = true,
+        help = "Required expertise: rust,node,python,go,java,frontend,devops,qa,docs,ux,data,security,any"
+    )]
+    pub expertise: Vec<String>,
+
+    /// Estimated effort: supports 2d / 0.5d / 3h / 480 (plain = minutes)
+    #[arg(long, help = "Estimated effort: 2d, 0.5d, 3h, or plain minutes (e.g. 480)")]
+    pub effort: Option<String>,
+
+    /// Skip interactive prompts (CI mode)
+    #[arg(long, help = "Skip interactive prompts (CI mode)")]
+    pub no_interactive: bool,
 
     /// tickets 目录路径（默认自动探测）
     #[arg(long)]
@@ -76,6 +95,113 @@ fn infer_priority(title: &str) -> &'static str {
     } else {
         "P2"
     }
+}
+
+// ─── Size check helpers ───────────────────────────────────────────────────────
+
+/// Parse effort string to minutes.
+/// Supported formats: "2d", "0.5d", "3h", "480" (plain number = minutes).
+/// 1d = 8h = 480min.
+fn parse_effort(s: &str) -> Option<u32> {
+    let s = s.trim();
+    if let Some(days_str) = s.strip_suffix('d') {
+        let days: f64 = days_str.parse().ok()?;
+        Some((days * 480.0).round() as u32)
+    } else if let Some(hours_str) = s.strip_suffix('h') {
+        let hours: f64 = hours_str.parse().ok()?;
+        Some((hours * 60.0).round() as u32)
+    } else {
+        s.parse::<u32>().ok()
+    }
+}
+
+/// Format minutes back to human-readable string.
+fn format_effort(minutes: u32) -> String {
+    if minutes % 480 == 0 {
+        format!("{}天", minutes / 480)
+    } else if minutes % 60 == 0 {
+        format!("{}小时", minutes / 60)
+    } else {
+        format!("{}min", minutes)
+    }
+}
+
+/// Read warn threshold (in minutes) from .eket/config.yml.
+/// Checks `task_size.warn_days` first (1d=480min), then `task_size.warn_minutes`.
+/// Falls back to 480 (1 day).
+fn read_threshold(project_root: &Path) -> u32 {
+    let config_path = project_root.join(".eket").join("config.yml");
+    let Ok(content) = std::fs::read_to_string(&config_path) else {
+        return 480;
+    };
+    let Ok(value) = serde_yaml::from_str::<serde_yaml::Value>(&content) else {
+        return 480;
+    };
+    // Prefer warn_days (human-friendly), fall back to warn_minutes
+    if let Some(days) = value
+        .get("task_size")
+        .and_then(|ts| ts.get("warn_days"))
+        .and_then(|v| v.as_f64())
+    {
+        return (days * 480.0).round() as u32;
+    }
+    value
+        .get("task_size")
+        .and_then(|ts| ts.get("warn_minutes"))
+        .and_then(|v| v.as_u64())
+        .map(|n| n as u32)
+        .unwrap_or(480)
+}
+
+/// Print yellow warning to stderr. Returns true if effort > threshold.
+fn check_and_warn_size(effort_minutes: u32, threshold: u32) -> bool {
+    if effort_minutes > threshold {
+        eprintln!(
+            "\x1b[33m⚠ 预估工时 {} 超过阈值 {}，建议拆分\x1b[0m",
+            format_effort(effort_minutes),
+            format_effort(threshold),
+        );
+        true
+    } else {
+        false
+    }
+}
+
+/// Read a trimmed line from stdin.
+fn read_line_trimmed() -> Result<String> {
+    let stdin = io::stdin();
+    let mut line = String::new();
+    stdin.lock().read_line(&mut line)?;
+    Ok(line.trim().to_string())
+}
+
+/// Interactive: ask user how many subtasks and collect titles.
+/// Returns list of titles (empty = user cancelled).
+fn interactive_split(count_min: u32, count_max: u32) -> Result<Vec<String>> {
+    eprint!("输入子任务数量（{}-{}）: ", count_min, count_max);
+    io::stderr().flush()?;
+
+    let count_str = read_line_trimmed()?;
+    let count: u32 = match count_str.parse() {
+        Ok(n) if n >= count_min && n <= count_max => n,
+        _ => {
+            eprintln!("无效数量，取消拆分。");
+            return Ok(vec![]);
+        }
+    };
+
+    let mut titles = Vec::with_capacity(count as usize);
+    for i in 1..=count {
+        eprint!("子任务 {} 标题: ", i);
+        io::stderr().flush()?;
+        let t = read_line_trimmed()?;
+        if t.is_empty() {
+            eprintln!("标题不能为空，取消拆分。");
+            return Ok(vec![]);
+        }
+        titles.push(t);
+    }
+    Ok(titles)
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -134,6 +260,7 @@ fn build_ticket_content(
     priority: &str,
     assignee: &str,
     blocked_by: &[String],
+    required_expertise: &[String],
 ) -> String {
     let date = chrono::Utc::now().format("%Y-%m-%d").to_string();
     let assignee_display = if assignee.is_empty() {
@@ -151,6 +278,11 @@ fn build_ticket_content(
     } else {
         blocked_by.join(", ")
     };
+    let expertise_display = if required_expertise.is_empty() {
+        "any".to_string()
+    } else {
+        required_expertise.join(", ")
+    };
 
     format!(
         r#"# {ticket_id}: {title}
@@ -162,7 +294,9 @@ fn build_ticket_content(
 - **负责人**: {assignee_display}
 - **创建时间**: {date}
 - **依赖**: {deps_display}
+- **所需专家**: {expertise_display}
 - blocked_by: [{blocked_by_comma}]
+- required_expertise: [{expertise_display}]
 
 ## 背景
 
@@ -179,33 +313,29 @@ fn build_ticket_content(
     )
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+/// Core create logic: write ticket file, link to EPIC, return JSON value.
+async fn create_single_ticket(
+    tickets_dir: &Path,
+    title: &str,
+    ticket_type: &str,
+    priority: &str,
+    assignee: &str,
+    blocked_by: &[String],
+    expertise: &[String],
+    epic: Option<&str>,
+) -> Result<serde_json::Value> {
+    let ticket_id = next_ticket_id(tickets_dir)?;
 
-pub async fn run(args: TaskCreateArgs) -> Result<()> {
-    // Resolve type and priority: explicit > inferred from title
-    let ticket_type = args.r#type.as_deref().unwrap_or_else(|| infer_type(&args.title)).to_string();
-    let priority = args.priority.as_deref().unwrap_or_else(|| infer_priority(&args.title)).to_string();
-
-    // 1. Find tickets dir
-    let tickets_dir = find_tickets_dir(args.tickets_dir)?;
-
-    // 2. Compute next ID
-    let ticket_id = next_ticket_id(&tickets_dir)?;
-
-    // 3. Parse blocked_by
-    let blocked_by = parse_blocked_by(&args.blocked_by);
-
-    // 4. Cycle detection
+    // Cycle detection
     if !blocked_by.is_empty() {
-        let mut dag = parse_tickets_dag(&tickets_dir);
-        // Add new node and edges to the DAG
+        let mut dag = parse_tickets_dag(tickets_dir);
         dag.nodes.push(DagNode {
             id: ticket_id.clone(),
-            label: args.title.clone(),
+            label: title.to_string(),
             status: "todo".to_string(),
             assignee: None,
         });
-        for dep in &blocked_by {
+        for dep in blocked_by {
             dag.edges.push(DagEdge {
                 source: ticket_id.clone(),
                 target: dep.clone(),
@@ -213,28 +343,23 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
         }
         if let Some(cycle_nodes) = detect_cycle(&dag) {
             let cycle_str = cycle_nodes.join(" -> ");
-            println!(
-                "{}",
-                serde_json::to_string_pretty(&json!({
-                    "status": "error",
-                    "error": format!("cycle detected: {}", cycle_str)
-                }))?
-            );
-            return Ok(());
+            return Ok(json!({
+                "status": "error",
+                "error": format!("cycle detected: {}", cycle_str)
+            }));
         }
     }
 
-    // 5. Generate content
     let content = build_ticket_content(
         &ticket_id,
-        &args.title,
-        &ticket_type,
-        &priority,
-        &args.assignee,
-        &blocked_by,
+        title,
+        ticket_type,
+        priority,
+        assignee,
+        blocked_by,
+        expertise,
     );
 
-    // 6. Atomic write (create_new = concurrent-safe)
     let file_path = tickets_dir.join(format!("{}.md", ticket_id));
     let mut file = OpenOptions::new()
         .write(true)
@@ -243,9 +368,8 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
         .map_err(|e| anyhow::anyhow!("Failed to create ticket file {}: {}", file_path.display(), e))?;
     file.write_all(content.as_bytes())?;
 
-    // 6b. If --epic given, link ticket into EPIC plan
-    if let Some(ref epic_id) = args.epic {
-        // Find project root (parent of jira/)
+    // Link to EPIC if given
+    if let Some(epic_id) = epic {
         let project_root = tickets_dir
             .parent() // jira/
             .and_then(|p| p.parent()); // project root
@@ -258,30 +382,137 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
                 let marker = "<!-- eket:section:tickets -->";
                 let existing = std::fs::read_to_string(&plan_path)?;
                 if existing.contains(marker) {
-                    // Replace marker with marker + new ticket line
-                    let replacement =
-                        format!("{marker}\n- {ticket_id}: {title}", title = args.title);
+                    let replacement = format!("{marker}\n- {ticket_id}: {title}");
                     let updated = existing.replacen(marker, &replacement, 1);
                     std::fs::write(&plan_path, updated)?;
                 }
-                // If marker absent, skip silently (plan format unexpected)
             } else {
                 eprintln!("[WARN] EPIC plan not found for {epic_id}, skipping");
             }
         }
     }
 
-    // 7. Output JSON
-    let report = json!({
+    Ok(json!({
         "status": "created",
         "ticket_id": ticket_id,
         "path": file_path.display().to_string(),
-        "title": args.title,
+        "title": title,
         "type": ticket_type,
         "priority": priority,
         "blocked_by": blocked_by,
-        "epic": args.epic,
-    });
+        "epic": epic,
+        "required_expertise": expertise,
+    }))
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+pub async fn run(args: TaskCreateArgs) -> Result<()> {
+    // Resolve type and priority: explicit > inferred from title
+    let ticket_type = args.r#type.as_deref().unwrap_or_else(|| infer_type(&args.title)).to_string();
+    let priority = args.priority.as_deref().unwrap_or_else(|| infer_priority(&args.title)).to_string();
+
+    // Validate expertise tags (warn on unknown, allow custom)
+    const KNOWN_TAGS: &[&str] = &[
+        "rust", "node", "python", "go", "java", "frontend",
+        "devops", "qa", "docs", "ux", "data", "security", "any",
+    ];
+    for tag in &args.expertise {
+        if !KNOWN_TAGS.contains(&tag.as_str()) {
+            eprintln!("[WARN] Unknown expertise tag '{}'. Known: {}", tag, KNOWN_TAGS.join(", "));
+        }
+    }
+
+    // 1. Find tickets dir
+    let tickets_dir = find_tickets_dir(args.tickets_dir.clone())?;
+
+    // 2. Parse blocked_by
+    let blocked_by = parse_blocked_by(&args.blocked_by);
+
+    // ── Size check ──────────────────────────────────────────────────────────
+    if let Some(ref effort_str) = args.effort {
+        // Resolve project root from tickets_dir (tickets_dir = <root>/jira/tickets)
+        let project_root = tickets_dir
+            .parent()
+            .and_then(|p| p.parent())
+            .map(|p| p.to_path_buf())
+            .unwrap_or_else(|| PathBuf::from("."));
+
+        let effort_minutes = match parse_effort(effort_str) {
+            Some(m) => m,
+            None => {
+                eprintln!("[WARN] Cannot parse --effort '{}'. Use formats like: 2d, 0.5d, 3h, 480", effort_str);
+                0
+            }
+        };
+
+        if effort_minutes > 0 {
+            let threshold = read_threshold(&project_root);
+            let oversized = check_and_warn_size(effort_minutes, threshold);
+
+            if oversized {
+                if args.no_interactive {
+                    // CI mode: warn only, proceed with single ticket creation
+                } else {
+                    // Interactive: ask user
+                    eprint!("继续创建单张卡？(y/N) ");
+                    io::stderr().flush()?;
+                    let answer = read_line_trimmed()?;
+
+                    match answer.to_lowercase().as_str() {
+                        "y" | "yes" => {
+                            // fall through to normal creation below
+                        }
+                        _ => {
+                            // Enter subtask batch mode
+                            eprintln!("进入子任务批量创建模式（数量 2-5）");
+                            let subtask_titles = interactive_split(2, 5)?;
+                            if subtask_titles.is_empty() {
+                                return Ok(());
+                            }
+
+                            let mut results = Vec::new();
+                            for sub_title in &subtask_titles {
+                                let report = create_single_ticket(
+                                    &tickets_dir,
+                                    sub_title,
+                                    &ticket_type,
+                                    &priority,
+                                    &args.assignee,
+                                    &[], // subtasks have no blocked_by by default
+                                    &args.expertise,
+                                    args.epic.as_deref(),
+                                )
+                                .await?;
+                                results.push(report);
+                            }
+
+                            println!("{}", serde_json::to_string_pretty(&json!({
+                                "status": "split_created",
+                                "count": results.len(),
+                                "tickets": results,
+                            }))?);
+                            return Ok(());
+                        }
+                    }
+                }
+            }
+        } // end if effort_minutes > 0
+    } // end if let Some(effort_str)
+
+    // ── Single ticket creation ───────────────────────────────────────────────
+    let report = create_single_ticket(
+        &tickets_dir,
+        &args.title,
+        &ticket_type,
+        &priority,
+        &args.assignee,
+        &blocked_by,
+        &args.expertise,
+        args.epic.as_deref(),
+    )
+    .await?;
+
     println!("{}", serde_json::to_string_pretty(&report)?);
     Ok(())
 }
@@ -302,6 +533,9 @@ mod tests {
             blocked_by: blocked_by.to_string(),
             assignee: String::new(),
             epic: None,
+            expertise: vec!["any".to_string()],
+            effort: None,
+            no_interactive: false,
             tickets_dir: Some(dir.path().to_path_buf()),
         }
     }
@@ -365,37 +599,14 @@ mod tests {
     #[tokio::test]
     async fn cycle_detection_rejects() {
         let dir = TempDir::new().unwrap();
-        // TASK-1 depends on TASK-2, TASK-2 depends on TASK-1 (cycle when we try to create TASK-2 → TASK-1)
-        // Create TASK-1 that depends on TASK-3 (future), then TASK-2 depending on TASK-1,
-        // then try TASK-3 depending on TASK-2 → cycle: TASK-1 → TASK-3 → TASK-2 → TASK-1
-        fs::write(
-            dir.path().join("TASK-1.md"),
-            "# TASK-1: A\n- **状态**: todo\n- blocked_by: [TASK-2]\n",
-        )
-        .unwrap();
-        fs::write(
-            dir.path().join("TASK-2.md"),
-            "# TASK-2: B\n- **状态**: todo\n- blocked_by: []\n",
-        )
-        .unwrap();
-
-        // Now try to create TASK-3 that TASK-2 blocks_by TASK-3 would form: TASK-1 → TASK-2 and new TASK-3 → TASK-1, creating no cycle
-        // Actually let's do direct: TASK-2 depends on something that depends on TASK-2
-        // TASK-1 depends on TASK-2; create new ticket depending on TASK-1 → forms TASK-NEW → TASK-1 → TASK-2 (no cycle)
-        // For a real cycle: create TASK-2 already depends on new ticket (impossible as new ticket not created yet)
-        // Best approach: TASK-1 blocked_by TASK-2, TASK-2 blocked_by TASK-1 (already in files)
-        // Re-setup:
         let dir2 = TempDir::new().unwrap();
         fs::write(
             dir2.path().join("TASK-1.md"),
             "# TASK-1: A\n- **状态**: todo\n- blocked_by: [TASK-2]\n",
         )
         .unwrap();
-        // TASK-2.md doesn't exist yet. We try to create TASK-2 blocked_by TASK-1 → cycle: TASK-1→TASK-2→TASK-1
+        // TASK-2.md doesn't exist yet. We try to create TASK-2 blocked_by TASK-1 → cycle
         let args = make_args("Will Cycle", "TASK-1", &dir2);
-        // Capture stdout by running directly
-        // We expect cycle detection; run should succeed (no panic) but print error JSON
-        // We'll test by checking the output indirectly: TASK-2.md should NOT be created
         let result = run(args).await;
         assert!(result.is_ok(), "run() itself should not error");
         // File must NOT be created because cycle was detected
@@ -403,6 +614,8 @@ mod tests {
             !dir2.path().join("TASK-2.md").exists(),
             "Cycle ticket should not be created"
         );
+        // suppress unused warning
+        drop(dir);
     }
 
     #[tokio::test]
@@ -415,6 +628,9 @@ mod tests {
             blocked_by: String::new(),
             assignee: String::new(),
             epic: None,
+            expertise: vec!["any".to_string()],
+            effort: None,
+            no_interactive: false,
             tickets_dir: Some(dir.path().to_path_buf()),
         };
         run(args).await.unwrap();
@@ -433,10 +649,106 @@ mod tests {
             blocked_by: String::new(),
             assignee: String::new(),
             epic: None,
+            expertise: vec!["any".to_string()],
+            effort: None,
+            no_interactive: false,
             tickets_dir: Some(dir.path().to_path_buf()),
         };
         run(args).await.unwrap();
         let content = fs::read_to_string(dir.path().join("TASK-1.md")).unwrap();
         assert!(content.contains("**优先级**: P0"));
+    }
+
+    #[tokio::test]
+    async fn effort_below_threshold_no_warn() {
+        let dir = TempDir::new().unwrap();
+        let args = TaskCreateArgs {
+            title: "Small task".to_string(),
+            r#type: None,
+            priority: None,
+            blocked_by: String::new(),
+            assignee: String::new(),
+            epic: None,
+            expertise: vec!["any".to_string()],
+            effort: Some("120".to_string()),
+            no_interactive: true, // CI mode
+            tickets_dir: Some(dir.path().to_path_buf()),
+        };
+        run(args).await.unwrap();
+        assert!(dir.path().join("TASK-1.md").exists());
+    }
+
+    #[tokio::test]
+    async fn effort_above_threshold_no_interactive_creates() {
+        let dir = TempDir::new().unwrap();
+        // effort=600 > default 480, but --no-interactive → just warn and create
+        let args = TaskCreateArgs {
+            title: "Big task".to_string(),
+            r#type: None,
+            priority: None,
+            blocked_by: String::new(),
+            assignee: String::new(),
+            epic: None,
+            expertise: vec!["rust".to_string()],
+            effort: Some("600".to_string()),
+            no_interactive: true,
+            tickets_dir: Some(dir.path().to_path_buf()),
+        };
+        run(args).await.unwrap();
+        // Ticket should still be created despite warning
+        assert!(dir.path().join("TASK-1.md").exists());
+        let content = fs::read_to_string(dir.path().join("TASK-1.md")).unwrap();
+        assert!(content.contains("Big task"));
+    }
+
+    #[tokio::test]
+    async fn check_and_warn_size_logic() {
+        // above threshold → true
+        assert!(check_and_warn_size(600, 480));
+        // at threshold → false
+        assert!(!check_and_warn_size(480, 480));
+        // below threshold → false
+        assert!(!check_and_warn_size(120, 480));
+    }
+
+    #[test]
+    fn test_parse_effort() {
+        assert_eq!(parse_effort("2d"), Some(960));
+        assert_eq!(parse_effort("1d"), Some(480));
+        assert_eq!(parse_effort("0.5d"), Some(240));
+        assert_eq!(parse_effort("3h"), Some(180));
+        assert_eq!(parse_effort("1h"), Some(60));
+        assert_eq!(parse_effort("480"), Some(480));
+        assert_eq!(parse_effort("0"), Some(0));
+        assert_eq!(parse_effort("abc"), None);
+        assert_eq!(parse_effort("1.5x"), None);
+    }
+
+    #[test]
+    fn test_format_effort() {
+        assert_eq!(format_effort(480), "1天");
+        assert_eq!(format_effort(960), "2天");
+        assert_eq!(format_effort(240), "4小时");
+        assert_eq!(format_effort(90), "90min");
+    }
+
+    #[tokio::test]
+    async fn read_threshold_missing_config() {
+        let dir = TempDir::new().unwrap();
+        // No .eket/config.yml → default 480
+        assert_eq!(read_threshold(dir.path()), 480);
+    }
+
+    #[tokio::test]
+    async fn read_threshold_from_config() {
+        let dir = TempDir::new().unwrap();
+        let eket_dir = dir.path().join(".eket");
+        fs::create_dir_all(&eket_dir).unwrap();
+        fs::write(
+            eket_dir.join("config.yml"),
+            "task_size:\n  warn_minutes: 240\n",
+        )
+        .unwrap();
+        assert_eq!(read_threshold(dir.path()), 240);
     }
 }
