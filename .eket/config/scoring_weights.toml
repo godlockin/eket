@@ -1,0 +1,5 @@
+[weights]
+success = 0.4
+uptime  = 0.2
+latency = 0.2
+error   = 0.2
