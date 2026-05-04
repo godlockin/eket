@@ -11,6 +11,7 @@
 use anyhow::Result;
 use clap::Parser;
 use eket_core::dag::{detect_cycle, parse_tickets_dag, DagEdge, DagNode};
+use eket_core::expert_skill_bridge::ExpertSkillBridge;
 use serde_json::json;
 use std::fs::OpenOptions;
 use std::io::{self, BufRead, Write as IoWrite};
@@ -405,6 +406,121 @@ async fn create_single_ticket(
     }))
 }
 
+// ─── Expert scaffold helpers ──────────────────────────────────────────────────
+
+/// Returns `~/.claude/skills/eket/experts` (or `$EKET_EXPERTS_DIR` override).
+pub fn default_experts_dir() -> PathBuf {
+    if let Ok(val) = std::env::var("EKET_EXPERTS_DIR") {
+        return PathBuf::from(val);
+    }
+    // Use `dirs` crate (already in workspace deps)
+    if let Some(home) = dirs::home_dir() {
+        return home.join(".claude/skills/eket/experts");
+    }
+    // Absolute fallback via $HOME
+    if let Ok(home) = std::env::var("HOME") {
+        return PathBuf::from(home).join(".claude/skills/eket/experts");
+    }
+    PathBuf::from(".claude/skills/eket/experts")
+}
+
+/// For each tag in `tags` (skipping "any"), check if an expert profile already
+/// exists (id contains tag OR domain == tag). If not, write a scaffold .md to
+/// `{experts_base}/extended/{tag}.md`. Skips write if file already exists.
+/// Returns the list of tags that were newly scaffolded.
+pub fn scaffold_missing_experts(tags: &[String], experts_base: &Path) -> Vec<String> {
+    // Load existing experts from default + extended dirs (skip if not present)
+    let default_dir = experts_base.join("default");
+    let extended_dir = experts_base.join("extended");
+
+    let mut dirs_to_load: Vec<(PathBuf, String)> = Vec::new();
+    if default_dir.is_dir() {
+        dirs_to_load.push((default_dir.clone(), "default".to_string()));
+    }
+    if extended_dir.is_dir() {
+        dirs_to_load.push((extended_dir.clone(), "extended".to_string()));
+    }
+
+    let bridge = match ExpertSkillBridge::load_from_dirs(&dirs_to_load) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("[WARN] scaffold_missing_experts: failed to load bridge: {}", e);
+            return vec![];
+        }
+    };
+
+    let all = bridge.all_experts();
+    let mut scaffolded = Vec::new();
+
+    for tag in tags {
+        if tag == "any" {
+            continue;
+        }
+        // Check if any existing expert matches this tag
+        let exists = all.iter().any(|p| {
+            p.id.contains(tag.as_str()) || p.domain == *tag
+        });
+        if exists {
+            continue;
+        }
+
+        // Ensure extended/ dir exists
+        if let Err(e) = std::fs::create_dir_all(&extended_dir) {
+            eprintln!("[WARN] scaffold_missing_experts: cannot create {}: {}", extended_dir.display(), e);
+            continue;
+        }
+
+        let file_path = extended_dir.join(format!("{}.md", tag));
+        if file_path.exists() {
+            // Already scaffolded previously, skip
+            continue;
+        }
+
+        // Capitalise tag for display name
+        let tag_cap = {
+            let mut c = tag.chars();
+            match c.next() {
+                None => String::new(),
+                Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+            }
+        };
+
+        let content = format!(
+            r#"```yaml
+id: eket.{tag}.scaffold
+name: {tag_cap} Expert
+name_cn: {tag} 专家
+role: {tag_cap} 专家（待完善）
+emoji: 🤖
+domain: {tag}
+tier: extended
+skills:
+  primary:
+    - systematic-debugging
+    - test-driven-development
+  contextual: []
+```
+
+> ⚠ 此文件由 eket 自动生成，请补充完整的专家 persona 设定。
+> 参考模板：~/.claude/skills/eket/experts/default/backend.md
+"#,
+            tag = tag,
+            tag_cap = tag_cap,
+        );
+
+        match std::fs::write(&file_path, &content) {
+            Ok(_) => {
+                scaffolded.push(tag.clone());
+            }
+            Err(e) => {
+                eprintln!("[WARN] scaffold_missing_experts: failed to write {}: {}", file_path.display(), e);
+            }
+        }
+    }
+
+    scaffolded
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 pub async fn run(args: TaskCreateArgs) -> Result<()> {
@@ -421,6 +537,13 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
         if !KNOWN_TAGS.contains(&tag.as_str()) {
             eprintln!("[WARN] Unknown expertise tag '{}'. Known: {}", tag, KNOWN_TAGS.join(", "));
         }
+    }
+
+    // Auto-scaffold missing expert personas
+    let experts_base = default_experts_dir();
+    let scaffolded = scaffold_missing_experts(&args.expertise, &experts_base);
+    if !scaffolded.is_empty() {
+        eprintln!("scaffolded_experts: {:?}", scaffolded);
     }
 
     // 1. Find tickets dir
@@ -750,5 +873,66 @@ mod tests {
         )
         .unwrap();
         assert_eq!(read_threshold(dir.path()), 240);
+    }
+
+    #[test]
+    fn scaffold_creates_missing_persona() {
+        let tmp = TempDir::new().unwrap();
+        let experts_base = tmp.path();
+
+        // Create empty default/ dir; no extended/
+        fs::create_dir_all(experts_base.join("default")).unwrap();
+
+        let result = scaffold_missing_experts(&["data-engineer".to_string()], experts_base);
+        assert_eq!(result, vec!["data-engineer".to_string()]);
+
+        let scaffold_path = experts_base.join("extended/data-engineer.md");
+        assert!(scaffold_path.exists(), "scaffold file should be created");
+
+        let content = fs::read_to_string(&scaffold_path).unwrap();
+        assert!(content.contains("id: eket.data-engineer.scaffold"), "content should contain scaffold id");
+
+        // Second call must NOT overwrite the file
+        let original_content = content.clone();
+        // Mutate file so we can detect overwrite
+        fs::write(&scaffold_path, "MODIFIED").unwrap();
+        let result2 = scaffold_missing_experts(&["data-engineer".to_string()], experts_base);
+        // File already exists → skip → empty returned list
+        assert!(result2.is_empty(), "should not scaffold again");
+        let after = fs::read_to_string(&scaffold_path).unwrap();
+        assert_eq!(after, "MODIFIED", "file should not be overwritten");
+        drop(original_content);
+    }
+
+    #[test]
+    fn scaffold_skips_existing_persona() {
+        let tmp = TempDir::new().unwrap();
+        let experts_base = tmp.path();
+        let default_dir = experts_base.join("default");
+        fs::create_dir_all(&default_dir).unwrap();
+
+        // Write a real-looking expert md with domain: rust
+        let rust_md = r#"```yaml
+id: eket.rust.001
+name: Rust Expert
+name_cn: Rust 专家
+role: Rust 工程师
+emoji: 🦀
+domain: rust
+tier: default
+skills:
+  primary:
+    - systems-programming
+  contextual: []
+```
+"#;
+        fs::write(default_dir.join("rust.md"), rust_md).unwrap();
+
+        let result = scaffold_missing_experts(&["rust".to_string()], experts_base);
+        assert!(result.is_empty(), "should skip existing persona");
+        assert!(
+            !experts_base.join("extended/rust.md").exists(),
+            "extended/rust.md should NOT be created"
+        );
     }
 }
