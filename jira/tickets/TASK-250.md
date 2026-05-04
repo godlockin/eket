@@ -1,6 +1,6 @@
 # TASK-250: HNSW 向量检索层 — expertise dispatch 语义升级
 
-**状态**: todo
+**状态**: done
 **优先级**: P0
 **预估工时**: 480min
 **负责人**: —
