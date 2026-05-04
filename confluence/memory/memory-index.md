@@ -11,7 +11,7 @@
 |------|------|
 | [patterns/knowledge-system.md](patterns/knowledge-system.md) | EKET 知识沉淀系统 — L0~L4 分层、写入时机、GC 流程 |
 | [patterns/master-slaver-coordination.md](patterns/master-slaver-coordination.md) | Master-Slaver 协调模式 — 任务分发、状态同步、越权防护 |
-| [patterns/three-level-degradation.md](patterns/three-level-degradation.md) | 四级降级模式 — Shell(L0) → Rust(L1) → Node.js(L2) → Redis+SQLite(L3) 容灾链路 |
+| [patterns/four-level-degradation.md](patterns/four-level-degradation.md) | 四级降级模式 — Shell(L0) → Rust(L1) → Node.js(L2) → Redis+SQLite(L3) 容灾链路 |
 | [patterns/multi-layer-intent-aggregation.md](patterns/multi-layer-intent-aggregation.md) | 多层意图聚合模式 — 4层模型、4注入点、冲突澄清流程 |
 | [patterns/expertise-tag-design.md](patterns/expertise-tag-design.md) | expertise tag 设计模式 — 白名单、heartbeat评分派送、等待队列、auto-scaffold |
 | [patterns/expert-dispatch-waiting.md](patterns/expert-dispatch-waiting.md) | Expert Dispatch 等待队列 + 按需召唤 — 完整流程图、优先级、文件约定 |
