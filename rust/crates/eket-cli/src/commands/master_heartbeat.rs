@@ -59,8 +59,14 @@ pub async fn run(args: MasterHeartbeatArgs) -> Result<()> {
 }
 
 /// One heartbeat cycle: scan ready tickets → assign to idle slavers.
+/// Unblocked queue (dispatched:false) is prioritized over normal DAG-ready tickets.
 /// Extracted for testability.
 pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tickets_dir: &Path) {
+    // 0. Derive project_root from tickets_dir (one level up from jira/tickets)
+    let project_root = tickets_dir
+        .parent()    // jira/
+        .and_then(|p| p.parent()); // project root
+
     // 1. Collect completed / failed ticket IDs from DB
     let completed: HashSet<String> = client
         .list_tickets(Some("done"), None, None)
@@ -76,14 +82,47 @@ pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tick
         .map(|r| r.id)
         .collect();
 
-    // 2. Parse DAG from filesystem → derive ready tickets
+    // 2. Build priority list: unblocked-queue first, then DAG-ready
+    let mut priority_tickets: Vec<String> = vec![];
+
+    // 2a. Read unblocked-queue.json (dispatched: false)
+    if let Some(root) = project_root {
+        let queue_path = root.join(".eket/state/unblocked-queue.json");
+        if queue_path.exists() {
+            if let Ok(raw) = std::fs::read_to_string(&queue_path) {
+                if let Ok(entries) = serde_json::from_str::<Vec<serde_json::Value>>(&raw) {
+                    let pending: Vec<String> = entries
+                        .iter()
+                        .filter(|v| {
+                            v.get("dispatched")
+                                .and_then(|d| d.as_bool())
+                                .map(|d| !d)
+                                .unwrap_or(false)
+                        })
+                        .filter_map(|v| {
+                            v.get("ticket_id").and_then(|s| s.as_str()).map(|s| s.to_string())
+                        })
+                        .collect();
+                    priority_tickets.extend(pending);
+                }
+            }
+        }
+    }
+
+    // 2b. DAG-ready tickets (excluding already-in priority_tickets to avoid dups)
     let dag = parse_tickets_dag(tickets_dir);
     let ready = ready_tickets(&dag, &completed, &failed);
+    let priority_set: HashSet<String> = priority_tickets.iter().cloned().collect();
+    for t in ready {
+        if !priority_set.contains(&t) {
+            priority_tickets.push(t);
+        }
+    }
 
-    // 3. Assign each ready ticket to the first idle slaver
+    // 3. Assign each ticket to the first idle slaver
     let sender = ProtocolSender::new(mailbox.clone());
 
-    for ticket_id in ready {
+    for ticket_id in priority_tickets {
         let instances = client.list_instances(Some("slaver")).unwrap_or_default();
         let idle = instances.into_iter().find(|i| i.status == "idle");
 
@@ -106,6 +145,11 @@ pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tick
 
                 let _ = client.update_instance_status(&slaver.id, "busy");
 
+                // Mark as dispatched in unblocked-queue if applicable
+                if let Some(root) = project_root {
+                    mark_unblocked_dispatched(root, &ticket_id);
+                }
+
                 println!(
                     "{}",
                     json!({
@@ -115,6 +159,29 @@ pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tick
                     })
                 );
             }
+        }
+    }
+}
+
+/// Mark a ticket as dispatched in .eket/state/unblocked-queue.json.
+fn mark_unblocked_dispatched(project_root: &Path, ticket_id: &str) {
+    let queue_path = project_root.join(".eket/state/unblocked-queue.json");
+    if !queue_path.exists() {
+        return;
+    }
+    let Ok(raw) = std::fs::read_to_string(&queue_path) else { return };
+    let Ok(mut entries) = serde_json::from_str::<Vec<serde_json::Value>>(&raw) else { return };
+
+    let mut changed = false;
+    for entry in &mut entries {
+        if entry.get("ticket_id").and_then(|v| v.as_str()) == Some(ticket_id) {
+            entry["dispatched"] = serde_json::json!(true);
+            changed = true;
+        }
+    }
+    if changed {
+        if let Ok(json) = serde_json::to_string_pretty(&entries) {
+            let _ = std::fs::write(&queue_path, json);
         }
     }
 }
