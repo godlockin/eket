@@ -190,6 +190,10 @@ enum Commands {
     /// Show skills for an expert
     #[command(name = "expert:skills")]
     ExpertSkills { expert_id: String },
+
+    /// Knowledge Curator: review a memory entry for quality before committing to library
+    #[command(name = "memory:review")]
+    MemoryReview(commands::memory_review::MemoryReviewArgs),
 }
 
 #[tokio::main]
@@ -256,5 +260,6 @@ async fn main() -> Result<()> {
         Commands::ExpertSkills { expert_id } => {
             commands::expert_compose::run_skills(expert_id).await
         }
+        Commands::MemoryReview(args) => commands::memory_review::run(args).await,
     }
 }

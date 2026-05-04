@@ -169,6 +169,73 @@ YAML
 }
 
 # ─── Phase 5 ─────────────────────────────────────────────────────────────────
+init_codebase_map() {
+  info "Phase 5: 初始化 Codebase Map..."
+
+  local map_dir="$PROJECT_ROOT/confluence/memory"
+  local map_file="$map_dir/codebase-map.md"
+  local gen_script="$EKET_ROOT/scripts/generate-codebase-map.sh"
+  local hook_src="$EKET_ROOT/template/scripts/hooks/post-commit"
+  local hook_dest="$PROJECT_ROOT/.git/hooks/post-commit"
+  local map_script_dest="$PROJECT_ROOT/confluence/scripts/generate-codebase-map.sh"
+
+  # 复制生成脚本到目标项目
+  mkdir -p "$PROJECT_ROOT/confluence/scripts"
+  if [ -f "$gen_script" ]; then
+    cp "$gen_script" "$map_script_dest"
+    chmod +x "$map_script_dest"
+    ok "generate-codebase-map.sh → confluence/scripts/"
+  fi
+
+  # 生成初始 codebase-map.md
+  if [ -f "$gen_script" ]; then
+    info "扫描目标项目生成 codebase-map.md..."
+    bash "$gen_script" "$PROJECT_ROOT" || warn "生成 codebase-map 失败，可稍后手动运行"
+    if [ -f "$map_file" ]; then
+      ok "codebase-map.md 已生成：$map_file"
+    fi
+  else
+    warn "generate-codebase-map.sh 不存在，跳过"
+  fi
+
+  # 安装 post-commit hook
+  if [ -d "$PROJECT_ROOT/.git" ]; then
+    if [ -f "$hook_src" ]; then
+      if [ -f "$hook_dest" ]; then
+        warn "post-commit hook 已存在，跳过（不覆盖）"
+      else
+        cp "$hook_src" "$hook_dest"
+        chmod +x "$hook_dest"
+        ok "post-commit hook 已安装"
+      fi
+    else
+      warn "hook 模板不存在：$hook_src"
+    fi
+  else
+    warn "未检测到 .git 目录，跳过 hook 安装"
+  fi
+
+  # 冷启动：若 confluence/memory/ 已有内容，立即建 knowledge index
+  local memory_dir="$PROJECT_ROOT/confluence/memory"
+  local db_path="$PROJECT_ROOT/.eket/eket.db"
+  local md_count
+  md_count=$(find "$memory_dir" -name "*.md" 2>/dev/null | grep -v "codebase-map" | wc -l | tr -d ' ')
+  if [ "$md_count" -gt 0 ] && command -v eket >/dev/null 2>&1; then
+    info "发现 ${md_count} 个 memory 文件，建立知识索引..."
+    if eket knowledge:index --dir "$memory_dir" --db-path "$db_path" 2>/dev/null; then
+      ok "knowledge index 已建立（${md_count} 个文件）"
+      # 重置 complete 计数，避免立即触发重建
+      echo "0" > "$PROJECT_ROOT/.git/eket-complete-count" 2>/dev/null || true
+    else
+      warn "knowledge index 建立失败，可稍后运行：eket knowledge:index --dir confluence/memory/"
+    fi
+  elif [ "$md_count" -gt 0 ]; then
+    warn "发现 ${md_count} 个 memory 文件，但未找到 eket binary，跳过索引建立"
+    info "安装后手动运行：eket knowledge:index --dir confluence/memory/"
+  fi
+}
+
+# ─── Phase 6 ─────────────────────────────────────────────────────────────────
 show_next_steps() {
   echo ""
   echo -e "${GREEN}========================================${NC}"
@@ -217,6 +284,8 @@ main() {
   init_gitignore
   echo ""
   init_master_identity
+  echo ""
+  init_codebase_map
   echo ""
   show_next_steps
 }
