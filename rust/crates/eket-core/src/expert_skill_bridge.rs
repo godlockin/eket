@@ -399,7 +399,10 @@ skills:
 
     #[test]
     fn expert_skill_missing_dir() {
+        // load_from_dirs gracefully skips non-existent directories (degraded mode),
+        // so load_from_dir on a missing path returns Ok with empty bridge.
         let result = ExpertSkillBridge::load_from_dir(Path::new("/nonexistent/dir"));
-        assert!(result.is_err());
+        assert!(result.is_ok());
+        assert!(result.unwrap().experts.is_empty());
     }
 }
