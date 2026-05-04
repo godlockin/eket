@@ -52,9 +52,9 @@ pub struct TaskCreateArgs {
     )]
     pub expertise: Vec<String>,
 
-    /// Estimated effort in minutes
-    #[arg(long, help = "Estimated effort in minutes")]
-    pub effort: Option<u32>,
+    /// Estimated effort: supports 2d / 0.5d / 3h / 480 (plain = minutes)
+    #[arg(long, help = "Estimated effort: 2d, 0.5d, 3h, or plain minutes (e.g. 480)")]
+    pub effort: Option<String>,
 
     /// Skip interactive prompts (CI mode)
     #[arg(long, help = "Skip interactive prompts (CI mode)")]
@@ -99,17 +99,52 @@ fn infer_priority(title: &str) -> &'static str {
 
 // ─── Size check helpers ───────────────────────────────────────────────────────
 
-/// Read warn_minutes threshold from .eket/config.yml under project root.
-/// Falls back to 480 if config absent or key missing.
+/// Parse effort string to minutes.
+/// Supported formats: "2d", "0.5d", "3h", "480" (plain number = minutes).
+/// 1d = 8h = 480min.
+fn parse_effort(s: &str) -> Option<u32> {
+    let s = s.trim();
+    if let Some(days_str) = s.strip_suffix('d') {
+        let days: f64 = days_str.parse().ok()?;
+        Some((days * 480.0).round() as u32)
+    } else if let Some(hours_str) = s.strip_suffix('h') {
+        let hours: f64 = hours_str.parse().ok()?;
+        Some((hours * 60.0).round() as u32)
+    } else {
+        s.parse::<u32>().ok()
+    }
+}
+
+/// Format minutes back to human-readable string.
+fn format_effort(minutes: u32) -> String {
+    if minutes % 480 == 0 {
+        format!("{}天", minutes / 480)
+    } else if minutes % 60 == 0 {
+        format!("{}小时", minutes / 60)
+    } else {
+        format!("{}min", minutes)
+    }
+}
+
+/// Read warn threshold (in minutes) from .eket/config.yml.
+/// Checks `task_size.warn_days` first (1d=480min), then `task_size.warn_minutes`.
+/// Falls back to 480 (1 day).
 fn read_threshold(project_root: &Path) -> u32 {
     let config_path = project_root.join(".eket").join("config.yml");
     let Ok(content) = std::fs::read_to_string(&config_path) else {
         return 480;
     };
-    // Parse YAML; look for task_size.warn_minutes
     let Ok(value) = serde_yaml::from_str::<serde_yaml::Value>(&content) else {
         return 480;
     };
+    // Prefer warn_days (human-friendly), fall back to warn_minutes
+    if let Some(days) = value
+        .get("task_size")
+        .and_then(|ts| ts.get("warn_days"))
+        .and_then(|v| v.as_f64())
+    {
+        return (days * 480.0).round() as u32;
+    }
     value
         .get("task_size")
         .and_then(|ts| ts.get("warn_minutes"))
@@ -119,16 +154,17 @@ fn read_threshold(project_root: &Path) -> u32 {
 }
 
 /// Print yellow warning to stderr. Returns true if effort > threshold.
-fn check_and_warn_size(effort: u32, threshold: u32) -> bool {
-    if effort > threshold {
+fn check_and_warn_size(effort_minutes: u32, threshold: u32) -> bool {
+    if effort_minutes > threshold {
         eprintln!(
-            "\x1b[33m⚠ 预估工时 {}min 超过阈值 {}min，建议拆分\x1b[0m",
-            effort, threshold
+            "\x1b[33m⚠ 预估工时 {} 超过阈值 {}，建议拆分\x1b[0m",
+            format_effort(effort_minutes),
+            format_effort(threshold),
         );
         true
     } else {
         false
-}
+    }
 }
 
 /// Read a trimmed line from stdin.
@@ -394,7 +430,7 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
     let blocked_by = parse_blocked_by(&args.blocked_by);
 
     // ── Size check ──────────────────────────────────────────────────────────
-    if let Some(effort) = args.effort {
+    if let Some(ref effort_str) = args.effort {
         // Resolve project root from tickets_dir (tickets_dir = <root>/jira/tickets)
         let project_root = tickets_dir
             .parent()
@@ -402,57 +438,67 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
             .map(|p| p.to_path_buf())
             .unwrap_or_else(|| PathBuf::from("."));
 
-        let threshold = read_threshold(&project_root);
-        let oversized = check_and_warn_size(effort, threshold);
+        let effort_minutes = match parse_effort(effort_str) {
+            Some(m) => m,
+            None => {
+                eprintln!("[WARN] Cannot parse --effort '{}'. Use formats like: 2d, 0.5d, 3h, 480", effort_str);
+                0
+            }
+        };
 
-        if oversized {
-            if args.no_interactive {
-                // CI mode: warn only, proceed with single ticket creation
-            } else {
-                // Interactive: ask user
-                eprint!("继续创建单张卡？(y/N) ");
-                io::stderr().flush()?;
-                let answer = read_line_trimmed()?;
+        if effort_minutes > 0 {
+            let threshold = read_threshold(&project_root);
+            let oversized = check_and_warn_size(effort_minutes, threshold);
 
-                match answer.to_lowercase().as_str() {
-                    "y" | "yes" => {
-                        // fall through to normal creation below
-                    }
-                    _ => {
-                        // Enter subtask batch mode
-                        eprintln!("进入子任务批量创建模式（数量 2-5）");
-                        let subtask_titles = interactive_split(2, 5)?;
-                        if subtask_titles.is_empty() {
+            if oversized {
+                if args.no_interactive {
+                    // CI mode: warn only, proceed with single ticket creation
+                } else {
+                    // Interactive: ask user
+                    eprint!("继续创建单张卡？(y/N) ");
+                    io::stderr().flush()?;
+                    let answer = read_line_trimmed()?;
+
+                    match answer.to_lowercase().as_str() {
+                        "y" | "yes" => {
+                            // fall through to normal creation below
+                        }
+                        _ => {
+                            // Enter subtask batch mode
+                            eprintln!("进入子任务批量创建模式（数量 2-5）");
+                            let subtask_titles = interactive_split(2, 5)?;
+                            if subtask_titles.is_empty() {
+                                return Ok(());
+                            }
+
+                            let mut results = Vec::new();
+                            for sub_title in &subtask_titles {
+                                let report = create_single_ticket(
+                                    &tickets_dir,
+                                    sub_title,
+                                    &ticket_type,
+                                    &priority,
+                                    &args.assignee,
+                                    &[], // subtasks have no blocked_by by default
+                                    &args.expertise,
+                                    args.epic.as_deref(),
+                                )
+                                .await?;
+                                results.push(report);
+                            }
+
+                            println!("{}", serde_json::to_string_pretty(&json!({
+                                "status": "split_created",
+                                "count": results.len(),
+                                "tickets": results,
+                            }))?);
                             return Ok(());
                         }
-
-                        let mut results = Vec::new();
-                        for sub_title in &subtask_titles {
-                            let report = create_single_ticket(
-                                &tickets_dir,
-                                sub_title,
-                                &ticket_type,
-                                &priority,
-                                &args.assignee,
-                                &[], // subtasks have no blocked_by by default
-                                &args.expertise,
-                                args.epic.as_deref(),
-                            )
-                            .await?;
-                            results.push(report);
-                        }
-
-                        println!("{}", serde_json::to_string_pretty(&json!({
-                            "status": "split_created",
-                            "count": results.len(),
-                            "tickets": results,
-                        }))?);
-                        return Ok(());
                     }
                 }
             }
-        }
-    }
+        } // end if effort_minutes > 0
+    } // end if let Some(effort_str)
 
     // ── Single ticket creation ───────────────────────────────────────────────
     let report = create_single_ticket(
@@ -624,7 +670,7 @@ mod tests {
             assignee: String::new(),
             epic: None,
             expertise: vec!["any".to_string()],
-            effort: Some(120),
+            effort: Some("120".to_string()),
             no_interactive: true, // CI mode
             tickets_dir: Some(dir.path().to_path_buf()),
         };
@@ -644,7 +690,7 @@ mod tests {
             assignee: String::new(),
             epic: None,
             expertise: vec!["rust".to_string()],
-            effort: Some(600),
+            effort: Some("600".to_string()),
             no_interactive: true,
             tickets_dir: Some(dir.path().to_path_buf()),
         };
@@ -663,6 +709,27 @@ mod tests {
         assert!(!check_and_warn_size(480, 480));
         // below threshold → false
         assert!(!check_and_warn_size(120, 480));
+    }
+
+    #[test]
+    fn test_parse_effort() {
+        assert_eq!(parse_effort("2d"), Some(960));
+        assert_eq!(parse_effort("1d"), Some(480));
+        assert_eq!(parse_effort("0.5d"), Some(240));
+        assert_eq!(parse_effort("3h"), Some(180));
+        assert_eq!(parse_effort("1h"), Some(60));
+        assert_eq!(parse_effort("480"), Some(480));
+        assert_eq!(parse_effort("0"), Some(0));
+        assert_eq!(parse_effort("abc"), None);
+        assert_eq!(parse_effort("1.5x"), None);
+    }
+
+    #[test]
+    fn test_format_effort() {
+        assert_eq!(format_effort(480), "1天");
+        assert_eq!(format_effort(960), "2天");
+        assert_eq!(format_effort(240), "4小时");
+        assert_eq!(format_effort(90), "90min");
     }
 
     #[tokio::test]
