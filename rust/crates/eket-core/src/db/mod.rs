@@ -46,6 +46,14 @@ pub struct RetroRow {
     pub created_at: i64,
 }
 
+/// TrustScore 用的统计数据（从 slaver_instances 读取）
+#[derive(Debug, Clone, Default)]
+pub struct InstanceScoringStats {
+    pub completed_count: i64,
+    pub failed_count: i64,
+    pub total_latency_ms: i64,
+}
+
 // ─── Pool factory ─────────────────────────────────────────────────────────────
 
 /// 建立连接池，运行 schema 迁移
@@ -80,6 +88,25 @@ pub fn create_pool(db_path: &str) -> EketResult<DbPool> {
 fn run_migrations(pool: &DbPool) -> EketResult<()> {
     let conn = pool.get()?;
     conn.execute_batch(include_str!("schema.sql"))?;
+
+    // Backfill trust-score columns for pre-existing slaver_instances tables
+    let existing_cols: Vec<String> = {
+        let mut stmt = conn.prepare("PRAGMA table_info(slaver_instances)")?;
+        let cols = stmt.query_map([], |row| row.get::<_, String>(1))?
+            .collect::<Result<Vec<_>, _>>()?;
+        cols
+    };
+    for (col, ddl) in &[
+        ("completed_count",  "ALTER TABLE slaver_instances ADD COLUMN completed_count  INTEGER NOT NULL DEFAULT 0"),
+        ("failed_count",     "ALTER TABLE slaver_instances ADD COLUMN failed_count     INTEGER NOT NULL DEFAULT 0"),
+        ("total_latency_ms", "ALTER TABLE slaver_instances ADD COLUMN total_latency_ms INTEGER NOT NULL DEFAULT 0"),
+    ] {
+        if !existing_cols.iter().any(|c| c == col) {
+            conn.execute_batch(ddl)?;
+            debug!("Added column {col} to slaver_instances");
+        }
+    }
+
     debug!("SQLite migrations applied");
     Ok(())
 }
@@ -573,6 +600,54 @@ impl SqliteClient {
         let conn = self.pool.get()?;
         let n: i64 = conn.query_row("SELECT 1", [], |r| r.get(0))?;
         Ok(n == 1)
+    }
+
+    // ─── TrustScore counters ──────────────────────────────────────────────────
+
+    /// 完成任务时更新 completed_count 和 total_latency_ms。
+    pub fn update_instance_completion(&self, id: &str, latency_ms: i64) -> EketResult<()> {
+        let conn = self.pool.get()?;
+        conn.execute(
+            "UPDATE slaver_instances
+             SET completed_count  = completed_count  + 1,
+                 total_latency_ms = total_latency_ms + ?1
+             WHERE id = ?2",
+            params![latency_ms, id],
+        )?;
+        Ok(())
+    }
+
+    /// 任务失败/回滚时更新 failed_count。
+    pub fn update_instance_failure(&self, id: &str) -> EketResult<()> {
+        let conn = self.pool.get()?;
+        conn.execute(
+            "UPDATE slaver_instances SET failed_count = failed_count + 1 WHERE id = ?1",
+            params![id],
+        )?;
+        Ok(())
+    }
+
+    /// 获取所有 instance 的评分统计数据（heartbeat 派送前调用）。
+    pub fn get_all_instance_scoring_stats(
+        &self,
+    ) -> EketResult<std::collections::HashMap<String, InstanceScoringStats>> {
+        let conn = self.pool.get()?;
+        let mut stmt = conn.prepare(
+            "SELECT id, completed_count, failed_count, total_latency_ms FROM slaver_instances",
+        )?;
+        let map = stmt
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    InstanceScoringStats {
+                        completed_count:  row.get(1)?,
+                        failed_count:     row.get(2)?,
+                        total_latency_ms: row.get(3)?,
+                    },
+                ))
+            })?
+            .collect::<Result<std::collections::HashMap<_, _>, _>>()?;
+        Ok(map)
     }
 }
 
