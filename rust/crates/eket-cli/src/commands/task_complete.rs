@@ -265,6 +265,46 @@ impl SagaStep<CompleteState> for RecordCompletion {
     }
 }
 
+
+// ─── Step 6: RemoveWorktree ───────────────────────────────────────────────────
+
+struct RemoveWorktree;
+
+#[async_trait]
+impl SagaStep<CompleteState> for RemoveWorktree {
+    fn name(&self) -> &str { "RemoveWorktree" }
+
+    async fn forward(
+        &self,
+        state: CompleteState,
+    ) -> Result<CompleteState, Box<dyn std::error::Error + Send + Sync>> {
+        let worktree_dir = state.project_root.join(".worktrees").join(&state.ticket_id);
+        if !worktree_dir.exists() {
+            return Ok(state); // nothing to remove
+        }
+
+        let status = std::process::Command::new("git")
+            .args(["worktree", "remove", "--force", &worktree_dir.to_string_lossy()])
+            .current_dir(&state.project_root)
+            .status();
+
+        match status {
+            Ok(s) if s.success() => {}
+            Ok(s) => eprintln!("[WARN] worktree remove exited {}: {:?}", s.code().unwrap_or(-1), worktree_dir),
+            Err(e) => eprintln!("[WARN] worktree remove failed: {e}"),
+        }
+
+        Ok(state)
+    }
+
+    async fn compensate(
+        &self,
+        _state: &CompleteState,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        Ok(())
+    }
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 pub struct CompleteArgs {
@@ -361,6 +401,7 @@ pub async fn run_complete(args: CompleteArgs) -> Result<()> {
         .add_step(UpdateTicketStatus)
         .add_step(NotifyMaster)
         .add_step(RecordCompletion)
+        .add_step(RemoveWorktree)
         .execute(initial_state)
         .await;
 
@@ -407,6 +448,11 @@ pub async fn run_complete(args: CompleteArgs) -> Result<()> {
 
         // Step 8: 累计 complete 计数，达到阈值触发 knowledge index 重建
         maybe_rebuild_knowledge_index(&result.state.project_root);
+
+        // Step 9: 扫描依赖已解除的 ticket，写入 unblocked-queue.json
+        if let Err(e) = notify_unblocked_tickets(&result.state.project_root, &args.ticket_id) {
+            eprintln!("[WARN] notify_unblocked_tickets: {e}");
+        }
 
         let report = json!({
             "status": "completed",
@@ -743,6 +789,130 @@ fn maybe_rebuild_knowledge_index(project_root: &Path) {
             eprintln!("[knowledge:index] 再完成 {remaining} 次将触发知识库重建");
         }
     }
+}
+
+// ─── Step 9: Unblocked ticket notification ────────────────────────────────────
+
+/// 扫描所有 ticket，找出 blocked_by 含 completed_id 且全部依赖已 done 的 ticket，
+/// 写入 .eket/state/unblocked-queue.json，并打印 [UNBLOCKED] 通知。
+fn notify_unblocked_tickets(project_root: &Path, completed_id: &str) -> Result<()> {
+    let tickets_dir = project_root.join("jira/tickets");
+    if !tickets_dir.exists() {
+        return Ok(());
+    }
+
+    let mut newly_unblocked: Vec<String> = vec![];
+
+    for entry in std::fs::read_dir(&tickets_dir)?.flatten() {
+        let path = entry.path();
+        if path.extension().and_then(|s| s.to_str()) != Some("md") {
+            continue;
+        }
+        let content = std::fs::read_to_string(&path).unwrap_or_default();
+
+        if let Some(deps) = parse_blocked_by_field(&content) {
+            if deps.contains(&completed_id.to_string())
+                && all_deps_done(project_root, &deps)
+            {
+                if let Some(tid) = extract_ticket_id_from_path(&path) {
+                    newly_unblocked.push(tid);
+                }
+            }
+        }
+    }
+
+    if !newly_unblocked.is_empty() {
+        append_unblocked_queue(project_root, &newly_unblocked)?;
+        for id in &newly_unblocked {
+            eprintln!("[UNBLOCKED] {} 依赖已解除，可领取", id);
+        }
+    }
+    Ok(())
+}
+
+/// 解析 ticket markdown 中的 blocked_by / 依赖 字段，返回 TASK-ID 列表。
+/// 支持格式：
+///   - **依赖**: TASK-98, TASK-99
+///   - blocked_by: [TASK-98, TASK-99]
+///   - blocked_by: TASK-98
+fn parse_blocked_by_field(content: &str) -> Option<Vec<String>> {
+    let re = regex::Regex::new(r"TASK-\d+").ok()?;
+    for line in content.lines() {
+        let lower = line.to_lowercase();
+        if lower.contains("blocked_by") || lower.contains("**依赖**") {
+            let ids: Vec<String> = re
+                .find_iter(line)
+                .map(|m| m.as_str().to_string())
+                .collect();
+            if !ids.is_empty() {
+                return Some(ids);
+            }
+        }
+    }
+    None
+}
+
+/// 检查给定依赖列表是否全部处于 done 状态。
+fn all_deps_done(project_root: &Path, deps: &[String]) -> bool {
+    let tickets_dir = project_root.join("jira/tickets");
+    for dep in deps {
+        let path = tickets_dir.join(format!("{dep}.md"));
+        let content = std::fs::read_to_string(&path).unwrap_or_default();
+        let done = content.lines().any(|l| {
+            let lower = l.to_lowercase();
+            (lower.contains("**状态**") || lower.contains("status")) && lower.contains("done")
+        });
+        if !done {
+            return false;
+        }
+    }
+    true
+}
+
+/// 从文件路径提取 ticket ID（如 TASK-101）。
+fn extract_ticket_id_from_path(path: &std::path::Path) -> Option<String> {
+    let stem = path.file_stem()?.to_str()?;
+    // 验证是合法 TASK-NNN 格式
+    if regex::Regex::new(r"^TASK-\d+$").ok()?.is_match(stem) {
+        Some(stem.to_string())
+    } else {
+        None
+    }
+}
+
+/// 幂等地追加 ticket_id 到 .eket/state/unblocked-queue.json。
+fn append_unblocked_queue(project_root: &Path, ids: &[String]) -> Result<()> {
+    let state_dir = project_root.join(".eket/state");
+    std::fs::create_dir_all(&state_dir)?;
+    let queue_path = state_dir.join("unblocked-queue.json");
+
+    // 读现有数据
+    let mut entries: Vec<serde_json::Value> = if queue_path.exists() {
+        let raw = std::fs::read_to_string(&queue_path).unwrap_or_default();
+        serde_json::from_str(&raw).unwrap_or_default()
+    } else {
+        vec![]
+    };
+
+    // 收集已有 ticket_id（幂等去重）
+    let existing_ids: std::collections::HashSet<String> = entries
+        .iter()
+        .filter_map(|v| v.get("ticket_id").and_then(|s| s.as_str()).map(|s| s.to_string()))
+        .collect();
+
+    let now = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
+    for id in ids {
+        if !existing_ids.contains(id) {
+            entries.push(serde_json::json!({
+                "ticket_id": id,
+                "unblocked_at": now,
+                "dispatched": false
+            }));
+        }
+    }
+
+    std::fs::write(&queue_path, serde_json::to_string_pretty(&entries)?)?;
+    Ok(())
 }
 
 fn read_rebuild_threshold(project_root: &Path) -> u32 {
