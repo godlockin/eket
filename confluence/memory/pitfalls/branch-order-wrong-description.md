@@ -8,7 +8,31 @@ severity: P2
 
 # 分支顺序描述错误
 
-## 正确顺序
+## 核心教训：动笔前先确认项目的分支流程
+
+**不同项目分支策略差异极大，不能凭印象套用。** 每次涉及分支描述时，第一步是查当前项目的权威来源（如 `branch-strategy-guide.md`、`CLAUDE.md`、README），确认实际流程后再写。
+
+常见分支流程示例（仅供参考，不能直接套用）：
+
+```
+# EKET 项目
+feature/*  →  testing  →  main  →  miao
+
+# 典型企业多环境
+feature/bug/hotfix  →  testing  →  qa  →  uat  →  prod  →  master/main
+
+# 简单 Git Flow
+feature/*  →  develop  →  main
+
+# GitHub Flow
+feature/*  →  main
+```
+
+各分支角色因项目而异：哪个是"最稳定对外交付"、哪个是"集成测试"、PR 的 base 是谁——**必须从项目文档确认，不能猜**。
+
+---
+
+## EKET 当前正确顺序（供本项目参考）
 
 ```
 feature/*  →  testing  →  main  →  miao
