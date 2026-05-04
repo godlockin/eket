@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# sync-branches.sh — One-click branch synchronization: main → testing → miao
+# sync-branches.sh — One-click branch synchronization: testing → main → miao
 set -euo pipefail
 
 RED='\033[0;31m'
