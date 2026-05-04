@@ -31,4 +31,5 @@ pub mod spike_create;
 pub mod spike_complete;
 pub mod doc_create;
 pub mod expert_compose;
+pub mod expert_summon;
 pub mod memory_review;
