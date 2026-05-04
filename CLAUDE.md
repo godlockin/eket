@@ -107,3 +107,5 @@ ESM 规范：内部导入必须带 `.js` 扩展名。测试：`node/tests/`，Je
 ---
 
 > 使用其他大模型时请读 `AGENTS.md`。分支策略：`feature/*` → `testing` → `main` → `miao`。详细分支策略见 `confluence/memory/branch-strategy-guide.md`。
+
+> **知识库**：`eket task:claim` 领取任务时自动推送相关经验教训（pitfalls/patterns/lessons）。手动检索：`eket knowledge:search "<关键词>"`，或读 `confluence/memory/memory-index.md`。
