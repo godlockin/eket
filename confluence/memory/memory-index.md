@@ -11,8 +11,14 @@
 |------|------|
 | [patterns/knowledge-system.md](patterns/knowledge-system.md) | EKET 知识沉淀系统 — L0~L4 分层、写入时机、GC 流程 |
 | [patterns/master-slaver-coordination.md](patterns/master-slaver-coordination.md) | Master-Slaver 协调模式 — 任务分发、状态同步、越权防护 |
-| [patterns/three-level-degradation.md](patterns/three-level-degradation.md) | 三级降级模式 — Shell → Node.js → Redis+SQLite 容灾链路 |
+| [patterns/four-level-degradation.md](patterns/four-level-degradation.md) | 四级降级模式 — Shell(L0) → Rust(L1) → Node.js(L2) → Redis+SQLite(L3) 容灾链路 |
 | [patterns/multi-layer-intent-aggregation.md](patterns/multi-layer-intent-aggregation.md) | 多层意图聚合模式 — 4层模型、4注入点、冲突澄清流程 |
+| [patterns/expertise-tag-design.md](patterns/expertise-tag-design.md) | expertise tag 设计模式 — 白名单、heartbeat评分派送、等待队列、auto-scaffold |
+| [patterns/expert-dispatch-waiting.md](patterns/expert-dispatch-waiting.md) | Expert Dispatch 等待队列 + 按需召唤 — 完整流程图、优先级、文件约定 |
+| [patterns/git-worktree-eket-integration.md](patterns/git-worktree-eket-integration.md) | Git Worktree + EKET 集成 — task:claim 自动创建、complete 清理、CWD 注意事项 |
+| [patterns/knowledge-flywheel.md](patterns/knowledge-flywheel.md) | 知识飞轮模式 — task:claim 自动推送 pitfalls/patterns、complete 触发 Curator |
+| [patterns/task-effort-human-units.md](patterns/task-effort-human-units.md) | 任务工时人类单位 — 2d/0.5d/3h/480min 换算规则 |
+| [patterns/unblocked-ticket-notification-design.md](patterns/unblocked-ticket-notification-design.md) | 依赖解除通知设计 — unblocked-queue.json、heartbeat 优先分发、Saga 步骤 |
 
 ---
 
@@ -23,6 +29,8 @@
 | [pitfalls/async-test-leak.md](pitfalls/async-test-leak.md) | Jest 异步测试泄漏 — Redis 连接/定时器未清理导致 force-exit |
 | [pitfalls/git-mv-directory-not-exist.md](pitfalls/git-mv-directory-not-exist.md) | `git mv` 目标目录不存在时报错 — 先 `mkdir -p` 再 mv |
 | [pitfalls/sqlite-inmemory-testclient-thread.md](pitfalls/sqlite-inmemory-testclient-thread.md) | SQLite In-Memory + FastAPI TestClient 线程隔离 — StaticPool 解法 |
+| [pitfalls/context-explosion-defense.md](pitfalls/context-explosion-defense.md) | Agent 上下文爆炸防御 — 溢出触发点、阻断规则、/compact 时机 |
+| [pitfalls/branch-order-wrong-description.md](pitfalls/branch-order-wrong-description.md) | 分支顺序描述错误 — 先确认项目 branch flow，EKET 正确顺序 feature→testing→main→miao |
 
 ---
 
@@ -37,6 +45,7 @@
 | [lessons/codebase-maintenance.md](lessons/codebase-maintenance.md) | 代码库与文档维护 — 四类文档债、清理顺序、重组两步法、archive规范 |
 | [lessons/eket-project-hygiene.md](lessons/eket-project-hygiene.md) | EKET 项目卫生 — template/引用、僵尸ticket、三仓库归属、版本号同步、Skills注册 |
 | [lessons/spec4-feedback-intent-lessons.md](lessons/spec4-feedback-intent-lessons.md) | Spec 4 反馈+意图系统实战经验教训 — 线程隔离、import路径、slaver超时、None语义（外部项目 Python/FastAPI） |
+| [lessons/compare-test-before-replace.md](lessons/compare-test-before-replace.md) | 修改在用逻辑：隔离对比测试后再替换 — 场景隔离方式、替换时机、大 release 专家组评审门卫 |
 
 ---
 
@@ -46,6 +55,7 @@
 |------|------|
 | [research/borrowed-wisdom.md](research/borrowed-wisdom.md) | EKET 借鉴知识库总索引 — 所有外部借鉴点汇总（713行，主文档） |
 | [research/round-22-archon-research.md](research/round-22-archon-research.md) | Archon 借鉴研究报告 Round 22 — DAG、模型路由、SSE体系 |
+| [research/ruflo-research.md](research/ruflo-research.md) | ruflo 借鉴研究 — HNSW 向量检索、TrustScore 评分、拒绝点清单 |
 
 ---
 
@@ -91,4 +101,4 @@
 
 ---
 
-*文件总数：27 | 上次更新：2026-05-01*
+*文件总数：39 | 上次更新：2026-05-04*
