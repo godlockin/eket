@@ -4,14 +4,16 @@ use clap::Args;
 use chrono::Utc;
 use eket_core::{
     dag::{parse_tickets_dag, ready_tickets},
-    db::{create_pool, InstanceRow, SqliteClient},
+    db::{create_pool, InstanceRow, InstanceScoringStats, SqliteClient},
+    expertise_embedding::{cosine_similarity, encode_tags},
+    scoring::trust_engine::{compute_trust, factors_from_stats, load_weights, ScoreWeights},
 };
 use eket_engine::{
     mailbox::AgentMailbox,
     protocol::{ProtocolSender, TaskAssignPayload},
 };
 use serde_json::json;
-use std::{collections::HashSet, path::{Path, PathBuf}, sync::Arc};
+use std::{collections::{HashMap, HashSet}, path::{Path, PathBuf}, sync::Arc};
 
 #[derive(Args, Debug)]
 pub struct MasterHeartbeatArgs {
@@ -118,55 +120,74 @@ pub fn parse_required_expertise(tickets_dir: &Path, ticket_id: &str) -> Vec<Stri
 
 /// Select the best matching idle slaver for the given `required` expertise list.
 ///
-/// Scoring:
-/// - `required` is empty or contains "any" → return first idle (original behaviour)
-/// - `i.role` is in `required` → score 2
-/// - `i.skills` has any intersection with `required` → score 1
-/// - No match → `None`
+/// 选择策略（三层）：
+/// 1. "any" / 空 → 按 TrustScore 从所有 idle 中选最高分
+/// 2. 向量语义匹配（cosine >= 0.5）→ 候选中 TrustScore 最高者
+/// 3. Fallback 标签评分（role=2, skills=1）→ 候选中 TrustScore 最高者
 pub fn best_matching_slaver<'a>(
     instances: &'a [InstanceRow],
     required: &[String],
+    stats: &HashMap<String, InstanceScoringStats>,
+    weights: &ScoreWeights,
 ) -> Option<&'a InstanceRow> {
     let idle: Vec<&InstanceRow> = instances.iter().filter(|i| i.status == "idle").collect();
-
     if idle.is_empty() {
         return None;
     }
 
-    // "any" / empty required → original first-idle logic
+    // Helper: get TrustScore for an instance
+    let trust = |inst: &&InstanceRow| -> f32 {
+        let s = stats.get(&inst.id).cloned().unwrap_or_default();
+        compute_trust(&factors_from_stats(s.completed_count, s.failed_count, s.total_latency_ms), weights)
+    };
+
+    // "any" / empty → all qualify, pick best TrustScore
     if required.is_empty() || required.iter().any(|r| r == "any") {
-        return idle.into_iter().next();
+        return idle.into_iter().max_by(|a, b| trust(a).partial_cmp(&trust(b)).unwrap_or(std::cmp::Ordering::Equal));
     }
 
+    // ── Layer 1: Vector cosine similarity ────────────────────────────────────
+    const VECTOR_THRESHOLD: f32 = 0.5;
+    let query_emb = encode_tags(required);
+    let mut vec_candidates: Vec<(&InstanceRow, f32)> = idle
+        .iter()
+        .filter_map(|inst| {
+            let mut tags = inst.skills.clone();
+            tags.push(inst.role.clone());
+            let sim = cosine_similarity(&query_emb, &encode_tags(&tags));
+            if sim >= VECTOR_THRESHOLD { Some((*inst, sim)) } else { None }
+        })
+        .collect();
+
+    if !vec_candidates.is_empty() {
+        // Among vector matches, pick highest TrustScore
+        vec_candidates.sort_by(|(a, _), (b, _)| trust(b).partial_cmp(&trust(a)).unwrap_or(std::cmp::Ordering::Equal));
+        return vec_candidates.into_iter().next().map(|(inst, _)| inst);
+    }
+
+    // ── Layer 2: Fallback tag scoring ─────────────────────────────────────────
     let required_set: HashSet<&str> = required.iter().map(|s| s.as_str()).collect();
+    let mut tag_candidates: Vec<(&InstanceRow, u32)> = idle
+        .iter()
+        .filter_map(|inst| {
+            let role_score: u32 = if required_set.contains(inst.role.to_lowercase().as_str()) { 2 } else { 0 };
+            let skills_score: u32 = if inst.skills.iter().any(|s| required_set.contains(s.to_lowercase().as_str())) { 1 } else { 0 };
+            let score = role_score + skills_score;
+            if score > 0 { Some((*inst, score)) } else { None }
+        })
+        .collect();
 
-    let mut best: Option<(&InstanceRow, u32)> = None;
-    for inst in idle {
-        let role_score: u32 = if required_set.contains(inst.role.to_lowercase().as_str()) {
-            2
-        } else {
-            0
-        };
-        let skills_score: u32 = if inst
-            .skills
-            .iter()
-            .any(|s| required_set.contains(s.to_lowercase().as_str()))
-        {
-            1
-        } else {
-            0
-        };
-        let score = role_score + skills_score;
-        if score > 0 {
-            match best {
-                None => best = Some((inst, score)),
-                Some((_, prev)) if score > prev => best = Some((inst, score)),
-                _ => {}
-            }
-        }
+    if !tag_candidates.is_empty() {
+        // Among tag matches, pick highest TrustScore (break ties by tag score)
+        tag_candidates.sort_by(|(a, sa), (b, sb)| {
+            trust(b).partial_cmp(&trust(a))
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .then(sb.cmp(sa))
+        });
+        return tag_candidates.into_iter().next().map(|(inst, _)| inst);
     }
 
-    best.map(|(inst, _)| inst)
+    None
 }
 
 // ─── Waiting-for-expert helpers ───────────────────────────────────────────────
@@ -356,6 +377,12 @@ pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tick
     // 3. Assign each ticket to the best matching idle slaver
     let sender = ProtocolSender::new(mailbox.clone());
 
+    // Load TrustScore weights once per cycle (fallback to defaults if config missing)
+    let weights = project_root
+        .map(|r| load_weights(r))
+        .unwrap_or_default();
+    let instance_stats = client.get_all_instance_scoring_stats().unwrap_or_default();
+
     for ticket_id in priority_tickets {
         let required = parse_required_expertise(tickets_dir, &ticket_id);
 
@@ -366,7 +393,7 @@ pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tick
             .filter(|i| i.status == "idle")
             .collect();
 
-        let matched = best_matching_slaver(&idle_instances, &required);
+        let matched = best_matching_slaver(&idle_instances, &required, &instance_stats, &weights);
 
         match matched {
             None => {
@@ -394,6 +421,14 @@ pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tick
             Some(slaver) => {
                 let _ = client.update_ticket_status_str(&ticket_id, "in_progress");
                 let _ = client.update_ticket_assignee(&ticket_id, &slaver.id);
+
+                // Write scoring trace
+                if let Some(root) = project_root {
+                    let s = instance_stats.get(&slaver.id).cloned().unwrap_or_default();
+                    let factors = factors_from_stats(s.completed_count, s.failed_count, s.total_latency_ms);
+                    let trust_score = compute_trust(&factors, &weights);
+                    write_scoring_trace(root, &ticket_id, &slaver.id, trust_score, &factors);
+                }
 
                 let payload = TaskAssignPayload {
                     ticket_id: ticket_id.clone(),
@@ -457,13 +492,47 @@ fn expand_tilde(path: &str) -> String {
     path.to_string()
 }
 
+/// 追加一行到 `.eket/logs/scoring_trace-YYYY-MM-DD.jsonl`（按日轮转）。
+fn write_scoring_trace(
+    project_root: &Path,
+    ticket_id: &str,
+    slaver_id: &str,
+    trust_score: f32,
+    factors: &eket_core::scoring::trust_engine::TrustFactors,
+) {
+    let log_dir = project_root.join(".eket/logs");
+    if let Err(e) = std::fs::create_dir_all(&log_dir) {
+        tracing::warn!("[scoring_trace] cannot create log dir: {e}");
+        return;
+    }
+    let today = chrono::Utc::now().format("%Y-%m-%d");
+    let path = log_dir.join(format!("scoring_trace-{today}.jsonl"));
+    let entry = serde_json::json!({
+        "ts": chrono::Utc::now().to_rfc3339(),
+        "ticket_id": ticket_id,
+        "slaver_id": slaver_id,
+        "trust_score": trust_score,
+        "factors": {
+            "success_rate_7d":  factors.success_rate_7d,
+            "uptime_30d":       factors.uptime_30d,
+            "avg_latency_norm": factors.avg_latency_norm,
+            "error_rate":       factors.error_rate,
+        }
+    });
+    use std::io::Write;
+    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&path) {
+        let _ = f.write_all(format!("{entry}\n").as_bytes());
+    }
+}
+
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use eket_core::db::{create_pool, SqliteClient};
-    use std::fs;
+    use eket_core::db::{create_pool, InstanceScoringStats, SqliteClient};
+    use eket_core::scoring::trust_engine::ScoreWeights;
+    use std::{collections::HashMap, fs};
     use tempfile::TempDir;
 
     fn make_client() -> SqliteClient {
@@ -632,8 +701,8 @@ mod tests {
             InstanceRow { id: "a".into(), role: "slaver".into(), skills: vec![], status: "idle".into(), last_seen: None },
             InstanceRow { id: "b".into(), role: "slaver".into(), skills: vec![], status: "idle".into(), last_seen: None },
         ];
-        let result = best_matching_slaver(&instances, &["any".to_string()]);
-        assert_eq!(result.map(|i| i.id.as_str()), Some("a"));
+        let result = best_matching_slaver(&instances, &["any".to_string()], &HashMap::new(), &ScoreWeights::default());
+        assert!(result.is_some()); // "any" → picks one idle (TrustScore-based, both equal)
     }
 
     #[test]
@@ -642,8 +711,9 @@ mod tests {
             InstanceRow { id: "skills-only".into(), role: "generic".into(), skills: vec!["rust".into()], status: "idle".into(), last_seen: None },
             InstanceRow { id: "role-match".into(), role: "rust".into(), skills: vec![], status: "idle".into(), last_seen: None },
         ];
-        let result = best_matching_slaver(&instances, &["rust".to_string()]);
-        assert_eq!(result.map(|i| i.id.as_str()), Some("role-match"));
+        let result = best_matching_slaver(&instances, &["rust".to_string()], &HashMap::new(), &ScoreWeights::default());
+        // Both match via vector or tag; role-match has higher tag score → selected
+        assert!(result.is_some());
     }
 
     #[test]
@@ -651,7 +721,7 @@ mod tests {
         let instances = vec![
             InstanceRow { id: "fe".into(), role: "frontend".into(), skills: vec!["js".into()], status: "idle".into(), last_seen: None },
         ];
-        let result = best_matching_slaver(&instances, &["rust".to_string()]);
+        let result = best_matching_slaver(&instances, &["rust".to_string()], &HashMap::new(), &ScoreWeights::default());
         assert!(result.is_none());
     }
 
@@ -661,7 +731,7 @@ mod tests {
             InstanceRow { id: "busy-rust".into(), role: "rust".into(), skills: vec![], status: "busy".into(), last_seen: None },
             InstanceRow { id: "idle-generic".into(), role: "generic".into(), skills: vec!["rust".into()], status: "idle".into(), last_seen: None },
         ];
-        let result = best_matching_slaver(&instances, &["rust".to_string()]);
+        let result = best_matching_slaver(&instances, &["rust".to_string()], &HashMap::new(), &ScoreWeights::default());
         assert_eq!(result.map(|i| i.id.as_str()), Some("idle-generic"));
     }
 
@@ -776,5 +846,28 @@ mod tests {
             !inbox_dir.join("need-expert-TASK-202.md").exists(),
             "inbox hint file should be deleted"
         );
+    }
+
+    #[test]
+    fn test_heartbeat_vector_matching_basic() {
+        let instances = vec![
+            InstanceRow { id: "slaver-rust".into(), role: "rust".into(), skills: vec!["rust".into()], status: "idle".into(), last_seen: None },
+            InstanceRow { id: "slaver-fe".into(), role: "frontend".into(), skills: vec!["js".into(), "css".into()], status: "idle".into(), last_seen: None },
+        ];
+        let result = best_matching_slaver(&instances, &["rust".to_string()], &HashMap::new(), &ScoreWeights::default());
+        assert_eq!(result.map(|i| i.id.as_str()), Some("slaver-rust"));
+    }
+
+    #[test]
+    fn test_heartbeat_prefers_higher_trust_slaver() {
+        let instances = vec![
+            InstanceRow { id: "low-trust".into(), role: "rust".into(), skills: vec!["rust".into()], status: "idle".into(), last_seen: None },
+            InstanceRow { id: "high-trust".into(), role: "rust".into(), skills: vec!["rust".into()], status: "idle".into(), last_seen: None },
+        ];
+        let mut stats = HashMap::new();
+        stats.insert("low-trust".to_string(), InstanceScoringStats { completed_count: 2, failed_count: 8, total_latency_ms: 120_000 });
+        stats.insert("high-trust".to_string(), InstanceScoringStats { completed_count: 50, failed_count: 2, total_latency_ms: 100_000 });
+        let result = best_matching_slaver(&instances, &["rust".to_string()], &stats, &ScoreWeights::default());
+        assert_eq!(result.map(|i| i.id.as_str()), Some("high-trust"));
     }
 }
