@@ -26,7 +26,7 @@
 - **分析设计**：编码前必须完成分析报告（`analysis-report.md`）
 - **编码实现**：在 `feature/{ticket-id}-{desc}` 分支上开发
 - **测试验收**：编写并运行测试，确保覆盖率达标
-- **提交 PR**：提交 PR（base: testing/miao），附真实测试输出
+- **提交 PR**：提交 PR（base: testing），附真实测试输出
 
 ### 心跳检查（3 个关键问题）
 

@@ -111,20 +111,20 @@ git diff origin/main origin/miao | wc -l      # 应为 0
 
 ```bash
 # 1. 创建 feature 分支（即使是纯文档改动）
-git checkout miao && git pull origin miao
+git checkout testing && git pull origin testing
 git checkout -b feature/docs-<brief-desc>
 
 # 2. 在 feature 分支上做修改并提交
 # ...修改文件...
 git add <files> && git commit -m "docs: ..."
 
-# 3. PR 合入 miao（或直接 merge，文档类可简化）
-git checkout miao && git merge feature/docs-<brief-desc> && git push origin miao
+# 3. PR 合入 testing（或直接 merge，文档类可简化）
+git checkout testing && git merge feature/docs-<brief-desc> && git push origin testing
 
 # 4. 同步三分支（MUST，不能遗漏）
-git checkout testing && git merge origin/miao --no-edit && git push origin testing
-git checkout main    && git merge origin/testing --no-edit && git push origin main
-git checkout miao    # 回到工作分支
+git checkout main && git merge origin/testing --no-edit && git push origin main
+git checkout miao && git merge origin/main --no-edit && git push origin miao
+git checkout testing # 回到工作分支
 ```
 
 ### SKILL.md 专项规则
