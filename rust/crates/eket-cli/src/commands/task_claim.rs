@@ -212,20 +212,33 @@ fn try_atomic_claim(client: &SqliteClient, ticket_id: &str, slaver_id: &str) -> 
 
 // ─── Role filter ──────────────────────────────────────────────────────────────
 
-/// Filter tickets by role keyword: checks if ticket file content contains the role string.
-//NOTE: Role filtering is content-based (case-insensitive substring match in ticket .md file).
+/// Filter tickets by role: checks ticket's required_expertise field for role or "any".
+/// Falls back to content substring match when the structured field is absent.
 fn filter_by_role(tickets: Vec<TicketFile>, tickets_dir: &Path, role: &str) -> Vec<TicketFile> {
     let role_lower = role.to_lowercase();
     tickets
         .into_iter()
         .filter(|t| {
             let file_path = tickets_dir.join(format!("{}.md", t.id));
-            if let Ok(content) = std::fs::read_to_string(&file_path) {
-                content.to_lowercase().contains(&role_lower)
-            } else {
-                // Include ticket if file unreadable (conservative)
-                true
+            let Ok(content) = std::fs::read_to_string(&file_path) else {
+                return true; // include if unreadable (conservative)
+            };
+            // Look for structured field: `required_expertise: [rust, devops]`
+            for line in content.lines() {
+                let trimmed = line.trim();
+                if let Some(rest) = trimmed.strip_prefix("required_expertise:") {
+                    let tags: Vec<&str> = rest
+                        .trim()
+                        .trim_start_matches('[')
+                        .trim_end_matches(']')
+                        .split(',')
+                        .map(|s| s.trim())
+                        .collect();
+                    return tags.iter().any(|tag| *tag == "any" || tag.to_lowercase() == role_lower);
+                }
             }
+            // Fallback: plain content substring match
+            content.to_lowercase().contains(&role_lower)
         })
         .collect()
 }
@@ -325,6 +338,19 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
     // Write ACTIVE_CONTEXT.md
     let _ = write_active_context(&project_root, &ticket, &slaver_id);
 
+    // ── Git worktree ──────────────────────────────────────────────────────────
+    ensure_gitignore_entry(&project_root);
+    let worktree_path = match create_worktree(&project_root, &ticket.id, &ticket.title) {
+        Ok(p) => {
+            let abs = p.canonicalize().unwrap_or(p);
+            abs.display().to_string()
+        }
+        Err(e) => {
+            eprintln!("[WARN] worktree: {e}");
+            String::new()
+        }
+    };
+
     // Doc lifecycle: append 分析记录 section to ticket
     {
         use eket_core::doc_lifecycle::{DocEvent, TemplateRenderer, handle_event};
@@ -385,7 +411,7 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
         "priority": ticket.priority,
         "assignee": slaver_id,
         "slaver_id": slaver_id,
-        "worktree_path": "",   // populated in Phase 4 when worktree support added
+        "worktree_path": worktree_path,   // absolute path to worktree dir
         "rules_path": rules_path,
         "project_root": project_root.display().to_string(),
         "instructions": format!(
@@ -395,7 +421,115 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
     });
 
     println!("{}", serde_json::to_string_pretty(&report)?);
+
+    // ── Memory hint: 搜索相关 pitfalls/patterns，有命中时输出提示 ──────────────
+    let hints = search_memory_hints(&project_root, &ticket.title, ticket.id.as_str());
+    if !hints.is_empty() {
+        println!("\n💡 相关经验教训（来自 confluence/memory/）：");
+        for h in &hints {
+            println!("  • [{}] {}", h.category, h.title);
+            println!("    {}", h.snippet);
+            println!("    → {}", h.path);
+        }
+        println!();
+    }
+
     Ok(())
+}
+
+// ─── Memory hint search ───────────────────────────────────────────────────────
+
+struct MemoryHint {
+    category: String,  // pitfall / pattern / lesson
+    title: String,
+    snippet: String,
+    path: String,
+}
+
+/// 从 confluence/memory/{pitfalls,patterns,lessons}/ 搜索与 ticket 相关的条目。
+/// 匹配逻辑：ticket title 中的关键词与文件名或文件内容首 300 字符做 case-insensitive 子串匹配。
+/// 最多返回 3 条，静默失败（不影响主流程）。
+fn search_memory_hints(project_root: &Path, ticket_title: &str, ticket_id: &str) -> Vec<MemoryHint> {
+    let mut hints = Vec::new();
+
+    // 提取关键词：去除常见停用词，取前 8 个 token
+    let stopwords = ["the", "a", "an", "and", "or", "to", "in", "of", "for",
+                     "with", "add", "fix", "update", "refactor", "implement",
+                     "新增", "修改", "添加", "更新", "修复", "实现", "重构"];
+    let keywords: Vec<String> = ticket_title
+        .split_whitespace()
+        .chain(ticket_id.split('-'))
+        .map(|w| w.to_lowercase().trim_matches(|c: char| !c.is_alphanumeric()).to_string())
+        .filter(|w| w.len() >= 3 && !stopwords.contains(&w.as_str()))
+        .take(8)
+        .collect();
+
+    if keywords.is_empty() {
+        return hints;
+    }
+
+    let memory_root = project_root.join("confluence/memory");
+    let search_dirs = [
+        ("pitfall",  memory_root.join("pitfalls")),
+        ("pattern",  memory_root.join("patterns")),
+        ("lesson",   memory_root.join("lessons")),
+    ];
+
+    'outer: for (category, dir) in &search_dirs {
+        let Ok(entries) = std::fs::read_dir(dir) else { continue };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) != Some("md") { continue }
+
+            let filename = path.file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("")
+                .to_lowercase();
+
+            // 先匹配文件名
+            let name_match = keywords.iter().any(|kw| filename.contains(kw.as_str()));
+
+            // 再匹配文件头 400 字节（避免读大文件）
+            let content_match = if !name_match {
+                std::fs::read(&path).ok()
+                    .and_then(|b| {
+                        let preview = String::from_utf8_lossy(&b[..b.len().min(400)]).to_lowercase();
+                        Some(keywords.iter().any(|kw| preview.contains(kw.as_str())))
+                    })
+                    .unwrap_or(false)
+            } else { false };
+
+            if !name_match && !content_match { continue }
+
+            // 读文件取标题行 + 首段摘要
+            let Ok(content) = std::fs::read_to_string(&path) else { continue };
+            let title = content.lines()
+                .find(|l| l.starts_with('#'))
+                .unwrap_or(&filename)
+                .trim_start_matches('#').trim()
+                .to_string();
+            let snippet = content.lines()
+                .skip_while(|l| l.starts_with('#') || l.trim().is_empty())
+                .take(2)
+                .collect::<Vec<_>>()
+                .join(" ")
+                .chars().take(120).collect::<String>();
+            let rel_path = path.strip_prefix(project_root)
+                .map(|p| p.display().to_string())
+                .unwrap_or_else(|_| path.display().to_string());
+
+            hints.push(MemoryHint {
+                category: category.to_string(),
+                title,
+                snippet,
+                path: rel_path,
+            });
+
+            if hints.len() >= 3 { break 'outer; }
+        }
+    }
+
+    hints
 }
 
 fn find_rules_path(project_root: &Path) -> String {
@@ -426,6 +560,74 @@ fn find_project_root() -> Option<PathBuf> {
         }
         if !dir.pop() {
             return None;
+        }
+    }
+}
+
+// ─── Worktree helpers ─────────────────────────────────────────────────────────
+
+/// Convert title to a URL-safe slug: lowercase, spaces→hyphens, only [a-z0-9-], max `max_len` chars.
+fn slugify(title: &str, max_len: usize) -> String {
+    title
+        .to_lowercase()
+        .chars()
+        .map(|c| if c == ' ' { '-' } else { c })
+        .filter(|c| c.is_ascii_alphanumeric() || *c == '-')
+        .take(max_len)
+        .collect::<String>()
+        .trim_matches('-')
+        .to_string()
+}
+
+/// Ensure `.worktrees/` is listed in the project `.gitignore`.
+fn ensure_gitignore_entry(project_root: &Path) {
+    let gitignore = project_root.join(".gitignore");
+    let entry = ".worktrees/";
+
+    let existing = std::fs::read_to_string(&gitignore).unwrap_or_default();
+    if existing.lines().any(|l| l.trim() == entry) {
+        return; // already present
+    }
+
+    let new_content = if existing.ends_with('\n') || existing.is_empty() {
+        format!("{existing}{entry}\n")
+    } else {
+        format!("{existing}\n{entry}\n")
+    };
+    if let Err(e) = std::fs::write(&gitignore, new_content) {
+        eprintln!("[WARN] gitignore: failed to append .worktrees/: {e}");
+    }
+}
+
+/// Create (or reuse) a git worktree at `.worktrees/<ticket_id>` on branch `feature/<ticket_id>-<slug>`.
+/// Returns the absolute path on success; on failure only warns and returns Err (non-fatal).
+fn create_worktree(project_root: &Path, ticket_id: &str, title: &str) -> Result<PathBuf, String> {
+    let slug = slugify(title, 30);
+    let branch = format!("feature/{}-{}", ticket_id, slug);
+    let worktree_dir = project_root.join(".worktrees").join(ticket_id);
+
+    if worktree_dir.exists() {
+        return Ok(worktree_dir); // reuse
+    }
+
+    // Try creating worktree with a new branch
+    let status = std::process::Command::new("git")
+        .args(["worktree", "add", &worktree_dir.to_string_lossy(), "-b", &branch])
+        .current_dir(project_root)
+        .status();
+
+    match status {
+        Ok(s) if s.success() => Ok(worktree_dir),
+        _ => {
+            // Branch may already exist — try without -b
+            let status2 = std::process::Command::new("git")
+                .args(["worktree", "add", &worktree_dir.to_string_lossy(), &branch])
+                .current_dir(project_root)
+                .status();
+            match status2 {
+                Ok(s) if s.success() => Ok(worktree_dir),
+                _ => Err(format!("Failed to create worktree for {}", ticket_id)),
+            }
         }
     }
 }

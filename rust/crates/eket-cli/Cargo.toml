@@ -21,6 +21,8 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 anyhow = { workspace = true }
 chrono = { workspace = true }
+regex = { workspace = true }
+serde_yaml = "0.9"
 uuid = { workspace = true }
 rusqlite = { workspace = true }
 r2d2 = { workspace = true }
