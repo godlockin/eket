@@ -212,20 +212,33 @@ fn try_atomic_claim(client: &SqliteClient, ticket_id: &str, slaver_id: &str) -> 
 
 // ─── Role filter ──────────────────────────────────────────────────────────────
 
-/// Filter tickets by role keyword: checks if ticket file content contains the role string.
-//NOTE: Role filtering is content-based (case-insensitive substring match in ticket .md file).
+/// Filter tickets by role: checks ticket's required_expertise field for role or "any".
+/// Falls back to content substring match when the structured field is absent.
 fn filter_by_role(tickets: Vec<TicketFile>, tickets_dir: &Path, role: &str) -> Vec<TicketFile> {
     let role_lower = role.to_lowercase();
     tickets
         .into_iter()
         .filter(|t| {
             let file_path = tickets_dir.join(format!("{}.md", t.id));
-            if let Ok(content) = std::fs::read_to_string(&file_path) {
-                content.to_lowercase().contains(&role_lower)
-            } else {
-                // Include ticket if file unreadable (conservative)
-                true
+            let Ok(content) = std::fs::read_to_string(&file_path) else {
+                return true; // include if unreadable (conservative)
+            };
+            // Look for structured field: `required_expertise: [rust, devops]`
+            for line in content.lines() {
+                let trimmed = line.trim();
+                if let Some(rest) = trimmed.strip_prefix("required_expertise:") {
+                    let tags: Vec<&str> = rest
+                        .trim()
+                        .trim_start_matches('[')
+                        .trim_end_matches(']')
+                        .split(',')
+                        .map(|s| s.trim())
+                        .collect();
+                    return tags.iter().any(|tag| *tag == "any" || tag.to_lowercase() == role_lower);
+                }
             }
+            // Fallback: plain content substring match
+            content.to_lowercase().contains(&role_lower)
         })
         .collect()
 }
@@ -325,6 +338,19 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
     // Write ACTIVE_CONTEXT.md
     let _ = write_active_context(&project_root, &ticket, &slaver_id);
 
+    // ── Git worktree ──────────────────────────────────────────────────────────
+    ensure_gitignore_entry(&project_root);
+    let worktree_path = match create_worktree(&project_root, &ticket.id, &ticket.title) {
+        Ok(p) => {
+            let abs = p.canonicalize().unwrap_or(p);
+            abs.display().to_string()
+        }
+        Err(e) => {
+            eprintln!("[WARN] worktree: {e}");
+            String::new()
+        }
+    };
+
     // Doc lifecycle: append 分析记录 section to ticket
     {
         use eket_core::doc_lifecycle::{DocEvent, TemplateRenderer, handle_event};
@@ -385,7 +411,7 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
         "priority": ticket.priority,
         "assignee": slaver_id,
         "slaver_id": slaver_id,
-        "worktree_path": "",   // populated in Phase 4 when worktree support added
+        "worktree_path": worktree_path,   // absolute path to worktree dir
         "rules_path": rules_path,
         "project_root": project_root.display().to_string(),
         "instructions": format!(
@@ -534,6 +560,74 @@ fn find_project_root() -> Option<PathBuf> {
         }
         if !dir.pop() {
             return None;
+        }
+    }
+}
+
+// ─── Worktree helpers ─────────────────────────────────────────────────────────
+
+/// Convert title to a URL-safe slug: lowercase, spaces→hyphens, only [a-z0-9-], max `max_len` chars.
+fn slugify(title: &str, max_len: usize) -> String {
+    title
+        .to_lowercase()
+        .chars()
+        .map(|c| if c == ' ' { '-' } else { c })
+        .filter(|c| c.is_ascii_alphanumeric() || *c == '-')
+        .take(max_len)
+        .collect::<String>()
+        .trim_matches('-')
+        .to_string()
+}
+
+/// Ensure `.worktrees/` is listed in the project `.gitignore`.
+fn ensure_gitignore_entry(project_root: &Path) {
+    let gitignore = project_root.join(".gitignore");
+    let entry = ".worktrees/";
+
+    let existing = std::fs::read_to_string(&gitignore).unwrap_or_default();
+    if existing.lines().any(|l| l.trim() == entry) {
+        return; // already present
+    }
+
+    let new_content = if existing.ends_with('\n') || existing.is_empty() {
+        format!("{existing}{entry}\n")
+    } else {
+        format!("{existing}\n{entry}\n")
+    };
+    if let Err(e) = std::fs::write(&gitignore, new_content) {
+        eprintln!("[WARN] gitignore: failed to append .worktrees/: {e}");
+    }
+}
+
+/// Create (or reuse) a git worktree at `.worktrees/<ticket_id>` on branch `feature/<ticket_id>-<slug>`.
+/// Returns the absolute path on success; on failure only warns and returns Err (non-fatal).
+fn create_worktree(project_root: &Path, ticket_id: &str, title: &str) -> Result<PathBuf, String> {
+    let slug = slugify(title, 30);
+    let branch = format!("feature/{}-{}", ticket_id, slug);
+    let worktree_dir = project_root.join(".worktrees").join(ticket_id);
+
+    if worktree_dir.exists() {
+        return Ok(worktree_dir); // reuse
+    }
+
+    // Try creating worktree with a new branch
+    let status = std::process::Command::new("git")
+        .args(["worktree", "add", &worktree_dir.to_string_lossy(), "-b", &branch])
+        .current_dir(project_root)
+        .status();
+
+    match status {
+        Ok(s) if s.success() => Ok(worktree_dir),
+        _ => {
+            // Branch may already exist — try without -b
+            let status2 = std::process::Command::new("git")
+                .args(["worktree", "add", &worktree_dir.to_string_lossy(), &branch])
+                .current_dir(project_root)
+                .status();
+            match status2 {
+                Ok(s) if s.success() => Ok(worktree_dir),
+                _ => Err(format!("Failed to create worktree for {}", ticket_id)),
+            }
         }
     }
 }
