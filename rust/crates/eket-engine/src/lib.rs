@@ -14,3 +14,4 @@ pub mod conflict_resolver;
 pub mod context_filter;
 pub mod context_budget;
 pub mod step_snapshot;
+pub mod memory;
