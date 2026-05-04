@@ -194,6 +194,10 @@ enum Commands {
     /// Knowledge Curator: review a memory entry for quality before committing to library
     #[command(name = "memory:review")]
     MemoryReview(commands::memory_review::MemoryReviewArgs),
+
+    /// 按专家角色召唤或注册 Slaver 实例
+    #[command(name = "expert:summon")]
+    ExpertSummon(commands::expert_summon::ExpertSummonArgs),
 }
 
 #[tokio::main]
@@ -261,5 +265,6 @@ async fn main() -> Result<()> {
             commands::expert_compose::run_skills(expert_id).await
         }
         Commands::MemoryReview(args) => commands::memory_review::run(args).await,
+        Commands::ExpertSummon(args) => commands::expert_summon::run(args).await,
     }
 }
