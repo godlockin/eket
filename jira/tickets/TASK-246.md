@@ -1,6 +1,6 @@
 # TASK-246: heartbeat 按 expertise 精准匹配 Slaver
 
-**状态**: ready
+**状态**: done
 **优先级**: P1
 **预估工时**: 360min
 **负责人**: —

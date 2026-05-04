@@ -1,6 +1,6 @@
 # TASK-249: 新 expertise tag 无 persona 时自动 scaffold 骨架文件
 
-**状态**: ready
+**状态**: done
 **优先级**: P2
 **预估工时**: 300min
 **负责人**: —
