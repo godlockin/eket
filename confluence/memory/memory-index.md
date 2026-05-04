@@ -55,6 +55,7 @@
 |------|------|
 | [research/borrowed-wisdom.md](research/borrowed-wisdom.md) | EKET 借鉴知识库总索引 — 所有外部借鉴点汇总（713行，主文档） |
 | [research/round-22-archon-research.md](research/round-22-archon-research.md) | Archon 借鉴研究报告 Round 22 — DAG、模型路由、SSE体系 |
+| [research/ruflo-research.md](research/ruflo-research.md) | ruflo 借鉴研究 — HNSW 向量检索、TrustScore 评分、拒绝点清单 |
 
 ---
 
@@ -100,4 +101,4 @@
 
 ---
 
-*文件总数：37 | 上次更新：2026-05-04*
+*文件总数：39 | 上次更新：2026-05-04*
