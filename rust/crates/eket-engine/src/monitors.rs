@@ -140,6 +140,7 @@ impl HeartbeatMonitor {
 
 pub struct StaleCleaner {
     db: Arc<SqliteClient>,
+    #[allow(dead_code)]
     tickets_dir: PathBuf,
     event_bus: Arc<EventBus>,
     check_interval: Duration,
