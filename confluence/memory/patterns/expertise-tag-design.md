@@ -92,3 +92,31 @@ pub expertise: Vec<String>,
 - 测试中构造 `TaskCreateArgs` 时必须补 `expertise` 字段，否则编译失败。
 - 旧 ticket（无 `required_expertise:` 行）走 fallback 全文匹配，不会破坏现有数据。
 - heartbeat 测试中 ticket ID 必须是纯数字格式（如 `TASK-201`），含字母（如 `TASK-W1`）DAG parser 会过滤掉，导致 ready_tickets 为空，测试白跑。
+
+## 向量语义匹配升级（TASK-250）
+
+标签评分（精确+子串）已升级为三层 dispatch：
+
+```
+Layer 1: 向量 cosine ≥ 0.5 → 候选中 TrustScore 最高者
+Layer 2: 标签评分 fallback  → 候选中 TrustScore 最高者
+Layer 3: any/空             → 全部 idle 中 TrustScore 最高者
+```
+
+- `expertise_embedding.rs`：`encode_tags(tags) -> Vec<f32>`，64维 Knuth-hash + L2 归一化，纯本地无 LLM 依赖
+- `memory/vector_store.rs`：内存向量库，`upsert` / `query(k)` → `Vec<(id, cosine_score)>`
+- 向量阈值 0.5（可调），低于阈值自动降级到 Layer 2
+- 重启后向量库重建（从 DB 全量 slaver），< 100ms for 10k slavers
+
+## 动态信誉评分（TASK-251）
+
+dispatch 从"第一个匹配者"升级为"TrustScore 最高者"：
+
+```
+TrustScore = 0.4×success_rate_7d + 0.2×uptime_30d + 0.2×(1-avg_latency_norm) + 0.2×(1-error_rate)
+```
+
+- 权重可配置：`.eket/config/scoring_weights.toml`（`[weights]` 节）
+- 新 Slaver 冷启动默认：`success=0.5, uptime=0.9, latency_norm=0.2, error=0.1`（约 0.76，避免饥饿）
+- DB 新增三列：`completed_count / failed_count / total_latency_ms`（backfill migration，幂等）
+- 每次 dispatch 写 `scoring_trace-YYYY-MM-DD.jsonl`（日轮转），供复盘审计
