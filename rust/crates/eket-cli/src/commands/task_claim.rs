@@ -322,7 +322,7 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
         .map_err(|e| anyhow::anyhow!("Failed to update ticket: {e}"))?;
 
     // Save checkpoint to SQLite
-    if let Some(c) = client {
+    if let Some(c) = &client {
         let cp = ExecutionCheckpoint {
             ticket_id: ticket.id.clone(),
             slaver_id: slaver_id.clone(),
@@ -333,6 +333,8 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
             updated_at: chrono::Utc::now(),
         };
         let _ = c.save_checkpoint(&cp);
+        // TASK-256: stamp claimed_at on tickets row
+        let _ = c.set_ticket_claimed_at(&ticket.id);
     }
 
     // Write ACTIVE_CONTEXT.md

@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: feature
 - **优先级**: P2
-**状态**: in_progress
+- **状态**: todo
 - **预估**: 0.5d
 - **expertise**: rust,backend
 - **来源**: DocuSeal 借鉴研究（2026-05-05）
@@ -103,7 +103,11 @@ eket team:status --metrics
 
 ## 分析记录
 
-**领取时间**: 2026-05-05T12:21:33.247462+00:00
-**执行者**: slaver_1776695133821_534ccf79
-
-TODO: 填写分析结论
+- **领取者**: rust-slaver
+- **领取时间**: 2026-05-05
+- **实现方案**:
+  - `Ticket` struct 新增 `claimed_at / blocked_at / unblocked_at / completed_at: Option<DateTime<Utc>>`
+  - 衍生方法 `queue_wait_duration() / execution_duration() / blocked_duration()` 实现于 `impl Ticket`
+  - `db/mod.rs` 新增 `set_ticket_claimed_at / set_ticket_blocked_at / set_ticket_unblocked_at / set_ticket_completed_at` 方法
+  - `task_claim.rs` 在写 checkpoint 后调用 `set_ticket_claimed_at`（仅首次写入，WHERE claimed_at IS NULL）
+  - Migration 与 TASK-255 合并：`0002_task_source_timestamps.sql`（+5 列，+1 索引）
