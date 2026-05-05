@@ -1,5 +1,7 @@
 # TASK-212: Recency Decay — MailboxContextFilter加时间衰减权重
 
+**状态**: done
+
 **优先级**: P0
 **类型**: Feature
 **模块**: rust/crates/eket-engine/src/context_filter.rs

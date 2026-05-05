@@ -1,5 +1,7 @@
 # TASK-189: StaleCleaner改用SQLite updated_at而非文件mtime
 
+**状态**: ready
+
 **优先级**: P1
 **类型**: Bug
 **模块**: eket-engine / monitors.rs:191

@@ -1,5 +1,7 @@
 # TASK-213: MerkleDAG增量索引 — knowledge:index只重索引变更文件
 
+**状态**: ready
+
 **优先级**: P1
 **类型**: Feature
 **模块**: node/src/commands/knowledge.ts, node/src/commands/knowledge-index.ts

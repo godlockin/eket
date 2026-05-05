@@ -1,5 +1,7 @@
 # TASK-196: WorkflowEngine全局RwLock改per-workflow锁
 
+**状态**: ready
+
 **优先级**: P2
 **类型**: Performance
 **模块**: eket-engine / workflow.rs:127
