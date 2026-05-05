@@ -1,5 +1,7 @@
 # TASK-182: 修复文件锁resign()不删文件——crash后永久卡死
 
+**状态**: ready
+
 **优先级**: P0
 **类型**: Bug
 **模块**: eket-core / election.rs:293

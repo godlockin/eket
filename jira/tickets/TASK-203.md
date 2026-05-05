@@ -1,5 +1,7 @@
 # TASK-203: ParallelGuardrail — 并行验收门禁
 
+**状态**: dropped
+
 **优先级**: P2
 **类型**: Feature
 **模块**: node/src/core/guardrail.ts
