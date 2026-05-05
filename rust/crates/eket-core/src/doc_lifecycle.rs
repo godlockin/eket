@@ -231,7 +231,7 @@ pub async fn handle_event(
         }
 
         DocEvent::RoadmapUpdated { ref project_id, ref quarter, ref project_root } => {
-            let q = quarter.clone().unwrap_or_else(|| current_quarter());
+            let q = quarter.clone().unwrap_or_else(current_quarter);
             let roadmap_path = project_root
                 .join("confluence")
                 .join("roadmap")
