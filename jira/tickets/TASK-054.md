@@ -2,7 +2,7 @@
 id: TASK-054
 title: "fix(master-election): 修复三处选举核心 Bug"
 priority: P0
-status: ready
+status: dropped
 assignee: backend_dev
 dispatched_by: master
 created_at: 2026-04-18
