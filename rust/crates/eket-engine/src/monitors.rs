@@ -186,24 +186,10 @@ impl StaleCleaner {
         };
 
         for ticket in tickets {
-            let path = self.tickets_dir.join(format!("{}.md", ticket.id));
-            let elapsed = match std::fs::metadata(&path) {
-                Ok(meta) => match meta.modified() {
-                    Ok(mtime) => match mtime.elapsed() {
-                        Ok(d) => d,
-                        Err(_) => continue, // mtime in future
-                    },
-                    Err(e) => {
-                        debug!("[StaleCleaner] mtime unavailable for {}: {e}", ticket.id);
-                        continue;
-                    }
-                },
-                Err(_) => {
-                    // File missing — treat as stale
-                    self.reset_ticket(&ticket.id).await;
-                    continue;
-                }
-            };
+            // TASK-189: Use SQLite updated_at (Unix timestamp) instead of fs::metadata mtime
+            let now_unix = chrono::Utc::now().timestamp();
+            let elapsed_secs = now_unix - ticket.updated_at;
+            let elapsed = std::time::Duration::from_secs(elapsed_secs.max(0) as u64);
 
             if elapsed > self.stale_ttl {
                 self.reset_ticket(&ticket.id).await;

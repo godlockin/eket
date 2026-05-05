@@ -10,7 +10,7 @@
 /// 7. 输出 JSON
 use anyhow::Result;
 use clap::Parser;
-use eket_core::dag::{detect_cycle, parse_tickets_dag, DagEdge, DagNode};
+use eket_core::dag::{detect_cycle, parse_tickets_dag, DagEdge, DagNode, TriggerRule};
 use eket_core::expert_skill_bridge::ExpertSkillBridge;
 use serde_json::json;
 use std::fs::OpenOptions;
@@ -335,6 +335,7 @@ async fn create_single_ticket(
             label: title.to_string(),
             status: "todo".to_string(),
             assignee: None,
+            trigger_rule: TriggerRule::AllSuccess,
         });
         for dep in blocked_by {
             dag.edges.push(DagEdge {
