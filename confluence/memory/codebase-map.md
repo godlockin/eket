@@ -187,6 +187,7 @@
 | confluence/memory/pitfalls/ | |
 | confluence/memory/research/ | |
 | confluence/memory/retrospectives/ | |
+| confluence/requirements/ | |
 | docker/ | |
 | docs/ | |
 | docs/adr/ | |
