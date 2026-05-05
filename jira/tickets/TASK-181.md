@@ -1,5 +1,7 @@
 # TASK-181: 修复Redis续租无条件SET——改为Lua CAS脚本
 
+**状态**: ready
+
 **优先级**: P0
 **类型**: Bug
 **模块**: eket-core / election.rs:175
