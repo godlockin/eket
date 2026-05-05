@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: feature
 - **优先级**: P1
-- **状态**: todo
+**状态**: in_progress
 - **预估**: 1d
 - **expertise**: rust,backend
 - **来源**: DocuSeal 借鉴研究（2026-05-05）
@@ -107,3 +107,10 @@ eket webhook:events [--status failed]  # 查看 webhook_events 记录
 - HMAC-SHA256：`hmac` crate
 - 重试调度：`tokio::time::sleep` + SQLite `next_retry_at` 持久化（进程重启后仍能恢复）
 - 加密存储 secret：AES-256-GCM，密钥来自 `EKET_ENCRYPTION_KEY` env var
+
+## 分析记录
+
+**领取时间**: 2026-05-05T12:20:15.831937+00:00
+**执行者**: slaver_1776695133821_534ccf79
+
+TODO: 填写分析结论
