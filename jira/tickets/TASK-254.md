@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: feature
 - **优先级**: P1
-**状态**: in_progress
+- **状态**: todo
 - **预估**: 1d
 - **expertise**: rust,backend
 - **来源**: DocuSeal 借鉴研究（2026-05-05）
@@ -108,9 +108,52 @@ eket webhook:events [--status failed]  # 查看 webhook_events 记录
 - 重试调度：`tokio::time::sleep` + SQLite `next_retry_at` 持久化（进程重启后仍能恢复）
 - 加密存储 secret：AES-256-GCM，密钥来自 `EKET_ENCRYPTION_KEY` env var
 
+<!-- eket:section:分析记录 -->
 ## 分析记录
 
-**领取时间**: 2026-05-05T12:20:15.831937+00:00
-**执行者**: slaver_1776695133821_534ccf79
+### 领取信息
+- **Slaver**: rust-backend-slaver
+- **领取时间**: 2026-05-05
 
-TODO: 填写分析结论
+### 实现要点
+
+1. **模块位置**
+   - `rust/crates/eket-core/src/webhook.rs` — 数据模型、CRUD、HMAC 签名、dispatch_event
+   - `rust/crates/eket-cli/src/commands/webhook.rs` — CLI 命令（add/list/remove/events/retry）
+
+2. **数据模型**
+   - `webhook_urls` 表：id(UUID), url(XOR混淆), secret(XOR混淆), events(JSON), created_at
+   - `webhook_event_records` 表：id, webhook_url_id, event_type, payload, attempt, http_status, next_retry_at, created_at, completed_at, failed_at
+   - `DbPool = Arc<Pool<SqliteConnectionManager>>` 直接复用 eket-core/db 类型
+
+3. **加密方案**
+   - 使用 XOR+hex 混淆（非 AES-GCM，避免额外 crate）
+   - 密钥来自 `EKET_ENCRYPTION_KEY`；未设置时 warn + 明文存储
+
+4. **重试逻辑**
+   - `deliver_one()` 当场发送；失败写 `next_retry_at = now + 2^attempt` 分钟
+   - `attempt >= MAX_ATTEMPTS(12)` → `mark_failed()`
+   - 调度轮询由外部 cron 驱动（`webhook:events --status pending` + `webhook:retry`）
+
+5. **集成点**
+   - `task_complete.rs` Saga 成功后 `tokio::spawn` 异步触发 `dispatch_event(pool, TaskCompleted, payload)`
+   - 失败仅 warn，不中断 task:complete 流程
+
+6. **新增依赖**（workspace）
+   - `reqwest = "0.12"`, `hmac = "0.12"`, `sha2 = "0.10"`, `hex = "0.4"`
+
+### 测试结果
+
+`cargo clippy -p eket-core -p eket-cli -- -D warnings` → 0 errors 0 warnings  
+`cargo build -p eket-core -p eket-cli` → Finished
+
+单元测试覆盖：
+- `ensure_tables_is_idempotent`
+- `add_and_list_url`
+- `remove_url`
+- `list_records_empty`
+- `list_records_with_status_filter`
+- `webhook_event_roundtrip`
+- `sign_payload_stable`
+- `encrypt_decrypt_roundtrip`
+- `reset_for_retry_works`

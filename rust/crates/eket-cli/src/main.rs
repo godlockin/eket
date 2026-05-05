@@ -209,6 +209,10 @@ enum Commands {
     /// 按专家角色召唤或注册 Slaver 实例
     #[command(name = "expert:summon")]
     ExpertSummon(commands::expert_summon::ExpertSummonArgs),
+
+    /// Webhook management (add / list / remove / events / retry)
+    #[command(name = "webhook", subcommand_required = true)]
+    Webhook(commands::webhook::WebhookArgs),
 }
 
 #[tokio::main]
@@ -277,5 +281,6 @@ async fn main() -> Result<()> {
         }
         Commands::MemoryReview(args) => commands::memory_review::run(args).await,
         Commands::ExpertSummon(args) => commands::expert_summon::run(args).await,
+        Commands::Webhook(args) => commands::webhook::run(args).await,
     }
 }
