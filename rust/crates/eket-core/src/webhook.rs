@@ -6,11 +6,12 @@
 ///
 /// Retry: exponential back-off 2^attempt minutes, max 12 attempts.
 /// Secret absent → store plaintext + warn.  Fail → warn only, never abort caller.
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use chrono::{DateTime, Utc};
 use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
+use std::net::IpAddr;
 use std::sync::Arc;
 use tracing::{info, warn};
 use uuid::Uuid;
@@ -21,14 +22,20 @@ pub use crate::db::DbPool;
 // ─── Public types ─────────────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
 pub enum WebhookEvent {
+    #[serde(rename = "task.created")]
     TaskCreated,
+    #[serde(rename = "task.claimed")]
     TaskClaimed,
+    #[serde(rename = "task.completed")]
     TaskCompleted,
+    #[serde(rename = "task.declined")]
     TaskDeclined,
+    #[serde(rename = "epic.completed")]
     EpicCompleted,
+    #[serde(rename = "slaver.registered")]
     SlaverRegistered,
+    #[serde(rename = "slaver.offline")]
     SlaverOffline,
 }
 
@@ -66,6 +73,29 @@ pub struct WebhookUrl {
     pub secret: Option<String>,
     pub events: Vec<String>,
     pub created_at: String,
+}
+
+/// Public view of a registered webhook URL — secret is masked, never exposed.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WebhookUrlPublic {
+    pub id: String,
+    pub url: String,
+    /// Always `Some("***")` when a secret is present, `None` otherwise.
+    pub secret: Option<&'static str>,
+    pub events: Vec<String>,
+    pub created_at: String,
+}
+
+impl From<WebhookUrl> for WebhookUrlPublic {
+    fn from(w: WebhookUrl) -> Self {
+        Self {
+            id: w.id,
+            url: w.url,
+            secret: w.secret.as_deref().map(|_| "***"),
+            events: w.events,
+            created_at: w.created_at,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -238,8 +268,7 @@ fn decrypt_with_key(ciphertext: &str, key: Option<&[u8; 32]>) -> String {
 // ─── HMAC-SHA256 signature ────────────────────────────────────────────────────
 
 /// Compute `HMAC-SHA256(secret, body)` as lowercase hex.
-pub fn sign_payload(secret: &str, body: &[u8]) -> String {
-    use hmac::{Hmac, Mac};
+pub fn sign_payload(secret: &str, body: &[u8]) -> String {    use hmac::{Hmac, Mac};
     use sha2::Sha256;
     type HmacSha256 = Hmac<Sha256>;
 
@@ -249,8 +278,77 @@ pub fn sign_payload(secret: &str, body: &[u8]) -> String {
     hex::encode(mac.finalize().into_bytes())
 }
 
-// ─── CRUD ─────────────────────────────────────────────────────────────────────
+// ─── SSRF防护：URL校验 ────────────────────────────────────────────────────────
 
+/// Validate a webhook URL against SSRF risks.
+///
+/// Rules:
+/// - Must be http or https scheme.
+/// - Must not target private/loopback/link-local/CGNAT/cloud-metadata ranges:
+///   127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16,
+///   169.254.0.0/16 (link-local / cloud metadata), ::1.
+pub fn validate_webhook_url(url: &str) -> Result<()> {
+    let parsed = url::Url::parse(url)
+        .with_context(|| format!("invalid URL: {url}"))?;
+
+    match parsed.scheme() {
+        "http" | "https" => {}
+        s => bail!("webhook URL must use http/https scheme, got: {s}"),
+    }
+
+    let host = parsed
+        .host_str()
+        .ok_or_else(|| anyhow::anyhow!("webhook URL has no host"))?;
+
+    // Reject bare "localhost" (case-insensitive)
+    if host.eq_ignore_ascii_case("localhost") {
+        bail!("webhook URL must not target localhost");
+    }
+
+    // Use url::Host enum for reliable IPv4/IPv6 detection.
+    match parsed.host() {
+        Some(url::Host::Ipv4(v4)) => {
+            let ip = IpAddr::V4(v4);
+            if is_ssrf_risk_ip(ip) {
+                bail!("webhook URL targets a disallowed IP address: {ip}");
+            }
+        }
+        Some(url::Host::Ipv6(v6)) => {
+            let ip = IpAddr::V6(v6);
+            if is_ssrf_risk_ip(ip) {
+                bail!("webhook URL targets a disallowed IP address: {ip}");
+            }
+        }
+        _ => {}
+    }
+
+    Ok(())
+}
+
+fn is_ssrf_risk_ip(ip: IpAddr) -> bool {
+    match ip {
+        IpAddr::V4(v4) => {
+            let o = v4.octets();
+            // 127.0.0.0/8 — loopback
+            if o[0] == 127 { return true; }
+            // 10.0.0.0/8 — private
+            if o[0] == 10 { return true; }
+            // 172.16.0.0/12 — private
+            if o[0] == 172 && (16..=31).contains(&o[1]) { return true; }
+            // 192.168.0.0/16 — private
+            if o[0] == 192 && o[1] == 168 { return true; }
+            // 169.254.0.0/16 — link-local / cloud metadata (AWS 169.254.169.254)
+            if o[0] == 169 && o[1] == 254 { return true; }
+            false
+        }
+        IpAddr::V6(v6) => {
+            // ::1 loopback
+            v6.is_loopback()
+        }
+    }
+}
+
+// ─── CRUD ─────────────────────────────────────────────────────────────────────
 pub struct WebhookStore {
     pool: DbPool,
 }
@@ -276,6 +374,8 @@ impl WebhookStore {
         events: &[String],
         secret: Option<&str>,
     ) -> Result<WebhookUrl> {
+        validate_webhook_url(url)?;
+
         let conn = self.conn()?;
         ensure_webhook_tables(&conn)?;
 
@@ -332,6 +432,12 @@ impl WebhookStore {
             });
         }
         Ok(result)
+    }
+
+    /// Same as `list_urls` but returns `WebhookUrlPublic` — secret is masked.
+    /// Use this for CLI output and API responses.
+    pub fn list_urls_public(&self) -> Result<Vec<WebhookUrlPublic>> {
+        self.list_urls().map(|v| v.into_iter().map(Into::into).collect())
     }
 
     pub fn remove_url(&self, id: &str) -> Result<u64> {
@@ -957,5 +1063,111 @@ mod tests {
 
         let due = store.get_due_retries(Utc::now()).unwrap();
         assert!(due.is_empty());
+    }
+
+    // ── SSRF防护 ──────────────────────────────────────────────────────────────
+
+    #[test]
+    fn validate_url_accepts_public_https() {
+        assert!(validate_webhook_url("https://example.com/hook").is_ok());
+        assert!(validate_webhook_url("http://example.com/hook").is_ok());
+    }
+
+    #[test]
+    fn validate_url_rejects_non_http_scheme() {
+        assert!(validate_webhook_url("ftp://example.com/hook").is_err());
+        assert!(validate_webhook_url("file:///etc/passwd").is_err());
+    }
+
+    #[test]
+    fn validate_url_rejects_localhost() {
+        assert!(validate_webhook_url("http://localhost/hook").is_err());
+        assert!(validate_webhook_url("http://LOCALHOST/hook").is_err());
+    }
+
+    #[test]
+    fn validate_url_rejects_loopback_ip() {
+        assert!(validate_webhook_url("http://127.0.0.1/hook").is_err());
+        assert!(validate_webhook_url("http://127.255.255.255/hook").is_err());
+    }
+
+    #[test]
+    fn validate_url_rejects_private_ranges() {
+        assert!(validate_webhook_url("http://10.0.0.1/hook").is_err());
+        assert!(validate_webhook_url("http://172.16.0.1/hook").is_err());
+        assert!(validate_webhook_url("http://172.31.255.255/hook").is_err());
+        assert!(validate_webhook_url("http://192.168.1.1/hook").is_err());
+    }
+
+    #[test]
+    fn validate_url_rejects_link_local_metadata() {
+        // AWS/GCP/Azure cloud metadata endpoint
+        assert!(validate_webhook_url("http://169.254.169.254/latest/meta-data/").is_err());
+    }
+
+    #[test]
+    fn validate_url_rejects_ipv6_loopback() {
+        assert!(validate_webhook_url("http://[::1]/hook").is_err());
+    }
+
+    #[test]
+    fn add_url_rejects_ssrf() {
+        let pool = make_pool();
+        let store = WebhookStore::new(pool);
+        assert!(store
+            .add_url("http://127.0.0.1/hook", &[], None)
+            .is_err());
+    }
+
+    // ── secret泄漏防护 ────────────────────────────────────────────────────────
+
+    #[test]
+    fn list_urls_public_masks_secret() {
+        let pool = make_pool();
+        let store = WebhookStore::new(pool);
+        store
+            .add_url(
+                "https://example.com/hook",
+                &["task.created".to_string()],
+                Some("super-secret-token"),
+            )
+            .unwrap();
+
+        let public_list = store.list_urls_public().unwrap();
+        assert_eq!(public_list.len(), 1);
+        assert_eq!(public_list[0].secret, Some("***"));
+    }
+
+    #[test]
+    fn list_urls_public_no_secret_is_none() {
+        let pool = make_pool();
+        let store = WebhookStore::new(pool);
+        store
+            .add_url("https://example.com/hook", &[], None)
+            .unwrap();
+
+        let public_list = store.list_urls_public().unwrap();
+        assert_eq!(public_list[0].secret, None);
+    }
+
+    // ── serde一致性 ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn webhook_event_serde_uses_dot_notation() {
+        // Serialised form must match as_str() dot-notation.
+        let cases = [
+            (WebhookEvent::TaskCreated, "task.created"),
+            (WebhookEvent::TaskClaimed, "task.claimed"),
+            (WebhookEvent::TaskCompleted, "task.completed"),
+            (WebhookEvent::TaskDeclined, "task.declined"),
+            (WebhookEvent::EpicCompleted, "epic.completed"),
+            (WebhookEvent::SlaverRegistered, "slaver.registered"),
+            (WebhookEvent::SlaverOffline, "slaver.offline"),
+        ];
+        for (event, expected) in cases {
+            let serialized = serde_json::to_string(&event).unwrap();
+            assert_eq!(serialized, format!("\"{}\"", expected));
+            assert_eq!(event.as_str(), expected);
+        }
     }
 }
