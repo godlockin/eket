@@ -1,5 +1,7 @@
 # TASK-211: ToC快照模式 — WorkflowStep历史步骤压缩为索引
 
+**状态**: done
+
 **优先级**: P0
 **类型**: Feature
 **模块**: rust/crates/eket-engine/src/workflow.rs, rust/crates/eket-core/src/checkpoint.rs

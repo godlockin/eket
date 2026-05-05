@@ -1,5 +1,7 @@
 # TASK-219: context_budget include_fields 误删 metadata keys
 
+**状态**: ready
+
 **优先级**: P1
 **类型**: Bugfix
 **模块**: rust/crates/eket-engine/src/context_budget.rs
