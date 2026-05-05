@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: feature
 - **优先级**: P1
-**状态**: in_progress
+- **状态**: todo
 - **预估**: 0.5d
 - **expertise**: rust,backend
 - **来源**: DocuSeal 借鉴研究（2026-05-05）
@@ -93,7 +93,13 @@ eket team:status --breakdown source
 
 ## 分析记录
 
-**领取时间**: 2026-05-05T12:21:14.297745+00:00
-**执行者**: slaver_1776695133821_534ccf79
-
-TODO: 填写分析结论
+- **领取者**: rust-slaver
+- **领取时间**: 2026-05-05
+- **实现方案**:
+  - `TaskSource` 枚举添加至 `rust/crates/eket-core/src/types.rs`（`#[derive(Default)]` + `#[default] Cli`）
+  - `Ticket` struct 新增 `source: TaskSource` 字段
+  - `db/mod.rs` 的 `run_migrations` 中追加幂等列检查（`ALTER TABLE IF NOT EXISTS` 模式）
+  - `create_ticket_with_source()` 新方法支持指定来源
+  - `TicketRow` 新增 `source: String` 字段，SELECT 语句追加 `COALESCE(source, 'cli')`
+  - `task:progress` 输出追加 `tickets` 数组（含 id/status/assignee/label）
+- **合并**: 与 TASK-256 合并为一次 schema migration（0002_task_source_timestamps.sql）
