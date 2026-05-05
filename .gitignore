@@ -1,4 +1,4 @@
-# EKET
+# EKET runtime data
 .eket/state/
 .eket/logs/
 .eket/memory/
@@ -12,6 +12,8 @@ rust/.eket/
 *.tmp
 *.log
 *.bak
+*.swp
+*~
 
 # 系统文件
 .DS_Store
@@ -19,6 +21,15 @@ Thumbs.db
 .claude/settings.local.json
 # Claude Code worktrees
 .claude/worktrees/
+
+# IDE/编辑器
+.idea/
+.vscode/
+*.sublime-*
+.project
+.classpath
+.settings/
+*.iml
 
 # 运行生成物
 outbox/
@@ -40,8 +51,6 @@ confluence/memory/retrospectives/*
 
 # 工具缓存 / 本地工具
 .serena/
-.coverage
-htmlcov/
 obsidian-plugins/
 
 # 空目录占位
@@ -50,6 +59,7 @@ obsidian-plugins/
 # Node.js
 node/node_modules/
 node/dist/
+node/coverage/
 node/tests/*.js
 node/tests/*.js.map
 node/tests/*.d.ts
@@ -79,7 +89,42 @@ jira/.eket_master_marker
 
 # Git worktrees
 .worktrees/
+
+# Rust
 rust/target/
+rust/Cargo.lock  # Keep if library; ignore if binary-only project
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
 
 # Docusaurus build output
 docs-site/.docusaurus/
