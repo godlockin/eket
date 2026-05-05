@@ -1,5 +1,7 @@
 # TASK-208: ContextBudget序列化 + CLI展示
 
+**状态**: done
+
 **优先级**: P3
 **类型**: Feature
 **模块**: rust/crates/eket-engine, rust/crates/eket-cli

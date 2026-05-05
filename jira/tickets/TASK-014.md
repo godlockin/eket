@@ -4,7 +4,7 @@
 **创建者**: Master Agent
 **版本**: v2.5.0
 **优先级**: P1
-**状态**: open
+**状态**: dropped
 **gate_review_veto_count**: 0
 **veto_reason**:
 **resubmit_conditions**:

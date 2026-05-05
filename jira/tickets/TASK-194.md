@@ -1,5 +1,7 @@
 # TASK-194: 修复CircuitBreaker滑动窗口——一次成功不应归零failures
 
+**状态**: ready
+
 **优先级**: P2
 **类型**: Bug
 **模块**: eket-core / circuit_breaker.rs:165
