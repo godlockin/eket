@@ -1,7 +1,7 @@
 # TASK-261: Webhook retry poller：background tokio task 扫描 next_retry_at
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P1
 - **负责人**: 待认领
