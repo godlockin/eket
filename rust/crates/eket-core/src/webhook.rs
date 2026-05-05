@@ -612,6 +612,13 @@ impl WebhookStore {
 
 const MAX_ATTEMPTS: i64 = 12;
 
+/// Compute retry delay for a given attempt number.
+/// Returns `2^attempt` minutes, capped at `2^(MAX_ATTEMPTS-1)` minutes.
+pub fn retry_delay(attempt: i64) -> std::time::Duration {
+    let capped = attempt.min(MAX_ATTEMPTS - 1) as u32;
+    std::time::Duration::from_secs(2u64.pow(capped) * 60)
+}
+
 /// Dispatch `event` to all matching webhook URLs concurrently.  Never returns Err.
 pub async fn dispatch_event(
     pool: DbPool,
@@ -1169,5 +1176,111 @@ mod tests {
             assert_eq!(serialized, format!("\"{}\"", expected));
             assert_eq!(event.as_str(), expected);
         }
+    }
+
+    // ── HMAC known-vector ─────────────────────────────────────────────────────
+
+    #[test]
+    fn hmac_known_vector() {
+        // key  = ASCII string of 64 zeros (what sign_payload uses: secret.as_bytes())
+        // body = b"test"
+        // expected = openssl dgst -sha256 -hmac "000...0" <<< "test"
+        let key = "0000000000000000000000000000000000000000000000000000000000000000";
+        let expected = "4962162475221ee2f6a74a0694ff3ea224dcfdf5b95f9d03126d9b14026bef5c";
+        assert_eq!(sign_payload(key, b"test"), expected);
+    }
+
+    // ── retry_delay boundary ──────────────────────────────────────────────────
+
+    #[test]
+    fn retry_delay_boundaries() {
+        use std::time::Duration;
+        assert_eq!(retry_delay(0), Duration::from_secs(60));
+        assert_eq!(retry_delay(11), Duration::from_secs(2u64.pow(11) * 60));
+        // attempt >= MAX_ATTEMPTS-1 (11) should be capped at attempt=11
+        assert_eq!(retry_delay(12), Duration::from_secs(2u64.pow(11) * 60));
+        assert_eq!(retry_delay(100), Duration::from_secs(2u64.pow(11) * 60));
+    }
+
+    // ── mark_retry → get_due_retries roundtrip ────────────────────────────────
+
+    #[test]
+    fn mark_retry_get_due_retries_roundtrip() {
+        let pool = make_pool();
+        let store = WebhookStore::new(pool.clone());
+        let wh = store
+            .add_url("https://example.com/hook", &["*".to_string()], None)
+            .unwrap();
+
+        let record_id = {
+            let conn = pool.get().unwrap();
+            let id = store
+                .create_record(&conn, &wh.id, "task.completed", &serde_json::json!({}))
+                .unwrap();
+            // mark_retry with attempt=0 → next_retry_at = now + 1 min (2^0)
+            store.mark_retry(&conn, &id, Some(503), 0).unwrap();
+            id
+        };
+
+        // Override next_retry_at to be in the past so get_due_retries returns it
+        {
+            let conn = pool.get().unwrap();
+            let past = Utc::now() - chrono::Duration::hours(1);
+            let past_str = past.format("%Y-%m-%dT%H:%M:%SZ").to_string();
+            conn.execute(
+                "UPDATE webhook_event_records SET next_retry_at = ?1 WHERE id = ?2",
+                rusqlite::params![past_str, record_id],
+            )
+            .unwrap();
+        }
+
+        let due = store.get_due_retries(Utc::now()).unwrap();
+        assert_eq!(due.len(), 1);
+        assert_eq!(due[0].id, record_id);
+        assert_eq!(due[0].attempt, 1); // mark_retry incremented attempt
+        assert_eq!(due[0].http_status, Some(503));
+    }
+
+    // ── dispatch_event integration (httpmock) ─────────────────────────────────
+
+    #[tokio::test]
+    async fn dispatch_event_sends_correct_headers() {
+        use httpmock::prelude::*;
+
+        let server = MockServer::start();
+        let mock = server.mock(|when, then| {
+            when.method(POST)
+                .path("/hook")
+                .header("X-Eket-Event", "task.completed")
+                .header_exists("X-Eket-Signature");
+            then.status(200);
+        });
+
+        let url = server.url("/hook");
+        let pool = make_pool();
+        let store = WebhookStore::new(pool.clone());
+
+        // Bypass SSRF validation to insert a localhost URL directly (test-only).
+        {
+            let conn = pool.get().unwrap();
+            ensure_webhook_tables(&conn).unwrap();
+            let id = uuid::Uuid::new_v4().to_string();
+            let events_json = serde_json::to_string(&["task.completed"]).unwrap();
+            let now = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
+            // Store URL + secret as plaintext (no key in test env)
+            conn.execute(
+                "INSERT INTO webhook_urls (id, url, secret, events, created_at) VALUES (?1,?2,?3,?4,?5)",
+                rusqlite::params![id, url, "my-secret", events_json, now],
+            ).unwrap();
+        }
+
+        dispatch_event(
+            pool,
+            WebhookEvent::TaskCompleted,
+            serde_json::json!({"ticket": "TASK-267"}),
+        )
+        .await;
+
+        mock.assert();
     }
 }
