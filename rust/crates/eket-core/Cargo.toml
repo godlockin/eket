@@ -25,6 +25,9 @@ handlebars = "6"
 hostname = "0.3"
 moka = { workspace = true }
 
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
 [dev-dependencies]
 tokio = { workspace = true, features = ["test-util"] }
 tempfile = "3"
