@@ -50,7 +50,8 @@ Hybrid: Rust(Core/CLI/SQLite/EventBus) + Node.js(Hook Server/Dashboard) + Shell(
 | **worktree 隔离** | `task:claim` 自动 `git worktree add .worktrees/TASK-NNN`，`task:complete` 自动清理 |
 | **专家标签** | `task:create` 必须传 `--expertise rust,devops`（或 `any`），`task:claim --role rust` 精准匹配 |
 | **依赖解除通知** | `task:complete` 后扫描 `blocked_by`，依赖全解除时写 `.eket/state/unblocked-queue.json`，heartbeat 优先分发 |
-| **expertise 精准派送** | heartbeat 读 `required_expertise` 匹配 slaver `role`/`skills`；无匹配时写 `waiting-for-expert.json` + inbox 提示 |
+| **向量语义派送** | heartbeat 3层dispatch：①cosine≥0.5向量匹配→TrustMax ②标签fallback→TrustMax ③any→TrustMax；`expertise_embedding.rs` 64维Knuth-hash |
+| **TrustScore 排序** | dispatch选TrustScore最高slaver：`0.4×success + 0.2×uptime + 0.2×latency + 0.2×(1-error)`；权重可配置 `.eket/config/scoring_weights.toml`；每次派送写 `scoring_trace-YYYY-MM-DD.jsonl` |
 | **按需专家召唤** | `expert:summon --role <tag>` 自动注册匹配 slaver；`--from-waiting` 批量处理等待队列 |
 | **专家 persona scaffold** | `task:create` 遇到未知 expertise tag 自动生成骨架文件到 `~/.claude/skills/eket/experts/extended/` |
 | **knowledge 飞轮** | `task:claim` 自动推送相关 pitfalls/patterns；`task:complete` 触发 Curator 质量门；每5次 complete 重建索引 |
