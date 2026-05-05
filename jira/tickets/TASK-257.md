@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: research / spike
 - **优先级**: P3
-- **状态**: todo
+**状态**: in_progress
 - **预估**: 2d（调研，无代码产出）
 - **expertise**: architecture,backend
 - **来源**: DocuSeal 借鉴研究（2026-05-05）
