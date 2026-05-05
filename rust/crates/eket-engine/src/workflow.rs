@@ -486,8 +486,8 @@ impl WorkflowEngine {
                         None
                     };
                 let context = if let Some(ref trimmed) = trimmed_data {
-                    let before_tokens: usize = context.data.iter().map(|(_, v)| crate::workflow::estimate_value_tokens(v)).sum();
-                    let after_tokens: usize = trimmed.iter().map(|(_, v)| crate::workflow::estimate_value_tokens(v)).sum();
+                    let before_tokens: usize = context.data.values().map(crate::workflow::estimate_value_tokens).sum();
+                    let after_tokens: usize = trimmed.values().map(crate::workflow::estimate_value_tokens).sum();
                     debug!("context budget applied: {} tokens → {} tokens (step={})", before_tokens, after_tokens, current_step_id);
                     let mut ctx = context;
                     ctx.data = trimmed.clone();
