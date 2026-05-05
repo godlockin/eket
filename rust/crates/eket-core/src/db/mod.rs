@@ -127,6 +127,8 @@ fn run_migrations(pool: &DbPool) -> EketResult<()> {
         ("blocked_at",   "ALTER TABLE tickets ADD COLUMN blocked_at   DATETIME"),
         ("unblocked_at", "ALTER TABLE tickets ADD COLUMN unblocked_at DATETIME"),
         ("completed_at", "ALTER TABLE tickets ADD COLUMN completed_at DATETIME"),
+        ("type",         "ALTER TABLE tickets ADD COLUMN type TEXT NOT NULL DEFAULT 'feature'"),
+        ("updated_at",   "ALTER TABLE tickets ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now'))"),
     ] {
         if !ticket_cols.iter().any(|c| c == col) {
             conn.execute_batch(ddl)?;
@@ -366,10 +368,18 @@ impl SqliteClient {
     ) -> EketResult<()> {
         let conn = self.pool.get()?;
         let now = chrono::Utc::now().to_rfc3339();
+
+        // Convert priority string (P0/P1/P2) to integer for legacy DB compatibility (TASK-270)
+        let priority_int: i32 = match priority {
+            "P0" => 0,
+            "P1" => 1,
+            "P2" | _ => 2,
+        };
+
         conn.execute(
             "INSERT INTO tickets (id, title, priority, type, status, source, created_at, updated_at)
              VALUES (?1, ?2, ?3, ?4, 'todo', ?5, ?6, ?6)",
-            params![id, title, priority, ticket_type, source, now],
+            params![id, title, priority_int, ticket_type, source, now],
         )?;
         Ok(())
     }
