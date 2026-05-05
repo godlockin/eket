@@ -7,10 +7,11 @@
 /// Retry: exponential back-off 2^attempt minutes, max 12 attempts.
 /// Secret absent → store plaintext + warn.  Fail → warn only, never abort caller.
 use anyhow::{Context, Result};
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use tracing::{info, warn};
 use uuid::Uuid;
 
@@ -119,43 +120,119 @@ pub fn ensure_webhook_tables(conn: &Connection) -> Result<()> {
 
 // ─── Encryption helpers ───────────────────────────────────────────────────────
 
-/// Very lightweight XOR-based obfuscation with a key from env.
-/// If key absent → return plaintext + emit warn (once per process).
+/// Derive a 32-byte AES key from an env var (try `EKET_WEBHOOK_KEY` first,
+/// then `EKET_ENCRYPTION_KEY`).  Returns `None` when no key is configured.
+fn load_key() -> Option<[u8; 32]> {
+    let raw = std::env::var("EKET_WEBHOOK_KEY")
+        .or_else(|_| std::env::var("EKET_ENCRYPTION_KEY"))
+        .unwrap_or_default();
+    if raw.len() >= 64 {
+        // 64 hex chars → 32 bytes
+        let bytes = hex::decode(&raw[..64]).ok()?;
+        let mut key = [0u8; 32];
+        key.copy_from_slice(&bytes);
+        Some(key)
+    } else if !raw.is_empty() {
+        // Short key: SHA-256 hash → 32 bytes (backward-compat convenience)
+        use sha2::{Digest, Sha256};
+        let hash = Sha256::digest(raw.as_bytes());
+        let mut key = [0u8; 32];
+        key.copy_from_slice(&hash);
+        Some(key)
+    } else {
+        None
+    }
+}
+
+/// Encrypt with AES-256-GCM using a random 12-byte nonce.
+/// Storage format: `hex(nonce):hex(ciphertext)`.
+/// Falls back to plaintext (with a warning) when no key is available.
 fn encrypt(plaintext: &str) -> String {
-    match std::env::var("EKET_ENCRYPTION_KEY") {
-        Ok(key) if !key.is_empty() => {
-            let key_bytes = key.as_bytes();
-            let enc: Vec<u8> = plaintext
-                .as_bytes()
-                .iter()
-                .enumerate()
-                .map(|(i, b)| b ^ key_bytes[i % key_bytes.len()])
-                .collect();
-            hex::encode(enc)
-        }
-        _ => {
-            warn!("EKET_ENCRYPTION_KEY not set — storing webhook secret as plaintext");
+    encrypt_with_key(plaintext, load_key().as_ref())
+}
+
+fn encrypt_with_key(plaintext: &str, key: Option<&[u8; 32]>) -> String {
+    use aes_gcm::{
+        aead::{Aead, KeyInit},
+        Aes256Gcm, Nonce,
+    };
+    use rand::RngCore;
+
+    let Some(key) = key else {
+        warn!("No encryption key configured — storing webhook secret as plaintext");
+        return plaintext.to_string();
+    };
+
+    let cipher = Aes256Gcm::new(key.into());
+    let mut nonce_bytes = [0u8; 12];
+    rand::thread_rng().fill_bytes(&mut nonce_bytes);
+    let nonce = Nonce::from_slice(&nonce_bytes);
+
+    match cipher.encrypt(nonce, plaintext.as_bytes()) {
+        Ok(ciphertext) => format!("{}:{}", hex::encode(nonce_bytes), hex::encode(ciphertext)),
+        Err(e) => {
+            warn!("AES-GCM encrypt failed: {e} — storing plaintext");
             plaintext.to_string()
         }
     }
 }
 
+/// Decrypt AES-256-GCM ciphertext.  Expects `hex(nonce):hex(ciphertext)`.
+/// Migration compat: if the value doesn't match that format, tries XOR
+/// fallback (legacy), returning the plaintext on success so the caller can
+/// transparently re-encrypt on next write.
 fn decrypt(ciphertext: &str) -> String {
-    match std::env::var("EKET_ENCRYPTION_KEY") {
-        Ok(key) if !key.is_empty() => {
-            let Ok(bytes) = hex::decode(ciphertext) else {
-                return ciphertext.to_string(); // fallback: maybe already plaintext
-            };
-            let key_bytes = key.as_bytes();
+    decrypt_with_key(ciphertext, load_key().as_ref())
+}
+
+fn decrypt_with_key(ciphertext: &str, key: Option<&[u8; 32]>) -> String {
+    use aes_gcm::{
+        aead::{Aead, KeyInit},
+        Aes256Gcm, Nonce,
+    };
+
+    let Some(key) = key else {
+        return ciphertext.to_string();
+    };
+
+    // Try AES-GCM format: "hex_nonce:hex_ciphertext"
+    if let Some((nonce_hex, ct_hex)) = ciphertext.split_once(':') {
+        if let (Ok(nonce_bytes), Ok(ct_bytes)) =
+            (hex::decode(nonce_hex), hex::decode(ct_hex))
+        {
+            if nonce_bytes.len() == 12 {
+                let cipher = Aes256Gcm::new(key.into());
+                let nonce = Nonce::from_slice(&nonce_bytes);
+                if let Ok(plain) = cipher.decrypt(nonce, ct_bytes.as_ref()) {
+                    if let Ok(s) = String::from_utf8(plain) {
+                        return s;
+                    }
+                }
+            }
+        }
+    }
+
+    // Migration fallback: try legacy XOR decryption
+    if let Ok(bytes) = hex::decode(ciphertext) {
+        // Use raw key bytes for XOR (legacy used the raw env string)
+        let key_str = std::env::var("EKET_WEBHOOK_KEY")
+            .or_else(|_| std::env::var("EKET_ENCRYPTION_KEY"))
+            .unwrap_or_default();
+        if !key_str.is_empty() {
+            let key_bytes = key_str.as_bytes();
             let dec: Vec<u8> = bytes
                 .iter()
                 .enumerate()
                 .map(|(i, b)| b ^ key_bytes[i % key_bytes.len()])
                 .collect();
-            String::from_utf8(dec).unwrap_or_else(|_| ciphertext.to_string())
+            if let Ok(s) = String::from_utf8(dec) {
+                return s;
+            }
         }
-        _ => ciphertext.to_string(),
     }
+
+    // Last resort: return as-is (may be stored plaintext)
+    ciphertext.to_string()
 }
 
 // ─── HMAC-SHA256 signature ────────────────────────────────────────────────────
@@ -371,17 +448,53 @@ impl WebhookStore {
         Ok(())
     }
 
-    /// Reset a failed record for immediate retry (attempt stays, next_retry_at cleared).
+    /// Reset a failed record for immediate retry; also reset attempt to 0.
     pub fn reset_for_retry(&self, record_id: &str) -> Result<()> {
         let conn = self.conn()?;
         ensure_webhook_tables(&conn)?;
         conn.execute(
             "UPDATE webhook_event_records
-             SET failed_at = NULL, next_retry_at = NULL, completed_at = NULL
+             SET failed_at = NULL, next_retry_at = NULL, completed_at = NULL, attempt = 0
              WHERE id = ?1",
             params![record_id],
         )?;
         Ok(())
+    }
+
+    /// Return records whose `next_retry_at` is due and are still pending.
+    pub fn get_due_retries(&self, now: DateTime<Utc>) -> Result<Vec<WebhookEventRecord>> {
+        let conn = self.conn()?;
+        ensure_webhook_tables(&conn)?;
+        let now_str = now.format("%Y-%m-%dT%H:%M:%SZ").to_string();
+        let mut stmt = conn.prepare(
+            "SELECT id, webhook_url_id, event_type, payload, attempt, http_status,
+                    next_retry_at, created_at, completed_at, failed_at
+             FROM webhook_event_records
+             WHERE next_retry_at <= ?1
+               AND completed_at IS NULL
+               AND failed_at IS NULL
+               AND attempt < 12
+             LIMIT 100",
+        )?;
+        let rows = stmt.query_map(params![now_str], |row| {
+            Ok(WebhookEventRecord {
+                id: row.get(0)?,
+                webhook_url_id: row.get(1)?,
+                event_type: row.get(2)?,
+                payload: serde_json::from_str(&row.get::<_, String>(3)?).unwrap_or_default(),
+                attempt: row.get(4)?,
+                http_status: row.get(5)?,
+                next_retry_at: row.get(6)?,
+                created_at: row.get(7)?,
+                completed_at: row.get(8)?,
+                failed_at: row.get(9)?,
+            })
+        })?;
+        let mut result = Vec::new();
+        for row in rows {
+            result.push(row?);
+        }
+        Ok(result)
     }
 }
 
@@ -659,11 +772,22 @@ mod tests {
 
     #[test]
     fn encrypt_decrypt_roundtrip() {
-        std::env::set_var("EKET_ENCRYPTION_KEY", "test-key-12345");
+        // 64 hex chars = 32 bytes key — no env mutation needed
+        let key_hex = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
+        let mut key = [0u8; 32];
+        hex::decode_to_slice(key_hex, &mut key).unwrap();
+
         let plaintext = "https://secret.example.com/hook";
-        let enc = encrypt(plaintext);
-        let dec = decrypt(&enc);
+        let enc = encrypt_with_key(plaintext, Some(&key));
+        let dec = decrypt_with_key(&enc, Some(&key));
         assert_eq!(dec, plaintext);
+
+        // Verify format: nonce_hex:ct_hex
+        assert!(enc.contains(':'), "expected nonce:ciphertext format");
+        // Different calls produce different ciphertexts (random nonce)
+        let enc2 = encrypt_with_key(plaintext, Some(&key));
+        assert_ne!(enc, enc2, "nonce should differ between calls");
+        assert_eq!(decrypt_with_key(&enc2, Some(&key)), plaintext);
     }
 
     #[test]
