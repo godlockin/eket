@@ -497,7 +497,10 @@ pub async fn start(port: u16, db_path: PathBuf, tickets_dir: PathBuf) -> Result<
     if auth_token.is_some() {
         info!("auth enabled via EKET_AUTH_TOKEN");
     }
-    let auth_config = Arc::new(auth::AuthConfig { token: auth_token });
+    let auth_config = Arc::new(auth::AuthConfig {
+        token: auth_token,
+        jwt_secret: std::env::var("EKET_JWT_SECRET").ok(),
+    });
     let app = build_router(state, auth_config);
     let addr = format!("0.0.0.0:{port}");
     info!("eket-server listening on {addr}");
@@ -534,7 +537,7 @@ mod tests {
     }
 
     fn no_auth() -> Arc<auth::AuthConfig> {
-        Arc::new(auth::AuthConfig { token: None })
+        Arc::new(auth::AuthConfig { token: None, jwt_secret: None })
     }
 
     async fn body_json(body: Body) -> Value {
