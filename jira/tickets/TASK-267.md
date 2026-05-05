@@ -7,7 +7,6 @@
 - **预估**: 0.5d
 - **expertise**: rust
 - **来源**: PR Review TASK-254（2026-05-05）
-- **依赖**: TASK-264, TASK-265（需先完成加密和 retry 修复）
 
 ## 背景
 
@@ -54,4 +53,4 @@ async fn test_retry_roundtrip() { ... }
 
 ## 依赖
 
-- **blocked_by**: TASK-264（加密修复）, TASK-265（retry poller）
+- **blocked_by**: []
