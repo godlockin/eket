@@ -1,0 +1,29 @@
+name: Validate Ignore Files
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/ignore-rules/**'
+      - '.gitignore'
+      - '.dockerignore'
+      - '.claudeignore'
+  push:
+    branches: [main, testing, miao]
+    paths:
+      - 'scripts/ignore-rules/**'
+
+jobs:
+  check-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check ignore files in sync
+        run: bash scripts/sync-ignore-files.sh --check
+
+      - name: Show diff if out of sync
+        if: failure()
+        run: |
+          echo "Expected .gitignore:"
+          bash scripts/sync-ignore-files.sh
+          git diff .gitignore .dockerignore .claudeignore

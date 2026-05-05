@@ -170,13 +170,75 @@ Cargo.lock  # Keep for binaries, ignore for libraries
 rust-analyzer/
 
 # ────────────────────────────────────────────────────────────────
-# git-extra
+# claude-extra
 # ────────────────────────────────────────────────────────────────
-# Git-specific extras (not needed in Docker/Claude)
+# Claude Code context optimization
 
-# Git worktrees
-.claude/worktrees/
-.claude/settings.local.json
+# Large compiled artifacts
+target/
+dist/
+build/
+node_modules/
+__pycache__/
+*.pyc
+coverage/
+.eggs/
+
+# Binary files
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+*.dat
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Media files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.mp3
+*.wav
+*.flac
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.pdf
+*.zip
+*.tar.gz
+*.7z
+*.rar
+
+# Large data files
+*.csv
+*.parquet
+*.arrow
+*.feather
+
+# Model weights and datasets
+models/
+weights/
+checkpoints/
+datasets/
+data/raw/
+data/processed/
+
+# Documentation build outputs
+docs-site/.docusaurus/
+docs-site/build/
+docs/_build/
+site/
+
+# Test snapshots and fixtures (large)
+**/__snapshots__/
+**/fixtures/**/*.bin
 
 # ────────────────────────────────────────────────────────────────
 # 90-project-specific
