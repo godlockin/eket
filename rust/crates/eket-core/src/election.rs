@@ -270,7 +270,7 @@ impl MasterElection {
         drop(guard);
 
         // Delete the file lock so other instances can win
-        let lock_path = self.project_root.join(".eket/master/lock");
+        let lock_path = self.project_root.join(".eket/state/master.lock");
         tokio::fs::remove_file(&lock_path).await.ok();
         info!("[Election] {} resigned", self.instance_id);
 
@@ -451,13 +451,13 @@ impl MasterElection {
     // ── Level 3: File ─────────────────────────────────────────────────────────
 
     async fn elect_file(&self) -> EketResult<ElectionResult> {
-        let marker_dir = self.project_root.join(".eket/master");
+        let marker_dir = self.project_root.join(".eket/state");
         match tokio::fs::create_dir_all(&marker_dir).await {
             Ok(_) => {}
             Err(e) => return Err(EketError::Io(e)),
         }
 
-        let marker = marker_dir.join("lock");
+        let marker = marker_dir.join("master.lock");
         let pid = std::process::id();
         let expires_at = chrono::Utc::now().timestamp() + FILE_LOCK_TTL_SECS as i64;
         // TASK-182: Lock file content: "{pid}:{instance_id}:{expires_at_unix}"
@@ -518,7 +518,7 @@ impl MasterElection {
     /// TASK-230: File-level renewal loop.
     async fn start_renewer_file(&self) {
         let id = self.instance_id.clone();
-        let lock_path = self.project_root.join(".eket/master/lock");
+        let lock_path = self.project_root.join(".eket/state/master.lock");
         let (stop_tx, mut stop_rx) = tokio::sync::oneshot::channel::<()>();
 
         *self.file_stop_tx.lock().await = Some(stop_tx);
@@ -528,7 +528,10 @@ impl MasterElection {
             loop {
                 tokio::select! {
                     _ = interval.tick() => {
-                        if let Err(e) = tokio::fs::write(&lock_path, id.as_bytes()).await {
+                        let pid = std::process::id();
+                        let expires = chrono::Utc::now().timestamp() + FILE_LOCK_TTL_SECS as i64;
+                        let content = format!("{pid}:{id}:{expires}");
+                        if let Err(e) = tokio::fs::write(&lock_path, content.as_bytes()).await {
                             warn!("[election] file master renewal failed: {e}");
                             break;
                         }
