@@ -289,6 +289,7 @@
 | rust/tests/ | |
 | scripts/ | |
 | scripts/hooks/ | |
+| scripts/ignore-rules/ | |
 | sdk/ | |
 | sdk/javascript/ | |
 | sdk/javascript/examples/ | |
