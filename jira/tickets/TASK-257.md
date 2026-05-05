@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: research / spike
 - **优先级**: P3
-**状态**: in_progress
+- **状态**: todo
 - **预估**: 2d（调研，无代码产出）
 - **expertise**: architecture,backend
 - **来源**: DocuSeal 借鉴研究（2026-05-05）
@@ -73,9 +73,29 @@ DocuSeal 的 `Submission#source` 枚举中已有 `mcp` 值，表明 DocuSeal 已
 
 无（纯调研，可立即开始）
 
+---
+
 ## 分析记录
 
-**领取时间**: 2026-05-05T12:20:36.476608+00:00
-**执行者**: slaver_1776695133821_534ccf79
+**领取时间**：2026-05-05  
+**执行者**：Architecture Slaver  
+**状态**：✅ 完成
 
-TODO: 填写分析结论
+### 关键发现
+
+1. **DocuSeal MCP Server 已官方发布**（v2.3.7, 2026-03-09），非社区实现。支持 `send_documents` 工具（创建签署请求）+ v2.5.0 字段预填；OAuth 2.1/PKCE PR (#633) 正在合并中。
+
+2. **EKET 作为 MCP 调用方**：当前 `task:complete` Saga 无外部签署场景，引入异步等待会破坏同步模型。**暂不建议**。
+
+3. **EKET 作为 MCP Server**：Express HTTP Server 改造成本低（~8-11d），可暴露 `task_create/claim/complete/list` + `knowledge_search` 工具，使 Claude Code Agent 直接操作 EKET 无需 CLI。**强烈建议**。
+
+4. **竞品**：DocuSeal 是目前明确支持 MCP 的首家/极少数文档签署产品；PandaDoc/HelloSign 无公开 MCP 信息（429 限流无法完全确认）。
+
+### 结论
+
+- **TASK-258（实现 EKET MCP Server）**：✅ 建议创建，P1 优先级
+- **TASK-259（EKET 集成 DocuSeal MCP）**：⏸ 暂不创建，列入 backlog
+
+### 产出物
+
+- `confluence/requirements/RESEARCH-MCP-DOCUSEAL.md`
