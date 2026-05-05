@@ -1,6 +1,6 @@
 # TASK-180: 修复SQLite选举无互斥——INSERT OR IGNORE按id不按role
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P0
 **类型**: Bug

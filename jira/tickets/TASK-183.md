@@ -1,6 +1,6 @@
 # TASK-183: 修复Node→Rust proxy静态绑定——Rust崩溃后502无法fallback
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P0
 **类型**: Bug

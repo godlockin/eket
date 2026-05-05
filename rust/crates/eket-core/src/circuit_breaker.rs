@@ -2,6 +2,9 @@
 ///
 /// 三态：closed → open → half_open → closed
 /// 纯 Rust，无外部依赖，tokio 时间戳
+///
+/// TASK-194: 滑动窗口用VecDeque<Instant>存储失败时间戳
+use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -54,21 +57,37 @@ impl std::fmt::Display for CircuitState {
 #[derive(Debug)]
 struct Inner {
     state: CircuitState,
-    failures: u32,
+    /// TASK-194: 滑动窗口失败时间戳队列（代替单一u32计数器）
+    failure_timestamps: VecDeque<Instant>,
     successes: u32,
     opened_at: Option<Instant>,
-    last_failure_at: Option<Instant>,
 }
 
 impl Inner {
     fn new() -> Self {
         Self {
             state: CircuitState::Closed,
-            failures: 0,
+            failure_timestamps: VecDeque::new(),
             successes: 0,
             opened_at: None,
-            last_failure_at: None,
         }
+    }
+
+    /// TASK-194: 清理窗口外的失败记录
+    fn evict_old_failures(&mut self, window: Duration) {
+        let cutoff = Instant::now() - window;
+        while let Some(&oldest) = self.failure_timestamps.front() {
+            if oldest < cutoff {
+                self.failure_timestamps.pop_front();
+            } else {
+                break;
+            }
+        }
+    }
+
+    /// TASK-194: 窗口内失败数量
+    fn failure_count(&self) -> usize {
+        self.failure_timestamps.len()
     }
 }
 
@@ -151,19 +170,22 @@ impl CircuitBreaker {
 
     fn on_success(&self) {
         let mut inner = self.inner.lock().unwrap_or_else(|p| p.into_inner());
+        // TASK-194: 清理窗口外失败记录，但不清零当前窗口内的失败
+        inner.evict_old_failures(self.config.monitor_window);
+
         inner.successes += 1;
         match inner.state {
             CircuitState::HalfOpen => {
                 if inner.successes >= self.config.success_threshold {
                     inner.state = CircuitState::Closed;
-                    inner.failures = 0;
+                    inner.failure_timestamps.clear(); // 恢复到closed才清零
                     inner.successes = 0;
                     inner.opened_at = None;
                     tracing::info!("[CircuitBreaker:{}] → closed (recovered)", self.name);
                 }
             }
             CircuitState::Closed => {
-                inner.failures = 0;
+                // TASK-194: 不再清零failures — 只清理过期记录（上面已做）
             }
             CircuitState::Open => {}
         }
@@ -172,19 +194,13 @@ impl CircuitBreaker {
     fn on_failure(&self) {
         let mut inner = self.inner.lock().unwrap_or_else(|p| p.into_inner());
 
-        // 滑动窗口：超出监控窗口则重置
-        if let Some(last) = inner.last_failure_at {
-            if last.elapsed() > self.config.monitor_window {
-                inner.failures = 0;
-            }
-        }
-
-        inner.failures += 1;
-        inner.last_failure_at = Some(Instant::now());
+        // TASK-194: 清理窗口外失败 + push新失败时间戳
+        inner.evict_old_failures(self.config.monitor_window);
+        inner.failure_timestamps.push_back(Instant::now());
 
         let should_open = match inner.state {
             CircuitState::HalfOpen => true,
-            CircuitState::Closed => inner.failures >= self.config.failure_threshold,
+            CircuitState::Closed => inner.failure_count() >= self.config.failure_threshold as usize,
             CircuitState::Open => false,
         };
 
@@ -202,7 +218,7 @@ impl CircuitBreaker {
             tracing::warn!(
                 "[CircuitBreaker:{}] → open (failures={})",
                 self.name,
-                inner.failures
+                inner.failure_count()
             );
         }
     }
@@ -309,19 +325,20 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn success_resets_failure_count_in_closed() {
+    async fn success_does_not_reset_windowed_failures() {
+        // TASK-194: 一次成功不应清零窗口内失败
         let cb = CircuitBreaker::new("test", fast_config());
-        // Two failures (below threshold)
+        // 2次失败
         for _ in 0..2 {
             let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
         }
-        // One success → failures reset
+        // 1次成功（不再清零）
         let _ = cb.execute(|| async { Ok::<_, EketError>(()) }).await;
-        // Two more failures → still below threshold (count was reset)
+        // 再2次失败 → 窗口内共4次，超过threshold=3 → open
         for _ in 0..2 {
             let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
         }
-        assert_eq!(cb.state(), CircuitState::Closed);
+        assert_eq!(cb.state(), CircuitState::Open);
     }
 
     #[tokio::test]
