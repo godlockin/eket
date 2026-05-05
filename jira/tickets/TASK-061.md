@@ -2,7 +2,7 @@
 id: TASK-061
 title: "fix(scripts): phase-summary.sh retro 范围 Bug + COMMIT_COUNT 修复"
 priority: P2
-status: ready
+status: dropped
 assignee: devops_dev
 dispatched_by: master
 created_at: 2026-04-18
