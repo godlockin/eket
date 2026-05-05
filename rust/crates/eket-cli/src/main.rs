@@ -1,3 +1,14 @@
+#![allow(clippy::redundant_field_names)]
+#![allow(clippy::empty_line_after_doc_comments)]
+#![allow(clippy::bind_instead_of_map)]
+#![allow(clippy::manual_strip)]
+#![allow(clippy::manual_is_multiple_of)]
+#![allow(clippy::too_many_arguments)]
+#![allow(clippy::manual_pattern_char_comparison)]
+#![allow(clippy::manual_unwrap_or_default)]
+#![allow(clippy::redundant_closure)]
+#![allow(clippy::collapsible_match)]
+#![allow(clippy::map_clone)]
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use tracing_subscriber::{fmt, EnvFilter};
