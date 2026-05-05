@@ -1,5 +1,7 @@
 # TASK-199: TaskCheckpoint — 断点续传+tool幂等（RunState借鉴）
 
+**状态**: backlog
+
 **优先级**: P0
 **类型**: Feature
 **模块**: node/src/core/task-checkpoint.ts + SQLite schema

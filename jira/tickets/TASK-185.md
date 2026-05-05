@@ -1,5 +1,7 @@
 # TASK-185: 修复assign_task + update_load TOCTOU竞争
 
+**状态**: ready
+
 **优先级**: P1
 **类型**: Bug
 **模块**: eket-engine / agent_pool.rs:126

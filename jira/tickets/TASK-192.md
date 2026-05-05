@@ -1,5 +1,7 @@
 # TASK-192: timestamp解析失败不应fallback到Utc::now()
 
+**状态**: ready
+
 **优先级**: P2
 **类型**: Bug
 **模块**: eket-core / registry.rs:264

@@ -2,7 +2,7 @@
 id: TASK-056
 title: "fix(python-sdk): token=None 鉴权静默失败 + 枚举容错"
 priority: P0
-status: in_review
+status: superseded
 assignee: backend_dev
 dispatched_by: master
 created_at: 2026-04-18

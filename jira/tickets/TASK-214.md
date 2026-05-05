@@ -1,5 +1,7 @@
 # TASK-214: std::sync::Mutex→tokio::sync::Mutex — StepSnapshotStore阻塞tokio线程
 
+**状态**: done
+
 **优先级**: P0
 **类型**: Bugfix
 **模块**: rust/crates/eket-engine/src/workflow.rs, step_snapshot.rs

@@ -1,5 +1,7 @@
 # TASK-188: 修复SSE broadcast满溢静默丢事件
 
+**状态**: ready
+
 **优先级**: P1
 **类型**: Bug
 **模块**: eket-server / lib.rs:426

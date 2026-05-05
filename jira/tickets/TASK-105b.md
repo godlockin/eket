@@ -1,7 +1,7 @@
 # TASK-105b: task:claim/complete 集成 worktree 隔离
 
 ## 元数据
-- **状态**: todo
+- **状态**: superseded
 - **类型**: feature
 - **优先级**: P0
 - **负责人**: 待领取
