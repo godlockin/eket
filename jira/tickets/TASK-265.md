@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: bugfix
 - **优先级**: P1
-**状态**: in_progress
+**状态**: done
 - **预估**: 1d
 - **expertise**: rust
 - **来源**: PR Review TASK-254（2026-05-05）
@@ -54,3 +54,14 @@ DB 查询：`WHERE next_retry_at <= now AND completed_at IS NULL AND failed_at I
 **执行者**: slaver_1776695133821_534ccf79
 
 TODO: 填写分析结论
+
+## Summary
+
+> 自动生成摘要（rule-based）
+
+| 项 | 内容 |
+|---|---|
+| Ticket | TASK-265: Webhook retry poller：background tokio task 扫描 next_retry_at |
+| 测试结果 | — |
+| PR | — |
+| 知识沉淀 | — |
