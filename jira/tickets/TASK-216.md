@@ -1,5 +1,7 @@
 # TASK-216: ContextBudget裁剪结果未写回 inst.context — feature完全无效
 
+**状态**: done
+
 **优先级**: P1
 **类型**: Bugfix
 **模块**: rust/crates/eket-engine/src/workflow.rs

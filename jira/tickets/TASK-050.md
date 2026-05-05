@@ -1,7 +1,7 @@
 ---
 id: TASK-050
 title: governance hardening + continuous retro/phase loop
-status: in_progress
+status: superseded
 priority: P0
 type: task
 epic: EPIC-V3-MIGRATION

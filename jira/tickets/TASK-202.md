@@ -1,5 +1,7 @@
 # TASK-202: MultiProvider — 角色级模型路由
 
+**状态**: dropped
+
 **优先级**: P2
 **类型**: Feature
 **模块**: node/src/models/provider.ts
