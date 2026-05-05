@@ -1,6 +1,6 @@
 # TASK-185: 修复assign_task + update_load TOCTOU竞争
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P1
 **类型**: Bug
