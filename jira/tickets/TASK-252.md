@@ -1,6 +1,7 @@
 # TASK-252: ruflo 借鉴研究经验沉淀
 
-**状态**: todo
+**状态**: closed
+**关闭原因**: 知识沉淀已并入 TASK-250/251 Slaver 职责（SLAVER-RULES §红线）；ruflo-research.md + memory-index.md + expertise-tag-design.md + SKILL.md 均已更新
 **优先级**: P1
 **预估工时**: 60min
 **负责人**: —
