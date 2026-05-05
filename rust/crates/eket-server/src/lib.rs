@@ -27,6 +27,7 @@ use tracing::info;
 
 use eket_core::dag::parse_tickets_dag;
 use eket_core::db::{create_pool, SqliteClient};
+use eket_core::webhook::{start_retry_poller, WebhookStore};
 use eket_engine::ticket_engine::WorkflowEvent;
 
 // ─── SSE EventType ────────────────────────────────────────────────────────────
@@ -487,6 +488,7 @@ pub fn build_router(state: AppState, auth_config: Arc<auth::AuthConfig>) -> Rout
 pub async fn start(port: u16, db_path: PathBuf, tickets_dir: PathBuf) -> Result<()> {
     let db_path_str = db_path.to_string_lossy();
     let pool = create_pool(&db_path_str)?;
+    start_retry_poller(Arc::new(WebhookStore::new(pool.clone())));
     let db = Arc::new(SqliteClient::new(pool));
     let event_bus = EventBus::new(4096); // TASK-188: capacity 4096 to reduce lag
     let (event_tx, _) = broadcast::channel::<WorkflowEvent>(4096);

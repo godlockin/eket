@@ -260,6 +260,10 @@ impl WebhookStore {
         Self { pool }
     }
 
+    pub fn pool(&self) -> DbPool {
+        self.pool.clone()
+    }
+
     fn conn(&self) -> Result<r2d2::PooledConnection<SqliteConnectionManager>> {
         self.pool.get().context("webhook db pool")
     }
@@ -424,7 +428,7 @@ impl WebhookStore {
         attempt: i64,
     ) -> Result<()> {
         // next_retry_at = now + 2^attempt minutes
-        let delay_minutes = i64::pow(2, attempt.min(20) as u32);
+        let delay_minutes = i64::pow(2, attempt.min(MAX_ATTEMPTS - 1) as u32);
         let next = Utc::now() + chrono::Duration::minutes(delay_minutes);
         let next_str = next.format("%Y-%m-%dT%H:%M:%SZ").to_string();
         let new_attempt = attempt + 1;
@@ -502,8 +506,7 @@ impl WebhookStore {
 
 const MAX_ATTEMPTS: i64 = 12;
 
-/// Dispatch `event` to all matching webhook URLs.  Never returns Err — failures
-/// are logged as warnings.
+/// Dispatch `event` to all matching webhook URLs concurrently.  Never returns Err.
 pub async fn dispatch_event(
     pool: DbPool,
     event: WebhookEvent,
@@ -541,7 +544,9 @@ pub async fn dispatch_event(
             return;
         }
     };
+    let client = Arc::new(client);
 
+    let mut handles = Vec::new();
     for wh_url in matching {
         let record_id = {
             let conn = match pool.get() {
@@ -564,17 +569,97 @@ pub async fn dispatch_event(
             }
         };
 
-        deliver_one(
-            pool.clone(),
-            &store,
-            &client,
-            &wh_url,
-            &record_id,
-            event_str,
-            &payload,
-            0,
-        )
-        .await;
+        let pool2 = pool.clone();
+        let client2 = client.clone();
+        let payload2 = payload.clone();
+        let event_str2 = event_str.to_string();
+        handles.push(tokio::spawn(async move {
+            let store2 = WebhookStore::new(pool2.clone());
+            deliver_one(
+                pool2,
+                &store2,
+                &client2,
+                &wh_url,
+                &record_id,
+                &event_str2,
+                &payload2,
+                0,
+            )
+            .await;
+        }));
+    }
+    for h in handles {
+        let _ = h.await;
+    }
+}
+
+/// Background poller: every 60 s check for due retries and re-deliver.
+pub fn start_retry_poller(store: Arc<WebhookStore>) {
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
+        loop {
+            interval.tick().await;
+            poll_due_retries(&store).await;
+        }
+    });
+}
+
+async fn poll_due_retries(store: &WebhookStore) {
+    let now = Utc::now();
+    let due = match store.get_due_retries(now) {
+        Ok(r) => r,
+        Err(e) => {
+            warn!("webhook poller: get_due_retries failed: {e}");
+            return;
+        }
+    };
+    if due.is_empty() {
+        return;
+    }
+    info!("webhook poller: {} records due for retry", due.len());
+
+    let client = match reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(30))
+        .build()
+    {
+        Ok(c) => Arc::new(c),
+        Err(e) => {
+            warn!("webhook poller: build client: {e}");
+            return;
+        }
+    };
+
+    let pool = store.pool();
+    let urls = match store.list_urls() {
+        Ok(u) => u,
+        Err(e) => {
+            warn!("webhook poller: list_urls: {e}");
+            return;
+        }
+    };
+
+    let mut handles = Vec::new();
+    for record in due {
+        let wh_url = match urls.iter().find(|u| u.id == record.webhook_url_id) {
+            Some(u) => u.clone(),
+            None => {
+                warn!("webhook poller: url {} not found for record {}", record.webhook_url_id, record.id);
+                continue;
+            }
+        };
+        let pool2 = pool.clone();
+        let client2 = client.clone();
+        let event_str = record.event_type.clone();
+        let payload = record.payload.clone();
+        let record_id = record.id.clone();
+        let attempt = record.attempt;
+        handles.push(tokio::spawn(async move {
+            let store2 = WebhookStore::new(pool2.clone());
+            deliver_one(pool2, &store2, &client2, &wh_url, &record_id, &event_str, &payload, attempt).await;
+        }));
+    }
+    for h in handles {
+        let _ = h.await;
     }
 }
 
@@ -816,5 +901,61 @@ mod tests {
 
         let records = store.list_records(Some("pending")).unwrap();
         assert_eq!(records.len(), 1);
+        assert_eq!(records[0].attempt, 0, "reset_for_retry should reset attempt to 0");
+    }
+
+    #[test]
+    fn get_due_retries_returns_due_records() {
+        let pool = make_pool();
+        let store = WebhookStore::new(pool.clone());
+        let wh = store
+            .add_url("https://example.com/hook", &["*".to_string()], None)
+            .unwrap();
+
+        // Create a record and schedule it in the past
+        let record_id = {
+            let conn = pool.get().unwrap();
+            let id = store
+                .create_record(&conn, &wh.id, "task.completed", &serde_json::json!({}))
+                .unwrap();
+            // Set next_retry_at to 1 hour ago
+            let past = Utc::now() - chrono::Duration::hours(1);
+            let past_str = past.format("%Y-%m-%dT%H:%M:%SZ").to_string();
+            conn.execute(
+                "UPDATE webhook_event_records SET next_retry_at = ?1 WHERE id = ?2",
+                rusqlite::params![past_str, id],
+            ).unwrap();
+            id
+        };
+
+        let due = store.get_due_retries(Utc::now()).unwrap();
+        assert_eq!(due.len(), 1);
+        assert_eq!(due[0].id, record_id);
+    }
+
+    #[test]
+    fn get_due_retries_excludes_future() {
+        let pool = make_pool();
+        let store = WebhookStore::new(pool.clone());
+        let wh = store
+            .add_url("https://example.com/hook", &["*".to_string()], None)
+            .unwrap();
+
+        {
+            let conn = pool.get().unwrap();
+            let id = store
+                .create_record(&conn, &wh.id, "task.completed", &serde_json::json!({}))
+                .unwrap();
+            // Set next_retry_at to 1 hour in future
+            let future = Utc::now() + chrono::Duration::hours(1);
+            let future_str = future.format("%Y-%m-%dT%H:%M:%SZ").to_string();
+            conn.execute(
+                "UPDATE webhook_event_records SET next_retry_at = ?1 WHERE id = ?2",
+                rusqlite::params![future_str, id],
+            ).unwrap();
+        }
+
+        let due = store.get_due_retries(Utc::now()).unwrap();
+        assert!(due.is_empty());
     }
 }
