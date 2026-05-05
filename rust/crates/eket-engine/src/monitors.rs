@@ -399,9 +399,23 @@ mod tests {
         let ticket_path = dir.path().join("T-stale.md");
         std::fs::write(&ticket_path, "# T-stale").unwrap();
 
-        // Use tiny stale_ttl (1ms) + sleep 5ms to trigger stale detection
-        tokio::time::sleep(Duration::from_millis(5)).await;
+        // Backdate updated_at to 10 seconds ago to trigger stale detection
+        {
+            let db2 = Arc::clone(&db);
+            let old_ts = chrono::Utc::now().timestamp() - 10;
+            tokio::task::spawn_blocking(move || {
+                let conn = db2.pool().get().unwrap();
+                conn.execute(
+                    "UPDATE tickets SET updated_at = ?1 WHERE id = 'T-stale'",
+                    rusqlite::params![old_ts],
+                )
+                .unwrap();
+            })
+            .await
+            .unwrap();
+        }
 
+        // stale_ttl = 1ms → 10 seconds ago is definitely stale
         let cleaner = Arc::new(
             StaleCleaner::new(Arc::clone(&db), dir.path().to_path_buf(), Arc::clone(&bus))
                 .with_intervals(Duration::from_secs(60), Duration::from_millis(1)),
