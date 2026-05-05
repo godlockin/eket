@@ -1,5 +1,7 @@
 # TASK-217: JoinPolicy::Any/Quorum — 剩余任务未 abort，永久泄漏
 
+**状态**: done
+
 **优先级**: P1
 **类型**: Bugfix
 **模块**: rust/crates/eket-engine/src/workflow.rs

@@ -1,5 +1,7 @@
 # TASK-195: subscribe_redis改用BRPOP替代轮询
 
+**状态**: ready
+
 **优先级**: P2
 **类型**: Performance
 **模块**: eket-core / queue.rs:189

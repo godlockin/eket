@@ -2,7 +2,7 @@
 id: TASK-057
 title: "fix(skills): 修复 index.ts 导出断层，接入 auto-registry"
 priority: P1
-status: ready
+status: dropped
 assignee: frontend_dev
 dispatched_by: master
 created_at: 2026-04-18

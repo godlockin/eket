@@ -1,5 +1,7 @@
 # TASK-205: ContextBudget struct + token estimator
 
+**状态**: done
+
 **优先级**: P2
 **类型**: Feature
 **模块**: rust/crates/eket-engine/src/workflow.rs
