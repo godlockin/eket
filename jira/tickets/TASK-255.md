@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: feature
 - **优先级**: P1
-**状态**: in_progress
+**状态**: done
 - **预估**: 0.5d
 - **expertise**: rust,backend
 - **来源**: DocuSeal 借鉴研究（2026-05-05）
@@ -103,3 +103,14 @@ eket team:status --breakdown source
   - `TicketRow` 新增 `source: String` 字段，SELECT 语句追加 `COALESCE(source, 'cli')`
   - `task:progress` 输出追加 `tickets` 数组（含 id/status/assignee/label）
 - **合并**: 与 TASK-256 合并为一次 schema migration（0002_task_source_timestamps.sql）
+
+## Summary
+
+> 自动生成摘要（rule-based）
+
+| 项 | 内容 |
+|---|---|
+| Ticket | TASK-255: Ticket source 枚举 — 任务来源追踪 |
+| 测试结果 | — |
+| PR | — |
+| 知识沉淀 | — |
