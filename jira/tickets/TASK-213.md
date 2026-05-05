@@ -1,6 +1,6 @@
 # TASK-213: MerkleDAG增量索引 — knowledge:index只重索引变更文件
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P1
 **类型**: Feature
