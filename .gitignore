@@ -3,6 +3,10 @@
 .eket/logs/
 .eket/memory/
 .eket/data/
+.eket/*.db
+.eket/*.db-shm
+.eket/*.db-wal
+rust/.eket/
 
 # 临时文件
 *.tmp
