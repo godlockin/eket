@@ -40,7 +40,7 @@ r2d2 = "0.8"
 r2d2_sqlite = "0.25"
 
 # Redis
-fred = { version = "9", features = ["i-keys", "i-lists", "i-hashes", "i-sets", "i-pubsub", "subscriber-client"] }
+fred = { version = "9", features = ["i-keys", "i-lists", "i-hashes", "i-sets", "i-pubsub", "i-scripts", "subscriber-client"] }
 
 # HTTP (axum)
 axum = { version = "0.7", features = ["ws"] }

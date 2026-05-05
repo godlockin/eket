@@ -370,7 +370,7 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
     // Run Pipeline with GuardrailMiddleware (TASK-233)
     // Build pipeline: always include default claim guardrails; optionally add SlaverRulesGuardrail
     let mut pipeline = Pipeline::new()
-        .add(crate::guardrail_middleware::GuardrailMiddleware::new(
+        .add_middleware(crate::guardrail_middleware::GuardrailMiddleware::new(
             GuardrailRunner::default_for_claim(),
         ));
 
@@ -381,7 +381,7 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
             let inner_runner = eket_core::guardrail::GuardrailRunner::from_checks(vec![
                 Box::new(slaver_guardrail),
             ]);
-            pipeline = pipeline.add(crate::guardrail_middleware::GuardrailMiddleware::new(
+            pipeline = pipeline.add_middleware(crate::guardrail_middleware::GuardrailMiddleware::new(
                 inner_runner,
             ));
         }

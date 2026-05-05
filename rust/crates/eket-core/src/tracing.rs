@@ -182,14 +182,20 @@ pub struct JsonFileExporter {
     dir: std::path::PathBuf,
 }
 
-impl JsonFileExporter {
-    pub fn new() -> Self {
+impl Default for JsonFileExporter {
+    fn default() -> Self {
         let dir = dirs::home_dir()
             .unwrap_or_else(|| std::path::PathBuf::from("."))
             .join(".eket")
             .join("traces");
         std::fs::create_dir_all(&dir).ok();
         Self { dir }
+    }
+}
+
+impl JsonFileExporter {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn with_dir(dir: impl Into<std::path::PathBuf>) -> Self {

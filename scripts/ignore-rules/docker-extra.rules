@@ -1,0 +1,8 @@
+# Docker-specific extras
+
+# Docker volumes and build cache
+.dockerignore
+docker-compose.override.yml
+
+# Local dev containers
+.devcontainer/local.json

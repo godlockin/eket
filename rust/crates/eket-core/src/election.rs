@@ -25,6 +25,9 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 
+#[cfg(unix)]
+use libc;
+
 use tokio::sync::{Mutex, Semaphore};
 use tracing::{debug, info, warn};
 use uuid::Uuid;
@@ -33,6 +36,17 @@ use crate::db::DbPool;
 use crate::error::{EketError, EketResult};
 use crate::pubsub::RedisPubSub;
 use crate::redis::EketRedisClient;
+
+/// TASK-181: Lua CAS script for Redis renewal.
+/// Only extends TTL if the key's current value matches our instance_id.
+/// Returns 1 on success, 0 if lost the lock (another master took over).
+const REDIS_RENEW_LUA: &str = r#"
+if redis.call('get', KEYS[1]) == ARGV[1] then
+    return redis.call('expire', KEYS[1], ARGV[2])
+else
+    return 0
+end
+"#;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -47,6 +61,8 @@ const UPGRADE_CHECK_INTERVAL_SECS: u64 = 60;
 const MASTER_CHANGED_CHANNEL: &str = "eket:master:changed";
 /// Cap concurrent spawn_blocking SQLite calls to avoid exhausting the r2d2 pool (max_size=8)
 const SQLITE_ELECTION_CONCURRENCY: usize = 4;
+/// TASK-182: File lock TTL (seconds). Lock is stale if expired AND the holding PID is dead.
+const FILE_LOCK_TTL_SECS: u64 = 90;
 
 /// Global semaphore to throttle concurrent SQLite spawn_blocking election calls
 static SQLITE_SEM: std::sync::OnceLock<Arc<Semaphore>> = std::sync::OnceLock::new();
@@ -78,8 +94,8 @@ pub struct ElectionResult {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/// Update last_seen timestamp for given master instance in SQLite.
-/// Used by the SQLite renewal loop. Extracted as standalone fn for testability.
+/// Update master_lock expires_at for the SQLite master renewal.
+/// Extends the lock TTL to prevent expiry while the master is alive.
 pub(crate) async fn update_heartbeat(pool: &DbPool, master_id: &str) -> EketResult<()> {
     let pool = pool.clone();
     let id = master_id.to_string();
@@ -87,10 +103,12 @@ pub(crate) async fn update_heartbeat(pool: &DbPool, master_id: &str) -> EketResu
         tokio::task::spawn_blocking(move || -> EketResult<()> {
             let _guard = permit;
             let conn = pool.get()?;
-            let now = chrono::Utc::now().to_rfc3339();
+            let new_expires = (chrono::Utc::now()
+                + chrono::Duration::seconds(REDIS_LEASE_TTL_SECS as i64 * 2))
+            .to_rfc3339();
             conn.execute(
-                "UPDATE instances SET last_seen = ?1 WHERE id = ?2",
-                rusqlite::params![now, id],
+                "UPDATE master_lock SET expires_at = ?1 WHERE singleton = 1 AND master_id = ?2",
+                rusqlite::params![new_expires, id],
             )?;
             Ok(())
         })
@@ -101,7 +119,24 @@ pub(crate) async fn update_heartbeat(pool: &DbPool, master_id: &str) -> EketResu
     }
 }
 
-// ─── MasterElection ───────────────────────────────────────────────────────────
+/// TASK-182: Check if PID in lock file is still alive.
+/// On Linux/macOS: try `kill(pid, 0)` equivalent via `/proc/{pid}` or signal(0).
+/// Returns true if process is alive, false if dead (stale lock).
+fn pid_is_alive(pid: u32) -> bool {
+    #[cfg(unix)]
+    {
+        // kill(pid, 0) — no signal sent; just checks liveness
+        let result = unsafe { libc::kill(pid as libc::pid_t, 0) };
+        result == 0
+    }
+    #[cfg(not(unix))]
+    {
+        // Windows: check process existence via OpenProcess
+        // For now, treat as alive (conservative)
+        let _ = pid;
+        true
+    }
+}
 
 pub struct MasterElection {
     instance_id: String,
@@ -296,10 +331,28 @@ impl MasterElection {
             let mut consecutive_failures: u32 = 0;
             loop {
                 interval.tick().await;
-                match redis.set(REDIS_LOCK_KEY, &id, Some(REDIS_LEASE_TTL_SECS)).await {
-                    Ok(_) => {
+                // TASK-181: Lua CAS — only renew if we still hold the lock
+                let result = redis
+                    .eval_lua(
+                        REDIS_RENEW_LUA,
+                        vec![REDIS_LOCK_KEY.to_string()],
+                        vec![id.clone(), REDIS_LEASE_TTL_SECS.to_string()],
+                    )
+                    .await;
+                match result {
+                    Ok(1) => {
                         consecutive_failures = 0;
                         tracing::debug!("[Election] Redis lease renewed for {id}");
+                    }
+                    Ok(0) => {
+                        // Another master took our lock — resign immediately
+                        warn!("[Election] {id} lost Redis lock (CAS mismatch), resigning");
+                        let mut guard = renewer.lock().await;
+                        guard.take();
+                        break;
+                    }
+                    Ok(n) => {
+                        warn!("[Election] Unexpected Lua return {n} for {id}");
                     }
                     Err(e) => {
                         consecutive_failures += 1;
@@ -308,9 +361,8 @@ impl MasterElection {
                         );
                         if consecutive_failures >= MAX_RENEW_FAILURES {
                             warn!("[Election] {id} resigning: too many renew failures → prevent split brain");
-                            // Abort self — caller should detect loss of master role
                             let mut guard = renewer.lock().await;
-                            guard.take(); // clear so resign() is idempotent
+                            guard.take();
                             break;
                         }
                     }
@@ -336,10 +388,14 @@ impl MasterElection {
             let _guard = _permit; // hold permit until spawn_blocking finishes
             let conn = pool.get()?;
             let now = chrono::Utc::now().to_rfc3339();
+            // TASK-180: Use master_lock singleton table.
+            // CHECK(singleton=1) + INSERT OR IGNORE ensures only one master exists.
+            // First INSERT wins (rows=1); all subsequent are ignored (rows=0).
+            let expires_at = (chrono::Utc::now() + chrono::Duration::seconds(REDIS_LEASE_TTL_SECS as i64 * 2)).to_rfc3339();
             let rows = conn.execute(
-                "INSERT OR IGNORE INTO instances (id, role, status, last_seen, created_at)
-                 VALUES (?1, 'master', 'active', ?2, ?2)",
-                rusqlite::params![id, now],
+                "INSERT OR IGNORE INTO master_lock (singleton, master_id, acquired_at, expires_at)
+                 VALUES (1, ?1, ?2, ?3)",
+                rusqlite::params![id, now, expires_at],
             )?;
             Ok(rows > 0)
         })
@@ -347,7 +403,7 @@ impl MasterElection {
         .map_err(|e| EketError::Other(e.to_string()))??;
 
         if won {
-            info!("[Election] {} won via SQLite", self.instance_id);
+            info!("[Election] {} won via SQLite (master_lock)", self.instance_id);
         }
 
         Ok(ElectionResult {
@@ -396,14 +452,42 @@ impl MasterElection {
 
     async fn elect_file(&self) -> EketResult<ElectionResult> {
         let marker_dir = self.project_root.join(".eket/master");
-        // mkdir -p is idempotent; exclusive creation via create_dir
         match tokio::fs::create_dir_all(&marker_dir).await {
             Ok(_) => {}
             Err(e) => return Err(EketError::Io(e)),
         }
 
         let marker = marker_dir.join("lock");
-        // Atomic: try exclusive create
+        let pid = std::process::id();
+        let expires_at = chrono::Utc::now().timestamp() + FILE_LOCK_TTL_SECS as i64;
+        // TASK-182: Lock file content: "{pid}:{instance_id}:{expires_at_unix}"
+        let lock_content = format!("{pid}:{instance_id}:{expires_at}", instance_id = self.instance_id);
+
+        // TASK-182: Check for stale lock before attempting exclusive create.
+        // If lock file exists but PID is dead or TTL expired → remove it.
+        if marker.exists() {
+            if let Ok(content) = tokio::fs::read_to_string(&marker).await {
+                let mut stale = false;
+                let parts: Vec<&str> = content.trim().splitn(3, ':').collect();
+                if parts.len() >= 2 {
+                    let lock_pid: u32 = parts[0].parse().unwrap_or(0);
+                    let lock_expires: i64 = parts.get(2).and_then(|s| s.parse().ok()).unwrap_or(0);
+                    let now_unix = chrono::Utc::now().timestamp();
+                    if lock_expires > 0 && now_unix > lock_expires {
+                        stale = true; // TTL expired
+                        warn!("[Election] File lock expired (pid={lock_pid}), removing stale lock");
+                    } else if !pid_is_alive(lock_pid) {
+                        stale = true; // Process dead
+                        warn!("[Election] File lock holder pid={lock_pid} is dead, removing stale lock");
+                    }
+                }
+                if stale {
+                    tokio::fs::remove_file(&marker).await.ok();
+                }
+            }
+        }
+
+        // Atomic exclusive create
         let won = match tokio::fs::OpenOptions::new()
             .write(true)
             .create_new(true)
@@ -412,7 +496,7 @@ impl MasterElection {
         {
             Ok(mut f) => {
                 use tokio::io::AsyncWriteExt;
-                let _ = f.write_all(self.instance_id.as_bytes()).await;
+                let _ = f.write_all(lock_content.as_bytes()).await;
                 true
             }
             Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => false,
@@ -641,11 +725,11 @@ mod tests {
         let result = e.elect().await.unwrap();
         assert!(result.is_master);
 
-        let initial_last_seen: String = {
+        let initial_expires: String = {
             let conn = pool.get().unwrap();
             conn.query_row(
-                "SELECT last_seen FROM instances WHERE id = ?1",
-                rusqlite::params![e.instance_id()],
+                "SELECT expires_at FROM master_lock WHERE singleton = 1",
+                [],
                 |row| row.get(0),
             )
             .unwrap()
@@ -654,19 +738,19 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(10)).await;
         update_heartbeat(&pool, e.instance_id()).await.unwrap();
 
-        let updated_last_seen: String = {
+        let updated_expires: String = {
             let conn = pool.get().unwrap();
             conn.query_row(
-                "SELECT last_seen FROM instances WHERE id = ?1",
-                rusqlite::params![e.instance_id()],
+                "SELECT expires_at FROM master_lock WHERE singleton = 1",
+                [],
                 |row| row.get(0),
             )
             .unwrap()
         };
 
         assert_ne!(
-            initial_last_seen, updated_last_seen,
-            "heartbeat should update last_seen timestamp"
+            initial_expires, updated_expires,
+            "heartbeat should update expires_at in master_lock"
         );
 
         e.resign().await;
