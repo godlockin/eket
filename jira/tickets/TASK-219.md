@@ -1,6 +1,6 @@
 # TASK-219: context_budget include_fields 误删 metadata keys
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P1
 **类型**: Bugfix
