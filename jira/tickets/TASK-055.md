@@ -2,7 +2,7 @@
 id: TASK-055
 title: "fix(message-queue): 修复 Redis subscriber 连接泄漏"
 priority: P0
-status: in-review
+status: superseded
 assignee: backend_dev
 dispatched_by: master
 created_at: 2026-04-18
