@@ -71,7 +71,6 @@ export function hashFileContent(absPath: string): string {
 }
 
 
-
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 export function walkMd(dir: string): string[] {
