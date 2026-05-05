@@ -1,6 +1,6 @@
 # TASK-187: 接通TriggerRule::OneSuccess/AllDone——当前为死代码
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P1
 **类型**: Bug

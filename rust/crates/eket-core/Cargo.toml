@@ -24,7 +24,18 @@ futures = "0.3"
 handlebars = "6"
 hostname = "0.3"
 moka = { workspace = true }
+reqwest = { workspace = true }
+hmac = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+aes-gcm = "0.10"
+rand = "0.8"
+url = "2"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["test-util"] }
 tempfile = "3"
+httpmock = "0.6"

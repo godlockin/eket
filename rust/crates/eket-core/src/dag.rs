@@ -14,6 +14,9 @@ pub struct DagNode {
     pub label: String,
     pub status: String,
     pub assignee: Option<String>,
+    /// TASK-187: Per-ticket trigger rule (default AllSuccess)
+    #[serde(default)]
+    pub trigger_rule: TriggerRule,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -30,8 +33,10 @@ pub struct DagResponse {
     pub edges: Vec<DagEdge>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
 pub enum TriggerRule {
+    #[default]
     AllSuccess,
     OneSuccess,
     AllDone,
@@ -132,6 +137,8 @@ pub fn parse_ticket_file(content: &str, ticket_id: &str) -> (DagNode, Vec<String
         label,
         status,
         assignee,
+        // TASK-187: Parse per-ticket trigger_rule
+        trigger_rule: parse_trigger_rule(content),
     };
     (node, blocked_by)
 }
@@ -397,7 +404,8 @@ pub fn ready_tickets(
         .filter(|n| n.status == "todo")
         .filter(|n| {
             let blocked_by = blocked_by_map.get(&n.id).map(|v| v.as_slice()).unwrap_or(&[]);
-            can_proceed(blocked_by, TriggerRule::AllSuccess, completed, failed)
+            // TASK-187: Use per-ticket trigger_rule instead of hardcoded AllSuccess
+            can_proceed(blocked_by, n.trigger_rule.clone(), completed, failed)
         })
         .map(|n| n.id.clone())
         .collect()
@@ -492,6 +500,7 @@ mod tests {
                     label: id.to_string(),
                     status: status.to_string(),
                     assignee: None,
+                    trigger_rule: TriggerRule::AllSuccess,
                 })
                 .collect(),
             edges: edges
