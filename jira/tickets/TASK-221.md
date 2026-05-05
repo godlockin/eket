@@ -1,5 +1,7 @@
 # TASK-221: step_snapshot P2修复 — FTS5触发器+in-memory+空查询+重复step ID+空模型
 
+**状态**: ready
+
 **优先级**: P2
 **类型**: Bugfix
 **模块**: rust/crates/eket-engine/src/step_snapshot.rs, workflow.rs, node/src/core/model-provider.ts

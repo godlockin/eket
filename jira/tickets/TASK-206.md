@@ -1,5 +1,7 @@
 # TASK-206: ContextBudgetApplier — 裁剪逻辑核心
 
+**状态**: done
+
 **优先级**: P2
 **类型**: Feature
 **模块**: rust/crates/eket-engine/src/context_budget.rs (新文件)
