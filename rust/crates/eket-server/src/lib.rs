@@ -382,9 +382,9 @@ async fn claim_task_handler(
         let conn = state.db.pool().get()?;
         let now = chrono::Utc::now().to_rfc3339();
         let rows = conn.execute(
-            "UPDATE tickets SET status='in_progress', assignee=?1, updated_at=?2
-             WHERE id=?3 AND status='ready'",
-            rusqlite::params![body.agent_id, now, id],
+            "UPDATE tickets SET status='in_progress', assignee=?1
+             WHERE id=?2 AND status IN ('todo', 'ready', 'backlog')",
+            rusqlite::params![body.agent_id, id],
         )?;
         Ok((rows > 0, now))
     })();
