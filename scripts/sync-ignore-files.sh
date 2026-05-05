@@ -208,26 +208,55 @@ main() {
     local temp_git
     temp_git=$(mktemp)
     merge_rules "$temp_git" "${git_rules[@]}" >/dev/null
-    if ! diff -q "$PROJECT_ROOT/.gitignore" "$temp_git" >/dev/null 2>&1; then
+    # Exclude timestamp line from diff (line 4: "# Last updated: ...")
+    if ! diff -I "^# Last updated:" "$PROJECT_ROOT/.gitignore" "$temp_git" >/dev/null 2>&1; then
       echo "❌ .gitignore needs update. Run: bash scripts/sync-ignore-files.sh" >&2
       rm "$temp_git"
       exit 1
     fi
     rm "$temp_git"
     echo "✓ .gitignore is up-to-date"
+
+    # Check .dockerignore
+    if [[ " ${detected_langs[*]} " =~ " docker " ]] || [[ -f "$PROJECT_ROOT/Dockerfile" ]]; then
+      local docker_rules=("${common_rules[@]}" "${lang_rules[@]}" "$RULES_DIR/docker-extra.rules")
+      local temp_docker
+      temp_docker=$(mktemp)
+      merge_rules "$temp_docker" "${docker_rules[@]}" >/dev/null
+      if ! diff -I "^# Last updated:" "$PROJECT_ROOT/.dockerignore" "$temp_docker" >/dev/null 2>&1; then
+        echo "❌ .dockerignore needs update. Run: bash scripts/sync-ignore-files.sh" >&2
+        rm "$temp_docker"
+        exit 1
+      fi
+      rm "$temp_docker"
+      echo "✓ .dockerignore is up-to-date"
+    fi
+
+    # Check .claudeignore
+    local claude_rules=("${common_rules[@]}" "${lang_rules[@]}" "$RULES_DIR/claude-extra.rules" "${project_rules[@]}")
+    local temp_claude
+    temp_claude=$(mktemp)
+    merge_rules "$temp_claude" "${claude_rules[@]}" >/dev/null
+    if ! diff -I "^# Last updated:" "$PROJECT_ROOT/.claudeignore" "$temp_claude" >/dev/null 2>&1; then
+      echo "❌ .claudeignore needs update. Run: bash scripts/sync-ignore-files.sh" >&2
+      rm "$temp_claude"
+      exit 1
+    fi
+    rm "$temp_claude"
+    echo "✓ .claudeignore is up-to-date"
   else
     merge_rules "$PROJECT_ROOT/.gitignore" "${git_rules[@]}"
-  fi
 
-  # ── .dockerignore ──
-  if [[ " ${detected_langs[*]} " =~ " docker " ]] || [[ -f "$PROJECT_ROOT/Dockerfile" ]]; then
-    local docker_rules=("${common_rules[@]}" "${lang_rules[@]}" "$RULES_DIR/docker-extra.rules")
-    merge_rules "$PROJECT_ROOT/.dockerignore" "${docker_rules[@]}"
-  fi
+    # ── .dockerignore ──
+    if [[ " ${detected_langs[*]} " =~ " docker " ]] || [[ -f "$PROJECT_ROOT/Dockerfile" ]]; then
+      local docker_rules=("${common_rules[@]}" "${lang_rules[@]}" "$RULES_DIR/docker-extra.rules")
+      merge_rules "$PROJECT_ROOT/.dockerignore" "${docker_rules[@]}"
+    fi
 
-  # ── .claudeignore ──
-  local claude_rules=("${common_rules[@]}" "${lang_rules[@]}" "$RULES_DIR/claude-extra.rules" "${project_rules[@]}")
-  merge_rules "$PROJECT_ROOT/.claudeignore" "${claude_rules[@]}"
+    # ── .claudeignore ──
+    local claude_rules=("${common_rules[@]}" "${lang_rules[@]}" "$RULES_DIR/claude-extra.rules" "${project_rules[@]}")
+    merge_rules "$PROJECT_ROOT/.claudeignore" "${claude_rules[@]}"
+  fi
 
   echo ""
   echo "✅ All ignore files synced"
