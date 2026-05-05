@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: feature
 - **优先级**: P1
-- **状态**: todo
+**状态**: in_progress
 - **预估**: 1d
 - **expertise**: rust,backend
 - **来源**: DocuSeal 借鉴研究（2026-05-05）
