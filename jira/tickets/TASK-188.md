@@ -1,6 +1,6 @@
 # TASK-188: 修复SSE broadcast满溢静默丢事件
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P1
 **类型**: Bug
