@@ -39,6 +39,19 @@ EKET 使用**规则驱动**的方式管理多个 ignore 文件（`.gitignore`, `
 bash scripts/sync-ignore-files.sh
 ```
 
+### 使用 gitignore.io API（首次设置或缺少语言模板时）
+
+```bash
+bash scripts/sync-ignore-files.sh --use-gitignore-io
+```
+
+**优先级**：本地 `lang-*.rules` > gitignore.io API
+
+gitignore.io 提供 400+ 模板（Python, Rust, Node, Java, Go, VisualStudio, Potlin）
+- 发现新框架/工具需要忽略规则时（如 Terraform, Ansible）
+
+**缓存机制**：API 响应保存到 `.gitignore-io-cache.rules`（可提交），后续生成无需网络。
+
 ### 仅生成指定语言规则
 
 ```bash

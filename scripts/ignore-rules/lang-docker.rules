@@ -1,0 +1,10 @@
+# Docker build artifacts
+.dockerignore
+
+# Docker compose
+docker-compose.override.yml
+docker-compose.*.yml
+!docker-compose.yml
+
+# Container runtime
+.docker/
