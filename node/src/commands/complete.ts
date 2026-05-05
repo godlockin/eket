@@ -22,6 +22,7 @@ import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
 
 import { getIsolationMode } from './claim.js';
+import { syncToSqlite } from './ticket-index.js';
 
 // Try to load SkillIndex for activatedSkills detection (graceful degradation)
 let _getSkillIndex: (() => import('../skills/index-loader.js').SkillIndex) | null = null;
@@ -569,6 +570,12 @@ export function registerComplete(program: Command): void {
         `Task: ${ticketId}`,
         `Worktree merged and removed: ${worktreePath}`,
       ]);
+
+      // Sync ticket status to SQLite (TASK-268)
+      const jiraDir = path.join(projectRoot, 'jira');
+      syncToSqlite(jiraDir).catch((e: unknown) => {
+        console.warn(`[sqlite-sync] 非致命错误: ${(e as Error).message ?? e}`);
+      });
 
       // Publish task_completed SSE event (TASK-109)
       sseBus.publish({
