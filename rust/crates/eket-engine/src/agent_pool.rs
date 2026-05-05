@@ -121,9 +121,11 @@ impl AgentPool {
     }
 
     /// Assign a task to the best available agent for a given role.
-    /// Strategy: prefer lowest utilization, then round-robin as tiebreak.
+    /// TASK-185: Holds write lock across candidate selection + slot increment
+    /// to prevent TOCTOU where two concurrent callers pick the same agent.
     pub async fn assign_task(&self, role: &str, required_skills: &[&str]) -> TaskAssignmentResult {
-        let agents = self.agents.read().await;
+        // Upgrade to write lock: select + increment are atomic under this lock
+        let mut agents = self.agents.write().await;
 
         let mut candidates: Vec<&AgentInstance> = agents
             .values()
@@ -152,9 +154,16 @@ impl AgentPool {
                 .then(a.id.cmp(&b.id))
         });
 
-        let winner = candidates[0];
-        debug!("[AgentPool] assigned role={role} to {}", winner.id);
-        TaskAssignmentResult::ok(winner.id.clone(), winner.role.clone())
+        let winner_id = candidates[0].id.clone();
+        let winner_role = candidates[0].role.clone();
+
+        // Atomically increment slot count under the write lock
+        if let Some(agent) = agents.get_mut(&winner_id) {
+            agent.current_load = agent.current_load.saturating_add(1);
+        }
+
+        debug!("[AgentPool] assigned role={role} to {winner_id}");
+        TaskAssignmentResult::ok(winner_id, winner_role)
     }
 
     /// Run health check: mark agents with stale heartbeats as offline
