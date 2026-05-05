@@ -2,7 +2,7 @@
 id: TASK-062
 title: "fix(ci): PR template 路径冲突 + 补全缺失检查项"
 priority: P2
-status: ready
+status: dropped
 assignee: devops_dev
 dispatched_by: master
 created_at: 2026-04-18

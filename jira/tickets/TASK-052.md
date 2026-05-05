@@ -1,7 +1,7 @@
 ---
 id: TASK-052
 title: 修复 broadcast 受保护分支 push + benchmark required-check 死锁
-status: in_progress
+status: superseded
 priority: P0
 type: bugfix
 epic: EPIC-V3-MIGRATION

@@ -1,5 +1,7 @@
 # TASK-186: 修复JoinPolicy::Any——branch不取消、成功失败不区分
 
+**状态**: ready
+
 **优先级**: P1
 **类型**: Bug
 **模块**: eket-engine / workflow.rs:565

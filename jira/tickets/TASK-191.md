@@ -1,5 +1,7 @@
 # TASK-191: 修复选举降级后无法向上恢复——Redis恢复后双Master共存
 
+**状态**: ready
+
 **优先级**: P1
 **类型**: Bug
 **模块**: eket-core / election.rs:95

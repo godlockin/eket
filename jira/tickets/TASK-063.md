@@ -2,7 +2,7 @@
 id: TASK-063
 title: "chore(confluence): 补全 sprint-001-retro + 归档 SOP 落地"
 priority: P2
-status: ready
+status: dropped
 assignee: fullstack_dev
 dispatched_by: master
 created_at: 2026-04-18

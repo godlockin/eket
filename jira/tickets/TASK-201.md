@@ -1,5 +1,7 @@
 # TASK-201: SpanTracing — 4层Span树 + NoOpSpan双实现
 
+**状态**: done
+**状态**: done
 **优先级**: P1
 **类型**: Feature
 **模块**: node/src/core/tracing/ + rust/crates/eket-server/src/tracing.rs
