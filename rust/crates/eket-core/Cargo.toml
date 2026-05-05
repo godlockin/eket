@@ -28,6 +28,8 @@ reqwest = { workspace = true }
 hmac = { workspace = true }
 sha2 = { workspace = true }
 hex = { workspace = true }
+aes-gcm = "0.10"
+rand = "0.8"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
