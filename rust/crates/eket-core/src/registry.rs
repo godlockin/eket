@@ -160,7 +160,17 @@ impl InstanceRegistry {
                 _ => unreachable!(),
             };
 
-            rows.collect::<Result<Vec<_>, _>>().map_err(EketError::from)
+            // TASK-192: Skip corrupted rows + warn instead of crash
+            let results: Vec<InstanceInfo> = rows
+                .filter_map(|r| match r {
+                    Ok(info) => Some(info),
+                    Err(e) => {
+                        tracing::warn!("[Registry] skipping corrupted row in discover: {e}");
+                        None
+                    }
+                })
+                .collect();
+            Ok(results)
         })
         .await
         .map_err(|e| EketError::Other(e.to_string()))?
@@ -259,9 +269,14 @@ fn row_to_info(row: &rusqlite::Row<'_>) -> rusqlite::Result<InstanceInfo> {
         role: row.get(1)?,
         skills: serde_json::from_str(&skills_str).unwrap_or_default(),
         status: row.get(3)?,
-        last_seen: last_seen_str
-            .parse::<DateTime<Utc>>()
-            .unwrap_or_else(|_| Utc::now()),
+        // TASK-192: Fail on corrupted timestamp instead of fallback to now()
+        last_seen: last_seen_str.parse::<DateTime<Utc>>().map_err(|e| {
+            rusqlite::Error::FromSqlConversionFailure(
+                4,
+                rusqlite::types::Type::Text,
+                Box::new(e),
+            )
+        })?,
         metadata: metadata_str
             .as_deref()
             .and_then(|s| serde_json::from_str(s).ok())

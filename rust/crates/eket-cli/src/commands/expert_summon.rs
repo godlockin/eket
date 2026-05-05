@@ -118,7 +118,7 @@ pub fn summon_roles(client: &SqliteClient, roles: &[String]) -> Result<SummonRes
             already_exist.push(id);
         } else {
             let instance_id = format!("{}_{}", role, short_id());
-            client.upsert_instance(&instance_id, role, &[role.clone()], "idle")?;
+            client.upsert_instance(&instance_id, role, std::slice::from_ref(role), "idle")?;
             summoned.push(instance_id);
         }
     }
