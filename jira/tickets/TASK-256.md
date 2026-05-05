@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: feature
 - **优先级**: P2
-**状态**: in_progress
+**状态**: done
 - **预估**: 0.5d
 - **expertise**: rust,backend
 - **来源**: DocuSeal 借鉴研究（2026-05-05）
@@ -111,3 +111,14 @@ eket team:status --metrics
   - `db/mod.rs` 新增 `set_ticket_claimed_at / set_ticket_blocked_at / set_ticket_unblocked_at / set_ticket_completed_at` 方法
   - `task_claim.rs` 在写 checkpoint 后调用 `set_ticket_claimed_at`（仅首次写入，WHERE claimed_at IS NULL）
   - Migration 与 TASK-255 合并：`0002_task_source_timestamps.sql`（+5 列，+1 索引）
+
+## Summary
+
+> 自动生成摘要（rule-based）
+
+| 项 | 内容 |
+|---|---|
+| Ticket | TASK-256: Ticket 关键节点时间戳补充（claimed_at / blocked_at / unblocked_at） |
+| 测试结果 | — |
+| PR | — |
+| 知识沉淀 | — |
