@@ -2,11 +2,11 @@
 
 **类型**: Bug Fix
 **优先级**: P0
-**状态**: todo
+**状态**: done
 **gate_review_veto_count**: 0
 **veto_reason**:
 **resubmit_conditions**:
-**分配给**: 待领取
+**分配给**: Slaver
 **预估工时**: 2 小时
 
 ---
@@ -48,10 +48,10 @@ const waitForPortRelease = async (port: number, timeout = 5000) => {
 
 ## 验收标准
 
-- [ ] 39/39 测试全部通过
-- [ ] 无 EADDRINUSE 错误
-- [ ] 测试可以连续运行多次
-- [ ] 测试时间 <60 秒
+- [x] 39/39 测试全部通过
+- [x] 无 EADDRINUSE 错误
+- [x] 测试可以连续运行多次
+- [x] 测试时间 <60 秒
 
 ## 相关文件
 
