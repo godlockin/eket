@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: bugfix
 - **优先级**: P1
-**状态**: in_progress
+**状态**: done
 - **预估**: 0.5d
 - **expertise**: rust,security
 - **来源**: PR Review TASK-254（2026-05-05）
@@ -74,3 +74,14 @@ fn decrypt(encoded: &str, key_hex: &str) -> Result<String> {
 **执行者**: slaver_1776695133821_534ccf79
 
 TODO: 填写分析结论
+
+## Summary
+
+> 自动生成摘要（rule-based）
+
+| 项 | 内容 |
+|---|---|
+| Ticket | TASK-264: Webhook secret 加密：XOR 替换为 AES-256-GCM |
+| 测试结果 | — |
+| PR | — |
+| 知识沉淀 | — |
