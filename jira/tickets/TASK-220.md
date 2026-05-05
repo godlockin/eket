@@ -1,6 +1,6 @@
 # TASK-220: EscalateToMaster判决超时留zombie workflow + task-checkpoint CAS throws
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P1
 **类型**: Bugfix
