@@ -1,5 +1,7 @@
 # TASK-193: WebSocket连接加认证——防止冒充任意agent
 
+**状态**: dropped
+
 **优先级**: P2
 **类型**: Security
 **模块**: node/src/api/eket-server.ts:308

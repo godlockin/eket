@@ -1,5 +1,7 @@
 # TASK-180: 修复SQLite选举无互斥——INSERT OR IGNORE按id不按role
 
+**状态**: ready
+
 **优先级**: P0
 **类型**: Bug
 **模块**: eket-core / election.rs

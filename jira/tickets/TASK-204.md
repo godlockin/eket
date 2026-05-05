@@ -1,5 +1,7 @@
 # TASK-204: WorkflowStep上下文预算 — 长流程token控制
 
+**状态**: dropped
+
 **优先级**: P3
 **类型**: Feature
 **模块**: rust/crates/eket-engine/src/workflow.rs

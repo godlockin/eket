@@ -1,7 +1,7 @@
 ---
 id: TASK-051
 title: post-merge-broadcast 修复 untracked 文件检测 + benchmark path-stub
-status: in_progress
+status: superseded
 priority: P1
 type: bugfix
 epic: EPIC-V3-MIGRATION

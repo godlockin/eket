@@ -1,5 +1,7 @@
 # TASK-207: WorkflowEngine集成 — 步骤切换时自动裁剪
 
+**状态**: done
+
 **优先级**: P2
 **类型**: Feature
 **模块**: rust/crates/eket-engine/src/workflow.rs
