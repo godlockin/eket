@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: feature
 - **优先级**: P1
-**状态**: in_progress
+**状态**: done
 - **预估**: 1d
 - **expertise**: rust,backend
 - **来源**: DocuSeal 借鉴研究（2026-05-05）
@@ -157,3 +157,14 @@ eket webhook:events [--status failed]  # 查看 webhook_events 记录
 - `sign_payload_stable`
 - `encrypt_decrypt_roundtrip`
 - `reset_for_retry_works`
+
+## Summary
+
+> 自动生成摘要（rule-based）
+
+| 项 | 内容 |
+|---|---|
+| Ticket | TASK-254: HTTP Webhook Job — 指数退避重试 + webhook_events 可追溯表 |
+| 测试结果 | `cargo clippy -p eket-core -p eket-cli -- -D warnings` → 0 errors 0 warnings / … |
+| PR | — |
+| 知识沉淀 | — |
