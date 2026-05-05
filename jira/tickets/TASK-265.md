@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: bugfix
 - **优先级**: P1
-- **状态**: todo
+**状态**: in_progress
 - **预估**: 1d
 - **expertise**: rust
 - **来源**: PR Review TASK-254（2026-05-05）
@@ -47,3 +47,10 @@ DB 查询：`WHERE next_retry_at <= now AND completed_at IS NULL AND failed_at I
 ## 依赖
 
 可与 TASK-264 并行
+
+## 分析记录
+
+**领取时间**: 2026-05-05T14:09:02.794005+00:00
+**执行者**: slaver_1776695133821_534ccf79
+
+TODO: 填写分析结论
