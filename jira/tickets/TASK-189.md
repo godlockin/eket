@@ -1,6 +1,6 @@
 # TASK-189: StaleCleaner改用SQLite updated_at而非文件mtime
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P1
 **类型**: Bug

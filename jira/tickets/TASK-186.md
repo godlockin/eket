@@ -1,6 +1,6 @@
 # TASK-186: 修复JoinPolicy::Any——branch不取消、成功失败不区分
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P1
 **类型**: Bug
