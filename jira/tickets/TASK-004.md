@@ -2,7 +2,7 @@
 
 **类型**: Performance
 **优先级**: P1
-**状态**: ready
+**状态**: backlog
 **gate_review_veto_count**: 0
 **veto_reason**:
 **resubmit_conditions**:

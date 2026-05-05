@@ -1,5 +1,7 @@
 # TASK-200: MailboxContextFilter — 三段式上下文裁剪
 
+**状态**: done
+**状态**: done
 **优先级**: P1
 **类型**: Feature
 **模块**: node/src/core/mailbox/ + rust/crates/eket-engine/src/mailbox.rs
