@@ -27,6 +27,7 @@ use tracing::info;
 
 use eket_core::dag::parse_tickets_dag;
 use eket_core::db::{create_pool, SqliteClient};
+use eket_core::webhook::{start_retry_poller, WebhookStore};
 use eket_engine::ticket_engine::WorkflowEvent;
 
 // ─── SSE EventType ────────────────────────────────────────────────────────────
@@ -424,7 +425,12 @@ async fn sse_handler(
                 }
                 Some(Ok(Event::default().event(event_name).data(m.data)))
             }
-            Err(_) => None,
+            // TASK-188: Send lagged notification instead of silently dropping
+            Err(tokio_stream::wrappers::errors::BroadcastStreamRecvError::Lagged(n)) => {
+                tracing::warn!("[SSE] subscriber lagged, missed {n} events");
+                let data = format!(r#"{{"missed":{n}}}"#);
+                Some(Ok(Event::default().event("lagged").data(data)))
+            }
         }
     });
 
@@ -482,9 +488,10 @@ pub fn build_router(state: AppState, auth_config: Arc<auth::AuthConfig>) -> Rout
 pub async fn start(port: u16, db_path: PathBuf, tickets_dir: PathBuf) -> Result<()> {
     let db_path_str = db_path.to_string_lossy();
     let pool = create_pool(&db_path_str)?;
+    start_retry_poller(Arc::new(WebhookStore::new(pool.clone())));
     let db = Arc::new(SqliteClient::new(pool));
-    let event_bus = EventBus::new(256);
-    let (event_tx, _) = broadcast::channel::<WorkflowEvent>(256);
+    let event_bus = EventBus::new(4096); // TASK-188: capacity 4096 to reduce lag
+    let (event_tx, _) = broadcast::channel::<WorkflowEvent>(4096);
     let state = AppState {
         db,
         tickets_dir,
@@ -497,7 +504,10 @@ pub async fn start(port: u16, db_path: PathBuf, tickets_dir: PathBuf) -> Result<
     if auth_token.is_some() {
         info!("auth enabled via EKET_AUTH_TOKEN");
     }
-    let auth_config = Arc::new(auth::AuthConfig { token: auth_token });
+    let auth_config = Arc::new(auth::AuthConfig {
+        token: auth_token,
+        jwt_secret: std::env::var("EKET_JWT_SECRET").ok(),
+    });
     let app = build_router(state, auth_config);
     let addr = format!("0.0.0.0:{port}");
     info!("eket-server listening on {addr}");
@@ -534,7 +544,7 @@ mod tests {
     }
 
     fn no_auth() -> Arc<auth::AuthConfig> {
-        Arc::new(auth::AuthConfig { token: None })
+        Arc::new(auth::AuthConfig { token: None, jwt_secret: None })
     }
 
     async fn body_json(body: Body) -> Value {

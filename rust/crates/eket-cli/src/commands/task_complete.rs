@@ -449,6 +449,30 @@ pub async fn run_complete(args: CompleteArgs) -> Result<()> {
         // Step 8: 累计 complete 计数，达到阈值触发 knowledge index 重建
         maybe_rebuild_knowledge_index(&result.state.project_root);
 
+        // Step 10: fire task.completed webhooks (non-blocking, failures → warn only)
+        {
+            use eket_core::webhook::{WebhookEvent, dispatch_event};
+            let db_path = result.state.db_path.clone();
+            let ticket_id_clone = args.ticket_id.clone();
+            let slaver_id_clone = slaver_id.clone();
+            let pr_url_clone = result.state.pr_url.clone();
+            tokio::spawn(async move {
+                if let Ok(pool) = eket_core::db::create_pool(&db_path) {
+                    let payload = serde_json::json!({
+                        "ticket_id": ticket_id_clone,
+                        "slaver_id": slaver_id_clone,
+                        "pr_url": pr_url_clone,
+                    });
+                    dispatch_event(
+                        pool,
+                        WebhookEvent::TaskCompleted,
+                        payload,
+                    )
+                    .await;
+                }
+            });
+        }
+
         // Step 9: 扫描依赖已解除的 ticket，写入 unblocked-queue.json
         if let Err(e) = notify_unblocked_tickets(&result.state.project_root, &args.ticket_id) {
             eprintln!("[WARN] notify_unblocked_tickets: {e}");

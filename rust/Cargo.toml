@@ -40,7 +40,7 @@ r2d2 = "0.8"
 r2d2_sqlite = "0.25"
 
 # Redis
-fred = { version = "9", features = ["i-keys", "i-lists", "i-hashes", "i-sets", "i-pubsub", "subscriber-client"] }
+fred = { version = "9", features = ["i-keys", "i-lists", "i-hashes", "i-sets", "i-pubsub", "i-scripts", "subscriber-client"] }
 
 # HTTP (axum)
 axum = { version = "0.7", features = ["ws"] }
@@ -60,6 +60,12 @@ regex = "1"
 async-trait = "0.1"
 tantivy = "0.22"
 dashmap = "5"
+
+# Webhook
+reqwest = { version = "0.12", features = ["json"] }
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
 
 [profile.release]
 opt-level = 3

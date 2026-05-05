@@ -90,6 +90,12 @@ level1_install() {
   find "$PROJECT_ROOT/scripts" -name "*.sh" -exec chmod +x {} \;
   echo "  ✓ scripts/*.sh 已设置可执行"
 
+  # 注册 pre-commit hook（ignore 文件同步检查）
+  if [ -f "$PROJECT_ROOT/.git/hooks/pre-commit-sync-ignore-files" ]; then
+    ln -sf "../../.git/hooks/pre-commit-sync-ignore-files" "$PROJECT_ROOT/.git/hooks/pre-commit"
+    echo "  ✓ pre-commit hook 已注册（ignore 文件同步）"
+  fi
+
   # 验证
   if "$PROJECT_ROOT/lib/adapters/hybrid-adapter.sh" doctor >/dev/null 2>&1; then
     echo "  ✓ hybrid-adapter doctor 通过"
