@@ -277,6 +277,7 @@
 | protocol/schemas/ | |
 | protocol/state-machines/ | |
 | rust/ | |
+| rust/.eket/ | |
 | rust/.serena/ | |
 | rust/.serena/memories/ | |
 | rust/crates/ | |
