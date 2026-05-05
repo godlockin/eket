@@ -30,6 +30,7 @@ sha2 = { workspace = true }
 hex = { workspace = true }
 aes-gcm = "0.10"
 rand = "0.8"
+url = "2"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
