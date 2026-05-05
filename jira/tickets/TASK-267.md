@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: test
 - **优先级**: P2
-**状态**: in_progress
+**状态**: done
 - **预估**: 0.5d
 - **expertise**: rust
 - **来源**: PR Review TASK-254（2026-05-05）
@@ -61,3 +61,14 @@ async fn test_retry_roundtrip() { ... }
 **执行者**: slaver_1776695133821_534ccf79
 
 TODO: 填写分析结论
+
+## Summary
+
+> 自动生成摘要（rule-based）
+
+| 项 | 内容 |
+|---|---|
+| Ticket | TASK-267: Webhook 测试覆盖：dispatch集成测试 + HMAC测试向量 + retry计算验证 |
+| 测试结果 | — |
+| PR | — |
+| 知识沉淀 | — |
