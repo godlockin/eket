@@ -1,0 +1,27 @@
+# Java compiled classes
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# Build outputs
+target/
+build/
+out/
+bin/
+.gradle/
+.mvn/
+
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+
+# Eclipse
+.metadata
+.recommenders
+
+# Logs
+hs_err_pid*
+replay_pid*

@@ -1,0 +1,46 @@
+# EKET project-specific patterns
+
+# Runtime data
+.eket/state/
+.eket/logs/
+.eket/memory/
+.eket/data/
+.eket/*.db
+.eket/*.db-shm
+.eket/*.db-wal
+rust/.eket/
+
+# Markers
+confluence/.eket_master_marker
+jira/.eket_master_marker
+
+# Generated outputs
+outbox/
+!template/outbox/
+!tests/dual-engine/fixtures/**/outbox/
+
+# Test results
+tests/results/
+
+# Memory management
+confluence/memory/retrospectives/*
+!confluence/memory/retrospectives/INBOX/
+!confluence/memory/retrospectives/sprint-*.md
+!confluence/memory/retrospectives/phase-*.md
+!confluence/memory/retrospectives/[0-9]*/
+
+# Build artifacts
+confluence/memory/.eket-index-state.json
+
+# Tool caches
+.serena/
+obsidian-plugins/
+.benchmarks/
+.worktrees/
+
+# Deleted directories
+sys_init/
+
+# Inbox human feedback (except .gitkeep)
+inbox/human_feedback/*
+!inbox/human_feedback/.gitkeep
