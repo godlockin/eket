@@ -237,6 +237,7 @@
 | lib/ | |
 | lib/adapters/ | |
 | lib/state/ | |
+| logs/ | |
 | node/ | |
 | node/.eket/ | |
 | node/.eket/data/ | |
