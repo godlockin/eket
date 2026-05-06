@@ -1,7 +1,7 @@
 # TASK-104b: 任务完成反馈上报 + Master skill_graph 更新
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P0
 - **负责人**: 待领取
