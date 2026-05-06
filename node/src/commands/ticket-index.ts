@@ -513,15 +513,18 @@ export async function syncToSqlite(jiraDir: string): Promise<Result<void>> {
 
   try {
     // TASK-272: 统一写 tickets 表（对齐 Rust schema），废弃 ticket_index
+    // schema 由 Rust 维护，此处仅做兼容性检查（Rust schema.sql 已定义正确结构）
     db.exec(`
       CREATE TABLE IF NOT EXISTS tickets (
         id           TEXT PRIMARY KEY,
         title        TEXT NOT NULL DEFAULT '',
         status       TEXT NOT NULL DEFAULT 'todo',
-        priority_text TEXT NOT NULL DEFAULT 'P2',
-        priority     INTEGER,
+        priority     TEXT NOT NULL DEFAULT 'P2',
         type         TEXT NOT NULL DEFAULT 'feature',
         assignee     TEXT,
+        dependencies TEXT,
+        metadata     TEXT,
+        content      TEXT,
         claimed_at   DATETIME,
         blocked_at   DATETIME,
         unblocked_at DATETIME,
@@ -537,7 +540,7 @@ export async function syncToSqlite(jiraDir: string): Promise<Result<void>> {
     const mdFiles = scanTicketMdFiles(ticketsDir);
 
     const stmt = db.prepare(`
-      INSERT OR REPLACE INTO tickets (id, title, status, priority_text, type, source, updated_at)
+      INSERT OR REPLACE INTO tickets (id, title, status, priority, type, source, updated_at)
       VALUES (?, ?, ?, ?, ?, 'md', CURRENT_TIMESTAMP)
     `);
 
