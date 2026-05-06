@@ -1,7 +1,7 @@
 # TASK-260: Webhook secret 加密：XOR 替换为 AES-256-GCM
 
 ## 元数据
-- **状态**: todo
+- **状态**: duplicate
 - **类型**: feature
 - **优先级**: P1
 - **负责人**: 待认领
