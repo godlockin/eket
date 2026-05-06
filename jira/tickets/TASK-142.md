@@ -1,7 +1,7 @@
 # TASK-142: task:resume 降级策略 + 测试补完
 
 ## 元数据
-- **状态**: backlog
+- **状态**: wont-fix
 - **类型**: feature / test
 - **优先级**: P3
 - **创建时间**: 2026-04-21
@@ -32,3 +32,19 @@ Rust 版 `rust/crates/eket-cli/src/commands/task_resume.rs`（114 行）：
 - 原 TS fallback 实现：`git show e5ac393b:node/src/commands/task-resume.ts | sed -n '/resumeWithFallback/,/^}/p'`
 - 原测试：`git show e5ac393b:node/tests/commands/task-resume-fallback.test.ts`
 - Rust 测试位置：`rust/crates/eket-cli/src/commands/task_resume.rs:71` (#[cfg(test)] 模块内扩展)
+
+
+---
+
+## Master 决策（2026-05-06）
+
+**状态**: wont-fix (Not applicable to Rust architecture)
+
+**原因**:
+1. Rust `task:resume` 完全不依赖 Redis（checkpoint 仅存 SQLite）
+2. Node.js `resumeWithFallback` 是旧架构遗留
+3. 降级已由 SQLite → File 统一处理
+
+**后续**: 测试覆盖增强拆为 TASK-288
+
+**参考**: `confluence/memory/redis-architecture-analysis.md`
