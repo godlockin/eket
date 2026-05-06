@@ -127,6 +127,8 @@ fn run_migrations(pool: &DbPool) -> EketResult<()> {
         ("blocked_at",   "ALTER TABLE tickets ADD COLUMN blocked_at   DATETIME"),
         ("unblocked_at", "ALTER TABLE tickets ADD COLUMN unblocked_at DATETIME"),
         ("completed_at", "ALTER TABLE tickets ADD COLUMN completed_at DATETIME"),
+        ("type",         "ALTER TABLE tickets ADD COLUMN type TEXT NOT NULL DEFAULT 'feature'"),
+        ("updated_at",   "ALTER TABLE tickets ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now'))"),
     ] {
         if !ticket_cols.iter().any(|c| c == col) {
             conn.execute_batch(ddl)?;
@@ -137,6 +139,24 @@ fn run_migrations(pool: &DbPool) -> EketResult<()> {
     conn.execute_batch(
         "CREATE INDEX IF NOT EXISTS idx_tickets_source ON tickets(source);"
     )?;
+
+    // TASK-272: Backfill priority column for legacy rows (if stored as INT)
+    // schema.sql already defines priority as TEXT, so we just ensure existing data is TEXT format
+    conn.execute_batch(
+        "UPDATE tickets SET priority =
+            CASE
+                WHEN typeof(priority) = 'integer' THEN
+                    CASE priority
+                        WHEN 0 THEN 'P0'
+                        WHEN 1 THEN 'P1'
+                        WHEN 2 THEN 'P2'
+                        ELSE 'P2'
+                    END
+                ELSE priority
+            END
+        WHERE typeof(priority) = 'integer';"
+    )?;
+    debug!("TASK-272: Backfilled priority INTEGER → TEXT");
 
     debug!("SQLite migrations applied");
     Ok(())
@@ -356,6 +376,7 @@ impl SqliteClient {
     }
 
     /// Create new ticket with explicit source (TASK-255).
+    /// TASK-272: priority 直接存 TEXT (P0/P1/P2)，废弃 priority_text 列
     pub fn create_ticket_with_source(
         &self,
         id: &str,
@@ -366,6 +387,7 @@ impl SqliteClient {
     ) -> EketResult<()> {
         let conn = self.pool.get()?;
         let now = chrono::Utc::now().to_rfc3339();
+
         conn.execute(
             "INSERT INTO tickets (id, title, priority, type, status, source, created_at, updated_at)
              VALUES (?1, ?2, ?3, ?4, 'todo', ?5, ?6, ?6)",
@@ -419,6 +441,7 @@ impl SqliteClient {
     }
 
     /// Get ticket as raw TicketRow.
+    /// TASK-272: 直接读 priority (TEXT)，无需 fallback
     pub fn get_ticket_row(&self, id: &str) -> EketResult<Option<TicketRow>> {
         let conn = self.pool.get()?;
         let mut stmt = conn.prepare(
