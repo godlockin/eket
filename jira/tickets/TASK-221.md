@@ -1,6 +1,6 @@
 # TASK-221: step_snapshot P2修复 — FTS5触发器+in-memory+空查询+重复step ID+空模型
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P2
 **类型**: Bugfix
