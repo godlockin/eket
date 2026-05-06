@@ -16,6 +16,33 @@ import { writeToMailbox as writeAgentMailbox } from './agent-mailbox.js';
 import { createRetryExecutor, type RetryExecutor } from './circuit-breaker.js';
 import { SLAVER_HARD_RULES } from './slaver-rules.js';
 
+/**
+ * Redis 队列模式：
+ * - 'pubsub'     : PUBLISH/SUBSCRIBE — 事件通知，fanout，多消费者
+ * - 'list_queue' : LPUSH/BRPOP      — 任务分发，单消费者，保证消费一次
+ */
+export type QueueMode = 'pubsub' | 'list_queue';
+
+/**
+ * 按消息类型自动选择队列模式：
+ * - 任务类消息 → list_queue（LPUSH/BRPOP）
+ * - 事件/通知类消息 → pubsub（PUBLISH/SUBSCRIBE）
+ */
+export function resolveQueueMode(messageType: string): QueueMode {
+  const taskTypes = new Set([
+    'task_assigned',
+    'task_claimed',
+    'task_completed',
+    'task_complete',
+    'task_blocked',
+    'task_progress',
+    'pr_review_request',
+    'help_request',
+    'help_response',
+  ]);
+  return taskTypes.has(messageType) ? 'list_queue' : 'pubsub';
+}
+
 export interface MessageQueueConfig {
   mode: 'redis' | 'file' | 'auto';
   redisHost?: string;
@@ -76,18 +103,25 @@ export class RedisMessageQueue implements MessageQueue {
   }
 
   async publish(channel: string, message: Message): Promise<Result<void>> {
+    const mode = resolveQueueMode(message.type);
     try {
       const client = (await this.pool.acquire()) as RedisClient;
       try {
-        const redisClient = client.getClient();
-        if (redisClient) {
-          await redisClient.publish(channel, JSON.stringify(message));
-          return { success: true, data: undefined };
+        if (mode === 'list_queue') {
+          // 任务类：LPUSH — 保证单消费者
+          return await client.pushTask(channel, JSON.stringify(message));
+        } else {
+          // 事件类：PUBLISH/SUBSCRIBE — fanout
+          const redisClient = client.getClient();
+          if (redisClient) {
+            await redisClient.publish(channel, JSON.stringify(message));
+            return { success: true, data: undefined };
+          }
+          return {
+            success: false,
+            error: new EketError(EketErrorCode.REDIS_CLIENT_NOT_AVAILABLE, 'Redis client not available'),
+          };
         }
-        return {
-          success: false,
-          error: new EketError(EketErrorCode.REDIS_CLIENT_NOT_AVAILABLE, 'Redis client not available'),
-        };
       } finally {
         this.pool.release(client);
       }

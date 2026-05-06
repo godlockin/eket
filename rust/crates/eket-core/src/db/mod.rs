@@ -26,6 +26,13 @@ pub struct TicketRow {
     pub ticket_type: Option<String>,
     pub created_at: i64,
     pub updated_at: i64,
+    /// TASK-255
+    pub source: String,
+    /// TASK-256
+    pub claimed_at: Option<String>,
+    pub blocked_at: Option<String>,
+    pub unblocked_at: Option<String>,
+    pub completed_at: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -106,6 +113,50 @@ fn run_migrations(pool: &DbPool) -> EketResult<()> {
             debug!("Added column {col} to slaver_instances");
         }
     }
+
+    // TASK-255 + TASK-256: Backfill tickets table columns (idempotent)
+    let ticket_cols: Vec<String> = {
+        let mut stmt = conn.prepare("PRAGMA table_info(tickets)")?;
+        let cols = stmt.query_map([], |row| row.get::<_, String>(1))?
+            .collect::<Result<Vec<_>, _>>()?;
+        cols
+    };
+    for (col, ddl) in &[
+        ("source",       "ALTER TABLE tickets ADD COLUMN source TEXT NOT NULL DEFAULT 'cli'"),
+        ("claimed_at",   "ALTER TABLE tickets ADD COLUMN claimed_at   DATETIME"),
+        ("blocked_at",   "ALTER TABLE tickets ADD COLUMN blocked_at   DATETIME"),
+        ("unblocked_at", "ALTER TABLE tickets ADD COLUMN unblocked_at DATETIME"),
+        ("completed_at", "ALTER TABLE tickets ADD COLUMN completed_at DATETIME"),
+        ("type",         "ALTER TABLE tickets ADD COLUMN type TEXT NOT NULL DEFAULT 'feature'"),
+        ("updated_at",   "ALTER TABLE tickets ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now'))"),
+    ] {
+        if !ticket_cols.iter().any(|c| c == col) {
+            conn.execute_batch(ddl)?;
+            debug!("Added column {col} to tickets");
+        }
+    }
+    // Source index (idempotent)
+    conn.execute_batch(
+        "CREATE INDEX IF NOT EXISTS idx_tickets_source ON tickets(source);"
+    )?;
+
+    // TASK-272: Backfill priority column for legacy rows (if stored as INT)
+    // schema.sql already defines priority as TEXT, so we just ensure existing data is TEXT format
+    conn.execute_batch(
+        "UPDATE tickets SET priority =
+            CASE
+                WHEN typeof(priority) = 'integer' THEN
+                    CASE priority
+                        WHEN 0 THEN 'P0'
+                        WHEN 1 THEN 'P1'
+                        WHEN 2 THEN 'P2'
+                        ELSE 'P2'
+                    END
+                ELSE priority
+            END
+        WHERE typeof(priority) = 'integer';"
+    )?;
+    debug!("TASK-272: Backfilled priority INTEGER → TEXT");
 
     debug!("SQLite migrations applied");
     Ok(())
@@ -233,6 +284,11 @@ impl SqliteClient {
                     .get::<_, String>(8)?
                     .parse()
                     .unwrap_or_else(|_| chrono::Utc::now()),
+                source: Default::default(),
+                claimed_at: None,
+                blocked_at: None,
+                unblocked_at: None,
+                completed_at: None,
             })
         });
 
@@ -287,6 +343,11 @@ impl SqliteClient {
                     .get::<_, String>(8)?
                     .parse()
                     .unwrap_or_else(|_| chrono::Utc::now()),
+                source: Default::default(),
+                claimed_at: None,
+                blocked_at: None,
+                unblocked_at: None,
+                completed_at: None,
             })
         })?
         .collect::<Result<Vec<_>, _>>()?;
@@ -314,13 +375,81 @@ impl SqliteClient {
         Ok(())
     }
 
+    /// Create new ticket with explicit source (TASK-255).
+    /// TASK-272: priority 直接存 TEXT (P0/P1/P2)，废弃 priority_text 列
+    pub fn create_ticket_with_source(
+        &self,
+        id: &str,
+        title: &str,
+        priority: &str,
+        ticket_type: &str,
+        source: &str,
+    ) -> EketResult<()> {
+        let conn = self.pool.get()?;
+        let now = chrono::Utc::now().to_rfc3339();
+
+        conn.execute(
+            "INSERT INTO tickets (id, title, priority, type, status, source, created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, 'todo', ?5, ?6, ?6)",
+            params![id, title, priority, ticket_type, source, now],
+        )?;
+        Ok(())
+    }
+
+    /// TASK-256: Write claimed_at when task is claimed.
+    pub fn set_ticket_claimed_at(&self, id: &str) -> EketResult<bool> {
+        let conn = self.pool.get()?;
+        let now = chrono::Utc::now().to_rfc3339();
+        let rows = conn.execute(
+            "UPDATE tickets SET claimed_at = ?1, updated_at = ?1 WHERE id = ?2 AND claimed_at IS NULL",
+            params![now, id],
+        )?;
+        Ok(rows > 0)
+    }
+
+    /// TASK-256: Write blocked_at when ticket enters blocked state.
+    pub fn set_ticket_blocked_at(&self, id: &str) -> EketResult<bool> {
+        let conn = self.pool.get()?;
+        let now = chrono::Utc::now().to_rfc3339();
+        let rows = conn.execute(
+            "UPDATE tickets SET blocked_at = ?1, updated_at = ?1 WHERE id = ?2",
+            params![now, id],
+        )?;
+        Ok(rows > 0)
+    }
+
+    /// TASK-256: Write unblocked_at when dependency is resolved.
+    pub fn set_ticket_unblocked_at(&self, id: &str) -> EketResult<bool> {
+        let conn = self.pool.get()?;
+        let now = chrono::Utc::now().to_rfc3339();
+        let rows = conn.execute(
+            "UPDATE tickets SET unblocked_at = ?1, updated_at = ?1 WHERE id = ?2",
+            params![now, id],
+        )?;
+        Ok(rows > 0)
+    }
+
+    /// TASK-256: Write completed_at when task is completed.
+    pub fn set_ticket_completed_at(&self, id: &str) -> EketResult<bool> {
+        let conn = self.pool.get()?;
+        let now = chrono::Utc::now().to_rfc3339();
+        let rows = conn.execute(
+            "UPDATE tickets SET completed_at = ?1, updated_at = ?1 WHERE id = ?2 AND completed_at IS NULL",
+            params![now, id],
+        )?;
+        Ok(rows > 0)
+    }
+
     /// Get ticket as raw TicketRow.
+    /// TASK-272: 直接读 priority (TEXT)，无需 fallback
     pub fn get_ticket_row(&self, id: &str) -> EketResult<Option<TicketRow>> {
         let conn = self.pool.get()?;
         let mut stmt = conn.prepare(
             "SELECT id, title, status, priority, assignee, type,
                     strftime('%s', created_at) as created_ts,
-                    strftime('%s', updated_at) as updated_ts
+                    strftime('%s', updated_at) as updated_ts,
+                    COALESCE(source, 'cli'),
+                    claimed_at, blocked_at, unblocked_at, completed_at
              FROM tickets WHERE id = ?1",
         )?;
         let result = stmt.query_row(params![id], map_ticket_row);
@@ -365,7 +494,9 @@ impl SqliteClient {
         let sql = format!(
             "SELECT id, title, status, priority, assignee, type,
                     strftime('%s', created_at) as created_ts,
-                    strftime('%s', updated_at) as updated_ts
+                    strftime('%s', updated_at) as updated_ts,
+                    COALESCE(source, 'cli'),
+                    claimed_at, blocked_at, unblocked_at, completed_at
              FROM tickets {where_clause}
              ORDER BY priority ASC, created_at ASC"
         );
@@ -669,6 +800,11 @@ fn map_ticket_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<TicketRow> {
             .get::<_, Option<String>>(7)?
             .and_then(|s| s.parse().ok())
             .unwrap_or(0),
+        source: row.get::<_, Option<String>>(8)?.unwrap_or_else(|| "cli".to_owned()),
+        claimed_at: row.get(9)?,
+        blocked_at: row.get(10)?,
+        unblocked_at: row.get(11)?,
+        completed_at: row.get(12)?,
     })
 }
 

@@ -140,6 +140,7 @@ impl HeartbeatMonitor {
 
 pub struct StaleCleaner {
     db: Arc<SqliteClient>,
+    #[allow(dead_code)]
     tickets_dir: PathBuf,
     event_bus: Arc<EventBus>,
     check_interval: Duration,
@@ -186,24 +187,10 @@ impl StaleCleaner {
         };
 
         for ticket in tickets {
-            let path = self.tickets_dir.join(format!("{}.md", ticket.id));
-            let elapsed = match std::fs::metadata(&path) {
-                Ok(meta) => match meta.modified() {
-                    Ok(mtime) => match mtime.elapsed() {
-                        Ok(d) => d,
-                        Err(_) => continue, // mtime in future
-                    },
-                    Err(e) => {
-                        debug!("[StaleCleaner] mtime unavailable for {}: {e}", ticket.id);
-                        continue;
-                    }
-                },
-                Err(_) => {
-                    // File missing — treat as stale
-                    self.reset_ticket(&ticket.id).await;
-                    continue;
-                }
-            };
+            // TASK-189: Use SQLite updated_at (Unix timestamp) instead of fs::metadata mtime
+            let now_unix = chrono::Utc::now().timestamp();
+            let elapsed_secs = now_unix - ticket.updated_at;
+            let elapsed = std::time::Duration::from_secs(elapsed_secs.max(0) as u64);
 
             if elapsed > self.stale_ttl {
                 self.reset_ticket(&ticket.id).await;
@@ -413,9 +400,23 @@ mod tests {
         let ticket_path = dir.path().join("T-stale.md");
         std::fs::write(&ticket_path, "# T-stale").unwrap();
 
-        // Use tiny stale_ttl (1ms) + sleep 5ms to trigger stale detection
-        tokio::time::sleep(Duration::from_millis(5)).await;
+        // Backdate updated_at to 10 seconds ago to trigger stale detection
+        {
+            let db2 = Arc::clone(&db);
+            let old_ts = chrono::Utc::now().timestamp() - 10;
+            tokio::task::spawn_blocking(move || {
+                let conn = db2.pool().get().unwrap();
+                conn.execute(
+                    "UPDATE tickets SET updated_at = ?1 WHERE id = 'T-stale'",
+                    rusqlite::params![old_ts],
+                )
+                .unwrap();
+            })
+            .await
+            .unwrap();
+        }
 
+        // stale_ttl = 1ms → 10 seconds ago is definitely stale
         let cleaner = Arc::new(
             StaleCleaner::new(Arc::clone(&db), dir.path().to_path_buf(), Arc::clone(&bus))
                 .with_intervals(Duration::from_secs(60), Duration::from_millis(1)),

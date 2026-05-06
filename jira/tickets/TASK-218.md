@@ -1,6 +1,6 @@
 # TASK-218: context_filter Phase2非连续去重 + O(n²) Levenshtein
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P1
 **类型**: Bugfix

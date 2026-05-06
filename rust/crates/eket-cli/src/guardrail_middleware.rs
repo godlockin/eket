@@ -91,7 +91,7 @@ mod tests {
     async fn pipeline_guardrail() {
         let runner = GuardrailRunner::default_for_claim();
         let middleware = GuardrailMiddleware::new(runner);
-        let pipeline = Pipeline::new().add(middleware);
+        let pipeline = Pipeline::new().add_middleware(middleware);
 
         let mut ctx = PipelineCtx::new("claim");
         ctx.ticket_id = Some("TASK-233".to_string());
@@ -106,7 +106,7 @@ mod tests {
     async fn pipeline_guardrail_no_violations_by_default() {
         let runner = GuardrailRunner::default_for_claim();
         let middleware = GuardrailMiddleware::new(runner);
-        let pipeline = Pipeline::new().add(middleware);
+        let pipeline = Pipeline::new().add_middleware(middleware);
 
         let mut ctx = PipelineCtx::new("claim");
         ctx.ticket_id = Some("TASK-233".to_string());
@@ -126,7 +126,7 @@ mod tests {
     async fn pipeline_guardrail_role_mismatch_recorded() {
         let runner = GuardrailRunner::default_for_claim();
         let middleware = GuardrailMiddleware::new(runner);
-        let pipeline = Pipeline::new().add(middleware);
+        let pipeline = Pipeline::new().add_middleware(middleware);
 
         let mut ctx = PipelineCtx::new("claim");
         ctx.ticket_id = Some("TASK-233".to_string());

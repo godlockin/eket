@@ -184,7 +184,8 @@ impl MessageQueue {
 
         let handle = tokio::spawn(async move {
             loop {
-                match redis.rpop(&key).await {
+                // TASK-195: Use BRPOP (5s timeout) instead of rpop + sleep
+                match redis.brpop(&key, 5.0).await {
                     Ok(Some(json)) => {
                         if let Ok(msg) = serde_json::from_str::<Message>(&json) {
                             let _ = tx.send(msg.clone());
@@ -192,10 +193,10 @@ impl MessageQueue {
                         }
                     }
                     Ok(None) => {
-                        tokio::time::sleep(Duration::from_millis(200)).await;
+                        // BRPOP timed out (5s elapsed, queue still empty) — loop again
                     }
                     Err(e) => {
-                        warn!("Redis poll error for {channel_name}: {e}");
+                        warn!("Redis BRPOP error for {channel_name}: {e}");
                         tokio::time::sleep(Duration::from_secs(1)).await;
                     }
                 }

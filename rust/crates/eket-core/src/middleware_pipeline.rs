@@ -51,7 +51,7 @@ impl Pipeline {
         Self { middlewares: Vec::new() }
     }
 
-    pub fn add(mut self, m: impl Middleware + 'static) -> Self {
+    pub fn add_middleware(mut self, m: impl Middleware + 'static) -> Self {
         self.middlewares.push(Arc::new(m));
         self
     }
@@ -166,7 +166,7 @@ mod tests {
 
     #[tokio::test]
     async fn pipeline_timing() {
-        let pipeline = Pipeline::new().add(TimingMiddleware);
+        let pipeline = Pipeline::new().add_middleware(TimingMiddleware);
         let mut ctx = PipelineCtx::new("test");
         ctx.ticket_id = Some("TASK-001".to_string());
 
@@ -187,8 +187,8 @@ mod tests {
         let pool = crate::db::create_pool(&db_path).expect("create pool");
 
         let pipeline = Pipeline::new()
-            .add(TimingMiddleware)
-            .add(AuditMiddleware::new(pool.clone()));
+            .add_middleware(TimingMiddleware)
+            .add_middleware(AuditMiddleware::new(pool.clone()));
 
         let mut ctx = PipelineCtx::new("claim");
         ctx.ticket_id = Some("TASK-226".to_string());

@@ -31,6 +31,7 @@ pub struct MemoryReviewArgs {
 // ─── 评审结论 ────────────────────────────────────────────────────────────────
 
 #[derive(Debug, PartialEq)]
+#[allow(dead_code)]
 pub enum ReviewVerdict {
     Accept,
     Revise(Vec<String>), // 具体修改意见列表
@@ -137,6 +138,7 @@ REASON:
 
 // ─── 解析 curator 输出 ───────────────────────────────────────────────────────
 
+#[allow(dead_code)]
 pub fn parse_curator_output(output: &str) -> ReviewVerdict {
     let verdict_line = output.lines()
         .find(|l| l.starts_with("VERDICT:"))
