@@ -7,7 +7,7 @@
 **优先级**: P3
 **重要性**: low
 
-**状态**: backlog
+**状态**: done
 **创建时间**: 2026-04-16
 **创建者**: Master
 **负责人**: 待领取
@@ -150,3 +150,29 @@ $ node dist/index.js task:claim TASK-042
 | 时间 | 状态变更 | 操作者 | 备注 |
 |------|----------|--------|------|
 | 2026-04-16 | backlog → ready | Master | 初始创建，借鉴 Harness 专项 Agent 模式，目标 token 压缩 + 精准度提升 |
+
+
+---
+
+## Master 验证（2026-05-06）
+
+**状态**: ✅ **已完成**（在 TASK-042~046 batch 中实现）
+
+**证据**:
+- Commit: `bce58e4ad` (2026-04-16)
+- PR: #64 feat(SELF-EVOLVE)
+
+**交付物验证**:
+- ✅ 4 个专项规则文件已存在：SLAVER-RULES-CODE/TEST/REVIEW/INFRA.md
+- ✅ 扩展到 17 个 Role（超出原需求 4 个）
+- ✅ `node/src/core/role-selector.ts` 已实现（103 行）
+- ✅ `node/src/commands/claim.ts` 已集成（L433 调用 selectRole）
+- ✅ 测试覆盖：12 个测试用例（`role-selector.test.ts`）
+
+**实际功能**:
+```bash
+node dist/index.js task:claim TASK-XXX
+# 输出: [Role] Ticket type: feature → 加载专项规则: SLAVER-RULES-CODE.md
+```
+
+**参考**: `git show bce58e4ad --stat`
