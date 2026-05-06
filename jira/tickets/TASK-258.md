@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: feature
 - **优先级**: P1
-- **状态**: todo
+- **状态**: done
 - **预估**: 8-11d
 - **expertise**: backend,node
 - **来源**: TASK-257 MCP 调研结论（2026-05-05）
