@@ -72,6 +72,9 @@
 | 文件 | 摘要 |
 |------|------|
 | [retrospectives/sprint-001-retro.md](retrospectives/sprint-001-retro.md) | Sprint 001 回顾 |
+| [retrospectives/2026-05-05-docuseal-borrowing.md](retrospectives/2026-05-05-docuseal-borrowing.md) | DocuSeal 借鉴研究综合复盘 |
+| [retrospectives/2026-05-06-TASK-269-completed.md](retrospectives/2026-05-06-TASK-269-completed.md) | TASK-269 Bug 修复复盘 — task:complete + slaver 实例化 |
+| [retrospectives/202605/05-TASK-180-221-batch-fixes.md](retrospectives/202605/05-TASK-180-221-batch-fixes.md) | TASK-180~221 批量修复复盘 |
 | [retrospectives/2026/20260421-rust-migration-review.md](retrospectives/2026/20260421-rust-migration-review.md) | EKET Rust 迁移综合 Review 反思 |
 | [retrospectives/2026/20260418T114538Z-PR81-TASK-053.md](retrospectives/2026/20260418T114538Z-PR81-TASK-053.md) | Retro — PR #81 (TASK-053) |
 | [retrospectives/2026/20260418T050759Z-PR79-TASK-053.md](retrospectives/2026/20260418T050759Z-PR79-TASK-053.md) | Retro — PR #79 (TASK-053) |
@@ -79,13 +82,18 @@
 
 ---
 
-## 📋 EPIC 经验教训
+## 📋 EPIC 经验教训 & 技术报告
 
 | 文件 | 摘要 |
 |------|------|
 | [EPIC-002-lessons.md](EPIC-002-lessons.md) | EPIC-002 综合经验教训 — PR收尾/rebase/CI/专家体系（addyosmani agent-skills引入） |
 | [EPIC-003-backport-lessons.md](EPIC-003-backport-lessons.md) | EPIC-003 回灌经验教训 — cherry-pick分叉、三分支对齐、历史债务处理 |
 | [EPIC-004-improvement-lessons.md](EPIC-004-improvement-lessons.md) | EPIC-004 持续改进经验教训 — Worktree丢失、防卡死、Post-Process、分支清理 |
+| [lessons-learned-2026-05-06.md](lessons-learned-2026-05-06.md) | DB+MD 双写失效排查与修复 — 3 Critical Pitfalls、3 Patterns、84 张状态修正 |
+| [db-md-sync-fix-report.md](db-md-sync-fix-report.md) | DB+MD 同步修复技术报告 — TASK-270~281 实施细节 |
+| [task-275-lessons.md](task-275-lessons.md) | TASK-275 Slaver 退出清理机制经验教训 |
+| [redis-architecture-analysis.md](redis-architecture-analysis.md) | Redis 架构分析与 TASK-142 wont-fix 决策依据 |
+| [project-status-2026-05-06.md](project-status-2026-05-06.md) | 项目 100% 完成状态报告（2026-05-06）|
 
 ---
 
@@ -101,4 +109,4 @@
 
 ---
 
-*文件总数：39 | 上次更新：2026-05-04*
+*文件总数：47 | 上次更新：2026-05-07*
