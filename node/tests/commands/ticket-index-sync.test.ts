@@ -118,7 +118,7 @@ describe('syncToSqlite', () => {
     fs.rmSync(tmpProject, { recursive: true, force: true });
   });
 
-  it('写入多条 ticket 到 ticket_index 表', async () => {
+  it('写入多条 ticket 到 tickets 表', async () => {
     writeTicket(ticketsDir, 'TASK-100.md', `- **Ticket ID**: TASK-100\n- **标题**: T100\n- **状态**: done\n- **优先级**: P1\n- **类型**: task\n`);
     writeTicket(ticketsDir, 'TASK-101.md', `- **Ticket ID**: TASK-101\n- **标题**: T101\n- **状态**: todo\n- **优先级**: P2\n`);
 
@@ -126,8 +126,8 @@ describe('syncToSqlite', () => {
     expect(result.success).toBe(true);
 
     const db = new Database(dbPath);
-    const rows = db.prepare('SELECT * FROM ticket_index ORDER BY id').all() as Array<{
-      id: string; status: string; title: string; priority: string; ticket_type: string | null;
+    const rows = db.prepare('SELECT * FROM tickets ORDER BY id').all() as Array<{
+      id: string; status: string; title: string; priority_text: string; type: string | null;
     }>;
     db.close();
 
@@ -135,8 +135,8 @@ describe('syncToSqlite', () => {
     expect(rows[0].id).toBe('TASK-100');
     expect(rows[0].status).toBe('done');
     expect(rows[0].title).toBe('T100');
-    expect(rows[0].priority).toBe('P1');
-    expect(rows[0].ticket_type).toBe('task');
+    expect(rows[0].priority_text).toBe('P1');
+    expect(rows[0].type).toBe('task');
     expect(rows[1].id).toBe('TASK-101');
     expect(rows[1].status).toBe('todo');
   });
@@ -150,7 +150,7 @@ describe('syncToSqlite', () => {
     expect(result.success).toBe(true);
 
     const db = new Database(dbPath);
-    const rows = db.prepare('SELECT id FROM ticket_index').all() as Array<{ id: string }>;
+    const rows = db.prepare('SELECT id FROM tickets').all() as Array<{ id: string }>;
     db.close();
 
     const ids = rows.map(r => r.id);
@@ -168,7 +168,7 @@ describe('syncToSqlite', () => {
     expect(result.success).toBe(true);
 
     const db = new Database(dbPath);
-    const row = db.prepare('SELECT * FROM ticket_index WHERE id = ?').get('TASK-300') as {
+    const row = db.prepare('SELECT * FROM tickets WHERE id = ?').get('TASK-300') as {
       status: string; title: string;
     } | undefined;
     db.close();

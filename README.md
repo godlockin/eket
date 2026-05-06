@@ -91,6 +91,29 @@ node dist/index.js web:dashboard --port 3000
 
 Degradation order: `Rust → Node.js → Shell → graceful exit`
 
+### HTTP API Authentication (Optional)
+
+The Rust HTTP server (`eket server`) supports optional Bearer token authentication:
+
+```bash
+# Start with authentication disabled (default)
+eket server --port 9877
+
+# Enable authentication via environment variable
+EKET_AUTH_TOKEN="your-secret-token-here" eket server
+
+# Or via CLI flag
+eket server --auth-token "your-secret-token-here"
+
+# Access protected endpoints
+curl -H "Authorization: Bearer your-secret-token-here" \
+     http://localhost:9877/api/v1/tasks
+```
+
+**Whitelisted paths** (no auth required): `/ready`, `/live`, `/health`, `/sse/events`
+
+**Error response** (401): `{"error": "invalid_token"}` or `{"error": "missing_token"}`
+
 ---
 
 ## 📊 Performance (Rust vs Node.js)
