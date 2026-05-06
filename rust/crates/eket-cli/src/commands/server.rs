@@ -15,9 +15,18 @@ pub struct ServerArgs {
     /// Directory containing TASK-*.md ticket files
     #[arg(long, env = "EKET_TICKETS_DIR")]
     pub tickets_dir: Option<PathBuf>,
+
+    /// Bearer token for API authentication (also via EKET_AUTH_TOKEN env)
+    #[arg(long, env = "EKET_AUTH_TOKEN")]
+    pub auth_token: Option<String>,
 }
 
 pub async fn run(args: ServerArgs) -> Result<()> {
+    // Set auth token from CLI flag if provided
+    if let Some(ref token) = args.auth_token {
+        std::env::set_var("EKET_AUTH_TOKEN", token);
+    }
+
     let db_path = args.db_path.unwrap_or_else(|| {
         dirs::home_dir()
             .unwrap_or_else(|| PathBuf::from("."))
