@@ -222,6 +222,19 @@ impl EketRedisClient {
             })
     }
 
+    /// EVAL Lua script (TASK-181: atomic CAS renewal)
+    /// Returns the integer result from the script.
+    pub async fn eval_lua(&self, script: &str, keys: Vec<String>, args: Vec<String>) -> EketResult<i64> {
+        self.require_available()?;
+        self.inner
+            .eval::<i64, _, _, _>(script, keys, args)
+            .await
+            .map_err(|e| {
+                self.mark_unavailable();
+                EketError::Redis(e.to_string())
+            })
+    }
+
     /// Create a new SubscriberClient using the same connection config.
     /// Caller is responsible for calling connect() + manage() on the returned client.
     pub fn new_subscriber(&self) -> SubscriberClient {

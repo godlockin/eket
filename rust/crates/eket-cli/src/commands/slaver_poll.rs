@@ -92,13 +92,41 @@ pub async fn run(args: SlaverPollArgs) -> Result<()> {
 
     tokio::select! {
         _ = tokio::signal::ctrl_c() => {
+            cleanup_on_exit(&instance_id, &client).await;
             let event = json!({ "event": "stopped" });
             println!("{}", serde_json::to_string(&event).unwrap_or_default());
         }
-        _ = poll => {}
+        _ = poll => {
+            cleanup_on_exit(&instance_id, &client).await;
+        }
     }
 
     Ok(())
+}
+
+/// Cleanup when Slaver exits:
+/// 1. Remove .eket/state/instance_config.yml
+/// 2. Update DB slaver_instances status to 'offline'
+async fn cleanup_on_exit(instance_id: &str, client: &Option<Arc<SqliteClient>>) {
+    // 1. Delete local config file
+    let config_path = ".eket/state/instance_config.yml";
+    if let Err(e) = std::fs::remove_file(config_path) {
+        // Silent failure — file may not exist
+        tracing::debug!("cleanup: remove {config_path} failed: {e}");
+    } else {
+        tracing::info!("cleanup: removed {config_path}");
+    }
+
+    // 2. Update DB status to offline
+    if let Some(c) = client {
+        // Update status + last_seen atomically
+        if let Err(e) = c.update_instance_status(instance_id, "offline") {
+            tracing::warn!("cleanup: failed to update DB status: {e}");
+        } else {
+            let _ = c.update_instance_last_seen(instance_id);
+            tracing::info!("cleanup: marked instance {instance_id} as offline in DB");
+        }
+    }
 }
 
 fn expand_tilde(path: &str) -> String {

@@ -24,5 +24,6 @@ pub mod skill_index;
 pub mod ticket;
 pub mod tracing;
 pub mod types;
+pub mod webhook;
 
 pub use error::{EketError, EketResult};
