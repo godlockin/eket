@@ -1,7 +1,7 @@
 # TASK-274: Master/Slaver 身份互斥机制修复 - TTL 刷新 lock
 
 ## 元数据
-- **状态**: in_progress
+- **状态**: done
 - **类型**: feature
 - **优先级**: P0
 - **负责人**: slaver_rust

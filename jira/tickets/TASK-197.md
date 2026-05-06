@@ -1,7 +1,7 @@
 # TASK-197: 修复 miao 主干 CI 历史失败（actionlint / Node lint / Rust clippy）
 
 ## 元数据
-- **状态**: in_progress
+- **状态**: done
 - **类型**: chore / tech-debt
 - **优先级**: P1
 - **创建时间**: 2026-04-24
