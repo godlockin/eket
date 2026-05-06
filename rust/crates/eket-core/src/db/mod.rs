@@ -140,23 +140,30 @@ fn run_migrations(pool: &DbPool) -> EketResult<()> {
         "CREATE INDEX IF NOT EXISTS idx_tickets_source ON tickets(source);"
     )?;
 
-    // TASK-272: Backfill priority column for legacy rows (if stored as INT)
-    // schema.sql already defines priority as TEXT, so we just ensure existing data is TEXT format
+    // TASK-278: Migrate legacy priority values (INTEGER or numeric TEXT) to Px format
     conn.execute_batch(
         "UPDATE tickets SET priority =
             CASE
                 WHEN typeof(priority) = 'integer' THEN
-                    CASE priority
+                    CASE CAST(priority AS INTEGER)
                         WHEN 0 THEN 'P0'
                         WHEN 1 THEN 'P1'
                         WHEN 2 THEN 'P2'
+                        WHEN 3 THEN 'P3'
                         ELSE 'P2'
+                    END
+                WHEN priority GLOB '[0-3]' THEN
+                    CASE priority
+                        WHEN '0' THEN 'P0'
+                        WHEN '1' THEN 'P1'
+                        WHEN '2' THEN 'P2'
+                        WHEN '3' THEN 'P3'
                     END
                 ELSE priority
             END
-        WHERE typeof(priority) = 'integer';"
+        WHERE typeof(priority) = 'integer' OR priority GLOB '[0-3]';"
     )?;
-    debug!("TASK-272: Backfilled priority INTEGER → TEXT");
+    debug!("TASK-278: Migrated priority INTEGER/numeric TEXT → Px format");
 
     debug!("SQLite migrations applied");
     Ok(())
@@ -1095,5 +1102,74 @@ mod tests {
         client.insert_retro("TASK-1", "hello world", &[]).unwrap();
         let empty = client.search_retros("nonexistent_xyz_abc").unwrap();
         assert!(empty.is_empty());
+    }
+
+    // ── TASK-278: Priority migration tests ───────────────────────────────────
+
+    #[test]
+    fn priority_migration_numeric_text_to_px() {
+        let client = make_client();
+
+        // Directly create tickets with legacy numeric TEXT priorities via raw SQL
+        // (bypassing create_ticket() to simulate pre-TASK-278 data)
+        {
+            let conn = client.pool().get().unwrap();
+            conn.execute_batch(
+                "INSERT INTO tickets (id, title, priority, type, status, created_at, updated_at)
+                 VALUES
+                   ('T-LEG-1', 'Legacy 1', '1', 'task', 'todo', datetime('now'), datetime('now')),
+                   ('T-LEG-2', 'Legacy 2', '2', 'bug', 'todo', datetime('now'), datetime('now')),
+                   ('T-LEG-0', 'Legacy 0', '0', 'critical', 'todo', datetime('now'), datetime('now'));"
+            ).unwrap();
+
+            // Run migration (simulate startup migration)
+            conn.execute_batch(
+                "UPDATE tickets SET priority =
+                    CASE
+                        WHEN typeof(priority) = 'integer' THEN
+                            CASE CAST(priority AS INTEGER)
+                                WHEN 0 THEN 'P0'
+                                WHEN 1 THEN 'P1'
+                                WHEN 2 THEN 'P2'
+                                WHEN 3 THEN 'P3'
+                                ELSE 'P2'
+                            END
+                        WHEN priority GLOB '[0-3]' THEN
+                            CASE priority
+                                WHEN '0' THEN 'P0'
+                                WHEN '1' THEN 'P1'
+                                WHEN '2' THEN 'P2'
+                                WHEN '3' THEN 'P3'
+                            END
+                        ELSE priority
+                    END
+                WHERE typeof(priority) = 'integer' OR priority GLOB '[0-3]';"
+            ).unwrap();
+        }
+
+        // Verify migration
+        let t1 = client.get_ticket_row("T-LEG-1").unwrap().unwrap();
+        let t2 = client.get_ticket_row("T-LEG-2").unwrap().unwrap();
+        let t0 = client.get_ticket_row("T-LEG-0").unwrap().unwrap();
+
+        assert_eq!(t1.priority, "P1");
+        assert_eq!(t2.priority, "P2");
+        assert_eq!(t0.priority, "P0");
+    }
+
+    #[test]
+    fn priority_order_by_works_correctly() {
+        let client = make_client();
+        client.create_ticket("T-P2", "Priority 2", "P2", "task").unwrap();
+        client.create_ticket("T-P0", "Priority 0", "P0", "bug").unwrap();
+        client.create_ticket("T-P1", "Priority 1", "P1", "feature").unwrap();
+
+        let all = client.list_tickets(None, None, None).unwrap();
+        assert_eq!(all.len(), 3);
+
+        // Verify ORDER BY priority ASC: P0 < P1 < P2 (lexicographic)
+        assert_eq!(all[0].id, "T-P0", "P0 should be first");
+        assert_eq!(all[1].id, "T-P1", "P1 should be second");
+        assert_eq!(all[2].id, "T-P2", "P2 should be third");
     }
 }
