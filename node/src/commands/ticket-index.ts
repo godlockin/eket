@@ -512,39 +512,48 @@ export async function syncToSqlite(jiraDir: string): Promise<Result<void>> {
   }
 
   try {
+    // TASK-272: 统一写 tickets 表（对齐 Rust schema），废弃 ticket_index
     db.exec(`
-      CREATE TABLE IF NOT EXISTS ticket_index (
-        id          TEXT    PRIMARY KEY,
-        title       TEXT    NOT NULL DEFAULT '',
-        status      TEXT    NOT NULL DEFAULT 'todo',
-        priority    TEXT    NOT NULL DEFAULT 'P2',
-        ticket_type TEXT,
-        indexed_at  INTEGER NOT NULL
+      CREATE TABLE IF NOT EXISTS tickets (
+        id           TEXT PRIMARY KEY,
+        title        TEXT NOT NULL DEFAULT '',
+        status       TEXT NOT NULL DEFAULT 'todo',
+        priority_text TEXT NOT NULL DEFAULT 'P2',
+        priority     INTEGER,
+        type         TEXT NOT NULL DEFAULT 'feature',
+        assignee     TEXT,
+        claimed_at   DATETIME,
+        blocked_at   DATETIME,
+        unblocked_at DATETIME,
+        completed_at DATETIME,
+        source       TEXT NOT NULL DEFAULT 'md',
+        created_at   TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at   TEXT NOT NULL DEFAULT (datetime('now'))
       );
-      CREATE INDEX IF NOT EXISTS idx_ticket_index_status ON ticket_index(status);
+      CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);
+      CREATE INDEX IF NOT EXISTS idx_tickets_source ON tickets(source);
     `);
 
     const mdFiles = scanTicketMdFiles(ticketsDir);
 
     const stmt = db.prepare(`
-      INSERT OR REPLACE INTO ticket_index (id, title, status, priority, ticket_type, indexed_at)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT OR REPLACE INTO tickets (id, title, status, priority_text, type, source, updated_at)
+      VALUES (?, ?, ?, ?, ?, 'md', CURRENT_TIMESTAMP)
     `);
 
     const insertAll = db.transaction((files: string[]) => {
       let count = 0;
-      const now = Date.now();
       for (const filePath of files) {
         const parsed = parseTicketMdForSync(filePath);
         if (!parsed) { continue; }
-        stmt.run(parsed.id, parsed.title, parsed.status, parsed.priority, parsed.ticketType, now);
+        stmt.run(parsed.id, parsed.title, parsed.status, parsed.priority, parsed.ticketType);
         count++;
       }
       return count;
     });
 
     const count = insertAll(mdFiles) as number;
-    console.log(`✓ SQLite 同步完成，写入 ${count} 条 ticket 记录`);
+    console.log(`✓ SQLite 同步完成，写入 ${count} 条 ticket 记录到 tickets 表`);
     return { success: true, data: undefined };
   } catch (e) {
     return {
