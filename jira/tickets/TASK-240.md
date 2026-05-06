@@ -3,7 +3,7 @@ id: TASK-240
 title: "P0 — CLAUDE.md 精简：减少 SessionStart 全局 context 注入"
 type: refactor
 priority: P0
-status: backlog
+status: done
 created: 2026-05-03
 epic: context-optimization
 ---

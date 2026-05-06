@@ -92,3 +92,13 @@ CREATE TABLE IF NOT EXISTS instance_execution_states (
     state_json  TEXT NOT NULL,
     updated_at  INTEGER NOT NULL
 );
+
+-- TASK-180: Master election singleton lock (mutual exclusion)
+-- Only ONE row ever exists (singleton=1), enforced by CHECK + PRIMARY KEY.
+-- INSERT OR IGNORE: first writer wins; subsequent inserts are silently ignored.
+CREATE TABLE IF NOT EXISTS master_lock (
+    singleton   INTEGER PRIMARY KEY CHECK(singleton = 1),
+    master_id   TEXT NOT NULL,
+    acquired_at TEXT NOT NULL,
+    expires_at  TEXT NOT NULL
+);

@@ -1,0 +1,9 @@
+# Rust build artifacts and caches
+target/
+Cargo.lock  # Keep for binaries, ignore for libraries
+**/*.rs.bk
+*.pdb
+
+# Rust-specific temp files
+.cargo/
+rust-analyzer/

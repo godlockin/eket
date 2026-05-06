@@ -31,7 +31,7 @@ async fn handle_socket(
                 match recv_result {
                     Ok(event) => {
                         let msg = serde_json::to_string(&event).unwrap_or_default();
-                        if socket.send(Message::Text(msg.into())).await.is_err() {
+                        if socket.send(Message::Text(msg)).await.is_err() {
                             debug!("ws client disconnected (send error)");
                             break;
                         }

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /**
  * Custom Jest resolver to map .js imports to .ts source files
  * This handles the ES module pattern where TypeScript source uses .js extensions

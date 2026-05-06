@@ -1,0 +1,32 @@
+# Node.js dependencies
+node_modules/
+jspm_packages/
+bower_components/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+coverage/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+*.d.ts.map
+
+# Test artifacts
+.nyc_output/
+
+# Package manager locks (keep for reproducibility)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml

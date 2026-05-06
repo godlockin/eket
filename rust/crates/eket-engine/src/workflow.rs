@@ -486,8 +486,8 @@ impl WorkflowEngine {
                         None
                     };
                 let context = if let Some(ref trimmed) = trimmed_data {
-                    let before_tokens: usize = context.data.iter().map(|(_, v)| crate::workflow::estimate_value_tokens(v)).sum();
-                    let after_tokens: usize = trimmed.iter().map(|(_, v)| crate::workflow::estimate_value_tokens(v)).sum();
+                    let before_tokens: usize = context.data.values().map(crate::workflow::estimate_value_tokens).sum();
+                    let after_tokens: usize = trimmed.values().map(crate::workflow::estimate_value_tokens).sum();
                     debug!("context budget applied: {} tokens → {} tokens (step={})", before_tokens, after_tokens, current_step_id);
                     let mut ctx = context;
                     ctx.data = trimmed.clone();
@@ -754,34 +754,54 @@ pub async fn execute_parallel(
                 }
             }
 
-            // ── Any: first success (or all fail) ───────────────────────────
+            // ── Any: first SUCCESS wins; abort all others (TASK-186) ─────
             JoinPolicy::Any => {
-                // Drive all handles; stop as soon as one succeeds.
-                let remaining: Vec<(String, tokio::task::JoinHandle<BranchOutcome>)> = std::mem::take(&mut handles);
-                if !remaining.is_empty() {
-                    // Poll every handle once via select_all-style approach.
-                    let (outcome, _idx, rest) = futures::future::select_all(
-                        remaining.into_iter().map(|(id, jh)| {
-                            let id2 = id.clone();
-                            jh.map(move |r| {
-                                r.unwrap_or_else(|e| BranchOutcome {
-                                    step_id: id2.clone(),
-                                    success: false,
-                                    output: serde_json::Value::Null,
-                                    error: Some(format!("join error: {e}")),
-                                })
-                            }).boxed()
+                use futures::stream::{FuturesUnordered, StreamExt};
+
+                // Decompose into (abort_handle, JoinHandle) pairs so we can
+                // abort losers while still awaiting winners.
+                let mut fu: FuturesUnordered<_> = FuturesUnordered::new();
+                let mut abort_handles: Vec<(String, tokio::task::AbortHandle)> = Vec::new();
+
+                let remaining = std::mem::take(&mut handles);
+                for (id, jh) in remaining {
+                    let ah = jh.abort_handle();
+                    abort_handles.push((id.clone(), ah));
+                    fu.push(jh.map(move |r| {
+                        r.unwrap_or_else(|e| BranchOutcome {
+                            step_id: id.clone(),
+                            success: false,
+                            output: serde_json::Value::Null,
+                            error: Some(format!("join error: {e}")),
                         })
-                    ).await;
-                    // Reconstruct remaining — futures::select_all returns the futures,
-                    // not the (id, jh) pairs.  We lost the id mapping, so we carry it
-                    // inside the future itself (step_id field).
-                    let _ = rest; // remaining futures run to completion via abort below
-                    let sid = outcome.step_id.clone();
-                    outcomes.insert(sid, outcome);
-                    // (rest is Vec<BoxFuture> — we can no longer abort them individually;
-                    //  they're already detached tasks, so just let them run out naturally)
-                    // exit after first resolution regardless
+                    }));
+                }
+
+                let mut first_success: Option<BranchOutcome> = None;
+                let mut all_failures: Vec<BranchOutcome> = Vec::new();
+
+                while let Some(outcome) = fu.next().await {
+                    if outcome.success {
+                        first_success = Some(outcome);
+                        break; // abort the rest below
+                    } else {
+                        all_failures.push(outcome);
+                    }
+                }
+
+                // Abort all remaining in-flight branches
+                for (id, ah) in &abort_handles {
+                    ah.abort();
+                    debug!("[workflow] JoinPolicy::Any aborted loser branch {id}");
+                }
+
+                if let Some(winner) = first_success {
+                    outcomes.insert(winner.step_id.clone(), winner);
+                } else {
+                    // All branches failed → record all failures
+                    for f in all_failures {
+                        outcomes.insert(f.step_id.clone(), f);
+                    }
                 }
             }
 

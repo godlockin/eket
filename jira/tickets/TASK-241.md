@@ -3,7 +3,7 @@ id: TASK-241
 title: "P1 — Master 长会话 Hybrid Memory：已完成 ticket 自动摘要"
 type: feature
 priority: P1
-status: backlog
+status: done
 created: 2026-05-03
 epic: context-optimization
 depends-on: [TASK-239, TASK-240]

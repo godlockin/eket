@@ -1,7 +1,7 @@
 # TASK-139: Hook Server Rust 化评估与方案
 
 ## 元数据
-- **状态**: backlog
+- **状态**: done
 - **类型**: refactor / tech-design
 - **优先级**: P1
 - **创建时间**: 2026-04-21

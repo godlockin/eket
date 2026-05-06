@@ -10,3 +10,4 @@ logs/
 
 # Test artifacts
 coverage/
+.worktrees/

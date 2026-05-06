@@ -1,0 +1,5 @@
+# Git-specific extras (not needed in Docker/Claude)
+
+# Git worktrees
+.claude/worktrees/
+.claude/settings.local.json
