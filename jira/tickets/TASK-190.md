@@ -1,6 +1,6 @@
 # TASK-190: Bearer token改constant_time_eq防timing attack
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P1
 **类型**: Security
