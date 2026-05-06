@@ -1,7 +1,7 @@
 # TASK-262: Webhook 安全加固：URL校验(SSRF防护) + secret泄漏防护 + serde修复
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P2
 - **负责人**: 待认领
