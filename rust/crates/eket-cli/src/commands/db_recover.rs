@@ -29,6 +29,7 @@ pub struct DbRecoverArgs {
 
 /// 从 MD 文件解析的 ticket 元数据
 #[derive(Debug)]
+#[allow(dead_code)]
 struct TicketMetadata {
     id: String,
     title: String,
