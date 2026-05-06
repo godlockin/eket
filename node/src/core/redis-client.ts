@@ -370,6 +370,49 @@ export class RedisClient {
   }
 
   /**
+   * 推送任务到队列（LPUSH —— 任务分发语义，保证单消费者）
+   */
+  async pushTask(queue: string, message: string): Promise<Result<void>> {
+    if (!this.client) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
+      };
+    }
+    try {
+      await (this.client as IORedisClient).lpush(queue, message);
+      return { success: true, data: undefined };
+    } catch (err) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.REDIS_OPERATION_FAILED, `Failed to push task: ${err}`),
+      };
+    }
+  }
+
+  /**
+   * 阻塞弹出任务（BRPOP —— 保证单消费，timeoutSec=0 无限等待）
+   */
+  async popTask(queue: string, timeoutSec = 5): Promise<Result<string | null>> {
+    if (!this.client) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.REDIS_NOT_CONNECTED, 'Redis client not connected'),
+      };
+    }
+    try {
+      const result = await (this.client as IORedisClient).brpop(queue, timeoutSec);
+      // brpop returns [key, value] or null on timeout
+      return { success: true, data: result ? result[1] : null };
+    } catch (err) {
+      return {
+        success: false,
+        error: new EketError(EketErrorCode.REDIS_OPERATION_FAILED, `Failed to pop task: ${err}`),
+      };
+    }
+  }
+
+  /**
    * 订阅消息通道
    */
   async subscribeMessage(

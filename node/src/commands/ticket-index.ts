@@ -11,6 +11,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import Database from 'better-sqlite3';
+
 import { Result, EketErrorClass, EketErrorCode } from '../types/index.js';
 
 interface Ticket {
@@ -374,22 +376,196 @@ async function syncToRedis(jiraDir: string): Promise<Result<void>> {
   return { success: true, data: undefined };
 }
 
-async function syncToSqlite(jiraDir: string): Promise<Result<void>> {
+/**
+ * 扫描 jira/tickets/ 下所有 TASK-*.md，排除 archive 子目录
+ */
+function scanTicketMdFiles(ticketsDir: string): string[] {
+  const results: string[] = [];
+
+  function walk(dir: string): void {
+    if (!fs.existsSync(dir)) { return; }
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name.toLowerCase() !== 'archive') {
+          walk(fullPath);
+        }
+      } else if (entry.isFile() && /^TASK-[^/\\]+\.md$/i.test(entry.name)) {
+        results.push(fullPath);
+      }
+    }
+  }
+
+  walk(ticketsDir);
+  return results;
+}
+
+interface ParsedTicketForSync {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  ticketType: string | null;
+}
+
+/**
+ * 解析单个 ticket MD 文件（用于 SQLite 同步）
+ * 兼容两种格式：`**状态**: done` 和 frontmatter `status: done`
+ */
+export function parseTicketMdForSync(filePath: string): ParsedTicketForSync | null {
+  let content: string;
+  try {
+    content = fs.readFileSync(filePath, 'utf-8');
+  } catch {
+    return null;
+  }
+
+  // ID from filename
+  const basename = path.basename(filePath, '.md');
+  const idMatch = basename.match(/^(TASK-[\w-]+)$/i);
+  if (!idMatch) { return null; }
+  const id = idMatch[1].toUpperCase();
+
+  // --- Status (中文字段优先，fallback frontmatter) ---
+  let status = 'todo';
+  const mdStatus = content.match(/\*\*状态\*\*\s*:\s*(\S+)/);
+  if (mdStatus) {
+    status = normalizeTicketStatus(mdStatus[1].trim());
+  } else {
+    const fmStatus = content.match(/^status\s*:\s*(\S+)/m);
+    if (fmStatus) {
+      status = normalizeTicketStatus(fmStatus[1].trim());
+    }
+  }
+
+  // --- Title ---
+  let title = id;
+  const mdTitle = content.match(/\*\*标题\*\*\s*:\s*(.+)/);
+  if (mdTitle) {
+    title = mdTitle[1].trim();
+  } else {
+    const h1 = content.match(/^#\s+(.+)/m);
+    if (h1) {
+      title = h1[1].replace(/^TASK-[\w-]+[:\s]+/i, '').trim() || h1[1].trim();
+    }
+  }
+
+  // --- Priority ---
+  let priority = 'P2';
+  const mdPriority = content.match(/\*\*优先级\*\*\s*:\s*(\S+)/);
+  if (mdPriority) {
+    priority = mdPriority[1].trim();
+  } else {
+    const fmPriority = content.match(/^priority\s*:\s*(\S+)/m);
+    if (fmPriority) {
+      priority = fmPriority[1].trim();
+    }
+  }
+
+  // --- Ticket Type ---
+  let ticketType: string | null = null;
+  const mdType = content.match(/\*\*类型\*\*\s*:\s*(\S+)/);
+  if (mdType) {
+    ticketType = mdType[1].trim();
+  } else {
+    const fmType = content.match(/^type\s*:\s*(\S+)/m);
+    if (fmType) {
+      ticketType = fmType[1].trim();
+    }
+  }
+
+  return { id, title, status, priority, ticketType };
+}
+
+function normalizeTicketStatus(raw: string): string {
+  const lower = raw.toLowerCase();
+  if (lower === 'done' || lower === '完成' || lower === 'completed') { return 'done'; }
+  if (lower === 'in_progress' || lower === 'in-progress' || lower === '进行中') { return 'in_progress'; }
+  if (lower === 'todo' || lower === '待办' || lower === 'open') { return 'todo'; }
+  if (lower === 'blocked' || lower === '阻塞') { return 'blocked'; }
+  return lower;
+}
+
+export async function syncToSqlite(jiraDir: string): Promise<Result<void>> {
   console.log('同步到 SQLite...');
 
-  const stateFile = path.join(jiraDir, 'state', 'ticket-registry.yml');
-
-  if (!fs.existsSync(stateFile)) {
+  const ticketsDir = path.join(jiraDir, 'tickets');
+  if (!fs.existsSync(ticketsDir)) {
     return {
       success: false,
-      error: makeError('JEK_REGISTRY_NOT_FOUND', 'ticket-registry.yml 不存在')
+      error: makeError('JEK_TICKETS_DIR_NOT_FOUND', 'jira/tickets 目录不存在')
     };
   }
 
-  // 简化实现：实际应使用 SQLite 客户端
-  console.log('✓ SQLite 同步完成（简化实现）');
+  // DB path: .eket/eket.db relative to project root (cwd)
+  const dbPath = path.join(process.cwd(), '.eket', 'eket.db');
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
-  return { success: true, data: undefined };
+  let db: Database.Database;
+  try {
+    db = new Database(dbPath);
+  } catch (e) {
+    return {
+      success: false,
+      error: makeError('JEK_SQLITE_OPEN_FAILED', `无法打开 SQLite: ${(e as Error).message}`)
+    };
+  }
+
+  try {
+    // TASK-272: 统一写 tickets 表（对齐 Rust schema），废弃 ticket_index
+    // schema 由 Rust 维护，此处仅做兼容性检查（Rust schema.sql 已定义正确结构）
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS tickets (
+        id           TEXT PRIMARY KEY,
+        title        TEXT NOT NULL DEFAULT '',
+        status       TEXT NOT NULL DEFAULT 'todo',
+        priority     TEXT NOT NULL DEFAULT 'P2',
+        type         TEXT NOT NULL DEFAULT 'feature',
+        assignee     TEXT,
+        dependencies TEXT,
+        metadata     TEXT,
+        content      TEXT,
+        claimed_at   DATETIME,
+        blocked_at   DATETIME,
+        unblocked_at DATETIME,
+        completed_at DATETIME,
+        source       TEXT NOT NULL DEFAULT 'md',
+        created_at   TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at   TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);
+      CREATE INDEX IF NOT EXISTS idx_tickets_source ON tickets(source);
+    `);
+
+    const mdFiles = scanTicketMdFiles(ticketsDir);
+
+    const stmt = db.prepare(`
+      INSERT OR REPLACE INTO tickets (id, title, status, priority, type, source, updated_at)
+      VALUES (?, ?, ?, ?, ?, 'md', CURRENT_TIMESTAMP)
+    `);
+
+    const insertAll = db.transaction((files: string[]) => {
+      let count = 0;
+      for (const filePath of files) {
+        const parsed = parseTicketMdForSync(filePath);
+        if (!parsed) { continue; }
+        stmt.run(parsed.id, parsed.title, parsed.status, parsed.priority, parsed.ticketType);
+        count++;
+      }
+      return count;
+    });
+
+    const count = insertAll(mdFiles) as number;
+    console.log(`✓ SQLite 同步完成，写入 ${count} 条 ticket 记录到 tickets 表`);
+    return { success: true, data: undefined };
+  } catch (e) {
+    return {
+      success: false,
+      error: makeError('JEK_SQLITE_SYNC_FAILED', `同步失败: ${(e as Error).message}`)
+    };
+  } finally {
+    db.close();
+  }
 }
 
 function showStats(jiraDir: string): Promise<Result<void>> {

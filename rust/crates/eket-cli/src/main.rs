@@ -124,6 +124,10 @@ enum Commands {
     #[command(name = "db:status")]
     DbStatus(commands::db_commands::DbStatusArgs),
 
+    /// Recover DB from MD files or vice versa
+    #[command(name = "db:recover")]
+    DbRecover(commands::db_recover::DbRecoverArgs),
+
     /// Show version info as JSON
     #[command(name = "version")]
     Version,
@@ -219,13 +223,26 @@ enum Commands {
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    fmt()
-        .with_env_filter(
-            EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| EnvFilter::new(&cli.log_level)),
-        )
-        .with_target(false)
-        .init();
+    // TASK-161: 支持 JSON formatter
+    let log_format = std::env::var("EKET_LOG_FORMAT").unwrap_or_default();
+    if log_format == "json" {
+        fmt()
+            .json()
+            .with_env_filter(
+                EnvFilter::try_from_default_env()
+                    .unwrap_or_else(|_| EnvFilter::new(&cli.log_level)),
+            )
+            .with_target(false)
+            .init();
+    } else {
+        fmt()
+            .with_env_filter(
+                EnvFilter::try_from_default_env()
+                    .unwrap_or_else(|_| EnvFilter::new(&cli.log_level)),
+            )
+            .with_target(false)
+            .init();
+    }
 
     match cli.command {
         Commands::KnowledgeIndex(args) => commands::knowledge::run_index(args).await,
@@ -251,9 +268,13 @@ async fn main() -> Result<()> {
         Commands::MasterPoll(args) => commands::master_poll::run(args).await,
         Commands::DbMigrate(args) => commands::db_commands::run_migrate(args).await,
         Commands::DbStatus(args) => commands::db_commands::run_status(args).await,
+        Commands::DbRecover(args) => commands::db_recover::run(args).await,
         Commands::Version => {
             let info = serde_json::json!({
                 "version": env!("CARGO_PKG_VERSION"),
+                "git_sha": env!("GIT_SHA"),
+                "build_time": env!("BUILD_TIME"),
+                "rust_version": env!("RUST_VERSION"),
             });
             println!("{}", serde_json::to_string_pretty(&info).unwrap());
             Ok(())
