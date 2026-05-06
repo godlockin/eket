@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: bugfix
 - **优先级**: P2
-**状态**: done
+- **状态**: done
 - **预估**: 0.5d
 - **expertise**: rust,nodejs
 - **来源**: Master 代码审查（2026-05-05）
@@ -141,11 +141,9 @@ if (context.slaverId) {
 
 ## Summary
 
-> 自动生成摘要（rule-based）
-
 | 项 | 内容 |
 |---|---|
 | Ticket | TASK-269: Bug: task:complete 后 slaver_instances 状态未更新（Rust + Node.js） |
-| 测试结果 | — |
-| PR | — |
-| 知识沉淀 | — |
+| 测试结果 | ✅ 11/11 passed |
+| PR | #180 https://github.com/godlockin/eket/pull/180 |
+| 知识沉淀 | `confluence/memory/TASK-269-retro.md` |
