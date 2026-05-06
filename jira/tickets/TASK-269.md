@@ -3,7 +3,7 @@
 ## 元数据
 - **类型**: bugfix
 - **优先级**: P2
-**状态**: in_progress
+**状态**: done
 - **预估**: 0.5d
 - **expertise**: rust,nodejs
 - **来源**: Master 代码审查（2026-05-05）
@@ -122,7 +122,30 @@ if (context.slaverId) {
 
 ## 分析记录
 
-**领取时间**: —
-**执行者**: —
+**领取时间**: 2026-05-06T00:06:07+08:00
+**执行者**: slaver_1776695133821_534ccf79 (backend)
 
-根因：`mark_offline()` 存在但从未被 `task:complete` 调用。正确行为应设为 `idle` 而非 `offline`，因为 Slaver 完成任务后仍可接受新任务。
+**分析结论**：
+
+根因确认 — `mark_offline()` 存在于 `registry.rs:180`，但仅被 `heartbeat_monitor` 调用。`task:complete` Saga 6步均无 slaver 状态更新。
+
+实现方案：
+1. 新增 `InstanceRegistry::set_status(id, status)` 方法（SQLite + Redis 同步）
+2. Rust `task_complete.rs`：Step 8 后调用 `set_status(slaver_id, "idle")`
+3. Node.js `complete.ts`：`updateTicketStatus('done')` 后同步修复
+4. 失败降级：warn only，heartbeat 兜底
+
+测试：`test_set_status_updates_db` + `test_set_status_idle_after_task_complete`（11/11 pass）
+
+影响：registry.rs (+57), task_complete.rs (+14), complete.ts (+12), tests (+28)
+
+## Summary
+
+> 自动生成摘要（rule-based）
+
+| 项 | 内容 |
+|---|---|
+| Ticket | TASK-269: Bug: task:complete 后 slaver_instances 状态未更新（Rust + Node.js） |
+| 测试结果 | — |
+| PR | — |
+| 知识沉淀 | — |
