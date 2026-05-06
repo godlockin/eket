@@ -500,13 +500,25 @@ pub async fn start(port: u16, db_path: PathBuf, tickets_dir: PathBuf) -> Result<
         hook_registry: hooks::HookRegistry::new(),
         event_tx,
     };
+    // TASK-279 I1: Validate JWT secret length ≥32 chars (256-bit entropy)
+    let jwt_secret = std::env::var("EKET_JWT_SECRET").ok();
+    if let Some(ref secret) = jwt_secret {
+        if secret.len() < 32 {
+            return Err(anyhow::anyhow!(
+                "EKET_JWT_SECRET must be ≥32 chars (256-bit entropy), got {} chars",
+                secret.len()
+            ));
+        }
+        info!("JWT auth enabled via EKET_JWT_SECRET");
+    }
+
     let auth_token = std::env::var("EKET_AUTH_TOKEN").ok();
     if auth_token.is_some() {
         info!("auth enabled via EKET_AUTH_TOKEN");
     }
     let auth_config = Arc::new(auth::AuthConfig {
         token: auth_token,
-        jwt_secret: std::env::var("EKET_JWT_SECRET").ok(),
+        jwt_secret,
     });
     let app = build_router(state, auth_config);
     let addr = format!("0.0.0.0:{port}");
@@ -710,5 +722,25 @@ mod tests {
         };
         let v: serde_json::Value = serde_json::from_str(&text).unwrap();
         assert_eq!(v["ticket_id"], "TASK-234");
+    }
+
+    // ─── TASK-279 I1 Tests ──────────────────────────────────────────────────
+
+    #[tokio::test]
+    async fn weak_jwt_secret_rejected() {
+        use std::path::PathBuf;
+
+        // Set weak secret (5 chars < 32)
+        std::env::set_var("EKET_JWT_SECRET", "short");
+
+        let tmp = TempDir::new().unwrap();
+        let db_path = tmp.path().join("test.db");
+        let tickets_dir = tmp.path().to_path_buf();
+
+        let result = start(8888, db_path, tickets_dir).await;
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("≥32 chars"));
+
+        std::env::remove_var("EKET_JWT_SECRET");
     }
 }
