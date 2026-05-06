@@ -10,7 +10,9 @@
 /// 7. 输出 JSON
 use anyhow::Result;
 use clap::Parser;
-use eket_core::dag::{detect_cycle, parse_tickets_dag, DagEdge, DagNode};
+use eket_core::config::EketConfig;
+use eket_core::dag::{detect_cycle, parse_tickets_dag, DagEdge, DagNode, TriggerRule};
+use eket_core::db::{create_pool, SqliteClient};
 use eket_core::expert_skill_bridge::ExpertSkillBridge;
 use serde_json::json;
 use std::fs::OpenOptions;
@@ -314,7 +316,7 @@ fn build_ticket_content(
     )
 }
 
-/// Core create logic: write ticket file, link to EPIC, return JSON value.
+/// Core create logic: write ticket file, link to EPIC, write to DB, return JSON value.
 async fn create_single_ticket(
     tickets_dir: &Path,
     title: &str,
@@ -324,6 +326,7 @@ async fn create_single_ticket(
     blocked_by: &[String],
     expertise: &[String],
     epic: Option<&str>,
+    db_client: Option<&SqliteClient>,
 ) -> Result<serde_json::Value> {
     let ticket_id = next_ticket_id(tickets_dir)?;
 
@@ -335,6 +338,7 @@ async fn create_single_ticket(
             label: title.to_string(),
             status: "todo".to_string(),
             assignee: None,
+            trigger_rule: TriggerRule::AllSuccess,
         });
         for dep in blocked_by {
             dag.edges.push(DagEdge {
@@ -368,6 +372,20 @@ async fn create_single_ticket(
         .open(&file_path)
         .map_err(|e| anyhow::anyhow!("Failed to create ticket file {}: {}", file_path.display(), e))?;
     file.write_all(content.as_bytes())?;
+
+    // Write to SQLite DB (TASK-270)
+    if let Some(db) = db_client {
+        if let Err(e) = db.create_ticket_with_source(
+            &ticket_id,
+            title,
+            priority,
+            ticket_type,
+            "cli", // source = "cli" for command-line created tickets
+        ) {
+            eprintln!("[WARN] Failed to write ticket to DB: {}", e);
+            // Continue execution — MD file is primary source of truth
+        }
+    }
 
     // Link to EPIC if given
     if let Some(epic_id) = epic {
@@ -524,6 +542,23 @@ skills:
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 pub async fn run(args: TaskCreateArgs) -> Result<()> {
+    // Initialize DB client (TASK-270)
+    let db_client = match EketConfig::load() {
+        Ok(config) => {
+            match create_pool(&config.sqlite.path) {
+                Ok(pool) => Some(SqliteClient::new(pool)),
+                Err(e) => {
+                    eprintln!("[WARN] Failed to create DB pool: {}", e);
+                    None
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("[WARN] Failed to load config: {}", e);
+            None
+        }
+    };
+
     // Resolve type and priority: explicit > inferred from title
     let ticket_type = args.r#type.as_deref().unwrap_or_else(|| infer_type(&args.title)).to_string();
     let priority = args.priority.as_deref().unwrap_or_else(|| infer_priority(&args.title)).to_string();
@@ -605,6 +640,7 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
                                     &[], // subtasks have no blocked_by by default
                                     &args.expertise,
                                     args.epic.as_deref(),
+                                    db_client.as_ref(),
                                 )
                                 .await?;
                                 results.push(report);
@@ -633,6 +669,7 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
         &blocked_by,
         &args.expertise,
         args.epic.as_deref(),
+        db_client.as_ref(),
     )
     .await?;
 

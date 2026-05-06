@@ -1,0 +1,21 @@
+# Security and Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+private.*
+secret.*
+secrets.*
+credentials.json
+service-account*.json
+auth-*.json
+token*.json
+*.asc
+id_rsa*
+id_ed25519*
+*.ssh

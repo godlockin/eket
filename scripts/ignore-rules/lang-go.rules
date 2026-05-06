@@ -1,0 +1,19 @@
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test/coverage
+*.test
+*.out
+coverage.txt
+*.prof
+
+# Dependency directories
+vendor/
+
+# Go workspace
+go.work
+go.work.sum

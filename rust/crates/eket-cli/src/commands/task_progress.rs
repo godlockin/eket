@@ -69,6 +69,13 @@ pub fn build_progress(tickets_dir: &std::path::Path) -> serde_json::Value {
         "critical_path": cp,
         "critical_path_done": cp_done,
         "critical_path_total": cp_total,
+        // TASK-255: ticket list with id/status/assignee for source column display
+        "tickets": dag.nodes.iter().map(|n| json!({
+            "id": n.id,
+            "status": n.status,
+            "assignee": n.assignee,
+            "label": n.label,
+        })).collect::<Vec<_>>(),
     })
 }
 

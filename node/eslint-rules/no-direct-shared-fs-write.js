@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-env node */
 /**
  * ESLint rule: no-direct-shared-fs-write
  *
@@ -12,10 +14,10 @@
  * placed on the same or the immediately preceding line.
  *
  * Exempt files (configured in eslint.config.js):
- *   - node/src/core/state/**     (the legitimate writer itself)
- *   - node/src/skills/**         (sandboxed skill adapters)
- *   - node/tests/**              (test harnesses)
- *   - **/*.test.ts, **/*.spec.ts
+ *   - node/src/core/state/ (the legitimate writer itself)
+ *   - node/src/skills/ (sandboxed skill adapters)
+ *   - node/tests/ (test harnesses)
+ *   - *.test.ts, *.spec.ts files
  */
 
 'use strict';
