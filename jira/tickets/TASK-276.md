@@ -1,7 +1,7 @@
 # TASK-276: 身份检测优化 - 支持同目录多 Master/Slaver 实例
 
 ## 元数据
-**状态**: done
+**状态**: in_progress
 - **类型**: feature
 - **优先级**: P1
 **负责人**: slaver_1776695133821_534ccf79

@@ -124,6 +124,10 @@ enum Commands {
     #[command(name = "db:status")]
     DbStatus(commands::db_commands::DbStatusArgs),
 
+    /// Recover DB from MD files or vice versa
+    #[command(name = "db:recover")]
+    DbRecover(commands::db_recover::DbRecoverArgs),
+
     /// Show version info as JSON
     #[command(name = "version")]
     Version,
@@ -251,6 +255,7 @@ async fn main() -> Result<()> {
         Commands::MasterPoll(args) => commands::master_poll::run(args).await,
         Commands::DbMigrate(args) => commands::db_commands::run_migrate(args).await,
         Commands::DbStatus(args) => commands::db_commands::run_status(args).await,
+        Commands::DbRecover(args) => commands::db_recover::run(args).await,
         Commands::Version => {
             let info = serde_json::json!({
                 "version": env!("CARGO_PKG_VERSION"),
