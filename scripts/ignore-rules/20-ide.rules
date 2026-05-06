@@ -1,0 +1,10 @@
+# IDE and Editors
+.idea/
+.vscode/
+*.sublime-*
+.project
+.classpath
+.settings/
+*.iml
+.vs/
+*.code-workspace

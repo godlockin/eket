@@ -1,6 +1,6 @@
 # TASK-184: 统一认证机制——Node JWT与Rust静态token不兼容
 
-**状态**: ready
+**状态**: done
 
 **优先级**: P1
 **类型**: Bug

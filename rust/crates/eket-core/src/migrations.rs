@@ -20,6 +20,17 @@ impl<'a> MigrationRunner<'a> {
         Ok(())
     }
 
+    /// Dry-run: return pending migration (version, name) without applying them.
+    pub fn pending(&self) -> Result<Vec<(i64, &'static str)>> {
+        self.ensure_schema_version_table()?;
+        let current = self.current_version()?;
+        Ok(MIGRATIONS
+            .iter()
+            .filter(|m| m.version > current)
+            .map(|m| (m.version, m.name))
+            .collect())
+    }
+
     pub fn current_version(&self) -> Result<i64> {
         let version: i64 = self.conn.query_row(
             "SELECT COALESCE(MAX(version), 0) FROM schema_version",
@@ -74,8 +85,15 @@ struct Migration {
     up: &'static str,
 }
 
-const MIGRATIONS: &[Migration] = &[Migration {
-    version: 1,
-    name: "initial_schema",
-    up: include_str!("../migrations/0001_initial.sql"),
-}];
+const MIGRATIONS: &[Migration] = &[
+    Migration {
+        version: 1,
+        name: "initial_schema",
+        up: include_str!("../migrations/0001_initial.sql"),
+    },
+    Migration {
+        version: 2,
+        name: "task_source_timestamps",
+        up: include_str!("../migrations/0002_task_source_timestamps.sql"),
+    },
+];

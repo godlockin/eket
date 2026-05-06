@@ -204,6 +204,8 @@ export class SkillExecutor {
    * 查找 Skill 文件
    */
   private async findSkillFile(skillName: string): Promise<string | null> {
+    // Bug-3 fix: normalize to lowercase for case-insensitive lookup
+    const normalizedName = skillName.toLowerCase();
     // 支持的分类
     const categories = [
       'requirements',
@@ -216,20 +218,20 @@ export class SkillExecutor {
 
     // 在分类目录中查找
     for (const category of categories) {
-      const skillPath = path.join(this.skillsPath, category, `${skillName}.yml`);
+      const skillPath = path.join(this.skillsPath, category, `${normalizedName}.yml`);
       if (fs.existsSync(skillPath)) {
         return skillPath;
       }
 
       // 也支持子目录
-      const subDirPath = path.join(this.skillsPath, category, skillName, 'skill.yml');
+      const subDirPath = path.join(this.skillsPath, category, normalizedName, 'skill.yml');
       if (fs.existsSync(subDirPath)) {
         return subDirPath;
       }
     }
 
     // 直接在 skills 目录查找
-    const directPath = path.join(this.skillsPath, `${skillName}.yml`);
+    const directPath = path.join(this.skillsPath, `${normalizedName}.yml`);
     if (fs.existsSync(directPath)) {
       return directPath;
     }

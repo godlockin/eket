@@ -56,7 +56,7 @@ fn keep_recent_n(data: &mut HashMap<String, Value>, n: usize) {
 /// Phase 4: estimate total tokens; if exceeded, remove largest non-metadata fields first.
 fn trim_to_max_tokens(data: &mut HashMap<String, Value>, max_tokens: usize) {
     loop {
-        let total: usize = data.iter().map(|(_, v)| estimate_value_tokens(v)).sum();
+        let total: usize = data.values().map(estimate_value_tokens).sum();
         if total <= max_tokens {
             break;
         }
