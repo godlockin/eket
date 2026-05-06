@@ -203,6 +203,7 @@ impl InstanceRegistry {
     }
 
     /// Set instance status (idle/busy/offline).
+    /// TASK-280 I2: Atomic update with status check to prevent race conditions.
     pub async fn set_status(&self, instance_id: &str, status: &str) -> EketResult<()> {
         let db = Arc::clone(&self.db);
         let id = instance_id.to_string();
@@ -210,10 +211,23 @@ impl InstanceRegistry {
 
         tokio::task::spawn_blocking(move || {
             let conn = db.pool().get()?;
-            conn.execute(
-                "UPDATE slaver_instances SET status = ?1 WHERE id = ?2",
-                params![s, id],
-            )?;
+            // TASK-280 I2: Atomic UPDATE with WHERE status condition
+            // When transitioning to 'idle', verify current status is 'busy' to prevent race
+            let (sql, log_warn) = if s == "idle" {
+                (
+                    "UPDATE slaver_instances SET status = ?1 WHERE id = ?2 AND status = 'busy'",
+                    true,
+                )
+            } else {
+                ("UPDATE slaver_instances SET status = ?1 WHERE id = ?2", false)
+            };
+
+            let affected = conn.execute(sql, params![s, id])?;
+
+            if log_warn && affected == 0 {
+                warn!("Slaver {} not in busy state when marking idle", id);
+            }
+
             Ok::<_, EketError>(())
         })
         .await
@@ -512,5 +526,58 @@ mod tests {
         assert_eq!(slavers.len(), 1);
         assert_eq!(slavers[0].id, "slaver-complete");
         assert_eq!(slavers[0].status, "idle");
+    }
+
+    // ─── TASK-280 I2 Tests ───────────────────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_concurrent_mark_idle_atomic() {
+        use std::sync::Arc;
+
+        let reg = Arc::new(make_registry());
+
+        // Register slaver as busy
+        reg.register(sample_instance("slaver-race", "slaver", "busy"))
+            .await
+            .unwrap();
+
+        // Spawn 10 concurrent tasks trying to mark idle
+        let mut handles = vec![];
+        for _ in 0..10 {
+            let r = Arc::clone(&reg);
+            let h = tokio::spawn(async move {
+                r.set_status("slaver-race", "idle").await
+            });
+            handles.push(h);
+        }
+
+        // Wait all complete
+        for h in handles {
+            let _ = h.await;
+        }
+
+        // Verify final state is consistent (status = idle)
+        let all = reg.discover(None).await.unwrap();
+        let found = all.iter().find(|i| i.id == "slaver-race");
+        assert!(found.is_some());
+        assert_eq!(found.unwrap().status, "idle");
+    }
+
+    #[tokio::test]
+    async fn test_mark_idle_on_non_busy_warns() {
+        let reg = make_registry();
+
+        // Register as idle (not busy)
+        reg.register(sample_instance("slaver-idle-already", "slaver", "idle"))
+            .await
+            .unwrap();
+
+        // Try to mark idle again (should warn but not error)
+        reg.set_status("slaver-idle-already", "idle").await.unwrap();
+
+        // Status remains idle
+        let all = reg.discover(None).await.unwrap();
+        assert_eq!(all.len(), 1);
+        assert_eq!(all[0].status, "idle");
     }
 }
