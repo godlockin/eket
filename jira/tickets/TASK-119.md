@@ -1,7 +1,7 @@
 # TASK-119: Ultrareview 多 Agent 独立代码审查（claude-code-best-practice 借鉴）
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P2
 - **负责人**: 待领取

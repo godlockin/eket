@@ -3,7 +3,7 @@ id: TASK-239
 title: "P0 — SKILL.md RAG 化：减少 SessionStart context 注入"
 type: feature
 priority: P0
-status: backlog
+status: done
 created: 2026-05-03
 epic: context-optimization
 ---

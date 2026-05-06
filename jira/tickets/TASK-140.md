@@ -1,7 +1,7 @@
 # TASK-140: DAG 中间件能力重建（Rust 或 Node）
 
 ## 元数据
-- **状态**: backlog
+- **状态**: done
 - **类型**: feature / refactor
 - **优先级**: P2
 - **创建时间**: 2026-04-21
