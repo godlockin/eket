@@ -202,6 +202,42 @@ impl InstanceRegistry {
         Ok(())
     }
 
+    /// Set instance status (idle/busy/offline).
+    pub async fn set_status(&self, instance_id: &str, status: &str) -> EketResult<()> {
+        let db = Arc::clone(&self.db);
+        let id = instance_id.to_string();
+        let s = status.to_string();
+
+        tokio::task::spawn_blocking(move || {
+            let conn = db.pool().get()?;
+            conn.execute(
+                "UPDATE slaver_instances SET status = ?1 WHERE id = ?2",
+                params![s, id],
+            )?;
+            Ok::<_, EketError>(())
+        })
+        .await
+        .map_err(|e| EketError::Other(e.to_string()))??;
+
+        // Sync Redis cache
+        if self.redis.is_available() {
+            let key = format!("{}{}", REDIS_KEY_PREFIX, instance_id);
+            if let Ok(Some(val)) = self.redis.get(&key).await {
+                // Update status field in cached JSON
+                if let Ok(mut obj) = serde_json::from_str::<serde_json::Value>(&val) {
+                    obj["status"] = serde_json::json!(status);
+                    let _ = self
+                        .redis
+                        .set(&key, &obj.to_string(), Some(HEARTBEAT_TTL_SECS))
+                        .await;
+                }
+            }
+        }
+
+        debug!("Set status {} for instance {}", status, instance_id);
+        Ok(())
+    }
+
     /// Save execution state for a ticket (upsert).
     pub async fn save_execution_state(
         &self,
@@ -440,5 +476,41 @@ mod tests {
         let reg = make_registry();
         let result = reg.get_execution_state("TASK-NONE").await.unwrap();
         assert!(result.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_set_status_updates_db() {
+        let reg = make_registry();
+        // Register slaver as busy
+        reg.register(sample_instance("slaver-test", "slaver", "busy"))
+            .await
+            .unwrap();
+
+        // Set status to idle
+        reg.set_status("slaver-test", "idle").await.unwrap();
+
+        // Verify status changed in DB
+        let all = reg.discover(None).await.unwrap();
+        let found = all.iter().find(|i| i.id == "slaver-test");
+        assert!(found.is_some(), "slaver should be discoverable");
+        assert_eq!(found.unwrap().status, "idle");
+    }
+
+    #[tokio::test]
+    async fn test_set_status_idle_after_task_complete() {
+        let reg = make_registry();
+        // Simulate task:claim → busy
+        reg.register(sample_instance("slaver-complete", "slaver", "busy"))
+            .await
+            .unwrap();
+
+        // Simulate task:complete → idle
+        reg.set_status("slaver-complete", "idle").await.unwrap();
+
+        // Verify idle slaver is immediately discoverable (not waiting for 90s TTL)
+        let slavers = reg.discover(Some("slaver")).await.unwrap();
+        assert_eq!(slavers.len(), 1);
+        assert_eq!(slavers[0].id, "slaver-complete");
+        assert_eq!(slavers[0].status, "idle");
     }
 }

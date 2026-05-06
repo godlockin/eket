@@ -449,6 +449,21 @@ pub async fn run_complete(args: CompleteArgs) -> Result<()> {
         // Step 8: 累计 complete 计数，达到阈值触发 knowledge index 重建
         maybe_rebuild_knowledge_index(&result.state.project_root);
 
+        // Step 9: 更新 slaver 状态为 idle（如果有 slaver_id）
+        {
+            use eket_core::redis::EketRedisClient;
+            use eket_core::registry::InstanceRegistry;
+            if let Ok(pool) = create_pool(&result.state.db_path) {
+                let db = Arc::new(SqliteClient::new(pool));
+                let redis = Arc::new(EketRedisClient::new_unavailable());
+                let registry = InstanceRegistry::new(db, redis);
+                if let Err(e) = registry.set_status(&result.state.slaver_id, "idle").await {
+                    eprintln!("[WARN] Failed to update slaver status to idle: {e}");
+                    // 不中断流程，status 降级由 heartbeat 兜底
+                }
+            }
+        }
+
         // Step 10: fire task.completed webhooks (non-blocking, failures → warn only)
         {
             use eket_core::webhook::{WebhookEvent, dispatch_event};

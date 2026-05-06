@@ -551,6 +551,19 @@ export function registerComplete(program: Command): void {
       // Update ticket status
       updateTicketStatus(projectRoot, ticketId, 'done');
 
+      // Update slaver status to idle (TASK-269)
+      try {
+        const dbPath = path.join(projectRoot, '.eket/state/eket.db');
+        const db = createSQLiteClient(dbPath);
+        await db.run(
+          'UPDATE slaver_instances SET status = ? WHERE id = ?',
+          ['idle', slaverId]
+        );
+      } catch (e: unknown) {
+        console.warn(`[slaver-status] Failed to update status to idle: ${(e as Error).message ?? e}`);
+        // Non-fatal: heartbeat 兜底
+      }
+
       // Report skill feedback (TASK-104b)
       await reportSkillFeedback(projectRoot, ticketId, slaverId);
 
