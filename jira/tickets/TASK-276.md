@@ -1,7 +1,7 @@
 # TASK-276: 身份检测优化 - 支持同目录多 Master/Slaver 实例
 
 ## 元数据
-**状态**: in_progress
+**状态**: done
 - **类型**: feature
 - **优先级**: P1
 **负责人**: slaver_1776695133821_534ccf79
@@ -273,3 +273,14 @@ SLAVER_LAST_REFRESH=2026-05-06T00:24:06.772135+00:00
 ### 下一步
 
 Master 审核 PR 后合并到 `testing` → `main` → `miao`。
+
+## Summary
+
+> 自动生成摘要（rule-based）
+
+| 项 | 内容 |
+|---|---|
+| Ticket | TASK-276: 身份检测优化 - 支持同目录多 Master/Slaver 实例 |
+| 测试结果 | — |
+| PR | — |
+| 知识沉淀 | — |
