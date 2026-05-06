@@ -1,11 +1,12 @@
 # TASK-272: 统一 DB schema - tickets vs ticket_index 表结构对齐
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P0
-- **负责人**: 待认领
+- **负责人**: slaver-rust-node-backend
 - **创建时间**: 2026-05-05
+- **完成时间**: 2026-05-06
 - **依赖**: []
 - **所需专家**: rust, node, backend
 - blocked_by: []
@@ -13,15 +14,35 @@
 
 ## 背景
 
-（待填写）
+两套表并存导致 priority 字段类型冲突：
+- `tickets` (Rust 写)：priority TEXT
+- Node.js `syncToSqlite()` 写 tickets 时用 priority_text + priority INTEGER（冗余）
 
 ## 验收标准
 
-- [ ] （待填写）
+- [x] 废弃 Node.js 中 priority_text 列
+- [x] Node.js syncToSqlite 改为写 priority TEXT
+- [x] Rust 迁移逻辑确保 INTEGER → TEXT
+- [x] 现有数据全部迁移
+- [x] cargo test 通过
 
 ## 技术方案
 
-（待填写）
+**方案 A（已实施）**：统一使用 `tickets` 表，priority 类型统一为 TEXT
+
+### Rust 部分
+- schema.sql 已定义 priority TEXT（L8）
+- 迁移逻辑（db/mod.rs L143-159）：UPDATE tickets SET priority = 'P0'/'P1'/'P2' WHERE typeof(priority)='integer'
+
+### Node.js 部分
+- `node/src/commands/ticket-index.ts:516-543`
+- CREATE TABLE tickets 改为 priority TEXT（废弃 priority_text + priority INTEGER）
+- INSERT 语句改为直接写 priority TEXT
+
+### 验收结果
+- 迁移数据：0 条 INTEGER 残留（全部已转为 TEXT）
+- 新创建：priority='P2' (TEXT)
+- 测试：cargo test db::tests::ticket_create_and_get PASSED
 
 ## 问题诊断
 
