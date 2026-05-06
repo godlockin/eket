@@ -140,20 +140,23 @@ fn run_migrations(pool: &DbPool) -> EketResult<()> {
         "CREATE INDEX IF NOT EXISTS idx_tickets_source ON tickets(source);"
     )?;
 
-    // TASK-272: Migrate priority INTEGER → TEXT (向后兼容)
-    if !ticket_cols.iter().any(|c| c == "priority_text") {
-        conn.execute_batch("ALTER TABLE tickets ADD COLUMN priority_text TEXT;")?;
-        // Backfill: 0→P0, 1→P1, 2→P2, NULL→P2
-        conn.execute_batch(
-            "UPDATE tickets SET priority_text = CASE priority
-                WHEN 0 THEN 'P0'
-                WHEN 1 THEN 'P1'
-                WHEN 2 THEN 'P2'
-                ELSE 'P2'
-            END WHERE priority_text IS NULL;"
-        )?;
-        debug!("Migrated priority INTEGER → priority_text TEXT");
-    }
+    // TASK-272: Backfill priority column for legacy rows (if stored as INT)
+    // schema.sql already defines priority as TEXT, so we just ensure existing data is TEXT format
+    conn.execute_batch(
+        "UPDATE tickets SET priority =
+            CASE
+                WHEN typeof(priority) = 'integer' THEN
+                    CASE priority
+                        WHEN 0 THEN 'P0'
+                        WHEN 1 THEN 'P1'
+                        WHEN 2 THEN 'P2'
+                        ELSE 'P2'
+                    END
+                ELSE priority
+            END
+        WHERE typeof(priority) = 'integer';"
+    )?;
+    debug!("TASK-272: Backfilled priority INTEGER → TEXT");
 
     debug!("SQLite migrations applied");
     Ok(())
@@ -373,7 +376,7 @@ impl SqliteClient {
     }
 
     /// Create new ticket with explicit source (TASK-255).
-    /// TASK-272: 统一写 priority_text (TEXT)，保留 priority (INTEGER) 用于向后兼容
+    /// TASK-272: priority 直接存 TEXT (P0/P1/P2)，废弃 priority_text 列
     pub fn create_ticket_with_source(
         &self,
         id: &str,
@@ -385,17 +388,10 @@ impl SqliteClient {
         let conn = self.pool.get()?;
         let now = chrono::Utc::now().to_rfc3339();
 
-        // Convert priority string (P0/P1/P2) to integer for legacy DB compatibility
-        let priority_int: i32 = match priority {
-            "P0" => 0,
-            "P1" => 1,
-            "P2" | _ => 2,
-        };
-
         conn.execute(
-            "INSERT INTO tickets (id, title, priority, priority_text, type, status, source, created_at, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, 'todo', ?6, ?7, ?7)",
-            params![id, title, priority_int, priority, ticket_type, source, now],
+            "INSERT INTO tickets (id, title, priority, type, status, source, created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, 'todo', ?5, ?6, ?6)",
+            params![id, title, priority, ticket_type, source, now],
         )?;
         Ok(())
     }
@@ -445,13 +441,11 @@ impl SqliteClient {
     }
 
     /// Get ticket as raw TicketRow.
-    /// TASK-272: 优先读 priority_text，fallback 到 priority (INTEGER → TEXT 转换)
+    /// TASK-272: 直接读 priority (TEXT)，无需 fallback
     pub fn get_ticket_row(&self, id: &str) -> EketResult<Option<TicketRow>> {
         let conn = self.pool.get()?;
         let mut stmt = conn.prepare(
-            "SELECT id, title, status,
-                    COALESCE(priority_text, CASE priority WHEN 0 THEN 'P0' WHEN 1 THEN 'P1' ELSE 'P2' END) as priority,
-                    assignee, type,
+            "SELECT id, title, status, priority, assignee, type,
                     strftime('%s', created_at) as created_ts,
                     strftime('%s', updated_at) as updated_ts,
                     COALESCE(source, 'cli'),
@@ -498,9 +492,7 @@ impl SqliteClient {
         };
 
         let sql = format!(
-            "SELECT id, title, status,
-                    COALESCE(priority_text, CASE priority WHEN 0 THEN 'P0' WHEN 1 THEN 'P1' ELSE 'P2' END) as priority,
-                    assignee, type,
+            "SELECT id, title, status, priority, assignee, type,
                     strftime('%s', created_at) as created_ts,
                     strftime('%s', updated_at) as updated_ts,
                     COALESCE(source, 'cli'),
