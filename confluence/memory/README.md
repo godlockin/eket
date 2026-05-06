@@ -6,10 +6,12 @@
 |------|------|---------|
 | `patterns/` | 可复用的架构模式、解法模式 | 发现通用解法时 |
 | `pitfalls/` | 踩坑记录与解法 | 遇到非显然问题时 |
-| `glossary/` | 领域术语定义 | 引入新术语时 |
-| `research/` | 研究性长文档（借鉴分析、深度调研） | 完成专项研究时 |
 | `lessons/` | 实战经验教训（简短提炼） | 每轮复盘后 |
-| `retrospectives/` | Sprint/PR 复盘记录 | 每个 Sprint 结束 |
+| `research/` | 研究性长文档（借鉴分析、深度调研） | 完成专项研究时 |
+| `guides/` | SOP 模板与操作指南 | 编写流程规范时 |
+| `glossary/` | 领域术语定义 | 引入新术语时 |
+| `retrospectives/` | Sprint/PR/EPIC 复盘记录 | 每个里程碑结束 |
+| `archive/` | 归档低引用/过期文档 | GC 触发时 |
 
 ## Slaver 使用指引
 
@@ -17,18 +19,23 @@
 1. 遇到坑 → `pitfalls/`
 2. 发现通用解法 → `patterns/`
 3. 单次 ticket/任务经验教训 → `lessons/`
-4. Sprint/PR 复盘 → `retrospectives/2026/`
-5. 引入新术语 → `glossary/terms.md`
+4. Sprint/PR/EPIC 复盘 → `retrospectives/{sprints,prs,epics}/`
+5. 编写 SOP/操作指南 → `guides/`
+6. 引入新术语 → `glossary/terms.md`
 
 > **注意**：`lessons/` 存放任务经验教训（含 ticket debrief），`research/` 存放研究性长文（外部借鉴分析、深度调研报告）。两者勿混淆。
 
 ## 文件命名规范
 
-- `patterns/`：`{主题}.md`，如 `three-level-degradation.md`
-- `pitfalls/`：`{症状描述}.md`，如 `async-test-leak.md`
-- `retrospectives/`：`{YYYYMMDD}-{TASK-ID}.md` 或 `sprint-{N}-retro.md`
-- `lessons/`：`{主题}.md`（lowercase-kebab）
-- `research/`：`{主题}.md`（lowercase-kebab）
+- `patterns/`：`{主题}.md`（lowercase-kebab），如 `three-level-degradation.md`
+- `pitfalls/`：`{症状描述}.md`（lowercase-kebab），如 `async-test-leak.md`
+- `lessons/`：`{主题}.md`（lowercase-kebab），如 `slaver-exit-cleanup.md`
+- `research/`：`{主题}.md`（lowercase-kebab），如 `redis-architecture.md`
+- `guides/`：`{主题}.md`（lowercase-kebab），如 `branch-strategy.md`
+- `retrospectives/sprints/`：`sprint-{N}.md`，如 `sprint-001.md`
+- `retrospectives/epics/`：`EPIC-{NNN}.md`，如 `EPIC-002.md`
+- `retrospectives/prs/2026/`：`PR{N}-TASK-{NNN}.md`，如 `PR75-TASK-050.md`
+- `retrospectives/2026/`：`{MM}-{主题}.md`，如 `05-lessons-learned.md`
 
 ---
 
