@@ -164,6 +164,9 @@ jobs:
       - name: Install dependencies
         run: cd node && npm ci
 
+      - name: Build TypeScript
+        run: cd node && npm run build
+
       - name: Build with pkg
         run: |
           cd node
