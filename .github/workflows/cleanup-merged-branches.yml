@@ -1,0 +1,38 @@
+name: Cleanup Merged Branches
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    # 仅当 PR 被合并时执行
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete merged branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+        run: |
+          echo "PR #${{ github.event.pull_request.number }} 已合并"
+          echo "准备删除分支: $BRANCH_NAME"
+
+          # 检查是否为受保护分支
+          if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "testing" || "$BRANCH_NAME" == "miao" ]]; then
+            echo "⚠️  保护分支，跳过删除: $BRANCH_NAME"
+            exit 0
+          fi
+
+          # 删除远程分支
+          gh api \
+            --method DELETE \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/${{ github.repository }}/git/refs/heads/$BRANCH_NAME" \
+            && echo "✅ 已删除分支: $BRANCH_NAME" \
+            || echo "❌ 删除失败（分支可能已不存在）"
