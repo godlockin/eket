@@ -144,13 +144,13 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            target: node20-linux-x64
+            target: node18-linux-x64
             artifact: eket-node-linux-amd64
           - os: macos-latest
-            target: node20-macos-x64
+            target: node18-macos-x64
             artifact: eket-node-darwin-amd64
           - os: macos-14
-            target: node20-macos-arm64
+            target: node18-macos-arm64
             artifact: eket-node-darwin-arm64
 
     steps:
