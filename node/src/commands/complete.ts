@@ -555,10 +555,15 @@ export function registerComplete(program: Command): void {
       try {
         const dbPath = path.join(projectRoot, '.eket/state/eket.db');
         const db = createSQLiteClient(dbPath);
-        await db.run(
-          'UPDATE slaver_instances SET status = ? WHERE id = ?',
-          ['idle', slaverId]
-        );
+        const connectResult = db.connect();
+        if (!connectResult.success) {
+          throw connectResult.error;
+        }
+        db.execute('UPDATE slaver_instances SET status = ? WHERE id = ?', [
+          'idle',
+          slaverId,
+        ]);
+        db.close();
       } catch (e: unknown) {
         console.warn(`[slaver-status] Failed to update status to idle: ${(e as Error).message ?? e}`);
         // Non-fatal: heartbeat 兜底
