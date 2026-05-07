@@ -6,15 +6,33 @@
 
 ---
 
-## ✅ 保留（职责明确）
+## ✅ 保留（职责明确，无冗余）
 
-| 目录 | 职责 | 说明 |
-|------|------|------|
-| `template/` | EKET 框架完整模板 | 供 `eket init` 复制到新项目 |
-| `templates/` | Handlebars 动态模板 | .hbs 文件，代码生成用 |
-| `tests/` | 测试套件 | 单元/集成/压力/烟雾测试 |
+### 1. template/ vs templates/
 
-**对比**: template/ vs templates/ — 完整模板 vs 动态模板（职责不同）
+| 目录 | 职责 | 格式 | 使用方 |
+|------|------|------|--------|
+| `template/` | EKET 框架完整模板 | .md (Markdown) | `eket init` 初始化新项目 |
+| `templates/` | 运行时动态模板 | .hbs (Handlebars) | Rust CLI 命令渲染 |
+
+**代码证据**:
+```rust
+// rust/crates/eket-cli/src/commands/epic_create.rs
+let t = dir.path().join("templates/jira");  // 使用 templates/
+let c = dir.path().join("templates/confluence");
+```
+
+**结论**: ✅ **职责完全不同，必须都保留**
+- `templates/` = 运行时模板引擎（9个 .hbs）
+- `template/` = 项目初始化框架（16子目录）
+
+### 2. tests/ ✅ 测试套件
+
+**内容**: 5子目录 + 9脚本
+- compat/, dry-run/, dual-engine/, fixtures/, integration/
+- run-*-tests.sh（单元/集成/压力/烟雾测试）
+
+**结论**: ✅ 核心测试基础设施，保留
 
 ---
 
@@ -42,4 +60,25 @@
 
 ---
 
-**根目录现在清爽、职责明确！** ✅
+## 最终根目录结构（已验证无冗余）
+
+```
+/
+├── template/          ✅ 框架完整模板（eket init 用）
+├── templates/         ✅ Handlebars 运行时模板（CLI 渲染用）
+├── tests/             ✅ 测试套件
+│   └── fixtures/      (已合并 test-fixtures/)
+├── docs/              ✅ 项目文档
+├── confluence/        ✅ 知识沉淀
+├── jira/              ✅ 票据管理
+├── node/              ✅ Node 实现
+├── rust/              ✅ Rust 实现
+├── scripts/           ✅ 项目脚本
+└── ...
+
+已删除:
+- .worktrees/          ❌ Worktree 残留
+- test-fixtures/       ❌ 重复 fixture 目录
+```
+
+**根目录现在清爽、职责明确、无冗余！** ✅
