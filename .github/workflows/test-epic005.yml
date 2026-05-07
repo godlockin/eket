@@ -33,7 +33,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            target: node20-linux-x64
+            target: node18-linux-x64
             artifact: eket-node-linux-amd64
 
     steps:
