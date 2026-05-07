@@ -11,20 +11,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **分支自动化清理机制**：PR 合并后自动删除源分支（`.github/workflows/cleanup-merged-branches.yml`）
 - **月度维护脚本**：自动清理已合并分支 + 健康度检查（`scripts/monthly-branch-cleanup.sh`）
 - **分支命名规范强制化**：统一使用 `feature/*` 前缀，禁止 feat/fix/chore/docs/sync 等
+- **Ticket 归档系统**：结构化归档已完成/废弃 tickets
+  - 归档索引：`jira/tickets/archive/INDEX.md`
+  - EPIC 级别归档（含 closure reviews）
+  - 架构决策保留机制
 
 ### Fixed
 - **Git Submodule 错误**：移除 `.claude/worktrees/agent-*` 误追踪（修复 CI checkout exit 128）
+- **Release Workflow 失败**：修复 5 次发布失败（submodule 错误导致）
 - **EPIC-005 完成**: SHA256 校验机制（TASK-426）+ TypeScript 编译错误（TASK-427）
 
 ### Changed
 - **分支大扫除**：删除 256 个过时分支（本地 97 + 远程 159），清理率 97.3%
+  - Phase 1: 77 feature 分支（深度审查 + 僵尸检测）
+  - Phases → 7 branches（3 local + 4 remote）
+- **Ticket 大清理**：归档 43 tickets，删除 6 tickets
+  - EPIC-003: 12 tickets 归档（CLOSED 2026-05-01）
+  - EPIC-005: 3 tickets 归档（2 completed, 1 superseded）
+  - 散落 done: 28 tickets 归档
+  - 删除：EPIC-001/feature（6 FEAT-xxx tickets，废弃示例项目）
+  - 结果：`jira/tickets/` 噪音降低 ~56%
 - **TASK-501 状态**：标记为 `superseded`（放弃 Node 预编译，改为 Rust-only）
-- **Inbox 清理**：归档 EPIC-005 相关文件
+- **Submodule 更新**：`eket-experts-extended` 更新至 commit `09af0b4`（59 files: 冲突解决 + 58 experts）
+
+### Removed
+- **EPIC-001/feature**：删除 6 个 FEAT-xxx tickets（废弃示例项目）
 
 ### Documentation
-- 新增 4 份分支清理报告（`confluence/memory/branch-cleanup-*.md`）
-- 新增月度维护计划（`docs/maintenance/monthly-branch-cleanup.md`）
-- 更新 CLAUDE.md 分支命名规范
+- **分支清理报告**：
+  - `confluence/memory/branch-cleanup-2026-05-07.md`（Phase 1）
+  - `confluence/memory/branch-cleanup-phase2-2026-05-07.md`（Phase 2）
+  - `confluence/memory/branch-cleanup-complete-2026-05-07.md`（完整总结）
+  - `confluence/memory/branch-cleanup-final-summary.md`（最终统计）
+- **Ticket 清理报告**：
+  - `confluence/memory/ticket-cleanup-report-2026-05-07.md`（分析 + 建议）
+  - `confluence/memory/ticket-archive-execution-log-2026-05-07.md`（执行日志）
+  - `jira/tickets/archive/INDEX.md`（归档索引）
+- **月度维护计划**：`docs/maintenance/monthly-branch-cleanup.md`
+- **经验教训**：`confluence/memory/lessons-learned-branch-cleanup-2026-05-07.md`
+- **CLAUDE.md 更新**：分支命名规范
+
+### EPIC Status
+- **EPIC-003**: ✅ CLOSED（2026-05-01），归档 12 tickets
+  - Skill anatomy 标准化完成
+  - 8 PRs 合并，main↔miao 内容一致
+- **EPIC-005**: 7/8 tasks 完成（87.5%）
+  - ✅ M0: 紧急修复（TASK-427, TASK-426）
+  - ✅ M1: CI 自动化（TASK-501, TASK-502）
+  - ✅ M2: 本地安装（TASK-505, TASK-506）
+  - ⏸️ M3: UX 改进（TASK-508 待执行）
+  - ❌ TASK-501: Superseded（Node pkg 预编译因 ESM 不兼容废弃）
 
 ---
 
