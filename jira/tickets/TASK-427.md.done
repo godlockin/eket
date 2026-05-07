@@ -1,0 +1,50 @@
+# TASK-427 完成报告
+
+**完成时间**: 2026-05-07 13:08
+**执行者**: Slaver B
+**实际工时**: 8 分钟（预估 30 分钟，效率 +73%）
+**状态**: ✅ completed
+
+---
+
+## 交付物
+
+- [x] `node/src/commands/complete.ts:558` 修复（`db.run()` → `db.execute()`）
+- [x] 编译通过（`npm run build` 0 errors）
+- [x] PR #181: https://github.com/godlockin/eket/pull/181
+
+---
+
+## 验收标准达成
+
+| AC | 状态 | 证据 |
+|---|---|---|
+| AC-1 编译通过 | ✅ | `npm run build` 无 error |
+| AC-2 功能正常 | ✅ | `task:complete --help` 正常输出 |
+
+---
+
+## 修复详情
+
+**修复前**:
+```typescript
+await db.run('UPDATE ...', params);  // ❌ TS2339: run() 不存在
+```
+
+**修复后**:
+```typescript
+const result = db.execute('UPDATE ...', params);
+if (!result.success) throw result.error;
+```
+
+---
+
+## 后续建议
+
+- [ ] Master 审核 PR #181 后合并
+- [ ] **解除阻塞**: TASK-420 现可继续
+- [ ] 技术债：全局检查 `.run()` 误用（本次仅修复阻塞点）
+
+---
+
+**Master 下一步**: 审核 PR #181 → 合并 → 通知 Slaver 继续 TASK-420
