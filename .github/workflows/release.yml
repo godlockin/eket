@@ -212,6 +212,54 @@ jobs:
           # 验证
           ls -lh eket-* | head -10
 
+      - name: Package skills
+        run: |
+          # 打包 skills 目录
+          tar -czf eket-skills.tar.gz -C .claude/skills eket/
+          sha256sum eket-skills.tar.gz > eket-skills.tar.gz.sha256
+          echo "✅ Skills 打包完成:"
+          ls -lh eket-skills.tar.gz*
+
+      - name: Generate install.sh
+        run: |
+          # 提取版本号
+          VERSION=${GITHUB_REF_NAME}
+          GENERATED_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
+          # 读取所有 sha256（提取第一列）
+          RUST_LINUX_SHA256=$(awk '{print $1}' eket-linux-x64.sha256)
+          RUST_DARWIN_ARM_SHA256=$(awk '{print $1}' eket-macos-arm64.sha256)
+          RUST_DARWIN_AMD_SHA256=$(awk '{print $1}' eket-macos-x64.sha256)
+          NODE_LINUX_SHA256=$(awk '{print $1}' eket-node-linux-amd64.sha256)
+          NODE_DARWIN_ARM_SHA256=$(awk '{print $1}' eket-node-darwin-arm64.sha256)
+          NODE_DARWIN_AMD_SHA256=$(awk '{print $1}' eket-node-darwin-amd64.sha256)
+
+          # 验证变量非空
+          for var in RUST_LINUX_SHA256 RUST_DARWIN_ARM_SHA256 RUST_DARWIN_AMD_SHA256 \
+                     NODE_LINUX_SHA256 NODE_DARWIN_ARM_SHA256 NODE_DARWIN_AMD_SHA256; do
+            if [ -z "${!var}" ]; then
+              echo "❌ 变量 $var 为空"
+              exit 1
+            fi
+          done
+
+          # 导出变量（供 envsubst 使用）
+          export VERSION GENERATED_TIME
+          export RUST_LINUX_SHA256 RUST_DARWIN_ARM_SHA256 RUST_DARWIN_AMD_SHA256
+          export NODE_LINUX_SHA256 NODE_DARWIN_ARM_SHA256 NODE_DARWIN_AMD_SHA256
+
+          # 转换占位符格式：{{VAR}} -> $VAR
+          sed 's/{{\([^}]*\)}}/\$\1/g' scripts/install-template.sh | envsubst > install.sh
+          chmod +x install.sh
+
+          # 验证生成结果
+          echo "✅ install.sh 已生成"
+          echo "--- 前 30 行预览 ---"
+          head -30 install.sh
+          echo ""
+          echo "--- 变量替换验证 ---"
+          grep -E "(VERSION=|SHA256_MAP=)" install.sh | head -5
+
       - name: Extract version from tag
         id: version
         run: |
@@ -271,3 +319,5 @@ jobs:
           files: |
             eket-*
             *.sha256
+            install.sh
+            eket-skills.tar.gz
