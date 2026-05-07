@@ -96,7 +96,7 @@
 | 资源 | 路径 |
 |------|------|
 | 项目知识库 | [confluence/memory/memory-index.md](../confluence/memory/memory-index.md) |
-| Ticket 模板 | [jira/templates/](../jira/templates/) |
+| Ticket 模板 | [template/jira/templates/](../template/jira/templates/) |
 | 框架模板 | [template/README.md](../template/README.md) |
 | 协议规范 | [protocol/README.md](../protocol/README.md) |
 | CLAUDE.md | [../CLAUDE.md](../CLAUDE.md) |
