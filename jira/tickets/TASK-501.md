@@ -1,6 +1,7 @@
 # TASK-501: CI 编译 Rust + Node（调整 release.yml）
 
-**EPIC**: EPIC-005 | **Milestone**: M1 | **优先级**: P0 | **工时**: 6h | **状态**: ready | **依赖**: TASK-427 ✅
+**EPIC**: EPIC-005 | **Milestone**: M1 | **优先级**: P0 | **工时**: 6h | **状态**: superseded | **依赖**: TASK-427 ✅  
+**完成时间**: 2026-05-07
 
 ## 需求
 调整 `.github/workflows/release.yml`，确保 Rust + Node 都编译并生成跨平台 binaries。
@@ -81,3 +82,27 @@ create-release:  # 调整现有 job
 
 ## 时限
 **6h** 内完成
+
+---
+
+## 架构决策变更
+
+**时间**: 2026-05-07 15:22  
+**决策**: 放弃 Node 预编译，改为 Rust-only 预编译方案  
+**原因**: `pkg` 工具不支持 ESM（ES Modules），Node.js 项目已全面采用 ESM 无法降级
+
+**替代实现**:
+- **简版安装**: Rust 预编译包（~10 MB）+ 本地 `npm install` Node 依赖
+- **研发版安装**: 本地编译 Rust + Node（完整源码）
+- **安装脚本**: `scripts/install-template-rust-only.sh`
+
+**相关提交**: 
+- `279137dc0` — refactor(ci): simplify to Rust-only prebuilt [EPIC-005]
+- `.github/workflows/release.yml` 已移除 `build-node` job
+
+**AC 达成情况**:
+- ✅ AC-1: Rust 编译验证（已实现）
+- ❌ AC-2: Node pkg 打包（技术不可行，已放弃）
+- ✅ AC-3: sha256 生成（已实现，仅针对 Rust binary）
+
+**最终方案**: EPIC-005 采用 Rust-only 预编译 + Node 源码安装的混合模式
