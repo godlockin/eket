@@ -39,6 +39,61 @@ NC='\033[0m'
 INSTALL_MODE=""  # "" = interactive, "minimal" = level1 only, "full" = all levels
 
 # ─────────────────────────────────────────────
+# 通用下载 + sha256 校验函数
+# ─────────────────────────────────────────────
+download_and_verify() {
+  local url=$1
+  local dest=$2
+
+  echo "  → 下载: $url"
+  if ! curl -fsSL "$url" -o "$dest" 2>/dev/null; then
+    echo -e "${RED}  ✗ 下载失败: $url${NC}"
+    return 1
+  fi
+
+  # 尝试下载 sha256 校验文件
+  if curl -fsSL "$url.sha256" -o "$dest.sha256" 2>/dev/null; then
+    echo "  → 校验 sha256..."
+
+    local expected actual
+    expected=$(cat "$dest.sha256" | awk '{print $1}')
+
+    # 检测 sha256sum 或 shasum 命令
+    if command -v sha256sum >/dev/null 2>&1; then
+      actual=$(sha256sum "$dest" | awk '{print $1}')
+    elif command -v shasum >/dev/null 2>&1; then
+      actual=$(shasum -a 256 "$dest" | awk '{print $1}')
+    else
+      echo -e "${RED}  ✗ 缺少 sha256sum/shasum 命令，无法校验${NC}"
+      rm -f "$dest" "$dest.sha256"
+      return 1
+    fi
+
+    if [[ "$expected" != "$actual" ]]; then
+      echo -e "${RED}  ✗ SHA256 校验失败！${NC}"
+      echo "    期望: $expected"
+      echo "    实际: $actual"
+      echo "    可能原因: 文件被篡改或传输错误"
+      rm -f "$dest" "$dest.sha256"
+      return 1
+    fi
+
+    echo -e "  ${GREEN}✓ SHA256 校验通过${NC}"
+    rm -f "$dest.sha256"
+  else
+    echo -e "${YELLOW}  ⚠ 警告: 无法下载校验文件 $url.sha256${NC}"
+    echo "    当前无法验证文件完整性（可能是旧版本 Release）"
+    read -rp "    是否继续安装？[y/N] " CONTINUE
+    if [[ "$CONTINUE" != "y" ]]; then
+      rm -f "$dest"
+      return 1
+    fi
+  fi
+
+  return 0
+}
+
+# ─────────────────────────────────────────────
 # Level 1: Shell 基础环境（始终运行）
 # ─────────────────────────────────────────────
 level1_install() {
@@ -187,10 +242,10 @@ download_prebuilt_binary() {
     download_url="${base_url}/download/${version}/${artifact}"
   fi
 
-  echo "  → 下载预编译 binary：$download_url"
   local tmp_bin
   tmp_bin=$(mktemp)
-  if curl -fsSL "$download_url" -o "$tmp_bin" 2>/dev/null; then
+
+  if download_and_verify "$download_url" "$tmp_bin"; then
     chmod +x "$tmp_bin"
     mkdir -p "$HOME/.local/bin"
     mv "$tmp_bin" "$HOME/.local/bin/eket"
