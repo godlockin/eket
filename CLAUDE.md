@@ -39,6 +39,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **红线**：每次 push 后必须同步三分支：`feature → testing → main → miao`，禁止遗漏
 - **红线**：`SKILL.md` 只能改源文件 `eket/.claude/skills/eket/SKILL.md`，改完执行 `bash scripts/install-skill.sh --update` 部署；禁止直接改 `~/.claude/skills/eket/SKILL.md`
 
+#### 分支命名规范（强制）
+
+**唯一前缀**: `feature/*`  
+**命名格式**: `feature/TASK-{ID}-{description}`  
+**示例**: `feature/TASK-123-add-user-login`
+
+**禁止使用**:
+- ❌ `feat/`, `fix/`, `chore/`, `docs/` 等其他前缀
+- ❌ 非标准命名（`pr96`, `retro-inbox`, `worktree-*`）
+- ❌ 无 TASK 编号的分支
+
+**例外**: 仅 `main`, `testing`, `miao` 三个主分支不受此限制
+
 ### Ticket 职责边界
 
 | Master 填写 | Slaver 填写 |
