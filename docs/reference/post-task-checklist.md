@@ -12,7 +12,7 @@
 
 ---
 
-## ✅ 4 项强制检查
+## ✅ 4 项强制检查 + 1 项补充
 
 ### 1️⃣ 文档是否更新？
 
@@ -250,3 +250,66 @@ bash scripts/post-task-check.sh
 ---
 
 **关键**: 养成习惯，**每批任务完成后自动执行 4 项检查**，而非等用户追问。
+
+---
+
+## 🔥 补充检查（本次新增）
+
+### 5️⃣ 编译产物是否被 git 追踪？
+
+**检查命令**:
+```bash
+# 检查是否有编译产物被追踪
+git ls-files | grep -E "dist/|coverage/|target/|node_modules/|__pycache__/" | wc -l
+# 期望: 0
+
+# 检查物理大小
+du -sh rust/target node/dist node/coverage sdk/*/dist 2>/dev/null
+```
+
+**常见问题**:
+- ❌ rust/target/ (13G, 36,801 文件)
+- ❌ node/coverage/ (8M, 164 文件)
+- ❌ sdk/*/dist/ (22 文件)
+
+**修复**:
+```bash
+git rm -r --cached rust/target/ node/coverage/ sdk/*/dist/
+git commit -m "fix: 清理编译产物"
+```
+
+**本次发现**（2026-05-07）:
+- rust/target/: 36,801 文件（13G）被追踪 ❌
+- node/coverage/: 164 文件被追踪 ❌
+- SDK dist/: 22 文件被追踪 ❌
+- 累计清理: **36,987 个编译产物**
+
+**教训**:
+> **每批任务完成后，必须检查 git ls-files 是否有编译产物！**
+> **即使 .gitignore 有规则，历史 commit 可能已追踪。**
+
+---
+
+## 📊 检查清单总结（5项）
+
+```bash
+#!/bin/bash
+# scripts/post-task-check.sh（完整版）
+
+echo "## 1️⃣ 文档"
+git status --short | grep "\.md$" | wc -l
+
+echo "## 2️⃣ Skill"
+diff .claude/skills/eket/SKILL.md ~/.claude/skills/eket/SKILL.md >/dev/null 2>&1 && echo "✅" || echo "⚠️"
+
+echo "## 3️⃣ 经验教训"
+find confluence/memory/{lessons,pitfalls,patterns}/ -name "*.md" -mtime -1 2>/dev/null | wc -l
+
+echo "## 4️⃣ 提交推送"
+git status | grep -q "nothing to commit" && echo "✅" || echo "⚠️"
+
+echo "## 5️⃣ 编译产物"
+git ls-files | grep -E "dist/|coverage/|target/" | wc -l  # 期望: 0
+```
+
+---
