@@ -27,6 +27,17 @@
     "agent",
     "framework"
   ],
+  "bin": "dist/index.js",
+  "pkg": {
+    "assets": [
+      "node_modules/better-sqlite3/**/*.node"
+    ],
+    "targets": [
+      "node20-linux-x64",
+      "node20-macos-arm64",
+      "node20-macos-x64"
+    ]
+  },
   "author": "EKET Framework Team",
   "license": "MIT",
   "dependencies": {

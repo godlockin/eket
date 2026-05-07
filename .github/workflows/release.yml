@@ -136,11 +136,55 @@ jobs:
           name: ${{ matrix.artifact }}
           path: ${{ matrix.artifact }}
 
+  # ─── Node.js standalone binary 编译 ─────────────────────────────────────────
+  build-node:
+    name: Build Node.js binary (${{ matrix.artifact }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: node20-linux-x64
+            artifact: eket-node-linux-amd64
+          - os: macos-latest
+            target: node20-macos-x64
+            artifact: eket-node-darwin-amd64
+          - os: macos-14
+            target: node20-macos-arm64
+            artifact: eket-node-darwin-arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: cd node && npm ci
+
+      - name: Build with pkg
+        run: |
+          cd node
+          npx pkg . --targets ${{ matrix.target }} --output ../${{ matrix.artifact }}
+
+      - name: Verify binary
+        run: |
+          chmod +x ${{ matrix.artifact }}
+          ./${{ matrix.artifact }} --version
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+
   # ─── GitHub Release 创建 ────────────────────────────────────────────────────
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [publish-pypi, publish-npm, build-binary]
+    needs: [publish-pypi, publish-npm, build-binary, build-node]
     permissions:
       contents: write
 
@@ -154,6 +198,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+
+      - name: Flatten artifacts and generate SHA256
+        run: |
+          # 拉平目录结构
+          find artifacts -type f -name 'eket-*' -exec mv {} . \;
+
+          # 生成 sha256
+          for file in eket-*; do
+            sha256sum "$file" > "$file.sha256"
+          done
+
+          # 验证
+          ls -lh eket-* | head -10
 
       - name: Extract version from tag
         id: version
@@ -199,9 +256,18 @@ jobs:
             - npm: `npm install eket-sdk`
 
             **Pre-built binaries:**
-            - Linux x64: `eket-linux-x64`
-            - macOS arm64: `eket-macos-arm64`
-            - macOS x64: `eket-macos-x64`
+            - Linux x64: `eket-linux-x64` (Rust), `eket-node-linux-amd64` (Node.js)
+            - macOS arm64: `eket-macos-arm64` (Rust), `eket-node-darwin-arm64` (Node.js)
+            - macOS x64: `eket-macos-x64` (Rust), `eket-node-darwin-amd64` (Node.js)
+
+            **Installation:**
+            ```bash
+            curl -fsSL https://github.com/godlockin/eket/releases/download/${{ steps.version.outputs.version }}/install.sh | bash
+            ```
+
+            SHA256 checksums available for all binaries.
           draft: false
           prerelease: ${{ steps.prerelease.outputs.is_prerelease == 'true' }}
-          files: artifacts/**/*
+          files: |
+            eket-*
+            *.sha256
