@@ -352,7 +352,7 @@
 | templates/ | |
 | templates/confluence/ | |
 | templates/jira/ | |
-| test-fixtures/ | |
+| ~~test-fixtures/~~ | 已合并到 tests/fixtures/ |
 | tests/ | |
 | tests/compat/ | |
 | tests/compat/cases/ | |
