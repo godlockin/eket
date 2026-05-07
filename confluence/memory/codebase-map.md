@@ -226,7 +226,7 @@
 | jira/archive/ | |
 | jira/decisions/ | |
 | jira/epics/ | |
-| jira/templates/ | |
+| ~~jira/templates/~~ | 已删除，统一用 template/jira/templates/ |
 | jira/tickets/ | |
 | jira/tickets/EPIC-002/ | |
 | jira/tickets/EPIC-003/ | |
