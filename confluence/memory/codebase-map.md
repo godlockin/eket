@@ -241,6 +241,7 @@
 | jira/tickets/EPIC-005/ | |
 | jira/tickets/feature/ | |
 | jira/tickets/TASK-426/ | |
+| jira/tickets/TASK-505/ | |
 | k6/ | |
 | k6/reports/ | |
 | k8s/ | |
