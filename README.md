@@ -37,35 +37,33 @@
 
 ## 🚀 Quick Start
 
-### Rust CLI (Recommended — ~21ms/cmd)
+### 一键安装（推荐）
+
+下载预编译包，无需任何编译环境：
 
 ```bash
-# Build and install
-cd rust && cargo build --release
-cp target/release/eket ~/.local/bin/
-
-# Verify connectivity
-eket system:doctor
-
-# Register a Slaver and start working
-eket slaver:register --role backend --skills rust
-eket task:claim
+curl -fsSL https://github.com/godlockin/eket/releases/latest/download/install.sh | bash
 ```
 
-### Shell Mode (Zero dependencies)
+安装完成后验证：
 
 ```bash
-git clone https://github.com/godlockin/eket.git && cd eket
-./scripts/eket-start.sh --role master
+eket-rust --version  # Rust 版（~10 MB）
+eket-node --version  # Node 版（~50 MB）
+eket doctor          # 环境检查
 ```
 
-### Node.js Web Layer
+### 开发者本地编译
+
+如需修改源码或调试：
 
 ```bash
-cd node && npm install && npm run build
-node dist/index.js server:start        # starts Rust server + Node web layer
-node dist/index.js web:dashboard --port 3000
+git clone https://github.com/godlockin/eket.git
+cd eket
+bash scripts/dev-install.sh
 ```
+
+**详细安装指南**: [installation.md](docs/installation.md)
 
 ---
 
