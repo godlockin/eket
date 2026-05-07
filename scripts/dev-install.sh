@@ -26,13 +26,12 @@ cd "$PROJECT_ROOT"
 # ───────────────────────────────────────────────────────────────────────────
 # 加载依赖模块
 # ───────────────────────────────────────────────────────────────────────────
-# TODO: TASK-506 完成后取消注释
-# if [ -f "scripts/lib/install-skills.sh" ]; then
-#   source scripts/lib/install-skills.sh
-# else
-#   echo -e "${RED}✗ 依赖缺失: scripts/lib/install-skills.sh（TASK-506）${NC}"
-#   exit 1
-# fi
+if [ -f "scripts/lib/install-skills.sh" ]; then
+  source scripts/lib/install-skills.sh
+else
+  echo -e "${RED}✗ 依赖缺失: scripts/lib/install-skills.sh（TASK-506）${NC}"
+  exit 1
+fi
 
 # ───────────────────────────────────────────────────────────────────────────
 # 本地编译 Rust 版
@@ -139,39 +138,6 @@ EOF
 }
 
 # ───────────────────────────────────────────────────────────────────────────
-# Skills 安装（临时实现，等待 TASK-506）
-# ────────────────────
-install_skills_temp() {
-  echo -e "${BLUE}[Skills 安装]${NC}"
-
-  local source_dir="$PROJECT_ROOT/.claude/skills/eket"
-  local target_dir="$HOME/.claude/skills/eket"
-
-  if [ ! -d "$source_dir" ]; then
-    echo -e "  ${RED}✗ 源目录不存在: $source_dir${NC}"
-    return 1
-  fi
-
-  mkdir -p "$HOME/.claude/skills"
-
-  if cp -R "$source_dir" "$target_dir"; then
-    echo -e "  ${GREEN}✓ Skills 已复制到 $target_dir${NC}"
-
-    # 验证关键文件
-    if [ -f "$target_dir/SKILL.md" ]; then
-      echo "     → SKILL.md 已安装"
-      return 0
-    else
-      echo -e "  ${RED}✗ SKILL.md 未找到${NC}"
-      return 1
-    fi
-  else
-    echo -e "  ${RED}✗ Skills 复制失败${NC}"
-    return 1
-  fi
-}
-
-# ───────────────────────────────────────────────────────────────────────────
 # 主流程
 # ───────────────────────────────────────────────────────────────────────────
 main() {
@@ -196,8 +162,8 @@ main() {
   fi
   echo ""
 
-  # 安装 Skills（TODO: 等 TASK-506 完成后替换为 install_skills）
-  if install_skills_temp; then
+  # 安装 Skills（TASK-506 函数）
+  if install_skills; then
     skills_success=true
   fi
   echo ""
