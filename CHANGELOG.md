@@ -5,6 +5,29 @@ All notable changes to the EKET Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.19.0-beta] - 2026-05-07
+
+### Added
+- **分支自动化清理机制**：PR 合并后自动删除源分支（`.github/workflows/cleanup-merged-branches.yml`）
+- **月度维护脚本**：自动清理已合并分支 + 健康度检查（`scripts/monthly-branch-cleanup.sh`）
+- **分支命名规范强制化**：统一使用 `feature/*` 前缀，禁止 feat/fix/chore/docs/sync 等
+
+### Fixed
+- **Git Submodule 错误**：移除 `.claude/worktrees/agent-*` 误追踪（修复 CI checkout exit 128）
+- **EPIC-005 完成**: SHA256 校验机制（TASK-426）+ TypeScript 编译错误（TASK-427）
+
+### Changed
+- **分支大扫除**：删除 256 个过时分支（本地 97 + 远程 159），清理率 97.3%
+- **TASK-501 状态**：标记为 `superseded`（放弃 Node 预编译，改为 Rust-only）
+- **Inbox 清理**：归档 EPIC-005 相关文件
+
+### Documentation
+- 新增 4 份分支清理报告（`confluence/memory/branch-cleanup-*.md`）
+- 新增月度维护计划（`docs/maintenance/monthly-branch-cleanup.md`）
+- 更新 CLAUDE.md 分支命名规范
+
+---
+
 ## [Unreleased — Rust Migration] - 2026-04-26
 
 > 版本号策略调整：Rust 迁移完成后将发布 v3.0.0。
