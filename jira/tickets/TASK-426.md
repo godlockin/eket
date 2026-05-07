@@ -5,7 +5,7 @@
 **优先级**: 🔴 P0（阻塞所有后续 TASK）  
 **预估工时**: 2h  
 **实际工时**: 1.5h  
-**状态**: code-review  
+**状态**: done  
 **依赖**: 无  
 **发现来源**: DevOps 评审  
 **领取人**: Slaver A（Backend Developer）  
@@ -187,4 +187,4 @@ download_and_verify "$download_url" "$tmp_bin" || {
 ---
 
 **完成时间**: 2026/05/07  
-**状态**: 等待 Master Review
+**状态**: ✅ done（已合并到 main/testing/miao）
