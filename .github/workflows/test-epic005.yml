@@ -13,6 +13,12 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             artifact: eket-rust-linux-amd64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: eket-rust-darwin-arm64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact: eket-rust-darwin-amd64
 
     steps:
       - uses: actions/checkout@v4
@@ -21,28 +27,6 @@ jobs:
           targets: ${{ matrix.target }}
       - run: cd rust && cargo build --release --target ${{ matrix.target }}
       - run: cp rust/target/${{ matrix.target }}/release/eket ${{ matrix.artifact }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact }}
-          path: ${{ matrix.artifact }}
-
-  build-node:
-    name: Build Node (${{ matrix.artifact }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: node18-linux-x64
-            artifact: eket-node-linux-amd64
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: {node-version: '20'}
-      - run: cd node && npm ci
-      - run: cd node && npm run build
-      - run: cd node && npx pkg . --targets ${{ matrix.target }} --output ../${{ matrix.artifact }}
       - run: chmod +x ${{ matrix.artifact }} && ./${{ matrix.artifact }} --version
       - uses: actions/upload-artifact@v4
         with:
