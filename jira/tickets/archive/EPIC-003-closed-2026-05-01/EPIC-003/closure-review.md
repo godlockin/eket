@@ -66,3 +66,29 @@
 2. **Codemod > manual edits** — 53 optional experts done in one pass via `codemod-inject-3sections.sh`; manual would have violated Rule of 500
 3. **CI as guardrail** — Anatomy check caught regressions in 3 subsequent PRs that would have slipped through
 4. **Incremental delivery** — 8 PRs over the EPIC allowed fast feedback loops vs. one mega-PR
+
+---
+
+## 执行方式变更说明
+
+**原计划**: 拆 8 主题 PR（TASK-230~237）依次回灌 miao → main  
+**实际执行**: 
+- **治理类 tasks（TASK-229/233/234/235/237）**: 通过独立 PR 完成（#159, #164, #168, #169/171, #173）
+- **回灌类 tasks（TASK-230/232/236b）**: 直接 merge miao → main + 冲突解决，无独立 PR
+
+**TASK-230/232/236b 状态说明**:
+- 原 ticket 文件创建时标记为 `todo`/`blocked`
+- EPIC-003 执行过程中通过 direct merge 方式完成回灌
+- 2026-05-08 状态已更新为 `done`，补充实际执行记录
+
+**验证结果**:
+- ✅ rust/ 目录存在于 main，cargo test 400 passed
+- ✅ Node TASK-115~122 功能回灌，3 文件冲突已解决
+- ✅ 红队 17 项修复 + TASK-003 complete 已回灌
+- ✅ main↔miao **0 lines diff**（目标达成）
+
+**closure-review 中的 TASK-230/232/236**:
+- closure-review 表格中的 TASK-230 (#159) 实际对应 "Anatomy check 脚本"
+- closure-review 表格中的 TASK-232 (#163) 实际对应 "53 位 optional 专家 codemod"
+- closure-review 表格中的 TASK-236 (#173) 实际对应 "PR size check"
+- 原 requirement-analysis 中的回灌 tasks 通过其他方式完成
