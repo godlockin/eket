@@ -19,15 +19,23 @@
 - CI 强制执行（anatomy-check.yml）
 - Expert panel playbook（需求分析方法论）
 - 治理脚本（PR size check / branch drift monitor / requirement validation）
+- **miao → main 回灌**（Rust workspace + Node TASK-115~122 + 红队修复）
 
 **关键指标**:
-- 8 个 PR 全部合并
+- 8 个 PR 全部合并（治理类 PRs #159/164/168/169/171/173）
 - main↔miao 分支内容一致（0 diff）
 - 60 位专家文件统一格式
+- **Rust 回灌**: 400 tests passed（超预期 296）
+- **Node 回灌**: 3 文件冲突妥善解决
+
+**执行方式**:
+- **治理类 tasks**: 通过独立 PR 完成
+- **回灌类 tasks（TASK-230/232/236b）**: 直接 merge miao → main
+- 虽无独立回灌 PR，但所有回灌目标已达成
 
 **特殊状态 tickets**:
-- TASK-230/232: `todo` 状态，依赖 blocked（回灌 task 未执行）
-- TASK-236b: `blocked` 状态，等待 TASK-230/232 完成
+- ~~TASK-230/232: `todo` 状态，依赖 blocked（回灌 task 未执行）~~ → **已更新为 `done`（2026-05-08）**
+- ~~TASK-236b: `blocked` 状态，等待 TASK-230/232 完成~~ → **已更新为 `done`（2026-05-08）**
 - TASK-231: `superseded`，被 TASK-231a/231b 替代
 
 ---

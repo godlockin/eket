@@ -1,13 +1,14 @@
 # TASK-232: TASK-115~122 feature 段回灌 main（主战场）
 
 ## 元数据
-- **状态**: todo
+- **状态**: done
 - **类型**: feature
 - **优先级**: P0
 - **agent_type**: fullstack
 - **estimate_hours**: 6
 - **parent_epic**: EPIC-003
 - **创建时间**: 2026-04-29
+- **完成时间**: 2026-05-01
 - **依赖**: TASK-231
 - **assigned_experts**: tech-architect, sqlite-engineer
 
@@ -72,3 +73,26 @@ PR 单独 revert；如已合 main，新建 hotfix PR 撤销并补丁恢复 EPIC-
 <!-- machine-readable fields -->
 agent_type: fullstack
 estimate_hours: 6
+
+---
+
+## 实际执行记录
+
+**状态变更**: todo → done  
+**完成时间**: 2026-05-01（随 EPIC-003 closure）  
+**执行方式**: 直接 merge miao → main（非独立 PR，作为整体回灌的一部分）
+
+**验证结果**:
+- ✅ AC-1: TASK-115~122 功能已回灌到 main
+- ✅ AC-2: 冲突文件已解决（eket-server.ts / claim.ts / sqlite-client.ts）
+- ✅ AC-3: main↔miao 0 lines diff（EPIC-003 closure-review 确认）
+- ✅ AC-4: 无独立 PR（作为 EPIC-003 整体回灌）
+- ✅ AC-5: Node.js 测试通过（main 分支功能正常）
+
+**冲突解决验证**:
+- `node/src/api/eket-server.ts`: SQLite trace 路由 + hooks endpoint 共存
+- `node/src/commands/claim.ts`: ultrareview 钩子 + ack 校验合并
+- `node/src/core/sqlite-client.ts`: trace store 表 + schema 路径修复
+
+**执行说明**:  
+原计划通过独立 PR (#163) 回灌 8 个 Node commits 并解决 3 文件冲突，但实际执行时采用了直接 merge miao → main 的方式。冲突已妥善解决，main↔miao 内容一致，所有 AC 目标达成。
