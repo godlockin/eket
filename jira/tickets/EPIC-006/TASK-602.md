@@ -1,11 +1,14 @@
 ---
 agent_type: backend
 estimate_hours: 006
+assigned_to: Slaver-backend-002
+claimed_at: 2026-05-09T14:30:00Z
+status: review
 ---
 
 # TASK-602: Context Tracker + 动态 Compact 触发
 
-**EPIC**: EPIC-006 | **Milestone**: M0-Emergency | **优先级**: P0 | **工时**: 5h | **状态**: ready | **依赖**: TASK-601
+**EPIC**: EPIC-006 | **Milestone**: M0-Emergency | **优先级**: P0 | **工时**: 5h | **状态**: review | **依赖**: TASK-601
 
 ## 需求
 

@@ -5,7 +5,7 @@ estimate_hours: 006
 
 # TASK-601: 400 Auto-Recovery 机制
 
-**EPIC**: EPIC-006 | **Milestone**: M0-Emergency | **优先级**: P0 | **工时**: 4h | **状态**: ready | **依赖**: 无
+**EPIC**: EPIC-006 | **Milestone**: M0-Emergency | **优先级**: P0 | **工时**: 4h | **状态**: review | **依赖**: 无
 
 ## 需求
 
@@ -207,3 +207,87 @@ Revert PR。无数据变更，无状态依赖，可安全回滚。
 **技能要求**: Node.js / TypeScript / Error Handling  
 **依赖**: 无  
 **assigned_experts**: backend-engineer
+
+---
+
+## 领取信息
+
+**领取时间**: 2026-05-09 (current date)
+**Slaver**: Slaver-backend-001
+**角色**: backend
+
+## 分析报告
+
+见：`jira/tickets/EPIC-006/TASK-601/analysis-report.md`
+
+**状态**: ✅ 已批准（评分 4.83/5）
+
+---
+
+## 实现报告
+
+### 代码变更
+
+**新增文件**:
+- `node/src/core/error-identifier.ts` (52 lines) - 400 错误分类器
+- `node/src/core/recovery-logger.ts` (103 lines) - 日志 + context 保存
+- `node/tests/core/error-identifier.test.ts` (68 lines) - 错误识别测试
+- `node/tests/core/recovery-logger.test.ts` (149 lines) - 日志测试
+- `node/tests/core/claude-runner-recovery.test.ts` (138 lines) - 恢复流程测试
+
+**修改文件**:
+- `node/src/core/claude-runner.ts` (+168 lines) - 添加 400 恢复逻辑
+
+### 测试结果
+
+```bash
+npm test -- --testPathPattern="error-identifier|recovery-logger|claude-runner-recovery"
+```
+
+**结果**: ✅ 18/18 测试通过
+
+| AC | 状态 | 验证方法 |
+|----|------|---------|
+| AC-1 | ✅ | `error-identifier.test.ts` - 4 种错误类型识别 |
+| AC-2 | ✅ | `claude-runner-recovery.test.ts` - 仅 context_length 恢复，其他抛出 |
+| AC-3 | ✅ | `claude-runner-recovery.test.ts` - compact + retry 成功 |
+| AC-4 | ✅ | `claude-runner-recovery.test.ts` - Nuclear Option 触发 |
+| AC-5 | ✅ | `recovery-logger.test.ts` - context 保存到 `.eket/recovery/` |
+| AC-6 | ✅ | `recovery-logger.test.ts` - 日志格式完整 |
+| AC-7 | ⏸️  | 需手动实验（不阻塞 PR） |
+
+### 核心逻辑
+
+**错误分类**（`error-identifier.ts`）:
+```typescript
+export function identifyErrorType(stderr: string): Error400Type {
+  const lowerStderr = stderr.toLowerCase();
+  
+  if (lowerStderr.includes('context_length') || 
+      lowerStderr.includes('maximum context') || 
+      lowerStderr.includes('context limit')) {
+    return 'context_length_exceeded';
+  }
+  // ... 其他分类
+}
+```
+
+**恢复策略**（`claude-runner.ts`）:
+1. **Strategy 1**: `/compact` → retry 原请求
+2. **Strategy 2**: save context → restart session（minimal prompt）
+
+### 日志示例
+
+`.eket/logs/context-overflow.log`:
+```
+[2026-05-09T12:34:56.789Z] sessionId=session-123, taskId=TASK-601, error_type=context_length_exceeded, recovery=detected, result=initiating
+[2026-05-09T12:35:01.234Z] sessionId=session-123, taskId=TASK-601, error_type=context_length_exceeded, recovery=compact_retry, result=recovered
+```
+
+### PR 信息
+
+**分支**: `feature/TASK-601-400-auto-recovery`  
+**Commit**: `feat(TASK-601): Implement 400 context overflow auto-recovery`  
+**测试**: 18 unit tests, all passing
+
+**等待 Master Review**
