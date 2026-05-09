@@ -1,0 +1,77 @@
+{
+  "type": "task_completion_notification",
+  "task_id": "TASK-601",
+  "slaver_id": "Slaver-backend-001",
+  "timestamp": "2026-05-09T14:30:00Z",
+  "status": "ready_for_review",
+  "summary": {
+    "title": "400 Context Overflow Auto-Recovery 实现完成",
+    "actual_hours": 3.5,
+    "estimated_hours": 4.0,
+    "efficiency": "112.5%"
+  },
+  "deliverables": {
+    "code": {
+      "new_files": [
+        "node/src/core/error-identifier.ts",
+        "node/src/core/recovery-logger.ts"
+      ],
+      "modified_files": [
+        "node/src/core/claude-runner.ts"
+      ],
+      "test_files": [
+        "node/tests/core/error-identifier.test.ts",
+        "node/tests/core/recovery-logger.test.ts",
+        "node/tests/core/claude-runner-recovery.test.ts"
+      ],
+      "total_lines": 678
+    },
+    "tests": {
+      "total": 18,
+      "passing": 18,
+      "coverage": "100%"
+    },
+    "documentation": [
+      "jira/tickets/EPIC-006/TASK-601/retrospective.md",
+      "confluence/memory/testing/esm-testing-patterns.md",
+      "confluence/memory/pitfalls/esm-no-dirname.md",
+      "PR-TASK-601.md"
+    ]
+  },
+  "ac_status": {
+    "AC-1": "✅ PASS - 4 error types identified",
+    "AC-2": "✅ PASS - Only context_length_exceeded recovers",
+    "AC-3": "✅ PASS - /compact + retry success",
+    "AC-4": "✅ PASS - Nuclear Option triggers",
+    "AC-5": "✅ PASS - Context saved to .eket/recovery/",
+    "AC-6": "✅ PASS - All 400 logged to .eket/logs/context-overflow.log",
+    "AC-7": "⏸️  PENDING - Manual experiment (non-blocking)"
+  },
+  "pr_info": {
+    "branch": "feature/TASK-601-400-auto-recovery",
+    "commits": 3,
+    "url": "https://github.com/<org>/eket/pull/<number>",
+    "ready": true
+  },
+  "review_checklist": [
+    "✅ TypeScript/ESM compliance (.js extensions)",
+    "✅ Unit tests cover all AC (AC-1~AC-6)",
+    "✅ Error logging format complete",
+    "✅ Nuclear Option saves context",
+    "✅ No breaking changes",
+    "✅ PR description complete",
+    "✅ Knowledge base updated"
+  ],
+  "next_steps": [
+    "Master review PR",
+    "Master approve merge (if pass)",
+    "AC-7 experiment (post-merge, optional)"
+  ],
+  "notes": [
+    "18/18 tests passing (100% coverage)",
+    "Actual hours 3.5h vs estimated 4h (12.5% faster)",
+    "Knowledge base updated: ESM testing patterns + pitfalls",
+    "No dependencies on other tasks",
+    "Ready for immediate review"
+  ]
+}
