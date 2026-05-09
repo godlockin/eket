@@ -10,6 +10,9 @@ import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 
 import { resolveModel, getModelDisplayName, type ModelTier } from './model-router.js';
 import { createModelConfig } from './model-provider.js';
+import { contextTracker } from './context-tracker.js';
+import { identifyErrorType } from './error-identifier.js';
+import { logContextOverflow, saveTaskContext } from './recovery-logger.js';
 
 // ============================================================================
 // Types
@@ -28,6 +31,8 @@ export interface ClaudeRunOptions {
   role?: string;
   /** Extra args passed to claude CLI */
   extraArgs?: string[];
+  /** Session ID for context tracking (TASK-602) */
+  sessionId?: string;
 }
 
 export interface ClaudeRunResult {
@@ -150,8 +155,20 @@ export function resolveAndPersistModel(
  *
  * Reads model from agent_profile.yml unless overridden in options.
  * Passes --model <model-display-name> to claude CLI.
+ *
+ * TASK-601: Handles 400 context_length_exceeded with auto-recovery.
  */
 export async function runClaude(options: ClaudeRunOptions): Promise<ClaudeRunResult> {
+  const sessionId = options.sessionId || 'default';
+
+  // TASK-602: Check if context needs compacting
+  if (contextTracker.shouldCompact(sessionId)) {
+    const compacted = await contextTracker.triggerCompact(sessionId);
+    if (!compacted) {
+      console.warn('⚠️  Auto-compact failed, proceeding anyway...');
+    }
+  }
+
   // Role-based routing (TASK-202): resolve model name from role if provided
   let modelName: string;
 
@@ -168,17 +185,21 @@ export async function runClaude(options: ClaudeRunOptions): Promise<ClaudeRunRes
     modelName = getModelDisplayName(tier);
   }
 
-  const args = [
-    '--model',
-    modelName,
-    '--print',
-    options.prompt,
-    ...(options.extraArgs ?? []),
-  ];
+  const args = ['--model', modelName, '--print', options.prompt, ...(options.extraArgs ?? [])];
 
   const result = await execFileNoThrow('claude', args, {
     cwd: options.projectRoot,
   });
+
+  // TASK-602: Track output tokens
+  if (result.stdout) {
+    contextTracker.trackToolOutput(sessionId, result.stdout);
+  }
+
+  // TASK-601: Check for 400 errors
+  if (result.status !== 0 && result.stderr?.includes('400')) {
+    return await handle400Error(result, options, args, modelName);
+  }
 
   return {
     success: result.status === 0,
@@ -186,4 +207,149 @@ export async function runClaude(options: ClaudeRunOptions): Promise<ClaudeRunRes
     stderr: result.stderr,
     modelUsed: modelName,
   };
+}
+
+// ============================================================================
+// TASK-601: 400 Error Recovery
+// ============================================================================
+
+/**
+ * Handle 400 errors from Claude CLI.
+ * Only recovers from `context_length_exceeded`, other 400s are thrown.
+ */
+async function handle400Error(
+  result: any,
+  options: ClaudeRunOptions,
+  originalArgs: string[],
+  modelName: string
+): Promise<ClaudeRunResult> {
+  const errorType = identifyErrorType(result.stderr);
+
+  // Only handle context_length_exceeded
+  if (errorType !== 'context_length_exceeded') {
+    // Log other 400 errors and reject
+    await logContextOverflow({
+      errorType,
+      recoveryStrategy: 'none',
+      result: 'rejected',
+      projectRoot: options.projectRoot,
+      sessionId: options.sessionId,
+    });
+
+    throw new Error(`Claude API 400 (${errorType}): ${result.stderr}`);
+  }
+
+  // Initiate recovery flow
+  console.error('❌ 400: Context length exceeded, initiating recovery...');
+  await logContextOverflow({
+    errorType: 'context_length_exceeded',
+    recoveryStrategy: 'detected',
+    result: 'initiating',
+    projectRoot: options.projectRoot,
+    sessionId: options.sessionId,
+  });
+
+  return await recoverFromContextOverflow(options, originalArgs, modelName);
+}
+
+/**
+ * Execute recovery strategy for context overflow.
+ * Strategy 1: /compact + retry
+ * Strategy 2: Nuclear Option (save context + restart session)
+ */
+async function recoverFromContextOverflow(
+  options: ClaudeRunOptions,
+  originalArgs: string[],
+  modelName: string
+): Promise<ClaudeRunResult> {
+  // Strategy 1: /compact + retry
+  console.log('🔄 Recovery Strategy 1: Attempting /compact...');
+  const compactResult = await execFileNoThrow('claude', ['--command', '/compact'], {
+    cwd: options.projectRoot,
+  });
+
+  if (compactResult.status === 0) {
+    console.log('✅ /compact successful, retrying original request...');
+    const retryResult = await execFileNoThrow('claude', originalArgs, {
+      cwd: options.projectRoot,
+    });
+
+    if (retryResult.status === 0 || !retryResult.stderr?.includes('400')) {
+      await logContextOverflow({
+        errorType: 'context_length_exceeded',
+        recoveryStrategy: 'compact_retry',
+        result: 'recovered',
+        projectRoot: options.projectRoot,
+        sessionId: options.sessionId,
+      });
+
+      return {
+        success: true,
+        stdout: retryResult.stdout,
+        stderr: retryResult.stderr,
+        modelUsed: modelName,
+      };
+    }
+  }
+
+  // Strategy 2: Nuclear Option
+  console.warn('⚠️  /compact insufficient, initiating Nuclear Option...');
+  console.log('🔄 Recovery Strategy 2: Session restart...');
+
+  // 1. Get task ID
+  const taskId = getTaskIdFromProfile(options.projectRoot);
+
+  // 2. Save task context
+  await saveTaskContext({
+    projectRoot: options.projectRoot,
+    taskId,
+    prompt: options.prompt,
+  });
+
+  // 3. Restart session with minimal prompt
+  const minimalPrompt = `[Context Overflow Recovery - Session Restarted]
+
+Task: ${taskId}
+Instruction: ${options.prompt}
+
+⚠️  Previous context exceeded limit and was cleared.
+📁 Context saved to: .eket/recovery/task-${taskId}-context.md
+
+Continue from last checkpoint.
+`;
+
+  const nuclearResult = await execFileNoThrow(
+    'claude',
+    ['--model', modelName, '--print', minimalPrompt],
+    { cwd: options.projectRoot }
+  );
+
+  await logContextOverflow({
+    errorType: 'context_length_exceeded',
+    recoveryStrategy: 'nuclear_restart',
+    result: nuclearResult.status === 0 ? 'recovered' : 'failed',
+    projectRoot: options.projectRoot,
+    sessionId: options.sessionId,
+  });
+
+  return {
+    success: nuclearResult.status === 0,
+    stdout: nuclearResult.stdout,
+    stderr: nuclearResult.stderr,
+    modelUsed: modelName,
+  };
+}
+
+/**
+ * Helper: Get current task ID from agent_profile.yml
+ */
+function getTaskIdFromProfile(projectRoot: string): string {
+  try {
+    const profilePath = path.join(projectRoot, '.eket', 'state', 'agent_profile.yml');
+    const content = fs.readFileSync(profilePath, 'utf-8');
+    const match = content.match(/^current_ticket:\s*(.+)$/m);
+    return match ? match[1].trim() : 'unknown';
+  } catch {
+    return 'unknown';
+  }
 }
