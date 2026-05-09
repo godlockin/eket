@@ -18,9 +18,9 @@ Hybrid: Rust(Core/CLI/SQLite/EventBus) + Node.js(Hook Server/Dashboard) + Shell(
 
 | 命令 | 说明 |
 |------|------|
-| `eket task:claim [TASK-NNN]` | 原子领取任务，自动创建 git worktree (.worktrees/TASK-NNN/) |
-| `eket task:complete TASK-NNN` | Saga完成：标记done + 清理worktree + 通知依赖解除 |
-| `eket task:create "title" --expertise rust,devops --effort 2d` | 创建ticket（专家标签必填，effort支持2d/0.5d/3h/480） |
+| `eket task:claim [TASK-NNN]` | 原子领取任务 |
+| `eket task:complete TASK-NNN` | Saga 5步完成 |
+| `eket task:create "title"` | 创建 ticket |
 | `eket task:test TASK-NNN` | 追加测试结果 |
 | `eket task:resume TASK-NNN` | checkpoint 恢复 |
 | `eket task:progress` | DAG进度+关键路径 |
@@ -36,25 +36,10 @@ Hybrid: Rust(Core/CLI/SQLite/EventBus) + Node.js(Hook Server/Dashboard) + Shell(
 | `eket knowledge:search "keyword"` | FTS搜索 |
 | `eket recommend TASK-NNN` | TF-IDF推荐相关ticket |
 | `eket expert:compose --skills tdd` | 组建专家组 |
-| `eket expert:summon --role rust` | 按角色召唤/注册 Slaver 实例 |
-| `eket expert:summon --from-waiting` | 批量召唤 waiting-for-expert 队列中缺失的专家 |
 | `eket gate:review TASK-NNN` | 执行前关卡审查 |
 | `eket team:status` | 团队状态 |
 | `eket system:doctor` | 系统诊断 |
 | `eket server [--port 9877]` | 启动axum HTTP API |
-
-## 团队协作特性
-
-| 特性 | 说明 |
-|------|------|
-| **worktree 隔离** | `task:claim` 自动 `git worktree add .worktrees/TASK-NNN`，`task:complete` 自动清理 |
-| **专家标签** | `task:create` 必须传 `--expertise rust,devops`（或 `any`），`task:claim --role rust` 精准匹配 |
-| **依赖解除通知** | `task:complete` 后扫描 `blocked_by`，依赖全解除时写 `.eket/state/unblocked-queue.json`，heartbeat 优先分发 |
-| **向量语义派送** | heartbeat 3层dispatch：①cosine≥0.5向量匹配→TrustMax ②标签fallback→TrustMax ③any→TrustMax；`expertise_embedding.rs` 64维Knuth-hash |
-| **TrustScore 排序** | dispatch选TrustScore最高slaver：`0.4×success + 0.2×uptime + 0.2×latency + 0.2×(1-error)`；权重可配置 `.eket/config/scoring_weights.toml`；每次派送写 `scoring_trace-YYYY-MM-DD.jsonl` |
-| **按需专家召唤** | `expert:summon --role <tag>` 自动注册匹配 slaver；`--from-waiting` 批量处理等待队列 |
-| **专家 persona scaffold** | `task:create` 遇到未知 expertise tag 自动生成骨架文件到 `~/.claude/skills/eket/experts/extended/` |
-| **knowledge 飞轮** | `task:claim` 自动推送相关 pitfalls/patterns；`task:complete` 触发 Curator 质量门；每5次 complete 重建索引 |
 
 ## Node.js 命令速查
 
