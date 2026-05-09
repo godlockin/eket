@@ -5,7 +5,7 @@ estimate_hours: 006
 
 # TASK-601: 400 Auto-Recovery 机制
 
-**EPIC**: EPIC-006 | **Milestone**: M0-Emergency | **优先级**: P0 | **工时**: 4h | **状态**: ready | **依赖**: 无
+**EPIC**: EPIC-006 | **Milestone**: M0-Emergency | **优先级**: P0 | **工时**: 4h | **状态**: review | **依赖**: 无
 
 ## 需求
 
