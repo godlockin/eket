@@ -1,10 +1,20 @@
 # TASK-608: Slaver 主动 Context 风险上报 + 拆卡请求
 
-**EPIC**: EPIC-006 | **Milestone**: M0-Emergency | **优先级**: P0 | **工时**: 4h | **状态**: ready | **依赖**: TASK-602, TASK-603
+**EPIC**: EPIC-006 | **Milestone**: M0-Emergency | **优先级**: P0 | **工时**: 4h | **状态**: done | **依赖**: TASK-602, TASK-603
 
 ---
 agent_type: backend
 estimate_hours: 4
+status: done
+assigned_to: slaver-architect-001
+claimed_at: 2026-05-10T12:09:00+08:00
+analysis_submitted_at: 2026-05-10T12:15:00+08:00
+analysis_approved_at: 2026-05-10T22:35:00+08:00
+implementation_completed_at: 2026-05-10T22:55:00+08:00
+pr_merged_at: 2026-05-10T23:00:00+08:00
+completed_at: 2026-05-10T23:00:00+08:00
+branch: feature/TASK-608-context-split-phase1-2
+merged_to: testing
 ---
 
 ## 需求
@@ -238,3 +248,11 @@ Revert PR。拆分后的子 tasks 可手动删除，原 task 改回 `in_progress
 **技能要求**: Node.js / TypeScript / Task Management  
 **依赖**: TASK-602（需要 contextTracker）, TASK-603（需要 logging）  
 **assigned_experts**: backend-engineer, tech-architect
+
+---
+
+## 领取记录
+
+**领取时间**: 2026-05-10T12:09:00+08:00  
+**Slaver ID**: slaver-architect-001  
+**角色**: backend / tech-architect

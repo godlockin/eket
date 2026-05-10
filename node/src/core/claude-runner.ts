@@ -259,6 +259,29 @@ async function handle400Error(
     projectRoot: options.projectRoot,
   });
 
+<<<<<<< Updated upstream
+||||||| Stash base
+  // TASK-607: Record error for alerting
+  const taskId = readTaskIdFromProfile(options.projectRoot);
+  const sessionId = options.sessionId || 'unknown';
+  const estimatedTokens = contextTracker.getSessionTokens(sessionId);
+  await alertManager.recordError(taskId, estimatedTokens);
+
+=======
+  // TASK-607: Record error for alerting
+  const taskId = readTaskIdFromProfile(options.projectRoot);
+  const sessionId = options.sessionId || 'unknown';
+  const estimatedTokens = contextTracker.getSessionTokens(sessionId);
+  await alertManager.recordError(taskId, estimatedTokens);
+
+  // TASK-603: Save session snapshot
+  await saveSessionSnapshot({
+    projectRoot: options.projectRoot,
+    sessionId,
+    messages: contextTracker.getSessionMessages(sessionId),
+  });
+
+>>>>>>> Stashed changes
   return await recoverFromContextOverflow(options, originalArgs, modelName);
 }
 
