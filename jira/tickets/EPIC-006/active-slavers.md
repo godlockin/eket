@@ -10,11 +10,12 @@
 
 | Slaver ID | Role | 专长 | 分配任务 | 状态 |
 |-----------|------|------|---------|------|
-| **slaver-backend-001** | backend-engineer | Node.js/TypeScript/Error Handling | TASK-601 | 🟢 ready |
-| **slaver-backend-002** | backend-engineer | Node.js/Process Management | TASK-602 | 🟢 ready |
-| **slaver-backend-003** | backend-engineer | File I/O/AST Parsing | TASK-603 → TASK-604/605 | 🟢 ready |
-| **slaver-devops-001** | devops-engineer | Monitoring/Dashboard | TASK-606 → TASK-607 | 🟢 ready |
-| **slaver-architect-001** | tech-architect | Task Decomposition | TASK-608（协助） | 🟢 ready |
+| **slaver-backend-001** | backend-engineer | Node.js/TypeScript/Error Handling | TASK-601 | ✅ done (2026-05-09) |
+| **slaver-backend-002** | backend-engineer | Node.js/Process Management | TASK-602 | ✅ done (2026-05-09) |
+| **slaver-backend-003** | backend-engineer | File I/O/Token Estimation | TASK-604 | ✅ done (2026-05-10) |
+| **slaver-backend-004** | backend-engineer | File I/O/Logging | TASK-603 | 🔄 实施中 (11:35) |
+| **slaver-devops-001** | devops-engineer | Monitoring/Dashboard | TASK-606 | 🔄 实施中 (11:45, 并行) |
+| **slaver-architect-001** | tech-architect | Task Decomposition | TASK-608 | 🟢 standby |
 
 **总计**: 5 Slavers
 
