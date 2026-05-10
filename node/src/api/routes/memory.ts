@@ -11,7 +11,22 @@ import { Router, Request, Response } from 'express';
 
 export const MemoryRouter = Router();
 
-const MEMORY_DIR = path.join(process.cwd(), '.eket', 'memory');
+/**
+ * 查找项目根目录（包含 .eket 的目录）
+ */
+function findProjectRoot(): string {
+  let current = process.cwd();
+  while (current !== path.parse(current).root) {
+    if (fs.existsSync(path.join(current, '.eket'))) {
+      return current;
+    }
+    current = path.dirname(current);
+  }
+  // 兜底：使用 cwd
+  return process.cwd();
+}
+
+const MEMORY_DIR = path.join(findProjectRoot(), '.eket', 'memory');
 
 /**
  * GET /api/v1/memory
