@@ -1,0 +1,28 @@
+{
+  "type": "task_assignment",
+  "message_id": "msg_task_606_1715328300",
+  "timestamp": "2026-05-10T11:45:00Z",
+  "from": "master-001",
+  "to": "slaver-devops-001",
+  "task_id": "TASK-606",
+  "priority": "P1",
+  "epic": "EPIC-006",
+  "title": "Context Health Dashboard",
+  "context": "基于 TASK-604 ContextTracker，实现 eket system:dashboard Context Health 面板，展示实时 token 使用率、400 错误率、recovery 成功率。可视化长会话健康状况。",
+  "dependencies": {
+    "completed": ["TASK-604"],
+    "in_progress": ["TASK-603"],
+    "knowledge_refs": [
+      "node/src/core/context-tracker.ts",
+      "node/src/commands/context-status.ts",
+      "jira/tickets/EPIC-006/TASK-606.md"
+    ]
+  },
+  "estimated_hours": 5,
+  "deadline": "2026-05-11T18:00:00Z",
+  "instructions": "实现 eket system:dashboard Context Health 面板。优先使用 TASK-604 已完成的 ContextTracker API。400 错误率/recovery 数据可先 mock（TASK-603 完成后集成真实数据）。关键：ASCII 图表、实时刷新、趋势预测。",
+  "parallel_execution": {
+    "running_tasks": ["TASK-603"],
+    "note": "可并行执行，TASK-603 数据未ready时使用 mock，后续迭代集成真实数据"
+  }
+}
