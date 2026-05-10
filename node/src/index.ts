@@ -22,6 +22,7 @@ import { createWebDashboardServer } from './api/web-server.js';
 import { registerAlerts } from './commands/alerts.js';
 import { registerClaim } from './commands/claim.js';
 import { registerComplete } from './commands/complete.js';
+import { registerContextStatus } from './commands/context-status.js';
 import { registerDependencyAnalyze } from './commands/dependency-analyze.js';
 import { registerGateReview } from './commands/gate-review.js';
 import { registerGraphQueryCommand } from './commands/graph-query.js';
@@ -943,6 +944,9 @@ Related Commands:
 
   // 注册 alerts 命令
   registerAlerts(program);
+
+  // 注册 context:status 命令 (TASK-604)
+  registerContextStatus(program);
 
   // 注册 skill:extract / skill:list 命令（TASK-043）
 
