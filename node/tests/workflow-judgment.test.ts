@@ -12,7 +12,7 @@
  * - 向后兼容：无 judgment_required 的步骤行为不变
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, jest } from '@jest/globals';
 import {
   WorkflowEngine,
   createWorkflowEngine,
@@ -22,6 +22,12 @@ import {
   type ExtendedWorkflowEvent,
 } from '../src/core/workflow-engine.js';
 import type { WorkflowDefinition, WorkflowJudgmentRequest } from '../src/types/index.js';
+import * as fs from 'fs';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ============================================================================
 // Helpers
@@ -88,6 +94,12 @@ async function createConnectedEngine(instanceId = 'test_instance'): Promise<Work
 
 describe('WorkflowEngine - Judgment Points', () => {
   let engine: WorkflowEngine;
+
+  beforeAll(async () => {
+    // 确保测试所需队列目录存在（防止 workflow-engine 内部初始化失败）
+    const projectRoot = path.join(__dirname, '..', '..');
+    await fs.promises.mkdir(path.join(projectRoot, '.eket/data/queue'), { recursive: true });
+  });
 
   beforeEach(async () => {
     jest.useFakeTimers();
