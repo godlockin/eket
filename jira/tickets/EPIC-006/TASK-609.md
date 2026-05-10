@@ -1,9 +1,13 @@
 ---
 agent_type: backend
 estimate_hours: 003
-status: ready
+status: approved
 priority: P1
 created_at: 2026-05-10T20:35:00+08:00
+assigned_to: slaver-backend-007
+claimed_at: 2026-05-10T21:00:00+08:00
+analysis_submitted_at: 2026-05-10T21:05:00+08:00
+analysis_approved_at: 2026-05-10T21:08:00+08:00
 ---
 
 # TASK-609: 自动 Token Tracking + Compact 触发
