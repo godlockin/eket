@@ -1,11 +1,20 @@
 ---
 agent_type: backend
 estimate_hours: 002
-status: ready
+status: done
 priority: P2
 created_at: 2026-05-10T23:30:00+08:00
 diagnosed_at: 2026-05-10T23:40:00+08:00
 root_cause: "Test directory creation - sync fs.mkdirSync() fails, need async mkdir or beforeAll setup"
+assigned_to: slaver-qa-001
+claimed_at: 2026-05-10T23:42:00+08:00
+round_1_completed: 2026-05-11T00:00:00+08:00
+round_2_completed: 2026-05-11T00:18:00+08:00
+pr_merged_at: 2026-05-11T00:22:00+08:00
+completed_at: 2026-05-11T00:22:00+08:00
+branch: feature/TASK-610-fix-test-path-errors
+merged_to: testing
+tests_fixed: 124/125 (99.2%)
 ---
 
 # TASK-610: 修复历史测试失败 (125 tests)
