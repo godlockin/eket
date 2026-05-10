@@ -1,0 +1,23 @@
+{
+  "type": "task_assignment",
+  "message_id": "msg_task_603_1715328000",
+  "timestamp": "2026-05-10T11:35:00Z",
+  "from": "master-001",
+  "to": "slaver-backend-004",
+  "task_id": "TASK-603",
+  "priority": "P0",
+  "epic": "EPIC-006",
+  "title": "Error Logging + Session Snapshot",
+  "context": "400 错误发生时需自动记录日志和保存 session 快照，用于后续分析和调试。配合 TASK-601 recovery 机制和 TASK-604 tracker 使用。",
+  "dependencies": {
+    "completed": ["TASK-601"],
+    "knowledge_refs": [
+      "node/src/core/recovery-logger.ts",
+      "node/src/core/error-identifier.ts",
+      "jira/tickets/EPIC-006/TASK-603.md"
+    ]
+  },
+  "estimated_hours": 3,
+  "deadline": "2026-05-10T18:00:00Z",
+  "instructions": "实现 400 错误日志（.eket/logs/context-overflow.log）+ session 快照（.eket/debug/session-<id>-overflow.json）。提供 eket logs:context-overflow 查看命令。关键：日志格式统一、快照轻量化（metadata only）、目录自动创建。"
+}
