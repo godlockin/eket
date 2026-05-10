@@ -1,6 +1,6 @@
 # Context Optimization 经验教训（2026-05-10）
 
-**执行范围**: TASK-603 Context P0 优化  
+**执行范围**: TASK-609 Context P0 优化  
 **优化成果**: -4.6k tokens (-51%)  
 **执行时间**: 2026-05-09 23:30-23:40
 
@@ -251,8 +251,8 @@ const filters = {
 
 | 文件 | 用途 |
 |------|------|
-| `TASK-603-optimization-summary.md` | 执行总结 |
-| `TASK-603-optimization-log.md` | 详细日志 |
+| `TASK-609-optimization-summary.md` | 执行总结 |
+| `TASK-609-optimization-log.md` | 详细日志 |
 | `CLAUDE.md` (项目) | 精简后版本 |
 | `~/.claude/CLAUDE.md.bak` | 全局配置备份 |
 | `~/.claude/skills/eket/SKILL.md.bak` | SKILL 备份 |

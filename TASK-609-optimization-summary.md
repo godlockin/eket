@@ -1,7 +1,7 @@
-# TASK-603: Context Optimization 执行总结
+# TASK-609: Context Optimization 执行总结
 
 **执行时间**: 2026-05-09 23:30-23:40  
-**分支**: `feature/TASK-603-context-optimization`  
+**分支**: `feature/TASK-609-context-optimization`  
 **状态**: ✅ 完成（P0 优化 4/5 项）
 
 ---
@@ -68,8 +68,8 @@
 
 **本地修改**:
 - `CLAUDE.md` (项目)
-- `TASK-603-optimization-log.md` (新增)
-- `TASK-603-optimization-summary.md` (新增)
+- `TASK-609-optimization-log.md` (新增)
+- `TASK-609-optimization-summary.md` (新增)
 
 **全局修改** (需提交到 CLAUDE.md 仓库):
 - `~/.claude/CLAUDE.md` (已备份到 `.bak`)
@@ -82,7 +82,7 @@
 
 1. **提交本地改动**: 
    ```bash
-   git add CLAUDE.md TASK-603-*.md
+   git add CLAUDE.md TASK-609-*.md
    git commit -m "feat(context): P0 optimization -4.6k tokens"
    ```
 
