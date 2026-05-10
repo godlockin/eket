@@ -1,9 +1,11 @@
 ---
 agent_type: backend
-estimate_hours: 004
-status: backlog
+estimate_hours: 002
+status: ready
 priority: P2
 created_at: 2026-05-10T23:30:00+08:00
+diagnosed_at: 2026-05-10T23:40:00+08:00
+root_cause: "Test directory creation - sync fs.mkdirSync() fails, need async mkdir or beforeAll setup"
 ---
 
 # TASK-610: 修复历史测试失败 (125 tests)
@@ -30,6 +32,84 @@ Pass Rate:   91.9%
 - **AC-3**: Given 失败测试修复, When 修改代码, Then 不破坏 EPIC-006 已通过的 58 个测试
 - **AC-4**: Given 修复完成, When 提交 PR, Then 包含失败原因分析 + 修复方案说明
 - **AC-5**: Given 修复验证, When CI 运行, Then 全量测试通过（如有 CI）
+
+## 诊断结果 (Master 快速诊断)
+
+**诊断时间**: 2026-05-10T23:40:00+08:00  
+**诊断者**: master-001
+
+### 根因确认 ✅
+
+**所有 125 个失败共同原因**:
+```
+ENOENT: no such file or directory, mkdir '/Users/.../node/.eket/...'
+```
+
+**具体失败点**:
+```typescript
+// tests/optimized-file-queue.test.ts:32
+fs.mkdirSync(testMemoryDir, { recursive: true });  // ❌ 失败
+
+// tests/workflow-judgment.test.ts:setup
+// 同样使用 mkdirSync
+
+// tests/api/routes/memory.test.ts:32
+fs.mkdirSync(testMemoryDir, { recursive: true });  // ❌ 失败
+```
+
+**原因分析**:
+1. 测试运行在 `node/` 目录
+2. 路径 `/node/.eket/...` 试图在 `node/node/.eket/` 创建（双重嵌套）
+3. `fs.mkdirSync()` 同步 API 在 Jest 异步环境可能有问题
+
+### 修复方案 (简化)
+
+**方案 A: 修复路径** (推荐, 5 分钟)
+```typescript
+// BEFORE
+const testMemoryDir = path.join(process.cwd(), '.eket', 'memory');
+
+// AFTER
+const testMemoryDir = path.join(__dirname, '..', '..', '.test-temp', 'memory');
+// 或
+const testMemoryDir = path.join(process.cwd(), '..', '.eket', 'memory');
+```
+
+**方案 B: 改用 async API** (备选, 10 分钟)
+```typescript
+// BEFORE (同步)
+fs.mkdirSync(testMemoryDir, { recursive: true });
+
+// AFTER (异步)
+await fs.promises.mkdir(testMemoryDir, { recursive: true });
+```
+
+**方案 C: beforeAll 确保目录** (最稳, 15 分钟)
+```typescript
+beforeAll(async () => {
+  await fs.promises.mkdir(testQueueDir, { recursive: true });
+  await fs.promises.mkdir(testMemoryDir, { recursive: true });
+  await fs.promises.mkdir(testDataDir, { recursive: true });
+});
+```
+
+### 预估修订
+
+**原估算**: 4h  
+**诊断后**: **1.5h**
+
+**理由**:
+- 根因单一（路径问题）
+- 修复机械（3 个测试文件，相同模式）
+- 无需复杂逻辑修改
+
+**修复清单**:
+1. `tests/optimized-file-queue.test.ts` - 修复路径 (15min)
+2. `tests/workflow-judgment.test.ts` - 修复路径 (15min)
+3. `tests/api/routes/memory.test.ts` - 修复路径 (30min, 97 tests)
+4. 验证 + PR (30min)
+
+---
 
 ## 失败测试分类
 
