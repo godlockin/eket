@@ -1,24 +1,30 @@
 # EKET Active Context
 
-> 此文件由 task:claim 自动生成，ticket 完成后删除。
-> 生成时间: 2026-05-06T13:33:28.983049+00:00
+> 此文件由 Slaver 领取任务时自动生成，ticket 完成后删除。
+> 生成时间: 2026-05-10T12:09:30+08:00
 
 ## Active Ticket
 
-- **ID**: TASK-269
-- **Title**: Bug: task:complete 后 slaver_instances 状态未更新（Rust + Node.js）
+- **ID**: TASK-608
+- **Title**: Slaver 主动 Context 风险上报 + 拆卡请求
 
 ## Identity
 
-- **Slaver ID**: slaver_1776695133821_534ccf79
-- **Started At**: 2026-05-06T13:33:28.983049+00:00
+- **Slaver ID**: slaver-architect-001
+- **Role**: backend / tech-architect
+- **Started At**: 2026-05-10T12:09:00+08:00
 
-## Model Recommendation
+## Status
 
-- **Domain**: `task`
-- **Recommended Level**: 2 (sonnet)
+- **Phase**: analysis
+- **Progress**: 0%
+
+## Dependencies
+
+- TASK-602: ContextTracker
+- TASK-603: Logging
 
 ## Commands
 
-- `eket task:complete TASK-269` — 完成任务
+- `eket task:complete TASK-608` — 完成任务
 - `eket system:doctor` — 系统诊断
