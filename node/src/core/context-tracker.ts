@@ -186,6 +186,21 @@ export class ContextTracker {
 
     return status;
   }
+
+  /**
+   * TASK-608: Check if task needs splitting due to context risk
+   * Returns risk level:
+   * - 'none': < 80k tokens, safe to continue
+   * - 'low': 80-120k, approaching threshold
+   * - 'high': > 120k, should compact or split
+   */
+  checkRisk(sessionId: string): 'none' | 'low' | 'high' {
+    const tokens = this.sessionTokens.get(sessionId) || 0;
+
+    if (tokens > 120000) return 'high';
+    if (tokens > 80000) return 'low';
+    return 'none';
+  }
 }
 
 /**
