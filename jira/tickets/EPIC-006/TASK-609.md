@@ -1,8 +1,9 @@
 ---
 agent_type: backend
 estimate_hours: 003
-status: backlog
+status: ready
 priority: P1
+created_at: 2026-05-10T20:35:00+08:00
 ---
 
 # TASK-609: 自动 Token Tracking + Compact 触发
