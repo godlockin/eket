@@ -5,6 +5,7 @@
  */
 
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
+import type { MessageMetadata } from './recovery-logger.js';
 
 /**
  * Improved token estimation for mixed Chinese/English text
@@ -39,6 +40,7 @@ function estimateTokens(text: string): number {
 export class ContextTracker {
   private sessionTokens: Map<string, number> = new Map();
   private lastCompactTime: Map<string, number> = new Map();
+  private sessionMessages: Map<string, MessageMetadata[]> = new Map(); // TASK-603
 
   /**
    * Track tool input (user prompt + args)
@@ -51,6 +53,9 @@ export class ContextTracker {
 
     this.sessionTokens.set(sessionId, newTotal);
     console.log(`[Context Tracker] Session ${sessionId}: ${newTotal} tokens (+${estimated} input)`);
+
+    // TASK-603: Record message metadata
+    this.recordMessage(sessionId, { role: 'user', tokenEstimate: estimated, timestamp: new Date().toISOString() });
 
     this.checkWarning(sessionId, newTotal);
   }
@@ -67,7 +72,36 @@ export class ContextTracker {
     this.sessionTokens.set(sessionId, newTotal);
     console.log(`[Context Tracker] Session ${sessionId}: ${newTotal} tokens (+${estimated} output)`);
 
+    // TASK-603: Record message metadata (count tool calls if present)
+    const toolCalls = (output.match(/<invoke/g) || []).length;
+    this.recordMessage(sessionId, {
+      role: 'assistant',
+      tokenEstimate: estimated,
+      toolCalls: toolCalls > 0 ? toolCalls : undefined,
+      timestamp: new Date().toISOString(),
+    });
+
     this.checkWarning(sessionId, newTotal);
+  }
+
+  /**
+   * TASK-603: Record message metadata for snapshot
+   */
+  private recordMessage(sessionId: string, metadata: MessageMetadata): void {
+    const messages = this.sessionMessages.get(sessionId) || [];
+    messages.push(metadata);
+    // Keep last 30 messages (will be trimmed to 20 in snapshot)
+    if (messages.length > 30) {
+      messages.shift();
+    }
+    this.sessionMessages.set(sessionId, messages);
+  }
+
+  /**
+   * TASK-603: Get session messages for snapshot
+   */
+  getSessionMessages(sessionId: string): MessageMetadata[] {
+    return this.sessionMessages.get(sessionId) || [];
   }
 
   /**
