@@ -1,6 +1,9 @@
 ---
 agent_type: backend
 estimate_hours: 006
+status: ready
+priority: P0
+created_at: 2026-05-09T10:00:00+08:00
 ---
 
 # TASK-603: Error Logging + Session Snapshot
