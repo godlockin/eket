@@ -33,6 +33,7 @@ import { registerKnowledge } from './commands/knowledge.js';
 // registerKnowledgeIndex/Search superseded by registerKnowledge (TASK-210)
 // import { registerKnowledgeIndex } from './commands/knowledge-index.js';
 // import { registerKnowledgeSearch } from './commands/knowledge-search.js';
+import { registerLogsCommand } from './commands/logs.js';
 import { registerMasterHeartbeat } from './commands/master-heartbeat.js';
 import { registerMasterPoll } from './commands/master-poll.js';
 import { registerRecommend } from './commands/recommend.js';
@@ -947,6 +948,9 @@ Related Commands:
 
   // 注册 context:status 命令 (TASK-604)
   registerContextStatus(program);
+
+  // 注册 logs:context-overflow 命令 (TASK-603)
+  registerLogsCommand(program);
 
   // 注册 skill:extract / skill:list 命令（TASK-043）
 
