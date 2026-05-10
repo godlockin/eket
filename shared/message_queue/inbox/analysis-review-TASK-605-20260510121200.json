@@ -1,0 +1,13 @@
+{
+  "type": "analysis_review_request",
+  "timestamp": "2026-05-10T12:12:00Z",
+  "slaver_id": "slaver-backend-005",
+  "ticket_id": "TASK-605",
+  "analysis_file": "jira/tickets/EPIC-006/analysis/TASK-605-analysis.md",
+  "summary": "Tool Output Filtering - 智能过滤 Grep/Glob/ls 输出，减少 token 消耗",
+  "estimated_hours": 4,
+  "risks": [
+    "过度截断可能丢失关键信息（缓解：清晰提示剩余）",
+    "claude-runner 集成点可能变更（先探测确认）"
+  ]
+}
