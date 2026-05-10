@@ -9,15 +9,26 @@
  * - TTL 过期清理
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, jest } from '@jest/globals';
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { OptimizedFileQueueManager } from '../src/core/optimized-file-queue.js';
 import type { Message } from '../types/index.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 describe('OptimizedFileQueueManager', () => {
-  const queueDir = path.join(process.cwd(), '.eket', 'test-queue', 'queue');
-  const archiveDir = path.join(process.cwd(), '.eket', 'test-queue', 'archive');
+  // projectRoot 应该是 eket 根目录（node 的父目录）
+  const projectRoot = path.join(__dirname, '..', '..');
+  const queueDir = path.join(projectRoot, '.eket', 'test-queue', 'queue');
+  const archiveDir = path.join(projectRoot, '.eket', 'test-queue', 'archive');
+
+  beforeAll(async () => {
+    // 确保父目录存在（防止 mkdirSync 报错）
+    await fs.promises.mkdir(path.join(projectRoot, '.eket'), { recursive: true });
+  });
 
   beforeEach(() => {
     // 使用真实时钟而不是 Jest 的假时钟
