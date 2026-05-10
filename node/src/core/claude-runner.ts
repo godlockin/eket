@@ -13,6 +13,7 @@ import { createModelConfig } from './model-provider.js';
 import { contextTracker } from './context-tracker.js';
 import { identifyErrorType } from './error-identifier.js';
 import { logContextOverflow, saveTaskContext } from './recovery-logger.js';
+import { alertManager } from './alert-manager.js';
 
 // ============================================================================
 // Types
@@ -258,6 +259,12 @@ async function handle400Error(
     result: 'initiating',
     projectRoot: options.projectRoot,
   });
+
+  // TASK-607: Record error for alerting
+  const taskId = readTaskIdFromProfile(options.projectRoot);
+  const sessionId = options.sessionId || 'unknown';
+  const estimatedTokens = contextTracker.getSessionTokens(sessionId);
+  await alertManager.recordError(taskId, estimatedTokens);
 
   return await recoverFromContextOverflow(options, originalArgs, modelName);
 }
