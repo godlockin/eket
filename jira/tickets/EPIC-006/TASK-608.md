@@ -5,6 +5,11 @@
 ---
 agent_type: backend
 estimate_hours: 4
+status: approved
+assigned_to: slaver-architect-001
+claimed_at: 2026-05-10T12:09:00+08:00
+analysis_submitted_at: 2026-05-10T12:15:00+08:00
+analysis_approved_at: 2026-05-10T22:35:00+08:00
 ---
 
 ## 需求
