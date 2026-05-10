@@ -1,0 +1,23 @@
+{
+  "type": "task_assignment",
+  "message_id": "msg_task_604_$(date +%s)",
+  "timestamp": "2026-05-10T00:10:00Z",
+  "from": "master-001",
+  "to": "slaver-backend-003",
+  "task_id": "TASK-604",
+  "priority": "P0",
+  "epic": "EPIC-006",
+  "title": "ContextTracker 增强 - 双向统计 + 降低阈值",
+  "context": "2026-05-10 Master 会话 200k overflow，ContextTracker 未触发 auto-compact。根因：仅统计输出、低估中文、阈值过高、覆盖不全。需双向统计 + 改进估算 + 降低阈值至 120k。",
+  "dependencies": {
+    "completed": ["TASK-602"],
+    "knowledge_refs": [
+      "confluence/memory/context-tracker-未触发-root-cause-2026-05-10.md",
+      "node/src/core/context-tracker.ts",
+      "node/src/core/claude-runner.ts"
+    ]
+  },
+  "estimated_hours": 8,
+  "deadline": "2026-05-11T18:00:00Z",
+  "instructions": "按 TASK-604 ticket AC 实施。关键：trackInput + trackOutput（双向）、中英文分别估算、阈值 150k→120k、提供 context:status 命令。测试覆盖中英文混合场景。"
+}
