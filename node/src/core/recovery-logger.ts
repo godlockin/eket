@@ -125,6 +125,91 @@ Refer to ticket file for original requirements:
 }
 
 /**
+ * Message metadata structure for session snapshots
+ */
+export interface MessageMetadata {
+  role: 'user' | 'assistant';
+  timestamp?: string;
+  toolCalls?: number;
+  tokenEstimate?: number;
+}
+
+/**
+ * Saves session snapshot to .eket/logs/session-snapshots/{sessionId}.json
+ *
+ * Captures last 20 messages metadata for post-recovery analysis.
+ * Enforces 10MB size limit per snapshot file.
+ *
+ * @param opts - Options containing session details
+ *
+ * @example
+ * ```typescript
+ * await saveSessionSnapshot({
+ *   projectRoot: '/path/to/project',
+ *   sessionId: 'abc123',
+ *   messages: [
+ *     { role: 'user', timestamp: '2026-05-10T10:00:00Z', tokenEstimate: 150 },
+ *     { role: 'assistant', timestamp: '2026-05-10T10:00:05Z', toolCalls: 2, tokenEstimate: 500 }
+ *   ]
+ * });
+ * ```
+ */
+export async function saveSessionSnapshot(opts: {
+  projectRoot: string;
+  sessionId: string;
+  messages: MessageMetadata[];
+}): Promise<void> {
+  const snapshotDir = path.join(opts.projectRoot, '.eket/logs/session-snapshots');
+  await fs.mkdir(snapshotDir, { recursive: true });
+
+  const snapshotPath = path.join(snapshotDir, `${opts.sessionId}.json`);
+
+  // Take last 20 messages only
+  const recentMessages = opts.messages.slice(-20);
+
+  const snapshot = {
+    sessionId: opts.sessionId,
+    timestamp: new Date().toISOString(),
+    messageCount: recentMessages.length,
+    messages: recentMessages,
+  };
+
+  const content = JSON.stringify(snapshot, null, 2);
+
+  // Enforce 10MB limit
+  const MAX_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+  if (Buffer.byteLength(content, 'utf8') > MAX_SIZE) {
+    // Truncate messages to fit under 10MB
+    const truncatedSnapshot = {
+      ...snapshot,
+      messages: recentMessages.slice(-10), // Further reduce to last 10
+      truncated: true,
+      originalCount: recentMessages.length,
+    };
+    const truncatedContent = JSON.stringify(truncatedSnapshot, null, 2);
+
+    if (Buffer.byteLength(truncatedContent, 'utf8') > MAX_SIZE) {
+      // If still too large, save minimal metadata only
+      const minimalSnapshot = {
+        sessionId: opts.sessionId,
+        timestamp: snapshot.timestamp,
+        messageCount: recentMessages.length,
+        error: 'Snapshot too large, saved metadata only',
+      };
+      await fs.writeFile(snapshotPath, JSON.stringify(minimalSnapshot, null, 2));
+      console.log(`⚠️  Session snapshot truncated (exceeded 10MB): ${snapshotPath}`);
+      return;
+    }
+
+    await fs.writeFile(snapshotPath, truncatedContent);
+    console.log(`⚠️  Session snapshot truncated to last 10 messages: ${snapshotPath}`);
+  } else {
+    await fs.writeFile(snapshotPath, content);
+    console.log(`💾 Session snapshot saved: ${snapshotPath}`);
+  }
+}
+
+/**
  * Reads the current task ID from agent_profile.yml
  *
  * @param projectRoot - The project root directory
