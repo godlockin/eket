@@ -2,10 +2,11 @@
  * PostToolUse Pipeline
  *
  * Events: PostToolUse, PostToolUseFailure
- * DAG: MetricsNode ∥ AuditNode (both parallel, no serial)
+ * DAG: FilterNode → (MetricsNode ∥ AuditNode)
  */
 
 import { PipelineExecutor, MiddlewareNode } from '../../core/middleware-pipeline.js';
+import { filterToolOutput } from '../../utils/tool-output-filter.js';
 
 import type { HttpHookPayload, HttpHookResponse } from '../http-hook-server.js';
 
@@ -17,8 +18,28 @@ export interface PostToolUseState extends Record<string, unknown> {
 export function createPostToolUsePipeline(): PipelineExecutor<PostToolUseState> {
   const nodes: Array<MiddlewareNode<PostToolUseState>> = [
     {
-      id: 'MetricsNode',
+      id: 'FilterNode',
       deps: [],
+      parallel: false,
+      failBehavior: 'warn',
+      handle: async (state) => {
+        const { toolName, toolResult } = state.payload.data;
+
+        // TASK-605: Filter tool output (grep/glob/ls)
+        if (toolName && typeof toolResult === 'string') {
+          const cwd = process.cwd(); // TODO: extract from toolInput if available
+          const filtered = filterToolOutput(toolName, toolResult, cwd);
+
+          // Mutate payload to apply filter
+          state.payload.data.toolResult = filtered;
+        }
+
+        return state;
+      },
+    },
+    {
+      id: 'MetricsNode',
+      deps: ['FilterNode'],
       parallel: true,
       failBehavior: 'warn',
       handle: async (state) => {
@@ -32,7 +53,7 @@ export function createPostToolUsePipeline(): PipelineExecutor<PostToolUseState> 
     },
     {
       id: 'AuditNode',
-      deps: [],
+      deps: ['FilterNode'],
       parallel: true,
       failBehavior: 'warn',
       handle: async (state) => {
