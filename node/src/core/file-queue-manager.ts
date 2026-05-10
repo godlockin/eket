@@ -74,6 +74,21 @@ interface FileMessage extends Message {
 }
 
 /**
+ * 查找项目根目录（包含 .eket 的目录）
+ */
+function findProjectRoot(): string {
+  let current = process.cwd();
+  while (current !== path.parse(current).root) {
+    if (fs.existsSync(path.join(current, '.eket'))) {
+      return current;
+    }
+    current = path.dirname(current);
+  }
+  // 兜底：使用 cwd
+  return process.cwd();
+}
+
+/**
  * 文件队列管理器
  */
 export class FileQueueManager {
@@ -83,8 +98,8 @@ export class FileQueueManager {
 
   constructor(config?: Partial<FileQueueConfig>) {
     const defaultConfig: FileQueueConfig = {
-      queueDir: path.join(process.cwd(), '.eket', 'data', 'queue'),
-      archiveDir: path.join(process.cwd(), '.eket', 'data', 'queue-archive'),
+      queueDir: path.join(findProjectRoot(), '.eket', 'data', 'queue'),
+      archiveDir: path.join(findProjectRoot(), '.eket', 'data', 'queue-archive'),
       maxAge: 24 * 60 * 60 * 1000, // 24 小时
       archiveAfter: 60 * 60 * 1000, // 1 小时
     };
