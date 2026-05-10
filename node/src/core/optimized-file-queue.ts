@@ -71,10 +71,26 @@ export class OptimizedFileQueueManager {
   private lastProcessedIdsSave = 0;
   private readonly PROCESSED_IDS_SAVE_INTERVAL = 5000; // 最多 5 秒保存一次
 
+  /**
+   * 查找项目根目录（包含 .eket 的目录）
+   */
+  private findProjectRoot(): string {
+    let current = process.cwd();
+    while (current !== path.parse(current).root) {
+      if (fs.existsSync(path.join(current, '.eket'))) {
+        return current;
+      }
+      current = path.dirname(current);
+    }
+    // 兜底：使用 cwd
+    return process.cwd();
+  }
+
   constructor(config?: Partial<OptimizedFileQueueConfig>) {
+    const projectRoot = this.findProjectRoot();
     const defaultConfig: OptimizedFileQueueConfig = {
-      queueDir: path.join(process.cwd(), '.eket', 'data', 'queue-v2'),
-      archiveDir: path.join(process.cwd(), '.eket', 'data', 'queue-archive-v2'),
+      queueDir: path.join(projectRoot, '.eket', 'data', 'queue-v2'),
+      archiveDir: path.join(projectRoot, '.eket', 'data', 'queue-archive-v2'),
       maxAge: 24 * 60 * 60 * 1000,
       archiveAfter: 60 * 60 * 1000,
       atomicWrites: true,
