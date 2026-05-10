@@ -12,7 +12,7 @@ import { resolveModel, getModelDisplayName, type ModelTier } from './model-route
 import { createModelConfig } from './model-provider.js';
 import { contextTracker } from './context-tracker.js';
 import { identifyErrorType } from './error-identifier.js';
-import { logContextOverflow, saveTaskContext } from './recovery-logger.js';
+import { logContextOverflow, saveTaskContext, saveSessionSnapshot } from './recovery-logger.js';
 import { alertManager } from './alert-manager.js';
 import { checkAndReportIfNeeded } from './slaver-context-monitor.js'; // TASK-608
 
