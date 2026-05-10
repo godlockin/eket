@@ -2,11 +2,20 @@
 id: TASK-604
 agent_type: backend
 estimate_hours: 008
+assigned_to: slaver-backend-003
+claimed_at: 2026-05-10T00:12:00Z
+status: approved
 ---
 
 # TASK-604: ContextTracker 增强 - 双向统计 + 降低阈值
 
 **EPIC**: EPIC-006 | **Milestone**: M1-Enhancement | **优先级**: P1 | **工时**: 8h | **状态**: ready | **依赖**: TASK-602
+
+## 状态
+
+**当前状态**: in_progress  
+**分配给**: slaver-backend-003  
+**分析报告**: [TASK-604/analysis-report.md](./TASK-604/analysis-report.md)
 
 ## 需求
 
