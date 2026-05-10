@@ -1,6 +1,9 @@
 ---
 agent_type: backend
 estimate_hours: 006
+status: analysis_review
+assigned_to: slaver-backend-005
+claimed_at: 2026-05-10T12:11:00Z
 ---
 
 # TASK-605: Tool Output Filtering（结果分页）

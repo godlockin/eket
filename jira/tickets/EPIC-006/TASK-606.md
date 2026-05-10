@@ -1,11 +1,15 @@
 ---
 agent_type: devops
 estimate_hours: 006
+assigned_to: slaver-devops-001
+claimed_at: 2026-05-10T11:45:00Z
+status: done
+merged_at: 2026-05-10T12:20:00Z
 ---
 
 # TASK-606: Context Health Dashboard
 
-**EPIC**: EPIC-006 | **Milestone**: M1-Optimization | **优先级**: P1 | **工时**: 5h | **状态**: ready | **依赖**: TASK-603
+**EPIC**: EPIC-006 | **Milestone**: M1-Optimization | **优先级**: P1 | **工时**: 5h | **状态**: done | **依赖**: TASK-604
 
 ## 需求
 
