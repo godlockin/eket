@@ -3,6 +3,7 @@
  * 支持 Redis 和文件队列两种模式，自动降级
  */
 
+import * as fs from 'fs';
 import * as path from 'path';
 
 import { RedisConnectionPool } from '../core/cache-layer.js';
@@ -192,6 +193,21 @@ export class RedisMessageQueue implements MessageQueue {
 }
 
 /**
+ * 查找项目根目录（包含 .eket 的目录）
+ */
+function findProjectRoot(): string {
+  let current = process.cwd();
+  while (current !== path.parse(current).root) {
+    if (fs.existsSync(path.join(current, '.eket'))) {
+      return current;
+    }
+    current = path.dirname(current);
+  }
+  // 兜底：使用 cwd
+  return process.cwd();
+}
+
+/**
  * 文件消息队列实现（降级模式）
  * Level 4 降级路径，使用 OptimizedFileQueueManager 实现原子写入、
  * 校验和验证、去重和批量操作。
@@ -204,7 +220,7 @@ export class FileMessageQueue implements MessageQueue {
   private optimizedQueue: OptimizedFileQueueManager;
 
   constructor(config: MessageQueueConfig) {
-    this.queueDir = config.queueDir || path.join(process.cwd(), '.eket', 'data', 'queue');
+    this.queueDir = config.queueDir || path.join(findProjectRoot(), '.eket', 'data', 'queue');
     // 默认 500ms，可通过配置覆盖
     this.pollIntervalMs = config.filePollingInterval ?? 500;
 
