@@ -4,15 +4,16 @@ agent_type: backend
 estimate_hours: 008
 assigned_to: slaver-backend-003
 claimed_at: 2026-05-10T00:12:00Z
-status: pr_submitted
+status: done
 pr_number: 185
 pr_url: https://github.com/godlockin/eket/pull/185
 submitted_at: 2026-05-10T03:15:00Z
+merged_at: 2026-05-10T11:25:24Z
 ---
 
 # TASK-604: ContextTracker 增强 - 双向统计 + 降低阈值
 
-**EPIC**: EPIC-006 | **Milestone**: M1-Enhancement | **优先级**: P1 | **工时**: 8h | **状态**: pr_submitted | **依赖**: TASK-602
+**EPIC**: EPIC-006 | **Milestone**: M1-Enhancement | **优先级**: P1 | **工时**: 8h | **状态**: done | **依赖**: TASK-602
 
 ## 状态
 
