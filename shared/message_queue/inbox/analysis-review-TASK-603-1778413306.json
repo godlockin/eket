@@ -1,0 +1,9 @@
+{
+  "type": "analysis_review_request",
+  "slaver_id": "slaver-backend-004",
+  "ticket_id": "TASK-603",
+  "timestamp": "2026-05-10T00:15:00Z",
+  "analysis_report_path": "jira/tickets/EPIC-006/TASK-603/analysis-report.md",
+  "summary": "扩展 recovery-logger.ts + 新增 logs:context-overflow 命令，预估 3h，3 个文件变更",
+  "request": "请 Master 审批技术方案：1) 扩展现有文件 vs 新建文件；2) 仅保存 last 20 messages metadata；3) 基础统计命令（无高级过滤）"
+}
