@@ -14,6 +14,7 @@ import { contextTracker } from './context-tracker.js';
 import { identifyErrorType } from './error-identifier.js';
 import { logContextOverflow, saveTaskContext } from './recovery-logger.js';
 import { alertManager } from './alert-manager.js';
+import { checkAndReportIfNeeded } from './slaver-context-monitor.js'; // TASK-608
 
 // ============================================================================
 // Helper Functions
@@ -259,6 +260,9 @@ export async function runClaude(options: ClaudeRunOptions): Promise<ClaudeRunRes
   if (result.stdout) {
     contextTracker.trackToolOutput(sessionId, result.stdout);
   }
+
+  // TASK-608: Check context risk and report to Master if needed
+  await checkAndReportIfNeeded(options.projectRoot, sessionId);
 
   // TASK-601: Check for 400 errors
   if (result.status !== 0 && result.stderr?.includes('400')) {
