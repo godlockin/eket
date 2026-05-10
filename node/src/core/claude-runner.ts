@@ -330,6 +330,12 @@ async function handle400Error(
   const estimatedTokens = contextTracker.getSessionTokens(sessionId);
   await alertManager.recordError(taskId, estimatedTokens);
 
+  // TASK-603: Save session snapshot
+  await saveSessionSnapshot({
+    projectRoot: options.projectRoot,
+    sessionId,
+    messages: contextTracker.getSessionMessages(sessionId),
+  });
   return await recoverFromContextOverflow(options, originalArgs, modelName);
 }
 
