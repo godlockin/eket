@@ -1,9 +1,37 @@
 /**
  * Context Tracker
  * TASK-602: Track tool output tokens and trigger /compact when approaching limit
+ * TASK-604: Enhanced tracking with input/output, improved estimation, context:status
  */
 
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
+
+/**
+ * Improved token estimation for mixed Chinese/English text
+ * Chinese: ~2 chars/token, English: ~4 chars/token
+ */
+function estimateTokens(text: string): number {
+  if (!text || text.length === 0) return 0;
+
+  let chineseChars = 0;
+  let otherChars = 0;
+
+  for (const char of text) {
+    const code = char.charCodeAt(0);
+    // CJK Unified Ideographs: 0x4E00-0x9FFF
+    if (code >= 0x4e00 && code <= 0x9fff) {
+      chineseChars++;
+    } else {
+      otherChars++;
+    }
+  }
+
+  // Chinese: ~2 chars/token, English: ~4 chars/token
+  const chineseTokens = Math.ceil(chineseChars / 2);
+  const englishTokens = Math.ceil(otherChars / 4);
+
+  return chineseTokens + englishTokens;
+}
 
 /**
  * Tracks estimated context tokens per session and triggers /compact when needed
@@ -13,28 +41,50 @@ export class ContextTracker {
   private lastCompactTime: Map<string, number> = new Map();
 
   /**
-   * Track tool output and estimate tokens
-   * Formula: output.length / 3.5 (conservative GPT-4 estimate)
+   * Track tool input (user prompt + args)
    */
-  trackToolOutput(sessionId: string, output: string): void {
-    const estimated = Math.ceil(output.length / 3.5);
+  trackInput(sessionId: string, prompt: string, extraArgs?: string): void {
+    const combinedText = extraArgs ? `${prompt} ${extraArgs}` : prompt;
+    const estimated = estimateTokens(combinedText);
     const current = this.sessionTokens.get(sessionId) || 0;
     const newTotal = current + estimated;
 
     this.sessionTokens.set(sessionId, newTotal);
+    console.log(`[Context Tracker] Session ${sessionId}: ${newTotal} tokens (+${estimated} input)`);
 
-    console.log(`[Context Tracker] Session ${sessionId}: ${newTotal} tokens (+${estimated})`);
+    this.checkWarning(sessionId, newTotal);
+  }
 
+  /**
+   * Track tool output and estimate tokens
+   * IMPROVED: Uses language-aware estimation (Chinese vs English)
+   */
+  trackToolOutput(sessionId: string, output: string): void {
+    const estimated = estimateTokens(output);
+    const current = this.sessionTokens.get(sessionId) || 0;
+    const newTotal = current + estimated;
+
+    this.sessionTokens.set(sessionId, newTotal);
+    console.log(`[Context Tracker] Session ${sessionId}: ${newTotal} tokens (+${estimated} output)`);
+
+    this.checkWarning(sessionId, newTotal);
+  }
+
+  /**
+   * Unified warning check (DRY)
+   */
+  private checkWarning(sessionId: string, tokens: number): void {
     // Warning at 100k (conservative)
-    if (newTotal > 100000) {
-      console.warn(`⚠️  Session ${sessionId} approaching limit: ${newTotal}/200000 tokens`);
+    if (tokens > 100000) {
+      console.warn(`⚠️  Session ${sessionId} approaching limit: ${tokens}/200000 tokens`);
     }
   }
 
   /**
    * Check if session needs compaction
+   * IMPROVED: Lower threshold (120k) for earlier compaction
    * Triggers when:
-   * - Token count > 150k
+   * - Token count > 120k (CHANGED from 150k)
    * - Time since last compact > 5 minutes
    */
   shouldCompact(sessionId: string): boolean {
@@ -42,8 +92,8 @@ export class ContextTracker {
     const lastCompact = this.lastCompactTime.get(sessionId) || 0;
     const timeSinceCompact = Date.now() - lastCompact;
 
-    // Threshold: 150k tokens, 5min cooldown
-    return tokens > 150000 && timeSinceCompact > 5 * 60 * 1000;
+    // Threshold: 120k tokens, 5min cooldown
+    return tokens > 120000 && timeSinceCompact > 5 * 60 * 1000;
   }
 
   /**
@@ -98,6 +148,43 @@ export class ContextTracker {
       tokens,
       lastCompact: this.lastCompactTime.get(sessionId) || 0,
     }));
+  }
+
+  /**
+   * Get formatted status report for a session (for context:status command)
+   */
+  getStatus(sessionId: string): string {
+    const tokens = this.sessionTokens.get(sessionId) || 0;
+    const lastCompact = this.lastCompactTime.get(sessionId) || 0;
+    const timeSinceCompact = lastCompact ? Date.now() - lastCompact : 0;
+
+    const percentage = ((tokens / 200000) * 100).toFixed(1);
+    const shouldCompactNow = this.shouldCompact(sessionId);
+
+    let status = `\n=== Context Tracker Status ===\n\n`;
+    status += `Session: ${sessionId}\n`;
+    status += `Tokens: ${tokens.toLocaleString()} / 200,000 (${percentage}%)\n`;
+    status += `Threshold: 120,000 tokens\n`;
+
+    if (lastCompact) {
+      const compactAgo = Math.round(timeSinceCompact / 1000 / 60);
+      status += `Last compact: ${compactAgo} min ago\n`;
+    } else {
+      status += `Last compact: Never\n`;
+    }
+
+    status += `\nRecommendation: `;
+    if (shouldCompactNow) {
+      status += `⚠️  COMPACT NOW (threshold exceeded)\n`;
+    } else if (tokens > 100000) {
+      status += `⚡ Approaching limit, compact soon\n`;
+    } else if (tokens > 80000) {
+      status += `📊 Usage normal, monitor closely\n`;
+    } else {
+      status += `✅ Usage healthy\n`;
+    }
+
+    return status;
   }
 }
 
