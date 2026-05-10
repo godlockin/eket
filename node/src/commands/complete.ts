@@ -15,6 +15,7 @@ import { contextCompressor } from '../core/context-compressor.js';
 import { createSQLiteClient } from '../core/sqlite-client.js';
 import { sseBus } from '../core/sse-bus.js';
 import { WorktreeManager } from '../core/worktree-manager.js';
+import { alertManager } from '../core/alert-manager.js';
 import type { SkillFeedback, SlaveResult } from '../types/index.js';
 import { validateTicketOutput } from '../types/ticket-output.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
@@ -482,6 +483,10 @@ export function registerComplete(program: Command): void {
         await reportSkillFeedback(projectRoot, ticketId, slaverId);
         await appendCommitTrailer(ticketId, slaverId);
         await writeRetro(ticketId, getTicketTitle(projectRoot, ticketId), slaverId, projectRoot);
+
+        // TASK-607: Clear context overflow alert for completed task
+        await alertManager.clearTaskAlert(ticketId);
+
         logSuccess('Task completed', [`Task: ${ticketId}`, 'Isolation: none']);
         sseBus.publish({ type: 'task_completed', ticketId, slaverId, timestamp: new Date().toISOString() });
         return;
@@ -583,6 +588,9 @@ export function registerComplete(program: Command): void {
 
       // Write retro (TASK-DOC-006)
       await writeRetro(ticketId, getTicketTitle(projectRoot, ticketId), slaverId, projectRoot);
+
+      // TASK-607: Clear context overflow alert for completed task
+      await alertManager.clearTaskAlert(ticketId);
 
       logSuccess('Task completed', [
         `Task: ${ticketId}`,
