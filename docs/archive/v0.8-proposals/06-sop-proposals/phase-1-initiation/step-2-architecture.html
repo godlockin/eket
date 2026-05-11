@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Step 2: 架构设计 SOP</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Step 2: 架构设计 SOP</h1>
+</header>
+<h1 id="step-2-架构设计-sop">Step 2: 架构设计 SOP</h1>
+<p><strong>版本</strong>: 1.0.0 <strong>最后更新</strong>: 2026-03-23
+<strong>负责智能体</strong>: 技术经理</p>
+<hr />
+<h2 id="目标">目标</h2>
+<p>基于需求文档，设计系统架构、选择技术栈、定义 API 和数据库
+schema。</p>
+<hr />
+<h2 id="输入">输入</h2>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 30%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>输入项</th>
+<th>位置</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需求文档</td>
+<td><code>confluence/projects/{project}/requirements/requirements.md</code></td>
+<td>功能和非功能性需求</td>
+</tr>
+<tr>
+<td>用户故事</td>
+<td><code>confluence/projects/{project}/requirements/user-stories.md</code></td>
+<td>用户场景</td>
+</tr>
+<tr>
+<td>验收标准</td>
+<td><code>confluence/projects/{project}/requirements/acceptance-criteria.md</code></td>
+<td>验收条件</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="输出">输出</h2>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 30%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>输出项</th>
+<th>位置</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>系统架构文档</td>
+<td><code>confluence/projects/{project}/architecture/system-architecture.md</code></td>
+<td>整体架构设计</td>
+</tr>
+<tr>
+<td>技术栈文档</td>
+<td><code>confluence/projects/{project}/architecture/tech-stack.md</code></td>
+<td>技术选型说明</td>
+</tr>
+<tr>
+<td>API 设计文档</td>
+<td><code>confluence/projects/{project}/architecture/api-design.md</code></td>
+<td>API 接口定义</td>
+</tr>
+<tr>
+<td>数据库设计</td>
+<td><code>confluence/projects/{project}/architecture/database-design.md</code></td>
+<td>Schema 设计</td>
+</tr>
+<tr>
+<td>部署架构</td>
+<td><code>confluence/projects/{project}/architecture/deployment-architecture.md</code></td>
+<td>部署方案</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="使用-skills">使用 Skills</h2>
+<table>
+<thead>
+<tr>
+<th>Skill</th>
+<th>用途</th>
+<th>调用顺序</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>architecture_design</code></td>
+<td>系统架构设计</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>api_design</code></td>
+<td>API 接口设计</td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>database_design</code></td>
+<td>数据库 schema 设计</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="详细步骤">详细步骤</h2>
+<h3 id="系统架构设计">2.1 系统架构设计</h3>
+<p><strong>目的</strong>: 设计系统的整体架构</p>
+<p><strong>调用 Skill</strong>: <code>architecture_design</code></p>
+<p><strong>步骤</strong>: 1. 分析非功能性需求（性能、扩展性、安全性） 2.
+选择架构模式（单体/微服务/Serverless） 3. 定义系统组件和交互 4.
+设计数据流和控制流</p>
+<p><strong>架构决策记录模板</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 架构决策：{decision_name}</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 背景</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>{为什么需要做这个决策}</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">### 选项</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**选项 A**: {描述}</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>优点：...</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>缺点：...</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**选项 B**: {描述}</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>优点：...</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>缺点：...</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">### 决策</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>选择 **{选项}**</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">### 理由</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>{为什么选择这个选项}</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="fu">### 影响</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>{这个决策带来的影响}</span></code></pre></div>
+<p><strong>检查清单</strong>: - [ ] 架构模式选择合理 - [ ] 组件职责清晰
+- [ ] 组件间耦合度低 - [ ] 满足非功能性需求 - [ ] 架构决策已记录</p>
+<hr />
+<h3 id="技术栈选型">2.2 技术栈选型</h3>
+<p><strong>目的</strong>: 选择适合项目需求的技术栈</p>
+<p><strong>步骤</strong>: 1. 分析功能需求和非功能性需求 2. 列出候选技术
+3. 评估每个技术的优缺点 4. 做出技术选型决策</p>
+<p><strong>技术栈评估维度</strong>: | 维度 | 说明 | 权重 | |——|——|——| |
+功能匹配度 | 是否满足功能需求 | 高 | | 性能 | 是否满足性能要求 | 高 | |
+学习曲线 | 团队熟悉程度 | 中 | | 社区生态 | 文档、库、工具 | 中 | |
+可维护性 | 代码可读性、测试支持 | 高 | | 成本 | 许可费用、云资源成本 |
+中 |</p>
+<p><strong>技术栈文档模板</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># {项目名} - 技术栈</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">## 前端</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 类别 <span class="pp">|</span> 技术 <span class="pp">|</span> 版本 <span class="pp">|</span> 理由 <span class="pp">|</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|------|------|</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 框架 <span class="pp">|</span> React <span class="pp">|</span> 18.x <span class="pp">|</span> 生态丰富，团队熟悉 <span class="pp">|</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 状态管理 <span class="pp">|</span> Zustand <span class="pp">|</span> 4.x <span class="pp">|</span> 轻量，易用 <span class="pp">|</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 构建工具 <span class="pp">|</span> Vite <span class="pp">|</span> 5.x <span class="pp">|</span> 快速开发体验 <span class="pp">|</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">## 后端</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 类别 <span class="pp">|</span> 技术 <span class="pp">|</span> 版本 <span class="pp">|</span> 理由 <span class="pp">|</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|------|------|</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 运行时 <span class="pp">|</span> Node.js <span class="pp">|</span> 20.x <span class="pp">|</span> 性能优秀 <span class="pp">|</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 框架 <span class="pp">|</span> Express <span class="pp">|</span> 4.x <span class="pp">|</span> 成熟稳定 <span class="pp">|</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 数据库 <span class="pp">|</span> PostgreSQL <span class="pp">|</span> 15.x <span class="pp">|</span> 功能强大 <span class="pp">|</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">## 基础设施</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 类别 <span class="pp">|</span> 技术 <span class="pp">|</span> 版本 <span class="pp">|</span> 理由 <span class="pp">|</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|------|------|</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 部署平台 <span class="pp">|</span> Cloudflare Pages <span class="pp">|</span> - <span class="pp">|</span> 免费，CDN 集成 <span class="pp">|</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> CI/CD <span class="pp">|</span> GitHub Actions <span class="pp">|</span> - <span class="pp">|</span> 与 GitHub 集成 <span class="pp">|</span></span></code></pre></div>
+<p><strong>检查清单</strong>: - [ ] 技术选型满足功能需求 - [ ]
+技术选型满足非功能性需求 - [ ] 技术评估记录完整 - [ ]
+技术决策有理有据</p>
+<hr />
+<h3 id="api-设计">2.3 API 设计</h3>
+<p><strong>目的</strong>: 定义系统对外的 API 接口</p>
+<p><strong>调用 Skill</strong>: <code>api_design</code></p>
+<p><strong>步骤</strong>: 1. 识别需要的 API 端点 2. 定义请求/响应格式 3.
+定义错误处理机制 4. 定义认证和授权机制</p>
+<p><strong>API 设计原则</strong>: - <strong>RESTful</strong>: 使用标准
+HTTP 方法和状态码 - <strong>版本化</strong>: URL 中包含版本号
+(<code>/api/v1/</code>) - <strong>一致性</strong>: 命名、格式保持一致 -
+<strong>文档化</strong>: 每个端点有详细说明</p>
+<p><strong>API 端点模板</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">### {端点名称}</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>**路径**: <span class="in">`{METHOD} /api/v1/{path}`</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>**描述**: {端点功能描述}</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>**认证**: {认证方式，如 JWT}</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>**请求**:</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="in">```json</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;field1&quot;</span><span class="fu">:</span> <span class="st">&quot;type: string, required&quot;</span><span class="fu">,</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;field2&quot;</span><span class="fu">:</span> <span class="st">&quot;type: number, optional&quot;</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>响应 (200 OK)</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;data&quot;</span><span class="fu">:</span> <span class="fu">{</span><span class="er">...</span><span class="fu">},</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;meta&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;page&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;total&quot;</span><span class="fu">:</span> <span class="dv">100</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>错误响应</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;error&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;code&quot;</span><span class="fu">:</span> <span class="st">&quot;ERROR_CODE&quot;</span><span class="fu">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;message&quot;</span><span class="fu">:</span> <span class="st">&quot;人类可读的错误信息&quot;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>示例</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-X</span> GET https://api.example.com/api/v1/users <span class="dt">\</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&quot;Authorization: Bearer {token}&quot;</span></span></code></pre></div>
+<pre><code>
+**检查清单**:
+- [ ] 所有功能有对应 API 端点
+- [ ] 使用标准 HTTP 方法
+- [ ] 错误处理一致
+- [ ] 认证机制完善
+- [ ] API 文档完整
+
+---
+
+### 2.4 数据库设计
+
+**目的**: 设计数据库 schema
+
+**调用 Skill**: `database_design`
+
+**步骤**:
+1. 识别实体和关系
+2. 设计表结构
+3. 定义索引和约束
+4. 设计迁移策略
+
+**ER 图模板**:
+```mermaid
+erDiagram
+    USER ||--o{ POST : creates
+    USER {
+        string id PK
+        string email
+        string password_hash
+        datetime created_at
+    }
+    POST {
+        string id PK
+        string user_id FK
+        string title
+        text content
+        datetime created_at
+    }</code></pre>
+<p><strong>表结构模板</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">### {table_name}</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>**描述**: {表的用途}</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 字段 <span class="pp">|</span> 类型 <span class="pp">|</span> 约束 <span class="pp">|</span> 说明 <span class="pp">|</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|------|------|</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> id <span class="pp">|</span> UUID <span class="pp">|</span> PRIMARY KEY <span class="pp">|</span> 唯一标识 <span class="pp">|</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> created_at <span class="pp">|</span> TIMESTAMP <span class="pp">|</span> NOT NULL, DEFAULT NOW() <span class="pp">|</span> 创建时间 <span class="pp">|</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> updated_at <span class="pp">|</span> TIMESTAMP <span class="pp">|</span> NOT NULL, DEFAULT NOW() <span class="pp">|</span> 更新时间 <span class="pp">|</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>**索引**:</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`idx_{field}`</span> on <span class="in">`{field}`</span> - {索引用途}</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>**外键**:</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`{field}`</span> references <span class="in">`{other_table}({other_field})`</span></span></code></pre></div>
+<p><strong>检查清单</strong>: - [ ] 实体识别完整 - [ ] 关系定义正确 - [
+] 范式化合理（通常 3NF） - [ ] 索引设计合理 - [ ] 迁移策略明确</p>
+<hr />
+<h3 id="部署架构设计">2.5 部署架构设计</h3>
+<p><strong>目的</strong>: 设计系统的部署方案</p>
+<p><strong>步骤</strong>: 1. 选择部署平台 2. 设计 CI/CD 流程 3.
+定义环境（dev/staging/prod） 4. 设计监控和日志方案</p>
+<p><strong>部署架构模板</strong>:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># 部署架构</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">## 环境</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 环境 <span class="pp">|</span> 用途 <span class="pp">|</span> 访问方式 <span class="pp">|</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|---------|</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> development <span class="pp">|</span> 开发测试 <span class="pp">|</span> 本地 <span class="pp">|</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> staging <span class="pp">|</span> 预发布测试 <span class="pp">|</span> https://staging.example.com <span class="pp">|</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> production <span class="pp">|</span> 生产环境 <span class="pp">|</span> https://example.com <span class="pp">|</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="fu">## CI/CD 流程</span></span></code></pre></div>
+<p>代码提交 → GitHub Actions → 测试 → 构建 → 部署</p>
+<pre><code>
+## 监控
+
+- **应用监控**: {工具}
+- **日志**: {工具}
+- **告警**: {工具}</code></pre>
+<p><strong>检查清单</strong>: - [ ] 部署平台选择合理 - [ ] CI/CD
+流程完整 - [ ] 环境隔离清晰 - [ ] 监控方案完善</p>
+<hr />
+<h3 id="创建-checkpoint">2.6 创建 Checkpoint</h3>
+<p><strong>Checkpoint 名称</strong>:
+<code>phase1_architecture_complete</code></p>
+<p><strong>Checkpoint 文件</strong>:
+<code>.eket/state/checkpoints/{project}-architecture-complete.md</code></p>
+<p><strong>内容</strong>:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Checkpoint: Phase1 Architecture Complete</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>**项目**: {project}</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>**时间**: {timestamp}</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>**负责人**: 技术经理</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## 检查项</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 系统架构文档已创建</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 技术栈选型完成</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> API 设计完成</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 数据库设计完成</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 部署架构完成</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="fu">## 交付物</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> system-architecture.md</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> tech-stack.md</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> api-design.md</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> database-design.md</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> deployment-architecture.md</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## 架构决策记录</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 架构决策已记录</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 技术选型评估已记录</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>**状态**: checkpoint_recorded</span></code></pre></div>
+<hr />
+<h2 id="质量检查">质量检查</h2>
+<h3 id="架构质量">架构质量</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />架构满足功能需求</label></li>
+<li><label><input type="checkbox" />架构满足非功能性需求</label></li>
+<li><label><input type="checkbox" />组件职责清晰</label></li>
+<li><label><input type="checkbox" />组件间解耦</label></li>
+</ul>
+<h3 id="技术选型质量">技术选型质量</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />技术选型有理有据</label></li>
+<li><label><input type="checkbox" />技术栈一致性好</label></li>
+<li><label><input type="checkbox" />团队能够胜任</label></li>
+</ul>
+<h3 id="api-设计质量">API 设计质量</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />API 设计 RESTful</label></li>
+<li><label><input type="checkbox" />命名一致</label></li>
+<li><label><input type="checkbox" />错误处理统一</label></li>
+<li><label><input type="checkbox" />文档完整</label></li>
+</ul>
+<h3 id="数据库设计质量">数据库设计质量</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />范式化合理</label></li>
+<li><label><input type="checkbox" />索引设计合理</label></li>
+<li><label><input type="checkbox" />扩展性考虑</label></li>
+</ul>
+<hr />
+<h2 id="相关文件">相关文件</h2>
+<ul>
+<li><a href="../phase-1-initiation/README.md">Phase 1 SOP</a></li>
+<li><a
+href="../../../template/skills/design/architecture_design.yml">Architecture
+Design Skill</a></li>
+<li><a href="../../../template/skills/design/api_design.yml">API Design
+Skill</a></li>
+<li><a
+href="../../../template/skills/design/database_design.yml">Database
+Design Skill</a></li>
+</ul>
+<hr />
+<p><strong>SOP 版本</strong>: 1.0.0 <strong>创建日期</strong>:
+2026-03-23 <strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 优化循环设计文档</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 优化循环设计文档</h1>
+</header>
+<h1 id="eket-优化循环设计文档">EKET 优化循环设计文档</h1>
+<p><strong>日期</strong>: 2026-04-06 <strong>版本</strong>: v2.0.0 →
+v2.1.0 <strong>方法</strong>: 分层制 × 分域并行</p>
+<hr />
+<h2 id="项目目标">项目目标</h2>
+<p><strong>近期（本次循环）</strong>：将 review 发现的 14 个功能性 Bug +
+6 项设计问题系统性修复，使框架从「可以运行」提升到「可以信赖」。</p>
+<p><strong>中期（v2.1.0）</strong>：消除模块重复、统一接口抽象、完善模板一致性，使框架从「可以信赖」提升到「可以演进」。</p>
+<p><strong>愿景</strong>：EKET 成为 AI
+智能体协作的工程化底座——任何团队可以通过 <code>init-project.sh</code> 在
+10 分钟内启动一个多 Agent
+协作项目，并在无人值守的情况下持续产出稳定的代码和决策记录。</p>
+<hr />
+<h2 id="评价体系">评价体系</h2>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>指标</th>
+<th>通过线</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Layer 1 Bug 修复</strong></td>
+<td>已知 Bug 修复率</td>
+<td>≥ 85%</td>
+</tr>
+<tr>
+<td></td>
+<td><code>npm run build</code> 零编译错误</td>
+<td>100%</td>
+</tr>
+<tr>
+<td></td>
+<td>新增测试覆盖修复点</td>
+<td>≥ 70%</td>
+</tr>
+<tr>
+<td><strong>Layer 2 架构整理</strong></td>
+<td>重复代码消除率</td>
+<td>≥ 80%</td>
+</tr>
+<tr>
+<td></td>
+<td><code>EketErrorCode</code> 覆盖率（所有模块使用枚举而非字符串）</td>
+<td>100%</td>
+</tr>
+<tr>
+<td></td>
+<td>模板版本号一致性</td>
+<td>100%</td>
+</tr>
+<tr>
+<td><strong>Layer 3 能力提升</strong></td>
+<td>模板 Agent 工作流无歧义（无矛盾指令）</td>
+<td>100%</td>
+</tr>
+<tr>
+<td></td>
+<td><code>outbox/tasks/</code> 有 README</td>
+<td>100%</td>
+</tr>
+<tr>
+<td></td>
+<td>优化循环可重复执行（脚本幂等）</td>
+<td>≥ 90%</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="循环架构">循环架构</h2>
+<pre><code>优化循环控制器（用户确认每层进入下一层）
+         │
+    ┌────▼────┐     ┌────▼────┐     ┌────▼────┐
+    │ Layer 1 │ --&gt; │ Layer 2 │ --&gt; │ Layer 3 │
+    │ Bug修复 │     │架构整理 │     │能力提升 │
+    └─────────┘     └─────────┘     └─────────┘
+
+每层内部：
+  域A升级Agent ──┐
+                 ├──► 评判Agent ──► 通过? ──► 用户确认进下层
+  域B升级Agent ──┤                    │
+  域C升级Agent ──┘          不通过 ──► 定向修正轮</code></pre>
+<hr />
+<h2 id="layer-1bug-修复">Layer 1：Bug 修复</h2>
+<h3 id="域-a-外框核心nodesrc">域 A — 外框核心（node/src/）</h3>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 35%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Bug</th>
+<th>文件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>sqlite-async-client Worker 忽略构造函数
+dbPath，走环境变量；connect() 在 Worker 初始化前就 resolve</td>
+<td><code>core/sqlite-async-client.ts</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>master-context 每次操作创建独立 Redis 连接，不走连接池</td>
+<td><code>core/master-context.ts</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>optimized-file-queue 校验和验证逻辑错误（含 _write_checksum
+字段的对象与不含该字段的对象不同）</td>
+<td><code>core/optimized-file-queue.ts</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>ConnectionLevel 类型三处重复定义，websocket-message-queue
+语义不同</td>
+<td><code>types/index.ts</code> + 相关模块</td>
+</tr>
+<tr>
+<td>5</td>
+<td>master-context 使用 7 个未注册到 EketErrorCode 的 string literal
+错误码</td>
+<td><code>core/master-context.ts</code> +
+<code>types/index.ts</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td>hashFunction 类型拼写 ‘murmer3’（应为 ‘murmur3’）</td>
+<td><code>types/index.ts</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td>master-election.ts 本地重复声明
+ElectionLevel/MasterElectionConfig/MasterElectionResult</td>
+<td><code>core/master-election.ts</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="域-b-外框周边scripts-web">域 B — 外框周边（scripts/ web/）</h3>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 35%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Bug</th>
+<th>文件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8</td>
+<td>eket-start.sh 引用 heartbeatmonitor.sh（无连字符），实际为
+heartbeat-monitor.sh</td>
+<td><code>scripts/eket-start.sh</code></td>
+</tr>
+<tr>
+<td>9</td>
+<td>start.sh 尝试启动不存在的 Python 模块，是迁移遗留僵尸脚本</td>
+<td><code>scripts/start.sh</code></td>
+</tr>
+<tr>
+<td>10</td>
+<td>web/app.js 请求不存在的 /locales/ 路径，i18n 全部 404</td>
+<td><code>web/app.js</code></td>
+</tr>
+<tr>
+<td>11</td>
+<td>init-three-repos.sh 错误提示引用过时命令格式</td>
+<td><code>scripts/init-three-repos.sh</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="域-c-模板template">域 C — 模板（template/）</h3>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 35%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Bug</th>
+<th>文件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>12</td>
+<td>IDENTITY.md 包含未执行的 Shell 表达式（<span
+class="math inline">(<em>d</em><em>a</em><em>t</em><em>e</em>)、</span>{ROLE}）</td>
+<td><code>template/.eket/IDENTITY.md</code></td>
+</tr>
+<tr>
+<td>13</td>
+<td>eket-slaver-auto.sh 状态解析正则与 ticket 模板格式不匹配；优先级用
+High/Low 但模板用 P0-P3</td>
+<td><code>template/.claude/commands/eket-slaver-auto.sh</code></td>
+</tr>
+<tr>
+<td>14</td>
+<td>eket-start.sh <code>-r</code> 参数用 $2 而非 $OPTARG</td>
+<td><code>template/.claude/commands/eket-start.sh</code></td>
+</tr>
+<tr>
+<td>15</td>
+<td>eket-init.sh 引用 $(dirname “$0”)/../../template/
+路径，复制到用户项目后失效</td>
+<td><code>template/.claude/commands/eket-init.sh</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="layer-2架构整理">Layer 2：架构整理</h2>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 69%" />
+</colgroup>
+<thead>
+<tr>
+<th>域</th>
+<th>工作内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>域 A</strong></td>
+<td>合并 sqlite 双实现共同接口；将 OptimizedFileQueueManager 接入
+message-queue 文件降级路径；删除 scripts/start.sh</td>
+</tr>
+<tr>
+<td><strong>域 B</strong></td>
+<td>统一所有模块 EketErrorCode 使用（消灭 string literal）；修复
+web-server.ts 静态路径健壮性</td>
+</tr>
+<tr>
+<td><strong>域 C</strong></td>
+<td>模板版本号统一到 v2.0.0；合并/厘清两个
+CLAUDE.md；confluence/templates/ 通用化；占位符统一为
+<code>{{变量名}}</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="layer-3能力提升">Layer 3：能力提升</h2>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 69%" />
+</colgroup>
+<thead>
+<tr>
+<th>域</th>
+<th>工作内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>域 A</strong></td>
+<td>补充 CLAUDE.md 分析报告步骤；补充 SYSTEM-SETTINGS.md
+审批触发机制；添加 outbox/README.md、tasks/README.md</td>
+</tr>
+<tr>
+<td><strong>域 B</strong></td>
+<td>修复 eket-init.sh 依赖检测逻辑；优先级体系统一
+P0-P3；eket-slaver-auto.sh 增加 P0-P3 解析</td>
+</tr>
+<tr>
+<td><strong>域 C</strong></td>
+<td>README.md 与 README_TEMPLATE.md 命名互换；更新过时目录结构描述；添加
+Agent 快速决策树入口</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

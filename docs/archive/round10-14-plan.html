@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Round 10-14 Sprint 计划 - v3.0 产品化之路</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Round 10-14 Sprint 计划 - v3.0 产品化之路</h1>
+</header>
+<h1 id="round-10-14-sprint-计划---v3.0-产品化之路">Round 10-14 Sprint
+计划 - v3.0 产品化之路</h1>
+<p><strong>制定时间</strong>: 2026-04-08 <strong>修订时间</strong>:
+2026-04-09 (Round 13b 进行中) <strong>当前版本</strong>: v2.4.0 (Round
+13a 完成) <strong>目标版本</strong>: v3.0.0 (生产级 AI 协作框架)</p>
+<hr />
+<h2 id="总览">📊 总览</h2>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 13%" />
+<col style="width: 18%" />
+<col style="width: 13%" />
+<col style="width: 20%" />
+<col style="width: 13%" />
+</colgroup>
+<thead>
+<tr>
+<th>Sprint</th>
+<th>主题</th>
+<th>Pillar</th>
+<th>周期</th>
+<th>目标版本</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Round 10</td>
+<td>CLI 体验改进</td>
+<td>Pillar 1</td>
+<td>1 周</td>
+<td>v2.3.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>Round 11</td>
+<td>文档站建设</td>
+<td>Pillar 1</td>
+<td>1 周</td>
+<td>v2.3.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>Round 12</td>
+<td>Docker 化</td>
+<td>Pillar 2</td>
+<td>1 周</td>
+<td>v2.3.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>Round 13a</td>
+<td>清账（测试100%+降级）</td>
+<td>Pillar 2</td>
+<td>1 周</td>
+<td>v2.4.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>Round 13b</td>
+<td>CI/CD + 健康检查</td>
+<td>Pillar 5</td>
+<td>1 周</td>
+<td>v2.5.0</td>
+<td>🔄 进行中</td>
+</tr>
+<tr>
+<td>Round 14</td>
+<td>SDK 正式化</td>
+<td>Pillar 3</td>
+<td>1 周</td>
+<td>v2.6.0</td>
+<td>⚪ 待启动</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="round-10-cli-体验改进">🎯 Round 10: CLI 体验改进</h2>
+<p><strong>周期</strong>: 1 周 <strong>工作量</strong>: 8-12 小时
+<strong>负责人</strong>: 待分配</p>
+<h3 id="任务清单">任务清单</h3>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 24%" />
+<col style="width: 24%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th>ID</th>
+<th>任务</th>
+<th>描述</th>
+<th>验收标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CLI-001</td>
+<td>inquirer.js 集成</td>
+<td>交互式配置向导</td>
+<td>用户无需记忆参数</td>
+</tr>
+<tr>
+<td>CLI-002</td>
+<td>命令别名</td>
+<td>常用命令快捷方式</td>
+<td><code>ekt start</code> = <code>ekt instance:start</code></td>
+</tr>
+<tr>
+<td>CLI-003</td>
+<td>命令补全</td>
+<td>bash/zsh 自动补全</td>
+<td>tab 补全命令和参数</td>
+</tr>
+<tr>
+<td>CLI-004</td>
+<td>错误消息优化</td>
+<td>友好的错误提示</td>
+<td>包含解决建议</td>
+</tr>
+<tr>
+<td>CLI-005</td>
+<td>进度条</td>
+<td>长时间操作显示进度</td>
+<td>构建、部署等操作</td>
+</tr>
+</tbody>
+</table>
+<h3 id="交付物">交付物</h3>
+<ul class="task-list">
+<li><label><input type="checkbox"
+checked="" />交互式启动向导</label></li>
+<li><label><input type="checkbox" checked="" />CLI 补全脚本</label></li>
+<li><label><input type="checkbox"
+checked="" />错误消息优化文档</label></li>
+<li><label><input type="checkbox" checked="" />v2.3.0 发布（含 Mindset
+注入）</label></li>
+</ul>
+<hr />
+<h2 id="round-11-文档站建设">🎯 Round 11: 文档站建设</h2>
+<p><strong>周期</strong>: 1 周 <strong>工作量</strong>: 16-20 小时
+<strong>负责人</strong>: 待分配</p>
+<h3 id="任务清单-1">任务清单</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>任务</th>
+<th>描述</th>
+<th>验收标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DOC-001</td>
+<td>Docusaurus 搭建</td>
+<td>文档站框架</td>
+<td>本地运行成功</td>
+</tr>
+<tr>
+<td>DOC-002</td>
+<td>首页设计</td>
+<td>30 秒快速开始</td>
+<td>突出核心卖点</td>
+</tr>
+<tr>
+<td>DOC-003</td>
+<td>架构文档迁移</td>
+<td>三级架构、核心模块</td>
+<td>图表清晰</td>
+</tr>
+<tr>
+<td>DOC-004</td>
+<td>API 文档生成</td>
+<td>TypeDoc 集成</td>
+<td>自动同步代码</td>
+</tr>
+<tr>
+<td>DOC-005</td>
+<td>部署到 Vercel</td>
+<td>自动部署流水线</td>
+<td>push 即部署</td>
+</tr>
+</tbody>
+</table>
+<h3 id="交付物-1">交付物</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />docusaurus
+文档站源代码</label></li>
+<li><label><input type="checkbox" checked="" />8
+篇核心文档迁移完成</label></li>
+<li><label><input type="checkbox" checked="" />v2.3.0 发布</label></li>
+</ul>
+<hr />
+<h2 id="round-12-docker-化">🎯 Round 12: Docker 化</h2>
+<p><strong>周期</strong>: 1 周 <strong>工作量</strong>: 12-16 小时
+<strong>负责人</strong>: 待分配</p>
+<h3 id="任务清单-2">任务清单</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>任务</th>
+<th>描述</th>
+<th>验收标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DCK-001</td>
+<td>Dockerfile 编写</td>
+<td>多阶段构建</td>
+<td>镜像 &lt;200MB</td>
+</tr>
+<tr>
+<td>DCK-002</td>
+<td>docker-compose.yml</td>
+<td>完整环境编排</td>
+<td>一键启动所有服务</td>
+</tr>
+<tr>
+<td>DCK-003</td>
+<td>多架构支持</td>
+<td>arm64/amd64</td>
+<td>GitHub Actions 构建</td>
+</tr>
+<tr>
+<td>DCK-004</td>
+<td>Docker Hub 发布</td>
+<td>自动推送镜像</td>
+<td><code>godlockin/eket:latest</code></td>
+</tr>
+<tr>
+<td>DCK-005</td>
+<td>部署文档</td>
+<td>完整部署指南</td>
+<td>新手可跟随部署</td>
+</tr>
+</tbody>
+</table>
+<h3 id="交付物-2">交付物</h3>
+<ul class="task-list">
+<li><label><input type="checkbox"
+checked="" />Dockerfile（多阶段构建）</label></li>
+<li><label><input type="checkbox"
+checked="" />docker-compose.yml</label></li>
+<li><label><input type="checkbox" checked="" />部署文档</label></li>
+<li><label><input type="checkbox" checked="" />v2.3.0 发布（Docker
+化）</label></li>
+</ul>
+<hr />
+<h2 id="round-13a-清账">🎯 Round 13a: 清账 ✅</h2>
+<p><strong>周期</strong>: 1 周 <strong>工作量</strong>: 8 小时
+<strong>目标版本</strong>: v2.4.0 <strong>状态</strong>: ✅ 完成</p>
+<h3 id="任务清单-3">任务清单</h3>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 27%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr>
+<th>ID</th>
+<th>任务</th>
+<th>描述</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIX-001</td>
+<td>openclaw-adapter 降级修复</td>
+<td>Redis 不可用时优雅降级到内存模式</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>FIX-002</td>
+<td>agent routes 测试修复</td>
+<td>18 个测试修复，全部通过</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>FIX-003</td>
+<td>版本对齐</td>
+<td>package.json/CLAUDE.md/CHANGELOG 统一 v2.4.0</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>FIX-004</td>
+<td>confluence 清理</td>
+<td>移除错误数据，重建 progress-tracker.md</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h3 id="交付物-3">交付物</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />openclaw-adapter.ts
+优雅降级</label></li>
+<li><label><input type="checkbox" checked="" />1072/1072 tests
+全部通过</label></li>
+<li><label><input type="checkbox" checked="" />v2.4.0 发布</label></li>
+</ul>
+<hr />
+<h2 id="round-13b-cicd-健康检查">🎯 Round 13b: CI/CD + 健康检查 🔄</h2>
+<p><strong>周期</strong>: 1 周 <strong>工作量</strong>: 12 小时
+<strong>目标版本</strong>: v2.5.0 <strong>状态</strong>: 🔄 进行中</p>
+<h3 id="任务清单-4">任务清单</h3>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 27%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr>
+<th>ID</th>
+<th>任务</th>
+<th>描述</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TASK-013</td>
+<td>GitHub Actions CI</td>
+<td>.github/workflows/ci.yml</td>
+<td>🔄 PR #1 open</td>
+</tr>
+<tr>
+<td>TASK-014</td>
+<td>健康检查端点</td>
+<td>/health /ready /live (EketServer + WebDashboardServer)</td>
+<td>✅ PR #2 open</td>
+</tr>
+<tr>
+<td>TASK-015</td>
+<td>Roadmap 文档对齐</td>
+<td>版本号与实际状态同步</td>
+<td>🔄 本次</td>
+</tr>
+</tbody>
+</table>
+<h3 id="交付物-4">交付物</h3>
+<ul class="task-list">
+<li><label><input type="checkbox"
+checked="" />.github/workflows/ci.yml</label></li>
+<li><label><input type="checkbox" checked="" />/health /ready /live
+端点</label></li>
+<li><label><input type="checkbox" checked="" />1079/1079 tests
+全部通过</label></li>
+<li><label><input type="checkbox" />分支保护规则配置</label></li>
+<li><label><input type="checkbox" />v2.5.0 发布</label></li>
+</ul>
+<hr />
+<h2 id="round-14-sdk-正式化">🎯 Round 14: SDK 正式化 ⚪</h2>
+<p><strong>周期</strong>: 1 周 <strong>工作量</strong>: 12-16 小时
+<strong>目标版本</strong>: v2.6.0 <strong>状态</strong>: ⚪ 待启动</p>
+<h3 id="任务清单-5">任务清单</h3>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 24%" />
+<col style="width: 24%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th>ID</th>
+<th>任务</th>
+<th>描述</th>
+<th>验收标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SDK-001</td>
+<td>Python SDK 版本策略</td>
+<td>semver + PyPI 发布流程</td>
+<td>RELEASING.md 完成</td>
+</tr>
+<tr>
+<td>SDK-002</td>
+<td>SDK examples 完善</td>
+<td>覆盖核心用例</td>
+<td>5+ example 脚本可运行</td>
+</tr>
+<tr>
+<td>SDK-003</td>
+<td>SDK tests 完善</td>
+<td>单测覆盖率 &gt;80%</td>
+<td>pytest 通过</td>
+</tr>
+<tr>
+<td>SDK-004</td>
+<td>SDK 文档</td>
+<td>API reference + quickstart</td>
+<td>docs-site 集成</td>
+</tr>
+</tbody>
+</table>
+<h3 id="交付物-5">交付物</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />sdk/python/RELEASING.md</label></li>
+<li><label><input type="checkbox" />sdk/python/examples/ (5+
+脚本)</label></li>
+<li><label><input type="checkbox" />sdk/python/tests/ 完善</label></li>
+<li><label><input type="checkbox" />v2.6.0 发布</label></li>
+</ul>
+<hr />
+<h2 id="依赖关系">📊 依赖关系</h2>
+<pre><code>Round 10 (CLI) ─────┬────→ Round 12 (Docker) ──→ Round 13a (清账)
+                    │
+Round 11 (文档) ─────┘                                    ↓
+                                               Round 13b (CI/CD+健康检查)
+                                                          ↓
+                                               Round 14 (SDK 正式化)</code></pre>
+<p><strong>关键路径</strong>: CLI/文档 → Docker → 清账 → CI/CD → SDK</p>
+<hr />
+<h2 id="验收标准汇总">🎯 验收标准汇总</h2>
+<h3 id="v2.3.0-round-10-12-完成">v2.3.0 (Round 10-12 完成) ✅</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />交互式 CLI
+向导可用</label></li>
+<li><label><input type="checkbox"
+checked="" />文档站上线，核心文档完成</label></li>
+<li><label><input type="checkbox" checked="" />Docker
+镜像可用，docker-compose 一键启动</label></li>
+</ul>
+<h3 id="v2.4.0-round-13a-完成">v2.4.0 (Round 13a 完成) ✅</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />1072/1072 tests
+全部通过</label></li>
+<li><label><input type="checkbox" checked="" />openclaw-adapter
+优雅降级</label></li>
+<li><label><input type="checkbox" checked="" />版本号统一</label></li>
+</ul>
+<h3 id="v2.5.0-round-13b-进行中">v2.5.0 (Round 13b 进行中) 🔄</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />GitHub Actions CI
+运行（PR #1）</label></li>
+<li><label><input type="checkbox" checked="" />健康检查端点 /health
+/ready /live（PR #2）</label></li>
+<li><label><input type="checkbox" />分支保护启用</label></li>
+</ul>
+<h3 id="v2.6.0-round-14">v2.6.0 (Round 14) ⚪</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Python SDK 正式发布</label></li>
+<li><label><input type="checkbox" />SDK 版本策略定义</label></li>
+<li><label><input type="checkbox" />SDK 文档完整</label></li>
+</ul>
+<hr />
+<h2 id="风险与缓解">💡 风险与缓解</h2>
+<table>
+<thead>
+<tr>
+<th>风险</th>
+<th>影响</th>
+<th>缓解措施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Docusaurus 主题定制耗时</td>
+<td>中</td>
+<td>使用现成主题，后定制</td>
+</tr>
+<tr>
+<td>Docker 镜像大小超标</td>
+<td>中</td>
+<td>多阶段构建，alpine 基础</td>
+</tr>
+<tr>
+<td>Prometheus 指标定义复杂</td>
+<td>低</td>
+<td>先实现核心指标</td>
+</tr>
+<tr>
+<td>semantic-release 配置复杂</td>
+<td>中</td>
+<td>参考成熟项目配置</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="任务认领方式">📝 任务认领方式</h2>
+<p>每个 Round 开始时： 1. Master 创建任务看板 2. Slaver 认领任务 3.
+每日站会同步进度 4. Round 结束发布版本</p>
+<hr />
+<h2 id="相关文档">🔗 相关文档</h2>
+<ul>
+<li><a href="v3.0-strategy.md">v3.0 战略规划</a></li>
+<li><a href="round9-complete.md">Round 9 完成报告</a></li>
+<li><a href="README.md">路线图</a></li>
+</ul>
+<hr />
+<p><strong>状态</strong>: Round 13b 进行中 <strong>下一步</strong>: 合并
+PR #1（GitHub Actions CI），发布 v2.5.0，启动 Round 14</p>
+</body>
+</html>

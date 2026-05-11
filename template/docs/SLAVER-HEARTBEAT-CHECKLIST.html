@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Slaver 心跳检查清单</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Slaver 心跳检查清单</h1>
+</header>
+<h1 id="slaver-心跳检查清单">Slaver 心跳检查清单</h1>
+<p><strong>版本</strong>: v2.1.0<br />
+<strong>用途</strong>: Slaver 实例的持续自我反思机制<br />
+<strong>触发</strong>: 每 15
+分钟自动执行，或完成任何任务阶段后手动执行</p>
+<hr />
+<h2 id="slaver-是被动唤醒的执行节点">Slaver 是被动唤醒的执行节点</h2>
+<p>Slaver 由 Master 通过 subagent 初始化，被赋予特定角色（如
+<code>frontend_dev</code>、<code>backend_dev</code>、<code>tester</code>
+等）。Slaver 被唤醒后，<strong>必须不断问自己以下 4
+个问题</strong>：</p>
+<hr />
+<h3 id="问题-1我现在手上的任务是什么有没有依赖需要报告-master">□ 问题
+1：我现在手上的任务是什么？有没有依赖需要报告 Master？</h3>
+<p><strong>检查清单</strong>： - [ ] 当前 ticket ID 是什么？状态是什么？
+- [ ] 任务的 <code>blocked_by</code> 依赖是否已满足？ - [ ]
+是否有新的阻塞（技术难点/需求不明/资源不足）？ - [ ] 是否需要 Master
+仲裁或协调？</p>
+<p><strong>依赖检测</strong>： | 情况 | 判定 | 行动 | |——|——|——| |
+依赖的任务未完成 | 阻塞 | 更新状态为 <code>blocked</code> → 发送消息给
+Master → 领取其他任务 | | 依赖的外部资源缺失 | 阻塞 | 写入
+<code>inbox/dependency-clarification.md</code> → 等待 Master 处理 | |
+技术难点卡住 &gt; 30 分钟 | 阻塞 | 写入
+<code>inbox/blocker_report.md</code> → 请求 Master 仲裁 | | 一切正常 |
+无阻塞 | 继续执行 |</p>
+<p><strong>行动流程</strong>：</p>
+<pre><code>发现依赖/阻塞
+    │
+    ▼
+是否可独立解决？
+    ├── 是，&lt; 30 分钟 → 尝试解决 → 继续执行
+    ├── 是，&gt; 30 分钟 → 记录 blocker → 通知 Master → 可继续则继续
+    └── 否 → 立即报告 Master → 等待仲裁/协调</code></pre>
+<hr />
+<h3 id="问题-2我做完之后下一个任务可以是什么">□ 问题
+2：我做完之后下一个任务可以是什么？</h3>
+<p><strong>检查清单</strong>： - [ ] 当前任务完成后，状态更新为
+<code>review</code> 或 <code>done</code> - [ ] 检查
+<code>jira/tickets/</code> 中 <code>ready</code> 状态的任务 - [ ]
+筛选匹配自己角色标签的任务 - [ ] 按优先级排序，领取下一个</p>
+<p><strong>任务匹配策略</strong>： | 自己的角色 | 优先领取的标签 |
+|————|—————| | <code>frontend_dev</code> | <code>frontend</code>,
+<code>ui</code>, <code>react</code>, <code>typescript</code> | |
+<code>backend_dev</code> | <code>backend</code>, <code>api</code>,
+<code>database</code>, <code>nodejs</code> | | <code>fullstack</code> |
+<code>fullstack</code>, <code>integration</code> | | <code>tester</code>
+| <code>test</code>, <code>qa</code>, <code>e2e</code> | |
+<code>devops</code> | <code>devops</code>, <code>deploy</code>,
+<code>docker</code>, <code>ci/cd</code> |</p>
+<p><strong>行动流程</strong>：</p>
+<pre><code>当前任务完成
+    │
+    ▼
+是否有 ready 任务？
+    ├── 有，匹配角色 → 立即领取 → 更新状态为 in_progress
+    ├── 有，但不匹配 → 通知 Master 需要其他角色
+    └── 无 → 通知 Master 请求新任务 → 进入 idle 状态</code></pre>
+<p><strong>预防 idle 策略</strong>： - 如果预计将进入 idle 状态 &gt; 10
+分钟 → 提前通知 Master - 如果 Master 无响应 &gt; 30 分钟 → 检查
+<code>backlog</code> 任务，分析后可主动开始（记录原因）</p>
+<hr />
+<h3 id="问题-3当前任务有没有优化的可能">□ 问题
+3：当前任务有没有优化的可能？</h3>
+<p><strong>检查清单</strong>（在提交 PR 前自问）： - [ ]
+代码是否可读？命名是否清晰？ - [ ] 是否有重复代码可以抽取？ - [ ]
+是否有更简单的实现方式？ - [ ] 是否有性能隐患（循环、查询、缓存）？ - [
+] 是否有安全问题（输入验证、权限检查）？ - [ ] 测试是否覆盖边界情况？ -
+[ ] 文档是否更新（注释、API 文档）？</p>
+<p><strong>自优化流程</strong>：</p>
+<pre><code>准备提交 PR 前
+    │
+    ▼
+执行自检清单
+    │
+    ▼
+发现问题？
+    ├── 是，可快速修复 → 立即修复 → 重新测试
+    ├── 是，影响架构 → 通知 Master → 等待确认
+    └── 否 → 提交 PR</code></pre>
+<hr />
+<h3 id="问题-4我是否陷入分析瘫痪">□ 问题 4：我是否陷入分析瘫痪？</h3>
+<p>→ 如果已连续读取 5+
+个文件而没有写任何代码，立刻开始写（哪怕只是框架代码）或报告
+BLOCKED，禁止继续探索</p>
+<p><strong>判断标准</strong>： - 连续 5
+次或以上纯读取/搜索操作（Read/Grep/Glob/WebSearch/WebFetch） -
+期间没有任何写操作（Edit/Write/Bash/Task）</p>
+<p><strong>决策点行动（二选一，禁止第三选项）</strong>： - <strong>行动
+A — 开始写代码</strong>：建立文件框架/骨架，哪怕不完整也要先动手 -
+<strong>行动 B — 报告 BLOCKED</strong>：一句话说明卡在哪，等待 Master
+指示</p>
+<p><strong>禁止</strong>：继续读文件、继续搜索、继续”再分析一下”</p>
+<hr />
+<h2 id="行动阈值规则analysis-paralysis-guard">行动阈值规则（Analysis
+Paralysis Guard）</h2>
+<p><strong>规则</strong>：执行阶段（in_progress）中，如果你已经连续做了
+5
+次或以上的纯读取/探索操作（Read/Grep/Glob/WebSearch/WebFetch）而没有任何写操作（Edit/Write/Bash/Task），必须立即触发决策点。</p>
+<p><strong>决策点行动（二选一，必须选其一，禁止继续探索）</strong>：</p>
+<ul>
+<li><strong>行动 A —
+开始写代码</strong>：即使只是文件框架/骨架代码也算。建立文件结构，然后逐步填充。</li>
+<li><strong>行动 B — 报告
+BLOCKED</strong>：在执行报告里写一句话说明卡在哪里，等待 Master
+指示。</li>
+</ul>
+<p><strong>禁止</strong>： - 在决策点之后继续读取文件 -
+继续搜索”再多了解一点” - 继续”想一想”但不写任何代码</p>
+<h3 id="例外情况不计入连续次数">例外情况（不计入连续次数）</h3>
+<ul>
+<li><strong>Gate Review
+阶段首次分析</strong>：领取任务后理解需求期，允许最多 10
+次读操作（一次性豁免）</li>
+<li><strong>明确标注调研任务</strong>：ticket
+里明确写”调研/research”类型，且在分析阶段（analysis status）</li>
+</ul>
+<h3 id="为什么有这条规则">为什么有这条规则</h3>
+<p>过度探索会： 1. 消耗大量 context window（读操作积累历史） 2.
+拖延任务进度（Master heartbeat 检测到 stale） 3.
+产生”感觉在工作但没有产出”的假进度 4.
+陷入完美主义陷阱（想完全理解再动手）</p>
+<p>好的 Slaver
+策略：先建立最小可运行框架，然后迭代完善，而不是先完全理解再动手。</p>
+<hr />
+<h2 id="slaver-自主执行权限v2.1.2">Slaver 自主执行权限（v2.1.2）</h2>
+<p><strong>核心原则</strong>：Slaver
+在执行常规操作时<strong>不需要等待确认，直接执行</strong>。</p>
+<h3 id="slaver-可直接执行的操作">Slaver 可直接执行的操作</h3>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>说明</th>
+<th>通知方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>查看 Ticket</td>
+<td>读取任务详情、验收标准</td>
+<td>无需通知</td>
+</tr>
+<tr>
+<td>领取任务</td>
+<td><code>ready</code> → <code>in_progress</code></td>
+<td>完成后发送消息到队列</td>
+</tr>
+<tr>
+<td>提交 PR</td>
+<td>创建 PR 描述文件，发送 Review 请求</td>
+<td>自动通知 Master</td>
+</tr>
+<tr>
+<td>更新状态</td>
+<td>根据进度更新 Ticket 状态</td>
+<td>无需通知</td>
+</tr>
+<tr>
+<td>创建/更新 worktree</td>
+<td>为任务创建独立开发环境</td>
+<td>无需通知</td>
+</tr>
+<tr>
+<td>检查 PR 反馈</td>
+<td>读取 Master Review 意见</td>
+<td>无需通知</td>
+</tr>
+<tr>
+<td>根据反馈修改</td>
+<td><code>changes_requested</code> → 修改代码</td>
+<td>无需通知</td>
+</tr>
+<tr>
+<td>提交进度报告</td>
+<td>写入 <code>inbox/human_feedback/</code></td>
+<td>无需通知</td>
+</tr>
+</tbody>
+</table>
+<h3 id="需要等待上报的情况">需要等待/上报的情况</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>情况</th>
+<th>行动</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>技术难点 &gt; 30 分钟</td>
+<td>写入 <code>inbox/blocker_report.md</code> → 等待 Master 仲裁</td>
+</tr>
+<tr>
+<td>需求不明确</td>
+<td>写入 <code>inbox/dependency-clarification.md</code> → 等待 Master
+处理</td>
+</tr>
+<tr>
+<td>资源缺失（API/数据/配置）</td>
+<td>写入 <code>inbox/dependency-clarification.md</code> → 等待
+Master</td>
+</tr>
+<tr>
+<td>Scope 变更影响交付</td>
+<td>通知 Master → 等待人类决策</td>
+</tr>
+</tbody>
+</table>
+<h3 id="自主执行流程">自主执行流程</h3>
+<pre><code>Slaver 检测/行动
+    │
+    ▼
+是否常规操作？
+    ├── 是 → 直接执行 → 完成后发送通知到消息队列
+    └── 否（阻塞/需求不明/资源缺失）
+            │
+            ▼
+        写入对应文件 → 通知 Master → 等待处理</code></pre>
+<hr />
+<h2 id="slaver-任务领取流程v2.1.0">Slaver 任务领取流程（v2.1.0）</h2>
+<h3 id="领取任务步骤">领取任务步骤</h3>
+<p><strong>触发条件</strong>: Slaver 检测到 <code>ready</code>
+状态的任务，且匹配自己的角色</p>
+<p><strong>步骤</strong>：</p>
+<ol type="1">
+<li><p><strong>运行领取命令</strong></p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-claim</span> <span class="op">&lt;</span>ticket-id<span class="op">&gt;</span></span></code></pre></div></li>
+<li><p><strong>脚本自动执行以下操作</strong>：</p>
+<ul>
+<li>✅ 读取实例配置，获取 <code>instance_id</code></li>
+<li>✅ 检查 ticket 状态（必须是
+<code>ready</code>/<code>backlog</code>/<code>analysis</code>）</li>
+<li>✅ 检查依赖任务是否完成</li>
+<li>✅ 更新状态：<code>ready</code> → <code>in_progress</code></li>
+<li>✅ 更新负责人：<code>**负责人**: &lt;instance_id&gt;</code></li>
+<li>✅ 更新执行
+Agent：<code>**执行 Agent**: &lt;instance_id&gt;</code></li>
+<li>✅ 更新最后更新时间</li>
+<li>✅ 添加领取记录到 <code>## 领取记录</code> 表格</li>
+<li>✅ 更新开始时间</li>
+<li>✅ 更新执行日志</li>
+<li>✅ 发送消息到消息队列（通知 Master 和其他 Slaver）</li>
+</ul></li>
+<li><p><strong>领取后的行动</strong>：</p>
+<ul class="task-list">
+<li><label><input type="checkbox" />仔细阅读 ticket
+描述和验收标准</label></li>
+<li><label><input
+type="checkbox" />创建任务分析报告：<code>jira/tickets/&lt;type&gt;/&lt;ticket-id&gt;/analysis-report.md</code></label></li>
+<li><label><input type="checkbox" />提交分析报告给 Master
+审批</label></li>
+<li><label><input type="checkbox" />审批通过后开始开发</label></li>
+</ul></li>
+</ol>
+<h3 id="领取记录格式">领取记录格式</h3>
+<p>Ticket 文件中的领取记录格式：</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 领取记录</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 操作 <span class="pp">|</span> Slaver Instance ID <span class="pp">|</span> 时间 <span class="pp">|</span> 状态变更 <span class="pp">|</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|-------------------|------|----------|</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 领取 <span class="pp">|</span> slaver_20260410_150000_x9y8z7w6 <span class="pp">|</span> 2026-04-10T15<span class="sc">:00:</span>00+08:00 <span class="pp">|</span> ready → in_progress <span class="pp">|</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 提交 Review <span class="pp">|</span> slaver_20260410_150000_x9y8z7w6 <span class="pp">|</span> 2026-04-10T17<span class="sc">:30:</span>00+08:00 <span class="pp">|</span> in_progress → review <span class="pp">|</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Review 通过 <span class="pp">|</span> master_20260410_143000_a1b2c3d4 <span class="pp">|</span> 2026-04-10T18<span class="sc">:00:</span>00+08:00 <span class="pp">|</span> review → done <span class="pp">|</span></span></code></pre></div>
+<hr />
+<h2 id="pr-等待期间检查频率v2.1.1">PR 等待期间检查频率（v2.1.1）</h2>
+<p>提交 PR 后等待 Master 反馈期间的检查频率：</p>
+<table>
+<thead>
+<tr>
+<th>Slaver 状态</th>
+<th>检查频率</th>
+<th>检查内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>空闲等待</td>
+<td>每 10 秒</td>
+<td><code>inbox/human_feedback/</code>、消息队列、Ticket 状态</td>
+</tr>
+<tr>
+<td>工作中</td>
+<td>每 5 分钟</td>
+<td><code>inbox/human_feedback/</code>、消息队列、Ticket 状态</td>
+</tr>
+</tbody>
+</table>
+<p><strong>判定标准</strong>： - <strong>空闲等待</strong>：当前无其他
+<code>in_progress</code> 任务 - <strong>工作中</strong>：有 1 个或多个
+<code>in_progress</code> 任务并行开发</p>
+<p><strong>检查内容</strong>： 1. <code>inbox/human_feedback/</code> -
+Master 是否有新反馈文件 2. 消息队列 - 是否有
+<code>pr_review_result</code> 类型消息 3. Ticket 状态 - 是否从
+<code>review</code> 变更为
+<code>approved</code>/<code>changes_requested</code>/<code>rejected</code></p>
+<h3 id="消息队列通知格式">消息队列通知格式</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;msg_20260410150000&quot;</span><span class="fu">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timestamp&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-04-10T15:00:00+08:00&quot;</span><span class="fu">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;from&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver_20260410_150000_x9y8z7w6&quot;</span><span class="fu">,</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;to&quot;</span><span class="fu">:</span> <span class="st">&quot;broadcast&quot;</span><span class="fu">,</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;task_claimed&quot;</span><span class="fu">,</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;priority&quot;</span><span class="fu">:</span> <span class="st">&quot;normal&quot;</span><span class="fu">,</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payload&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ticket_id&quot;</span><span class="fu">:</span> <span class="st">&quot;FEAT-001&quot;</span><span class="fu">,</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;claimed_by&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver_20260410_150000_x9y8z7w6&quot;</span><span class="fu">,</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;previous_status&quot;</span><span class="fu">:</span> <span class="st">&quot;ready&quot;</span><span class="fu">,</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;new_status&quot;</span><span class="fu">:</span> <span class="st">&quot;in_progress&quot;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<hr />
+<p><strong>优化检查维度</strong>： | 维度 | 检查点 | 工具 | |——|——–|——|
+| 代码质量 | ESLint 零错误、无 <code>any</code> 类型 |
+<code>npm run lint</code> | | 测试覆盖 | 覆盖率 ≥ 80%、边界情况覆盖 |
+<code>npm test -- --coverage</code> | | 性能 | 无 N+1 查询、大数据有缓存
+| 人工审查 | | 安全 | 输入验证、XSS/SQL 注入防护 | 人工审查 + 工具 | |
+文档 | JSDoc/TSDoc 完整、README 更新 | 人工审查 |</p>
+<hr />
+<h2 id="slaver-自检频率建议">Slaver 自检频率建议</h2>
+<table>
+<thead>
+<tr>
+<th>检查类型</th>
+<th>频率</th>
+<th>触发时机</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>问题 1（依赖/阻塞）</td>
+<td>每 15 分钟</td>
+<td>遇到困难时立即</td>
+</tr>
+<tr>
+<td>问题 2（下一任务）</td>
+<td>完成任务时</td>
+<td>当前任务提交 PR 后</td>
+</tr>
+<tr>
+<td>问题 3（优化）</td>
+<td>提交 PR 前</td>
+<td>完成编码准备测试时</td>
+</tr>
+<tr>
+<td>问题 4（分析瘫痪）</td>
+<td>每次读操作后</td>
+<td>连续 5 次读操作后立即</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="blocker-报告模板">Blocker 报告模板</h2>
+<p>发现问题 1 需要报告 Master 时，写入
+<code>inbox/blocker_reports/blocker-{{YYYYMMDD-HHMM}}.md</code>：</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Blocker 报告</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>**时间**: {{ISO8601 时间}}</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>**Slaver ID**: {{slaver_id}}</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>**当前任务**: {{TICKET-ID}}</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">## 问题描述</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>{{清晰描述遇到的阻塞}}</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="fu">## 已尝试的解决方案</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> {{方案 1}} → {{结果}}</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> {{方案 2}} → {{结果}}</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## 需要的帮助</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 需要技术决策</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 需要需求澄清</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 需要协调其他 Slaver</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 其他：{{说明}}</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="fu">## 阻塞影响</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>当前任务状态：{{status}}</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>预计延迟：{{X}} 小时/天</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>是否影响关键路径：是/否</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## 等待期间计划</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>在等待 Master 回复期间，我将：</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 继续执行 {{其他可并行任务}}</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 暂停当前任务</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 预计 {{X}} 小时后如无回复将发送提醒</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>**状态**: awaiting_arbitration</span></code></pre></div>
+<hr />
+<h2 id="任务领取模板">任务领取模板</h2>
+<p>完成当前任务后领取新任务时，更新
+<code>jira/tickets/{TICKET-ID}.md</code>：</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 执行记录</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 领取信息</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**领取者**: {{slaver_id}}</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**领取时间**: {{ISO8601 时间}}</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**预计工时**: {{X}}h</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**状态已更新**: <span class="co">[</span><span class="ot">x</span><span class="co">]</span> ready → in_progress</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">### 上一任务</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Ticket ID**: {{PREV_TICKET_ID}}</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**完成时间**: {{ISO8601 时间}}</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**PR 状态**: submitted / merged</span></code></pre></div>
+<hr />
+<h2 id="pr-自检清单提交前必填技术栈感知四件套">PR
+自检清单（提交前必填，技术栈感知四件套）</h2>
+<p>在 <code>jira/tickets/{TICKET-ID}.md</code>
+的”执行记录”中，按项目技术栈选择对应命令执行自检：</p>
+<blockquote>
+<p>📌 技术栈探测：<code>bash scripts/detect-stack.sh</code>
+自动识别当前栈</p>
+</blockquote>
+<h3 id="node.js-项目">Node.js 项目</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">### PR 自检（Node.js）</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> <span class="in">`npm run build`</span> — TypeScript 编译零 error</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> <span class="in">`npm run lint`</span> — ESLint 零 error</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> <span class="in">`npm test`</span> — 全量通过，零新增失败</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> <span class="in">`npm audit --audit-level=high`</span> — 无 high/critical 漏洞</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 测试覆盖率 ≥ 80%</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 文档已更新</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 提交历史已整理（rebase/squash）</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 分支已同步上游最新代码</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>**自检时间**: {{ISO8601 时间}}</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>**自检者**: {{slaver_id}}</span></code></pre></div>
+<h3 id="python-项目">Python 项目</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">### PR 自检（Python）</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> <span class="in">`mypy src/`</span> — 类型检查零 error</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> <span class="in">`ruff check .`</span> — Lint 零 error</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> <span class="in">`pytest`</span> — 全量通过，零新增失败</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> <span class="in">`pip-audit`</span> 或 <span class="in">`safety check`</span> — 无高危漏洞</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 测试覆盖率 ≥ 80%</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 文档已更新</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 提交历史已整理（rebase/squash）</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 分支已同步上游最新代码</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>**自检时间**: {{ISO8601 时间}}</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>**自检者**: {{slaver_id}}</span></code></pre></div>
+<h3 id="shell-通用项目">Shell / 通用项目</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">### PR 自检（Shell）</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> <span class="in">`shellcheck scripts/*.sh`</span> — 零 error</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> <span class="in">`bash scripts/validate-ticket-template.sh`</span> — 全部通过</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 文档已更新</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 提交历史已整理（rebase/squash）</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 分支已同步上游最新代码</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> **Artifact Schema 已填写**：Ticket 的执行记录包含 <span class="in">`implementation_report`</span> 结构化字段（test_result 必须是真实命令输出，非描述）</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>**自检时间**: {{ISO8601 时间}}</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>**自检者**: {{slaver_id}}</span></code></pre></div>
+<hr />
+<h2 id="偏差处理协议deviation-rules">偏差处理协议（Deviation
+Rules）</h2>
+<p>执行任务时遇到超出 ticket 范围的问题，按以下规则处理：</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 30%" />
+<col style="width: 20%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>规则</th>
+<th>触发条件</th>
+<th>行动</th>
+<th>范围限制</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rule 1 — Bug Fix</td>
+<td>当前实现中发现明确 bug（逻辑错误/类型错误/边界条件）</td>
+<td>自动修复，PR 描述注明</td>
+<td>仅限当前 ticket 修改过的文件</td>
+</tr>
+<tr>
+<td>Rule 2 — Missing Critical</td>
+<td>缺失 error handling/输入校验/关键 null guard</td>
+<td>自动补充，PR 描述注明</td>
+<td>仅限新增代码，不重构已有代码</td>
+</tr>
+<tr>
+<td>Rule 3 — Blocking</td>
+<td>missing dependency/broken import/编译错误</td>
+<td>自动修复，记录在 PR</td>
+<td>只修复影响当前 ticket 的阻塞点</td>
+</tr>
+<tr>
+<td>Rule 4 — Architectural</td>
+<td>需要修改 DB schema/新建 service/修改公共 API/大规模重构（100+
+行）</td>
+<td>暂停，写入 inbox/human_feedback/，标注 [BLOCKED-ARCH]</td>
+<td>不得自行决定</td>
+</tr>
+</tbody>
+</table>
+<p><strong>兜底规则</strong>：同一问题尝试修复 ≥ 3 次仍失败 →
+停止，在执行报告 <code>deferred_issues</code> 里记录失败细节，等待
+Master。</p>
+<p><strong>预存在问题处理</strong>：发现非本 ticket 引入的 bug →
+记录到执行报告 <code>deferred_issues</code>
+字段，不修复，避免意外变更范围。</p>
+<h3 id="rule-4-判断清单以下任一-必须上报">Rule 4 判断清单（以下任一 =
+必须上报）</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />需要修改或新建数据库 schema /
+migration</label></li>
+<li><label><input type="checkbox" />需要新建 service 文件（不在 ticket
+指定范围内）</label></li>
+<li><label><input type="checkbox" />需要修改对外公共 API 接口（影响其他
+Slaver 的依赖）</label></li>
+<li><label><input type="checkbox" />需要修改超过 100
+行已有代码（大规模重构）</label></li>
+<li><label><input type="checkbox" />不确定是否属于 Rule 4 → 按 Rule 4
+处理（宁可多报，不要擅自决定）</label></li>
+</ul>
+<hr />
+<h2 id="可用命令集agent-computer-interface">可用命令集（Agent-Computer
+Interface）</h2>
+<h3 id="允许的命令类别">✅ 允许的命令类别</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 42%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr>
+<th>类别</th>
+<th>允许命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>读取代码</td>
+<td><code>cat</code>, <code>grep</code>, <code>find</code>,
+<code>ls</code>, <code>wc</code></td>
+<td>只读，无副作用</td>
+</tr>
+<tr>
+<td>编辑代码</td>
+<td><code>Edit</code>/<code>Write</code>/<code>Read</code> 工具</td>
+<td>通过 Claude Code 工具，有权限控制</td>
+</tr>
+<tr>
+<td>测试</td>
+<td><code>npm test</code>, <code>npm run lint</code>,
+<code>npm run build</code></td>
+<td>项目标准命令</td>
+</tr>
+<tr>
+<td>Git 只读</td>
+<td><code>git status</code>, <code>git log</code>,
+<code>git diff</code>, <code>git branch</code></td>
+<td>查看状态，不修改</td>
+</tr>
+<tr>
+<td>Git 提交</td>
+<td><code>git add</code>, <code>git commit</code>,
+<code>git push origin &lt;feature-branch&gt;</code></td>
+<td>仅限 feature/* 分支</td>
+</tr>
+<tr>
+<td>脚本</td>
+<td><code>bash scripts/validate-ticket-template.sh</code></td>
+<td>项目内白名单脚本</td>
+</tr>
+</tbody>
+</table>
+<h3 id="禁止的命令">❌ 禁止的命令</h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>git push --force</code> / <code>git push -f</code></td>
+<td>可能破坏他人工作</td>
+</tr>
+<tr>
+<td><code>git reset --hard</code></td>
+<td>不可逆破坏</td>
+</tr>
+<tr>
+<td><code>rm -rf</code></td>
+<td>不可逆删除</td>
+</tr>
+<tr>
+<td><code>git push origin main</code> / <code>origin miao</code></td>
+<td>受保护分支，必须走 PR</td>
+</tr>
+<tr>
+<td><code>npm publish</code> / <code>pip publish</code></td>
+<td>发布操作，需 Master 授权</td>
+</tr>
+<tr>
+<td><code>sudo</code> / <code>chmod 777</code></td>
+<td>权限提升</td>
+</tr>
+<tr>
+<td>任何直接操作数据库的命令</td>
+<td>绕过应用层</td>
+</tr>
+</tbody>
+</table>
+<h3 id="需要确认再用的命令">🟡 需要确认再用的命令</h3>
+<ul>
+<li><code>git rebase</code> — 可能产生冲突，执行前说明原因</li>
+<li><code>npm install &lt;new-package&gt;</code> — 新增依赖需在 PR
+描述说明</li>
+<li><code>curl</code> / <code>wget</code> — 网络请求需说明目的</li>
+</ul>
+<hr />
+<h2 id="相关文档">相关文档</h2>
+<ul>
+<li><a href="./SLAVER-AUTO-EXEC-GUIDE.md">SLAVER-AUTO-EXEC-GUIDE.md</a>
+— Slaver 自动执行流程</li>
+<li><a
+href="./TICKET-RESPONSIBILITIES.md">TICKET-RESPONSIBILITIES.md</a> —
+Ticket 职责边界</li>
+<li><a
+href="./MASTER-HEARTBEAT-CHECKLIST.md">MASTER-HEARTBEAT-CHECKLIST.md</a>
+— Master 心跳检查</li>
+</ul>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team
+<strong>最后更新</strong>: 2026-04-14</p>
+</body>
+</html>

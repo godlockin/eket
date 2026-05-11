@@ -1,0 +1,30 @@
+{
+  "name": "eket-monorepo",
+  "version": "2.9.0-alpha",
+  "private": true,
+  "description": "EKET Framework - Master-Slaver Collaboration Framework",
+  "type": "module",
+  "workspaces": [
+    "node"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "format": "npm run format --workspaces --if-present",
+    "format:check": "npm run format:check --workspaces --if-present"
+  },
+  "keywords": [
+    "eket",
+    "framework",
+    "master-slaver",
+    "agent",
+    "collaboration"
+  ],
+  "author": "EKET Framework Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

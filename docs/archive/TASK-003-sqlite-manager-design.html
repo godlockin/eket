@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>TASK-003: SQLite 双实现合并 - 架构设计文档</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">TASK-003: SQLite 双实现合并 - 架构设计文档</h1>
+</header>
+<h1 id="task-003-sqlite-双实现合并---架构设计文档">TASK-003: SQLite
+双实现合并 - 架构设计文档</h1>
+<p><strong>作者</strong>: Slaver 3 (架构重构专家 - Backend)
+<strong>日期</strong>: 2026-04-07 <strong>状态</strong>: 设计阶段
+<strong>优先级</strong>: P1</p>
+<hr />
+<h2 id="一现状分析">一、现状分析</h2>
+<h3 id="当前实现">1.1 当前实现</h3>
+<p>目前存在两个独立的 SQLite 实现：</p>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 34%" />
+<col style="width: 19%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr>
+<th>实现</th>
+<th>文件路径</th>
+<th>特点</th>
+<th>接口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SQLiteClient</strong></td>
+<td><code>node/src/core/sqlite-client.ts</code></td>
+<td>同步 API，基于 <code>better-sqlite3</code></td>
+<td>同步方法 (Result&lt;T&gt;)</td>
+</tr>
+<tr>
+<td><strong>AsyncSQLiteClient</strong></td>
+<td><code>node/src/core/sqlite-async-client.ts</code></td>
+<td>异步 API，Worker 线程封装</td>
+<td>异步方法 (Promise&lt;Result&lt;T&gt;&gt;)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="关键发现">1.2 关键发现</h3>
+<h4 id="已有接口定义">✅ 已有接口定义</h4>
+<p>在 <code>types/index.ts</code> 已定义 <code>ISQLiteClient</code>
+接口（异步签名）：</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">interface</span> ISQLiteClient {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">connect</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">close</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">isReady</span>()<span class="op">:</span> <span class="dt">boolean</span><span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">execute</span>(sql<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> params<span class="op">?:</span> <span class="dt">unknown</span>[])<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">get</span>(sql<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> params<span class="op">?:</span> <span class="dt">unknown</span>[])<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">unknown</span><span class="op">&gt;&gt;;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(sql<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> params<span class="op">?:</span> <span class="dt">unknown</span>[])<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">unknown</span>[]<span class="op">&gt;&gt;;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">insertRetrospective</span>(<span class="op">...</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">number</span><span class="op">&gt;&gt;;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ... 其他业务方法</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h4 id="asyncsqliteclient-已实现接口">✅ AsyncSQLiteClient
+已实现接口</h4>
+<p><code>AsyncSQLiteClient</code> 已经实现了 <code>ISQLiteClient</code>
+接口：</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> AsyncSQLiteClient <span class="kw">implements</span> ISQLiteClient { <span class="op">...</span> }</span></code></pre></div>
+<h4 id="sqliteclient-未实现接口">❌ SQLiteClient 未实现接口</h4>
+<p><code>SQLiteClient</code> 使用同步方法签名，无法直接实现
+<code>ISQLiteClient</code>：</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> SQLiteClient {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">connect</span>()<span class="op">:</span> Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span>  <span class="co">// 同步</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">close</span>()<span class="op">:</span> <span class="dt">void</span>            <span class="co">// 同步，无 Result</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">execute</span>(sql<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> params<span class="op">:</span> <span class="dt">unknown</span>[])<span class="op">:</span> Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ... 其他同步方法</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="调用方分析">1.3 调用方分析</h3>
+<p>通过 Grep 分析，主要调用方： 1. <strong>master-election.ts</strong> →
+使用 <code>new SQLiteClient()</code> (同步) 2.
+<strong>connection-manager.ts</strong> → 使用
+<code>new SQLiteClient()</code> (同步) 3. <strong>CLI 命令</strong> →
+通过 <code>createSQLiteClient()</code> 工厂函数 4.
+<strong>其他模块</strong> → 大部分通过依赖注入</p>
+<h3 id="代码重复问题">1.4 代码重复问题</h3>
+<p>两个实现中有大量重复代码： - ✅ 相同的表结构初始化
+(<code>initializeTables</code>) - ✅
+相同的业务方法（insertRetrospective, getRetrospective 等） - ✅ 相同的
+SQL 语句 - ✅ 相同的 LIKE 转义逻辑 (<code>escapeLikePattern</code>)</p>
+<hr />
+<h2 id="二架构设计">二、架构设计</h2>
+<h3 id="设计目标">2.1 设计目标</h3>
+<ol type="1">
+<li><strong>统一接口</strong> - 对外提供单一的
+<code>SQLiteManager</code>，自动选择实现</li>
+<li><strong>向后兼容</strong> - 保持现有 API 不变，避免大规模重构</li>
+<li><strong>代码复用</strong> - 消除重复代码，提升可维护性</li>
+<li><strong>性能优化</strong> - 根据场景自动选择同步/异步实现</li>
+<li><strong>可测试性</strong> - 支持依赖注入和 Mock</li>
+</ol>
+<h3 id="核心架构">2.2 核心架构</h3>
+<pre><code>┌─────────────────────────────────────────────────────────┐
+│                   SQLiteManager                         │
+│  (统一管理类，实现 ISQLiteClient)                          │
+├─────────────────────────────────────────────────────────┤
+│  - 根据配置选择 Sync/Async 实现                            │
+│  - 统一接口（Promise&lt;Result&lt;T&gt;&gt;）                         │
+│  - 自动降级（Async → Sync）                               │
+└──────────────┬──────────────────────────────────────────┘
+               │
+       ┌───────┴────────┐
+       │                │
+       ▼                ▼
+┌──────────────┐  ┌──────────────────┐
+│ SyncAdapter  │  │ AsyncSQLiteClient│
+│ (包装器)      │  │ (已实现接口)      │
+├──────────────┤  ├──────────────────┤
+│ 包装          │  │ Worker 线程       │
+│ SQLiteClient │  │ 封装同步 API      │
+│ 为异步接口    │  └──────────────────┘
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ SQLiteClient │
+│ (同步实现)    │
+└──────────────┘</code></pre>
+<h3 id="技术方案">2.3 技术方案</h3>
+<h4 id="方案-1-适配器模式推荐">方案 1: 适配器模式（推荐）✅</h4>
+<p><strong>实现步骤</strong>: 1. 创建 <code>SyncSQLiteAdapter</code>
+包装 <code>SQLiteClient</code>，转换为异步接口 2. 创建
+<code>SQLiteManager</code> 统一管理类 3. 保留原有类，逐步迁移调用方</p>
+<p><strong>优点</strong>: - ✅ 最小化改动，向后兼容 - ✅
+同步/异步实现可独立维护 - ✅ 支持运行时切换</p>
+<p><strong>缺点</strong>: - ❌ 多一层包装，轻微性能损耗</p>
+<h4 id="方案-2-直接重构备选">方案 2: 直接重构（备选）</h4>
+<p><strong>实现步骤</strong>: 1. 修改 <code>SQLiteClient</code>
+所有方法为异步 2. 删除 <code>AsyncSQLiteClient</code> 3.
+统一到一个实现</p>
+<p><strong>优点</strong>: - ✅ 架构最简洁 - ✅ 性能最优</p>
+<p><strong>缺点</strong>: - ❌ 需要大规模修改调用方 - ❌
+破坏性变更，风险高</p>
+<hr />
+<h2 id="三详细设计方案-1">三、详细设计（方案 1）</h2>
+<h3 id="文件结构">3.1 文件结构</h3>
+<pre><code>node/src/core/
+├── sqlite-client.ts              # 保留，同步实现
+├── sqlite-async-client.ts        # 保留，异步实现
+├── sqlite-sync-adapter.ts        # 新增，同步→异步适配器
+├── sqlite-manager.ts             # 新增，统一管理类
+└── sqlite-shared.ts              # 新增，共享工具函数</code></pre>
+<h3 id="共享工具模块">3.2 共享工具模块</h3>
+<p><strong>文件</strong>: <code>sqlite-shared.ts</code></p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"> * SQLite 共享工具函数</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"> * 抽取两个实现中的公共代码</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> Database <span class="im">from</span> <span class="st">&#39;better-sqlite3&#39;</span><span class="op">;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"> * 初始化数据库表结构</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"> * 被 SQLiteClient 和 AsyncSQLiteClient Worker 调用</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">function</span> <span class="fu">initializeTables</span>(db<span class="op">:</span> Database<span class="op">.</span><span class="at">Database</span>)<span class="op">:</span> <span class="dt">void</span> {</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  db<span class="op">.</span><span class="fu">exec</span>(<span class="vs">`</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="vs">    -- Retrospective 主表</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="vs">    CREATE TABLE IF NOT EXISTS retrospectives (</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="vs">      id INTEGER PRIMARY KEY AUTOINCREMENT,</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="vs">      sprint_id TEXT NOT NULL,</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="vs">      file_name TEXT UNIQUE,</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="vs">      title TEXT NOT NULL,</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="vs">      date TEXT,</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="vs">      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="vs">      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="vs">    );</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="vs">    -- ... 其他表定义</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="vs">  `</span>)<span class="op">;</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="co"> * 转义 SQL LIKE 语句中的通配符</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">function</span> <span class="fu">escapeLikePattern</span>(str<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="dt">string</span> {</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> str<span class="op">.</span><span class="fu">replace</span>(<span class="ss">/</span><span class="sc">\\</span><span class="ss">/g</span><span class="op">,</span> <span class="st">&#39;</span><span class="sc">\\\\</span><span class="st">&#39;</span>)<span class="op">.</span><span class="fu">replace</span>(<span class="ss">/%/g</span><span class="op">,</span> <span class="st">&#39;</span><span class="sc">\\</span><span class="st">%&#39;</span>)<span class="op">.</span><span class="fu">replace</span>(<span class="ss">/_/g</span><span class="op">,</span> <span class="st">&#39;</span><span class="sc">\\</span><span class="st">_&#39;</span>)<span class="op">;</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="co"> * 获取默认数据库路径</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">function</span> <span class="fu">getDefaultDBPath</span>()<span class="op">:</span> <span class="dt">string</span> {</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> homeDir <span class="op">=</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">HOME</span> <span class="op">||</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">USERPROFILE</span> <span class="op">||</span> <span class="st">&#39;.&#39;</span><span class="op">;</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> path<span class="op">.</span><span class="fu">join</span>(homeDir<span class="op">,</span> <span class="st">&#39;.eket&#39;</span><span class="op">,</span> <span class="st">&#39;data&#39;</span><span class="op">,</span> <span class="st">&#39;sqlite&#39;</span><span class="op">,</span> <span class="st">&#39;eket.db&#39;</span>)<span class="op">;</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="同步适配器">3.3 同步适配器</h3>
+<p><strong>文件</strong>: <code>sqlite-sync-adapter.ts</code></p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"> * 同步 SQLite 客户端适配器</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"> * 将 SQLiteClient 的同步 API 包装为异步接口</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="im">type</span> { ISQLiteClient<span class="op">,</span> Result } <span class="im">from</span> <span class="st">&#39;../types/index.js&#39;</span><span class="op">;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { SQLiteClient } <span class="im">from</span> <span class="st">&#39;./sqlite-client.js&#39;</span><span class="op">;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> SyncSQLiteAdapter <span class="kw">implements</span> ISQLiteClient {</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> client<span class="op">:</span> SQLiteClient<span class="op">;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>(dbPath<span class="op">?:</span> <span class="dt">string</span>) {</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">client</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">SQLiteClient</span>(dbPath)<span class="op">;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="co">/**</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co">   * 连接数据库（包装为异步）</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co">   */</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">connect</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  <span class="co">/**</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co">   * 关闭数据库（包装为异步）</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="co">   */</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">close</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span> {</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">close</span>()<span class="op">;</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>  <span class="co">/**</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="co">   * 检查连接状态</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="co">   */</span></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">isReady</span>()<span class="op">:</span> <span class="dt">boolean</span> {</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">isReady</span>()<span class="op">;</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>  <span class="co">/**</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="co">   * 执行 SQL（包装为异步）</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="co">   */</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">execute</span>(sql<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> params<span class="op">:</span> <span class="dt">unknown</span>[] <span class="op">=</span> [])<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">execute</span>(sql<span class="op">,</span> params)<span class="op">;</span></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>  <span class="co">/**</span></span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="co">   * 查询单行（包装为异步）</span></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="co">   */</span></span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="kw">get</span>(sql<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> params<span class="op">:</span> <span class="dt">unknown</span>[] <span class="op">=</span> [])<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">unknown</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">get</span>(sql<span class="op">,</span> params)<span class="op">;</span></span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>  <span class="co">/**</span></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="co">   * 查询多行（包装为异步）</span></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="co">   */</span></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">all</span>(sql<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> params<span class="op">:</span> <span class="dt">unknown</span>[] <span class="op">=</span> [])<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">unknown</span>[]<span class="op">&gt;&gt;</span> {</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">all</span>(sql<span class="op">,</span> params)<span class="op">;</span></span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ... 其他业务方法（简单包装为 async）</span></span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">insertRetrospective</span>(retro<span class="op">:</span> {<span class="op">...</span>})<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">number</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">insertRetrospective</span>(retro)<span class="op">;</span></span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">getRetrospective</span>(sprintId<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">unknown</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">getRetrospective</span>(sprintId)<span class="op">;</span></span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ... 其他方法类似</span></span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="统一管理类">3.4 统一管理类</h3>
+<p><strong>文件</strong>: <code>sqlite-manager.ts</code></p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"> * SQLite Manager - 统一 SQLite 客户端管理</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"> * 根据配置自动选择同步或异步实现</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> <span class="im">type</span> { ISQLiteClient<span class="op">,</span> Result } <span class="im">from</span> <span class="st">&#39;../types/index.js&#39;</span><span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { SyncSQLiteAdapter } <span class="im">from</span> <span class="st">&#39;./sqlite-sync-adapter.js&#39;</span><span class="op">;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { AsyncSQLiteClient } <span class="im">from</span> <span class="st">&#39;./sqlite-async-client.js&#39;</span><span class="op">;</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">interface</span> SQLiteManagerConfig {</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  dbPath<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">/** 是否使用 Worker 异步实现（默认 false，使用同步） */</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  useWorker<span class="op">?:</span> <span class="dt">boolean</span><span class="op">;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="co">/** 是否启用自动降级（Worker 失败时降级到同步） */</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  autoFallback<span class="op">?:</span> <span class="dt">boolean</span><span class="op">;</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> SQLiteManager <span class="kw">implements</span> ISQLiteClient {</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> client<span class="op">:</span> ISQLiteClient<span class="op">;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> config<span class="op">:</span> SQLiteManagerConfig<span class="op">;</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> usingWorker<span class="op">:</span> <span class="dt">boolean</span><span class="op">;</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>(config<span class="op">:</span> SQLiteManagerConfig <span class="op">=</span> {}) {</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">config</span> <span class="op">=</span> {</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>      useWorker<span class="op">:</span> <span class="kw">false</span><span class="op">,</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>      autoFallback<span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>      <span class="op">...</span>config<span class="op">,</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 根据配置选择实现</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">config</span><span class="op">.</span><span class="at">useWorker</span>) {</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">client</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">AsyncSQLiteClient</span>(<span class="kw">this</span><span class="op">.</span><span class="at">config</span><span class="op">.</span><span class="at">dbPath</span>)<span class="op">;</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">usingWorker</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">client</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">SyncSQLiteAdapter</span>(<span class="kw">this</span><span class="op">.</span><span class="at">config</span><span class="op">.</span><span class="at">dbPath</span>)<span class="op">;</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">usingWorker</span> <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>  <span class="co">/**</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="co">   * 连接数据库（带自动降级）</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="co">   */</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">connect</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 如果 Worker 失败且启用自动降级，切换到同步实现</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span>result<span class="op">.</span><span class="at">success</span> <span class="op">&amp;&amp;</span> <span class="kw">this</span><span class="op">.</span><span class="at">config</span><span class="op">.</span><span class="at">autoFallback</span> <span class="op">&amp;&amp;</span> <span class="kw">this</span><span class="op">.</span><span class="at">usingWorker</span>) {</span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>      <span class="bu">console</span><span class="op">.</span><span class="fu">warn</span>(<span class="st">&#39;[SQLiteManager] Worker failed, falling back to sync implementation&#39;</span>)<span class="op">;</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">client</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">SyncSQLiteAdapter</span>(<span class="kw">this</span><span class="op">.</span><span class="at">config</span><span class="op">.</span><span class="at">dbPath</span>)<span class="op">;</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">usingWorker</span> <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result<span class="op">;</span></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">close</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span> {</span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">close</span>()<span class="op">;</span></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">isReady</span>()<span class="op">:</span> <span class="dt">boolean</span> {</span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">isReady</span>()<span class="op">;</span></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>  <span class="co">/**</span></span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a><span class="co">   * 获取底层实现类型（用于调试）</span></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a><span class="co">   */</span></span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>  <span class="fu">getImplementationType</span>()<span class="op">:</span> <span class="st">&#39;sync&#39;</span> <span class="op">|</span> <span class="st">&#39;async&#39;</span> {</span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">usingWorker</span> <span class="op">?</span> <span class="st">&#39;async&#39;</span> <span class="op">:</span> <span class="st">&#39;sync&#39;</span><span class="op">;</span></span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a>  <span class="co">// === 代理所有业务方法 ===</span></span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">execute</span>(sql<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> params<span class="op">?:</span> <span class="dt">unknown</span>[])<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">execute</span>(sql<span class="op">,</span> params)<span class="op">;</span></span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="kw">get</span>(sql<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> params<span class="op">?:</span> <span class="dt">unknown</span>[])<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">unknown</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">get</span>(sql<span class="op">,</span> params)<span class="op">;</span></span>
+<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">all</span>(sql<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> params<span class="op">?:</span> <span class="dt">unknown</span>[])<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">unknown</span>[]<span class="op">&gt;&gt;</span> {</span>
+<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">all</span>(sql<span class="op">,</span> params)<span class="op">;</span></span>
+<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-84"><a href="#cb8-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-85"><a href="#cb8-85" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">insertRetrospective</span>(retro<span class="op">:</span> {</span>
+<span id="cb8-86"><a href="#cb8-86" aria-hidden="true" tabindex="-1"></a>    sprintId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb8-87"><a href="#cb8-87" aria-hidden="true" tabindex="-1"></a>    fileName<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb8-88"><a href="#cb8-88" aria-hidden="true" tabindex="-1"></a>    title<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb8-89"><a href="#cb8-89" aria-hidden="true" tabindex="-1"></a>    date<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb8-90"><a href="#cb8-90" aria-hidden="true" tabindex="-1"></a>  })<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">number</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb8-91"><a href="#cb8-91" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">insertRetrospective</span>(retro)<span class="op">;</span></span>
+<span id="cb8-92"><a href="#cb8-92" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-93"><a href="#cb8-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-94"><a href="#cb8-94" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">getRetrospective</span>(sprintId<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">unknown</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb8-95"><a href="#cb8-95" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">getRetrospective</span>(sprintId)<span class="op">;</span></span>
+<span id="cb8-96"><a href="#cb8-96" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-97"><a href="#cb8-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-98"><a href="#cb8-98" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">listRetrospectives</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">unknown</span>[]<span class="op">&gt;&gt;</span> {</span>
+<span id="cb8-99"><a href="#cb8-99" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">listRetrospectives</span>()<span class="op">;</span></span>
+<span id="cb8-100"><a href="#cb8-100" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-101"><a href="#cb8-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-102"><a href="#cb8-102" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">insertRetroContent</span>(content<span class="op">:</span> {</span>
+<span id="cb8-103"><a href="#cb8-103" aria-hidden="true" tabindex="-1"></a>    retroId<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb8-104"><a href="#cb8-104" aria-hidden="true" tabindex="-1"></a>    category<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb8-105"><a href="#cb8-105" aria-hidden="true" tabindex="-1"></a>    content<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb8-106"><a href="#cb8-106" aria-hidden="true" tabindex="-1"></a>    createdBy<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb8-107"><a href="#cb8-107" aria-hidden="true" tabindex="-1"></a>  })<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">number</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb8-108"><a href="#cb8-108" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">insertRetroContent</span>(content)<span class="op">;</span></span>
+<span id="cb8-109"><a href="#cb8-109" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-110"><a href="#cb8-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-111"><a href="#cb8-111" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">getRetroContentByCategory</span>(retroId<span class="op">:</span> <span class="dt">number</span><span class="op">,</span> category<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">unknown</span>[]<span class="op">&gt;&gt;</span> {</span>
+<span id="cb8-112"><a href="#cb8-112" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">getRetroContentByCategory</span>(retroId<span class="op">,</span> category)<span class="op">;</span></span>
+<span id="cb8-113"><a href="#cb8-113" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-114"><a href="#cb8-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-115"><a href="#cb8-115" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">searchRetrospectives</span>(keyword<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">unknown</span>[]<span class="op">&gt;&gt;</span> {</span>
+<span id="cb8-116"><a href="#cb8-116" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">searchRetrospectives</span>(keyword)<span class="op">;</span></span>
+<span id="cb8-117"><a href="#cb8-117" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-118"><a href="#cb8-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-119"><a href="#cb8-119" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">generateReport</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span>{</span>
+<span id="cb8-120"><a href="#cb8-120" aria-hidden="true" tabindex="-1"></a>    totalRetrospectives<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb8-121"><a href="#cb8-121" aria-hidden="true" tabindex="-1"></a>    totalSprints<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb8-122"><a href="#cb8-122" aria-hidden="true" tabindex="-1"></a>    totalItems<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb8-123"><a href="#cb8-123" aria-hidden="true" tabindex="-1"></a>    byCategory<span class="op">:</span> <span class="bu">Array</span><span class="op">&lt;</span>{ category<span class="op">:</span> <span class="dt">string</span><span class="op">;</span> count<span class="op">:</span> <span class="dt">number</span> }<span class="op">&gt;;</span></span>
+<span id="cb8-124"><a href="#cb8-124" aria-hidden="true" tabindex="-1"></a>  }<span class="op">&gt;&gt;</span> {</span>
+<span id="cb8-125"><a href="#cb8-125" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">client</span><span class="op">.</span><span class="fu">generateReport</span>()<span class="op">;</span></span>
+<span id="cb8-126"><a href="#cb8-126" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-127"><a href="#cb8-127" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-128"><a href="#cb8-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-129"><a href="#cb8-129" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb8-130"><a href="#cb8-130" aria-hidden="true" tabindex="-1"></a><span class="co"> * 工厂函数 - 推荐使用</span></span>
+<span id="cb8-131"><a href="#cb8-131" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb8-132"><a href="#cb8-132" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">function</span> <span class="fu">createSQLiteManager</span>(config<span class="op">?:</span> SQLiteManagerConfig)<span class="op">:</span> SQLiteManager {</span>
+<span id="cb8-133"><a href="#cb8-133" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">new</span> <span class="fu">SQLiteManager</span>(config)<span class="op">;</span></span>
+<span id="cb8-134"><a href="#cb8-134" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="配置管理">3.5 配置管理</h3>
+<p>在 <code>config/app-config.ts</code> 添加配置项：</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">interface</span> AppConfig {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ... 现有配置</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  sqlite<span class="op">:</span> {</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    dbPath<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    useWorker<span class="op">:</span> <span class="dt">boolean</span><span class="op">;</span>          <span class="co">// 新增：是否使用 Worker</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    autoFallback<span class="op">:</span> <span class="dt">boolean</span><span class="op">;</span>       <span class="co">// 新增：是否自动降级</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    workerTimeout<span class="op">:</span> <span class="dt">number</span><span class="op">;</span>       <span class="co">// 新增：Worker 超时（ms）</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  }<span class="op">;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">const</span> defaultConfig<span class="op">:</span> AppConfig <span class="op">=</span> {</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ... 现有默认值</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  sqlite<span class="op">:</span> {</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    useWorker<span class="op">:</span> <span class="kw">false</span><span class="op">,</span>            <span class="co">// 默认使用同步实现</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    autoFallback<span class="op">:</span> <span class="kw">true</span><span class="op">,</span>          <span class="co">// 默认启用自动降级</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    workerTimeout<span class="op">:</span> <span class="dv">30000</span><span class="op">,</span>        <span class="co">// 30s 超时</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="四迁移计划">四、迁移计划</h2>
+<h3 id="阶段-1-创建新模块不影响现有代码">4.1 阶段 1:
+创建新模块（不影响现有代码）</h3>
+<p><strong>任务</strong>: 1. ✅ 创建
+<code>sqlite-shared.ts</code>（共享工具） 2. ✅ 创建
+<code>sqlite-sync-adapter.ts</code>（同步适配器） 3. ✅ 创建
+<code>sqlite-manager.ts</code>（统一管理类） 4. ✅ 添加单元测试</p>
+<p><strong>验收</strong>: - [ ] 所有测试通过 - [ ]
+不影响现有代码运行</p>
+<h3 id="阶段-2-重构现有实现消除重复代码">4.2 阶段 2:
+重构现有实现（消除重复代码）</h3>
+<p><strong>任务</strong>: 1. ✅ 修改 <code>SQLiteClient</code> 使用
+<code>sqlite-shared.ts</code> 工具函数 2. ✅ 修改
+<code>AsyncSQLiteClient</code> 使用 <code>sqlite-shared.ts</code>
+工具函数 3. ✅ 更新测试</p>
+<p><strong>验收</strong>: - [ ] 代码行数减少 30%+ - [ ] 所有测试通过 - [
+] 行为保持不变</p>
+<h3 id="阶段-3-迁移调用方逐步替换">4.3 阶段 3:
+迁移调用方（逐步替换）</h3>
+<p><strong>优先级排序</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>优先级</th>
+<th>模块</th>
+<th>复杂度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>CLI 命令</td>
+<td>低</td>
+<td>替换工厂函数即可</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>DI 容器</td>
+<td>中</td>
+<td>修改依赖注入配置</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>connection-manager</td>
+<td>中</td>
+<td>需要测试降级逻辑</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>master-election</td>
+<td>中</td>
+<td>需要测试选举逻辑</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>其他模块</td>
+<td>低</td>
+<td>通过 DI 自动生效</td>
+</tr>
+</tbody>
+</table>
+<p><strong>迁移示例 - CLI 命令</strong>:</p>
+<p>Before:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">// commands/sqlite.ts</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteClient } <span class="im">from</span> <span class="st">&#39;../core/sqlite-client.js&#39;</span><span class="op">;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> client <span class="op">=</span> <span class="fu">createSQLiteClient</span>()<span class="op">;</span></span></code></pre></div>
+<p>After:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">// commands/sqlite.ts</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteManager } <span class="im">from</span> <span class="st">&#39;../core/sqlite-manager.js&#39;</span><span class="op">;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> client <span class="op">=</span> <span class="fu">createSQLiteManager</span>({</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  useWorker<span class="op">:</span> <span class="kw">false</span>  <span class="co">// CLI 命令使用同步实现</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<p><strong>迁移示例 - DI 容器</strong>:</p>
+<p>Before:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// di/container.ts</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteClient } <span class="im">from</span> <span class="st">&#39;../core/sqlite-client.js&#39;</span><span class="op">;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>container<span class="op">.</span><span class="fu">register</span>(<span class="st">&#39;sqliteClient&#39;</span><span class="op">,</span> () <span class="kw">=&gt;</span> <span class="fu">createSQLiteClient</span>()<span class="op">,</span> {</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  singleton<span class="op">:</span> <span class="kw">true</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<p>After:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">// di/container.ts</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteManager } <span class="im">from</span> <span class="st">&#39;../core/sqlite-manager.js&#39;</span><span class="op">;</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { getConfigManager } <span class="im">from</span> <span class="st">&#39;../config/app-config.js&#39;</span><span class="op">;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>container<span class="op">.</span><span class="fu">register</span>(<span class="st">&#39;sqliteClient&#39;</span><span class="op">,</span> () <span class="kw">=&gt;</span> {</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> config <span class="op">=</span> <span class="fu">getConfigManager</span>()<span class="op">.</span><span class="fu">get</span>(<span class="st">&#39;sqlite&#39;</span>)<span class="op">;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="fu">createSQLiteManager</span>(config)<span class="op">;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>}<span class="op">,</span> { singleton<span class="op">:</span> <span class="kw">true</span> })<span class="op">;</span></span></code></pre></div>
+<h3 id="阶段-4-清理可选谨慎">4.4 阶段 4: 清理（可选，谨慎）</h3>
+<p><strong>任务</strong>: 1. 🔶 标记 <code>createSQLiteClient()</code>
+为 <code>@deprecated</code> 2. 🔶 添加迁移指南文档 3. ⚠️
+（可选）删除直接调用的代码路径</p>
+<p><strong>验收</strong>: - [ ] 所有调用方已迁移 - [ ] 文档更新完成 - [
+] 向后兼容性保持（建议保留旧 API 1-2 个版本）</p>
+<hr />
+<h2 id="五测试策略">五、测试策略</h2>
+<h3 id="单元测试">5.1 单元测试</h3>
+<p><strong>新增测试文件</strong>:</p>
+<pre><code>node/tests/core/
+├── sqlite-shared.test.ts         # 共享工具测试
+├── sqlite-sync-adapter.test.ts   # 适配器测试
+└── sqlite-manager.test.ts        # 管理类测试</code></pre>
+<p><strong>测试覆盖</strong>: 1. ✅ <code>SyncSQLiteAdapter</code>
+所有方法正确包装 2. ✅ <code>SQLiteManager</code> 同步/异步切换逻辑 3.
+✅ 自动降级功能（Worker 失败 → Sync） 4. ✅
+共享工具函数（escapeLikePattern、initializeTables） 5. ✅
+配置加载和默认值</p>
+<h3 id="集成测试">5.2 集成测试</h3>
+<p><strong>测试场景</strong>: 1. ✅ 同步模式 - 完整 CRUD 流程 2. ✅
+异步模式 - 完整 CRUD 流程 3. ✅ 自动降级 - 模拟 Worker 失败 4. ✅
+并发操作 - 验证线程安全 5. ✅ 性能对比 - Sync vs Async</p>
+<h3 id="性能基准测试">5.3 性能基准测试</h3>
+<p><strong>对比指标</strong>: | 操作 | SQLiteClient (同步) |
+AsyncSQLiteClient (Worker) | SQLiteManager (Sync) | SQLiteManager
+(Async) | |——|———————|—————————|———————|———————-| | connect() | &lt;
+10ms | &lt; 50ms | &lt; 12ms | &lt; 55ms | | insert() | &lt; 5ms | &lt;
+15ms | &lt; 6ms | &lt; 16ms | | query() | &lt; 3ms | &lt; 12ms | &lt;
+4ms | &lt; 13ms | | 1000 次插入 | &lt; 500ms | &lt; 1000ms | &lt; 550ms
+| &lt; 1050ms |</p>
+<p><strong>验收标准</strong>: - ✅ 适配器性能损耗 &lt; 10% - ✅
+自动降级耗时 &lt; 100ms</p>
+<hr />
+<h2 id="六风险评估">六、风险评估</h2>
+<h3 id="兼容性风险">6.1 兼容性风险</h3>
+<table>
+<thead>
+<tr>
+<th>风险</th>
+<th>概率</th>
+<th>影响</th>
+<th>缓解措施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>同步→异步包装导致行为差异</td>
+<td>低</td>
+<td>高</td>
+<td>完整的单元测试 + 对比测试</td>
+</tr>
+<tr>
+<td>Worker 失败导致服务不可用</td>
+<td>中</td>
+<td>高</td>
+<td>自动降级机制 + 监控告警</td>
+</tr>
+<tr>
+<td>配置错误导致性能下降</td>
+<td>中</td>
+<td>中</td>
+<td>默认使用同步实现</td>
+</tr>
+</tbody>
+</table>
+<h3 id="性能风险">6.2 性能风险</h3>
+<table>
+<thead>
+<tr>
+<th>风险</th>
+<th>概率</th>
+<th>影响</th>
+<th>缓解措施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>多一层包装导致性能下降</td>
+<td>低</td>
+<td>低</td>
+<td>性能基准测试验证</td>
+</tr>
+<tr>
+<td>Worker 通信开销过大</td>
+<td>中</td>
+<td>中</td>
+<td>仅在高并发场景启用 Worker</td>
+</tr>
+</tbody>
+</table>
+<h3 id="迁移风险">6.3 迁移风险</h3>
+<table>
+<thead>
+<tr>
+<th>风险</th>
+<th>概率</th>
+<th>影响</th>
+<th>缓解措施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>调用方遗漏导致运行时错误</td>
+<td>低</td>
+<td>高</td>
+<td>Grep 全局搜索 + 类型检查</td>
+</tr>
+<tr>
+<td>配置不一致导致行为不同</td>
+<td>中</td>
+<td>中</td>
+<td>中心化配置管理</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="七验收标准">七、验收标准</h2>
+<h3 id="功能验收">7.1 功能验收</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>SQLiteManager</code>
+提供统一接口</label></li>
+<li><label><input type="checkbox" />支持同步/异步自动选择</label></li>
+<li><label><input type="checkbox" />自动降级功能正常</label></li>
+<li><label><input type="checkbox" />所有业务方法正常工作</label></li>
+</ul>
+<h3 id="代码质量">7.2 代码质量</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />代码行数减少 30%+</label></li>
+<li><label><input type="checkbox" />测试覆盖率 &gt; 90%</label></li>
+<li><label><input type="checkbox" />无 ESLint 警告</label></li>
+<li><label><input type="checkbox" />所有类型定义完整</label></li>
+</ul>
+<h3 id="性能验收">7.3 性能验收</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />适配器性能损耗 &lt; 10%</label></li>
+<li><label><input type="checkbox" />自动降级耗时 &lt; 100ms</label></li>
+<li><label><input type="checkbox" />内存占用无明显增加</label></li>
+</ul>
+<h3 id="文档验收">7.4 文档验收</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />API 文档更新</label></li>
+<li><label><input type="checkbox" />迁移指南完成</label></li>
+<li><label><input type="checkbox" />架构图更新</label></li>
+</ul>
+<hr />
+<h2 id="八时间估算">八、时间估算</h2>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>任务</th>
+<th>预估时间</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>阶段 1</td>
+<td>创建新模块 + 测试</td>
+<td>1.5 小时</td>
+</tr>
+<tr>
+<td>阶段 2</td>
+<td>重构现有实现</td>
+<td>1 小时</td>
+</tr>
+<tr>
+<td>阶段 3</td>
+<td>迁移调用方</td>
+<td>1 小时</td>
+</tr>
+<tr>
+<td>阶段 4</td>
+<td>文档 + 清理</td>
+<td>0.5 小时</td>
+</tr>
+<tr>
+<td><strong>总计</strong></td>
+<td></td>
+<td><strong>4 小时</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="九后续优化建议">九、后续优化建议</h2>
+<h3 id="短期优化v2.1.1">9.1 短期优化（v2.1.1）</h3>
+<ol type="1">
+<li><strong>性能监控</strong> - 添加 SQLite 操作耗时统计</li>
+<li><strong>连接池</strong> - 支持多个 SQLite 连接复用</li>
+<li><strong>事务支持</strong> - 统一事务管理接口</li>
+</ol>
+<h3 id="长期优化v2.2.0">9.2 长期优化（v2.2.0）</h3>
+<ol type="1">
+<li><strong>读写分离</strong> - 主从复制支持</li>
+<li><strong>数据迁移工具</strong> - 自动 Schema 升级</li>
+<li><strong>备份恢复</strong> - 自动备份和灾难恢复</li>
+</ol>
+<hr />
+<h2 id="十参考资料">十、参考资料</h2>
+<ul>
+<li><a href="https://github.com/WiseLibs/better-sqlite3">better-sqlite3
+文档</a></li>
+<li><a href="https://nodejs.org/api/worker_threads.html">Node.js Worker
+Threads</a></li>
+<li><a href="../architecture/">EKET 架构文档</a></li>
+<li><a href="../../jira/tickets/TASK-003.md">TASK-003 Jira
+Ticket</a></li>
+</ul>
+<hr />
+<p><strong>文档版本</strong>: v1.0.0 <strong>最后更新</strong>:
+2026-04-07 <strong>作者</strong>: Slaver 3 (Backend)</p>
+</body>
+</html>

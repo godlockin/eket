@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Protocol Specification v1.0</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Protocol Specification v1.0</h1>
+</header>
+<h1 id="eket-protocol-specification-v1.0">EKET Protocol Specification
+v1.0</h1>
+<blockquote>
+<p>Language-agnostic. Any process (Bash script, Node.js daemon, Python
+agent, human-operated terminal) that implements this spec is a valid
+EKET participant.</p>
+</blockquote>
+<hr />
+<h2 id="overview">Overview</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Protocol Version</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>Framework Version</td>
+<td>EKET 2.9.x</td>
+</tr>
+<tr>
+<td>State persistence</td>
+<td>File system (Git-tracked)</td>
+</tr>
+<tr>
+<td>Optional acceleration</td>
+<td>Redis pub/sub, SQLite</td>
+</tr>
+</tbody>
+</table>
+<h3 id="repository-roles">Repository Roles</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 44%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr>
+<th>Repo alias</th>
+<th>Default dir name</th>
+<th>Contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>repo-confluence</code></td>
+<td><code>repo-confluence/</code></td>
+<td>Team knowledge base, architecture docs, ADRs, retrospectives, Skills
+library</td>
+</tr>
+<tr>
+<td><code>repo-jira</code></td>
+<td><code>repo-jira/</code></td>
+<td>Ticket files, EPIC directories, task state machine</td>
+</tr>
+<tr>
+<td><code>repo-code</code></td>
+<td><code>repo-code/</code></td>
+<td>All code deliverables, branches, CI config</td>
+</tr>
+</tbody>
+</table>
+<p>The three repos are <strong>physically separate Git
+repositories</strong> with independent permissions and independent clone
+URLs. The monorepo you cloned to read this file is the <strong>framework
+template</strong> — see <a
+href="THREE-REPO-DEPLOYMENT.md">THREE-REPO-DEPLOYMENT.md</a> for real
+deployment.</p>
+<hr />
+<h2 id="repository-layout-three-repo-model">1. Repository Layout
+(Three-Repo Model)</h2>
+<h3 id="repo-confluence-layout">1.1 repo-confluence layout</h3>
+<pre><code>repo-confluence/
+├── architecture/          # System design, C4 diagrams, ADRs
+├── memory/                # Shared persistent knowledge (cross-ticket learnings)
+│   ├── global/            # Language/framework-agnostic lessons
+│   └── project/           # Project-specific patterns, gotchas
+├── skills/                # Reusable agent skill definitions
+├── retrospectives/        # Sprint/EPIC retros
+└── team/                  # Agent profiles, onboarding docs</code></pre>
+<h3 id="repo-jira-layout">1.2 repo-jira layout</h3>
+<pre><code>repo-jira/
+├── epics/
+│   └── EPIC-001/
+│       ├── EPIC-001.md          # EPIC metadata + acceptance criteria
+│       └── tickets/
+│           ├── TICKET-001.md
+│           └── TICKET-002.md
+├── backlog/                     # Unassigned tickets
+├── inbox/
+│   ├── human_feedback/          # P0/P1 messages from humans
+│   └── agent_feedback/          # Agent-to-agent messages (fallback if no Redis)
+└── .eket/
+    ├── config.yml               # Repo path config
+    ├── heartbeat/               # One file per agent
+    ├── mailbox/                 # One file per agent
+    └── queue/                   # File-based message queue channels</code></pre>
+<h3 id="repo-code-layout">1.3 repo-code layout</h3>
+<pre><code>repo-code/
+├── src/                   # Application source
+├── tests/                 # Test suites
+├── .github/               # CI/CD workflows
+└── (project-specific)</code></pre>
+<h3 id="initialization">1.4 Initialization</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/init-three-repos.sh <span class="dt">\</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--confluence</span> /path/to/repo-confluence <span class="dt">\</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--jira</span>       /path/to/repo-jira <span class="dt">\</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--code</span>       /path/to/repo-code</span></code></pre></div>
+<p>Cross-repo paths are resolved via <code>.eket/config.yml</code> (see
+§1 of <a
+href="THREE-REPO-DEPLOYMENT.md">THREE-REPO-DEPLOYMENT.md</a>).</p>
+<hr />
+<h2 id="participant-roles">2. Participant Roles</h2>
+<h3 id="master">2.1 Master</h3>
+<p><strong>Can be</strong>: human operator or AI agent (e.g., Claude,
+GPT-4o, Gemini)</p>
+<p><strong>Responsibilities</strong>: - Ingest raw requirements; run
+Expert Panel analysis for complex changes - Decompose EPICs into tickets
+with fully-specified acceptance criteria - Initialize Slaver agents
+(write <code>IDENTITY.md</code>, seed mailbox) - Review PRs and merge to
+protected branches - Triage blocked tickets; escalate cross-Slaver
+dependencies - Write EPIC retro after all tickets close</p>
+<p><strong>Hard constraints</strong>: - NEVER write code, config, or
+tests directly - NEVER self-review a PR (a different agent or human must
+approve) - NEVER merge without CI green - NEVER leave tasks sitting in
+backlog after decomposition — initialize Slavers immediately - NEVER
+skip the Expert Panel step on: new requirements, architectural changes,
+refactors, production incidents</p>
+<p><strong>Identity file</strong> (<code>.eket/IDENTITY.md</code>):</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">agent_id</span><span class="kw">:</span><span class="at"> master-001</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">role</span><span class="kw">:</span><span class="at"> master</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">model</span><span class="kw">:</span><span class="at"> claude-opus-4-5</span><span class="co">          # or &quot;human&quot;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">started_at</span><span class="kw">:</span><span class="at"> 2026-04-21T09:00:00Z</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">confluence_root</span><span class="kw">:</span><span class="at"> /abs/path/to/repo-confluence</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">jira_root</span><span class="kw">:</span><span class="at"> /abs/path/to/repo-jira</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">code_root</span><span class="kw">:</span><span class="at"> /abs/path/to/repo-code</span></span></code></pre></div>
+<h3 id="slaver">2.2 Slaver</h3>
+<p><strong>Can be</strong>: human engineer or AI agent — the protocol is
+identical for both</p>
+<p><strong>Responsibilities</strong>: - Claim a ticket (transition
+status <code>ready</code> → <code>in_progress</code>, write
+<code>assignee</code>) - Write Analysis Report before writing any code -
+Implement, write tests, commit to feature branch in
+<code>repo-code</code> - Open PR, pass CI, request review via mailbox
+<code>TaskCompleted</code> - After merge: write retro notes in ticket +
+promote learnings to <code>repo-confluence/memory/</code></p>
+<p><strong>Hard constraints</strong>: - NEVER modify acceptance criteria
+or priority after claiming - NEVER help another Slaver directly —
+escalate to Master - NEVER review your own PR - Reading 5+ files with no
+write operation = analysis paralysis → write code or send
+<code>BLOCKED</code> message - NEVER mark ticket <code>done</code>
+before CI is green and PR is merged</p>
+<p><strong>Identity file</strong> (<code>.eket/IDENTITY.md</code>):</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">agent_id</span><span class="kw">:</span><span class="at"> slaver-backend-001</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">role</span><span class="kw">:</span><span class="at"> slaver</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">profile</span><span class="kw">:</span><span class="at"> backend_dev</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">model</span><span class="kw">:</span><span class="at"> gemini-2.0-flash</span><span class="co">          # or &quot;human&quot;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">master_id</span><span class="kw">:</span><span class="at"> master-001</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">started_at</span><span class="kw">:</span><span class="at"> 2026-04-21T09:05:00Z</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">confluence_root</span><span class="kw">:</span><span class="at"> /abs/path/to/repo-confluence</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="fu">jira_root</span><span class="kw">:</span><span class="at"> /abs/path/to/repo-jira</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">code_root</span><span class="kw">:</span><span class="at"> /abs/path/to/repo-code</span></span></code></pre></div>
+<hr />
+<h2 id="ticket-schema">3. Ticket Schema</h2>
+<p>Tickets are Markdown files with YAML frontmatter. Stored in
+<code>repo-jira/</code>.</p>
+<h3 id="frontmatter-yaml">3.1 Frontmatter (YAML)</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">id</span><span class="kw">:</span><span class="at"> TICKET-042</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">type</span><span class="kw">:</span><span class="at"> feature</span><span class="co">          # feature | bug | chore | spike | refactor</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">priority</span><span class="kw">:</span><span class="at"> P1</span><span class="co">           # P0 | P1 | P2 | P3</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">status</span><span class="kw">:</span><span class="at"> ready</span><span class="co">          # backlog | ready | in_progress | review | done | blocked | cancelled</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">created</span><span class="kw">:</span><span class="at"> 2026-04-21T10:00:00Z</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">updated</span><span class="kw">:</span><span class="at"> 2026-04-21T14:23:00Z</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">assignee</span><span class="kw">:</span><span class="at"> slaver-backend-001</span><span class="co">   # empty string if unassigned</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="fu">blocked_by</span><span class="kw">:</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> TICKET-040</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> TICKET-041</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">epic</span><span class="kw">:</span><span class="at"> EPIC-007</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="fu">estimated_hours</span><span class="kw">:</span><span class="at"> </span><span class="dv">4</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="fu">actual_hours</span><span class="kw">:</span><span class="at"> </span><span class="ch">~</span><span class="co">        # filled on completion</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<h3 id="status-enum">3.2 Status Enum</h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Meaning</th>
+<th>Who transitions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>backlog</code></td>
+<td>Created, not yet ready for pickup</td>
+<td>Master</td>
+</tr>
+<tr>
+<td><code>ready</code></td>
+<td>Acceptance criteria complete, dependencies met</td>
+<td>Master</td>
+</tr>
+<tr>
+<td><code>in_progress</code></td>
+<td>Slaver claimed and working</td>
+<td>Slaver (on claim)</td>
+</tr>
+<tr>
+<td><code>review</code></td>
+<td>PR open, awaiting review</td>
+<td>Slaver (on PR open)</td>
+</tr>
+<tr>
+<td><code>done</code></td>
+<td>PR merged, CI green</td>
+<td>Master (on merge)</td>
+</tr>
+<tr>
+<td><code>blocked</code></td>
+<td>Slaver hit unresolvable dependency</td>
+<td>Slaver</td>
+</tr>
+<tr>
+<td><code>cancelled</code></td>
+<td>Scope cut or superseded</td>
+<td>Master</td>
+</tr>
+</tbody>
+</table>
+<h3 id="required-sections">3.3 Required Sections</h3>
+<p>Every ticket MUST contain all six sections:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## Background</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- Why this work exists. Context, user impact, link to EPIC. --&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">## Acceptance Criteria</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- Filled by Master. Immutable after Slaver claims ticket. --&gt;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Criterion 1 (testable, specific)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Criterion 2</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## Dependencies</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- Other tickets, external services, environment requirements. --&gt;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implementation Notes</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- Filled by Slaver. Analysis report, design decisions, file list. --&gt;</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="fu">## Test Results</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- Filled by Slaver. CI run URL, test coverage delta, manual test steps. --&gt;</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="fu">## Retro</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- Filled by Slaver post-merge. What went well, what to improve, lessons for confluence/memory/. --&gt;</span></span></code></pre></div>
+<hr />
+<h2 id="mailbox-message-schema">4. Mailbox Message Schema</h2>
+<p>Location:
+<code>repo-jira/.eket/mailbox/&lt;agent_id&gt;.json</code></p>
+<p>Each file is a JSON array of message objects. Append-only by sender;
+reader marks <code>read: true</code>.</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;msg-550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;from&quot;</span><span class="fu">:</span> <span class="st">&quot;master-001&quot;</span><span class="fu">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;to&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver-backend-001&quot;</span><span class="fu">,</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;TaskAssigned&quot;</span><span class="fu">,</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payload&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ticket_id&quot;</span><span class="fu">:</span> <span class="st">&quot;TICKET-042&quot;</span><span class="fu">,</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ticket_path&quot;</span><span class="fu">:</span> <span class="st">&quot;epics/EPIC-007/tickets/TICKET-042.md&quot;</span><span class="fu">,</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;priority&quot;</span><span class="fu">:</span> <span class="st">&quot;P1&quot;</span><span class="fu">,</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;deadline_hint&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-04-22T18:00:00Z&quot;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timestamp&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-04-21T10:01:00Z&quot;</span><span class="fu">,</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;read&quot;</span><span class="fu">:</span> <span class="kw">false</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="message-type-enum">4.1 Message Type Enum</h3>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 34%" />
+<col style="width: 46%" />
+</colgroup>
+<thead>
+<tr>
+<th>Type</th>
+<th>Direction</th>
+<th>Payload fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TaskAssigned</code></td>
+<td>Master → Slaver</td>
+<td><code>ticket_id</code>, <code>ticket_path</code>,
+<code>priority</code>, <code>deadline_hint?</code></td>
+</tr>
+<tr>
+<td><code>TaskCompleted</code></td>
+<td>Slaver → Master</td>
+<td><code>ticket_id</code>, <code>pr_url</code>, <code>ci_status</code>,
+<code>notes?</code></td>
+</tr>
+<tr>
+<td><code>AgentIdle</code></td>
+<td>Slaver → Master</td>
+<td><code>agent_id</code>, <code>available_profiles</code></td>
+</tr>
+<tr>
+<td><code>Blocked</code></td>
+<td>Slaver → Master</td>
+<td><code>ticket_id</code>, <code>blocker_description</code>,
+<code>blocked_by_tickets?</code></td>
+</tr>
+<tr>
+<td><code>Shutdown</code></td>
+<td>Master → Any</td>
+<td><code>reason</code>, <code>save_state: bool</code></td>
+</tr>
+<tr>
+<td><code>PermissionRequest</code></td>
+<td>Slaver → Master</td>
+<td><code>ticket_id</code>, <code>resource</code>,
+<code>justification</code></td>
+</tr>
+<tr>
+<td><code>Custom</code></td>
+<td>Any → Any</td>
+<td><code>(arbitrary object)</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="heartbeat-schema">5. Heartbeat Schema</h2>
+<p>Location:
+<code>repo-jira/.eket/heartbeat/&lt;agent_id&gt;.json</code></p>
+<p>Written by each agent every 30 seconds. Master uses staleness
+(&gt;90s) to detect dead agents.</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;agent_id&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver-backend-001&quot;</span><span class="fu">,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;role&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver&quot;</span><span class="fu">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;status&quot;</span><span class="fu">:</span> <span class="st">&quot;busy&quot;</span><span class="fu">,</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;current_task_id&quot;</span><span class="fu">:</span> <span class="st">&quot;TICKET-042&quot;</span><span class="fu">,</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;last_seen&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-04-21T14:23:45Z&quot;</span><span class="fu">,</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;skills&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;nodejs&quot;</span><span class="ot">,</span> <span class="st">&quot;typescript&quot;</span><span class="ot">,</span> <span class="st">&quot;postgresql&quot;</span><span class="ot">,</span> <span class="st">&quot;docker&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;uptime_seconds&quot;</span><span class="fu">:</span> <span class="dv">5421</span><span class="fu">,</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;tickets_completed_session&quot;</span><span class="fu">:</span> <span class="dv">3</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="status-enum-1">5.1 Status Enum</h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>idle</code></td>
+<td>No current task, ready to receive</td>
+</tr>
+<tr>
+<td><code>busy</code></td>
+<td>Working on <code>current_task_id</code></td>
+</tr>
+<tr>
+<td><code>offline</code></td>
+<td>Graceful shutdown (last heartbeat before exit)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="queue-message-schema">6. Queue Message Schema</h2>
+<p>Location:
+<code>repo-jira/.eket/queue/&lt;channel&gt;/&lt;id&gt;.json</code></p>
+<p>Used for broadcast events and async pipelines. Channel examples:
+<code>task-events</code>, <code>review-requests</code>,
+<code>ci-results</code>.</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;q-7c9e6679-7425-40de-944b-e07fc1f90ae7&quot;</span><span class="fu">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;channel&quot;</span><span class="fu">:</span> <span class="st">&quot;task-events&quot;</span><span class="fu">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payload&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;event&quot;</span><span class="fu">:</span> <span class="st">&quot;ticket_status_changed&quot;</span><span class="fu">,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ticket_id&quot;</span><span class="fu">:</span> <span class="st">&quot;TICKET-042&quot;</span><span class="fu">,</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;from_status&quot;</span><span class="fu">:</span> <span class="st">&quot;in_progress&quot;</span><span class="fu">,</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;to_status&quot;</span><span class="fu">:</span> <span class="st">&quot;review&quot;</span><span class="fu">,</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;agent_id&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver-backend-001&quot;</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;created_at&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-04-21T14:20:00Z&quot;</span><span class="fu">,</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;processed&quot;</span><span class="fu">:</span> <span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;processed_by&quot;</span><span class="fu">:</span> <span class="kw">null</span><span class="fu">,</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;processed_at&quot;</span><span class="fu">:</span> <span class="kw">null</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Queue consumers set <code>processed: true</code> and write
+<code>processed_by</code> (their <code>agent_id</code>) and
+<code>processed_at</code> (ISO 8601) atomically via file rename.</p>
+<hr />
+<h2 id="communication-patterns">7. Communication Patterns</h2>
+<h3 id="master-slaver-task-assignment">7.1 Master → Slaver: Task
+Assignment</h3>
+<pre><code>Master writes TaskAssigned to repo-jira/.eket/mailbox/slaver-backend-001.json
+Slaver polls mailbox every 5s (file watch or cron)
+Slaver reads message, sets read: true, transitions ticket to in_progress
+Slaver writes heartbeat with status: busy, current_task_id: TICKET-042</code></pre>
+<h3 id="slaver-master-task-completion">7.2 Slaver → Master: Task
+Completion</h3>
+<pre><code>Slaver opens PR in repo-code
+Slaver transitions ticket to review
+Slaver writes TaskCompleted to repo-jira/.eket/mailbox/master-001.json
+Master reviews PR, merges, transitions ticket to done
+Master writes next TaskAssigned or leaves Slaver idle</code></pre>
+<h3 id="broadcast-file-queue">7.3 Broadcast: File Queue</h3>
+<pre><code>Any agent writes to repo-jira/.eket/queue/&lt;channel&gt;/&lt;uuid&gt;.json
+Interested consumers poll channel directory
+Consumer claims message by atomically renaming to &lt;uuid&gt;.processing.json
+Consumer processes, then writes processed: true</code></pre>
+<h3 id="redis-pubsub-level-3">7.4 Redis pub/sub (Level 3)</h3>
+<p>When <code>EKET_REDIS_HOST</code> is set, agents additionally publish
+to Redis channel <code>eket:&lt;channel&gt;</code> for real-time
+delivery. File queue remains the authoritative store — Redis is
+acceleration only.</p>
+<h3 id="real-time-dashboard-sse">7.5 Real-Time Dashboard: SSE</h3>
+<p>Node.js gateway exposes <code>GET /api/v1/events</code> as
+Server-Sent Events. Clients receive ticket status changes, agent
+heartbeats, and queue events streamed in real time. Falls back to
+polling <code>/.eket/heartbeat/</code> if gateway is not running.</p>
+<hr />
+<h2 id="state-machine-ticket-lifecycle">8. State Machine: Ticket
+Lifecycle</h2>
+<pre><code>                  ┌─────────┐
+          create  │ backlog  │
+  ──────────────► │         │
+                  └────┬────┘
+               ready   │  (Master sets ACs complete)
+                  ┌────▼────┐
+                  │  ready  │◄──── unblock (Master)
+                  └────┬────┘
+               claim   │  (Slaver claims, writes assignee)
+                  ┌────▼────────┐
+                  │ in_progress │
+                  └────┬──┬─────┘
+          PR open  │   │  │ hit blocker
+                   │   │  └──────────────► blocked ──► ready (on unblock)
+                   │   │ cancelled
+                   │   └──────────────────► cancelled
+              ┌────▼────┐
+              │ review  │
+              └────┬────┘
+        CI+merge   │  (Master merges)
+              ┌────▼────┐
+              │  done   │
+              └─────────┘</code></pre>
+<p><strong>Transition rules</strong>: - Only Master may set:
+<code>backlog→ready</code>, <code>review→done</code>,
+<code>*→cancelled</code>, <code>blocked→ready</code> - Only Slaver may
+set: <code>ready→in_progress</code>, <code>in_progress→review</code>,
+<code>in_progress→blocked</code> - Tickets in <code>done</code> are
+immutable</p>
+<hr />
+<h2 id="implementing-a-slaver-in-any-language">9. Implementing a Slaver
+in Any Language</h2>
+<p>A minimal valid EKET Slaver must:</p>
+<h3 id="step-1-read-identity">Step 1 — Read identity</h3>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bash</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="va">AGENT_ID</span><span class="op">=</span><span class="va">$(</span><span class="fu">grep</span> <span class="st">&#39;agent_id:&#39;</span> .eket/IDENTITY.md <span class="kw">|</span> <span class="fu">awk</span> <span class="st">&#39;{print $2}&#39;</span><span class="va">)</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="va">JIRA_ROOT</span><span class="op">=</span><span class="va">$(</span><span class="fu">grep</span> <span class="st">&#39;jira_root:&#39;</span> .eket/IDENTITY.md <span class="kw">|</span> <span class="fu">awk</span> <span class="st">&#39;{print $2}&#39;</span><span class="va">)</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="va">MASTER_ID</span><span class="op">=</span><span class="va">$(</span><span class="fu">grep</span> <span class="st">&#39;master_id:&#39;</span> .eket/IDENTITY.md <span class="kw">|</span> <span class="fu">awk</span> <span class="st">&#39;{print $2}&#39;</span><span class="va">)</span></span></code></pre></div>
+<h3 id="step-2-poll-mailbox-for-taskassigned">Step 2 — Poll mailbox for
+TaskAssigned</h3>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Python example</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json, time, os</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>mailbox_path <span class="op">=</span> <span class="ss">f&quot;</span><span class="sc">{</span>jira_root<span class="sc">}</span><span class="ss">/.eket/mailbox/</span><span class="sc">{</span>agent_id<span class="sc">}</span><span class="ss">.json&quot;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> poll_mailbox():</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> os.path.exists(mailbox_path):</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> []</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(mailbox_path) <span class="im">as</span> f:</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        messages <span class="op">=</span> json.load(f)</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [m <span class="cf">for</span> m <span class="kw">in</span> messages <span class="cf">if</span> <span class="kw">not</span> m[<span class="st">&quot;read&quot;</span>] <span class="kw">and</span> m[<span class="st">&quot;type&quot;</span>] <span class="op">==</span> <span class="st">&quot;TaskAssigned&quot;</span>]</span></code></pre></div>
+<h3 id="step-3-transition-ticket-to-in_progress">Step 3 — Transition
+ticket to <code>in_progress</code></h3>
+<p>Open the ticket file, update YAML frontmatter:
+<code>status: in_progress</code>,
+<code>assignee: &lt;agent_id&gt;</code>,
+<code>updated: &lt;now&gt;</code>.</p>
+<h3 id="step-4-do-work-write-to-repo-code">Step 4 — Do work, write to
+repo-code</h3>
+<p>Implement on a feature branch:
+<code>feature/&lt;ticket-id&gt;-&lt;short-description&gt;</code>. Run
+tests. Commit.</p>
+<h3 id="step-5-transition-to-review-send-taskcompleted">Step 5 —
+Transition to <code>review</code>, send TaskCompleted</h3>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Update ticket status to review</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>update_ticket_status(ticket_id, <span class="st">&quot;review&quot;</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Send message to master</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>send_mailbox_message(master_id, {</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;type&quot;</span>: <span class="st">&quot;TaskCompleted&quot;</span>,</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;payload&quot;</span>: {</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;ticket_id&quot;</span>: ticket_id,</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;pr_url&quot;</span>: <span class="st">&quot;https://github.com/org/repo-code/pull/42&quot;</span>,</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;ci_status&quot;</span>: <span class="st">&quot;passing&quot;</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<h3 id="step-6-send-heartbeat-every-30-seconds">Step 6 — Send heartbeat
+every 30 seconds</h3>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bash heartbeat loop (run in background)</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="fu">true</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span> <span class="op">&gt;</span> <span class="st">&quot;</span><span class="va">$JIRA_ROOT</span><span class="st">/.eket/heartbeat/</span><span class="va">$AGENT_ID</span><span class="st">.json&quot;</span> <span class="op">&lt;&lt; EOF</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="st">{</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;agent_id&quot;: &quot;</span><span class="va">$AGENT_ID</span><span class="st">&quot;,</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;role&quot;: &quot;slaver&quot;,</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;status&quot;: &quot;</span><span class="va">$CURRENT_STATUS</span><span class="st">&quot;,</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;current_task_id&quot;: &quot;</span><span class="va">$CURRENT_TICKET</span><span class="st">&quot;,</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;last_seen&quot;: &quot;</span><span class="va">$(</span><span class="fu">date</span> <span class="at">-u</span> +%Y-%m-%dT%H:%M:%SZ<span class="va">)</span><span class="st">&quot;,</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;skills&quot;: [&quot;bash&quot;, &quot;git&quot;]</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sleep</span> 30</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code></pre></div>
+<p>That’s the complete minimal implementation. Any language, any runtime
+— these six steps make you a valid EKET participant.</p>
+<h2 id="submodule-版本指针协议">§10 Submodule 版本指针协议</h2>
+<p><strong>原则</strong>：Slaver 只推自己所在的子仓库；主项目指针由
+Master 统一更新。</p>
+<h3 id="slaver-工作流">Slaver 工作流</h3>
+<ol type="1">
+<li>在子仓库（通常 jira 或 code）完成提交并 push</li>
+<li><strong>不需要</strong>回到主项目更新指针</li>
+</ol>
+<h3 id="master-工作流">Master 工作流</h3>
+<ol type="1">
+<li><p>定期（每个 sprint 末 或 重要里程碑后）更新主项目指针</p></li>
+<li><p>操作：</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> {project}</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> submodule update <span class="at">--remote</span> <span class="at">--merge</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add {project}-confluence {project}-jira {project}-code</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">&quot;chore: 更新 submodule 指针至最新&quot;</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push origin main</span></code></pre></div></li>
+</ol>
+<h3 id="为何不让-slaver-更新指针">为何不让 Slaver 更新指针</h3>
+<ul>
+<li>主项目指针更新若与其他 Slaver 并发，容易产生冲突</li>
+<li>Master 作为中央协调者，统一决定”当前稳定版本”指向哪个 commit</li>
+</ul>
+</body>
+</html>

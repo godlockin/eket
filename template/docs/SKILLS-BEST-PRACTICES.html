@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>SKILLS-BEST-PRACTICES.md</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">SKILLS-BEST-PRACTICES.md</h1>
+</header>
+<h1 id="skills-best-practices.md">SKILLS-BEST-PRACTICES.md</h1>
+<blockquote>
+<p><strong>来源灵感</strong>：claude-code-best-practice（Anthropic
+核心团队，44k ⭐）</p>
+<p><strong>核心原则</strong>：Skill <code>description</code>
+是触发器，不是摘要。<strong>为模型写，描述”何时应该触发”，而不是描述功能。</strong></p>
+</blockquote>
+<hr />
+<h2 id="写法对比摘要-vs-触发条件">1. 写法对比：摘要 vs 触发条件</h2>
+<h3 id="错误写法功能摘要-对模型无意义">错误写法（功能摘要 —
+对模型无意义）</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ❌ 摘要式 — 模型不知道什么时候该调用这个 Skill</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;管理 Redis 连接的工具&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;执行单元测试&quot;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;API 文档生成&quot;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;用户需求访谈&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Kubernetes 部署&quot;</span></span></code></pre></div>
+<p><strong>问题</strong>：这些描述告诉模型”这个 Skill
+能做什么”，但没有告诉模型”什么情况下应该用这个
+Skill”。结果是模型在正确的场景下不会自动调用，降低了协作效率。</p>
+<hr />
+<h3 id="正确写法触发条件-模型知道何时调用">正确写法（触发条件 —
+模型知道何时调用）</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ✅ 触发条件式 — 模型能在正确场景下自动选择</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Use when checking Redis connectivity, listing Slavers, or diagnosing</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">  connection issues. Triggers when user mentions &#39;redis&#39;, &#39;connection failed&#39;,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">  or &#39;slaver list&#39;. Provides connection status and diagnostics.&quot;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Use when newly written code needs unit test coverage or when existing</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">  tests need updating to meet a coverage target. Triggers when user mentions</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;unit test&#39;, &#39;write tests&#39;, &#39;test coverage&#39;, &#39;jest&#39;, or &#39;pytest&#39;.&quot;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Use when an API implementation is complete and developers need reference</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="st">  documentation. Triggers when user mentions &#39;API docs&#39;, &#39;OpenAPI spec&#39;,</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;Swagger&#39;, or &#39;document endpoints&#39;.&quot;</span></span></code></pre></div>
+<p><strong>为什么有效</strong>：LLM 选择 Skill 时，会将用户的意图与
+<code>description</code>
+做语义匹配。触发条件式描述提供了明确的”激活信号”，让模型能精准匹配用户需求。</p>
+<hr />
+<h2 id="触发条件-description-模板">2. 触发条件 description 模板</h2>
+<pre><code>Use when [用户场景/意图].
+Triggers when user mentions [触发关键词列表].
+Provides [核心输出/能力简述].</code></pre>
+<h3 id="各字段说明">各字段说明</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>字段</th>
+<th>必填</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Use when [场景]</code></td>
+<td>✅ 必填</td>
+<td>描述触发此 Skill 的业务场景或用户意图</td>
+</tr>
+<tr>
+<td><code>Triggers when user mentions [关键词]</code></td>
+<td>✅ 必填</td>
+<td>列举 3-6 个最典型的触发词或短语</td>
+</tr>
+<tr>
+<td><code>Provides [输出]</code></td>
+<td>推荐</td>
+<td>简述 Skill 的核心产出，帮助模型区分相似 Skill</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="类-skill-类型与触发关键词模板">3. 9 类 Skill
+类型与触发关键词模板</h2>
+<h3 id="type-1-library知识库查询类">Type 1: Library（知识库查询类）</h3>
+<p><strong>场景</strong>：检索最佳实践、规范、参考资料</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Use when needing to look up [domain] best practices, standards, or</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">  reference patterns. Triggers when user mentions &#39;[keyword1]&#39;, &#39;[keyword2]&#39;,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;how to [action]&#39;, or &#39;best practice for [topic]&#39;.&quot;</span></span></code></pre></div>
+<p><strong>示例关键词</strong>：<code>best practice</code>,
+<code>reference</code>, <code>standard</code>, <code>convention</code>,
+<code>how to</code></p>
+<hr />
+<h3 id="type-2-product-verification产品验证类">Type 2: Product
+Verification（产品验证类）</h3>
+<p><strong>场景</strong>：验证功能是否符合产品需求或验收标准</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Use when a feature implementation needs to be verified against product</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="st">  requirements or acceptance criteria. Triggers when user mentions &#39;verify feature&#39;,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;check requirements&#39;, &#39;acceptance test&#39;, or &#39;does this meet the spec&#39;.&quot;</span></span></code></pre></div>
+<p><strong>示例关键词</strong>：<code>verify</code>,
+<code>validate</code>, <code>acceptance criteria</code>,
+<code>does this meet</code>, <code>check requirement</code></p>
+<hr />
+<h3 id="type-3-data-fetching数据获取类">Type 3: Data
+Fetching（数据获取类）</h3>
+<p><strong>场景</strong>：从外部系统、API 或数据库获取数据</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Use when real-time data needs to be fetched from [system/API] to</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">  answer questions or populate a workflow. Triggers when user mentions</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;[system name]&#39;, &#39;fetch data&#39;, &#39;get [resource]&#39;, or &#39;query [source]&#39;.&quot;</span></span></code></pre></div>
+<p><strong>示例关键词</strong>：<code>fetch</code>, <code>get</code>,
+<code>query</code>, <code>retrieve</code>, <code>pull from</code>,
+<code>look up</code></p>
+<hr />
+<h3 id="type-4-business-process业务流程类">Type 4: Business
+Process（业务流程类）</h3>
+<p><strong>场景</strong>：执行标准化的多步骤业务流程（如需求分析、发版流程）</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Use when [business process] needs to be executed following the</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="st">  standard [team/org] workflow. Triggers when user mentions &#39;[process name]&#39;,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;[trigger action]&#39;, or &#39;[business event]&#39;.&quot;</span></span></code></pre></div>
+<p><strong>示例关键词</strong>：需求分析 <code>requirement</code>, 发版
+<code>release</code>, 评审 <code>review</code>, 上线
+<code>deploy</code></p>
+<hr />
+<h3 id="type-5-code-scaffolding代码脚手架类">Type 5: Code
+Scaffolding（代码脚手架类）</h3>
+<p><strong>场景</strong>：生成项目结构、组件、模板代码</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Use when bootstrapping a new [component/service/project] from scratch</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="st">  or from a template. Triggers when user mentions &#39;create new [type]&#39;,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;scaffold [name]&#39;, &#39;generate [component]&#39;, or &#39;bootstrap project&#39;.&quot;</span></span></code></pre></div>
+<p><strong>示例关键词</strong>：<code>create new</code>,
+<code>scaffold</code>, <code>generate</code>, <code>boilerplate</code>,
+<code>template</code>, <code>bootstrap</code></p>
+<hr />
+<h3 id="type-6-code-quality代码质量类">Type 6: Code
+Quality（代码质量类）</h3>
+<p><strong>场景</strong>：代码审查、重构建议、lint、格式化</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Use when code quality issues need to be identified and fixed, including</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="st">  linting errors, style violations, or refactoring opportunities. Triggers when</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">  user mentions &#39;code review&#39;, &#39;refactor&#39;, &#39;lint&#39;, &#39;clean up code&#39;, or</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;code quality&#39;.&quot;</span></span></code></pre></div>
+<p><strong>示例关键词</strong>：<code>code review</code>,
+<code>refactor</code>, <code>lint</code>, <code>clean up</code>,
+<code>code smell</code>, <code>tech debt</code></p>
+<hr />
+<h3 id="type-7-cicd持续集成部署类">Type 7: CI/CD（持续集成部署类）</h3>
+<p><strong>场景</strong>：设置或修改 CI/CD 流水线、部署脚本</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Use when setting up or modifying automated build, test, and deployment</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="st">  pipelines. Triggers when user mentions &#39;CI/CD&#39;, &#39;GitHub Actions&#39;, &#39;pipeline&#39;,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;automated deploy&#39;, &#39;workflow&#39;, or &#39;branch protection&#39;.&quot;</span></span></code></pre></div>
+<p><strong>示例关键词</strong>：<code>CI/CD</code>,
+<code>pipeline</code>, <code>GitHub Actions</code>,
+<code>workflow</code>, <code>automated deploy</code>,
+<code>branch protection</code></p>
+<hr />
+<h3 id="type-8-runbooks运维手册类">Type 8: Runbooks（运维手册类）</h3>
+<p><strong>场景</strong>：处理生产告警、故障排查、应急响应</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Use when a production incident or alert needs a structured runbook</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="st">  for diagnosis and remediation. Triggers when user mentions &#39;production issue&#39;,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;alert firing&#39;, &#39;runbook&#39;, &#39;incident response&#39;, &#39;on-call&#39;, or &#39;outage&#39;.&quot;</span></span></code></pre></div>
+<p><strong>示例关键词</strong>：<code>production issue</code>,
+<code>alert</code>, <code>runbook</code>, <code>incident</code>,
+<code>on-call</code>, <code>outage</code>, <code>debug</code></p>
+<hr />
+<h3 id="type-9-infrastructure基础设施类">Type 9:
+Infrastructure（基础设施类）</h3>
+<p><strong>场景</strong>：管理云资源、容器编排、IaC（基础设施即代码）</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Use when provisioning or managing [infrastructure type] resources,</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="st">  or when IaC templates need to be created/updated. Triggers when user mentions</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;Terraform&#39;, &#39;Kubernetes&#39;, &#39;cloud resources&#39;, &#39;infra&#39;, &#39;provision&#39;, or</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;[cloud provider] setup&#39;.&quot;</span></span></code></pre></div>
+<p><strong>示例关键词</strong>：<code>Terraform</code>,
+<code>Kubernetes</code>, <code>k8s</code>, <code>cloud</code>,
+<code>provision</code>, <code>infra</code>, <code>IaC</code></p>
+<hr />
+<h2 id="eket-已有-skill-分类对照">4. EKET 已有 Skill 分类对照</h2>
+<table>
+<colgroup>
+<col style="width: 39%" />
+<col style="width: 21%" />
+<col style="width: 39%" />
+</colgroup>
+<thead>
+<tr>
+<th>Skill 名称</th>
+<th>类型</th>
+<th>核心触发词</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user_interview</code></td>
+<td>Business Process</td>
+<td>user interview, requirements gathering, customer research</td>
+</tr>
+<tr>
+<td><code>requirement_decomposition</code></td>
+<td>Business Process</td>
+<td>break down requirements, decompose feature, create tickets</td>
+</tr>
+<tr>
+<td><code>acceptance_criteria_definition</code></td>
+<td>Product Verification</td>
+<td>acceptance criteria, definition of done, test conditions</td>
+</tr>
+<tr>
+<td><code>user_story_mapping</code></td>
+<td>Business Process</td>
+<td>user story map, sprint planning, user journey</td>
+</tr>
+<tr>
+<td><code>architecture_design</code></td>
+<td>Code Scaffolding</td>
+<td>system architecture, tech stack, component design,
+microservices</td>
+</tr>
+<tr>
+<td><code>api_design</code></td>
+<td>Code Scaffolding</td>
+<td>API design, REST endpoints, OpenAPI, API contract</td>
+</tr>
+<tr>
+<td><code>database_design</code></td>
+<td>Code Scaffolding</td>
+<td>database design, schema, ERD, data modeling</td>
+</tr>
+<tr>
+<td><code>ui_ux_design</code></td>
+<td>Code Scaffolding</td>
+<td>UI design, UX, wireframe, mockup, user flow</td>
+</tr>
+<tr>
+<td><code>icon_design</code></td>
+<td>Code Scaffolding</td>
+<td>icon design, SVG icon, app icon, favicon</td>
+</tr>
+<tr>
+<td><code>frontend_development</code></td>
+<td>Code Scaffolding</td>
+<td>frontend development, React component, implement UI</td>
+</tr>
+<tr>
+<td><code>backend_development</code></td>
+<td>Code Scaffolding</td>
+<td>backend development, implement API, server-side logic</td>
+</tr>
+<tr>
+<td><code>unit_test</code></td>
+<td>Code Quality</td>
+<td>unit test, test coverage, jest, pytest</td>
+</tr>
+<tr>
+<td><code>integration_test</code></td>
+<td>Code Quality</td>
+<td>integration test, test modules together, API integration test</td>
+</tr>
+<tr>
+<td><code>performance_test</code></td>
+<td>Code Quality</td>
+<td>performance test, load test, QPS, bottleneck analysis</td>
+</tr>
+<tr>
+<td><code>e2e_test</code></td>
+<td>Code Quality</td>
+<td>E2E test, Playwright, Cypress, browser automation</td>
+</tr>
+<tr>
+<td><code>docker_build</code></td>
+<td>Infrastructure</td>
+<td>Docker, containerize, Dockerfile, docker-compose</td>
+</tr>
+<tr>
+<td><code>ci_cd_setup</code></td>
+<td>CI/CD</td>
+<td>CI/CD, GitHub Actions, pipeline, automated deployment</td>
+</tr>
+<tr>
+<td><code>kubernetes_deploy</code></td>
+<td>Infrastructure</td>
+<td>Kubernetes, k8s, kubectl, HPA, container orchestration</td>
+</tr>
+<tr>
+<td><code>monitoring_setup</code></td>
+<td>Runbooks</td>
+<td>monitoring, Prometheus, Grafana, alerting, observability</td>
+</tr>
+<tr>
+<td><code>api_documentation</code></td>
+<td>Library</td>
+<td>API docs, OpenAPI spec, Swagger, document endpoints</td>
+</tr>
+<tr>
+<td><code>technical_doc</code></td>
+<td>Library</td>
+<td>technical documentation, architecture doc, developer guide</td>
+</tr>
+<tr>
+<td><code>user_guide</code></td>
+<td>Library</td>
+<td>user guide, user manual, how-to docs, quick start</td>
+</tr>
+<tr>
+<td><code>release_notes</code></td>
+<td>Library</td>
+<td>release notes, changelog, version announcement, migration guide</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="常见反模式避免">5. 常见反模式（避免）</h2>
+<table>
+<colgroup>
+<col style="width: 34%" />
+<col style="width: 26%" />
+<col style="width: 39%" />
+</colgroup>
+<thead>
+<tr>
+<th>反模式</th>
+<th>问题</th>
+<th>修正方向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>description: "管理 X 的工具"</code></td>
+<td>只描述功能，没有触发条件</td>
+<td>改为 “Use when managing X…”</td>
+</tr>
+<tr>
+<td><code>description: "执行 Y 操作"</code></td>
+<td>动词开头但仍是功能摘要</td>
+<td>加入 “Use when Y is needed…”</td>
+</tr>
+<tr>
+<td><code>description: "X 和 Y 功能"</code></td>
+<td>列举功能，无场景</td>
+<td>加入 “Triggers when user mentions…”</td>
+</tr>
+<tr>
+<td>过长 description（&gt;3行）</td>
+<td>降低匹配精度，模型注意力稀释</td>
+<td>聚焦最核心的 1-2 个场景</td>
+</tr>
+<tr>
+<td>过短 description（&lt;1句）</td>
+<td>触发关键词不足，召回率低</td>
+<td>补充 “Triggers when…” 段落</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="自检清单">6. 自检清单</h2>
+<p>在编写或审查 Skill description 时，逐项检查：</p>
+<ul class="task-list">
+<li><label><input type="checkbox" />description 以
+<code>"Use when..."</code> 或 <code>"Triggers when..."</code>
+开头</label></li>
+<li><label><input type="checkbox" />包含至少 3
+个具体触发关键词或短语</label></li>
+<li><label><input
+type="checkbox" />描述的是<strong>触发场景</strong>（用户意图），而非<strong>功能实现</strong></label></li>
+<li><label><input
+type="checkbox" />避免”管理”、“工具”、“系统”、“执行”等功能摘要词作为核心词</label></li>
+<li><label><input type="checkbox" />与同类别其他 Skill 的 description
+有明显区分度</label></li>
+<li><label><input type="checkbox" />长度在 1-3 句之间（50-150
+字符为佳）</label></li>
+</ul>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team
+<strong>最后更新</strong>: 2026-04-15 <strong>版本</strong>: 1.0.0</p>
+</body>
+</html>

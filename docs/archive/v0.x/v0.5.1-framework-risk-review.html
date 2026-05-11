@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Framework v0.5.1 风险审查报告</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Framework v0.5.1 风险审查报告</h1>
+</header>
+<h1 id="eket-framework-v0.5.1-风险审查报告">EKET Framework v0.5.1
+风险审查报告</h1>
+<p><strong>审查时间</strong>: 2026-03-23 <strong>审查版本</strong>:
+v0.5.1 <strong>审查范围</strong>:
+配置系统、脚本集成、权限模型、监控体系、测试门禁
+<strong>审查依据</strong>: 软件工程原则 + 团队协作最佳实践 + YAML
+规范</p>
+<hr />
+<h2 id="一executive-summary">一、Executive Summary</h2>
+<h3 id="风险等级总览">1.1 风险等级总览</h3>
+<table>
+<thead>
+<tr>
+<th>风险等级</th>
+<th>数量</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🔴 Critical</td>
+<td>5</td>
+<td>需要立即修复</td>
+</tr>
+<tr>
+<td>🟡 High</td>
+<td>8</td>
+<td>需要本周修复</td>
+</tr>
+<tr>
+<td>🟢 Medium</td>
+<td>6</td>
+<td>需要规划修复</td>
+</tr>
+<tr>
+<td>⚪ Low</td>
+<td>4</td>
+<td>可选优化</td>
+</tr>
+</tbody>
+</table>
+<h3 id="v0.5.1-已修复的-v0.5-风险">1.2 v0.5.1 已修复的 v0.5 风险</h3>
+<table>
+<thead>
+<tr>
+<th>v0.5 风险 ID</th>
+<th>风险描述</th>
+<th>v0.5.1 状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-01</td>
+<td>策略集成缺口</td>
+<td>✅ 已集成到 eket-start.sh</td>
+</tr>
+<tr>
+<td>C-03</td>
+<td>Memory Agent 无心跳</td>
+<td>✅ 已实现心跳机制</td>
+</tr>
+<tr>
+<td>C-06</td>
+<td>心跳机制不完整</td>
+<td>✅ 已实现 heartbeatmonitor.sh</td>
+</tr>
+<tr>
+<td>C-07</td>
+<td>Mock 检测覆盖不全</td>
+<td>✅ 已增强检测模式</td>
+</tr>
+<tr>
+<td>H-01</td>
+<td>无响应超时过短</td>
+<td>✅ 30min → 120min</td>
+</tr>
+<tr>
+<td>H-02</td>
+<td>任务重置无通知</td>
+<td>✅ 已实现 broadcast-task-reset.sh</td>
+</tr>
+<tr>
+<td>H-04</td>
+<td>Checkpoint 无验证</td>
+<td>✅ 已实现 checkpoint-validator.sh</td>
+</tr>
+<tr>
+<td>H-05</td>
+<td>Sprint Review 无自动化</td>
+<td>✅ 已实现 generate-sprint-report.sh</td>
+</tr>
+<tr>
+<td>H-06</td>
+<td>Retrospective 无追踪</td>
+<td>✅ 已实现 action_tracking</td>
+</tr>
+<tr>
+<td>H-07</td>
+<td>日志轮转无实现</td>
+<td>✅ 已实现 log-rotate.sh</td>
+</tr>
+<tr>
+<td>H-08</td>
+<td>并发控制无实现</td>
+<td>✅ 已实现 concurrency-controller.sh</td>
+</tr>
+<tr>
+<td>H-09</td>
+<td>Worktree 清理缺失</td>
+<td>✅ 已实现 worktree-cleaner.sh</td>
+</tr>
+</tbody>
+</table>
+<h3 id="v0.5.1-新增风险">1.3 v0.5.1 新增风险</h3>
+<p>尽管 v0.5.1 修复了大量 v0.5 的风险，但在审查中发现了<strong>5 个新的
+Critical 风险</strong>和<strong>8 个 High
+风险</strong>，需要立即关注。</p>
+<hr />
+<h2 id="二critical-风险">二、Critical 风险 (🔴)</h2>
+<h3 id="c-01-yaml-配置语法错误">C-01: YAML 配置语法错误</h3>
+<p><strong>风险描述</strong>: <code>advanced.yml</code> 第 79-81
+行使用中文字符作为 YAML key，违反 YAML 语法规范。</p>
+<p><strong>影响</strong>: - 配置加载失败 - 脚本启动报错 -
+整个错误处理规范无法生效</p>
+<p><strong>当前代码问题</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># template/.eket/config/advanced.yml 第 77-81 行</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">error_handling</span><span class="kw">:</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="at">  统一 error 码：true</span><span class="co">      # ❌ 非法 YAML key</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="at">  统一日志格式：true</span><span class="co">      # ❌ 非法 YAML key</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="at">  统一退出码：true</span><span class="co">        # ❌ 非法 YAML key</span></span></code></pre></div>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">error_handling</span><span class="kw">:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">unified_error_codes</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">unified_log_format</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">unified_exit_codes</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code></pre></div>
+<p><strong>优先级</strong>: P0 - 立即修复</p>
+<hr />
+<h3 id="c-02-配置文件未验证">C-02: 配置文件未验证</h3>
+<p><strong>风险描述</strong>: 虽然配置了
+<code>validation.enabled: true</code>，但无实际验证逻辑执行。</p>
+<p><strong>影响</strong>: - 错误配置无法及时发现 - 运行时才会暴露问题 -
+配置漂移无法检测</p>
+<p><strong>当前状态</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># config.yml</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">validation</span><span class="kw">:</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">strict_mode</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># advanced.yml</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">config_validation</span><span class="kw">:</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">validate_on_start</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code></pre></div>
+<p><strong>问题</strong>: 配置存在，但 <code>validate-config.sh</code>
+脚本未在主流程中调用。</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># eket-start.sh 添加</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 验证配置文件&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/validate-config.sh</span> <span class="kw">||</span> <span class="kw">{</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;❌ 配置验证失败，请检查配置文件&quot;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 1</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<p><strong>优先级</strong>: P0 - 立即修复</p>
+<hr />
+<h3 id="c-03-脚本路径硬编码">C-03: 脚本路径硬编码</h3>
+<p><strong>风险描述</strong>: 命令脚本中使用相对路径
+<code>../../scripts/</code>，目录结构变化时失效。</p>
+<p><strong>影响</strong>: - 项目初始化后脚本无法找到 -
+不同部署环境路径不一致 - 维护困难</p>
+<p><strong>当前代码问题</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># eket-claim.sh 第 148 行</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">-x</span> <span class="st">&quot;../../scripts/task-time-tracker.sh&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">../../scripts/task-time-tracker.sh</span> start <span class="st">&quot;</span><span class="va">$TASK_ID</span><span class="st">&quot;</span> ...</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># eket-claim.sh 第 165 行</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">-x</span> <span class="st">&quot;../../scripts/slaver-permissions.sh&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># eket-claim.sh 第 182 行</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">-x</span> <span class="st">&quot;../../scripts/checkpoint-sprint-retro.sh&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span></code></pre></div>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 使用动态路径</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="va">SCRIPT_DIR</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">dirname</span> <span class="st">&quot;</span><span class="va">${BASH_SOURCE</span><span class="op">[</span><span class="dv">0</span><span class="op">]</span><span class="va">}</span><span class="st">&quot;</span><span class="va">)</span><span class="st">&quot;</span> <span class="kw">&amp;&amp;</span> <span class="bu">pwd</span><span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="va">PROJECT_ROOT</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$SCRIPT_DIR</span><span class="st">/..&quot;</span> <span class="kw">&amp;&amp;</span> <span class="bu">pwd</span><span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="va">SCRIPTS_DIR</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$PROJECT_ROOT</span><span class="st">/scripts&quot;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">-x</span> <span class="st">&quot;</span><span class="va">$SCRIPTS_DIR</span><span class="st">/task-time-tracker.sh&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;</span><span class="va">$SCRIPTS_DIR</span><span class="st">/task-time-tracker.sh&quot;</span> start <span class="st">&quot;</span><span class="va">$TASK_ID</span><span class="st">&quot;</span> ...</span></code></pre></div>
+<p><strong>优先级</strong>: P0 - 本周修复</p>
+<hr />
+<h3 id="c-04-merge-流程绕过验证">C-04: Merge 流程绕过验证</h3>
+<p><strong>风险描述</strong>: <code>eket-review-merge.sh</code> 直接执行
+Git 合并，未调用 <code>merge-strategy.sh</code> 和
+<code>test-gate-system.sh</code>。</p>
+<p><strong>影响</strong>: - 未完成功能可被合并 - 测试未通过可被合并 -
+Review 验证形同虚设</p>
+<p><strong>当前代码问题</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># eket-review-merge.sh 第 277-307 行</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 直接合并，无验证</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout testing</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> merge <span class="st">&quot;</span><span class="va">$BRANCH</span><span class="st">&quot;</span> <span class="at">-m</span> <span class="st">&quot;feat: merge </span><span class="va">$TASK_ID</span><span class="st">&quot;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout main</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> merge testing <span class="at">-m</span> <span class="st">&quot;feat: merge </span><span class="va">$TASK_ID</span><span class="st"> to main&quot;</span></span></code></pre></div>
+<p><strong>应该调用</strong>: - <code>scripts/merge-strategy.sh</code> -
+检查完成率、决定是否部分合并 - <code>scripts/test-gate-system.sh</code>
+- 执行 9 大门禁测试 - <code>scripts/checkpoint-validator.sh</code> -
+验证 Checkpoint</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 合并前验证</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/test-gate-system.sh</span> all <span class="st">&quot;</span><span class="va">$TASK_ID</span><span class="st">&quot;</span> <span class="kw">||</span> <span class="kw">{</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;❌ 测试门禁未通过，阻止合并&quot;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">1</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/merge-strategy.sh</span> <span class="st">&quot;</span><span class="va">$TASK_ID</span><span class="st">&quot;</span> <span class="at">--auto</span> <span class="kw">||</span> <span class="kw">{</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;❌ 合并策略检查失败&quot;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">1</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<p><strong>优先级</strong>: P0 - 立即修复</p>
+<hr />
+<h3 id="c-05-监控脚本无守护进程管理">C-05: 监控脚本无守护进程管理</h3>
+<p><strong>风险描述</strong>: <code>heartbeatmonitor.sh</code> 和
+<code>memory-review-agent.sh</code> 使用简单 <code>&amp;</code>
+后台运行，无进程管理。</p>
+<p><strong>影响</strong>: - 进程挂掉后无法自动重启 - 无 PID 文件管理 -
+无法优雅关闭</p>
+<p><strong>当前代码问题</strong>:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># eket-start.sh</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">../../scripts/heartbeatmonitor.sh</span> <span class="at">--daemon</span> <span class="op">&amp;&gt;</span>/dev/null <span class="kw">&amp;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">../../scripts/memory-review-agent.sh</span> <span class="at">--daemon</span> <span class="op">&amp;&gt;</span>/dev/null <span class="kw">&amp;</span></span></code></pre></div>
+<p><strong>问题</strong>: - 无 PID 文件追踪 - 无重启逻辑 -
+实例重启后不会自动恢复</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 使用进程管理</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">start_daemon()</span> <span class="kw">{</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">script</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$1</span><span class="st">&quot;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">name</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$2</span><span class="st">&quot;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">pid_file</span><span class="op">=</span><span class="st">&quot;.eket/state/</span><span class="va">${name}</span><span class="st">.pid&quot;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="ot">-f</span> <span class="st">&quot;</span><span class="va">$pid_file</span><span class="st">&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">local</span> <span class="va">pid</span><span class="op">=</span><span class="va">$(</span><span class="fu">cat</span> <span class="st">&quot;</span><span class="va">$pid_file</span><span class="st">&quot;</span><span class="va">)</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">kill</span> <span class="at">-0</span> <span class="st">&quot;</span><span class="va">$pid</span><span class="st">&quot;</span> <span class="dv">2</span><span class="op">&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>            <span class="bu">echo</span> <span class="st">&quot;✓ </span><span class="va">$name</span><span class="st"> 已在运行 (PID: </span><span class="va">$pid</span><span class="st">)&quot;</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="dv">0</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">fi</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 启动并保存 PID</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nohup</span> <span class="st">&quot;</span><span class="va">$script</span><span class="st">&quot;</span> <span class="at">--daemon</span> <span class="op">&gt;</span> <span class="st">&quot;logs/</span><span class="va">${name}</span><span class="st">.log&quot;</span> <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">&amp;</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="va">$!</span> <span class="op">&gt;</span> <span class="st">&quot;</span><span class="va">$pid_file</span><span class="st">&quot;</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;✓ </span><span class="va">$name</span><span class="st"> 已启动 (PID: </span><span class="va">$!</span><span class="st">)&quot;</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="ex">start_daemon</span> <span class="st">&quot;./scripts/heartbeatmonitor.sh&quot;</span> <span class="st">&quot;heartbeat-monitor&quot;</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="ex">start_daemon</span> <span class="st">&quot;./scripts/memory-review-agent.sh&quot;</span> <span class="st">&quot;memory-review-agent&quot;</span></span></code></pre></div>
+<p><strong>优先级</strong>: P0 - 本周修复</p>
+<hr />
+<h2 id="三high-风险">三、High 风险 (🟡)</h2>
+<h3 id="h-01-测试门禁脚本无执行权限">H-01: 测试门禁脚本无执行权限</h3>
+<p><strong>风险描述</strong>: 新创建的脚本可能缺少执行权限。</p>
+<p><strong>检查</strong>:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ls <span class="at">-la</span> scripts/test-gate-system.sh</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">-rwxr-xr-x</span>  ✓</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ls <span class="at">-la</span> scripts/checkpoint-validator.sh</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="ex">-rwxr-xr-x</span>  ✓</span></code></pre></div>
+<p><strong>状态</strong>: ✅ 已修复（v0.5.1 提交记录显示已
+<code>chmod +x</code>）</p>
+<p><strong>建议</strong>: 在 init 脚本中添加权限检查步骤。</p>
+<hr />
+<h3 id="h-02-动态覆盖率阈值实现不完整">H-02:
+动态覆盖率阈值实现不完整</h3>
+<p><strong>风险描述</strong>:
+配置支持按优先级/类型/模块设置覆盖率阈值，但
+<code>test-gate-system.sh</code> 仅实现了按优先级。</p>
+<p><strong>当前代码</strong>:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># test-gate-system.sh 第 90-114 行</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">get_min_coverage()</span> <span class="kw">{</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">ticket_id</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$1</span><span class="st">&quot;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">ticket_file</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$JIRA_DIR</span><span class="st">&quot;</span>/<span class="pp">*</span>/<span class="st">&quot;.</span><span class="va">${ticket_id}</span><span class="st">.md&quot;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="ot">-f</span> <span class="st">&quot;</span><span class="va">$ticket_file</span><span class="st">&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        <span class="bu">local</span> <span class="va">priority</span><span class="op">=</span><span class="va">$(</span><span class="fu">grep</span> <span class="st">&quot;^priority:&quot;</span> <span class="st">&quot;</span><span class="va">$ticket_file</span><span class="st">&quot;</span> ... <span class="va">)</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">local</span> <span class="va">type</span><span class="op">=</span><span class="va">$(</span><span class="fu">grep</span> <span class="st">&quot;^type:&quot;</span> <span class="st">&quot;</span><span class="va">$ticket_file</span><span class="st">&quot;</span> ... <span class="va">)</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&quot;</span><span class="va">$priority</span><span class="st">&quot;</span> <span class="kw">in</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>            <span class="ss">P0</span><span class="kw">|</span><span class="ss">urgent</span><span class="kw">)</span> <span class="bu">echo</span> <span class="st">&quot;95&quot;</span> <span class="cf">;;</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>            <span class="ss">P1</span><span class="kw">|</span><span class="ss">high</span><span class="kw">)</span> <span class="bu">echo</span> <span class="st">&quot;90&quot;</span> <span class="cf">;;</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>            <span class="ss">P2</span><span class="kw">|</span><span class="ss">normal</span><span class="kw">)</span> <span class="bu">echo</span> <span class="st">&quot;80&quot;</span> <span class="cf">;;</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>            <span class="pp">*</span><span class="kw">)</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>                <span class="cf">case</span> <span class="st">&quot;</span><span class="va">$type</span><span class="st">&quot;</span> <span class="kw">in</span>  <span class="co"># ⚠️ 仅按类型回退</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                    <span class="ss">feature</span><span class="kw">)</span> <span class="bu">echo</span> <span class="st">&quot;80&quot;</span> <span class="cf">;;</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>                    <span class="ss">bugfix</span><span class="kw">)</span> <span class="bu">echo</span> <span class="st">&quot;85&quot;</span> <span class="cf">;;</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>                    <span class="ss">hotfix</span><span class="kw">)</span> <span class="bu">echo</span> <span class="st">&quot;70&quot;</span> <span class="cf">;;</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>                    <span class="pp">*</span><span class="kw">)</span> <span class="bu">echo</span> <span class="st">&quot;80&quot;</span> <span class="cf">;;</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>                <span class="cf">esac</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>                <span class="cf">;;</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">esac</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">&quot;80&quot;</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<p><strong>配置要求</strong>:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">testing</span><span class="kw">:</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">unit_test</span><span class="kw">:</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">coverage</span><span class="kw">:</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">by_priority</span><span class="kw">:</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">P0</span><span class="kw">:</span><span class="at"> </span><span class="dv">95</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">P1</span><span class="kw">:</span><span class="at"> </span><span class="dv">90</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">P2</span><span class="kw">:</span><span class="at"> </span><span class="dv">80</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">by_type</span><span class="kw">:</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">feature</span><span class="kw">:</span><span class="at"> </span><span class="dv">80</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">bugfix</span><span class="kw">:</span><span class="at"> </span><span class="dv">85</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">hotfix</span><span class="kw">:</span><span class="at"> </span><span class="dv">70</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">by_module</span><span class="kw">:</span><span class="co">  # ❌ 未实现</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">critical</span><span class="kw">:</span><span class="at"> </span><span class="dv">95</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">important</span><span class="kw">:</span><span class="at"> </span><span class="dv">90</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">normal</span><span class="kw">:</span><span class="at"> </span><span class="dv">80</span></span></code></pre></div>
+<p><strong>修复建议</strong>:
+添加模块重要性检测逻辑（需要分析代码路径）。</p>
+<p><strong>优先级</strong>: P1 - 本周修复</p>
+<hr />
+<h3 id="h-03-retrospective-索引解析简单">H-03: Retrospective
+索引解析简单</h3>
+<p><strong>风险描述</strong>: <code>retrospective-index.sh</code>
+使用简单 grep 解析 YAML，无法处理复杂结构。</p>
+<p><strong>当前代码</strong>:</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># retrospective-index.sh 第 151-161 行</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> keyword <span class="kw">in</span> <span class="st">&quot;</span><span class="va">${keywords</span><span class="op">[@]</span><span class="va">}</span><span class="st">&quot;</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="va">IFS</span><span class="op">=</span> <span class="bu">read</span> <span class="at">-r</span> <span class="va">line</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">[[</span> <span class="st">&quot;</span><span class="va">$line</span><span class="st">&quot;</span> <span class="ot">==</span> <span class="pp">*</span><span class="st">&quot;file:&quot;</span><span class="pp">*</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>            <span class="bu">local</span> <span class="va">file</span><span class="op">=</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">&quot;</span><span class="va">$line</span><span class="st">&quot;</span> <span class="kw">|</span> <span class="fu">cut</span> <span class="at">-d</span><span class="st">&#39;:&#39;</span> <span class="at">-f2</span> <span class="kw">|</span> <span class="fu">tr</span> <span class="at">-d</span> <span class="st">&#39; &#39;</span><span class="va">)</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>            <span class="co"># ...</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">fi</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">done</span> <span class="op">&lt;</span> <span class="op">&lt;(</span><span class="fu">grep</span> <span class="at">-i</span> <span class="st">&quot;</span><span class="va">$keyword</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$index_file</span><span class="st">&quot;</span> <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">true</span><span class="op">)</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code></pre></div>
+<p><strong>问题</strong>: - 无法处理嵌套 YAML - 无法计算相似度
+(仅关键词匹配) - <code>similarity_threshold</code> 配置未使用</p>
+<p><strong>修复建议</strong>: 使用 <code>yq</code> 或 Python YAML
+库解析。</p>
+<p><strong>优先级</strong>: P1 - 本周修复</p>
+<hr />
+<h3 id="h-04-sprint-review-指标计算简单">H-04: Sprint Review
+指标计算简单</h3>
+<p><strong>风险描述</strong>: <code>generate-sprint-report.sh</code>
+仅统计完成/未完成数量，缺少速度、质量等指标。</p>
+<p><strong>配置要求</strong>:</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">process</span><span class="kw">:</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">sprint</span><span class="kw">:</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">review</span><span class="kw">:</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">include_metrics</span><span class="kw">:</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;completed_tasks&quot;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;incomplete_tasks&quot;</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;code_quality&quot;</span><span class="co">       # ❌ 未实现</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;velocity&quot;</span><span class="co">           # ❌ 未实现</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;blockers&quot;</span><span class="co">           # ❌ 未实现</span></span></code></pre></div>
+<p><strong>修复建议</strong>: 添加以下指标计算： - Velocity: 完成故事点
+/ Sprint 数 - Code Quality: 测试覆盖率、Lint 错误数、代码重复率 -
+Blockers: 阻塞任务数、平均阻塞时长</p>
+<p><strong>优先级</strong>: P1 - 本周修复</p>
+<hr />
+<h3 id="h-05-权限检查未实际执行">H-05: 权限检查未实际执行</h3>
+<p><strong>风险描述</strong>: 配置了
+<code>check.before_each_operation: true</code>，但无实际检查逻辑。</p>
+<p><strong>影响</strong>: - 权限配置形同虚设 - Slaver 可执行越权操作</p>
+<p><strong>当前状态</strong>:</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">permissions</span><span class="kw">:</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">check</span><span class="kw">:</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">before_each_operation</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">log_all_checks</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">alert_on_violation</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code></pre></div>
+<p><strong>问题</strong>: <code>slaver-permissions.sh</code>
+脚本存在，但未在操作前调用。</p>
+<p><strong>修复建议</strong>: 在所有 Git 操作、Jira
+更新前调用权限检查。</p>
+<p><strong>优先级</strong>: P1 - 本周修复</p>
+<hr />
+<h3 id="h-06-配置模块加载器未实现">H-06: 配置模块加载器未实现</h3>
+<p><strong>风险描述</strong>: <code>config.yml</code> 使用
+<code>@load</code> 指令引用模块，但 <code>load-config.sh</code>
+功能简单。</p>
+<p><strong>当前代码</strong>:</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load-config.sh</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 仅检查文件是否存在，未实际合并配置</span></span></code></pre></div>
+<p><strong>问题</strong>: - 配置覆盖逻辑未实现 - 环境变量替换未实现 -
+配置验证与加载分离</p>
+<p><strong>修复建议</strong>: 使用配置文件合并工具（如
+<code>yq eval-all</code>）。</p>
+<p><strong>优先级</strong>: P1 - 本周修复</p>
+<hr />
+<h3 id="h-07-文档同步机制未实现">H-07: 文档同步机制未实现</h3>
+<p><strong>风险描述</strong>: 配置了
+<code>documentation_sync.sync_on</code> 多个节点，但无实际同步逻辑。</p>
+<p><strong>配置</strong>:</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">advanced</span><span class="kw">:</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">documentation_sync</span><span class="kw">:</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">sync_on</span><span class="kw">:</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;task_analysis_complete&quot;</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;plan_approved&quot;</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;dev_complete&quot;</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;merge_complete&quot;</span></span></code></pre></div>
+<p><strong>问题</strong>: 无脚本实现文档自动同步。</p>
+<p><strong>优先级</strong>: P1 - 本周修复</p>
+<hr />
+<h3 id="h-08-错误处理规范未统一">H-08: 错误处理规范未统一</h3>
+<p><strong>风险描述</strong>:
+配置了统一错误码，但各脚本错误处理不一致。</p>
+<p><strong>配置</strong>:</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">advanced</span><span class="kw">:</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">error_handling</span><span class="kw">:</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">unified_error_codes</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span><span class="co">  # ⚠️ 语法错误，且未实现</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">error_codes</span><span class="kw">:</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">success</span><span class="kw">:</span><span class="at"> </span><span class="dv">0</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">general_error</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">config_error</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">permission_error</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">timeout_error</span><span class="kw">:</span><span class="at"> </span><span class="dv">4</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">validation_error</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span></code></pre></div>
+<p><strong>问题</strong>: - YAML 语法错误（中文字符） -
+各脚本退出码不一致 - 错误日志格式不统一</p>
+<p><strong>优先级</strong>: P1 - 本周修复</p>
+<hr />
+<h2 id="四medium-风险">四、Medium 风险 (🟢)</h2>
+<h3 id="m-01-任务优先级算法权重固定">M-01: 任务优先级算法权重固定</h3>
+<p><strong>风险描述</strong>: 权重配置在 YAML
+中，但脚本使用硬编码默认值。</p>
+<p><strong>当前代码</strong>:</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># prioritize-tasks.sh 第 57-71 行</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="va">WEIGHT_BASE_PRIORITY</span><span class="op">=</span><span class="va">$(</span><span class="fu">grep</span> <span class="at">-A10</span> <span class="st">&quot;factors:&quot;</span> <span class="st">&quot;</span><span class="va">$config_file</span><span class="st">&quot;</span> ... <span class="kw">||</span> <span class="bu">echo</span> <span class="st">&quot;0.25&quot;</span><span class="va">)</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span></code></pre></div>
+<p><strong>问题</strong>: grep 解析 YAML 不可靠，配置可能不生效。</p>
+<p><strong>优先级</strong>: P2 - 规划修复</p>
+<hr />
+<h3 id="m-02-并发控制无实际限制">M-02: 并发控制无实际限制</h3>
+<p><strong>风险描述</strong>: <code>concurrency-controller.sh</code>
+创建了，但 <code>eket-claim.sh</code> 未调用。</p>
+<p><strong>优先级</strong>: P2 - 规划修复</p>
+<hr />
+<h3 id="m-03-worktree-清理无调度">M-03: Worktree 清理无调度</h3>
+<p><strong>风险描述</strong>: <code>worktree-cleaner.sh</code>
+存在，但无定时执行机制。</p>
+<p><strong>优先级</strong>: P2 - 规划修复</p>
+<hr />
+<h3 id="m-04-mock-检测排除路径未使用">M-04: Mock 检测排除路径未使用</h3>
+<p><strong>风险描述</strong>: 配置了 <code>exclude_paths</code>，但
+<code>mock-detector.sh</code> 未使用。</p>
+<p><strong>优先级</strong>: P2 - 规划修复</p>
+<hr />
+<h3 id="m-05-通知方法仅支持文件和控制台">M-05:
+通知方法仅支持文件和控制台</h3>
+<p><strong>风险描述</strong>: 无 Slack、钉钉、邮件集成。</p>
+<p><strong>优先级</strong>: P2 - 规划修复</p>
+<hr />
+<h3 id="m-06-配置热重载不支持">M-06: 配置热重载不支持</h3>
+<p><strong>风险描述</strong>: 修改配置需重启实例。</p>
+<p><strong>优先级</strong>: P2 - 规划修复</p>
+<hr />
+<h2 id="五low-风险">五、Low 风险 (⚪)</h2>
+<h3 id="l-01-无命令别名">L-01: 无命令别名</h3>
+<p>建议添加短命令别名： - <code>/es</code> → <code>/eket-status</code> -
+<code>/ec</code> → <code>/eket-claim</code> - <code>/er</code> →
+<code>/eket-review</code></p>
+<hr />
+<h3 id="l-02-无-dashboard">L-02: 无 Dashboard</h3>
+<p>仅文本状态，无图形化 Dashboard。</p>
+<hr />
+<h3 id="l-03-快捷键缺失">L-03: 快捷键缺失</h3>
+<p>无交互式快捷键支持。</p>
+<hr />
+<h3 id="l-04-性能基准缺失">L-04: 性能基准缺失</h3>
+<p>无框架性能基准测试。</p>
+<hr />
+<h2 id="六修复优先级矩阵">六、修复优先级矩阵</h2>
+<table>
+<thead>
+<tr>
+<th>风险 ID</th>
+<th>等级</th>
+<th>影响</th>
+<th>难度</th>
+<th>优先级</th>
+<th>预计 Sprint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-01</td>
+<td>Critical</td>
+<td>高</td>
+<td>低</td>
+<td>P0</td>
+<td>立即</td>
+</tr>
+<tr>
+<td>C-02</td>
+<td>Critical</td>
+<td>高</td>
+<td>低</td>
+<td>P0</td>
+<td>立即</td>
+</tr>
+<tr>
+<td>C-03</td>
+<td>Critical</td>
+<td>中</td>
+<td>中</td>
+<td>P0</td>
+<td>本周</td>
+</tr>
+<tr>
+<td>C-04</td>
+<td>Critical</td>
+<td>高</td>
+<td>中</td>
+<td>P0</td>
+<td>立即</td>
+</tr>
+<tr>
+<td>C-05</td>
+<td>Critical</td>
+<td>中</td>
+<td>中</td>
+<td>P0</td>
+<td>本周</td>
+</tr>
+<tr>
+<td>H-01</td>
+<td>High</td>
+<td>中</td>
+<td>低</td>
+<td>P1</td>
+<td>本周</td>
+</tr>
+<tr>
+<td>H-02</td>
+<td>High</td>
+<td>中</td>
+<td>中</td>
+<td>P1</td>
+<td>本周</td>
+</tr>
+<tr>
+<td>H-03</td>
+<td>High</td>
+<td>低</td>
+<td>中</td>
+<td>P1</td>
+<td>本周</td>
+</tr>
+<tr>
+<td>H-04</td>
+<td>High</td>
+<td>中</td>
+<td>中</td>
+<td>P1</td>
+<td>本周</td>
+</tr>
+<tr>
+<td>H-05</td>
+<td>High</td>
+<td>高</td>
+<td>中</td>
+<td>P1</td>
+<td>本周</td>
+</tr>
+<tr>
+<td>H-06</td>
+<td>High</td>
+<td>中</td>
+<td>中</td>
+<td>P1</td>
+<td>本周</td>
+</tr>
+<tr>
+<td>H-07</td>
+<td>High</td>
+<td>中</td>
+<td>高</td>
+<td>P1</td>
+<td>下周</td>
+</tr>
+<tr>
+<td>H-08</td>
+<td>High</td>
+<td>中</td>
+<td>中</td>
+<td>P1</td>
+<td>本周</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="七立即行动项">七、立即行动项</h2>
+<h3 id="sprint-0-立即修复">Sprint 0 (立即修复)</h3>
+<ol type="1">
+<li><strong>修复 YAML 语法错误</strong> (C-01)
+<ul>
+<li>文件：<code>template/.eket/config/advanced.yml</code></li>
+<li>修改第 79-81 行为中英文 key</li>
+</ul></li>
+<li><strong>集成配置验证到主流程</strong> (C-02)
+<ul>
+<li>文件：<code>template/.claude/commands/eket-start.sh</code></li>
+<li>添加 <code>validate-config.sh</code> 调用</li>
+</ul></li>
+<li><strong>修复 Merge 流程绕过验证</strong> (C-04)
+<ul>
+<li>文件：<code>template/.claude/commands/eket-review-merge.sh</code></li>
+<li>合并前调用 <code>test-gate-system.sh</code> 和
+<code>merge-strategy.sh</code></li>
+</ul></li>
+</ol>
+<h3 id="sprint-1-本周修复">Sprint 1 (本周修复)</h3>
+<ol start="4" type="1">
+<li><strong>修复脚本路径硬编码</strong> (C-03)</li>
+<li><strong>添加守护进程 PID 管理</strong> (C-05)</li>
+<li><strong>完善动态覆盖率阈值</strong> (H-02)</li>
+<li><strong>实现权限检查调用</strong> (H-05)</li>
+<li><strong>统一错误处理规范</strong> (H-08)</li>
+</ol>
+<hr />
+<h2 id="八总结">八、总结</h2>
+<h3 id="风险分布">8.1 风险分布</h3>
+<pre><code>v0.5 审查:              v0.5.1 审查:
+Critical: ████████ 5    Critical: ████████ 5 (新增 5 个)
+High:     ████████████ 8 High:     ████████████ 8 (新增 8 个)
+Medium:   ██████████ 6  Medium:   ████████ 6 (修复 2 个)
+Low:      ██████ 4      Low:      ██████ 4 (新增 4 个)</code></pre>
+<h3 id="核心问题">8.2 核心问题</h3>
+<p><strong>v0.5.1 的主要问题是”实现质量”</strong>： -
+配置存在但未实际执行（配置驱动 ≠ 功能实现） - 脚本创建但未集成到主流程 -
+YAML 语法错误导致配置失效 - 路径硬编码导致可移植性差</p>
+<h3 id="建议">8.3 建议</h3>
+<ol type="1">
+<li><strong>建立集成测试</strong> - 确保配置生效、脚本被调用</li>
+<li><strong>配置 Schema 验证</strong> - 使用 YAML Schema 验证工具</li>
+<li><strong>代码审查流程</strong> - 新增脚本必须 Review 集成点</li>
+<li><strong>错误处理规范</strong> - 统一退出码、日志格式</li>
+</ol>
+<hr />
+<p><strong>审查人</strong>: Master Node + AI Agent
+<strong>审查日期</strong>: 2026-03-23 <strong>下次审查</strong>: Sprint
+1 完成后复查 Critical 风险</p>
+</body>
+</html>

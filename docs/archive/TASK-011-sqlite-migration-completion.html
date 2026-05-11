@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>TASK-011: SQLite Manager 完整迁移 - 执行报告</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">TASK-011: SQLite Manager 完整迁移 - 执行报告</h1>
+</header>
+<h1 id="task-011-sqlite-manager-完整迁移---执行报告">TASK-011: SQLite
+Manager 完整迁移 - 执行报告</h1>
+<p><strong>任务 ID</strong>: TASK-011 <strong>负责人</strong>: Slaver A
+(SQLite Architect) <strong>开始时间</strong>: 2026-04-08
+<strong>状态</strong>: IN_PROGRESS <strong>优先级</strong>: P1</p>
+<hr />
+<h2 id="执行概况">📊 执行概况</h2>
+<h3 id="目标">目标</h3>
+<p>将剩余 15个使用 <code>SQLiteClient</code> 的文件迁移到统一的
+<code>SQLiteManager</code>，消除代码重复，提升架构一致性。</p>
+<h3 id="已完成基础设施-round-2">已完成基础设施 (Round 2)</h3>
+<ul>
+<li>✅ <code>src/core/sqlite-manager.ts</code> - 统一管理类</li>
+<li>✅ <code>src/core/sqlite-shared.ts</code> - 共享工具函数</li>
+<li>✅ <code>src/core/sqlite-sync-adapter.ts</code> - 同步适配器</li>
+</ul>
+<hr />
+<h2 id="迁移文件清单">📋 迁移文件清单</h2>
+<h3 id="核心模块-8个文件---p0-高优先级">核心模块 (8个文件 - P0
+高优先级)</h3>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 24%" />
+<col style="width: 24%" />
+<col style="width: 18%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>导入方式</th>
+<th>迁移状态</th>
+<th>复杂度</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/core/sqlite-client.ts</code></td>
+<td>N/A</td>
+<td>🟡 SKIP</td>
+<td>低</td>
+<td>保留为底层实现</td>
+</tr>
+<tr>
+<td><code>src/core/sqlite-async-client.ts</code></td>
+<td>N/A</td>
+<td>🟡 SKIP</td>
+<td>低</td>
+<td>保留为底层实现</td>
+</tr>
+<tr>
+<td><strong><code>src/core/knowledge-base.ts</code></strong></td>
+<td><code>createSQLiteClient</code></td>
+<td>⚠️ BLOCKED</td>
+<td>中</td>
+<td><strong>Linter 自动还原修改</strong></td>
+</tr>
+<tr>
+<td><code>src/core/connection-manager.ts</code></td>
+<td><code>new SQLiteClient()</code></td>
+<td>⏸️ TODO</td>
+<td>中</td>
+<td>降级逻辑依赖</td>
+</tr>
+<tr>
+<td><code>src/core/master-election.ts</code></td>
+<td><code>new SQLiteClient()</code></td>
+<td>⏸️ TODO</td>
+<td>高</td>
+<td>关键选举逻辑</td>
+</tr>
+<tr>
+<td><code>src/core/history-tracker.ts</code></td>
+<td><code>createSQLiteClient</code></td>
+<td>⏸️ TODO</td>
+<td>低</td>
+<td>简单CRUD</td>
+</tr>
+<tr>
+<td><code>src/core/context-snapshot.ts</code></td>
+<td><code>createSQLiteClient</code></td>
+<td>⏸️ TODO</td>
+<td>低</td>
+<td>简单CRUD</td>
+</tr>
+</tbody>
+</table>
+<h3 id="api-模块-6个文件---p1-中优先级">API 模块 (6个文件 - P1
+中优先级)</h3>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 24%" />
+<col style="width: 24%" />
+<col style="width: 18%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>导入方式</th>
+<th>迁移状态</th>
+<th>复杂度</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/api/eket-server.ts</code></td>
+<td><code>createSQLiteClient</code></td>
+<td>⏸️ TODO</td>
+<td>中</td>
+<td>Express 集成</td>
+</tr>
+<tr>
+<td><code>src/api/web-server.ts</code></td>
+<td><code>createSQLiteClient</code></td>
+<td>⏸️ TODO</td>
+<td>中</td>
+<td>Web Dashboard</td>
+</tr>
+<tr>
+<td><code>src/api/audit-logger.ts</code></td>
+<td><code>createSQLiteClient</code></td>
+<td>⏸️ TODO</td>
+<td>低</td>
+<td>审计日志</td>
+</tr>
+<tr>
+<td><code>src/api/data-access.ts</code></td>
+<td><code>createSQLiteClient</code></td>
+<td>⏸️ TODO</td>
+<td>低</td>
+<td>数据访问层</td>
+</tr>
+<tr>
+<td><code>src/api/data-deletion.ts</code></td>
+<td><code>createSQLiteClient</code></td>
+<td>⏸️ TODO</td>
+<td>低</td>
+<td>数据删除</td>
+</tr>
+<tr>
+<td><code>src/api/middleware/api-key-storage.ts</code></td>
+<td><code>createSQLiteClient</code></td>
+<td>⏸️ TODO</td>
+<td>低</td>
+<td>API Key 存储</td>
+</tr>
+</tbody>
+</table>
+<h3 id="其他模块-4个文件---p2-低优先级">其他模块 (4个文件 - P2
+低优先级)</h3>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 24%" />
+<col style="width: 24%" />
+<col style="width: 18%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>导入方式</th>
+<th>迁移状态</th>
+<th>复杂度</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/health-check.ts</code></td>
+<td><code>createSQLiteClient</code></td>
+<td>⏸️ TODO</td>
+<td>低</td>
+<td>健康检查</td>
+</tr>
+<tr>
+<td><code>src/index.ts</code></td>
+<td><code>createSQLiteClient</code></td>
+<td>⏸️ TODO</td>
+<td>低</td>
+<td>CLI 入口</td>
+</tr>
+<tr>
+<td><code>src/hooks/http-hook-server.ts</code></td>
+<td><code>createSQLiteClient</code></td>
+<td>⏸️ TODO</td>
+<td>低</td>
+<td>HTTP Hook</td>
+</tr>
+</tbody>
+</table>
+<p><strong>总计</strong>: 18个文件 (不含 sqlite-client/async 本身)</p>
+<hr />
+<h2 id="遇到的问题">⚠️ 遇到的问题</h2>
+<h3 id="问题-1-linterformatter-自动还原修改">问题 1: Linter/Formatter
+自动还原修改</h3>
+<p><strong>现象</strong>: 在编辑 <code>knowledge-base.ts</code>
+时，修改被自动还原：</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 我的修改</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteManager<span class="op">,</span> <span class="kw">type</span> SQLiteManager } <span class="im">from</span> <span class="st">&#39;./sqlite-manager.js&#39;</span><span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">// 被自动还原为</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteClient<span class="op">,</span> <span class="kw">type</span> SQLiteClient } <span class="im">from</span> <span class="st">&#39;./sqlite-client.js&#39;</span><span class="op">;</span></span></code></pre></div>
+<p><strong>影响</strong>: - 无法完成文件迁移 - 可能是 ESLint/Prettier
+的自动修复功能 - 可能是 TypeScript 编译器的智能导入</p>
+<p><strong>可能原因</strong>: 1. <code>.eslintrc.js</code> 或
+<code>tsconfig.json</code> 配置了自动导入优化 2. 编辑器 (VS Code)
+的自动格式化设置 3. Git hooks (pre-commit/pre-push) 运行了 linter</p>
+<p><strong>解决方案建议</strong>: 1. 暂时禁用自动格式化:
+<code>// eslint-disable-next-line</code> 2. 修改
+<code>.eslintrc.js</code> 允许新的导入路径 3. 批量迁移后再运行 linter 4.
+使用 <code>git commit --no-verify</code> 跳过 hooks</p>
+<hr />
+<h2 id="迁移模式-migration-pattern">🎯 迁移模式 (Migration Pattern)</h2>
+<h3 id="模式-a-基础迁移-适用于简单crud模块">模式 A: 基础迁移
+(适用于简单CRUD模块)</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// BEFORE</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteClient<span class="op">,</span> <span class="kw">type</span> SQLiteClient } <span class="im">from</span> <span class="st">&#39;./sqlite-client.js&#39;</span><span class="op">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MyModule {</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> sqlite<span class="op">:</span> SQLiteClient<span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>(dbPath<span class="op">?:</span> <span class="dt">string</span>) {</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">sqlite</span> <span class="op">=</span> <span class="fu">createSQLiteClient</span>(dbPath)<span class="op">;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">connect</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqlite</span><span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span> <span class="co">// 同步变异步</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">disconnect</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span> {</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">sqlite</span><span class="op">.</span><span class="fu">close</span>()<span class="op">;</span> <span class="co">// 同步变异步</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co">// AFTER</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteManager<span class="op">,</span> <span class="kw">type</span> SQLiteManager } <span class="im">from</span> <span class="st">&#39;./sqlite-manager.js&#39;</span><span class="op">;</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MyModule {</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> sqlite<span class="op">:</span> SQLiteManager<span class="op">;</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>(dbPath<span class="op">?:</span> <span class="dt">string</span>) {</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">sqlite</span> <span class="op">=</span> <span class="fu">createSQLiteManager</span>({ dbPath<span class="op">,</span> useWorker<span class="op">:</span> <span class="kw">false</span> })<span class="op">;</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">connect</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqlite</span><span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span> <span class="co">// 统一异步</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">disconnect</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span> {</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqlite</span><span class="op">.</span><span class="fu">close</span>()<span class="op">;</span> <span class="co">// 统一异步</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="模式-b-复杂迁移-适用于-connection-managermaster-election">模式
+B: 复杂迁移 (适用于 connection-manager/master-election)</h3>
+<p>这些模块需要特殊处理，因为它们直接使用
+<code>new SQLiteClient()</code>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// BEFORE</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { SQLiteClient } <span class="im">from</span> <span class="st">&#39;./sqlite-client.js&#39;</span><span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ConnectionManager {</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> sqliteClient<span class="op">:</span> SQLiteClient <span class="op">|</span> <span class="dt">null</span> <span class="op">=</span> <span class="kw">null</span><span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">tryConnectSqlite</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">SQLiteClient</span>(dbPath)<span class="op">;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span><span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co">// AFTER Option 1: 使用 SQLiteManager (推荐)</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { SQLiteManager<span class="op">,</span> createSQLiteManager } <span class="im">from</span> <span class="st">&#39;./sqlite-manager.js&#39;</span><span class="op">;</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ConnectionManager {</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> sqliteClient<span class="op">:</span> SQLiteManager <span class="op">|</span> <span class="dt">null</span> <span class="op">=</span> <span class="kw">null</span><span class="op">;</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">tryConnectSqlite</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span> <span class="op">=</span> <span class="fu">createSQLiteManager</span>({ dbPath<span class="op">,</span> useWorker<span class="op">:</span> <span class="kw">false</span> })<span class="op">;</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span><span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co">// AFTER Option 2: 使用 SyncSQLiteAdapter (保持接口一致)</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { SyncSQLiteAdapter } <span class="im">from</span> <span class="st">&#39;./sqlite-sync-adapter.js&#39;</span><span class="op">;</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ConnectionManager {</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> sqliteClient<span class="op">:</span> SyncSQLiteAdapter <span class="op">|</span> <span class="dt">null</span> <span class="op">=</span> <span class="kw">null</span><span class="op">;</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">tryConnectSqlite</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">SyncSQLiteAdapter</span>(dbPath)<span class="op">;</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span><span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="迁移策略建议">📐 迁移策略建议</h2>
+<h3 id="策略-1-渐进式迁移-推荐">策略 1: 渐进式迁移 (推荐)</h3>
+<p>按优先级分阶段迁移，每个阶段测试验证：</p>
+<p><strong>阶段 1: 简单模块 (1-2 小时)</strong> - ✅ history-tracker.ts
+- ✅ context-snapshot.ts - ✅ audit-logger.ts - ✅ data-access.ts - ✅
+data-deletion.ts - ✅ api-key-storage.ts</p>
+<p><strong>阶段 2: API 模块 (1 小时)</strong> - ✅ eket-server.ts - ✅
+web-server.ts - ✅ health-check.ts - ✅ http-hook-server.ts</p>
+<p><strong>阶段 3: 核心模块 (2-3 小时)</strong> - ✅ knowledge-base.ts
+(需解决 linter 问题) - ✅ connection-manager.ts - ✅
+master-election.ts</p>
+<p><strong>阶段 4: 测试与验证 (1 小时)</strong> - ✅ 运行所有单元测试 -
+✅ 运行集成测试 - ✅ 代码重复验证 (jscpd) - ✅ 性能基准测试</p>
+<h3 id="策略-2-一次性迁移-备选">策略 2: 一次性迁移 (备选)</h3>
+<p>创建迁移脚本批量处理所有文件：</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># scripts/migrate-to-sqlite-manager.sh</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 批量替换导入语句</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">find</span> node/src <span class="at">-type</span> f <span class="at">-name</span> <span class="st">&quot;*.ts&quot;</span> <span class="at">-exec</span> sed <span class="at">-i</span> <span class="st">&#39;&#39;</span> <span class="dt">\</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;s/import { createSQLiteClient, type SQLiteClient } from.*sqlite-client/import { createSQLiteManager, type SQLiteManager } from .\/sqlite-manager/g&#39;</span> {} +</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 替换类型声明</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">find</span> node/src <span class="at">-type</span> f <span class="at">-name</span> <span class="st">&quot;*.ts&quot;</span> <span class="at">-exec</span> sed <span class="at">-i</span> <span class="st">&#39;&#39;</span> <span class="dt">\</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;s/: SQLiteClient/: SQLiteManager/g&#39;</span> {} +</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 替换工厂函数调用</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="fu">find</span> node/src <span class="at">-type</span> f <span class="at">-name</span> <span class="st">&quot;*.ts&quot;</span> <span class="at">-exec</span> sed <span class="at">-i</span> <span class="st">&#39;&#39;</span> <span class="dt">\</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;s/createSQLiteClient(\(.*\))/createSQLiteManager({ dbPath: \1, useWorker: false })/g&#39;</span> {} +</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 替换 new SQLiteClient()</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="fu">find</span> node/src <span class="at">-type</span> f <span class="at">-name</span> <span class="st">&quot;*.ts&quot;</span> <span class="at">-exec</span> sed <span class="at">-i</span> <span class="st">&#39;&#39;</span> <span class="dt">\</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;s/new SQLiteClient(\(.*\))/createSQLiteManager({ dbPath: \1, useWorker: false })/g&#39;</span> {} +</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. 添加 await 到异步调用</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co"># (需要手动处理，脚本难以准确识别)</span></span></code></pre></div>
+<p><strong>注意</strong>:
+自动化脚本可能破坏代码，需要人工审查每个修改。</p>
+<hr />
+<h2 id="测试计划">🧪 测试计划</h2>
+<h3 id="单元测试">单元测试</h3>
+<p>每个迁移的模块需要验证：</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 运行特定模块测试</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>knowledge-base</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>connection-manager</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>master-election</span></code></pre></div>
+<h3 id="集成测试">集成测试</h3>
+<p>验证整体系统行为：</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 运行集成测试</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>tests/integration/</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 SQLite 降级逻辑</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>connection-manager</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 Master 选举</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>master-election</span></code></pre></div>
+<h3 id="代码重复检测">代码重复检测</h3>
+<p>使用 jscpd 验证代码重复消除：</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 迁移前</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> jscpd node/src/core/sqlite-<span class="pp">*</span>.ts <span class="at">--min-lines</span> 5 <span class="at">--min-tokens</span> 50</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 迁移后 (预期减少 ~300行)</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> jscpd node/src/core/sqlite-<span class="pp">*</span>.ts <span class="at">--min-lines</span> 5 <span class="at">--min-tokens</span> 50</span></code></pre></div>
+<h3 id="性能基准测试">性能基准测试</h3>
+<p>确保迁移后性能无回归：</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 运行性能测试</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>performance</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 手动基准测试</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js sqlite:check</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js system:doctor</span></code></pre></div>
+<hr />
+<h2 id="预期成果">📊 预期成果</h2>
+<h3 id="代码指标">代码指标</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>迁移前</th>
+<th>迁移后</th>
+<th>目标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>使用 SQLiteClient 的文件</td>
+<td>18</td>
+<td>2</td>
+<td>≤2</td>
+</tr>
+<tr>
+<td>代码重复行数</td>
+<td>~300</td>
+<td>~0</td>
+<td>&lt;50</td>
+</tr>
+<tr>
+<td>SQLite 相关文件数</td>
+<td>2</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr>
+<td>测试覆盖率</td>
+<td>85%</td>
+<td>&gt;90%</td>
+<td>&gt;90%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="架构改进">架构改进</h3>
+<ul>
+<li>✅ 统一接口：所有模块通过 SQLiteManager 访问</li>
+<li>✅ 自动降级：Worker 失败时自动切换到同步模式</li>
+<li>✅ 可配置性：支持运行时选择同步/异步实现</li>
+<li>✅ 可测试性：支持依赖注入和 Mock</li>
+<li>✅ 向后兼容：旧接口标记 <span class="citation"
+data-cites="deprecated">@deprecated</span> 但不删除</li>
+</ul>
+<hr />
+<h2 id="当前阻塞问题">🚧 当前阻塞问题</h2>
+<h3 id="阻塞-1-linter-自动还原">阻塞 1: Linter 自动还原 ⚠️</h3>
+<p><strong>问题描述</strong>: 编辑 <code>knowledge-base.ts</code>
+时，导入语句被自动还原。</p>
+<p><strong>影响范围</strong>: - knowledge-base.ts (无法完成迁移) -
+可能影响其他文件的迁移</p>
+<p><strong>建议解决方案</strong>: 1. 检查 <code>.eslintrc.js</code> /
+<code>tsconfig.json</code> 配置 2. 暂时禁用自动格式化 3. 使用
+<code>// prettier-ignore</code> 或 <code>// eslint-disable</code> 4.
+批量迁移后统一运行 lint –fix</p>
+<p><strong>需要 Master 决策</strong>: 是否暂时禁用 linter/prettier
+自动修复功能？</p>
+<hr />
+<h2 id="下一步计划">📅 下一步计划</h2>
+<h3 id="立即行动-需要-master-确认">立即行动 (需要 Master 确认)</h3>
+<ol type="1">
+<li><strong>解决 Linter 问题</strong>
+<ul class="task-list">
+<li><label><input type="checkbox" />检查项目配置文件</label></li>
+<li><label><input type="checkbox" />确认自动格式化设置</label></li>
+<li><label><input type="checkbox" />决定是否暂时禁用</label></li>
+</ul></li>
+<li><strong>继续迁移简单模块</strong>
+<ul class="task-list">
+<li><label><input type="checkbox" />history-tracker.ts</label></li>
+<li><label><input type="checkbox" />context-snapshot.ts</label></li>
+<li><label><input type="checkbox" />audit-logger.ts</label></li>
+</ul></li>
+<li><strong>创建迁移脚本</strong> (可选)
+<ul class="task-list">
+<li><label><input type="checkbox" />编写自动化脚本</label></li>
+<li><label><input type="checkbox" />测试脚本安全性</label></li>
+<li><label><input type="checkbox" />执行批量迁移</label></li>
+</ul></li>
+</ol>
+<h3 id="短期计划-1-2-天内">短期计划 (1-2 天内)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />完成核心 8个文件迁移</label></li>
+<li><label><input type="checkbox" />运行测试验证</label></li>
+<li><label><input type="checkbox" />提交 PR (Phase 1)</label></li>
+</ul>
+<h3 id="中期计划-本周内">中期计划 (本周内)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />完成所有 18个文件迁移</label></li>
+<li><label><input type="checkbox" />代码重复验证</label></li>
+<li><label><input type="checkbox" />性能基准测试</label></li>
+<li><label><input type="checkbox" />更新文档</label></li>
+<li><label><input type="checkbox" />提交最终 PR</label></li>
+</ul>
+<hr />
+<h2 id="备注">📝 备注</h2>
+<h3 id="技术债务">技术债务</h3>
+<p>迁移过程中识别的需要改进的地方：</p>
+<ol type="1">
+<li><strong>类型定义不一致</strong>
+<ul>
+<li>SQLiteClient 使用同步签名</li>
+<li>ISQLiteClient 使用异步签名</li>
+<li>需要统一类型定义</li>
+</ul></li>
+<li><strong>错误处理不统一</strong>
+<ul>
+<li>部分模块使用 Result<T></li>
+<li>部分模块直接抛出异常</li>
+<li>需要统一错误处理模式</li>
+</ul></li>
+<li><strong>配置管理分散</strong>
+<ul>
+<li>SQLite 配置分散在多个模块</li>
+<li>需要中心化配置管理</li>
+</ul></li>
+</ol>
+<h3 id="学到的经验">学到的经验</h3>
+<ol type="1">
+<li><strong>自动化工具的双刃剑</strong>
+<ul>
+<li>Linter 提高代码质量，但可能阻碍重构</li>
+<li>需要在迁移时暂时禁用自动修复</li>
+</ul></li>
+<li><strong>渐进式迁移的重要性</strong>
+<ul>
+<li>分阶段迁移降低风险</li>
+<li>每阶段测试确保无回归</li>
+</ul></li>
+<li><strong>向后兼容性的价值</strong>
+<ul>
+<li>保留旧接口避免破坏性变更</li>
+<li>使用 <span class="citation"
+data-cites="deprecated">@deprecated</span> 引导迁移</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="需要-master-协助">🤝 需要 Master 协助</h2>
+<ol type="1">
+<li><strong>决策</strong>: 是否暂时禁用 linter/prettier 自动修复？</li>
+<li><strong>审查</strong>: 迁移模式是否正确？</li>
+<li><strong>支持</strong>: 遇到复杂模块（master-election）需要 Master
+审查</li>
+</ol>
+<hr />
+<p><strong>文档版本</strong>: v1.0.0 <strong>最后更新</strong>:
+2026-04-08 <strong>作者</strong>: Slaver A (SQLite Architect)
+<strong>状态</strong>: 🟡 BLOCKED - 等待 Master 确认 Linter
+问题解决方案</p>
+</body>
+</html>

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Framework v0.5.1 实现总结</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Framework v0.5.1 实现总结</h1>
+</header>
+<h1 id="eket-framework-v0.5.1-实现总结">EKET Framework v0.5.1
+实现总结</h1>
+<p><strong>版本</strong>: v0.5.1 <strong>发布日期</strong>: 2026-03-23
+<strong>基于</strong>: EKET Framework v0.5 风险审查报告
+(docs/05-reference/v0.5-framework-risk-review.md)</p>
+<hr />
+<h2 id="概述">概述</h2>
+<p>v0.5.1 版本针对风险审查报告中识别的 29 个风险，实现了 24
+个关键改进措施，涵盖配置管理、监控告警、权限控制、合并策略、测试验证等多个维度。</p>
+<hr />
+<h2 id="个用户确认的改进项">24 个用户确认的改进项</h2>
+<h3 id="集成缺失策略到主流程">1. 集成缺失策略到主流程 ✅</h3>
+<p><strong>风险</strong>: Master 监控、Memory Review Agent、Merge
+Validator 等策略已配置但未集成到主流程</p>
+<p><strong>实现</strong>: - 更新
+<code>template/.claude/commands/eket-start.sh</code> - Master
+模式自动启动心跳监控守护进程 - Master 模式自动启动 Memory Review Agent -
+Slaver 模式集成 Merge Validator 和测试门禁系统 - 添加配置验证步骤</p>
+<p><strong>文件</strong>: -
+<code>template/.claude/commands/eket-start.sh</code> (修改) -
+<code>scripts/heartbeatmonitor.sh</code> (集成) -
+<code>scripts/memory-review-agent.sh</code> (集成)</p>
+<hr />
+<h3 id="拆分配置文件为模块化结构">2. 拆分配置文件为模块化结构 ✅</h3>
+<p><strong>风险</strong>: 单一配置文件 375 行，50+
+参数，难以维护和审查</p>
+<p><strong>实现</strong>: - 配置文件拆分为 10 个模块 - 主配置文件使用
+<code>@load</code> 指令引用模块 - 支持分块加载和独立验证</p>
+<p><strong>文件</strong>: - <code>template/.eket/config.yml</code>
+(精简为加载指令) - <code>template/.eket/config/project.yml</code>
+(项目配置) - <code>template/.eket/config/tasks.yml</code> (任务配置) -
+<code>template/.eket/config/monitoring.yml</code> (监控配置) -
+<code>template/.eket/config/permissions.yml</code> (权限配置) -
+<code>template/.eket/config/git.yml</code> (Git 配置) -
+<code>template/.eket/config/review_merge.yml</code> (Review/Merge 配置)
+- <code>template/.eket/config/process.yml</code> (流程配置) -
+<code>template/.eket/config/testing.yml</code> (测试配置) -
+<code>template/.eket/config/memory_log.yml</code> (记忆/日志配置) -
+<code>template/.eket/config/advanced.yml</code> (高级配置)</p>
+<p><strong>新增脚本</strong>: - <code>scripts/load-config.sh</code> -
+配置模块加载器 - <code>scripts/validate-config.sh</code> -
+配置验证器</p>
+<hr />
+<h3 id="memory-review-agent-心跳和故障恢复">3. Memory Review Agent
+心跳和故障恢复 ✅</h3>
+<p><strong>风险</strong>: Memory Review Agent
+作为长期任务无心跳上报，超时无法检测</p>
+<p><strong>实现</strong>: - 添加心跳机制 (60 秒间隔) - 超时检测 (600
+秒阈值) - 故障自动恢复 - 守护进程模式 - 状态查询接口</p>
+<p><strong>文件</strong>: - <code>scripts/memory-review-agent.sh</code>
+(升级) - <code>update_heartbeat()</code> - 更新心跳 -
+<code>check_heartbeat()</code> - 检查心跳 - <code>run_daemon()</code> -
+守护进程模式 - <code>restart_agent()</code> - 重启 Agent -
+<code>recover_from_failure()</code> - 故障恢复 -
+<code>show_status()</code> - 状态查询</p>
+<p><strong>命令</strong>: - <code>--daemon</code> - 后台守护进程 -
+<code>--status</code> - 显示状态 - <code>--restart</code> - 重启 -
+<code>--recover</code> - 故障恢复 - <code>--stop</code> - 停止</p>
+<hr />
+<h3 id="基于风险的动态权限控制">4. 基于风险的动态权限控制 ✅</h3>
+<p><strong>风险</strong>: 权限模型过于简单，无法处理复杂场景</p>
+<p><strong>实现</strong>: - 三级权限模型
+(auto_allow/auto_question/auto_reject) - 特异配置支持
+(允许/拒绝特定模式) - 动态权限决策</p>
+<p><strong>文件</strong>: -
+<code>template/.eket/config/permissions.yml</code> (新增)</p>
+<p><strong>配置示例</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">permissions</span><span class="kw">:</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">model</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;risk_based&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">auto_allow_patterns</span><span class="kw">:</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;read_*&quot;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;list_*&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;get_*&quot;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">auto_question_patterns</span><span class="kw">:</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;update_*&quot;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;create_*&quot;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">auto_reject_patterns</span><span class="kw">:</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;delete_*&quot;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;drop_*&quot;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">specific</span><span class="kw">:</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">allow</span><span class="kw">:</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;read_conference_*&quot;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">reject</span><span class="kw">:</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;read_conference_release_plan&quot;</span></span></code></pre></div>
+<hr />
+<h3 id="人类任务持续等待-无上限">5. 人类任务持续等待 (无上限) ✅</h3>
+<p><strong>风险</strong>: 人类任务 48 小时超时限制过短</p>
+<p><strong>实现</strong>: - <code>human_timeout_hours</code> 设置为
+<code>null</code> (无上限) - 人类任务不再自动超时</p>
+<p><strong>文件</strong>: - <code>template/.eket/config/tasks.yml</code>
+(修改)</p>
+<hr />
+<h3 id="心跳监控和告警机制">6. 心跳监控和告警机制 ✅</h3>
+<p><strong>风险</strong>: Slaver 心跳超时检测缺失</p>
+<p><strong>实现</strong>: - 心跳监控守护进程 - 超时自动告警 -
+自动任务重置 - 广播通知</p>
+<p><strong>文件</strong>: - <code>scripts/heartbeatmonitor.sh</code>
+(新增) - <code>check_all_heartbeats()</code> - 检查所有心跳 -
+<code>check_slaver_heartbeat()</code> - 检查 Slaver 心跳 -
+<code>trigger_alert()</code> - 触发告警 -
+<code>reset_slaver_task()</code> - 重置任务</p>
+<hr />
+<h3 id="增强-mock-检测覆盖">7. 增强 Mock 检测覆盖 ✅</h3>
+<p><strong>风险</strong>: Mock 检测仅覆盖基础空函数</p>
+<p><strong>实现</strong>: - 增强检测模式 (空函数、异步函数、假数据) -
+深度代码分析 - 排除测试文件</p>
+<p><strong>文件</strong>: - <code>scripts/mock-detector.sh</code> (升级)
+- <code>MOCK_PATTERNS</code> - 增强检测模式 -
+<code>deep_code_analysis()</code> - 深度分析</p>
+<hr />
+<h3 id="调整超时配置">8. 调整超时配置 ✅</h3>
+<p><strong>风险</strong>: 无响应超时 30 分钟过短</p>
+<p><strong>实现</strong>: - <code>no_response_timeout_minutes</code>: 30
+→ 120 分钟</p>
+<p><strong>文件</strong>: - <code>template/.eket/config/tasks.yml</code>
+(修改)</p>
+<hr />
+<h3 id="任务重置广播通知">9. 任务重置广播通知 ✅</h3>
+<p><strong>风险</strong>: 任务重置后无通知，相关方不知情</p>
+<p><strong>实现</strong>: - 创建消息队列文件 - 广播到所有智能体 - 更新
+Jira 状态 - 通知人类</p>
+<p><strong>文件</strong>: - <code>scripts/broadcast-task-reset.sh</code>
+(新增)</p>
+<hr />
+<h3 id="灵活合并策略">10. 灵活合并策略 ✅</h3>
+<p><strong>风险</strong>: 合并阻塞，80% 完成度无法合并</p>
+<p><strong>实现</strong>: - 100% 完成 → 全部 merge - ≥80% 完成 →
+cherry-pick + 创建后续任务 - 功能标志检查</p>
+<p><strong>文件</strong>: -
+<code>template/.eket/config/review_merge.yml</code> (新增) -
+<code>scripts/merge-strategy.sh</code> (新增)</p>
+<hr />
+<h3 id="checkpoint-验证逻辑">11. Checkpoint 验证逻辑 ✅</h3>
+<p><strong>风险</strong>: 关键节点无验证</p>
+<p><strong>实现</strong>: - 4 个 Checkpoint 验证 -
+<code>task_start</code> - 任务开始 - <code>task_dev_complete</code> -
+开发完成 - <code>task_test_complete</code> - 测试完成 -
+<code>task_complete</code> - 任务完成</p>
+<p><strong>文件</strong>: -
+<code>template/.eket/config/process.yml</code> (配置) -
+<code>scripts/checkpoint-validator.sh</code> (新增)</p>
+<hr />
+<h3 id="自动化-sprint-review-报告">12. 自动化 Sprint Review 报告 ✅</h3>
+<p><strong>风险</strong>: Sprint Review 手动执行</p>
+<p><strong>实现</strong>: - 自动计算完成率 - 生成 metrics 报告 -
+创建改进建议</p>
+<p><strong>文件</strong>: -
+<code>scripts/generate-sprint-report.sh</code> (新增)</p>
+<hr />
+<h3 id="retrospective-索引和任务前检查">13. Retrospective
+索引和任务前检查 ✅</h3>
+<p><strong>风险</strong>: 重复问题重复犯</p>
+<p><strong>实现</strong>: - 构建 Retrospective 索引 -
+任务开始前检查类似场景 - 创建阅读建议</p>
+<p><strong>文件</strong>: - <code>scripts/retrospective-index.sh</code>
+(新增)</p>
+<hr />
+<h3 id="日志轮转脚本">14. 日志轮转脚本 ✅</h3>
+<p><strong>风险</strong>: 日志无限增长</p>
+<p><strong>实现</strong>: - 7 天后压缩 - 30 天后删除</p>
+<p><strong>文件</strong>: - <code>scripts/log-rotate.sh</code>
+(新增)</p>
+<hr />
+<h3 id="并发控制机制">15. 并发控制机制 ✅</h3>
+<p><strong>风险</strong>: 无并发限制</p>
+<p><strong>实现</strong>: - Slot-based 管理 - 最大并发 Slaver 数 -
+最大并发任务数</p>
+<p><strong>文件</strong>: -
+<code>scripts/concurrency-controller.sh</code> (新增)</p>
+<hr />
+<h3 id="worktree-清理策略">16. Worktree 清理策略 ✅</h3>
+<p><strong>风险</strong>: Worktree 无限增长</p>
+<p><strong>实现</strong>: - 保留最近 N 个 - 自动清理超过 X 天的 -
+已合并分支优先清理</p>
+<p><strong>文件</strong>: - <code>scripts/worktree-cleaner.sh</code>
+(新增)</p>
+<hr />
+<h3 id="升级任务优先级算法">17. 升级任务优先级算法 ✅</h3>
+<p><strong>风险</strong>: 优先级计算过于简单</p>
+<p><strong>实现</strong>: - 6 因子加权算法 - 基础优先级 (25%) - 依赖计数
+(20%) - 未来影响 (20%) - Phase 重要性 (15%) - 紧急度 (10%) - 重要度
+(10%)</p>
+<p><strong>文件</strong>: - <code>template/.eket/config/tasks.yml</code>
+(配置) - <code>scripts/prioritize-tasks.sh</code> (升级)</p>
+<hr />
+<h3 id="升级人类反馈解析机制">18. 升级人类反馈解析机制 ✅</h3>
+<p><strong>风险</strong>: 人类反馈解析不准确</p>
+<p><strong>实现</strong>: - 增强解析逻辑 - 多格式支持 - 歧义处理</p>
+<p><em>(注：此功能已融入各脚本的人类反馈处理逻辑中)</em></p>
+<hr />
+<h3 id="文档生成和审查自动化">19. 文档生成和审查自动化 ✅</h3>
+<p><strong>风险</strong>: 文档手动更新</p>
+<p><strong>实现</strong>: - 自动生成文档 - 定期审查</p>
+<p><em>(注：此功能已融入 Memory Review Agent 和 Sprint Review
+脚本)</em></p>
+<hr />
+<h3 id="动态测试覆盖率阈值">20. 动态测试覆盖率阈值 ✅</h3>
+<p><strong>风险</strong>: 一刀切的覆盖率要求</p>
+<p><strong>实现</strong>: - P0 (紧急): 95% - P1 (重要): 90% - P2 (正常):
+80% - P3 (低): 75%</p>
+<p><strong>文件</strong>: -
+<code>template/.eket/config/testing.yml</code> (配置) -
+<code>scripts/test-gate-system.sh</code> (实现)</p>
+<hr />
+<h3 id="文档同步更新机制">21. 文档同步更新机制 ✅</h3>
+<p><strong>风险</strong>: 文档与代码不同步</p>
+<p><strong>实现</strong>: - 任务分析后更新 - 计划通过后更新 -
+处理完成后更新 - Merge 后更新</p>
+<p><em>(注：此功能已融入 checkpoint-validator.sh 和
+merge-strategy.sh)</em></p>
+<hr />
+<h3 id="统一错误处理规范">22. 统一错误处理规范 ✅</h3>
+<p><strong>风险</strong>: 错误处理不统一</p>
+<p><strong>实现</strong>: - 统一错误输出格式 - 统一返回码 -
+统一日志记录</p>
+<p><em>(注：此规范已应用到所有新增脚本)</em></p>
+<hr />
+<h3 id="配置验证机制">23. 配置验证机制 ✅</h3>
+<p><strong>风险</strong>: 配置错误无法及时发现</p>
+<p><strong>实现</strong>: - 启动时验证 - 必填字段检查 - 值范围检查</p>
+<p><strong>文件</strong>: - <code>scripts/validate-config.sh</code>
+(新增)</p>
+<hr />
+<h3 id="全阶段测试门禁系统">24. 全阶段测试门禁系统 ✅</h3>
+<p><strong>风险</strong>: 测试不充分</p>
+<p><strong>实现</strong>: - 9 大门禁 1. 单元测试 2. Lint 检查 3.
+集成测试 4. E2E 测试 5. 验收测试 6. UI/UX 测试 7. 代码 Review 8.
+性能测试 9. 安全性测试</p>
+<p><strong>文件</strong>: -
+<code>template/.eket/config/testing.yml</code> (配置) -
+<code>scripts/test-gate-system.sh</code> (新增)</p>
+<hr />
+<h2 id="新增脚本汇总">新增脚本汇总</h2>
+<table>
+<thead>
+<tr>
+<th>脚本</th>
+<th>用途</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>load-config.sh</code></td>
+<td>配置模块加载</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>validate-config.sh</code></td>
+<td>配置验证</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>heartbeatmonitor.sh</code></td>
+<td>心跳监控</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>memory-review-agent.sh</code></td>
+<td>Memory Review (带心跳)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>broadcast-task-reset.sh</code></td>
+<td>任务重置广播</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>log-rotate.sh</code></td>
+<td>日志轮转</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>concurrency-controller.sh</code></td>
+<td>并发控制</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>worktree-cleaner.sh</code></td>
+<td>Worktree 清理</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>mock-detector.sh</code></td>
+<td>Mock 检测 (增强)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>checkpoint-validator.sh</code></td>
+<td>Checkpoint 验证</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>generate-sprint-report.sh</code></td>
+<td>Sprint Review</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>retrospective-index.sh</code></td>
+<td>Retrospective 索引</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>merge-strategy.sh</code></td>
+<td>灵活合并</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>prioritize-tasks.sh</code></td>
+<td>优先级算法</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>test-gate-system.sh</code></td>
+<td>测试门禁</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="配置变更汇总">配置变更汇总</h2>
+<h3 id="超时配置">超时配置</h3>
+<table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>v0.5</th>
+<th>v0.5.1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>no_response_timeout_minutes</code></td>
+<td>30</td>
+<td>120</td>
+</tr>
+<tr>
+<td><code>human_timeout_hours</code></td>
+<td>48</td>
+<td>null (无上限)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="配置文件">配置文件</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>v0.5</th>
+<th>v0.5.1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>config.yml</code></td>
+<td>375 行单文件</td>
+<td>10 个模块 + 主文件</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="提交历史">提交历史</h2>
+<pre><code>29f5910 feat(v0.5.1): 实现任务重置广播和 Memory Agent 心跳机制
+093ed89 feat(v0.5.1): 集成 Master 监控、Memory Agent 和 Merge Validator 到主流程
+596728b feat(v0.5.1): 实现全阶段测试门禁系统和优先级算法升级
+085d554 feat(v0.5.1): 新增流程管理和验证脚本
+773b57a feat(v0.5.1): 实现配置模块化和关键监控脚本</code></pre>
+<hr />
+<h2 id="测试状态">测试状态</h2>
+<p>所有脚本已添加执行权限 (<code>chmod +x</code>)</p>
+<p><strong>单元测试</strong>: 10/10 通过 - 模式检测 (U01-U02) ✓ -
+优先级计算 (U03-U05) ✓ - 任务推荐 (U06) ✓ - Agent Profile 匹配 (U07-U08)
+✓ - 任务领取 (U09-U10) ✓</p>
+<hr />
+<h2 id="后续工作">后续工作</h2>
+<p>以下功能已融入现有脚本，未单独创建文件： - #18: 人类反馈解析机制 -
+#19: 文档生成和审查 - #21: 文档同步更新 - #22: 统一错误处理</p>
+<hr />
+<p><strong>生成者</strong>: EKET Framework Team
+<strong>生成时间</strong>: 2026-03-23</p>
+</body>
+</html>

@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Rust Rewrite: Visual Roadmap &amp; Decision Tree</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Rust Rewrite: Visual Roadmap &amp; Decision
+Tree</h1>
+</header>
+<h1 id="eket-rust-rewrite-visual-roadmap-decision-tree">EKET Rust
+Rewrite: Visual Roadmap &amp; Decision Tree</h1>
+<pre><code>┌─────────────────────────────────────────────────────────────────────────────┐
+│                  EKET FRAMEWORK REWRITE ANALYSIS (2026-04-20)              │
+│                         Total Codebase: ~15,000 LOC                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                          TIER CLASSIFICATION TREE
+
+                          ┌──────────────────────┐
+                          │   EKET CODEBASE      │
+                          │    ~15,000 LOC       │
+                          └──────────┬───────────┘
+                                     │
+                    ┌────────────────┼────────────────┐
+                    │                │                │
+        ┌───────────▼───────────┐   │   ┌───────────▼────────────┐
+        │  TIER 1: RUST MUST    │   │   │  TIER 3: KEEP IN       │
+        │   5,930 LOC (39%)     │   │   │  NODE.JS               │
+        │  Pure Logic, High ROI │   │   │  6,070 LOC (41%)       │
+        └───────────┬───────────┘   │   │  Tight Integration     │
+                    │               │   │  Frontend/LLM          │
+                    │               │   └───────────┬────────────┘
+        ┌───────────▼────────────┐  │
+        │ TIER 2: PARTIAL        │  │
+        │ 2,000 LOC (13%)        │  │
+        │ Mixed Logic + I/O      │  │
+        └───────────┬────────────┘  │
+                    │               │
+        ┌───────────┴───────────┬───┴─┬──────────────┬──────────────┐
+        │                       │     │              │              │
+   ┌────▼────┐  ┌──────▼───┐  │  ┌──▼──┐  ┌────────▼──┐  ┌───────▼──┐
+   │ STATE    │  │ MESSAGE  │  │  │TASK │  │ AGENT     │  │ OPTIMIZE │
+   │2,630 LOC │  │ QUEUE    │  │  │1,900│  │1,750 LOC  │  │1,430 LOC │
+   │          │  │1,500 LOC │  │  │LOC  │  │           │  │          │
+   │sqlite    │  │          │  │  │     │  │registry   │  │recomm.   │
+   │redis     │  │redis+    │  │  │task │  │election   │  │compress  │
+   │cache     │  │file      │  │  │wf   │  │heartbeat  │  │rag       │
+   │locks     │  │queue     │  │  │dag  │  │pool       │  │search    │
+   └──────────┘  └──────────┘  │  └─────┘  └───────────┘  └──────────┘
+                               │
+                               │ ┌─────────────────┐
+                               │ │ CLI COMMANDS    │
+                               │ │ 20/30 portable  │
+                               │ │ 2,000 LOC       │
+                               │ └─────────────────┘
+                               │
+                               │ ┌─────────────────┐
+                               │ │ SKILL REGISTRY  │
+                               │ │ ~300 LOC        │
+                               │ └─────────────────┘
+
+TIER 3 BREAKDOWN:
+┌───────────────────────────────────────────────────────────────┐
+│ HTTP Servers      1,200 LOC │ Keep in Node.js + Express       │
+│ LLM Runners         800 LOC │ Anthropic/OpenAI SDKs           │
+│ CLI Frameworks      600 LOC │ inquirer, ora, commander         │
+│ Web Dashboard     1,500 LOC │ React frontend                   │
+│ Git Integration     500 LOC │ GitHub API, shell fallback       │
+│ i18n/Other      1,470 LOC │ Localization, misc               │
+├───────────────────────────────────────────────────────────────┤
+│ Total Staying:    6,070 LOC │ No changes needed               │
+└───────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                    RUST REWRITE TIMELINE (12-16 WEEKS)
+
+Week 1-2        Week 3-5          Week 6-7       Week 8-10      Week 11-12
+├─────┤         ├──────┤           ├─────┤        ├────────┤     ├──────────┤
+ FOUND          STORAGE           MESSAGE        CORE BIZ       CLI/POLISH
+  │              │                  │              │               │
+  ├─Errors       ├─SQLite           ├─Queue        ├─Workflow      ├─Port 20
+  ├─Types        ├─Redis            ├─File Q       ├─Agents        │ Commands
+  ├─Config       ├─Cache            ├─Mailbox      ├─Election      ├─Testing
+  └─Tests        └─Locks            └─Envelope     ├─Instance      └─Bench
+                                                   └─Recommend
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                      PERFORMANCE IMPACT ANALYSIS
+
+OPERATION                    CURRENT (Node.js)    RUST          GAIN
+─────────────────────────────────────────────────────────────────────────
+Task Claiming (atomic)       2-3ms              0.3-0.5ms      5-10x ⚡
+Master Election (consensus)  100-150ms          20-40ms        3-5x  ⚡
+Workflow DAG Evaluation      50-100ms           10-20ms        3-5x  ⚡
+State Persistence (SQLite)   0.04ms             0.01ms         2-4x  ⚡
+Message Queue Enqueue        1.3ms              0.3-0.5ms      2-3x  ⚡
+Startup Time                 1.5-2.0s           0.1-0.2s       10-20x 🚀
+Memory Footprint             100-150MB          10-30MB        5-10x 💾
+Concurrent Throughput        100 agents/s       500+ agents/s  5x    📊
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                    MODULE DEPENDENCY GRAPH
+
+     ┌──────────────────────────────┐
+     │      APPLICATION LAYER       │
+     │   (CLI Commands, HTTP Routes)│
+     └──────────────┬───────────────┘
+                    │
+     ┌──────────────▼───────────────┐
+     │    BUSINESS LOGIC LAYER      │
+     │ (Workflow, Task, Recommender)│
+     └──────────────┬───────────────┘
+                    │
+         ┌──────────┼──────────┐
+         │          │          │
+    ┌────▼──┐  ┌───▼───┐  ┌──▼────┐
+    │AGENT  │  │MESSAGE │  │STATE  │
+    │LAYER  │  │QUEUE   │  │LAYER  │
+    └────┬──┘  └───┬───┘  └──┬────┘
+         │        │          │
+         └────────┼──────────┘
+                  │
+         ┌────────▼────────┐
+         │  STORAGE LAYER  │
+         │ (SQLite + Redis)│
+         └─────────────────┘
+
+REWRITE ORDER: Bottom-up → Foundation → Message → Agent → Business Logic
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                    CRITICAL PATH ANALYSIS
+
+                        PORT FIRST (Week 1-7)
+                              │
+                    ┌─────────┼─────────┐
+                    │         │         │
+                ┌───▼──┐  ┌──▼───┐  ┌─▼────┐
+                │Error │  │State │  │Redis │
+                │Types │  │ Mgmt │  │Cache │
+                └───┬──┘  └──┬───┘  └─┬────┘
+                    │       │       │
+                    └───────┼───────┘
+                            │
+                    ┌───────▼────────┐
+                    │  Message Queue │
+                    │  (Blocking Dep)│
+                    └───────┬────────┘
+                            │
+              ┌─────────────┼─────────────┐
+              │             │             │
+         ┌────▼──┐   ┌──────▼──┐   ┌────▼────┐
+         │Task   │   │Workflow │   │Election │
+         │Engine │   │Engine   │   │&amp; Agents │
+         └───────┘   └─────────┘   └─────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                    TECHNOLOGY STACK (RECOMMENDED)
+
+┌─ RUST CORE ───────────────────────────────────────────────────────────────┐
+│                                                                            │
+│  [Async Runtime]              [Data &amp; Storage]                            │
+│  ├─ tokio         1.37        ├─ rusqlite       0.32 (SQLite)            │
+│  ├─ tokio-util    0.7         ├─ redis          0.25 (Redis)            │
+│  └─ futures       0.3         └─ lru            0.12 (LRU Cache)         │
+│                                                                            │
+│  [Algorithms]                 [Serialization]                             │
+│  ├─ petgraph      0.6 (DAG)   ├─ serde          1.0 (Serialization)     │
+│  ├─ ndarray       0.15 (ML)   ├─ serde_json     1.0 (JSON)              │
+│  └─ approx        0.5         └─ serde_yaml     0.9 (YAML)              │
+│                                                                            │
+│  [CLI &amp; UX]                   [Security &amp; Crypto]                         │
+│  ├─ clap          4.5         ├─ jsonwebtoken   9.0 (JWT)               │
+│  └─ indicatif     0.17 (Progress)  ├─ sha2    0.10 (Hashing)           │
+│                                └─ ring          0.17 (Crypto)            │
+│                                                                            │
+│  [Error &amp; Logging]            [Testing]                                   │
+│  ├─ anyhow        1.0         ├─ criterion      0.5 (Benchmarks)        │
+│  ├─ thiserror     1.0         └─ tokio-test    0.4 (Async tests)        │
+│  └─ tracing       0.1                                                     │
+│      tracing-subscriber 0.3                                              │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ NODE.JS LAYER (Unchanged) ────────────────────────────────────────────────┐
+│                                                                            │
+│  [HTTP Server]                [Integration]                               │
+│  ├─ express       5.2.1        ├─ @anthropic-ai/sdk (Claude)            │
+│  ├─ cors          2.8.6        ├─ github API (PR creation)              │
+│  └─ morgan        1.10.1       └─ openai (GPT integration)              │
+│                                                                            │
+│  [WebSocket &amp; Real-time]      [CLI &amp; TUI]                                │
+│  ├─ ws            8.20.0       ├─ inquirer       13.4.1 (Prompts)       │
+│  └─ socket.io     4.x          ├─ ora            9.3.0 (Spinners)       │
+│                                └─ commander      12.0.0 (CLI)            │
+│                                                                            │
+│  [Frontend]                   [Utilities]                                 │
+│  ├─ React 18+                 ├─ date-fns       3.6.0 (Dates)           │
+│  ├─ TypeScript    5.3.3        ├─ i18next        23.11.5 (i18n)         │
+│  └─ Webpack/Vite              └─ js-yaml        4.1.1 (YAML)            │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                    INTEGRATION PATTERNS (3 Options)
+
+OPTION A: MONOLITHIC RUST CLI ✅ RECOMMENDED
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│  eket (single binary)                                        │
+│  ├─ Core business logic (Rust)                              │
+│  ├─ CLI commands (Rust + clap)                              │
+│  └─ File operations, state mgmt (Rust)                      │
+│                                                              │
+│  Node.js Server (separate process)                           │
+│  ├─ HTTP API (Express.js)                                   │
+│  ├─ Web Dashboard (React)                                   │
+│  └─ LLM runners (Anthropic SDK)                             │
+│                                                              │
+│  Communication: stdio, HTTP, or file-based queue            │
+│  Pros: Clean separation, easier testing                     │
+│  Cons: Two processes to coordinate                          │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+
+OPTION B: NATIVE NODE.JS MODULE (WASM/NAPI)
+┌──────────────────────────────────────────────────────────────┐
+│  eket (Node.js CLI)                                          │
+│  ├─ Native module (Rust via napi-rs)                        │
+│  ├─ JavaScript wrapper layer                                │
+│  └─ Seamless integration with existing tools                │
+│                                                              │
+│  Pros: Single process, easier deployment                    │
+│  Cons: NAPI complexity, potential FFI overhead              │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+
+OPTION C: MICROSERVICES (Advanced)
+┌──────────────────────────────────────────────────────────────┐
+│  eket-core (Rust service on port 9090)                      │
+│  ├─ All business logic                                      │
+│  └─ REST API + WebSocket                                    │
+│                                                              │
+│  eket-api (Node.js service on port 3000)                    │
+│  ├─ HTTP gateway (Express.js)                               │
+│  ├─ Web Dashboard                                           │
+│  └─ Orchestration &amp; monitoring                              │
+│                                                              │
+│  Kubernetes ready, but adds complexity                      │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                    DECISION CHECKLIST (PRE-REWRITE)
+
+Core Architecture Decisions:
+  ☐ Monolithic Rust binary or Rust core + Node.js wrapper?
+  ☐ Maintain backward compatibility with Node.js CLI?
+  ☐ Support existing API consumers (external agents)?
+  ☐ Modernize database (PostgreSQL) or keep SQLite+Redis?
+
+Project Logistics:
+  ☐ Timeline: 12 weeks (full-time) or 16 weeks (part-time)?
+  ☐ Dedicated Rust developer or ramp-up team?
+  ☐ Gradual migration or big-bang rewrite?
+  ☐ Testing strategy: port all 95 tests or subset first?
+
+Technology Choices:
+  ☐ Single process or multi-process (Rust + Node.js)?
+  ☐ FFI required? (NAPI, stdio, HTTP)
+  ☐ Kubernetes deployment needed?
+  ☐ Performance targets: 2-5x or 10x gains?
+
+Success Metrics (Post-Rewrite):
+  ☐ Startup time &lt;200ms (vs 1.5-2s)
+  ☐ Memory footprint &lt;50MB (vs 100-150MB)
+  ☐ Task claiming P95 &lt;1ms (vs 2-3ms)
+  ☐ Workflow throughput 500+ agents/s (vs 100/s)
+  ☐ Test coverage ≥90% (matching Node.js)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                        KEY LEARNINGS
+
+1. CLEAR SEPARATION OF CONCERNS
+   └─ 53% of code is pure logic (portable to Rust)
+   └─ 41% is tight to Node.js (HTTP, LLM SDKs)
+   └─ 6% is infrastructure glue (scripts)
+
+2. STRONG TYPE SYSTEM
+   └─ 150+ error codes well-defined
+   └─ Rich interfaces (Job, Task, Agent, Workflow)
+   └─ Excellent candidate for Rust&#39;s type system
+
+3. MULTI-LEVEL ARCHITECTURE ENABLES GRADUAL MIGRATION
+   └─ Level 1 (Shell) → Rust binary (no Node.js)
+   └─ Level 2 (Node.js) → Hybrid Rust + Node.js
+   └─ Level 3 (Full-stack) → Distributed Rust
+
+4. MESSAGE-DRIVEN DESIGN
+   └─ State isolation via messages
+   └─ Easy to test in Rust (pure functions)
+   └─ Excellent for concurrent execution (tokio)
+
+5. PROVEN ALGORITHMS
+   └─ DAG evaluation (petgraph)
+   └─ Master election (distributed locks)
+   └─ Task recommendation (simple ML scoring)
+   └─ All easily ported to Rust
+
+═══════════════════════════════════════════════════════════════════════════════</code></pre>
+<hr />
+<h2 id="summary-statistics">Summary Statistics</h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Total EKET codebase</strong></td>
+<td>~15,000 LOC</td>
+</tr>
+<tr>
+<td><strong>Rust rewrite target</strong></td>
+<td>~7,930 LOC (53%)</td>
+</tr>
+<tr>
+<td><strong>Expected Rust codebase</strong></td>
+<td>~6,200 LOC (20% reduction)</td>
+</tr>
+<tr>
+<td><strong>Remain in Node.js</strong></td>
+<td>~6,070 LOC (41%)</td>
+</tr>
+<tr>
+<td><strong>Core modules in scope</strong></td>
+<td>60+ files</td>
+</tr>
+<tr>
+<td><strong>High-priority modules</strong></td>
+<td>42 (70%)</td>
+</tr>
+<tr>
+<td><strong>CLI commands portable</strong></td>
+<td>20/30 (67%)</td>
+</tr>
+<tr>
+<td><strong>Estimated timeline</strong></td>
+<td>12-16 weeks</td>
+</tr>
+<tr>
+<td><strong>Expected startup gain</strong></td>
+<td>10-20x faster</td>
+</tr>
+<tr>
+<td><strong>Expected performance gain</strong></td>
+<td>2-5x on hot paths</td>
+</tr>
+<tr>
+<td><strong>Memory reduction</strong></td>
+<td>5-10x smaller</td>
+</tr>
+<tr>
+<td><strong>Test files to port</strong></td>
+<td>95+ tests</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="files-created-for-your-reference">Files Created for Your
+Reference</h2>
+<ol type="1">
+<li><strong>EKET_RUST_REWRITE_SUMMARY.md</strong> (this directory)
+<ul>
+<li>Complete 10-point analysis with actionable insights</li>
+<li>Detailed module classification</li>
+<li>Performance benchmarks and timeline</li>
+</ul></li>
+<li><strong>Memory:
+eket/rust-rewrite-planning/comprehensive-analysis</strong>
+<ul>
+<li>Full directory tree and module inventory</li>
+<li>API routes and HTTP servers</li>
+<li>Type system documentation</li>
+<li>Three-level architecture explanation</li>
+<li>Test coverage analysis</li>
+</ul></li>
+<li><strong>Memory: eket/rust-rewrite-planning/quick-reference</strong>
+<ul>
+<li>Decision matrix (Tier 1/2/3)</li>
+<li>Technology stack recommendations</li>
+<li>Performance projections</li>
+<li>12-16 week timeline with milestones</li>
+<li>Integration strategy options</li>
+</ul></li>
+<li><strong>Memory: eket/rust-rewrite-planning/module-mapping</strong>
+<ul>
+<li>1:1 TypeScript → Rust mapping</li>
+<li>Detailed code examples</li>
+<li>Cargo.toml template</li>
+<li>Testing strategy</li>
+<li>Module completion checklist</li>
+</ul></li>
+</ol>
+<hr />
+<p><strong>Ready to start? Review the decision checklist above and
+confirm your answers to move forward with prototyping!</strong></p>
+</body>
+</html>

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 框架文档导航</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 框架文档导航</h1>
+</header>
+<h1 id="eket-框架文档导航">EKET 框架文档导航</h1>
+<p><strong>版本</strong>: 2.14.0-beta | <strong>最后更新</strong>:
+2026-04-26</p>
+<blockquote>
+<p>文档中心入口。Rust 迁移完成后的四级架构文档索引。</p>
+</blockquote>
+<hr />
+<h2 id="快速开始">🚀 快速开始</h2>
+<ul>
+<li><strong><a href="../README.md">README</a></strong> — 项目概览、Quick
+Start、四级架构图</li>
+<li><strong><a
+href="getting-started/QUICKSTART.md">getting-started/QUICKSTART.md</a></strong>
+— 详细安装步骤</li>
+<li><strong><a
+href="getting-started/DESIGN_PHILOSOPHY.md">getting-started/DESIGN_PHILOSOPHY.md</a></strong>
+— 设计理念</li>
+<li><strong><a
+href="getting-started/USAGE.md">getting-started/USAGE.md</a></strong> —
+完整使用手册</li>
+</ul>
+<hr />
+<h2 id="架构设计-architecture">🏗️ 架构设计 (<a
+href="architecture/">architecture/</a>)</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>文档</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="architecture/FRAMEWORK.md">FRAMEWORK.md</a></td>
+<td>框架白皮书</td>
+</tr>
+<tr>
+<td><a
+href="architecture/THREE_REPO_ARCHITECTURE.md">THREE_REPO_ARCHITECTURE.md</a></td>
+<td>三仓库架构设计</td>
+</tr>
+<tr>
+<td><a
+href="architecture/DEGRADATION-STRATEGY.md">DEGRADATION-STRATEGY.md</a></td>
+<td>四级降级策略</td>
+</tr>
+<tr>
+<td><a href="architecture/AGENTS_CONFIG.md">AGENTS_CONFIG.md</a></td>
+<td>Agent 配置指南</td>
+</tr>
+<tr>
+<td><a href="architecture/SKILLS_SYSTEM.md">SKILLS_SYSTEM.md</a></td>
+<td>Skills 系统设计</td>
+</tr>
+<tr>
+<td><a
+href="architecture/MULTI_INSTANCE_DESIGN.md">MULTI_INSTANCE_DESIGN.md</a></td>
+<td>多实例设计</td>
+</tr>
+<tr>
+<td><a
+href="architecture/OPENCLAW-INTEGRATION-DESIGN.md">OPENCLAW-INTEGRATION-DESIGN.md</a></td>
+<td>OpenCLAW 集成</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="使用指南-guides">📘 使用指南 (<a
+href="guides/">guides/</a>)</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>文档</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="guides/SHELL-MODE.md">SHELL-MODE.md</a></td>
+<td>Level 0 Shell 模式操作指南</td>
+</tr>
+<tr>
+<td><a href="guides/NODEJS-MODE.md">NODEJS-MODE.md</a></td>
+<td>Level 2 Node.js 模式指南</td>
+</tr>
+<tr>
+<td><a href="guides/FULL-STACK-MODE.md">FULL-STACK-MODE.md</a></td>
+<td>全栈模式（Rust + Node + Redis）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="架构决策记录-adr">📐 架构决策记录 (<a href="adr/">adr/</a>)</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>文档</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="adr/ADR-001-four-level-degradation.md">ADR-001</a></td>
+<td>四级降级架构决策</td>
+</tr>
+<tr>
+<td><a href="adr/ADR-002-master-slaver-mode.md">ADR-002</a></td>
+<td>Master-Slaver 模式决策</td>
+</tr>
+<tr>
+<td><a href="adr/ADR-003-file-queue-fallback.md">ADR-003</a></td>
+<td>File Queue 降级决策</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="运维手册-ops">🔧 运维手册 (<a href="ops/">ops/</a>)</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>文档</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="ops/runbook.md">runbook.md</a></td>
+<td>生产运维手册</td>
+</tr>
+<tr>
+<td><a
+href="ops/backup-restore-policy.md">backup-restore-policy.md</a></td>
+<td>备份恢复策略</td>
+</tr>
+<tr>
+<td><a
+href="ops/backup-restore-procedures.md">backup-restore-procedures.md</a></td>
+<td>备份恢复操作步骤</td>
+</tr>
+<tr>
+<td><a
+href="ops/branch-protection-setup.md">branch-protection-setup.md</a></td>
+<td>分支保护配置</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="性能-performance">📊 性能 (<a
+href="performance/">performance/</a>)</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>文档</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a
+href="performance/benchmark-report.md">benchmark-report.md</a></td>
+<td>基准测试报告</td>
+</tr>
+<tr>
+<td><a
+href="performance/optimization-recommendations.md">optimization-recommendations.md</a></td>
+<td>性能优化建议</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="参考资料-reference">📚 参考资料 (<a
+href="reference/">reference/</a>)</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>文档</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="reference/error-codes.md">error-codes.md</a></td>
+<td>错误码参考</td>
+</tr>
+<tr>
+<td><a href="reference/EKET-PROTOCOL.md">EKET-PROTOCOL.md</a></td>
+<td>协议规范入口（详见 protocol/ 目录）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="版本路线图-roadmap">🗺️ 版本路线图 (<a
+href="roadmap/">roadmap/</a>)</h2>
+<ul>
+<li><a href="roadmap/README.md">README.md</a> — 当前里程碑状态</li>
+<li><a href="roadmap/RELEASE-POLICY.md">RELEASE-POLICY.md</a> —
+发布策略</li>
+</ul>
+<hr />
+<h2 id="历史归档-archive">🗃️ 历史归档 (<a
+href="archive/README.md">archive/</a>)</h2>
+<p>历史版本文档、旧规划文档、各版本完成报告均归档于此。不再主动维护。</p>
+<hr />
+<h2 id="外部入口">🔗 外部入口</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>资源</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>项目知识库</td>
+<td><a
+href="../confluence/memory/memory-index.md">confluence/memory/memory-index.md</a></td>
+</tr>
+<tr>
+<td>Ticket 模板</td>
+<td><a
+href="../template/jira/templates/">template/jira/templates/</a></td>
+</tr>
+<tr>
+<td>框架模板</td>
+<td><a href="../template/README.md">template/README.md</a></td>
+</tr>
+<tr>
+<td>协议规范</td>
+<td><a href="../protocol/README.md">protocol/README.md</a></td>
+</tr>
+<tr>
+<td>CLAUDE.md</td>
+<td><a href="../CLAUDE.md">../CLAUDE.md</a></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

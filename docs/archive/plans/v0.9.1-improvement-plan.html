@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET v0.9.1 改进方案</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET v0.9.1 改进方案</h1>
+</header>
+<h1 id="eket-v0.9.1-改进方案">EKET v0.9.1 改进方案</h1>
+<p><strong>版本</strong>: v0.9.1 <strong>完成日期</strong>: 2026-03-26
+<strong>状态</strong>: 实施中</p>
+<hr />
+<h2 id="概述">概述</h2>
+<p>v0.9.1 针对两个关键问题进行改进：</p>
+<ol type="1">
+<li><strong>增强降级策略</strong>：从两级降级（Redis →
+File）扩展到四级降级（远程 Redis → 本地 Redis → SQLite → File）</li>
+<li><strong>Master 选举问题</strong>：解决多个 instance
+同时启动时都認為自己是 Master 的竞态条件</li>
+</ol>
+<hr />
+<h2 id="问题-1-降级策略增强">问题 1: 降级策略增强</h2>
+<h3 id="当前状态">当前状态</h3>
+<p>当前的 <code>message-queue.ts</code> 只支持两级降级：</p>
+<pre><code>Redis → File</code></pre>
+<h3 id="目标状态">目标状态</h3>
+<p>四级降级策略，支持两种驱动模式：</p>
+<pre><code>┌─────────────────────────────────────────────────────────┐
+│                    驱动模式检测                          │
+│  ┌─────────────┐     ┌─────────────┐                    │
+│  │  JS 驱动    │     │  Shell 驱动 │                    │
+│  │  (Node.js)  │     │  (Bash)     │                    │
+│  └─────────────┘     └─────────────┘                    │
+└─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│                    四级降级链路                          │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │ Level 1: 远程共享 Redis                            │  │
+│  │ - 用于多实例共享状态                               │  │
+│  │ - 配置：EKET_REMOTE_REDIS_HOST/PORT               │  │
+│  └───────────────────────────────────────────────────┘  │
+│                          │ (失败)                        │
+│                          ▼                               │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │ Level 2: 本地 Redis                                │  │
+│  │ - 用于单机多实例                                   │  │
+│  │ - 配置：EKET_LOCAL_REDIS_HOST/PORT                │  │
+│  └───────────────────────────────────────────────────┘  │
+│                          │ (失败)                        │
+│                          ▼                               │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │ Level 3: 本地 SQLite                               │  │
+│  │ - 用于数据持久化                                   │  │
+│  │ - 路径：~/.eket/data/sqlite/eket.db               │  │
+│  └───────────────────────────────────────────────────┘  │
+│                          │ (失败)                        │
+│                          ▼                               │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │ Level 4: 本地文件系统                              │  │
+│  │ - 最终降级模式                                     │  │
+│  │ - 路径：.eket/data/queue/                         │  │
+│  └───────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘</code></pre>
+<h3 id="新增模块">新增模块</h3>
+<p><strong><code>node/src/core/connection-manager.ts</code></strong></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> ConnectionManager {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 四级连接</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> remoteRedisClient<span class="op">:</span> RedisClient <span class="op">|</span> <span class="dt">null</span><span class="op">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> localRedisClient<span class="op">:</span> RedisClient <span class="op">|</span> <span class="dt">null</span><span class="op">;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> sqliteClient<span class="op">:</span> SQLiteClient <span class="op">|</span> <span class="dt">null</span><span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> fileAvailable<span class="op">:</span> <span class="dt">boolean</span><span class="op">;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 自动初始化，选择最高可用级别</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">initialize</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span>ConnectionLevel<span class="op">&gt;&gt;;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 获取当前连接级别</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">getCurrentLevel</span>()<span class="op">:</span> ConnectionLevel<span class="op">;</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 获取统计信息</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">getStats</span>()<span class="op">:</span> ConnectionStats<span class="op">;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="环境变量配置">环境变量配置</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 远程 Redis（可选）</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_REMOTE_REDIS_HOST</span><span class="op">=</span>redis-cluster.example.com</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_REMOTE_REDIS_PORT</span><span class="op">=</span>6380</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_REMOTE_REDIS_PASSWORD</span><span class="op">=</span>xxx</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 本地 Redis（可选）</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_LOCAL_REDIS_HOST</span><span class="op">=</span>localhost</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_LOCAL_REDIS_PORT</span><span class="op">=</span>6379</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># SQLite（可选）</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_SQLITE_PATH</span><span class="op">=</span>~/.eket/data/sqlite/eket.db</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 文件队列（可选）</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_FILE_QUEUE_DIR</span><span class="op">=</span>./.eket/data/queue</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 驱动模式</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_DRIVER_MODE</span><span class="op">=</span>js  <span class="co"># 或 shell</span></span></code></pre></div>
+<hr />
+<h2 id="问题-2-master-选举机制">问题 2: Master 选举机制</h2>
+<h3 id="问题分析">问题分析</h3>
+<p>当前代码在 <code>start-instance.ts</code> 中的逻辑：</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 旧逻辑 - 存在竞态条件</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> masterCheckResult <span class="op">=</span> <span class="cf">await</span> <span class="fu">checkMasterMarker</span>(projectRoot)<span class="op">;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> masterExists <span class="op">=</span> masterCheckResult<span class="op">.</span><span class="at">data</span><span class="op">.</span><span class="at">exists</span><span class="op">;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="op">!</span>masterExists) {</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 多个 instance 同时检测到这里，都会成为 Master</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> { success<span class="op">:</span> <span class="kw">true</span><span class="op">,</span> data<span class="op">:</span> <span class="st">&#39;master&#39;</span> }<span class="op">;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>问题场景</strong>： 1. Instance A 启动，检查 Master
+marker，不存在 2. Instance B 同时启动，检查 Master marker，不存在 3.
+Instance A 创建 Master marker 4. Instance B 也创建 Master
+marker（可能失败，但已认为自己是 Master） 5. 结果：两个 instance
+都认为自己是 Master</p>
+<h3 id="解决方案">解决方案</h3>
+<p><strong><code>node/src/core/master-election.ts</code></strong></p>
+<p>使用分布式锁机制，支持三级降级：</p>
+<pre><code>┌─────────────────────────────────────────────────────────┐
+│                  Master 选举机制                         │
+│                                                         │
+│  Level 1: Redis SETNX 分布式锁                          │
+│  - 原子性：SET key value NX PX timeout                  │
+│  - 租约机制：定期续期                                    │
+│  - 声明等待期：2 秒检测冲突                              │
+│                         │ (失败)                         │
+│                         ▼                                │
+│  Level 2: SQLite 锁表                                    │
+│  - 事务保证原子性                                        │
+│  - CREATE TABLE IF NOT EXISTS master_lock               │
+│  - INSERT OR REPLACE 实现锁                              │
+│                         │ (失败)                         │
+│                         ▼                                │
+│  Level 3: 文件系统原子操作                               │
+│  - mkdir exclusive 创建锁目录                            │
+│  - 文件锁信息：JSON 格式                                 │
+│  - 声明文件检测冲突                                      │
+└─────────────────────────────────────────────────────────┘</code></pre>
+<h3 id="选举流程">选举流程</h3>
+<pre><code>┌───────────────────────────────────────────────────────────┐
+│ Instance 启动                                              │
+└───────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌───────────────────────────────────────────────────────────┐
+│ Step 1: 尝试获取分布式锁                                   │
+│ - Redis: SET lock_key instance_id NX PX 5000             │
+│ - SQLite: INSERT OR REPLACE INTO master_lock             │
+│ - File: mkdir lock_dir (exclusive)                       │
+└───────────────────────────────────────────────────────────┘
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+              ▼                           ▼
+      ┌───────────────┐           ┌───────────────┐
+      │ 获取成功       │           │ 获取失败       │
+      │               │           │               │
+      │ 进入声明等待期 │           │ 放弃 Master    │
+      └───────────────┘           │ 返回 Slaver   │
+              │                   └───────────────┘
+              ▼
+┌───────────────────────────────────────────────────────────┐
+│ Step 2: 声明等待期（2 秒）                                   │
+│ - 检测是否有其他 Master 声明                               │
+│ - 如有冲突，放弃 Master                                    │
+└───────────────────────────────────────────────────────────┘
+              │
+              ▼
+┌───────────────────────────────────────────────────────────┐
+│ Step 3: 创建 Master 声明                                    │
+│ - Redis: SETEX declaration_key lease_time instance_id    │
+│ - SQLite: UPDATE master_lock SET expires_at              │
+│ - File: 写入 declaration 文件                              │
+└───────────────────────────────────────────────────────────┘
+              │
+              ▼
+┌───────────────────────────────────────────────────────────┐
+│ Step 4: 创建 Master marker 文件                             │
+│ - 位置：confluence/.eket_master_marker                    │
+│ - 内容：instance_id, timestamp                            │
+└───────────────────────────────────────────────────────────┘
+              │
+              ▼
+┌───────────────────────────────────────────────────────────┐
+│ Step 5: 启动租约续期                                       │
+│ - 每 15 秒续期一次（租约 30 秒）                              │
+│ - 检测续期失败，自动 relinquish                           │
+└───────────────────────────────────────────────────────────┘</code></pre>
+<h3 id="使用示例">使用示例</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createMasterElection } <span class="im">from</span> <span class="st">&#39;./core/master-election.js&#39;</span><span class="op">;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> election <span class="op">=</span> <span class="fu">createMasterElection</span>({</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  redis<span class="op">:</span> {</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    host<span class="op">:</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">EKET_REDIS_HOST</span> <span class="op">||</span> <span class="st">&#39;localhost&#39;</span><span class="op">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    port<span class="op">:</span> <span class="pp">parseInt</span>(<span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">EKET_REDIS_PORT</span> <span class="op">||</span> <span class="st">&#39;6379&#39;</span><span class="op">,</span> <span class="dv">10</span>)<span class="op">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  projectRoot<span class="op">:</span> <span class="bu">process</span><span class="op">.</span><span class="fu">cwd</span>()<span class="op">,</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  electionTimeout<span class="op">:</span> <span class="dv">5000</span><span class="op">,</span>    <span class="co">// 选举超时</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  declarationPeriod<span class="op">:</span> <span class="dv">2000</span><span class="op">,</span>  <span class="co">// 声明等待期</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  leaseTime<span class="op">:</span> <span class="dv">30000</span><span class="op">,</span>         <span class="co">// 租约时间</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> election<span class="op">.</span><span class="fu">elect</span>()<span class="op">;</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (result<span class="op">.</span><span class="at">success</span> <span class="op">&amp;&amp;</span> result<span class="op">.</span><span class="at">data</span><span class="op">.</span><span class="at">isMaster</span>) {</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;成为 Master&#39;</span>)<span class="op">;</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="vs">`Instance ID: </span><span class="sc">${</span>election<span class="op">.</span><span class="fu">getInstanceId</span>()<span class="sc">}</span><span class="vs">`</span>)<span class="op">;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;成为 Slaver&#39;</span>)<span class="op">;</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="vs">`Master ID: </span><span class="sc">${</span>result<span class="op">.</span><span class="at">data</span><span class="op">.</span><span class="at">masterId</span><span class="sc">}</span><span class="vs">`</span>)<span class="op">;</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="文件清单">文件清单</h2>
+<h3 id="新增文件">新增文件</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>node/src/core/connection-manager.ts</code></td>
+<td>四级降级连接管理器</td>
+</tr>
+<tr>
+<td><code>node/src/core/master-election.ts</code></td>
+<td>Master 选举机制</td>
+</tr>
+<tr>
+<td><code>docs/plans/v0.9.1-improvement-plan.md</code></td>
+<td>本改进方案文档</td>
+</tr>
+</tbody>
+</table>
+<h3 id="修改文件">修改文件</h3>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>修改内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>node/src/commands/start-instance.ts</code></td>
+<td>使用 <code>MasterElection</code> 替代简单的文件检测</td>
+</tr>
+<tr>
+<td><code>node/src/types/index.ts</code></td>
+<td>新增错误码和类型定义</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="类型定义更新">类型定义更新</h2>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">// node/src/types/index.ts</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">// 新增连接级别类型</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="im">export type</span> ConnectionLevel <span class="op">=</span> <span class="st">&#39;remote_redis&#39;</span> <span class="op">|</span> <span class="st">&#39;local_redis&#39;</span> <span class="op">|</span> <span class="st">&#39;sqlite&#39;</span> <span class="op">|</span> <span class="st">&#39;file&#39;</span><span class="op">;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="im">export type</span> DriverMode <span class="op">=</span> <span class="st">&#39;js&#39;</span> <span class="op">|</span> <span class="st">&#39;shell&#39;</span><span class="op">;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">// 新增 Master 选举结果类型</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">interface</span> MasterElectionResult {</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  isMaster<span class="op">:</span> <span class="dt">boolean</span><span class="op">;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  electionLevel<span class="op">:</span> <span class="st">&#39;redis&#39;</span> <span class="op">|</span> <span class="st">&#39;sqlite&#39;</span> <span class="op">|</span> <span class="st">&#39;file&#39;</span><span class="op">;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  masterId<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  conflictDetected<span class="op">:</span> <span class="dt">boolean</span><span class="op">;</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="co">// 新增错误码</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> EketErrorCode {</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 连接管理</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  CONNECTION_FAILED <span class="op">=</span> <span class="st">&#39;CONNECTION_FAILED&#39;</span><span class="op">,</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  REMOTE_REDIS_NOT_CONFIGURED <span class="op">=</span> <span class="st">&#39;REMOTE_REDIS_NOT_CONFIGURED&#39;</span><span class="op">,</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  LOCAL_REDIS_NOT_CONFIGURED <span class="op">=</span> <span class="st">&#39;LOCAL_REDIS_NOT_CONFIGURED&#39;</span><span class="op">,</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  UPGRADE_FAILED <span class="op">=</span> <span class="st">&#39;UPGRADE_FAILED&#39;</span><span class="op">,</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Master 选举</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  ELECTION_FAILED <span class="op">=</span> <span class="st">&#39;ELECTION_FAILED&#39;</span><span class="op">,</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  MASTER_ALREADY_EXISTS <span class="op">=</span> <span class="st">&#39;MASTER_ALREADY_EXISTS&#39;</span><span class="op">,</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  CONFLICT_DETECTED <span class="op">=</span> <span class="st">&#39;CONFLICT_DETECTED&#39;</span><span class="op">,</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="向后兼容性">向后兼容性</h2>
+<h3 id="降级策略">降级策略</h3>
+<ul>
+<li>现有代码继续使用 <code>createMessageQueue()</code>，行为不变</li>
+<li>新代码可使用 <code>createConnectionManager()</code>
+获取更细粒度控制</li>
+</ul>
+<h3 id="master-选举">Master 选举</h3>
+<ul>
+<li>旧的 <code>checkMasterMarker()</code> 函数保留，用于向后兼容</li>
+<li>新的 <code>start-instance.ts</code> 默认使用
+<code>MasterElection</code></li>
+<li>可通过环境变量禁用：<code>EKET_USE_LEGACY_MASTER_CHECK=true</code></li>
+</ul>
+<hr />
+<h2 id="测试建议">测试建议</h2>
+<h3 id="单元测试">单元测试</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Connection Manager 测试</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./tests/run-connection-manager-tests.sh</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Master Election 测试</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./tests/run-master-election-tests.sh</span></span></code></pre></div>
+<h3 id="场景测试">场景测试</h3>
+<ol type="1">
+<li><p><strong>多 Instance 同时启动</strong></p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 终端 1</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./eket-start</span> <span class="at">--auto</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 终端 2（同时）</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./eket-start</span> <span class="at">--auto</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 预期：只有一个成为 Master</span></span></code></pre></div></li>
+<li><p><strong>Master 故障转移</strong></p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 启动 Master</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./eket-start</span> <span class="at">--auto</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 停止 Master 进程</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 启动新 Instance</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./eket-start</span> <span class="at">--auto</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 预期：新 Instance 检测到 Master 已失效，成为新 Master</span></span></code></pre></div></li>
+<li><p><strong>降级链路测试</strong></p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 无 Redis 环境</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="bu">unset</span> <span class="va">EKET_REDIS_HOST</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./eket-start</span> <span class="at">--auto</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 预期：降级到 SQLite 或 File</span></span></code></pre></div></li>
+</ol>
+<hr />
+<h2 id="下一步行动">下一步行动</h2>
+<ol type="1">
+<li><strong>更新 <code>message-queue.ts</code></strong> - 使用
+<code>ConnectionManager</code> 实现四级降级</li>
+<li><strong>添加类型定义</strong> - 在 <code>types/index.ts</code>
+中新增类型和错误码</li>
+<li><strong>编写单元测试</strong> - 为新模块添加测试</li>
+<li><strong>更新文档</strong> - 在 CLAUDE.md 中更新 v0.9.1 变更说明</li>
+</ol>
+<hr />
+<p><strong>报告生成时间</strong>: 2026-03-26 <strong>框架版本</strong>:
+v0.9.1 <strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>
