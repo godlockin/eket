@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 文档整理报告</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 文档整理报告</h1>
+</header>
+<h1 id="eket-文档整理报告">EKET 文档整理报告</h1>
+<p><strong>日期</strong>: 2026-03-20 <strong>版本</strong>: v0.6.2
+(已更新)</p>
+<hr />
+<h2 id="整理摘要">整理摘要</h2>
+<p>将 docs/ 目录中的 20 个文档文件重组为清晰的分类结构。</p>
+<hr />
+<h2 id="整理前结构">整理前结构</h2>
+<pre><code>docs/
+├── 20 个 .md 文件（扁平排列）
+└── README.md</code></pre>
+<h3 id="问题">问题</h3>
+<ul>
+<li>文档扁平排列，难以导航</li>
+<li>没有按主题分类</li>
+<li>新用戶难以找到入门文档</li>
+<li>文档之间关系不清晰</li>
+</ul>
+<hr />
+<h2 id="整理后结构">整理后结构</h2>
+<pre><code>docs/
+├── README.md                     # 文档索引（更新版）
+├── 01-getting-started/           # 入门文档
+│   ├── QUICKSTART.md
+│   ├── COMPLETE_FRAMEWORK_v0.2.md
+│   └── USAGE.md
+├── 02-architecture/              # 架构设计
+│   ├── FRAMEWORK.md
+│   ├── THREE_REPO_ARCHITECTURE.md
+│   ├── AGENTS_CONFIG.md
+│   └── SKILLS_SYSTEM.md
+├── 03-implementation/            # 实现细节
+│   ├── INSTANCE_INITIALIZATION.md
+│   ├── AGENT_BEHAVIOR.md
+│   ├── BRANCH_STRATEGY.md
+│   ├── STATE_MACHINE.md
+│   └── IMPLEMENTATION_STATUS.md
+├── 04-testing/                   # 测试验证
+│   ├── TEST_FRAMEWORK.md
+│   └── VALIDATION_REPORT.md
+├── 05-reference/                 # 参考资料
+│   ├── CHANGELOG_v0.2.md
+│   ├── CODE_REVIEW_CHECKLIST.md
+│   ├── WORKFLOW_DIAGRAM.md
+│   ├── CLEANUP_REPORT.md
+│   └── expert-review.md
+└── archive/                      # 归档文档（空）</code></pre>
+<hr />
+<h2 id="目录分类说明">目录分类说明</h2>
+<h3 id="getting-started-入门文档">01-getting-started/ 入门文档</h3>
+<p>新用户入门路线，按顺序阅读。</p>
+<h3 id="architecture-架构设计">02-architecture/ 架构设计</h3>
+<p>框架核心架构设计文档。</p>
+<h3 id="implementation-实现细节">03-implementation/ 实现细节</h3>
+<p>具体实现和流程说明。</p>
+<h3 id="testing-测试验证">04-testing/ 测试验证</h3>
+<p>测试框架和验证报告。</p>
+<h3 id="reference-参考资料">05-reference/ 参考资料</h3>
+<p>查阅用的参考文档。</p>
+<h3 id="archive-归档文档">archive/ 归档文档</h3>
+<p>存放过期或废弃的文档。</p>
+<hr />
+<h2 id="文档数量统计">文档数量统计</h2>
+<table>
+<thead>
+<tr>
+<th>分类</th>
+<th>文档数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01-getting-started</td>
+<td>3</td>
+</tr>
+<tr>
+<td>02-architecture</td>
+<td>4</td>
+</tr>
+<tr>
+<td>03-implementation</td>
+<td>5</td>
+</tr>
+<tr>
+<td>04-testing</td>
+<td>2</td>
+</tr>
+<tr>
+<td>05-reference</td>
+<td>5</td>
+</tr>
+<tr>
+<td><strong>总计</strong></td>
+<td><strong>19</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="变更内容">变更内容</h2>
+<h3 id="移动的文件19-个">移动的文件（19 个）</h3>
+<p>所有文档都已移动到对应的子目录。</p>
+<h3 id="更新的文件">更新的文件</h3>
+<ul>
+<li><code>README.md</code> - 重写为新的文档索引，包含目录结构和导航</li>
+</ul>
+<hr />
+<h2 id="使用方式">使用方式</h2>
+<h3 id="浏览文档">浏览文档</h3>
+<ol type="1">
+<li>打开 <code>docs/README.md</code></li>
+<li>根据分类找到所需文档</li>
+<li>点击链接阅读</li>
+</ol>
+<h3 id="推荐路径">推荐路径</h3>
+<p><strong>新用户</strong>:</p>
+<pre><code>01-getting-started/QUICKSTART.md
+→ 01-getting-started/COMPLETE_FRAMEWORK_v0.2.md
+→ 02-architecture/FRAMEWORK.md</code></pre>
+<p><strong>理解初始化</strong>:</p>
+<pre><code>03-implementation/INSTANCE_INITIALIZATION.md</code></pre>
+<p><strong>查看测试结果</strong>:</p>
+<pre><code>04-testing/TEST_FRAMEWORK.md
+→ 04-testing/VALIDATION_REPORT.md</code></pre>
+<hr />
+<h2 id="整理效果">整理效果</h2>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>整理前</th>
+<th>整理后</th>
+<th>改善</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文档组织</td>
+<td>扁平</td>
+<td>分类</td>
+<td>结构化</td>
+</tr>
+<tr>
+<td>导航难度</td>
+<td>高</td>
+<td>低</td>
+<td>易查找</td>
+</tr>
+<tr>
+<td>新人友好</td>
+<td>一般</td>
+<td>好</td>
+<td>有路径</td>
+</tr>
+<tr>
+<td>文档关系</td>
+<td>不清晰</td>
+<td>清晰</td>
+<td>分类明确</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>执行者</strong>: EKET Framework Team <strong>日期</strong>:
+2026-03-20</p>
+</body>
+</html>

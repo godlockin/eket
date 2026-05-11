@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Master 复盘机制（Post-Mortem Checklist）</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Master 复盘机制（Post-Mortem Checklist）</h1>
+</header>
+<h1 id="master-复盘机制post-mortem-checklist">Master
+复盘机制（Post-Mortem Checklist）</h1>
+<p><strong>适用场景</strong>: EPIC/Sprint 完成后、单个 TASK
+完成后、季度末复盘</p>
+<p><strong>目的</strong>:
+持续改进任务拆解质量、工时估算准确度、团队配置合理性</p>
+<hr />
+<h2 id="task-级别复盘每个-task-完成后">1. TASK 级别复盘（每个 TASK
+完成后）</h2>
+<h3 id="三大核心问题">1.1 三大核心问题</h3>
+<h4 id="q1-拆卡是否合适">Q1: 拆卡是否合适？</h4>
+<p><strong>检查项</strong>: - [ ] Slaver 是否遇到 context
+超限风险？（检查
+<code>inbox/human_feedback/[SLAVER-ALERT] context-risk-*</code>） - [ ]
+Task 是否触碰 3+ 模块？（检查 PR diff 文件分布） - [ ] Slaver 是否在
+analysis 阶段提出”任务太大”？ - [ ] AC 数量是否 &gt; 7 个？（超标 =
+应拆分）</p>
+<p><strong>判定</strong>: | 指标 | 理想值 | 实际值 | 结论 |
+|——|——–|——–|——| | Context 使用 | &lt;100k tokens | <em>填写</em> | ✅
+合适 / ❌ 过大 | | 涉及模块 | ≤2 | <em>填写</em> | ✅ 合适 / ❌ 过大 | |
+AC 数量 | ≤7 | <em>填写</em> | ✅ 合适 / ❌ 过大 | | Slaver 反馈 |
+无异议 | <em>填写</em> | ✅ 合适 / ⚠️ 有异议 |</p>
+<p><strong>结论</strong>: - ✅ 拆卡合理，无需调整 - ⚠️
+接近上限，下次类似 task 考虑拆小 - ❌
+<strong>明显过大，沉淀经验教训</strong>： ```bash # 写入
+confluence/memory/lessons/task-sizing-mistakes.md echo “## TASK-XXX
+拆卡失误</p>
+<p><strong>原因</strong>: 单个 task 涉及 5 个模块 <strong>后果</strong>:
+Slaver 触发 2 次 context overflow <strong>修正</strong>: 应拆分为 3 个
+task，每个聚焦 1-2 模块 ” &gt;&gt;
+confluence/memory/lessons/task-sizing-mistakes.md ```</p>
+<hr />
+<h4 id="q2-估时是否合理">Q2: 估时是否合理？</h4>
+<p><strong>检查项</strong>: - [ ] 预估工时 vs 实际工时偏差 &lt; 50%？ -
+[ ] 是否存在”估 4h 实际 10min”（过度拆分）？ - [ ] 是否存在”估 4h 实际
+12h”（严重低估）？</p>
+<p><strong>计算偏差</strong>:</p>
+<pre><code>偏差率 = |实际工时 - 预估工时| / 预估工时 × 100%</code></pre>
+<p><strong>判定阈值</strong>: | 偏差率 | 评级 | 处理 | |——–|——|——| |
+&lt;30% | ✅ 优秀 | 无需调整 | | 30-50% | ⚠️ 可接受 |
+记录原因（技术难度/依赖阻塞） | | &gt;50% | ❌ 失败 |
+<strong>沉淀经验教训</strong> |</p>
+<p><strong>经验沉淀模板</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## TASK-XXX 估时失误</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>**预估**: 4h  </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>**实际**: 10min  </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>**偏差**: -98%</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>**原因**: 高估了复杂度，实际仅需修改 1 行配置</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>**修正**: 配置类 task 估时 0.5h，代码类 task 估时 4h+</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>**规则更新**: </span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>修改 MASTER-RULES.md §X：配置文件修改 ≤1h</span></code></pre></div>
+<hr />
+<h4 id="q3-slaver-团队是否足够专业">Q3: Slaver 团队是否足够专业？</h4>
+<p><strong>检查项</strong>: - [ ] Slaver 提交的 PR
+质量如何？（代码规范、测试覆盖、文档完整性） - [ ] Review 轮次是否 &gt;
+2？（&gt; 2 = 质量不足） - [ ] Slaver 是否在 analysis
+阶段提出有价值的设计建议？ - [ ] Slaver 是否复用了既有模式？（DRY
+原则）</p>
+<p><strong>质量评分卡</strong>: | 维度 | 权重 | 评分 (1-5) | 得分 |
+|——|——|———–|——| | 代码质量 | 30% | <em>填写</em> | <em>自动计算</em> | |
+测试覆盖 | 25% | <em>填写</em> | <em>自动计算</em> | | 文档完整 | 15% |
+<em>填写</em> | <em>自动计算</em> | | 设计洞察 | 20% | <em>填写</em> |
+<em>自动计算</em> | | DRY 复用 | 10% | <em>填写</em> | <em>自动计算</em>
+| | <strong>总分</strong> | 100% | - | <em>总分</em> |</p>
+<p><strong>判定</strong>: - 总分 ≥4.0: ✅ 优秀，Slaver 专业度匹配 - 总分
+3.0-3.9: ⚠️ 可接受，建议补充 expertise - 总分 &lt;3.0: ❌
+<strong>不匹配，需调整团队</strong></p>
+<p><strong>调整建议</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 如果后端 Slaver 质量不足</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> expert:summon <span class="at">--role</span> senior-backend  <span class="co"># 召唤高级后端</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 如果需要特定领域专家</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> expert:summon <span class="at">--role</span> security-engineer  <span class="co"># 安全审计</span></span></code></pre></div>
+<hr />
+<h2 id="epic-级别复盘epic-完成后">2. EPIC 级别复盘（EPIC 完成后）</h2>
+<h3 id="整体指标">2.1 整体指标</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>目标</th>
+<th>实际</th>
+<th>达成率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>总工时预估</td>
+<td>34h</td>
+<td><em>填写</em></td>
+<td><em>计算</em></td>
+</tr>
+<tr>
+<td>任务完成率</td>
+<td>100% (8/8)</td>
+<td><em>填写</em></td>
+<td><em>计算</em></td>
+</tr>
+<tr>
+<td>平均估时偏差</td>
+<td>&lt;30%</td>
+<td><em>填写</em></td>
+<td><em>计算</em></td>
+</tr>
+<tr>
+<td>Context overflow 次数</td>
+<td>0</td>
+<td><em>填写</em></td>
+<td>-</td>
+</tr>
+<tr>
+<td>PR review 平均轮次</td>
+<td>≤2</td>
+<td><em>填写</em></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="关键路径分析">2.2 关键路径分析</h3>
+<p><strong>预期 Critical Path</strong>: TASK-601 → 602 → 603 → 608 → 604
+(22h)</p>
+<p><strong>实际执行</strong>: - <em>填写实际 critical path</em> -
+<em>填写瓶颈环节</em></p>
+<p><strong>延迟分析</strong>: | 延迟原因 | 影响 tasks | 损失工时 |
+预防措施 | |———|———–|———|———| | <em>填写</em> | <em>填写</em> |
+<em>填写</em> | <em>填写</em> |</p>
+<h3 id="团队配置复盘">2.3 团队配置复盘</h3>
+<p><strong>预期</strong>: 5 Slavers (3 backend + 1 devops + 1
+architect)</p>
+<p><strong>实际</strong>: - <em>填写实际 Slaver 数量</em> -
+<em>填写是否有 Slaver 闲置 &gt; 4h</em> - <em>填写是否有 Slaver
+超负荷（同时处理 2+ tasks）</em></p>
+<p><strong>优化建议</strong>: - 如果有闲置：下次减少 1-2 个 Slaver -
+如果超负荷：下次增加 1-2 个 Slaver</p>
+<hr />
+<h2 id="季度复盘每季度末">3. 季度复盘（每季度末）</h2>
+<h3 id="拆卡质量趋势">3.1 拆卡质量趋势</h3>
+<p><strong>统计</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 统计最近 3 个月的 task sizing 失误</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-r</span> <span class="st">&quot;拆卡失误\|估时失误&quot;</span> confluence/memory/lessons/<span class="pp">*</span>.md <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span></span></code></pre></div>
+<p><strong>趋势分析</strong>: - Q1: 15 次失误（基线） - Q2:
+<em>填写</em>（目标：&lt;10 次） - 改进率: <em>计算</em></p>
+<h3 id="context-overflow-趋势">3.2 Context overflow 趋势</h3>
+<p><strong>统计</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 读取 context-overflow.log</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> .eket/logs/context-overflow.log <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span></span></code></pre></div>
+<p><strong>对比</strong>: - EPIC-006 实施前: <em>填写</em> 次/月 -
+EPIC-006 实施后: <em>填写</em> 次/月 - 改善率: <em>计算</em></p>
+<h3 id="slaver-质量排名">3.3 Slaver 质量排名</h3>
+<table>
+<thead>
+<tr>
+<th>Slaver ID</th>
+<th>完成 tasks</th>
+<th>平均质量分</th>
+<th>平均估时偏差</th>
+<th>排名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>backend-001</td>
+<td><em>填写</em></td>
+<td><em>填写</em></td>
+<td><em>填写</em></td>
+<td><em>填写</em></td>
+</tr>
+<tr>
+<td>backend-002</td>
+<td><em>填写</em></td>
+<td><em>填写</em></td>
+<td><em>填写</em></td>
+<td><em>填写</em></td>
+</tr>
+<tr>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody>
+</table>
+<p><strong>优化建议</strong>: - 高分 Slaver（&gt;4.5）：优先分配 P0 任务
+- 低分 Slaver（&lt;3.0）：分配简单 P2 任务 + 培训</p>
+<hr />
+<h2 id="复盘输出强制产物">4. 复盘输出（强制产物）</h2>
+<h3 id="每-task-完成后">每 TASK 完成后</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Master 执行</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> task:retrospective TASK-XXX</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 自动生成</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">jira/tickets/TASK-XXX/retrospective.md</span></span></code></pre></div>
+<p><strong>模板</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># TASK-XXX Retrospective</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>**完成时间**: YYYY-MM-DD</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>**Slaver**: slaver-xxx</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>**实际工时**: Xh（预估 Yh，偏差 Z%）</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">## 拆卡质量</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>涉及模块: X 个</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>AC 数量: X 个</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Context 峰值: Xk tokens</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>评级: ✅ 合适 / ⚠️ 接近上限 / ❌ 过大</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="fu">## Slaver 质量</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>代码质量: X/5</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>测试覆盖: X/5</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>文档完整: X/5</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>设计洞察: X/5</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>DRY 复用: X/5</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**总分**: X/5</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="fu">## 经验教训</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>_Slaver 填写_</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>_Master 补充_</span></code></pre></div>
+<h3 id="每-epic-完成后">每 EPIC 完成后</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Master 执行</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> epic:retrospective EPIC-XXX</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 自动生成</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ex">jira/tickets/EPIC-XXX/epic-retrospective.md</span></span></code></pre></div>
+<p><strong>包含</strong>: - 整体指标统计 - 关键路径分析 - 团队配置复盘 -
+经验教训汇总 - 下次改进建议</p>
+<hr />
+<h2 id="自动化检查pre-complete-hook">5. 自动化检查（pre-complete
+hook）</h2>
+<h3 id="taskcomplete-前置检查">task:complete 前置检查</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .eket/hooks/pre-complete.sh</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="va">TASK_ID</span><span class="op">=</span><span class="va">$1</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;=== Pre-Complete Checks for </span><span class="va">$TASK_ID</span><span class="st"> ===&quot;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 1: 是否有 retrospective.md</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-f</span> <span class="st">&quot;jira/tickets/</span><span class="va">$TASK_ID</span><span class="st">/retrospective.md&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;❌ Missing retrospective.md&quot;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;   Run: eket task:retrospective </span><span class="va">$TASK_ID</span><span class="st">&quot;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  <span class="bu">exit</span> 1</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 2: 是否填写了实际工时</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="ot">! </span><span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;实际工时&quot;</span> <span class="st">&quot;jira/tickets/</span><span class="va">$TASK_ID</span><span class="st">/retrospective.md&quot;</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;❌ Retrospective missing actual hours&quot;</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="bu">exit</span> 1</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 3: 是否有质量评分</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="ot">! </span><span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;总分&quot;</span> <span class="st">&quot;jira/tickets/</span><span class="va">$TASK_ID</span><span class="st">/retrospective.md&quot;</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;❌ Retrospective missing quality score&quot;</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="bu">exit</span> 1</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;✅ Pre-complete checks passed&quot;</span></span></code></pre></div>
+<hr />
+<p><strong>建立时间</strong>: 2026-05-08<br />
+<strong>维护人</strong>: Master<br />
+<strong>状态</strong>: ✅ 已激活</p>
+<p><strong>Integration</strong>: - MASTER-RULES.md §9
+补充：完成任务前必须执行复盘 - task:complete 命令添加 pre-hook 调用</p>
+</body>
+</html>

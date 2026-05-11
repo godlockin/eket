@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>TASK-003: SQLite 双实现合并 - 调用方分析报告</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">TASK-003: SQLite 双实现合并 - 调用方分析报告</h1>
+</header>
+<h1 id="task-003-sqlite-双实现合并---调用方分析报告">TASK-003: SQLite
+双实现合并 - 调用方分析报告</h1>
+<p><strong>日期</strong>: 2026-04-07 <strong>作者</strong>: Slaver 3
+(Backend) <strong>目的</strong>:
+识别所有需要迁移的调用方，制定详细迁移计划</p>
+<hr />
+<h2 id="一调用方列表17-个文件">一、调用方列表（17 个文件）</h2>
+<h3 id="核心模块7-个">1.1 核心模块（7 个）</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 25%" />
+<col style="width: 22%" />
+<col style="width: 19%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>当前使用</th>
+<th>复杂度</th>
+<th>优先级</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>core/connection-manager.ts</code></td>
+<td>SQLiteClient</td>
+<td>⭐⭐⭐</td>
+<td>P1</td>
+<td>四级降级连接，关键路径</td>
+</tr>
+<tr>
+<td><code>core/master-election.ts</code></td>
+<td>SQLiteClient</td>
+<td>⭐⭐⭐</td>
+<td>P1</td>
+<td>三级选举，关键路径</td>
+</tr>
+<tr>
+<td><code>core/sqlite-client.ts</code></td>
+<td>-</td>
+<td>⭐</td>
+<td>P0</td>
+<td>源文件，需重构使用 shared</td>
+</tr>
+<tr>
+<td><code>core/sqlite-async-client.ts</code></td>
+<td>-</td>
+<td>⭐</td>
+<td>P0</td>
+<td>源文件，需重构使用 shared</td>
+</tr>
+<tr>
+<td><code>core/knowledge-base.ts</code></td>
+<td>SQLiteClient</td>
+<td>⭐⭐</td>
+<td>P2</td>
+<td>知识库存储</td>
+</tr>
+<tr>
+<td><code>core/history-tracker.ts</code></td>
+<td>SQLiteClient</td>
+<td>⭐⭐</td>
+<td>P2</td>
+<td>历史记录</td>
+</tr>
+<tr>
+<td><code>core/context-snapshot.ts</code></td>
+<td>SQLiteClient</td>
+<td>⭐⭐</td>
+<td>P2</td>
+<td>上下文快照</td>
+</tr>
+</tbody>
+</table>
+<h3 id="api-服务6-个">1.2 API 服务（6 个）</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 25%" />
+<col style="width: 22%" />
+<col style="width: 19%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>当前使用</th>
+<th>复杂度</th>
+<th>优先级</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>api/eket-server.ts</code></td>
+<td>SQLiteClient</td>
+<td>⭐⭐</td>
+<td>P2</td>
+<td>OpenCLAW Gateway</td>
+</tr>
+<tr>
+<td><code>api/web-server.ts</code></td>
+<td>SQLiteClient</td>
+<td>⭐⭐</td>
+<td>P2</td>
+<td>Web Dashboard</td>
+</tr>
+<tr>
+<td><code>api/data-access.ts</code></td>
+<td>SQLiteClient</td>
+<td>⭐⭐</td>
+<td>P2</td>
+<td>数据访问层</td>
+</tr>
+<tr>
+<td><code>api/data-deletion.ts</code></td>
+<td>SQLiteClient</td>
+<td>⭐</td>
+<td>P3</td>
+<td>数据删除</td>
+</tr>
+<tr>
+<td><code>api/audit-logger.ts</code></td>
+<td>SQLiteClient</td>
+<td>⭐</td>
+<td>P3</td>
+<td>审计日志</td>
+</tr>
+<tr>
+<td><code>api/middleware/api-key-storage.ts</code></td>
+<td>SQLiteClient</td>
+<td>⭐</td>
+<td>P3</td>
+<td>API Key 存储</td>
+</tr>
+</tbody>
+</table>
+<h3 id="其他模块4-个">1.3 其他模块（4 个）</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 25%" />
+<col style="width: 22%" />
+<col style="width: 19%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>当前使用</th>
+<th>复杂度</th>
+<th>优先级</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hooks/http-hook-server.ts</code></td>
+<td>SQLiteClient</td>
+<td>⭐</td>
+<td>P3</td>
+<td>HTTP Hook 服务</td>
+</tr>
+<tr>
+<td><code>health-check.ts</code></td>
+<td>SQLiteClient</td>
+<td>⭐</td>
+<td>P3</td>
+<td>健康检查</td>
+</tr>
+<tr>
+<td><code>index.ts</code></td>
+<td>-</td>
+<td>⭐</td>
+<td>P0</td>
+<td>CLI 命令注册</td>
+</tr>
+<tr>
+<td><code>types/index.ts</code></td>
+<td>-</td>
+<td>⭐</td>
+<td>P0</td>
+<td>类型定义（已有接口）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="二详细调用分析">二、详细调用分析</h2>
+<h3 id="p1-优先级文件">2.1 P1 优先级文件</h3>
+<h4
+id="coreconnection-manager.ts"><code>core/connection-manager.ts</code></h4>
+<p><strong>当前使用</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { SQLiteClient } <span class="im">from</span> <span class="st">&#39;./sqlite-client.js&#39;</span><span class="op">;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> sqliteClient<span class="op">:</span> SQLiteClient <span class="op">|</span> <span class="dt">null</span> <span class="op">=</span> <span class="kw">null</span><span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="kw">async</span> <span class="fu">tryConnectSqlite</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">SQLiteClient</span>(<span class="kw">this</span><span class="op">.</span><span class="at">config</span><span class="op">.</span><span class="at">sqlitePath</span>)<span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span><span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>迁移方案</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { SQLiteManager } <span class="im">from</span> <span class="st">&#39;./sqlite-manager.js&#39;</span><span class="op">;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> sqliteClient<span class="op">:</span> SQLiteManager <span class="op">|</span> <span class="dt">null</span> <span class="op">=</span> <span class="kw">null</span><span class="op">;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="kw">async</span> <span class="fu">tryConnectSqlite</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;</span> {</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">SQLiteManager</span>({</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    dbPath<span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">config</span><span class="op">.</span><span class="at">sqlitePath</span><span class="op">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    useWorker<span class="op">:</span> <span class="kw">false</span>  <span class="co">// 降级场景使用同步实现</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  })<span class="op">;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span><span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>风险评估</strong>: - ✅ 低风险 - 只需替换构造函数 - ⚠️
+需测试降级逻辑</p>
+<hr />
+<h4
+id="coremaster-election.ts"><code>core/master-election.ts</code></h4>
+<p><strong>当前使用</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { SQLiteClient } <span class="im">from</span> <span class="st">&#39;./sqlite-client.js&#39;</span><span class="op">;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> sqliteClient<span class="op">:</span> SQLiteClient <span class="op">|</span> <span class="dt">null</span> <span class="op">=</span> <span class="kw">null</span><span class="op">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="kw">async</span> <span class="fu">electWithSqlite</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span>MasterElectionResult<span class="op">&gt;&gt;</span> {</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">SQLiteClient</span>(<span class="kw">this</span><span class="op">.</span><span class="at">config</span><span class="op">.</span><span class="at">sqlitePath</span>)<span class="op">;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> connectResult <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span><span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ... 选举逻辑</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>迁移方案</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { SQLiteManager } <span class="im">from</span> <span class="st">&#39;./sqlite-manager.js&#39;</span><span class="op">;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> sqliteClient<span class="op">:</span> SQLiteManager <span class="op">|</span> <span class="dt">null</span> <span class="op">=</span> <span class="kw">null</span><span class="op">;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="kw">async</span> <span class="fu">electWithSqlite</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span>MasterElectionResult<span class="op">&gt;&gt;</span> {</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">SQLiteManager</span>({</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    dbPath<span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">config</span><span class="op">.</span><span class="at">sqlitePath</span><span class="op">,</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    useWorker<span class="op">:</span> <span class="kw">false</span>  <span class="co">// 选举场景需要同步操作</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  })<span class="op">;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> connectResult <span class="op">=</span> <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span><span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ... 选举逻辑</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>风险评估</strong>: - ⚠️ 中风险 - 选举逻辑关键，需要同步行为 -
+✅ 已有 <code>await</code> 处理异步</p>
+<hr />
+<h3 id="p2-优先级文件">2.2 P2 优先级文件</h3>
+<h4 id="coreknowledge-base.ts"><code>core/knowledge-base.ts</code></h4>
+<p><strong>当前使用</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteClient } <span class="im">from</span> <span class="st">&#39;./sqlite-client.js&#39;</span><span class="op">;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> KnowledgeBase {</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> sqliteClient<span class="op">:</span> SQLiteClient<span class="op">;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>(config<span class="op">:</span> KnowledgeBaseConfig) {</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span> <span class="op">=</span> <span class="fu">createSQLiteClient</span>(config<span class="op">.</span><span class="at">dbPath</span>)<span class="op">;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>迁移方案</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteManager } <span class="im">from</span> <span class="st">&#39;./sqlite-manager.js&#39;</span><span class="op">;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> KnowledgeBase {</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> sqliteClient<span class="op">:</span> SQLiteManager<span class="op">;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>(config<span class="op">:</span> KnowledgeBaseConfig) {</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">sqliteClient</span> <span class="op">=</span> <span class="fu">createSQLiteManager</span>({</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>      dbPath<span class="op">:</span> config<span class="op">.</span><span class="at">dbPath</span><span class="op">,</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>      useWorker<span class="op">:</span> config<span class="op">.</span><span class="at">useWorker</span> <span class="op">??</span> <span class="kw">false</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>风险评估</strong>: - ✅ 低风险 - 独立模块，影响范围小</p>
+<hr />
+<h4
+id="apieket-server.ts-apiweb-server.ts"><code>api/eket-server.ts</code>,
+<code>api/web-server.ts</code></h4>
+<p><strong>共同模式</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteClient } <span class="im">from</span> <span class="st">&#39;../core/sqlite-client.js&#39;</span><span class="op">;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">// 在路由处理中</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> sqliteClient <span class="op">=</span> <span class="fu">createSQLiteClient</span>()<span class="op">;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> sqliteClient<span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span></code></pre></div>
+<p><strong>迁移方案</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteManager } <span class="im">from</span> <span class="st">&#39;../core/sqlite-manager.js&#39;</span><span class="op">;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">// 在路由处理中</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> sqliteClient <span class="op">=</span> <span class="fu">createSQLiteManager</span>({</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  useWorker<span class="op">:</span> <span class="kw">false</span>  <span class="co">// Web API 使用同步实现</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> sqliteClient<span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span></code></pre></div>
+<p><strong>风险评估</strong>: - ✅ 低风险 - 已经是异步调用 - ⚠️ 需测试
+API 响应时间</p>
+<hr />
+<h3 id="p3-优先级文件">2.3 P3 优先级文件</h3>
+<p>大部分为简单调用，直接替换即可：</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Before</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteClient } <span class="im">from</span> <span class="st">&#39;../core/sqlite-client.js&#39;</span><span class="op">;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> client <span class="op">=</span> <span class="fu">createSQLiteClient</span>()<span class="op">;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">// After</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createSQLiteManager } <span class="im">from</span> <span class="st">&#39;../core/sqlite-manager.js&#39;</span><span class="op">;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> client <span class="op">=</span> <span class="fu">createSQLiteManager</span>()<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="三迁移步骤">三、迁移步骤</h2>
+<h3 id="step-1-准备阶段已完成">Step 1: 准备阶段（已完成）</h3>
+<ul class="task-list">
+<li><label><input type="checkbox"
+checked="" />分析所有调用方</label></li>
+<li><label><input type="checkbox"
+checked="" />评估风险和复杂度</label></li>
+<li><label><input type="checkbox" checked="" />制定优先级</label></li>
+</ul>
+<h3 id="step-2-创建新模块">Step 2: 创建新模块</h3>
+<p><strong>任务清单</strong>: - [ ] 创建
+<code>core/sqlite-shared.ts</code> - [ ] 创建
+<code>core/sqlite-sync-adapter.ts</code> - [ ] 创建
+<code>core/sqlite-manager.ts</code> - [ ] 编写单元测试</p>
+<p><strong>验收标准</strong>: - [ ] 所有新模块测试通过 - [ ]
+不影响现有代码</p>
+<h3 id="step-3-重构现有实现">Step 3: 重构现有实现</h3>
+<p><strong>任务清单</strong>: - [ ] 修改
+<code>core/sqlite-client.ts</code> 使用 <code>sqlite-shared.ts</code> -
+[ ] 修改 <code>core/sqlite-async-client.ts</code> 使用
+<code>sqlite-shared.ts</code> - [ ] 更新相关测试</p>
+<p><strong>验收标准</strong>: - [ ] 代码行数减少 30%+ - [ ] 所有测试通过
+- [ ] 行为保持不变</p>
+<h3 id="step-4-迁移调用方分批进行">Step 4: 迁移调用方（分批进行）</h3>
+<h4 id="batch-1-cli-命令-index.ts">Batch 1: CLI 命令 (index.ts)</h4>
+<p><strong>目标文件</strong>: <code>index.ts</code></p>
+<p><strong>修改内容</strong>: - 替换所有
+<code>createSQLiteClient()</code> 为 <code>createSQLiteManager()</code>
+- 更新类型声明</p>
+<p><strong>测试</strong>:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run build</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js sqlite:check</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js sqlite:list-retros</span></code></pre></div>
+<hr />
+<h4 id="batch-2-核心模块-p1">Batch 2: 核心模块 (P1)</h4>
+<p><strong>目标文件</strong>: 1. <code>core/connection-manager.ts</code>
+2. <code>core/master-election.ts</code></p>
+<p><strong>测试</strong>:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>connection-manager</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>master-election</span></code></pre></div>
+<hr />
+<h4 id="batch-3-业务模块-p2">Batch 3: 业务模块 (P2)</h4>
+<p><strong>目标文件</strong>: 1. <code>core/knowledge-base.ts</code> 2.
+<code>core/history-tracker.ts</code> 3.
+<code>core/context-snapshot.ts</code> 4. <code>api/eket-server.ts</code>
+5. <code>api/web-server.ts</code> 6. <code>api/data-access.ts</code></p>
+<p><strong>测试</strong>:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>knowledge-base</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>api</span></code></pre></div>
+<hr />
+<h4 id="batch-4-其他模块-p3">Batch 4: 其他模块 (P3)</h4>
+<p><strong>目标文件</strong>: 1. <code>api/data-deletion.ts</code> 2.
+<code>api/audit-logger.ts</code> 3.
+<code>api/middleware/api-key-storage.ts</code> 4.
+<code>hooks/http-hook-server.ts</code> 5.
+<code>health-check.ts</code></p>
+<p><strong>测试</strong>:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test</span></code></pre></div>
+<hr />
+<h3 id="step-5-更新配置和文档">Step 5: 更新配置和文档</h3>
+<p><strong>任务清单</strong>: - [ ] 更新
+<code>config/app-config.ts</code> - [ ] 更新 <code>CLAUDE.md</code> - [
+] 创建迁移指南 - [ ] 更新 API 文档</p>
+<hr />
+<h2 id="四回滚计划">四、回滚计划</h2>
+<p>如果迁移过程中发现问题，可以快速回滚：</p>
+<h3 id="回滚策略">回滚策略</h3>
+<ol type="1">
+<li><strong>保留旧 API</strong> - 在 1-2 个版本内保持
+<code>createSQLiteClient()</code> 可用</li>
+<li><strong>Git 分支隔离</strong> - 每个批次在独立分支开发</li>
+<li><strong>渐进式迁移</strong> - 按优先级逐步迁移，不全量替换</li>
+</ol>
+<h3 id="回滚命令">回滚命令</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 回滚到迁移前状态</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout feature/TASK-003-sqlite-manager <span class="at">--</span> node/src/core/</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout feature/TASK-003-sqlite-manager <span class="at">--</span> node/src/api/</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 或回滚整个分支</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> reset <span class="at">--hard</span> origin/testing</span></code></pre></div>
+<hr />
+<h2 id="五验证清单">五、验证清单</h2>
+<h3 id="功能验证">5.1 功能验证</h3>
+<p>每个批次迁移后需验证：</p>
+<ul class="task-list">
+<li><label><input type="checkbox" />单元测试全部通过</label></li>
+<li><label><input type="checkbox" />集成测试全部通过</label></li>
+<li><label><input type="checkbox" />手动运行 CLI 命令验证</label></li>
+<li><label><input type="checkbox" />启动 Web Dashboard 验证</label></li>
+<li><label><input type="checkbox" />启动 OpenCLAW Gateway
+验证</label></li>
+</ul>
+<h3 id="性能验证">5.2 性能验证</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />SQLite
+操作耗时无明显增加</label></li>
+<li><label><input type="checkbox" />内存占用无明显增加</label></li>
+<li><label><input type="checkbox" />API 响应时间无退化</label></li>
+</ul>
+<h3 id="兼容性验证">5.3 兼容性验证</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />现有配置文件兼容</label></li>
+<li><label><input type="checkbox" />现有数据库文件兼容</label></li>
+<li><label><input
+type="checkbox" />跨平台兼容性（Linux/macOS/Windows）</label></li>
+</ul>
+<hr />
+<h2 id="六风险矩阵">六、风险矩阵</h2>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>风险等级</th>
+<th>影响范围</th>
+<th>缓解措施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>connection-manager.ts</td>
+<td>🔴 高</td>
+<td>全局</td>
+<td>完整测试 + 自动降级</td>
+</tr>
+<tr>
+<td>master-election.ts</td>
+<td>🔴 高</td>
+<td>全局</td>
+<td>完整测试 + 同步模式</td>
+</tr>
+<tr>
+<td>knowledge-base.ts</td>
+<td>🟡 中</td>
+<td>局部</td>
+<td>单元测试</td>
+</tr>
+<tr>
+<td>api/*.ts</td>
+<td>🟡 中</td>
+<td>局部</td>
+<td>API 测试</td>
+</tr>
+<tr>
+<td>其他</td>
+<td>🟢 低</td>
+<td>局部</td>
+<td>常规测试</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="七时间估算详细">七、时间估算（详细）</h2>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>预估时间</th>
+<th>依赖</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>创建 sqlite-shared.ts</td>
+<td>0.5h</td>
+<td>-</td>
+</tr>
+<tr>
+<td>创建 sqlite-sync-adapter.ts</td>
+<td>0.5h</td>
+<td>sqlite-shared.ts</td>
+</tr>
+<tr>
+<td>创建 sqlite-manager.ts</td>
+<td>0.5h</td>
+<td>sqlite-sync-adapter.ts</td>
+</tr>
+<tr>
+<td>编写测试</td>
+<td>1h</td>
+<td>以上全部</td>
+</tr>
+<tr>
+<td>重构现有实现</td>
+<td>1h</td>
+<td>sqlite-shared.ts</td>
+</tr>
+<tr>
+<td>迁移 Batch 1 (CLI)</td>
+<td>0.5h</td>
+<td>sqlite-manager.ts</td>
+</tr>
+<tr>
+<td>迁移 Batch 2 (核心)</td>
+<td>1h</td>
+<td>Batch 1</td>
+</tr>
+<tr>
+<td>迁移 Batch 3 (业务)</td>
+<td>1h</td>
+<td>Batch 2</td>
+</tr>
+<tr>
+<td>迁移 Batch 4 (其他)</td>
+<td>0.5h</td>
+<td>Batch 3</td>
+</tr>
+<tr>
+<td>文档更新</td>
+<td>0.5h</td>
+<td>以上全部</td>
+</tr>
+<tr>
+<td><strong>总计</strong></td>
+<td><strong>7h</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>注</strong>: 原计划 4h，考虑测试和验证后调整为 7h</p>
+<hr />
+<h2 id="八依赖关系图">八、依赖关系图</h2>
+<pre><code>┌─────────────────────────────────────────────────────────┐
+│                    调用方依赖图                          │
+└─────────────────────────────────────────────────────────┘
+
+sqlite-shared.ts
+    ├─→ sqlite-client.ts (重构)
+    └─→ sqlite-async-client.ts (重构)
+
+sqlite-sync-adapter.ts (依赖 sqlite-client.ts)
+    │
+    └─→ sqlite-manager.ts
+            │
+            ├─→ index.ts (CLI)
+            ├─→ connection-manager.ts
+            ├─→ master-election.ts
+            ├─→ knowledge-base.ts
+            ├─→ history-tracker.ts
+            ├─→ context-snapshot.ts
+            ├─→ api/*.ts
+            ├─→ hooks/http-hook-server.ts
+            └─→ health-check.ts</code></pre>
+<hr />
+<h2 id="九后续跟踪">九、后续跟踪</h2>
+<h3 id="监控指标">9.1 监控指标</h3>
+<p>迁移后需持续监控：</p>
+<ol type="1">
+<li><strong>错误率</strong> - SQLite 操作失败率</li>
+<li><strong>性能</strong> - P95 / P99 延迟</li>
+<li><strong>降级次数</strong> - Worker → Sync 降级频率</li>
+</ol>
+<h3 id="反馈收集">9.2 反馈收集</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />开发者反馈（API
+易用性）</label></li>
+<li><label><input type="checkbox" />生产环境监控数据</label></li>
+<li><label><input type="checkbox" />性能基准测试结果</label></li>
+</ul>
+<hr />
+<p><strong>文档版本</strong>: v1.0.0 <strong>最后更新</strong>:
+2026-04-07 <strong>作者</strong>: Slaver 3 (Backend)</p>
+</body>
+</html>

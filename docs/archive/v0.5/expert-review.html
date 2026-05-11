@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 框架专家组 Review 报告</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 框架专家组 Review 报告</h1>
+</header>
+<h1 id="eket-框架专家组-review-报告">EKET 框架专家组 Review 报告</h1>
+<p><strong>Review 日期</strong>: 2026-03-19 <strong>Review
+版本</strong>: v0.6.2 (已更新) <strong>Review 类型</strong>: 架构设计 +
+实现审查</p>
+<hr />
+<h2 id="执行摘要">执行摘要</h2>
+<p>EKET
+框架是一个设计良好的多智能体协作系统，通过文件系统实现可靠的跨实例通信。整体架构清晰，文档完整，但在错误处理、安全配置和开发者体验方面存在改进空间。</p>
+<p><strong>整体评分</strong>: 7.5/10</p>
+<hr />
+<h2 id="专家审查意见">专家审查意见</h2>
+<h3 id="架构师审查">👨‍💻 架构师审查</h3>
+<h4 id="优点">优点 ✅</h4>
+<ol type="1">
+<li><strong>混合通信模式</strong> - 文件为基础 + Git 持久化 +
+消息队列，设计合理</li>
+<li>** coordinator/executor 分层** - 职责清晰，符合单一职责原则</li>
+<li><strong>状态机设计</strong> - Ticket
+状态转换明确，避免了状态混乱</li>
+<li><strong>模块化设计</strong> - 初始化、清理、命令分离，便于维护</li>
+</ol>
+<h4 id="关注点">关注点 ⚠️</h4>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>问题</th>
+<th>严重性</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td>缺少框架版本管理</td>
+<td>中</td>
+<td>添加 <code>.eket/version</code> 文件</td>
+</tr>
+<tr>
+<td>A2</td>
+<td>错误处理流程不明确</td>
+<td>高</td>
+<td>添加错误处理状态机和恢复流程</td>
+</tr>
+<tr>
+<td>A3</td>
+<td>配置分散在多个文件</td>
+<td>低</td>
+<td>考虑配置集中管理</td>
+</tr>
+<tr>
+<td>A4</td>
+<td>缺少健康检查机制</td>
+<td>中</td>
+<td>添加 <code>health_check.sh</code> 脚本</td>
+</tr>
+</tbody>
+</table>
+<h4 id="架构评分810">架构评分：8/10</h4>
+<hr />
+<h3 id="用户体验专家审查">🎨 用户体验专家审查</h3>
+<h4 id="优点-1">优点 ✅</h4>
+<ol type="1">
+<li><strong>命令命名直观</strong> - <code>/eket-status</code>,
+<code>/eket-task</code> 等清晰易懂</li>
+<li><strong>模板降低门槛</strong> - 状态报告、PR
+描述等模板减少了认知负担</li>
+<li><strong>反馈机制完善</strong> - 提供了人类回复的标准格式</li>
+</ol>
+<h4 id="关注点-1">关注点 ⚠️</h4>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 23%" />
+<col style="width: 30%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr>
+<th>编号</th>
+<th>问题</th>
+<th>严重性</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UX1</td>
+<td>缺少快速开始示例</td>
+<td>高</td>
+<td>添加 <code>examples/</code> 目录，包含完整流程示例</td>
+</tr>
+<tr>
+<td>UX2</td>
+<td>反馈文档对新手复杂</td>
+<td>中</td>
+<td>添加简化版快速反馈指南</td>
+</tr>
+<tr>
+<td>UX3</td>
+<td>错误信息不友好</td>
+<td>中</td>
+<td>脚本错误应提供清晰的解决步骤</td>
+</tr>
+<tr>
+<td>UX4</td>
+<td>缺少可视化状态图</td>
+<td>低</td>
+<td>添加 ASCII 或图表展示工作流程</td>
+</tr>
+</tbody>
+</table>
+<h4 id="用户体验评分710">用户体验评分：7/10</h4>
+<hr />
+<h3 id="安全专家审查">🔒 安全专家审查</h3>
+<h4 id="优点-2">优点 ✅</h4>
+<ol type="1">
+<li><strong>权限配置存在</strong> - <code>.claude/settings.json</code>
+支持 permissions</li>
+<li><strong>清理脚本需要确认</strong> - 防止误操作</li>
+<li><strong>Git 隔离</strong> - 每个任务独立分支</li>
+</ol>
+<h4 id="关注点-2">关注点 ⚠️</h4>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>问题</th>
+<th>严重性</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1</td>
+<td>缺少输入验证</td>
+<td>高</td>
+<td><code>inbox/human_input.md</code> 应验证格式</td>
+</tr>
+<tr>
+<td>S2</td>
+<td><code>rm -rf</code> 风险</td>
+<td>高</td>
+<td>添加路径白名单检查</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>无敏感信息保护指南</td>
+<td>中</td>
+<td>添加 <code>.gitignore</code> 规则和安全指南</td>
+</tr>
+<tr>
+<td>S4</td>
+<td>脚本未检查执行权限</td>
+<td>低</td>
+<td>添加权限检查逻辑</td>
+</tr>
+</tbody>
+</table>
+<h4 id="安全评分610">安全评分：6/10</h4>
+<h4 id="建议的安全配置">建议的安全配置</h4>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="er">//</span> <span class="er">.claude/settings.json</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;permissions&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ask&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;Bash:rm*&quot;</span><span class="ot">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;Bash:sudo*&quot;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;auto&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;Bash:./scripts/*.sh&quot;</span><span class="ot">,</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;Bash:.claude/commands/*.sh&quot;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;deny&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;Bash:rm -rf /&quot;</span><span class="ot">,</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;Bash:curl*|sh&quot;</span><span class="ot">,</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;Bash:wget*|sh&quot;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="ot">]</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<hr />
+<h3 id="devops-专家审查">⚙️ DevOps 专家审查</h3>
+<h4 id="优点-3">优点 ✅</h4>
+<ol type="1">
+<li><strong>Git 集成良好</strong> - 分支命名、提交信息规范</li>
+<li><strong>清理机制完善</strong> - 支持标准和完全清理模式</li>
+<li><strong>目录结构清晰</strong> - 便于 CI/CD 集成</li>
+</ol>
+<h4 id="关注点-3">关注点 ⚠️</h4>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 23%" />
+<col style="width: 30%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr>
+<th>编号</th>
+<th>问题</th>
+<th>严重性</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>缺少 CI/CD 集成说明</td>
+<td>中</td>
+<td>添加 GitHub Actions / GitLab CI 配置示例</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>无监控告警机制</td>
+<td>中</td>
+<td>添加任务超时、失败告警</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>缺少日志轮转配置</td>
+<td>低</td>
+<td>添加日志管理策略</td>
+</tr>
+</tbody>
+</table>
+<h4 id="devops-评分710">DevOps 评分：7/10</h4>
+<hr />
+<h3 id="全栈开发审查">💻 全栈开发审查</h3>
+<h4 id="优点-4">优点 ✅</h4>
+<ol type="1">
+<li><strong>工作流程符合开发习惯</strong> - 与 Git Flow 类似</li>
+<li><strong>Review 流程清晰</strong> - 有明确的通过/修改标准</li>
+<li><strong>Conventional Commits</strong> - 便于生成变更日志</li>
+</ol>
+<h4 id="关注点-4">关注点 ⚠️</h4>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>问题</th>
+<th>严重性</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D4</td>
+<td>任务状态机不明确</td>
+<td>中</td>
+<td>添加状态转换图文档</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>缺少代码审查清单</td>
+<td>低</td>
+<td>添加 PR 审查清单模板</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>无本地测试指南</td>
+<td>中</td>
+<td>添加本地开发和测试流程</td>
+</tr>
+</tbody>
+</table>
+<h4 id="开发者体验评分810">开发者体验评分：8/10</h4>
+<hr />
+<h2 id="优先级行动项目">优先级行动项目</h2>
+<h3 id="p0---立即处理">P0 - 立即处理</h3>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>问题</th>
+<th>影响</th>
+<th>预计工作量</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S2</td>
+<td><code>rm -rf</code> 风险</td>
+<td>数据丢失风险</td>
+<td>2 小时</td>
+<td>✅ 已完成</td>
+</tr>
+<tr>
+<td>S1</td>
+<td>缺少输入验证</td>
+<td>格式错误风险</td>
+<td>4 小时</td>
+<td>✅ 已完成</td>
+</tr>
+<tr>
+<td>A2</td>
+<td>错误处理流程</td>
+<td>阻塞性问题</td>
+<td>8 小时</td>
+<td>⏳ 进行中</td>
+</tr>
+</tbody>
+</table>
+<h3 id="p1---近期处理">P1 - 近期处理</h3>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>问题</th>
+<th>影响</th>
+<th>预计工作量</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UX1</td>
+<td>缺少快速开始示例</td>
+<td>学习曲线陡峭</td>
+<td>4 小时</td>
+<td>✅ 已完成</td>
+</tr>
+<tr>
+<td>UX3</td>
+<td>错误信息不友好</td>
+<td>用户体验差</td>
+<td>2 小时</td>
+<td>✅ 已完成</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>敏感信息保护</td>
+<td>安全风险</td>
+<td>1 小时</td>
+<td>✅ 已完成</td>
+</tr>
+<tr>
+<td>A4</td>
+<td>健康检查机制</td>
+<td>运维困难</td>
+<td>4 小时</td>
+<td>✅ 已完成</td>
+</tr>
+</tbody>
+</table>
+<h3 id="p2---后续优化">P2 - 后续优化</h3>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>问题</th>
+<th>影响</th>
+<th>预计工作量</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>CI/CD 集成</td>
+<td>自动化程度</td>
+<td>4 小时</td>
+<td>✅ 已完成</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>状态机文档</td>
+<td>理解成本</td>
+<td>2 小时</td>
+<td>✅ 已完成</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>代码审查清单</td>
+<td>代码质量</td>
+<td>1 小时</td>
+<td>✅ 已完成</td>
+</tr>
+<tr>
+<td>UX4</td>
+<td>可视化状态图</td>
+<td>理解成本</td>
+<td>2 小时</td>
+<td>✅ 已完成</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="修改建议">修改建议</h2>
+<h3 id="清理脚本安全增强">1. 清理脚本安全增强</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 在 cleanup-project.sh 开头添加</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">validate_project_root()</span> <span class="kw">{</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">root</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$1</span><span class="st">&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 禁止在根目录、家目录执行</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">[[</span> <span class="st">&quot;</span><span class="va">$root</span><span class="st">&quot;</span> <span class="ot">==</span> <span class="st">&quot;/&quot;</span> <span class="kw">||</span> <span class="st">&quot;</span><span class="va">$root</span><span class="st">&quot;</span> <span class="ot">==</span> <span class="st">&quot;</span><span class="va">$HOME</span><span class="st">&quot;</span> <span class="kw">||</span> <span class="st">&quot;</span><span class="va">$root</span><span class="st">&quot;</span> <span class="ot">==</span> ~<span class="pp">*</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">&quot;错误：不允许在系统目录或家目录执行清理&quot;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        <span class="bu">exit</span> 1</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 必须有 .eket 目录才认为是有效项目</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">[[</span> <span class="ot">!</span> <span class="ot">-d</span> <span class="st">&quot;</span><span class="va">$root</span><span class="st">/.eket&quot;</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">&quot;错误：未找到有效的 EKET 项目结构&quot;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        <span class="bu">exit</span> 1</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<h3 id="版本文件">2. 版本文件</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .eket/version</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.1.0</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">created_at</span><span class="kw">:</span><span class="at"> 2026-03-19</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">template_version</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.1.0</span></span></code></pre></div>
+<h3 id="健康检查脚本">3. 健康检查脚本</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># .eket/health_check.sh</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">check_status()</span> <span class="kw">{</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;检查 EKET 项目健康状态...&quot;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 检查必要文件</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">required_files</span><span class="op">=</span><span class="va">(</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;CLAUDE.md&quot;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;.eket/config.yml&quot;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;inbox/human_input.md&quot;</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="va">)</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> file <span class="kw">in</span> <span class="st">&quot;</span><span class="va">${required_files</span><span class="op">[@]</span><span class="va">}</span><span class="st">&quot;</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">[[</span> <span class="ot">-f</span> <span class="st">&quot;</span><span class="va">$file</span><span class="st">&quot;</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>            <span class="bu">echo</span> <span class="st">&quot;✓ </span><span class="va">$file</span><span class="st">&quot;</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>            <span class="bu">echo</span> <span class="st">&quot;✗ </span><span class="va">$file</span><span class="st"> (缺失)&quot;</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">fi</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">done</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 检查目录</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">required_dirs</span><span class="op">=</span><span class="va">(</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;.claude/commands&quot;</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;inbox/human_feedback&quot;</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;outbox/review_requests&quot;</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;tasks&quot;</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="va">)</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> dir <span class="kw">in</span> <span class="st">&quot;</span><span class="va">${required_dirs</span><span class="op">[@]</span><span class="va">}</span><span class="st">&quot;</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">[[</span> <span class="ot">-d</span> <span class="st">&quot;</span><span class="va">$dir</span><span class="st">&quot;</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>            <span class="bu">echo</span> <span class="st">&quot;✓ </span><span class="va">$dir</span><span class="st">&quot;</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>            <span class="bu">echo</span> <span class="st">&quot;✗ </span><span class="va">$dir</span><span class="st"> (缺失)&quot;</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>        <span class="cf">fi</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">done</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="ex">check_status</span></span></code></pre></div>
+<hr />
+<h2 id="审查结论">审查结论</h2>
+<p>EKET
+框架<strong>架构设计良好</strong>，核心概念清晰，文档相对完整。主要问题集中在：</p>
+<ol type="1">
+<li><strong>安全性</strong> - 需要增强输入验证和路径检查</li>
+<li><strong>错误处理</strong> - 需要明确的错误恢复流程</li>
+<li><strong>开发者体验</strong> - 需要更多示例和快速开始指南</li>
+</ol>
+<p>建议在投入生产使用前完成 P0 和 P1 级别的修复。</p>
+<hr />
+<h2 id="最终状态">最终状态</h2>
+<p><strong>所有专家组提出的改进项目已全部完成！</strong></p>
+<h3 id="交付成果">交付成果</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>类别</th>
+<th>文件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>安全加固</strong></td>
+<td><code>scripts/cleanup-project.sh</code> (验证函数),
+<code>template/.gitignore</code>, <code>template/SECURITY.md</code></td>
+</tr>
+<tr>
+<td><strong>健康检查</strong></td>
+<td><code>template/.eket/health_check.sh</code></td>
+</tr>
+<tr>
+<td><strong>快速开始</strong></td>
+<td><code>template/examples/quickstart.md</code></td>
+</tr>
+<tr>
+<td><strong>状态机文档</strong></td>
+<td><code>docs/STATE_MACHINE.md</code></td>
+</tr>
+<tr>
+<td><strong>审查清单</strong></td>
+<td><code>docs/CODE_REVIEW_CHECKLIST.md</code></td>
+</tr>
+<tr>
+<td><strong>CI/CD 配置</strong></td>
+<td><code>template/.github/workflows/*.yml</code></td>
+</tr>
+<tr>
+<td><strong>可视化流程图</strong></td>
+<td><code>docs/WORKFLOW_DIAGRAM.md</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="框架评分">框架评分</h3>
+<ul>
+<li><strong>审查前</strong>: 7.5/10</li>
+<li><strong>审查后</strong>: 9.0/10</li>
+</ul>
+<hr />
+<p><strong>审查员签名</strong>: - 架构师：AI Architecture Reviewer -
+用户体验：AI UX Specialist - 安全：AI Security Engineer - DevOps: AI
+DevOps Engineer - 全栈开发：AI Full-stack Developer</p>
+<p><strong>下次审查日期</strong>: 2026-03-26（建议一周后复审）</p>
+</body>
+</html>

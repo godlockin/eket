@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 智能体行为说明</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 智能体行为说明</h1>
+</header>
+<h1 id="eket-智能体行为说明">EKET 智能体行为说明</h1>
+<p><strong>版本</strong>: 0.1.0 <strong>日期</strong>: 2026-03-20</p>
+<hr />
+<h2 id="目录">目录</h2>
+<ol type="1">
+<li><a href="#初始化后首次启动流程">初始化后首次启动流程</a></li>
+<li><a href="#智能体完整行为流程">智能体完整行为流程</a></li>
+<li><a href="#各阶段详细行为">各阶段详细行为</a></li>
+<li><a href="#命令参考">命令参考</a></li>
+<li><a href="#示例完整任务流转">示例：完整任务流转</a></li>
+</ol>
+<hr />
+<h2 id="初始化后首次启动流程">初始化后首次启动流程</h2>
+<p>当你运行 <code>./scripts/init-project.sh</code> 初始化项目后，打开
+Claude Code 并执行 <code>/eket-init</code>，会发生以下事情：</p>
+<h3 id="步骤-1-项目结构检查">步骤 1: 项目结构检查</h3>
+<pre><code>✓ .eket
+✓ .eket/state
+✓ inbox
+✓ inbox/human_feedback
+✓ outbox
+✓ outbox/review_requests
+✓ tasks
+✓ CLAUDE.md
+✓ .eket/config.yml
+✓ inbox/human_input.md</code></pre>
+<p>智能体验证所有必需的文件和目录是否存在。</p>
+<h3 id="步骤-2-健康检查">步骤 2: 健康检查</h3>
+<p>运行 <code>.eket/health_check.sh</code>，检查： - 核心文件完整性 -
+Claude Code 配置 - 目录结构 - 脚本执行权限 - Git 状态</p>
+<h3 id="步骤-3-显示快速开始指南">步骤 3: 显示快速开始指南</h3>
+<p>智能体显示使用指南，告诉你下一步该做什么。</p>
+<h3 id="步骤-4-显示当前输入状态">步骤 4: 显示当前输入状态</h3>
+<p>显示 <code>inbox/human_input.md</code>
+的内容，提示你编辑此文件来描述需求。</p>
+<hr />
+<h2 id="智能体完整行为流程">智能体完整行为流程</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────────────┐
+│                        智能体行为流程图                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+用户操作                       智能体行为
+─────────────────────────────────────────────────────────────────
+
+1. 打开 Claude Code            → 加载项目，读取 CLAUDE.md
+2. 运行 /eket-init             → 执行初始化检查，显示指南
+3. 编辑 inbox/human_input.md   → (等待用户输入)
+4. 保存文件并发送消息          → 检测到输入，开始分析
+                                ↓
+                          ┌─────────────────┐
+                          │   需求分析阶段   │
+                          │  (Requirement   │
+                          │    Analyst)     │
+                          └────────┬────────┘
+                                   │
+                                   ▼
+                          ┌─────────────────┐
+                          │  拆解为任务列表  │
+                          │  创建任务文件   │
+                          └────────┬────────┘
+                                   │
+                                   ▼
+                          ┌─────────────────┐
+                          │  创建状态报告   │
+                          │  等待人类确认   │
+                          └────────┬────────┘
+                                   │
+                                   ▼
+                          (等待人类确认/反馈)
+                                   │
+                                   ▼
+                          ┌─────────────────┐
+                          │   任务执行阶段   │
+                          │    (Executor)   │
+                          └────────┬────────┘
+                                   │
+                                   ▼
+                          ┌─────────────────┐
+                          │   创建分支      │
+                          │   git checkout  │
+                          └────────┬────────┘
+                                   │
+                                   ▼
+                          ┌─────────────────┐
+                          │   开发实现      │
+                          │   编写代码      │
+                          └────────┬────────┘
+                                   │
+                                   ▼
+                          ┌─────────────────┐
+                          │   提交代码      │
+                          │   git commit    │
+                          └────────┬────────┘
+                                   │
+                                   ▼
+                          ┌─────────────────┐
+                          │   创建 PR       │
+                          └────────┬────────┘
+                                   │
+                                   ▼
+                          ┌─────────────────┐
+                          │   创建 Review    │
+                          │   请求消息      │
+                          └────────┬────────┘
+                                   │
+                                   ▼
+                          ┌─────────────────┐
+                          │   创建状态报告   │
+                          │  等待人类确认   │
+                          └────────┬────────┘
+                                   │
+                                   ▼
+                          (等待人类确认/反馈)
+                                   │
+                                   ▼
+                          ┌─────────────────┐
+                          │   Review 阶段    │
+                          │  (Tech Manager) │
+                          └────────┬────────┘
+                                   │
+                    ┌──────────────┴──────────────┐
+                    │                             │
+                    ▼                             ▼
+           ┌──────────────┐              ┌──────────────┐
+           │  Review 通过  │              │ 需要修改     │
+           │  合并到 main  │              │ 返回修改     │
+           └──────┬───────┘              └──────┬───────┘
+                  │                             │
+                  │                             ▼
+                  │                    (返回开发实现阶段)
+                  │
+                  ▼
+           ┌──────────────┐
+           │ 更新 Jira    │
+           │ 任务状态     │
+           └──────┬───────┘
+                  │
+                  ▼
+           ┌──────────────┐
+           │ 任务完成     │
+           │ 生成总结     │
+           └──────────────┘</code></pre>
+<hr />
+<h2 id="各阶段详细行为">各阶段详细行为</h2>
+<h3 id="阶段-1-需求分析">阶段 1: 需求分析</h3>
+<p><strong>负责智能体</strong>: 需求分析师 (Requirement Analyst)</p>
+<p><strong>触发条件</strong>: - <code>inbox/human_input.md</code>
+被创建或修改 - 用户发送消息触发分析</p>
+<p><strong>智能体行为</strong>: 1. 读取
+<code>inbox/human_input.md</code> 内容 2. 分析用户需求 3.
+识别功能点、非功能需求 4. 拆解为可执行的 Jira tickets 5.
+定义验收标准</p>
+<p><strong>输出物</strong>: - <code>tasks/task-XXX.md</code> -
+任务定义文件 -
+<code>inbox/human_feedback/analysis-&lt;timestamp&gt;.md</code> -
+需求分析状态报告</p>
+<p><strong>状态报告示例</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># 任务状态报告</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>**任务 ID**: N/A (需求分析阶段)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>**时间**: 2026-03-20 10:30</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>**阶段**: 需求分析完成</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>**状态**: <span class="in">`pending_confirmation`</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">## 本阶段成果</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>分析了用户输入的需求</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>拆解为 3 个独立任务</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>定义了每个任务的验收标准</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## 待确认问题</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>任务优先级是否正确？</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>任务 1: 用户登录 (high)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>任务 2: 用户注册 (normal)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>任务 3: 密码重置 (low)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>**推荐**: 按上述优先级执行</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>是否需要先设计数据库 Schema？</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>选项 A: 先设计 Schema，再开发</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>选项 B: 边开发边设计</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>**推荐**: 选项 A - 更符合最佳实践</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="fu">## 下一步计划</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>等待人类确认任务优先级</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>创建数据库设计任务</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>唤醒执行智能体开始开发</span></code></pre></div>
+<hr />
+<h3 id="阶段-2-任务领取">阶段 2: 任务领取</h3>
+<p><strong>负责智能体</strong>: 执行智能体 (Executor)</p>
+<p><strong>触发条件</strong>: - 任务状态变为 <code>ready</code> -
+执行智能体轮询到可用任务</p>
+<p><strong>智能体行为</strong>: 1. 扫描 <code>tasks/</code> 目录 2.
+筛选状态为 <code>ready</code> 或 <code>backlog</code> 的任务 3.
+检查自身能力是否匹配任务需求 4. 更新任务状态为 <code>in_progress</code>
+5. 创建任务领取消息</p>
+<p><strong>输出物</strong>: - 更新 <code>tasks/task-XXX.md</code> 状态 -
+<code>shared/message_queue/outbox/task-claimed-XXX.json</code> -
+领取消息</p>
+<hr />
+<h3 id="阶段-3-开发实现">阶段 3: 开发实现</h3>
+<p><strong>负责智能体</strong>: 前端开发/后端开发/设计师/测试员</p>
+<p><strong>触发条件</strong>: - 任务状态为 <code>in_progress</code> -
+智能体已领取任务</p>
+<p><strong>智能体行为</strong>: 1. 创建 Git
+分支：<code>git checkout -b feature/task-XXX-description</code> 2.
+编写代码/设计/测试 3.
+提交代码：<code>git add . &amp;&amp; git commit -m "feat: description"</code>
+4.
+推送到远程：<code>git push -u origin feature/task-XXX-description</code></p>
+<p><strong>输出物</strong>: - 代码文件 - 测试文件 - Git 提交记录</p>
+<hr />
+<h3 id="阶段-4-review-请求">阶段 4: Review 请求</h3>
+<p><strong>负责智能体</strong>: 执行智能体</p>
+<p><strong>触发条件</strong>: - 开发完成 - 代码已提交</p>
+<p><strong>智能体行为</strong>: 1. 创建 PR（通过 Git 命令或 API） 2.
+指定协调智能体为 Reviewer 3. 发送 Review 请求消息 4.
+创建状态报告等待人类确认</p>
+<p><strong>输出物</strong>: -
+<code>outbox/review_requests/review-task-XXX.md</code> - Review 请求 -
+<code>inbox/human_feedback/dev-complete-&lt;timestamp&gt;.md</code> -
+开发完成状态报告 - GitHub/GitLab PR</p>
+<p><strong>Review 请求示例</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Review 请求</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>**任务 ID**: task-001</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>**请求时间**: 2026-03-20 15:00</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>**状态**: pending_review</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## 变更内容</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>新增用户登录表单组件</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>新增登录 API 接口</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>新增表单验证逻辑</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">## 验收标准</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> 登录表单有用户名和密码输入框</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> 密码输入显示为星号</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> 登录成功显示欢迎消息</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> 登录失败显示错误提示</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 7 天内自动保持登录状态 (下一步实现)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="fu">## PR</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>#1 - Implement user login form</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="fu">## 测试</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> 单元测试通过</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> 手动测试完成</span></code></pre></div>
+<hr />
+<h3 id="阶段-5-review-执行">阶段 5: Review 执行</h3>
+<p><strong>负责智能体</strong>: 技术经理 (Tech Manager)</p>
+<p><strong>触发条件</strong>: - 收到 Review 请求消息 - PR 被创建</p>
+<p><strong>智能体行为</strong>: 1. 读取 PR 内容 2. 检查代码质量 3.
+验证验收标准 4. 决定：通过/驳回</p>
+<p><strong>输出物</strong>: - PR 评论（通过/修改意见） -
+更新任务状态</p>
+<hr />
+<h3 id="阶段-6-任务完成">阶段 6: 任务完成</h3>
+<p><strong>负责智能体</strong>: 项目经理 (Project Manager)</p>
+<p><strong>触发条件</strong>: - PR 合并完成 - 所有验收标准满足</p>
+<p><strong>智能体行为</strong>: 1. 更新 Jira 任务状态为
+<code>done</code> 2. 生成任务总结 3. 归档任务相关文件 4. 通知相关方</p>
+<p><strong>输出物</strong>: - 更新 <code>tasks/task-XXX.md</code> 状态为
+<code>done</code> - 任务总结报告</p>
+<hr />
+<h2 id="命令参考">命令参考</h2>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+<th>智能体行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/eket-init</code></td>
+<td>初始化向导</td>
+<td>检查项目结构、运行健康检查、显示指南</td>
+</tr>
+<tr>
+<td><code>/eket-status</code></td>
+<td>查看状态</td>
+<td>显示任务列表、输入输出状态</td>
+</tr>
+<tr>
+<td><code>/eket-task [desc]</code></td>
+<td>创建/查看任务</td>
+<td>创建新任务或显示任务列表</td>
+</tr>
+<tr>
+<td><code>/eket-review [id]</code></td>
+<td>请求 Review</td>
+<td>创建 Review 请求</td>
+</tr>
+<tr>
+<td><code>/eket-claim [id]</code></td>
+<td>领取任务</td>
+<td>领取指定任务</td>
+</tr>
+<tr>
+<td><code>/eket-help</code></td>
+<td>帮助</td>
+<td>显示帮助信息</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="示例完整任务流转">示例：完整任务流转</h2>
+<h3 id="用户操作">用户操作</h3>
+<ol type="1">
+<li><p><strong>初始化项目</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/path/to/eket/scripts/init-project.sh</span> my-project /path/to/project</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /path/to/project</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">claude</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-init</span></span></code></pre></div></li>
+<li><p><strong>编辑 <code>inbox/human_input.md</code></strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># 我想要</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>实现用户登录功能，支持用户名密码登录。</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">## 背景/目的</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>系统需要用户认证功能。</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## 期望结果</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>用户可以输入用户名和密码登录</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>登录成功后跳转到个人主页</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## 验收标准</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 登录表单有用户名和密码输入框</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 密码输入显示为星号</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 登录成功显示欢迎消息</span></code></pre></div></li>
+<li><p><strong>发送消息给 Claude</strong>: &gt;
+“我已经写好了需求，请开始分析”</p></li>
+</ol>
+<h3 id="智能体响应">智能体响应</h3>
+<ol start="4" type="1">
+<li><p><strong>需求分析师响应</strong>:</p>
+<pre><code>收到需求，开始分析...
+
+分析完成！我将创建以下任务：
+
+1. task-001: 创建登录表单组件 (high)
+2. task-002: 实现登录 API 接口 (high)
+3. task-003: 添加表单验证逻辑 (normal)
+
+已创建状态报告：inbox/human_feedback/analysis-20260320-103000.md
+
+请确认任务优先级是否正确。</code></pre></li>
+<li><p><strong>用户确认</strong>: 在状态报告中回复：</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 人类反馈</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> 确认任务优先级正确</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> 同意开始执行</span></code></pre></div></li>
+<li><p><strong>执行智能体响应</strong>:</p>
+<pre><code>已领取任务 task-001, task-002, task-003
+开始执行...
+
+创建分支：feature/task-001-login-form
+开发中...
+
+代码已提交：abc123
+已推送分支：feature/task-001-login-form
+
+已创建 PR #1
+已发送 Review 请求给 @tech-manager
+
+状态报告：inbox/human_feedback/dev-20260320-150000.md</code></pre></li>
+<li><p><strong>技术经理响应</strong>:</p>
+<pre><code>开始 Review PR #1...
+
+Review 完成：
+- 代码质量：✓
+- 测试覆盖：✓
+- 验收标准：✓
+
+PR 已合并到 main 分支
+任务 task-001 状态更新为：done</code></pre></li>
+<li><p><strong>最终总结</strong>:</p>
+<pre><code>所有任务完成！
+
+成果汇总:
+- 3 个任务完成
+- 3 个 PR 合并
+- 15 个文件新增/修改
+
+项目已就绪，可以开始下一阶段开发。</code></pre></li>
+</ol>
+<hr />
+<h2 id="附录智能体角色速查">附录：智能体角色速查</h2>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>类型</th>
+<th>职责</th>
+<th>触发条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需求分析师</td>
+<td>协调者</td>
+<td>分析需求、拆解任务</td>
+<td>人类输入</td>
+</tr>
+<tr>
+<td>技术经理</td>
+<td>协调者</td>
+<td>技术方案、PR Review</td>
+<td>Review 请求</td>
+</tr>
+<tr>
+<td>项目经理</td>
+<td>协调者</td>
+<td>进度跟踪、资源协调</td>
+<td>定期轮询</td>
+</tr>
+<tr>
+<td>文档监控员</td>
+<td>协调者</td>
+<td>文档完整性检查</td>
+<td>定期轮询</td>
+</tr>
+<tr>
+<td>设计师</td>
+<td>执行者</td>
+<td>UI/UX 设计</td>
+<td>设计任务</td>
+</tr>
+<tr>
+<td>前端开发</td>
+<td>执行者</td>
+<td>前端代码实现</td>
+<td>前端任务</td>
+</tr>
+<tr>
+<td>后端开发</td>
+<td>执行者</td>
+<td>后端代码实现</td>
+<td>后端任务</td>
+</tr>
+<tr>
+<td>测试员</td>
+<td>执行者</td>
+<td>测试编写执行</td>
+<td>测试任务</td>
+</tr>
+<tr>
+<td>运维</td>
+<td>执行者</td>
+<td>部署配置</td>
+<td>部署任务</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>

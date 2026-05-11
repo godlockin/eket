@@ -1,10 +1,13 @@
 # TASK-630: 文档 HTML 自动渲染系统
 
 **优先级**: P1  
-**状态**: `ready`  
+**状态**: `review`  
 **预估工时**: 3h  
+**实际工时**: 2.5h  
 **父级**: EPIC-006  
-**角色**: fullstack
+**角色**: fullstack  
+**分支**: feature/TASK-630  
+**PR**: (待 Master 创建)
 
 ---
 
@@ -116,6 +119,42 @@ done <<< "$staged_md"
 ## 7. 参考
 
 设计文档：`confluence/memory/solutions/docs-html-rendering-spec.md`
+
+---
+
+## 8. 实施记录
+
+**完成时间**: 2026-05-11  
+**执行者**: Slaver (fullstack)  
+
+### 验收清单
+
+- [x] 选择渲染方案：Pandoc
+- [x] 创建单文件转换脚本：`scripts/md-to-html.sh`
+- [x] 创建批量转换脚本：`scripts/batch-md-to-html.sh`
+- [x] macOS 兼容性修复（移除 timeout, 替换 mapfile）
+- [x] 转换关键文档 (211 个 HTML):
+  - [x] README.md → README.html
+  - [x] template/docs/ (41 files)
+  - [x] confluence/architecture/ (2 files)
+  - [x] confluence/memory/lessons/ (12 files)
+  - [x] docs/ (155 files)
+- [x] .gitignore 决策：提交 HTML（离线阅读）
+- [x] 测试：HTML 在浏览器正常显示
+- [x] 提交 + push 到 feature/TASK-630
+
+### 技术细节
+
+**脚本特性**:
+- 自动提取标题（首行 # 内容）
+- 错误处理（文件检测、pandoc 检测）
+- 批量转换统计（成功/失败计数）
+- macOS bash 3.x 兼容
+
+**未实施（Phase 2）**:
+- pre-commit hook（可选）
+- CI 验证（可选）
+- GitHub Pages 部署（可选）
 
 ---
 
