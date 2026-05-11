@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>SETTINGS-PERMISSIONS.md — Claude Code settings.json 权限系统说明</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">SETTINGS-PERMISSIONS.md — Claude Code settings.json
+权限系统说明</h1>
+</header>
+<h1
+id="settings-permissions.md-claude-code-settings.json-权限系统说明">SETTINGS-PERMISSIONS.md
+— Claude Code settings.json 权限系统说明</h1>
+<p><strong>版本</strong>: 1.0.0<br />
+<strong>创建时间</strong>: 2026-04-15<br />
+<strong>相关文件</strong>: -
+<code>template/.claude/settings.master.json</code> — Master 实例权限配置
+- <code>template/.claude/settings.slaver.json</code> — Slaver
+实例权限配置</p>
+<hr />
+<h2 id="为什么需要-settings.json-权限配置">1. 为什么需要 settings.json
+权限配置？</h2>
+<p>CLAUDE.md 中的规则（如”Master
+禁止写代码”）属于<strong>软约束</strong>：它们是给 AI
+模型的建议，在上下文压力大或对话轮次过多时可能被忽略。</p>
+<p><code>settings.json</code>
+的权限配置属于<strong>物理级强制约束</strong>：Claude Code
+在执行操作前会先检查 settings.json，被 deny
+的操作将被直接阻断，无论上下文中有什么指令。</p>
+<blockquote>
+<p><strong>核心原则</strong>（来自 Boris Cherny，Claude Code
+创始人）：<br />
+<strong>用 <code>settings.json</code> 强制执行确定性行为，而不是在
+CLAUDE.md 中写”NEVER do X”。CLAUDE.md 是建议，settings.json
+是执行。</strong></p>
+</blockquote>
+<hr />
+<h2 id="allow-ask-deny-三级语义">2. allow / ask / deny 三级语义</h2>
+<p>Claude Code 的 <code>settings.json</code>
+支持三种权限级别，按照<strong>优先级从高到低</strong>：<code>deny</code>
+&gt; <code>ask</code> &gt; <code>allow</code>。</p>
+<h3 id="deny-完全禁止">2.1 <code>deny</code> — 完全禁止</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;deny&quot;</span><span class="er">:</span> <span class="ot">[</span><span class="st">&quot;Edit(node/src/**)&quot;</span><span class="ot">,</span> <span class="st">&quot;Bash(git push --force origin main*)&quot;</span><span class="ot">]</span></span></code></pre></div>
+<ul>
+<li><strong>含义</strong>：匹配的操作<strong>直接被阻断</strong>，Claude
+无法执行，也不会弹出确认对话框</li>
+<li><strong>使用场景</strong>：强制执行角色职责边界，防止误操作破坏性变更</li>
+<li><strong>优先级最高</strong>：deny 覆盖所有 allow 规则</li>
+</ul>
+<h3 id="ask-执行前需确认">2.2 <code>ask</code> — 执行前需确认</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;ask&quot;</span><span class="er">:</span> <span class="ot">[</span><span class="st">&quot;Bash(git merge*)&quot;</span><span class="ot">,</span> <span class="st">&quot;Bash(rm -rf*)&quot;</span><span class="ot">]</span></span></code></pre></div>
+<ul>
+<li><strong>含义</strong>：匹配的操作在执行前<strong>弹出确认对话框</strong>，用户批准后才执行</li>
+<li><strong>使用场景</strong>：高风险但偶尔需要的操作（合并分支、删除文件等）</li>
+<li><strong>优先级居中</strong>：被 deny 覆盖，可覆盖 allow</li>
+</ul>
+<h3 id="allow-自动允许无需确认">2.3 <code>allow</code> —
+自动允许（无需确认）</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;allow&quot;</span><span class="er">:</span> <span class="ot">[</span><span class="st">&quot;Read(*)&quot;</span><span class="ot">,</span> <span class="st">&quot;Bash(git status*)&quot;</span><span class="ot">]</span></span></code></pre></div>
+<ul>
+<li><strong>含义</strong>：匹配的操作<strong>自动执行</strong>，无需用户确认</li>
+<li><strong>使用场景</strong>：高频、低风险、角色必要的操作</li>
+<li><strong>优先级最低</strong>：被 deny 和 ask 覆盖</li>
+</ul>
+<h3 id="优先级总结">2.4 优先级总结</h3>
+<pre><code>deny（最高）→ 完全阻断
+  ask（中） → 弹出确认
+allow（低） → 自动执行</code></pre>
+<p>当一个操作<strong>同时匹配 allow 和 ask 规则</strong>时，ask
+规则优先（需要确认）。<br />
+当一个操作<strong>同时匹配 allow/ask 和 deny 规则</strong>时，deny
+规则优先（直接阻断）。</p>
+<hr />
+<h2 id="权限模式语法">3. 权限模式语法</h2>
+<p>Claude Code settings.json 支持以下操作类型和通配符：</p>
+<h3 id="操作类型">3.1 操作类型</h3>
+<table>
+<colgroup>
+<col style="width: 45%" />
+<col style="width: 27%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr>
+<th>操作类型</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Read(pattern)</code></td>
+<td>读取文件</td>
+<td><code>Read(*)</code>, <code>Read(node/src/**)</code></td>
+</tr>
+<tr>
+<td><code>Edit(pattern)</code></td>
+<td>编辑已有文件</td>
+<td><code>Edit(jira/**)</code>, <code>Edit(node/src/**)</code></td>
+</tr>
+<tr>
+<td><code>Write(pattern)</code></td>
+<td>创建或覆盖写入文件</td>
+<td><code>Write(jira/**)</code>, <code>Write(node/src/**)</code></td>
+</tr>
+<tr>
+<td><code>Bash(pattern)</code></td>
+<td>执行 Shell 命令</td>
+<td><code>Bash(git*)</code>, <code>Bash(npm run build*)</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="通配符规则">3.2 通配符规则</h3>
+<table>
+<thead>
+<tr>
+<th>通配符</th>
+<th>含义</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>*</code></td>
+<td>匹配任意字符（不跨目录）</td>
+<td><code>Edit(*.json)</code></td>
+</tr>
+<tr>
+<td><code>**</code></td>
+<td>匹配任意字符（包括跨目录）</td>
+<td><code>Edit(node/**)</code></td>
+</tr>
+<tr>
+<td>末尾 <code>*</code></td>
+<td>匹配命令前缀</td>
+<td><code>Bash(git*)</code>, <code>Bash(npm run build*)</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="master-权限边界设计">4. Master 权限边界设计</h2>
+<p><strong>设计原则</strong>：Master 是产品经理/Scrum
+Master，职责是<strong>管理任务、协调流程、审查
+PR</strong>，不应直接写业务代码。</p>
+<h3 id="master-允许的操作allow">4.1 Master 允许的操作（allow）</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>操作</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Read(*)</code></td>
+<td>Master 需要全量只读权限来了解项目状态</td>
+</tr>
+<tr>
+<td><code>Edit/Write(jira/**)</code></td>
+<td>Master 负责维护 Jira tickets（需求、优先级、验收标准）</td>
+</tr>
+<tr>
+<td><code>Edit/Write(confluence/**)</code></td>
+<td>Master 负责维护需求文档、架构文档</td>
+</tr>
+<tr>
+<td><code>Edit/Write(inbox/**)</code></td>
+<td>Master 需要处理人类输入和反馈</td>
+</tr>
+<tr>
+<td><code>Bash(git log/status/diff/fetch*)</code></td>
+<td>Master 需要查看项目状态（只读 git 操作）</td>
+</tr>
+<tr>
+<td><code>Bash(gh pr/issue*)</code></td>
+<td>Master 需要通过 GitHub CLI 管理 PR 和 Issue</td>
+</tr>
+<tr>
+<td><code>Bash(node dist/index.js gate:review*)</code></td>
+<td>Master 执行 gate review 流程</td>
+</tr>
+<tr>
+<td><code>Bash(node dist/index.js task:*)</code></td>
+<td>Master 管理任务状态</td>
+</tr>
+</tbody>
+</table>
+<h3 id="master-需要确认的操作ask">4.2 Master 需要确认的操作（ask）</h3>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Bash(git merge*)</code></td>
+<td>合并分支是高风险操作，需要明确确认</td>
+</tr>
+<tr>
+<td><code>Bash(git push*)</code></td>
+<td>push 操作需要确认，避免意外推送</td>
+</tr>
+<tr>
+<td><code>Edit/Write(template/**)</code></td>
+<td>修改框架模板影响所有使用者，需谨慎</td>
+</tr>
+<tr>
+<td><code>Edit/Write(scripts/**)</code></td>
+<td>修改工具脚本可能破坏流程，需谨慎</td>
+</tr>
+</tbody>
+</table>
+<h3 id="master-禁止的操作deny">4.3 Master 禁止的操作（deny）</h3>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Edit/Write(node/src/**)</code></td>
+<td><strong>核心红线</strong>：Master 不得编写业务代码</td>
+</tr>
+<tr>
+<td><code>Edit/Write(node/tests/**)</code></td>
+<td><strong>核心红线</strong>：Master 不得编写测试代码</td>
+</tr>
+<tr>
+<td><code>Edit(node/package.json)</code></td>
+<td><strong>核心红线</strong>：Master 不得修改依赖配置</td>
+</tr>
+<tr>
+<td><code>Bash(npm install*)</code></td>
+<td>Master 不应直接安装依赖</td>
+</tr>
+<tr>
+<td><code>Bash(npm run build*)</code></td>
+<td>Master 不应直接执行构建操作</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="slaver-权限边界设计">5. Slaver 权限边界设计</h2>
+<p><strong>设计原则</strong>：Slaver
+是执行工程师，职责是<strong>领取任务、开发代码、提交
+PR</strong>，不应直接修改受保护分支或 Jira 元数据。</p>
+<h3 id="slaver-允许的操作allow">5.1 Slaver 允许的操作（allow）</h3>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Read(*)</code></td>
+<td>Slaver 需要读取所有文件来理解项目</td>
+</tr>
+<tr>
+<td><code>Edit(*)</code>, <code>Write(*)</code></td>
+<td>Slaver 需要自由写代码（在 deny 约束范围外）</td>
+</tr>
+<tr>
+<td><code>Bash(git add/commit/checkout*)</code></td>
+<td>Slaver 日常 git 操作</td>
+</tr>
+<tr>
+<td><code>Bash(git push origin feature/*)</code></td>
+<td>Slaver 可以 push 到 feature 分支</td>
+</tr>
+<tr>
+<td><code>Bash(npm*)</code></td>
+<td>Slaver 可以执行所有 npm 命令（安装/测试/构建）</td>
+</tr>
+<tr>
+<td><code>Bash(node*)</code></td>
+<td>Slaver 可以执行 Node.js 脚本</td>
+</tr>
+</tbody>
+</table>
+<h3 id="slaver-需要确认的操作ask">5.2 Slaver 需要确认的操作（ask）</h3>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Bash(git push origin main*)</code></td>
+<td>push 到主干分支需要确认</td>
+</tr>
+<tr>
+<td><code>Bash(git push origin miao*)</code></td>
+<td>push 到稳定主干需要确认</td>
+</tr>
+<tr>
+<td><code>Bash(git push origin testing*)</code></td>
+<td>push 到测试分支需要确认</td>
+</tr>
+<tr>
+<td><code>Bash(git reset --hard*)</code></td>
+<td>破坏性重置操作需要确认</td>
+</tr>
+<tr>
+<td><code>Bash(rm -rf*)</code></td>
+<td>递归删除操作需要确认</td>
+</tr>
+</tbody>
+</table>
+<h3 id="slaver-禁止的操作deny">5.3 Slaver 禁止的操作（deny）</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>操作</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Bash(git push --force origin main*)</code></td>
+<td><strong>核心红线</strong>：禁止强制 push 到 main 分支</td>
+</tr>
+<tr>
+<td><code>Bash(git push --force origin miao*)</code></td>
+<td><strong>核心红线</strong>：禁止强制 push 到 miao 分支</td>
+</tr>
+<tr>
+<td><code>Edit(jira/tickets/**)</code></td>
+<td>Slaver 不得修改 Jira 票证的元数据（优先级、验收标准等）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="在-init-project.sh-中安装角色对应-settings">6. 在
+init-project.sh 中安装角色对应 settings</h2>
+<p><code>scripts/init-project.sh</code> 在初始化时根据角色自动安装对应的
+settings.json：</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 初始化 Master 时</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> template/.claude/settings.master.json .claude/settings.json</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 初始化 Slaver 时</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> template/.claude/settings.slaver.json .claude/settings.json</span></code></pre></div>
+<p><strong>安装后的效果</strong>： - 物理级强制约束立即生效 - Claude
+Code 在执行受限操作时自动阻断或弹出确认 - CLAUDE.md 中的软规则与
+settings.json 硬规则互相补充</p>
+<hr />
+<h2 id="常见权限模式参考">7. 常见权限模式参考</h2>
+<h3 id="模式-a只读分析角色">模式 A：只读分析角色</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;permissions&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;allow&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;Read(*)&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ask&quot;</span><span class="fu">:</span> <span class="ot">[]</span><span class="fu">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;deny&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;Edit(**)&quot;</span><span class="ot">,</span> <span class="st">&quot;Write(**)&quot;</span><span class="ot">,</span> <span class="st">&quot;Bash(***)&quot;</span><span class="ot">]</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="模式-b文档维护角色">模式 B：文档维护角色</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;permissions&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;allow&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;Read(*)&quot;</span><span class="ot">,</span> <span class="st">&quot;Edit(docs/**)&quot;</span><span class="ot">,</span> <span class="st">&quot;Write(docs/**)&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ask&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;Edit(**)&quot;</span><span class="ot">,</span> <span class="st">&quot;Write(**)&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;deny&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;Bash(git push --force*)&quot;</span><span class="ot">,</span> <span class="st">&quot;Edit(node/src/**)&quot;</span><span class="ot">]</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="模式-c完整开发角色默认-slaver">模式 C：完整开发角色（默认
+Slaver）</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;permissions&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;allow&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;Read(*)&quot;</span><span class="ot">,</span> <span class="st">&quot;Edit(*)&quot;</span><span class="ot">,</span> <span class="st">&quot;Write(*)&quot;</span><span class="ot">,</span> <span class="st">&quot;Bash(git*)&quot;</span><span class="ot">,</span> <span class="st">&quot;Bash(npm*)&quot;</span><span class="ot">,</span> <span class="st">&quot;Bash(node*)&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ask&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;Bash(git push origin main*)&quot;</span><span class="ot">,</span> <span class="st">&quot;Bash(rm -rf*)&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;deny&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;Bash(git push --force origin main*)&quot;</span><span class="ot">,</span> <span class="st">&quot;Bash(git push --force origin miao*)&quot;</span><span class="ot">]</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<hr />
+<h2 id="注意事项">8. 注意事项</h2>
+<ol type="1">
+<li><p><strong>settings.json 必须是合法
+JSON</strong>：可用以下命令验证：</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> <span class="at">-e</span> <span class="st">&quot;JSON.parse(require(&#39;fs&#39;).readFileSync(&#39;.claude/settings.json&#39;,&#39;utf8&#39;)); console.log(&#39;valid&#39;)&quot;</span></span></code></pre></div></li>
+<li><p><strong>deny 规则优先级最高</strong>：无论 allow
+规则如何定义，deny 都会覆盖</p></li>
+<li><p><strong>Bash 规则末尾的 <code>*</code>
+是前缀匹配</strong>：<code>Bash(git push --force*)</code> 会匹配所有以
+<code>git push --force</code> 开头的命令</p></li>
+<li><p><strong>settings.json 是实例级配置</strong>：每个 Claude Code
+实例根据自己的角色安装对应文件</p></li>
+<li><p><strong>与 CLAUDE.md 互补</strong>：settings.json
+处理确定性约束，CLAUDE.md 提供上下文指导和复杂判断规则</p></li>
+</ol>
+<hr />
+<h2 id="相关文档">9. 相关文档</h2>
+<ul>
+<li><a href="../CLAUDE.md">CLAUDE.md</a> — 项目主指南（软规则）</li>
+<li><a href="TICKET-RESPONSIBILITIES.md">TICKET-RESPONSIBILITIES.md</a>
+— Ticket 职责边界</li>
+<li><a href="GATE-REVIEW-PROTOCOL.md">GATE-REVIEW-PROTOCOL.md</a> — Gate
+Review 协议</li>
+<li><a href="MASTER-WORKFLOW.md">MASTER-WORKFLOW.md</a> — Master
+工作流</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Master 等待 PR 期间的主动工作指南</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Master 等待 PR 期间的主动工作指南</h1>
+</header>
+<h1 id="master-等待-pr-期间的主动工作指南">Master 等待 PR
+期间的主动工作指南</h1>
+<p><strong>版本</strong>: v2.1.4<br />
+<strong>创建日期</strong>: 2026-04-11<br />
+<strong>目的</strong>: 定义 Master 在等待 PR
+反馈期间的主动工作清单和流程</p>
+<hr />
+<h2 id="核心原则">核心原则</h2>
+<p><strong>Master 在等待 PR
+反馈期间不是被动等待，而是主动执行项目管理和规划工作。</strong></p>
+<pre><code>传统模式（错误）:
+PR 提交 → Master 等待反馈 → 空闲/低效
+
+EKET 模式（正确）:
+PR 提交 → Master 主动工作 → 反馈到达时立即响应
+           ├── 同步 roadmap
+           ├── 规划下阶段
+           ├── 拆解新需求
+           ├── 标记优先级
+           └── 预初始化团队</code></pre>
+<hr />
+<h2 id="等待期间的五大工作任务">等待期间的五大工作任务</h2>
+<h3 id="任务-1同步和修正-roadmap">任务 1：同步和修正 Roadmap</h3>
+<p><strong>目的</strong>：确保路线图反映当前实际进度，识别风险项。</p>
+<p><strong>检查位置</strong>： -
+<code>confluence/projects/{project}/roadmap.md</code> — 产品路线图 -
+<code>jira/state/project-status.yml</code> — 当前项目状态 -
+<code>jira/tickets/*/status: done</code> — 已完成任务</p>
+<p><strong>工作流程</strong>：</p>
+<pre><code>1. 读取已完成任务列表
+   ↓
+2. 计算各 Milestone 完成率
+   ↓
+3. 对比计划日期和实际进度
+   ↓
+4. 识别延期风险
+   ↓
+5. 更新 roadmap.md</code></pre>
+<p><strong>Roadmap 同步模板</strong>：</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 当前进度（更新于：YYYY-MM-DD HH:mm）</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Milestone <span class="pp">|</span> 计划完成 <span class="pp">|</span> 预计完成 <span class="pp">|</span> 完成率 <span class="pp">|</span> 状态 <span class="pp">|</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|----------|----------|--------|------|</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> MILESTONE-001 <span class="pp">|</span> 2026-04-15 <span class="pp">|</span> 2026-04-15 <span class="pp">|</span> 80% <span class="pp">|</span> 🟢 正常 <span class="pp">|</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> MILESTONE-002 <span class="pp">|</span> 2026-04-30 <span class="pp">|</span> 2026-05-05 <span class="pp">|</span> 30% <span class="pp">|</span> 🟡 风险 <span class="pp">|</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> MILESTONE-003 <span class="pp">|</span> 2026-05-15 <span class="pp">|</span> 2026-05-15 <span class="pp">|</span> 10% <span class="pp">|</span> 🟢 正常 <span class="pp">|</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## 本周完成</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> FEAT-001: 用户登录功能</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> FEAT-002: 用户注册功能</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> FEAT-003: 个人资料页 (进行中，预计延期 1 天)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## 风险项</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 风险 <span class="pp">|</span> 影响 <span class="pp">|</span> 缓解措施 <span class="pp">|</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|----------|</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 后端 API 延期 <span class="pp">|</span> 前端开发阻塞 <span class="pp">|</span> 协调 backend_dev 优先处理 <span class="pp">|</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 测试人力不足 <span class="pp">|</span> 发布延迟风险 <span class="pp">|</span> 准备临时增加 tester <span class="pp">|</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="fu">## 下周计划</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> FEAT-004: 密码重置</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> FEAT-005: 邮箱验证</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> FEAT-006: 个人中心</span></code></pre></div>
+<p><strong>检查清单</strong>： - [ ] 所有已完成任务已标记 - [ ]
+Milestone 完成率准确 - [ ] 延期任务已识别 - [ ] 风险项已记录 - [ ]
+缓解措施已制定</p>
+<hr />
+<h3 id="任务-2规划下阶段任务">任务 2：规划下阶段任务</h3>
+<p><strong>目的</strong>：确保 Slaver 团队始终保持充足的可领取任务。</p>
+<p><strong>检查位置</strong>： -
+<code>confluence/projects/{project}/requirements/prd.md</code> —
+产品需求文档 - <code>jira/sprints/</code> — 当前和下一 Sprint -
+<code>jira/tickets/backlog/</code> — 待拆解需求</p>
+<p><strong>工作流程</strong>：</p>
+<pre><code>1. 阅读 PRD 识别未实现功能
+   ↓
+2. 确定下一 Sprint 主题
+   ↓
+3. 创建 Sprint 草案文档
+   ↓
+4. 预估任务工时和角色
+   ↓
+5. 标记关键路径任务</code></pre>
+<p><strong>Sprint 规划模板</strong>：</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Sprint {N+1} 规划草案</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>**主题**: {Sprint 主题，如&quot;用户系统完善&quot;}</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>**日期**: YYYY-MM-DD ~ YYYY-MM-DD (2 周)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>**目标**:</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>完成用户相关功能（密码重置、邮箱验证）</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>完善个人资料管理</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>实现基础权限控制</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>**预估任务**:</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 功能 <span class="pp">|</span> Ticket ID <span class="pp">|</span> 优先级 <span class="pp">|</span> 预估工时 <span class="pp">|</span> 适配角色 <span class="pp">|</span> 依赖 <span class="pp">|</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|-----------|--------|----------|----------|------|</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 密码重置 <span class="pp">|</span> FEAT-004 <span class="pp">|</span> P1 <span class="pp">|</span> 8h <span class="pp">|</span> fullstack <span class="pp">|</span> - <span class="pp">|</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 邮箱验证 <span class="pp">|</span> FEAT-005 <span class="pp">|</span> P1 <span class="pp">|</span> 6h <span class="pp">|</span> backend_dev <span class="pp">|</span> FEAT-004 <span class="pp">|</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 个人资料 <span class="pp">|</span> FEAT-006 <span class="pp">|</span> P2 <span class="pp">|</span> 12h <span class="pp">|</span> frontend_dev <span class="pp">|</span> - <span class="pp">|</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 权限控制 <span class="pp">|</span> FEAT-007 <span class="pp">|</span> P1 <span class="pp">|</span> 16h <span class="pp">|</span> backend_dev <span class="pp">|</span> FEAT-001 <span class="pp">|</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>**Sprint 容量**:</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>总工时：42h</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>frontend_dev: 12h × 1 = 12h</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>backend_dev: 22h × 1 = 22h</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>fullstack: 8h × 1 = 8h</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>**关键路径**:</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>FEAT-004 → FEAT-005 → FEAT-007</span></code></pre></div>
+<p><strong>检查清单</strong>： - [ ] Sprint 主题明确 - [ ] 目标可衡量 -
+[ ] 任务估时合理（单任务 4-16h） - [ ] 角色分配均衡 - [ ] 依赖关系清晰 -
+[ ] 关键路径已识别</p>
+<hr />
+<h3 id="任务-3拆解新需求到-ticket-级别">任务 3：拆解新需求到 Ticket
+级别</h3>
+<p><strong>目的</strong>：将宏观需求转化为可执行的原子任务。</p>
+<p><strong>检查位置</strong>： - <code>inbox/human_input.md</code> —
+新需求 -
+<code>confluence/projects/{project}/requirements/user_stories.md</code>
+— 用户故事 - <code>jira/epics/</code> — Epic 列表</p>
+<p><strong>拆解流程</strong>：</p>
+<pre><code>1. 阅读需求/用户故事
+   ↓
+2. 识别功能模块（创建 Epic）
+   ↓
+3. 拆解为 Ticket（4-16 小时/个）
+   ↓
+4. 定义验收标准（可测试）
+   ↓
+5. 标记优先级和依赖
+   ↓
+6. 状态设为 ready</code></pre>
+<p><strong>Ticket 模板</strong>：</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># {TICKET-ID}: {功能名称}</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">## 元数据</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**类型**: feature | bugfix | task | test | doc</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**优先级**: P0 | P1 | P2 | P3</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**重要性**: critical | high | medium | low</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**状态**: ready</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**适配角色**: frontend_dev | backend_dev | fullstack | tester | devops</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**预估工时**: Xh</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**所属 Epic**: {EPIC-ID}</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**所属 Sprint**: {SPRINT-ID}</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**所属 Milestone**: {MILESTONE-ID}</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## 依赖关系</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**blocks**: <span class="co">[</span><span class="ot">本任务阻塞哪些任务</span><span class="co">]</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**blocked_by**: <span class="co">[</span><span class="ot">本任务被哪些任务阻塞</span><span class="co">]</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**related**: <span class="co">[</span><span class="ot">相关任务，可并行开发</span><span class="co">]</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="fu">## 需求描述</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>{清晰描述功能需求}</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="fu">## 验收标准</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 标准 1（可测试）</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 标准 2（可测试）</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 标准 3（可测试）</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="fu">## 技术提示（可选）</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>{技术实现的提示或约束}</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="fu">## 参考资料（可选）</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>{相关文档、API 规范等}</span></code></pre></div>
+<p><strong>拆解原则</strong>： | 原则 | 说明 | |——|——| | 原子性 | 每个
+Ticket 不可再分 | | 独立性 | 尽量减少依赖关系 | | 可测试 |
+验收标准必须可验证 | | 估时准确 | 单任务 4-16 小时（不超过 2 天） | |
+角色匹配 | 明确适配的 Slaver 角色 |</p>
+<p><strong>检查清单</strong>： - [ ] Ticket 标题清晰 - [ ] 优先级正确 -
+[ ] 适配角色明确 - [ ] 预估工时合理 - [ ] 验收标准可测试 - [ ]
+依赖关系正确 - [ ] 关联 Epic/Sprint/Milestone</p>
+<hr />
+<h3 id="任务-4标记-ticket-优先级和依赖">任务 4：标记 Ticket
+优先级和依赖</h3>
+<p><strong>目的</strong>：确保 Slaver
+领取任务时的决策质量，避免关键路径延误。</p>
+<p><strong>优先级判定标准</strong>： | 优先级 | 判定标准 | 响应时间 |
+示例 | |——–|———-|———-|——| | P0 | 生产事故、阻塞关键路径 | 立即 |
+系统宕机、数据丢失 | | P1 | 高优先级功能、影响核心体验 | 24 小时 |
+核心功能开发 | | P2 | 正常功能、按顺序开发 | 3 天 | 一般功能增强 | | P3
+| 优化类、技术债务 | 1 周 | 代码重构、文档补充 |</p>
+<p><strong>依赖关系类型</strong>：</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 依赖关系</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 阻塞关系（硬依赖）</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>**blocks**: 本任务完成后，其他任务才能开始</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>**blocked_by**: 本任务需要等待其他任务完成</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">### 相关关系（软依赖）</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>**related**: 功能相关，可并行开发，但最好协调</span></code></pre></div>
+<p><strong>关键路径识别</strong>：</p>
+<pre><code>关键路径 = 最长依赖链
+
+示例：
+FEAT-001 (登录) → FEAT-004 (密码重置) → FEAT-005 (邮箱验证) → FEAT-007 (权限控制)
+     4h                    8h                    6h                    16h
+
+关键路径工时：4 + 8 + 6 + 16 = 34h
+关键路径工期：至少需要 34 小时（单 Slaver）</code></pre>
+<p><strong>行动清单</strong>： - [ ] 扫描所有 <code>ready</code> 状态
+Ticket - [ ] 确认优先级与业务目标一致 - [ ] 标记所有依赖关系 - [ ]
+识别关键路径任务（P0/P1 优先） - [ ] 调整非关键任务优先级</p>
+<hr />
+<h3 id="任务-5预初始化-slaver-团队">任务 5：预初始化 Slaver 团队</h3>
+<p><strong>目的</strong>：确保有足够的 Slaver 容量处理 ready
+状态的任务。</p>
+<p><strong>检查位置</strong>： -
+<code>jira/state/ticket-index.yml</code> — ready 状态任务列表 -
+<code>.eket/state/profiles/</code> — Slaver 角色配置 -
+<code>jira/state/project-status.yml</code> — Slaver 状态</p>
+<p><strong>容量规划流程</strong>：</p>
+<pre><code>1. 统计 ready 任务的工时和角色分布
+   ↓
+   frontend_dev: 24h (3 个任务)
+   backend_dev: 20h (2 个任务)
+   tester: 8h (1 个任务)
+
+2. 检查现有 Slaver 工作负载
+   ↓
+   frontend_dev × 1: 16h in_progress (剩余容量 8h/周)
+   backend_dev × 1: 8h in_progress (剩余容量 24h/周)
+   tester × 1: 0h in_progress (剩余容量 32h/周)
+
+3. 识别人力缺口
+   ↓
+   frontend_dev: 24h - 8h = 16h 缺口 → 需要增加 1 个 frontend_dev
+   backend_dev: 20h - 24h = -4h → 容量充足
+   tester: 8h - 32h = -24h → 容量充足
+
+4. 预初始化新 Slaver 配置
+   ↓
+   创建 .eket/state/profiles/frontend_dev_2.yml
+   写入角色配置和技能要求
+   状态设为 standby</code></pre>
+<p><strong>Slaver 容量计算公式</strong>：</p>
+<pre><code>单 Slaver 周容量 = 40h (全时) 或 20h (半时)
+剩余容量 = 周容量 - in_progress 工时
+
+需要的 Slaver 数量 = ceil(总工时 / 单 Slaver 剩余容量)</code></pre>
+<p><strong>预初始化配置模板</strong>：</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .eket/state/profiles/frontend_dev_2.yml</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">role</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;slaver&quot;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">agent_type</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;frontend_dev&quot;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="fu">status</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;standby&quot;</span><span class="co">  # standby | active | idle</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="fu">skills</span><span class="kw">:</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> react</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> typescript</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> tailwindcss</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> unit_testing</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="fu">capacity</span><span class="kw">:</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">weekly_hours</span><span class="kw">:</span><span class="at"> </span><span class="dv">40</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">current_load</span><span class="kw">:</span><span class="at"> </span><span class="dv">0</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">available_from</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;2026-04-11&quot;</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="fu">assignment_policy</span><span class="kw">:</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">priority_roles</span><span class="kw">:</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> frontend_dev</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">secondary_roles</span><span class="kw">:</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> fullstack</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">max_concurrent_tasks</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span></code></pre></div>
+<p><strong>检查清单</strong>： - [ ] ready 任务工时统计准确 - [ ] 现有
+Slaver 工作负载已检查 - [ ] 人力缺口已识别 - [ ] 新 Slaver
+配置已创建（如需要） - [ ] 任务通知已准备（Slaver 激活后发送）</p>
+<hr />
+<h2 id="工作优先级决策树">工作优先级决策树</h2>
+<pre><code>等待 PR Review 反馈
+│
+├── 1. 检查 inbox/human_input.md 是否有新需求？
+│   ├── 是 → 启动需求分析流程（最高优先级）
+│   └── 否 → 继续往下
+│
+├── 2. Roadmap 是否 &gt; 10 分钟未更新？
+│   ├── 是 → 同步 roadmap 进度
+│   └── 否 → 继续往下
+│
+├── 3. 下阶段规划是否清晰？
+│   ├── 否 → 创建下一 Sprint 规划草案
+│   └── 是 → 继续往下
+│
+├── 4. 是否有未拆解的需求？
+│   ├── 是 → 拆解需求到 Ticket 级别
+│   └── 否 → 继续往下
+│
+├── 5. ready 任务是否充足（≥ 2 个任务/Slaver）？
+│   ├── 否 → 创建更多 ready 任务
+│   └── 是 → 继续往下
+│
+└── 6. Slaver 工作负载是否均衡？
+    ├── 否 → 预初始化 Slaver 团队
+    └── 是 → 检查 PR 反馈，准备响应</code></pre>
+<hr />
+<h2 id="时间分配建议">时间分配建议</h2>
+<table>
+<thead>
+<tr>
+<th>工作任务</th>
+<th>建议时间占比</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Roadmap 同步</td>
+<td>10%</td>
+<td>每 10 分钟更新一次</td>
+</tr>
+<tr>
+<td>下阶段规划</td>
+<td>25%</td>
+<td>Sprint 草案、Epic 定义</td>
+</tr>
+<tr>
+<td>需求拆解</td>
+<td>35%</td>
+<td>Ticket 创建和细化</td>
+</tr>
+<tr>
+<td>优先级标记</td>
+<td>15%</td>
+<td>依赖分析、关键路径</td>
+</tr>
+<tr>
+<td>团队预初始化</td>
+<td>15%</td>
+<td>容量规划、Slaver 配置</td>
+</tr>
+</tbody>
+</table>
+<p><strong>典型等待周期（30 分钟 PR Review）的时间分配</strong>：</p>
+<pre><code>0-5 分钟:   同步 roadmap（检查已完成任务）
+5-12 分钟:  下阶段规划（创建 Sprint 草案）
+12-22 分钟: 需求拆解（2-3 个新 Ticket）
+22-27 分钟: 优先级标记（依赖关系分析）
+27-30 分钟: 团队预初始化（检查容量）</code></pre>
+<hr />
+<h2 id="与心跳检查的集成">与心跳检查的集成</h2>
+<p><strong>每 5 分钟检查一次 PR 反馈</strong>，然后继续主动工作：</p>
+<pre><code>检查 PR 反馈
+│
+├── 有反馈，需要修改 → 暂停主动工作，立即处理反馈
+├── 有反馈，批准 → 暂停主动工作，准备合并
+└── 无反馈 → 继续主动工作</code></pre>
+<p><strong>心跳检查频率</strong>： | Master 状态 | PR 检查频率 |
+主动工作 | |————|————-|———-| | 等待 PR 反馈 | 每 5 分钟 | 持续进行 | |
+等待人类决策 | 每 10 秒 | 持续进行 | | 空闲 | 每 10 秒 | N/A | |
+工作中（Review） | N/A | N/A |</p>
+<hr />
+<h2 id="相关文档">相关文档</h2>
+<ul>
+<li><a
+href="./MASTER-HEARTBEAT-CHECKLIST.md"><code>MASTER-HEARTBEAT-CHECKLIST.md</code></a>
+— Master 心跳检查完整清单</li>
+<li><a href="./MASTER-WORKFLOW.md"><code>MASTER-WORKFLOW.md</code></a> —
+Master 完整工作流程</li>
+<li><a
+href="./TICKET-RESPONSIBILITIES.md"><code>TICKET-RESPONSIBILITIES.md</code></a>
+— Ticket 职责边界</li>
+</ul>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team<br />
+<strong>版本</strong>: v2.1.4<br />
+<strong>最后更新</strong>: 2026-04-11</p>
+</body>
+</html>
