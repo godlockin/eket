@@ -1,0 +1,95 @@
+name: Health Check
+
+on:
+  push:
+    branches:
+      - main
+      - testing
+      - feature/*
+  pull_request:
+    branches:
+      - main
+      - testing
+  workflow_dispatch:
+
+jobs:
+  health:
+    name: EKET Health Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: node/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./node
+        run: npm ci
+
+      - name: Install SQLite
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sqlite3
+
+      - name: Setup Redis (optional)
+        uses: shogo82148/actions-setup-redis@v1
+        with:
+          redis-version: '7.x'
+          auto-start: true
+        continue-on-error: true
+
+      - name: Create test database
+        run: |
+          mkdir -p .eket/state
+          sqlite3 .eket/state/eket.db "CREATE TABLE IF NOT EXISTS health_check (id INTEGER PRIMARY KEY, timestamp TEXT);"
+          sqlite3 .eket/state/eket.db "INSERT INTO health_check (timestamp) VALUES (datetime('now'));"
+
+      - name: Create config file
+        run: |
+          mkdir -p .eket
+          cat > .eket/config.yml <<EOF
+          version: 2.9.0-alpha
+          master:
+            enabled: true
+          slaver:
+            enabled: true
+          EOF
+
+      - name: Run Health Check
+        id: health_check
+        run: |
+          bash scripts/health_check.sh
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          exit $EXIT_CODE
+
+      - name: Upload health report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: health-check-report
+          path: |
+            scripts/health_check.sh
+            .eket/config.yml
+            .eket/state/eket.db
+          retention-days: 7
+
+      - name: Comment PR (on failure)
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const message = '## ❌ Health Check Failed\n\nThe EKET health check failed. Review checks:\n\n- [ ] Git repository\n- [ ] Node.js >= 18\n- [ ] npm deps\n- [ ] Redis (optional)\n- [ ] SQLite\n- [ ] Core dirs\n- [ ] Config YAML\n\nSee workflow run for details.';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
