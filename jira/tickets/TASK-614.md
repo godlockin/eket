@@ -1,7 +1,7 @@
 # TASK-614: 补充 node/src API 文档
 
 **优先级**: P1  
-**状态**: `review`  
+**状态**: `done`  
 **预估工时**: 4h  
 **父级**: EPIC-006  
 **角色**: backend_dev  
