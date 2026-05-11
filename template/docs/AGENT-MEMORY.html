@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>AGENT-MEMORY.md — Agent Memory 系统说明</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">AGENT-MEMORY.md — Agent Memory 系统说明</h1>
+</header>
+<h1 id="agent-memory.md-agent-memory-系统说明">AGENT-MEMORY.md — Agent
+Memory 系统说明</h1>
+<p><strong>版本</strong>: 1.0.0<br />
+<strong>适用框架</strong>: EKET v2.1.33+（依赖 Claude Code v2.1.33+ 原生
+Agent Memory 支持）<br />
+<strong>最后更新</strong>: 2026-04-15</p>
+<hr />
+<h2 id="概述">概述</h2>
+<p>Claude Code v2.1.33+ 原生支持 Agent Memory。在 <code>agent.yml</code>
+中声明 <code>memory</code> 字段后，Agent
+可以跨会话积累知识，而无需依赖外部数据库或手动注入 prompt。</p>
+<p><strong>核心能力</strong>： - Agent 启动时：自动读取
+<code>MEMORY.md</code> 前 200 行，注入系统提示 - 超出 200 行时：Agent
+自动将内容迁移到主题子文件（如
+<code>veto-patterns.md</code>、<code>anti-patterns.md</code>） -
+任务完成时：Agent 主动更新 <code>MEMORY.md</code>（需在
+<code>agent.yml</code> 的 prompt 中明确要求）</p>
+<hr />
+<h2 id="三级存储">三级存储</h2>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>范围</th>
+<th>声明方式</th>
+<th>存储路径</th>
+<th>版本控制</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user</code></td>
+<td><code>memory: user</code></td>
+<td><code>~/.claude/agent-memory/&lt;agent-name&gt;/</code></td>
+<td>❌ 否</td>
+<td>跨项目通用知识（个人习惯、通用编程约定）</td>
+</tr>
+<tr>
+<td><code>project</code></td>
+<td><code>memory: project</code></td>
+<td><code>.claude/agent-memory/&lt;agent-name&gt;/</code></td>
+<td>✅ 是</td>
+<td>团队共享的项目约定（代码规范、审查模式）</td>
+</tr>
+<tr>
+<td><code>local</code></td>
+<td><code>memory: local</code></td>
+<td><code>.claude/agent-memory-local/&lt;agent-name&gt;/</code></td>
+<td>❌ 否</td>
+<td>个人私有知识（本地实验、个人笔记）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="三级存储选择指南">三级存储选择指南</h3>
+<pre><code>我的知识是否应该共享给团队其他成员？
+├── 是 → 使用 project（版本控制，可 code review）
+└── 否 → 继续往下
+
+这是个人跨项目通用知识？
+├── 是 → 使用 user（所有项目共享，个人维度）
+└── 否 → 使用 local（当前项目，个人私有，不追踪）</code></pre>
+<h3 id="eket-框架中的配置">EKET 框架中的配置</h3>
+<p>EKET 中所有 reviewer Agent 使用 <code>project</code>
+级别（团队共享审查知识）：</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># gate_reviewer — 积累否决/批准模式</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> gate_reviewer</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">memory</span><span class="kw">:</span><span class="at"> project</span><span class="co">   # → .claude/agent-memory/gate-reviewer/MEMORY.md</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># code_reviewer — 积累代码风格约定和反模式</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> code_reviewer</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">memory</span><span class="kw">:</span><span class="at"> project</span><span class="co">   # → .claude/agent-memory/code-reviewer/MEMORY.md</span></span></code></pre></div>
+<blockquote>
+<p><strong>注意</strong>：<code>.claude/agent-memory-local/</code>
+已添加到 <code>.gitignore</code>，确保 local 级别不被追踪。</p>
+</blockquote>
+<hr />
+<h2 id="如何在-agent.yml-中激活-memory">如何在 agent.yml 中激活
+Memory</h2>
+<h3 id="第一步声明-memory-字段">第一步：声明 memory 字段</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> my_agent</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">memory</span><span class="kw">:</span><span class="at"> project</span><span class="co">   # 或 user / local</span></span></code></pre></div>
+<h3 id="第二步在-prompt-中添加-memory-使用规范">第二步：在 prompt 中添加
+Memory 使用规范</h3>
+<p>在 <code>agent.yml</code> 的文档区域（或 <code>system_prompt</code>
+字段）添加以下内容：</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## Memory 使用规范</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**启动时**：Review your memory in <span class="in">`.claude/agent-memory/&lt;agent-name&gt;/MEMORY.md`</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  for historical patterns before starting each session.</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**完成后**：Update your memory with new patterns discovered in this session.</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**格式约定**：每条记忆条目需注明关联 ticket/PR ID 和日期，便于追溯。</span></code></pre></div>
+<h3 id="第三步创建初始-memory.md种子文件">第三步：创建初始
+MEMORY.md（种子文件）</h3>
+<p>在与 <code>agent.yml</code> 相同目录下创建
+<code>MEMORY.md</code>，用于存储初始种子知识。<br />
+此文件会被 Agent 在运行时读取和更新。</p>
+<hr />
+<h2 id="memory-文件结构最佳实践">Memory 文件结构最佳实践</h2>
+<h3 id="基本结构模板">基本结构模板</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># &lt;Agent Name&gt; Memory</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **自动管理说明**：此文件由 </span><span class="dt">&lt;</span><span class="kw">agent_name</span><span class="dt">&gt;</span><span class="at"> 在每次任务后自动更新。</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; 前 200 行会在每次启动时注入系统提示。超出后迁移到主题子文件。</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **格式约定**：每条记忆注明关联 ticket/PR ID（或 </span><span class="in">`[seed]`</span><span class="at">）和日期。</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## &lt;主题 1&gt;（例：Veto Patterns）</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- Agent 自动追加 --&gt;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="fu">### &lt;子类别&gt;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**[ticket-id 或 seed] YYYY-MM-DD** — <span class="co">[</span><span class="ot">知识条目描述</span><span class="co">]</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="fu">## &lt;主题 2&gt;（例：Project-Specific Rules）</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- 手动维护 --&gt;</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="fu">## History Index（历史索引）</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; 超出 200 行时迁移到子文件。</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ID <span class="pp">|</span> 结论 <span class="pp">|</span> 日期 <span class="pp">|</span> 摘要 <span class="pp">|</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="pp">|----|------|------|------|</span></span></code></pre></div>
+<h3 id="设计原则">设计原则</h3>
+<ol type="1">
+<li><strong>可读性优先</strong>：Memory 文件是给 AI
+读的，但也要让人类能读懂并参与维护。</li>
+<li><strong>可追溯性</strong>：每条记忆注明来源（ticket ID / PR ID /
+<code>[seed]</code>）和日期，便于未来审计。</li>
+<li><strong>分类明确</strong>：用二级标题（<code>##</code>）分类，三级标题（<code>###</code>）分子类，便于
+Agent 快速定位。</li>
+<li><strong>避免冗余</strong>：相同模式不重复记录，更新旧条目而非新增重复条目。</li>
+<li><strong>200 行控制</strong>：超出 200 行时，Agent 会将历史索引迁移到
+<code>&lt;topic&gt;.md</code> 子文件，主文件保持精简。</li>
+</ol>
+<h3 id="禁止事项">禁止事项</h3>
+<ul>
+<li>❌ 在 MEMORY.md 中存储完整代码（只存模式描述，具体代码放
+ticket/PR）</li>
+<li>❌ 存储敏感信息（密码、API Key、个人数据）—— 尤其是
+<code>project</code> 级别（会被版本控制）</li>
+<li>❌ 手动截断 MEMORY.md（由 Agent 自动管理）</li>
+</ul>
+<hr />
+<h2 id="eket-中已配置-memory-的-agent">EKET 中已配置 Memory 的
+Agent</h2>
+<table>
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 25%" />
+<col style="width: 33%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr>
+<th>Agent</th>
+<th>存储级别</th>
+<th>Memory 路径</th>
+<th>积累内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gate_reviewer</code></td>
+<td><code>project</code></td>
+<td><code>.claude/agent-memory/gate-reviewer/MEMORY.md</code></td>
+<td>否决/批准模式、项目特有规则</td>
+</tr>
+<tr>
+<td><code>code_reviewer</code></td>
+<td><code>project</code></td>
+<td><code>.claude/agent-memory/code-reviewer/MEMORY.md</code></td>
+<td>代码风格约定、反模式、测试覆盖要求</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="与-sqlite-知识库的关系">与 SQLite 知识库的关系</h2>
+<p>Agent Memory 和 SQLite
+知识库（<code>core/knowledge-base.ts</code>）是<strong>互补关系</strong>，而非竞争关系：</p>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 39%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>维度</th>
+<th>Agent Memory</th>
+<th>SQLite 知识库</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>主要使用者</strong></td>
+<td>Agent（自动读取注入 prompt）</td>
+<td>人类/CLI（通过命令查询）</td>
+</tr>
+<tr>
+<td><strong>查询方式</strong></td>
+<td>自动注入（启动时）</td>
+<td><code>node dist/index.js sqlite:search "&lt;keyword&gt;"</code></td>
+</tr>
+<tr>
+<td><strong>存储内容</strong></td>
+<td>Agent 工作模式、审查经验</td>
+<td>技术决策、架构 ADR、项目知识</td>
+</tr>
+<tr>
+<td><strong>版本控制</strong></td>
+<td>project 级别：是；local 级别：否</td>
+<td>否（运行时数据库）</td>
+</tr>
+<tr>
+<td><strong>适合场景</strong></td>
+<td>Agent 跨会话学习</td>
+<td>人类知识沉淀和检索</td>
+</tr>
+</tbody>
+</table>
+<p><strong>推荐使用策略</strong>： - Agent
+发现的<strong>审查模式</strong> → 写入 Agent
+Memory（<code>MEMORY.md</code>） - 重大<strong>技术决策</strong> → 写入
+SQLite 知识库（<code>knowledge-base.ts</code> artifact/decision 类型） -
+<strong>两者互通</strong>：复杂知识先沉淀到 SQLite，再由 Master
+提炼摘要写入 <code>MEMORY.md</code></p>
+<hr />
+<h2 id="故障排查">故障排查</h2>
+<h3 id="memory-文件未被-agent-读取">Memory 文件未被 Agent 读取</h3>
+<ol type="1">
+<li>确认 <code>agent.yml</code> 中声明了
+<code>memory: project</code>（或 user/local）</li>
+<li>确认 <code>MEMORY.md</code>
+存在于对应路径（<code>.claude/agent-memory/&lt;agent-name&gt;/</code>）</li>
+<li>确认 <code>MEMORY.md</code> 不超过 200
+行（超出时会自动迁移，但迁移失败会导致读取不完整）</li>
+<li>确认 <code>agent.yml</code> prompt 中包含 Memory 使用规范（否则
+Agent 知道有文件但不知道何时读）</li>
+</ol>
+<h3 id="memory-被污染或有错误条目">Memory 被污染或有错误条目</h3>
+<ol type="1">
+<li>直接编辑 <code>MEMORY.md</code> 删除错误条目（文件是普通
+Markdown，可手动编辑）</li>
+<li>若整体混乱，可从
+<code>template/agents/&lt;type&gt;/&lt;agent_name&gt;/MEMORY.md</code>
+重置为初始种子文件</li>
+<li>通过 git history 追溯是哪次 Agent 更新引入了错误</li>
+</ol>
+<h3 id="local-级别-memory-被意外追踪">local 级别 Memory 被意外追踪</h3>
+<p>确认 <code>.gitignore</code> 中包含：</p>
+<pre><code>.claude/agent-memory-local/</code></pre>
+</body>
+</html>

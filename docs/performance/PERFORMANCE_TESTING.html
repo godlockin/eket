@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 性能测试套件</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 性能测试套件</h1>
+</header>
+<h1 id="eket-性能测试套件">EKET 性能测试套件</h1>
+<p><strong>TASK-004: 性能基准测试和优化</strong></p>
+<p>本目录包含 EKET 框架的性能测试工具和文档。</p>
+<hr />
+<h2 id="目录结构">📂 目录结构</h2>
+<pre><code>.
+├── node/benchmarks/           # Node.js 基准测试
+│   ├── performance-benchmark.ts         # 原有基准测试
+│   └── comprehensive-benchmark.ts       # 综合基准测试 (新增)
+│
+├── k6/                        # k6 压力测试脚本
+│   ├── load-test.js          # 完整压力测试 (新增)
+│   └── quick-test.js         # 快速测试 (新增)
+│
+└── docs/performance/          # 性能文档
+    ├── benchmark-report.md              # 基准测试报告 (新增)
+    └── optimization-recommendations.md  # 优化建议 (新增)</code></pre>
+<hr />
+<h2 id="快速开始">🚀 快速开始</h2>
+<h3 id="运行基准测试">1. 运行基准测试</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 进入 Node.js 目录</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 安装依赖（如果还未安装）</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 运行综合基准测试</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run bench:comprehensive</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 或运行原有基准测试</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run bench</span></code></pre></div>
+<p><strong>预期输出</strong>:</p>
+<pre><code>==========================================================================
+🚀 EKET v2.1.1 综合性能基准测试 - TASK-004
+==========================================================================
+
+⚙️  配置:
+  ├─ 迭代次数: 1000
+  ├─ 预热轮数: 100
+  └─ 并发级别: 1, 10, 100, 500, 1000
+
+📋 测试目标:
+  ├─ Redis 读写:  &lt;5ms (P95)
+  ├─ SQLite 查询: &lt;10ms (P95)
+  ├─ 文件队列:    &lt;20ms (P95)
+  ├─ 消息传递:    &lt;50ms (P95)
+  └─ 内存使用:    &lt;512MB
+
+==========================================================================
+📦 测试 1: Redis 读写性能
+==========================================================================
+...</code></pre>
+<h3 id="运行-k6-压力测试">2. 运行 k6 压力测试</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 安装 k6 (如果还未安装)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># macOS</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">brew</span> install k6</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Linux</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-key adv <span class="at">--keyserver</span> hkp://keyserver.ubuntu.com:80 <span class="at">--recv-keys</span> C5AD17C747E3415A3642D57D77C6C491D6AC1D69</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;deb https://dl.k6.io/deb stable main&quot;</span> <span class="kw">|</span> <span class="fu">sudo</span> tee /etc/apt/sources.list.d/k6.list</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get update</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get install k6</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Windows</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="ex">choco</span> install k6</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 启动 HTTP Hook 服务器</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run build</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js hooks:start <span class="at">--port</span> 8899 <span class="kw">&amp;</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 运行快速测试（5 分钟）</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ..</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="ex">k6</span> run k6/quick-test.js</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co"># 运行完整压力测试（30+ 分钟）</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="ex">k6</span> run k6/load-test.js</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="co"># 自定义测试参数</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="ex">k6</span> run <span class="at">--vus</span> 500 <span class="at">--duration</span> 10m k6/quick-test.js</span></code></pre></div>
+<hr />
+<h2 id="测试说明">📊 测试说明</h2>
+<h3 id="基准测试-benchmarks">基准测试 (Benchmarks)</h3>
+<p><strong>comprehensive-benchmark.ts</strong> 包含以下测试：</p>
+<ol type="1">
+<li><strong>Redis 读写性能</strong>
+<ul>
+<li>SET/GET/DELETE 操作</li>
+<li>目标: P95 &lt;5ms</li>
+</ul></li>
+<li><strong>SQLite 查询性能</strong>
+<ul>
+<li>INSERT/SELECT/批量查询</li>
+<li>目标: P95 &lt;10ms</li>
+</ul></li>
+<li><strong>文件队列性能</strong>
+<ul>
+<li>消息发布/订阅</li>
+<li>目标: P95 &lt;20ms</li>
+</ul></li>
+<li><strong>LRU 缓存性能</strong>
+<ul>
+<li>写入/读取/驱逐</li>
+<li>目标: P95 &lt;1ms</li>
+</ul></li>
+<li><strong>并发性能</strong>
+<ul>
+<li>1-1000 并发级别</li>
+<li>测试吞吐量和延迟</li>
+</ul></li>
+<li><strong>内存使用</strong>
+<ul>
+<li>10000 条目内存占用</li>
+<li>目标: &lt;512MB</li>
+</ul></li>
+</ol>
+<h3 id="压力测试-k6">压力测试 (k6)</h3>
+<p><strong>load-test.js</strong> 包含 4 个测试场景：</p>
+<ol type="1">
+<li><strong>渐进式负载测试</strong>
+<ul>
+<li>0 → 100 → 500 → 1000 并发</li>
+<li>持续 17 分钟</li>
+</ul></li>
+<li><strong>稳定负载测试</strong>
+<ul>
+<li>500 并发持续 10 分钟</li>
+<li>验证系统稳定性</li>
+</ul></li>
+<li><strong>WebSocket 连接测试</strong>
+<ul>
+<li>100 并发 WebSocket 连接</li>
+<li>持续 5 分钟</li>
+</ul></li>
+<li><strong>峰值负载测试</strong>
+<ul>
+<li>快速爬升到 2000 并发</li>
+<li>持续 1 分钟</li>
+</ul></li>
+</ol>
+<p><strong>quick-test.js</strong> 快速测试： - 5 分钟快速压力测试 - 最高
+500 并发</p>
+<hr />
+<h2 id="性能目标">🎯 性能目标</h2>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>目标值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Redis 读写 P95</td>
+<td>&lt;5ms</td>
+</tr>
+<tr>
+<td>SQLite 查询 P95</td>
+<td>&lt;10ms</td>
+</tr>
+<tr>
+<td>文件队列 P95</td>
+<td>&lt;20ms</td>
+</tr>
+<tr>
+<td>HTTP 请求 P95</td>
+<td>&lt;100ms</td>
+</tr>
+<tr>
+<td>消息传递 P95</td>
+<td>&lt;50ms</td>
+</tr>
+<tr>
+<td>错误率</td>
+<td>&lt;1%</td>
+</tr>
+<tr>
+<td>最大并发</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>内存使用</td>
+<td>&lt;512MB</td>
+</tr>
+<tr>
+<td>CPU 使用</td>
+<td>&lt;50%</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="测试报告">📝 测试报告</h2>
+<p>测试完成后，查看以下文档：</p>
+<ol type="1">
+<li><strong><a
+href="docs/performance/benchmark-report.md">benchmark-report.md</a></strong>
+<ul>
+<li>详细的测试结果数据</li>
+<li>性能指标分析</li>
+<li>达成情况评估</li>
+</ul></li>
+<li><strong><a
+href="docs/performance/optimization-recommendations.md">optimization-recommendations.md</a></strong>
+<ul>
+<li>识别的性能瓶颈</li>
+<li>优化建议和代码示例</li>
+<li>预期性能提升</li>
+<li>实施计划</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="环境变量">🔧 环境变量</h2>
+<p>测试使用以下环境变量（可选）：</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Redis 配置</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_REDIS_HOST</span><span class="op">=</span>localhost</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_REDIS_PORT</span><span class="op">=</span>6379</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># SQLite 配置</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_SQLITE_PATH</span><span class="op">=</span>~/.eket/data/sqlite/eket.db</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># k6 测试目标</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_HOOK_URL</span><span class="op">=</span>http://localhost:8899</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_WS_URL</span><span class="op">=</span>ws://localhost:8899/ws</span></code></pre></div>
+<hr />
+<h2 id="故障排查">🐛 故障排查</h2>
+<h3 id="redis-测试跳过">Redis 测试跳过</h3>
+<p><strong>问题</strong>: “⚠️ Redis 不可用，跳过 Redis 测试”</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 启动 Redis (Docker)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">-p</span> 6379:6379 redis:7-alpine</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 或使用本地 Redis</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">redis-server</span></span></code></pre></div>
+<h3 id="k6-连接失败">k6 连接失败</h3>
+<p><strong>问题</strong>: k6 测试报告连接错误</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 确保 Hook 服务器已启动</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js hooks:start <span class="at">--port</span> 8899</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查服务器状态</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> http://localhost:8899/health</span></code></pre></div>
+<h3 id="typescript-编译错误">TypeScript 编译错误</h3>
+<p><strong>问题</strong>: ts-node 报告导入错误</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 确保使用 --esm 标志</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ts-node</span> <span class="at">--esm</span> benchmarks/comprehensive-benchmark.ts</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 或构建后运行</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run build</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/../benchmarks/comprehensive-benchmark.js</span></code></pre></div>
+<hr />
+<h2 id="性能优化建议">🚀 性能优化建议</h2>
+<p>基于测试结果，我们识别了以下优化机会：</p>
+<h3 id="立即实施-本周">立即实施 (本周)</h3>
+<ol type="1">
+<li><p><strong>启用 SQLite WAL 模式</strong></p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="fu">pragma</span>(<span class="st">&#39;journal_mode = WAL&#39;</span>)<span class="op">;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="fu">pragma</span>(<span class="st">&#39;synchronous = NORMAL&#39;</span>)<span class="op">;</span></span></code></pre></div></li>
+<li><p><strong>优化文件队列轮询</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>filePollingInterval<span class="op">:</span> <span class="dv">100</span>  <span class="co">// 从 500ms 降到 100ms</span></span></code></pre></div></li>
+<li><p><strong>Redis 超时保护</strong></p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>timeout<span class="op">:</span> <span class="dv">3000</span>  <span class="co">// 3 秒超时</span></span></code></pre></div></li>
+</ol>
+<h3 id="短期优化-本月">短期优化 (本月)</h3>
+<ul>
+<li>文件队列批量处理</li>
+<li>迁移到 AsyncSQLiteClient</li>
+<li>Redis 连接池优化</li>
+<li>内存监控告警</li>
+</ul>
+<p>详见: <a
+href="docs/performance/optimization-recommendations.md">optimization-recommendations.md</a></p>
+<hr />
+<h2 id="相关文档">📚 相关文档</h2>
+<ul>
+<li><a href="../jira/tickets/TASK-004.md">TASK-004 任务说明</a></li>
+<li><a href="../CLAUDE.md">CLAUDE.md 开发指南</a></li>
+<li><a href="https://k6.io/docs/">k6 官方文档</a></li>
+</ul>
+<hr />
+<h2 id="验收标准">✅ 验收标准</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />创建综合基准测试脚本
+✅</label></li>
+<li><label><input type="checkbox" checked="" />创建 k6 压力测试脚本
+✅</label></li>
+<li><label><input type="checkbox" checked="" />编写性能优化建议
+✅</label></li>
+<li><label><input type="checkbox" checked="" />编写基准测试报告模板
+✅</label></li>
+<li><label><input type="checkbox" />P95 延迟 &lt;100ms
+(待实测)</label></li>
+<li><label><input type="checkbox" />支持 1000 并发 (待实测)</label></li>
+<li><label><input type="checkbox" />内存使用 &lt;512MB
+(待实测)</label></li>
+<li><label><input type="checkbox" />CPU 使用 &lt;50%
+(待实测)</label></li>
+</ul>
+<hr />
+<p><strong>负责人</strong>: Slaver 4 (DevOps) <strong>状态</strong>:
+Phase 1-3 完成，等待实际测试验证 <strong>最后更新</strong>:
+2026-04-07</p>
+</body>
+</html>

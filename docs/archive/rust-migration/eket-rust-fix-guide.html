@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Rust 移植 - 修复指南</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Rust 移植 - 修复指南</h1>
+</header>
+<h1 id="eket-rust-移植---修复指南">EKET Rust 移植 - 修复指南</h1>
+<h2 id="p1-优先级修复---本周完成">P1 优先级修复 - 本周完成</h2>
+<h3 id="修复-1-master-election-声明等待期">修复 1: Master Election
+声明等待期</h3>
+<p><strong>文件</strong>:
+<code>rust/crates/eket-core/src/election.rs</code></p>
+<p><strong>问题</strong>: 无声明等待期 → 多个 instance
+可能同时认为自己是 MASTER</p>
+<p><strong>修复代码</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">impl</span> MasterElection <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> elect(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> EketResult<span class="op">&lt;</span>ElectionResult<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="pp">info!</span>(<span class="st">&quot;[Election] {} starting...&quot;</span><span class="op">,</span> <span class="kw">self</span><span class="op">.</span>instance_id)<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Level 1: Redis</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">let</span> <span class="cn">Some</span>(redis) <span class="op">=</span> <span class="op">&amp;</span><span class="kw">self</span><span class="op">.</span>redis <span class="op">{</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> redis<span class="op">.</span>is_available() <span class="op">{</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>                <span class="cf">match</span> <span class="kw">self</span><span class="op">.</span>elect_redis(redis)<span class="op">.</span><span class="kw">await</span> <span class="op">{</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                    <span class="cn">Ok</span>(result) <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                        <span class="cf">if</span> result<span class="op">.</span>is_master <span class="op">{</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                            <span class="co">// 🆕 添加声明等待期</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                            <span class="cf">if</span> <span class="kw">let</span> <span class="cn">Err</span>(e) <span class="op">=</span> <span class="kw">self</span><span class="op">.</span>declaration_period_redis(redis)<span class="op">.</span><span class="kw">await</span> <span class="op">{</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                                <span class="pp">warn!</span>(<span class="st">&quot;[Election] Declaration period failed: {e}&quot;</span>)<span class="op">;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                                <span class="cf">return</span> <span class="cn">Ok</span>(ElectionResult <span class="op">{</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>                                    is_master<span class="op">:</span> <span class="cn">false</span><span class="op">,</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>                                    instance_id<span class="op">:</span> <span class="kw">self</span><span class="op">.</span>instance_id<span class="op">.</span>clone()<span class="op">,</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>                                    level<span class="op">:</span> <span class="pp">ElectionLevel::</span>Redis<span class="op">,</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                                <span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                            <span class="op">}</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>                            <span class="kw">self</span><span class="op">.</span>start_renewer_redis(redis<span class="op">.</span>clone())<span class="op">.</span><span class="kw">await</span><span class="op">;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>                        <span class="op">}</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>                        <span class="cf">return</span> <span class="cn">Ok</span>(result)<span class="op">;</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>                    <span class="op">}</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>                    <span class="cn">Err</span>(e) <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>                        <span class="pp">warn!</span>(<span class="st">&quot;[Election] Redis failed: {e}, trying SQLite...&quot;</span>)<span class="op">;</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>                    <span class="op">}</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>                <span class="op">}</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        <span class="co">// ... 其他 levels ...</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    <span class="co">/// 声明等待期（2 秒）— 轮询检测其他竞争者</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">async</span> <span class="kw">fn</span> declaration_period_redis(<span class="op">&amp;</span><span class="kw">self</span><span class="op">,</span> redis<span class="op">:</span> <span class="op">&amp;</span>EketRedisClient) <span class="op">-&gt;</span> EketResult<span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> DECLARATION_PERIOD<span class="op">:</span> <span class="dt">u64</span> <span class="op">=</span> <span class="dv">2000</span><span class="op">;</span> <span class="co">// 2 seconds</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> POLL_INTERVAL<span class="op">:</span> <span class="dt">u64</span> <span class="op">=</span> <span class="dv">100</span><span class="op">;</span> <span class="co">// 100ms</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> start <span class="op">=</span> <span class="pp">std::time::Instant::</span>now()<span class="op">;</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>        <span class="cf">while</span> start<span class="op">.</span>elapsed()<span class="op">.</span>as_millis() <span class="op">&lt;</span> DECLARATION_PERIOD <span class="kw">as</span> <span class="dt">u128</span> <span class="op">{</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>            <span class="co">// 检查是否有其他 Master 声明</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>            <span class="cf">match</span> redis<span class="op">.</span>get(<span class="st">&quot;eket:master:declaration&quot;</span>)<span class="op">.</span><span class="kw">await</span> <span class="op">{</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>                <span class="cn">Ok</span>(<span class="cn">Some</span>(other_id)) <span class="cf">if</span> other_id <span class="op">!=</span> <span class="kw">self</span><span class="op">.</span>instance_id <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">return</span> <span class="cn">Err</span>(<span class="pp">EketError::</span>Other(<span class="pp">format!</span>(<span class="st">&quot;Other master detected: {other_id}&quot;</span>)))<span class="op">;</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>                <span class="op">}</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>                _ <span class="op">=&gt;</span> <span class="op">{}</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>            <span class="pp">tokio::time::</span>sleep(<span class="pp">Duration::</span>from_millis(POLL_INTERVAL))<span class="op">.</span><span class="kw">await</span><span class="op">;</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>        <span class="co">// 发送正式声明</span></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>        redis<span class="op">.</span>setex(<span class="st">&quot;eket:master:declaration&quot;</span><span class="op">,</span> <span class="dv">30</span><span class="op">,</span> <span class="op">&amp;</span><span class="kw">self</span><span class="op">.</span>instance_id)<span class="op">.</span><span class="kw">await</span><span class="op">?;</span></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>        <span class="pp">info!</span>(<span class="st">&quot;[Election] Declaration sent: {}&quot;</span><span class="op">,</span> <span class="kw">self</span><span class="op">.</span>instance_id)<span class="op">;</span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>        <span class="cn">Ok</span>(())</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 类似地为 SQLite 和 File 添加声明等待期...</span></span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>验证方法</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 终端1</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">RUST_LOG</span><span class="op">=</span>info <span class="ex">cargo</span> run <span class="at">--bin</span> eket-cli <span class="at">--</span> master:test</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 终端2 (同时运行)</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="va">RUST_LOG</span><span class="op">=</span>info <span class="ex">cargo</span> run <span class="at">--bin</span> eket-cli <span class="at">--</span> master:test</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 验证: 只有一个输出 &quot;is_master=true&quot;</span></span></code></pre></div>
+<p><strong>预期时间</strong>: 1-2 小时</p>
+<hr />
+<h3 id="修复-2-task-claim-sqlite-竞争保护">修复 2: Task Claim SQLite
+竞争保护</h3>
+<p><strong>文件</strong>:
+<code>rust/crates/eket-cli/src/commands/task_claim.rs</code></p>
+<p><strong>问题</strong>: 多个 Slaver 可能同时领取同一任务</p>
+<p><strong>当前代码</strong> (有问题):</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 只是读文件，无原子保护</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="kw">mut</span> ticket <span class="op">=</span> find_ticket(<span class="op">&amp;</span>tickets_dir<span class="op">,</span> id)<span class="op">?;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> ticket<span class="op">.</span>status <span class="op">!=</span> <span class="pp">TicketStatus::</span>Todo <span class="op">{</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 错误：此时其他 Slaver 可能已经改变 ticket 状态</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>ticket<span class="op">.</span>set_status(<span class="pp">TicketStatus::</span>InProgress<span class="op">,</span> <span class="cn">Some</span>(<span class="op">&amp;</span>slaver_id))<span class="op">?;</span></span></code></pre></div>
+<p><strong>修复代码</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="pp">eket_core::db::</span><span class="op">{</span>create_pool<span class="op">,</span> SqliteClient<span class="op">};</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">async</span> <span class="kw">fn</span> claim_task_atomic(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    pool<span class="op">:</span> <span class="op">&amp;</span>DbPool<span class="op">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    ticket_id<span class="op">:</span> <span class="op">&amp;</span><span class="dt">str</span><span class="op">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    slaver_id<span class="op">:</span> <span class="op">&amp;</span><span class="dt">str</span><span class="op">,</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="dt">Result</span><span class="op">&lt;</span><span class="dt">bool</span><span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> pool <span class="op">=</span> pool<span class="op">.</span>clone()<span class="op">;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> ticket_id <span class="op">=</span> ticket_id<span class="op">.</span>to_string()<span class="op">;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> slaver_id <span class="op">=</span> slaver_id<span class="op">.</span>to_string()<span class="op">;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="pp">tokio::task::</span>spawn_blocking(<span class="kw">move</span> <span class="op">||</span> <span class="op">-&gt;</span> <span class="dt">Result</span><span class="op">&lt;</span><span class="dt">bool</span><span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> conn <span class="op">=</span> pool<span class="op">.</span>get()<span class="op">?;</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        <span class="co">// 原子操作：检查 + 更新 = 一个事务</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> tx <span class="op">=</span> conn<span class="op">.</span>transaction()<span class="op">?;</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        <span class="co">// 检查状态</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> status<span class="op">:</span> <span class="dt">String</span> <span class="op">=</span> tx<span class="op">.</span>query_row(</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;SELECT status FROM tasks WHERE id = ?1&quot;</span><span class="op">,</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>            <span class="pp">rusqlite::params!</span>[<span class="op">&amp;</span>ticket_id]<span class="op">,</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>            <span class="op">|</span>row<span class="op">|</span> row<span class="op">.</span>get(<span class="dv">0</span>)<span class="op">,</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>        )<span class="op">?;</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> status <span class="op">!=</span> <span class="st">&quot;todo&quot;</span> <span class="op">{</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="cn">Ok</span>(<span class="cn">false</span>)<span class="op">;</span> <span class="co">// Already claimed</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>        <span class="co">// 原子更新</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> rows <span class="op">=</span> tx<span class="op">.</span>execute(</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;UPDATE tasks SET status = &#39;in_progress&#39;, claimed_by = ?1, claimed_at = ?2 WHERE id = ?3&quot;</span><span class="op">,</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>            <span class="pp">rusqlite::params!</span>[<span class="op">&amp;</span>slaver_id<span class="op">,</span> <span class="pp">chrono::Utc::</span>now()<span class="op">.</span>to_rfc3339()<span class="op">,</span> <span class="op">&amp;</span>ticket_id]<span class="op">,</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>        )<span class="op">?;</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>        tx<span class="op">.</span>commit()<span class="op">?;</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>        <span class="cn">Ok</span>(rows <span class="op">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>)</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="kw">await</span><span class="op">?</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> run(ticket_id<span class="op">:</span> <span class="dt">Option</span><span class="op">&lt;</span><span class="dt">String</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="dt">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> config <span class="op">=</span> <span class="pp">EketConfig::</span>load()<span class="op">.</span>unwrap_or_default()<span class="op">;</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> project_root <span class="op">=</span> find_project_root()<span class="op">.</span>unwrap_or_else(<span class="op">||</span> <span class="pp">std::env::</span>current_dir()<span class="op">.</span>unwrap())<span class="op">;</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> slaver_id <span class="op">=</span> get_or_create_slaver_id(<span class="op">&amp;</span>project_root)<span class="op">;</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ... 找 ticket ...</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 🆕 原子领取</span></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> pool <span class="op">=</span> create_pool(<span class="op">&amp;</span>config<span class="op">.</span>sqlite<span class="op">.</span>path)<span class="op">?;</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> claimed <span class="op">=</span> claim_task_atomic(<span class="op">&amp;</span>pool<span class="op">,</span> <span class="op">&amp;</span>ticket<span class="op">.</span>id<span class="op">,</span> <span class="op">&amp;</span>slaver_id)<span class="op">.</span><span class="kw">await</span><span class="op">?;</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">!</span>claimed <span class="op">{</span></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>        <span class="pp">println!</span>(<span class="st">&quot;{}&quot;</span><span class="op">,</span> <span class="pp">serde_json::</span>to_string_pretty(<span class="op">&amp;</span><span class="pp">json!</span>(<span class="op">{</span></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;status&quot;</span><span class="op">:</span> <span class="st">&quot;error&quot;</span><span class="op">,</span></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;message&quot;</span><span class="op">:</span> <span class="pp">format!</span>(<span class="st">&quot;Task {} already claimed by another slaver&quot;</span><span class="op">,</span> ticket<span class="op">.</span>id)<span class="op">,</span></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span>))<span class="op">?</span>)<span class="op">;</span></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="cn">Ok</span>(())<span class="op">;</span></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ... 继续正常流程 ...</span></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>验证方法</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 测试脚本: test_concurrent_claim.sh</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_SLAVER_ID</span><span class="op">=</span>slaver_1</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--bin</span> eket-cli <span class="at">--</span> task:claim FEAT-123 <span class="kw">&amp;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="va">PID1</span><span class="op">=</span><span class="va">$!</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_SLAVER_ID</span><span class="op">=</span>slaver_2</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--bin</span> eket-cli <span class="at">--</span> task:claim FEAT-123 <span class="kw">&amp;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="va">PID2</span><span class="op">=</span><span class="va">$!</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="bu">wait</span> <span class="va">$PID1</span> <span class="va">$PID2</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 验证: 一个返回 &quot;claimed&quot;，一个返回 &quot;error&quot;</span></span></code></pre></div>
+<p><strong>预期时间</strong>: 2-3 小时</p>
+<hr />
+<h3 id="修复-3-taskclaim-json-输出补齐">修复 3: task:claim JSON
+输出补齐</h3>
+<p><strong>文件</strong>:
+<code>rust/crates/eket-cli/src/commands/task_claim.rs</code></p>
+<p><strong>问题</strong>: Slaver Prompt 需要的字段缺失</p>
+<p><strong>缺失字段</strong>: - <code>rules_path</code> - Slaver
+无法找到规则文件 - <code>worktree_path</code> - Slaver 无法进行代码隔离
+- <code>assigned_instance</code> - Slaver 无法了解分配的 agent</p>
+<p><strong>修复代码</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 在 write_active_context() 之前添加</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> get_rules_path(project_root<span class="op">:</span> <span class="op">&amp;</span><span class="dt">Path</span><span class="op">,</span> ticket_type<span class="op">:</span> <span class="op">&amp;</span><span class="dt">str</span>) <span class="op">-&gt;</span> <span class="dt">PathBuf</span> <span class="op">{</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 根据 ticket 类型选择规则文件</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> rules_dir <span class="op">=</span> project_root<span class="op">.</span>join(<span class="st">&quot;.eket/rules&quot;</span>)<span class="op">;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> ticket_type <span class="op">{</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;feature&quot;</span> <span class="op">=&gt;</span> rules_dir<span class="op">.</span>join(<span class="st">&quot;feature-rules.md&quot;</span>)<span class="op">,</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;bugfix&quot;</span> <span class="op">=&gt;</span> rules_dir<span class="op">.</span>join(<span class="st">&quot;bugfix-rules.md&quot;</span>)<span class="op">,</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;task&quot;</span> <span class="op">=&gt;</span> rules_dir<span class="op">.</span>join(<span class="st">&quot;task-rules.md&quot;</span>)<span class="op">,</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;improvement&quot;</span> <span class="op">=&gt;</span> rules_dir<span class="op">.</span>join(<span class="st">&quot;improvement-rules.md&quot;</span>)<span class="op">,</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        _ <span class="op">=&gt;</span> rules_dir<span class="op">.</span>join(<span class="st">&quot;default-rules.md&quot;</span>)<span class="op">,</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> run(ticket_id<span class="op">:</span> <span class="dt">Option</span><span class="op">&lt;</span><span class="dt">String</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="dt">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ... 前面的代码 ...</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> rules_path <span class="op">=</span> get_rules_path(<span class="op">&amp;</span>project_root<span class="op">,</span> <span class="op">&amp;</span>ticket<span class="op">.</span>priority)<span class="op">;</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> worktree_path <span class="op">=</span> project_root<span class="op">.</span>join(<span class="st">&quot;.claude&quot;</span>)<span class="op">.</span>join(<span class="st">&quot;worktrees&quot;</span>)<span class="op">.</span>join(<span class="op">&amp;</span>ticket<span class="op">.</span>id)<span class="op">;</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Output JSON with all fields</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> report <span class="op">=</span> <span class="pp">json!</span>(<span class="op">{</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;status&quot;</span><span class="op">:</span> <span class="st">&quot;claimed&quot;</span><span class="op">,</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;ticket_id&quot;</span><span class="op">:</span> ticket<span class="op">.</span>id<span class="op">,</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;title&quot;</span><span class="op">:</span> ticket<span class="op">.</span>title<span class="op">,</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;priority&quot;</span><span class="op">:</span> ticket<span class="op">.</span>priority<span class="op">,</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;slaver_id&quot;</span><span class="op">:</span> slaver_id<span class="op">,</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;project_root&quot;</span><span class="op">:</span> project_root<span class="op">.</span>display()<span class="op">.</span>to_string()<span class="op">,</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;instructions&quot;</span><span class="op">:</span> <span class="pp">format!</span>(</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;Ticket {} claimed. Implement the requirements, then run: eket task:complete {}&quot;</span><span class="op">,</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>            ticket<span class="op">.</span>id<span class="op">,</span> ticket<span class="op">.</span>id</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>        )<span class="op">,</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>        <span class="co">// 🆕 新增字段</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;rules_path&quot;</span><span class="op">:</span> rules_path<span class="op">.</span>display()<span class="op">.</span>to_string()<span class="op">,</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;worktree_path&quot;</span><span class="op">:</span> worktree_path<span class="op">.</span>display()<span class="op">.</span>to_string()<span class="op">,</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;assigned_instance&quot;</span><span class="op">:</span> null<span class="op">,</span> <span class="co">// 后续可从 InstanceRegistry 获取</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;role&quot;</span><span class="op">:</span> <span class="st">&quot;developer&quot;</span><span class="op">,</span> <span class="co">// 后续可从角色匹配获取</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;recommended_level&quot;</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="co">// 后续可从 SkillIndex 获取</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    <span class="pp">println!</span>(<span class="st">&quot;{}&quot;</span><span class="op">,</span> <span class="pp">serde_json::</span>to_string_pretty(<span class="op">&amp;</span>report)<span class="op">?</span>)<span class="op">;</span></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>    <span class="cn">Ok</span>(())</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>验证方法</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--bin</span> eket-cli <span class="at">--</span> task:claim FEAT-123 <span class="kw">|</span> <span class="ex">jq</span> <span class="st">&#39;.rules_path&#39;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 应输出规则文件路径</span></span></code></pre></div>
+<p><strong>预期时间</strong>: 1 小时</p>
+<hr />
+<h2 id="p2-优先级修复---下周开始">P2 优先级修复 - 下周开始</h2>
+<h3 id="修复-4-circuit-breaker-模块新文件">修复 4: Circuit Breaker
+模块（新文件）</h3>
+<p><strong>文件</strong>:
+<code>rust/crates/eket-core/src/circuit_breaker.rs</code> (新建)</p>
+<p><strong>预期工作量</strong>: 8-12 小时</p>
+<p><strong>参考 TS 实现</strong>:
+<code>node/src/core/circuit-breaker.ts</code> (Lines 80-412)</p>
+<p><strong>Rust 框架</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="pp">std::sync::</span><span class="op">{</span>Arc<span class="op">,</span> Mutex<span class="op">};</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="pp">std::time::</span><span class="op">{</span>Duration<span class="op">,</span> Instant<span class="op">};</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="pp">tracing::</span>warn<span class="op">;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span><span class="bu">Debug</span><span class="op">,</span> <span class="bu">Clone</span><span class="op">,</span> <span class="bu">PartialEq</span><span class="op">,</span> <span class="bu">Eq</span><span class="at">)]</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">enum</span> CircuitState <span class="op">{</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    Closed<span class="op">,</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    Open<span class="op">,</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    HalfOpen<span class="op">,</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">struct</span> CircuitBreaker <span class="op">{</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    state<span class="op">:</span> Arc<span class="op">&lt;</span>Mutex<span class="op">&lt;</span>CircuitState<span class="op">&gt;&gt;,</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    failures<span class="op">:</span> Arc<span class="op">&lt;</span>Mutex<span class="op">&lt;</span><span class="dt">u32</span><span class="op">&gt;&gt;,</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    successes<span class="op">:</span> Arc<span class="op">&lt;</span>Mutex<span class="op">&lt;</span><span class="dt">u32</span><span class="op">&gt;&gt;,</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    failure_threshold<span class="op">:</span> <span class="dt">u32</span><span class="op">,</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    success_threshold<span class="op">:</span> <span class="dt">u32</span><span class="op">,</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    timeout<span class="op">:</span> Duration<span class="op">,</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    opened_at<span class="op">:</span> Arc<span class="op">&lt;</span>Mutex<span class="op">&lt;</span><span class="dt">Option</span><span class="op">&lt;</span>Instant<span class="op">&gt;&gt;&gt;,</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="kw">impl</span> CircuitBreaker <span class="op">{</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">pub</span> <span class="kw">fn</span> new(</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>        failure_threshold<span class="op">:</span> <span class="dt">u32</span><span class="op">,</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>        success_threshold<span class="op">:</span> <span class="dt">u32</span><span class="op">,</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>        timeout<span class="op">:</span> Duration<span class="op">,</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    ) <span class="op">-&gt;</span> <span class="dt">Self</span> <span class="op">{</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Self</span> <span class="op">{</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>            state<span class="op">:</span> <span class="pp">Arc::</span>new(<span class="pp">Mutex::</span>new(<span class="pp">CircuitState::</span>Closed))<span class="op">,</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>            failures<span class="op">:</span> <span class="pp">Arc::</span>new(<span class="pp">Mutex::</span>new(<span class="dv">0</span>))<span class="op">,</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>            successes<span class="op">:</span> <span class="pp">Arc::</span>new(<span class="pp">Mutex::</span>new(<span class="dv">0</span>))<span class="op">,</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>            failure_threshold<span class="op">,</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>            success_threshold<span class="op">,</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>            timeout<span class="op">,</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>            opened_at<span class="op">:</span> <span class="pp">Arc::</span>new(<span class="pp">Mutex::</span>new(<span class="cn">None</span>))<span class="op">,</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> execute<span class="op">&lt;</span>T<span class="op">,</span> F<span class="op">,</span> Fut<span class="op">&gt;</span>(<span class="op">&amp;</span><span class="kw">self</span><span class="op">,</span> operation<span class="op">:</span> F) <span class="op">-&gt;</span> <span class="dt">Result</span><span class="op">&lt;</span>T<span class="op">,</span> <span class="dt">String</span><span class="op">&gt;</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">where</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>        F<span class="op">:</span> <span class="bu">FnOnce</span>() <span class="op">-&gt;</span> Fut<span class="op">,</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>        Fut<span class="op">:</span> <span class="pp">std::future::</span><span class="bu">Future</span><span class="op">&lt;</span>Output <span class="op">=</span> <span class="dt">Result</span><span class="op">&lt;</span>T<span class="op">,</span> <span class="dt">String</span><span class="op">&gt;&gt;,</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>        <span class="co">// 检查是否可执行</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">!</span><span class="kw">self</span><span class="op">.</span>can_execute() <span class="op">{</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="cn">Err</span>(<span class="st">&quot;Circuit open&quot;</span><span class="op">.</span>to_string())<span class="op">;</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>        <span class="co">// 执行操作</span></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">match</span> operation()<span class="op">.</span><span class="kw">await</span> <span class="op">{</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>            <span class="cn">Ok</span>(result) <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>                <span class="kw">self</span><span class="op">.</span>on_success()<span class="op">;</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>                <span class="cn">Ok</span>(result)</span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>            <span class="cn">Err</span>(e) <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>                <span class="kw">self</span><span class="op">.</span>on_failure()<span class="op">;</span></span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>                <span class="cn">Err</span>(e)</span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> can_execute(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="dt">bool</span> <span class="op">{</span></span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> state <span class="op">=</span> <span class="kw">self</span><span class="op">.</span>state<span class="op">.</span>lock()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>        <span class="cf">match</span> <span class="op">*</span>state <span class="op">{</span></span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>            <span class="pp">CircuitState::</span>Closed <span class="op">=&gt;</span> <span class="cn">true</span><span class="op">,</span></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>            <span class="pp">CircuitState::</span>Open <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> <span class="kw">let</span> <span class="cn">Some</span>(opened) <span class="op">=</span> <span class="op">*</span><span class="kw">self</span><span class="op">.</span>opened_at<span class="op">.</span>lock()<span class="op">.</span>unwrap() <span class="op">{</span></span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">if</span> opened<span class="op">.</span>elapsed() <span class="op">&gt;=</span> <span class="kw">self</span><span class="op">.</span>timeout <span class="op">{</span></span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a>                        drop(state)<span class="op">;</span></span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a>                        <span class="op">*</span><span class="kw">self</span><span class="op">.</span>state<span class="op">.</span>lock()<span class="op">.</span>unwrap() <span class="op">=</span> <span class="pp">CircuitState::</span>HalfOpen<span class="op">;</span></span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a>                        <span class="cn">true</span></span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a>                    <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a>                        <span class="cn">false</span></span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a>                    <span class="op">}</span></span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>                <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a>                    <span class="cn">false</span></span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a>                <span class="op">}</span></span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a>            <span class="pp">CircuitState::</span>HalfOpen <span class="op">=&gt;</span> <span class="cn">true</span><span class="op">,</span></span>
+<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> on_success(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">{</span></span>
+<span id="cb8-84"><a href="#cb8-84" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> <span class="kw">mut</span> state <span class="op">=</span> <span class="kw">self</span><span class="op">.</span>state<span class="op">.</span>lock()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb8-85"><a href="#cb8-85" aria-hidden="true" tabindex="-1"></a>        <span class="cf">match</span> <span class="op">*</span>state <span class="op">{</span></span>
+<span id="cb8-86"><a href="#cb8-86" aria-hidden="true" tabindex="-1"></a>            <span class="pp">CircuitState::</span>HalfOpen <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb8-87"><a href="#cb8-87" aria-hidden="true" tabindex="-1"></a>                <span class="kw">let</span> <span class="kw">mut</span> successes <span class="op">=</span> <span class="kw">self</span><span class="op">.</span>successes<span class="op">.</span>lock()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb8-88"><a href="#cb8-88" aria-hidden="true" tabindex="-1"></a>                <span class="op">*</span>successes <span class="op">+=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb8-89"><a href="#cb8-89" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> <span class="op">*</span>successes <span class="op">&gt;=</span> <span class="kw">self</span><span class="op">.</span>success_threshold <span class="op">{</span></span>
+<span id="cb8-90"><a href="#cb8-90" aria-hidden="true" tabindex="-1"></a>                    drop(successes)<span class="op">;</span></span>
+<span id="cb8-91"><a href="#cb8-91" aria-hidden="true" tabindex="-1"></a>                    drop(state)<span class="op">;</span></span>
+<span id="cb8-92"><a href="#cb8-92" aria-hidden="true" tabindex="-1"></a>                    <span class="kw">self</span><span class="op">.</span>reset()<span class="op">;</span></span>
+<span id="cb8-93"><a href="#cb8-93" aria-hidden="true" tabindex="-1"></a>                <span class="op">}</span></span>
+<span id="cb8-94"><a href="#cb8-94" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb8-95"><a href="#cb8-95" aria-hidden="true" tabindex="-1"></a>            <span class="pp">CircuitState::</span>Closed <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb8-96"><a href="#cb8-96" aria-hidden="true" tabindex="-1"></a>                <span class="op">*</span><span class="kw">self</span><span class="op">.</span>failures<span class="op">.</span>lock()<span class="op">.</span>unwrap() <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb8-97"><a href="#cb8-97" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb8-98"><a href="#cb8-98" aria-hidden="true" tabindex="-1"></a>            _ <span class="op">=&gt;</span> <span class="op">{}</span></span>
+<span id="cb8-99"><a href="#cb8-99" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb8-100"><a href="#cb8-100" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-101"><a href="#cb8-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-102"><a href="#cb8-102" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> on_failure(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">{</span></span>
+<span id="cb8-103"><a href="#cb8-103" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> <span class="kw">mut</span> failures <span class="op">=</span> <span class="kw">self</span><span class="op">.</span>failures<span class="op">.</span>lock()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb8-104"><a href="#cb8-104" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span>failures <span class="op">+=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb8-105"><a href="#cb8-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-106"><a href="#cb8-106" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">*</span>failures <span class="op">&gt;=</span> <span class="kw">self</span><span class="op">.</span>failure_threshold <span class="op">{</span></span>
+<span id="cb8-107"><a href="#cb8-107" aria-hidden="true" tabindex="-1"></a>            drop(failures)<span class="op">;</span></span>
+<span id="cb8-108"><a href="#cb8-108" aria-hidden="true" tabindex="-1"></a>            <span class="kw">let</span> <span class="kw">mut</span> state <span class="op">=</span> <span class="kw">self</span><span class="op">.</span>state<span class="op">.</span>lock()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb8-109"><a href="#cb8-109" aria-hidden="true" tabindex="-1"></a>            <span class="op">*</span>state <span class="op">=</span> <span class="pp">CircuitState::</span>Open<span class="op">;</span></span>
+<span id="cb8-110"><a href="#cb8-110" aria-hidden="true" tabindex="-1"></a>            <span class="op">*</span><span class="kw">self</span><span class="op">.</span>opened_at<span class="op">.</span>lock()<span class="op">.</span>unwrap() <span class="op">=</span> <span class="cn">Some</span>(<span class="pp">Instant::</span>now())<span class="op">;</span></span>
+<span id="cb8-111"><a href="#cb8-111" aria-hidden="true" tabindex="-1"></a>            <span class="pp">warn!</span>(<span class="st">&quot;[CircuitBreaker] Circuit opened&quot;</span>)<span class="op">;</span></span>
+<span id="cb8-112"><a href="#cb8-112" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb8-113"><a href="#cb8-113" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-114"><a href="#cb8-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-115"><a href="#cb8-115" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> reset(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">{</span></span>
+<span id="cb8-116"><a href="#cb8-116" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> <span class="kw">mut</span> state <span class="op">=</span> <span class="kw">self</span><span class="op">.</span>state<span class="op">.</span>lock()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb8-117"><a href="#cb8-117" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span>state <span class="op">=</span> <span class="pp">CircuitState::</span>Closed<span class="op">;</span></span>
+<span id="cb8-118"><a href="#cb8-118" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span><span class="kw">self</span><span class="op">.</span>failures<span class="op">.</span>lock()<span class="op">.</span>unwrap() <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb8-119"><a href="#cb8-119" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span><span class="kw">self</span><span class="op">.</span>successes<span class="op">.</span>lock()<span class="op">.</span>unwrap() <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb8-120"><a href="#cb8-120" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span><span class="kw">self</span><span class="op">.</span>opened_at<span class="op">.</span>lock()<span class="op">.</span>unwrap() <span class="op">=</span> <span class="cn">None</span><span class="op">;</span></span>
+<span id="cb8-121"><a href="#cb8-121" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-122"><a href="#cb8-122" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>优先级</strong>: 1. 基础 CircuitBreaker 2. RetryExecutor with
+exponential backoff 3. 集成到 message-queue 和 election</p>
+<hr />
+<h2 id="集成测试用例">集成测试用例</h2>
+<h3 id="并发竞争测试">并发竞争测试</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span><span class="pp">tokio::</span>test<span class="at">]</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">async</span> <span class="kw">fn</span> test_concurrent_master_election() <span class="op">{</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> dir <span class="op">=</span> <span class="pp">TempDir::</span>new()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> e1 <span class="op">=</span> <span class="pp">MasterElection::</span>new(<span class="cn">None</span><span class="op">,</span> <span class="cn">None</span><span class="op">,</span> dir<span class="op">.</span>path())<span class="op">;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> e2 <span class="op">=</span> <span class="pp">MasterElection::</span>new(<span class="cn">None</span><span class="op">,</span> <span class="cn">None</span><span class="op">,</span> dir<span class="op">.</span>path())<span class="op">;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 并发竞争</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> r1 <span class="op">=</span> <span class="pp">tokio::</span>spawn(<span class="op">{</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> e <span class="op">=</span> e1<span class="op">.</span>clone()<span class="op">;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        <span class="kw">async</span> <span class="kw">move</span> <span class="op">{</span> e<span class="op">.</span>elect()<span class="op">.</span><span class="kw">await</span> <span class="op">}</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> r2 <span class="op">=</span> <span class="pp">tokio::</span>spawn(<span class="op">{</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> e <span class="op">=</span> e2<span class="op">.</span>clone()<span class="op">;</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        <span class="kw">async</span> <span class="kw">move</span> <span class="op">{</span> e<span class="op">.</span>elect()<span class="op">.</span><span class="kw">await</span> <span class="op">}</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> (res1<span class="op">,</span> res2) <span class="op">=</span> <span class="pp">tokio::join!</span>(r1<span class="op">,</span> r2)<span class="op">;</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> r1 <span class="op">=</span> res1<span class="op">.</span>unwrap()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> r2 <span class="op">=</span> res2<span class="op">.</span>unwrap()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 验证: 恰好一个是 master</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="pp">assert_ne!</span>(r1<span class="op">.</span>is_master<span class="op">,</span> r2<span class="op">.</span>is_master)<span class="op">;</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    <span class="pp">assert!</span>(r1<span class="op">.</span>is_master <span class="op">||</span> r2<span class="op">.</span>is_master)<span class="op">;</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span><span class="pp">tokio::</span>test<span class="at">]</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="kw">async</span> <span class="kw">fn</span> test_concurrent_task_claim() <span class="op">{</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 创建 2 个 slaver 同时领取同一任务</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> result1 <span class="op">=</span> <span class="pp">tokio::</span>spawn(<span class="kw">async</span> <span class="op">{</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>        claim_task_atomic(<span class="op">&amp;</span>pool<span class="op">,</span> <span class="st">&quot;FEAT-123&quot;</span><span class="op">,</span> <span class="st">&quot;slaver_1&quot;</span>)<span class="op">.</span><span class="kw">await</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> result2 <span class="op">=</span> <span class="pp">tokio::</span>spawn(<span class="kw">async</span> <span class="op">{</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>        claim_task_atomic(<span class="op">&amp;</span>pool<span class="op">,</span> <span class="st">&quot;FEAT-123&quot;</span><span class="op">,</span> <span class="st">&quot;slaver_2&quot;</span>)<span class="op">.</span><span class="kw">await</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> (r1<span class="op">,</span> r2) <span class="op">=</span> <span class="pp">tokio::join!</span>(result1<span class="op">,</span> result2)<span class="op">;</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 验证: 恰好一个成功</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> success_count <span class="op">=</span> (r1<span class="op">.</span>unwrap() <span class="kw">as</span> <span class="dt">u32</span> <span class="op">+</span> r2<span class="op">.</span>unwrap() <span class="kw">as</span> <span class="dt">u32</span>) <span class="kw">as</span> <span class="dt">usize</span><span class="op">;</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>    <span class="pp">assert_eq!</span>(success_count<span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="st">&quot;Only one slaver should claim the task&quot;</span>)<span class="op">;</span></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<hr />
+<h2 id="代码审查检查清单">代码审查检查清单</h2>
+<p>在提 PR 前，检查这些内容：</p>
+<ul class="task-list">
+<li><label><input type="checkbox" />所有修复都有单元测试</label></li>
+<li><label><input type="checkbox" />并发场景都有测试覆盖</label></li>
+<li><label><input type="checkbox" />错误处理遵循原 TS
+版逻辑</label></li>
+<li><label><input type="checkbox" />JSON 输出格式与 TS
+版兼容</label></li>
+<li><label><input type="checkbox" />日志输出使用 <code>tracing</code>
+框架</label></li>
+<li><label><input type="checkbox" />没有 <code>unwrap()</code>
+在生产路径上</label></li>
+<li><label><input type="checkbox" />所有 <code>TODO</code> 和
+<code>FIXME</code> 都有追踪号</label></li>
+<li><label><input type="checkbox" />性能没有明显下降（可用 flame
+graph）</label></li>
+</ul>
+<hr />
+<h2 id="集成检查清单">集成检查清单</h2>
+<p>优先级从高到低：</p>
+<h3 id="关键路径-必须通过">关键路径 (必须通过)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Master election
+三级降级成功</label></li>
+<li><label><input type="checkbox" />同一项目多个 instance 只有一个
+MASTER</label></li>
+<li><label><input type="checkbox" />task:claim 后状态变为
+in_progress</label></li>
+<li><label><input type="checkbox" />task:complete 后状态变为
+done</label></li>
+<li><label><input type="checkbox" />JSON 输出包含必要字段</label></li>
+</ul>
+<h3 id="容错路径-应该通过">容错路径 (应该通过)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Redis 不可用 → SQLite 接管 →
+文件系统接管</label></li>
+<li><label><input type="checkbox" />Message Queue 降级正常</label></li>
+<li><label><input type="checkbox" />并发 claim
+有一个失败（保护机制）</label></li>
+<li><label><input type="checkbox" />多 instance 选举只有一个
+MASTER</label></li>
+</ul>
+<h3 id="数据一致性-需要验证">数据一致性 (需要验证)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Slaver ID
+持久化（重启后相同）</label></li>
+<li><label><input type="checkbox" />SQLite checkpoint 完整</label></li>
+<li><label><input type="checkbox" />Commit trailer
+幂等（不重复添加）</label></li>
+<li><label><input type="checkbox" />没有孤立的 worktree
+或文件</label></li>
+</ul>
+<hr />
+<p><strong>修复指南完成</strong></p>
+<p>持续更新此文档以反映实际修复进度。</p>
+</body>
+</html>

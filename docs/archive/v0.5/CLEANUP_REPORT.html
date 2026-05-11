@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 框架清理报告</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 框架清理报告</h1>
+</header>
+<h1 id="eket-框架清理报告">EKET 框架清理报告</h1>
+<p><strong>日期</strong>: 2026-03-20 <strong>版本</strong>: v0.6.2
+(已更新)</p>
+<hr />
+<h2 id="清理摘要">清理摘要</h2>
+<p>本次清理移除了过期、无效和临时的文件，优化了项目结构。</p>
+<hr />
+<h2 id="已删除的文件目录">已删除的文件/目录</h2>
+<h3 id="过期的文档">过期的文档</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>原因</th>
+<th>替代文件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AGENTS.md</code></td>
+<td>v0.1 旧版本</td>
+<td><code>docs/AGENTS_CONFIG.md</code></td>
+</tr>
+<tr>
+<td><code>SKILLS.md</code></td>
+<td>v0.1 旧版本</td>
+<td><code>docs/SKILLS_SYSTEM.md</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="临时测试文件">临时测试文件</h3>
+<table>
+<thead>
+<tr>
+<th>文件/目录</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tests/results/*</code></td>
+<td>测试结果（每次测试重新生成）</td>
+</tr>
+<tr>
+<td><code>tests/TEST_RESULTS.md</code></td>
+<td>临时结果文件</td>
+</tr>
+<tr>
+<td><code>tests/TEST_SUMMARY.md</code></td>
+<td>临时总结文件</td>
+</tr>
+</tbody>
+</table>
+<h3 id="空的占位目录">空的占位目录</h3>
+<table>
+<thead>
+<tr>
+<th>目录</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sys_init/</code></td>
+<td>仅包含初始规划文档</td>
+</tr>
+<tr>
+<td><code>agents/</code></td>
+<td>v0.2 使用 template 中的配置</td>
+</tr>
+<tr>
+<td><code>runtime/</code></td>
+<td>未实现的核心运行时</td>
+</tr>
+<tr>
+<td><code>config/</code></td>
+<td>未实现的配置文件</td>
+</tr>
+<tr>
+<td><code>hooks/</code></td>
+<td>未实现的 Git hooks</td>
+</tr>
+<tr>
+<td><code>private/</code></td>
+<td>未实现的私有工作区</td>
+</tr>
+<tr>
+<td><code>shared/</code></td>
+<td>v0.2 使用 submodule 方式</td>
+</tr>
+<tr>
+<td><code>tasks/</code></td>
+<td>v0.2 使用 <code>jira/tickets/</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="测试残留文件">测试残留文件</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>inbox/human_input.md</code></td>
+<td>测试输入</td>
+</tr>
+<tr>
+<td><code>inbox/human_feedback/*</code></td>
+<td>测试反馈</td>
+</tr>
+<tr>
+<td><code>outbox/review_requests/*</code></td>
+<td>测试输出</td>
+</tr>
+<tr>
+<td><code>template/inbox/human_input.md</code></td>
+<td>模板测试文件</td>
+</tr>
+<tr>
+<td><code>template/inbox/human_feedback/*</code></td>
+<td>模板测试反馈</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="保留的核心文件">保留的核心文件</h2>
+<h3 id="根目录">根目录</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CLAUDE.md</code></td>
+<td>系统核心文档（宪法）</td>
+</tr>
+<tr>
+<td><code>QUICKSTART.md</code></td>
+<td>快速开始指南</td>
+</tr>
+<tr>
+<td><code>.gitignore</code></td>
+<td>Git 忽略规则</td>
+</tr>
+</tbody>
+</table>
+<h3 id="docs-目录">docs/ 目录</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>README.md</code></td>
+<td>文档索引</td>
+</tr>
+<tr>
+<td><code>QUICKSTART.md</code></td>
+<td>快速开始</td>
+</tr>
+<tr>
+<td><code>FRAMEWORK.md</code></td>
+<td>框架白皮书</td>
+</tr>
+<tr>
+<td><code>COMPLETE_FRAMEWORK_v0.2.md</code></td>
+<td>v0.2 完整说明</td>
+</tr>
+<tr>
+<td><code>INSTANCE_INITIALIZATION.md</code></td>
+<td>实例初始化流程</td>
+</tr>
+<tr>
+<td><code>THREE_REPO_ARCHITECTURE.md</code></td>
+<td>三仓库架构</td>
+</tr>
+<tr>
+<td><code>AGENTS_CONFIG.md</code></td>
+<td>Agent 配置</td>
+</tr>
+<tr>
+<td><code>SKILLS_SYSTEM.md</code></td>
+<td>Skills 体系</td>
+</tr>
+<tr>
+<td><code>BRANCH_STRATEGY.md</code></td>
+<td>分支策略</td>
+</tr>
+<tr>
+<td><code>AGENT_BEHAVIOR.md</code></td>
+<td>Agent 行为</td>
+</tr>
+<tr>
+<td><code>STATE_MACHINE.md</code></td>
+<td>状态机</td>
+</tr>
+<tr>
+<td><code>TEST_FRAMEWORK.md</code></td>
+<td>测试框架</td>
+</tr>
+<tr>
+<td><code>VALIDATION_REPORT.md</code></td>
+<td>验证报告</td>
+</tr>
+<tr>
+<td><code>CHANGELOG_v0.2.md</code></td>
+<td>变更日志</td>
+</tr>
+<tr>
+<td><code>WORKFLOW_DIAGRAM.md</code></td>
+<td>流程图</td>
+</tr>
+<tr>
+<td><code>CODE_REVIEW_CHECKLIST.md</code></td>
+<td>Code Review 清单</td>
+</tr>
+<tr>
+<td><code>expert-review.md</code></td>
+<td>专家组审查</td>
+</tr>
+<tr>
+<td><code>IMPLEMENTATION_STATUS.md</code></td>
+<td>实现状态</td>
+</tr>
+</tbody>
+</table>
+<h3 id="template-目录">template/ 目录</h3>
+<p>项目模板，用于初始化新项目。</p>
+<h3 id="scripts-目录">scripts/ 目录</h3>
+<table>
+<thead>
+<tr>
+<th>脚本</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>init-project.sh</code></td>
+<td>项目初始化</td>
+</tr>
+<tr>
+<td><code>init-three-repos.sh</code></td>
+<td>三仓库初始化</td>
+</tr>
+<tr>
+<td><code>cleanup-project.sh</code></td>
+<td>项目清理</td>
+</tr>
+<tr>
+<td><code>load-agent-profile.sh</code></td>
+<td>Agent Profile 加载</td>
+</tr>
+<tr>
+<td><code>prioritize-tasks.sh</code></td>
+<td>任务优先级排序</td>
+</tr>
+<tr>
+<td><code>recommend-tasks.sh</code></td>
+<td>任务推荐</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tests-目录">tests/ 目录</h3>
+<p>测试框架和脚本。</p>
+<hr />
+<h2 id="清理后结构">清理后结构</h2>
+<pre><code>eket/
+├── CLAUDE.md                 # 系统核心文档
+├── QUICKSTART.md             # 快速开始指南
+├── .gitignore                # Git 忽略规则
+│
+├── docs/                     # 框架文档
+│   ├── README.md             # 文档索引
+│   ├── QUICKSTART.md         # 快速开始
+│   ├── FRAMEWORK.md          # 框架白皮书
+│   ├── COMPLETE_FRAMEWORK_v0.2.md
+│   ├── INSTANCE_INITIALIZATION.md
+│   ├── THREE_REPO_ARCHITECTURE.md
+│   ├── AGENTS_CONFIG.md      # Agent 配置
+│   ├── SKILLS_SYSTEM.md      # Skills 体系
+│   ├── BRANCH_STRATEGY.md    # 分支策略
+│   ├── AGENT_BEHAVIOR.md     # Agent 行为
+│   ├── STATE_MACHINE.md      # 状态机
+│   ├── TEST_FRAMEWORK.md     # 测试框架
+│   ├── VALIDATION_REPORT.md  # 验证报告
+│   ├── CHANGELOG_v0.2.md     # 变更日志
+│   ├── WORKFLOW_DIAGRAM.md   # 流程图
+│   ├── CODE_REVIEW_CHECKLIST.md
+│   ├── expert-review.md      # 专家审查
+│   └── IMPLEMENTATION_STATUS.md
+│
+├── template/                 # 项目模板
+│   ├── CLAUDE.md             # 模板核心文档
+│   ├── README.md             # 模板说明
+│   ├── README_TEMPLATE.md    # README 模板
+│   ├── SECURITY.md           # 安全指南
+│   ├── eket.config.yml       # 项目配置
+│   ├── .claude/              # Claude Code 配置
+│   ├── .eket/                # EKET 配置
+│   ├── inbox/                # 输入目录（空）
+│   ├── outbox/               # 输出目录（空）
+│   └── tasks/                # 任务目录（空）
+│
+├── scripts/                  # 工具脚本
+│   ├── init-project.sh       # 项目初始化
+│   ├── init-three-repos.sh   # 三仓库初始化
+│   ├── cleanup-project.sh    # 项目清理
+│   ├── load-agent-profile.sh # Agent 加载
+│   ├── prioritize-tasks.sh   # 优先级排序
+│   └── recommend-tasks.sh    # 任务推荐
+│
+├── tests/                    # 测试框架
+│   ├── run-unit-tests.sh     # 单元测试
+│   ├── run-integration-tests.sh
+│   ├── run-scenario-tests.sh
+│   ├── run-stress-tests.sh
+│   ├── run-uat-tests.sh
+│   └── run-all-tests.sh      # 完整套件
+│
+├── inbox/                    # 人类输入
+│   └── human_feedback/       # 反馈目录
+│
+└── outbox/                   # 智能体输出
+    └── review_requests/      # Review 请求</code></pre>
+<hr />
+<h2 id="清理效果">清理效果</h2>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>清理前</th>
+<th>清理后</th>
+<th>改善</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>根目录文件数</td>
+<td>~10</td>
+<td>~4</td>
+<td>60% 减少</td>
+</tr>
+<tr>
+<td>空目录数</td>
+<td>~8</td>
+<td>0</td>
+<td>100% 清理</td>
+</tr>
+<tr>
+<td>重复文档</td>
+<td>4 个</td>
+<td>0 个</td>
+<td>100% 清理</td>
+</tr>
+<tr>
+<td>临时文件</td>
+<td>~5 个</td>
+<td>0 个</td>
+<td>100% 清理</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="后续维护建议">后续维护建议</h2>
+<ol type="1">
+<li><strong>定期清理测试结果</strong>: <code>tests/results/</code>
+每次测试后生成</li>
+<li><strong>保持文档同步</strong>: 更新 <code>docs/</code>
+时删除旧版本</li>
+<li><strong>模板保持精简</strong>: <code>template/</code>
+仅包含必需文件</li>
+<li><strong>状态文件清理</strong>: <code>.eket/state/</code>
+定期清理</li>
+</ol>
+<hr />
+<p><strong>执行者</strong>: EKET Framework Team <strong>日期</strong>:
+2026-03-20</p>
+</body>
+</html>

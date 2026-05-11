@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EPIC-005 架构评审</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EPIC-005 架构评审</h1>
+</header>
+<h1 id="epic-005-架构评审">EPIC-005 架构评审</h1>
+<p><strong>评审时间</strong>: 2026-05-07<br />
+<strong>评审人</strong>: 架构师（只读评审）<br />
+<strong>评审范围</strong>: 预编译系统技术可行性</p>
+<hr />
+<h2 id="现有-workflow-评审">1. 现有 workflow 评审</h2>
+<h3 id="release.yml-target-配置">1.1 release.yml target 配置</h3>
+<p><strong>当前 target</strong>（仅 3 个）:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">os</span><span class="kw">:</span><span class="at"> ubuntu-latest, target: x86_64-unknown-linux-gnu, artifact: eket-linux-x64</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">os</span><span class="kw">:</span><span class="at"> macos-latest, target: aarch64-apple-darwin, artifact: eket-macos-arm64</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">os</span><span class="kw">:</span><span class="at"> macos-latest, target: x86_64-apple-darwin, artifact: eket-macos-x64</span></span></code></pre></div>
+<p><strong>缺失平台</strong>: - [ ] ❌ Windows x64:
+<code>x86_64-pc-windows-msvc</code> (最大用户群) - [ ] ❌ Linux musl:
+<code>x86_64-unknown-linux-musl</code> (Docker/Alpine 兼容) - [ ] ❌
+Linux ARM: <code>aarch64-unknown-linux-gnu</code> (服务器/树莓派)</p>
+<p><strong>命名规范问题</strong>: - ✅ macOS 产物名含架构
+(<code>arm64</code>/<code>x64</code>) - ⚠️ Linux 产物名未含
+<code>gnu</code> 后缀，与 musl 冲突潜在风险</p>
+<h3 id="rust-musl-target-配置">1.2 Rust musl target 配置</h3>
+<p><strong>当前状态</strong>: - ❌ 仅
+<code>x86_64-unknown-linux-gnu</code> (glibc) - ❌ 无 musl
+静态编译配置</p>
+<p><strong>影响</strong>: - Alpine Linux 部署失败 (glibc 不兼容) -
+Docker 镜像需额外安装 glibc 依赖（体积 +30MB）</p>
+<p><strong>已有静态链接配置</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">rusqlite</span> <span class="op">=</span> <span class="op">{ </span><span class="dt">version</span><span class="op"> =</span> <span class="st">&quot;0.32&quot;</span><span class="op">, </span><span class="dt">features</span><span class="op"> =</span> <span class="op">[</span><span class="st">&quot;bundled&quot;</span><span class="op">,</span> <span class="st">&quot;chrono&quot;</span><span class="op">] }</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># ✅ bundled 特性已启用，SQLite 无需外部依赖</span></span></code></pre></div>
+<p><strong>待验证</strong>: 其他依赖（fred Redis
+客户端）是否需要额外配置</p>
+<h3 id="编译产物命名规范">1.3 编译产物命名规范</h3>
+<p><strong>建议统一格式</strong>:
+<code>eket-{os}-{arch}[-{variant}]</code></p>
+<table>
+<thead>
+<tr>
+<th>当前名称</th>
+<th>建议名称</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>eket-linux-x64</code></td>
+<td><code>eket-linux-x64-gnu</code></td>
+<td>区分 musl 变体</td>
+</tr>
+<tr>
+<td><code>eket-macos-arm64</code></td>
+<td>✅ 无需改</td>
+<td>已明确</td>
+</tr>
+<tr>
+<td>-</td>
+<td><code>eket-windows-x64.exe</code></td>
+<td>缺失</td>
+</tr>
+<tr>
+<td>-</td>
+<td><code>eket-linux-x64-musl</code></td>
+<td>缺失</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="node-预编译验证">2. Node 预编译验证</h2>
+<h3 id="ncc-bundle-可行性">2.1 ncc bundle 可行性</h3>
+<p><strong>测试结果</strong>: ❌ <strong>阻塞问题 - TypeScript
+编译失败</strong></p>
+<pre><code>Error: [tsl] ERROR in node/src/commands/complete.ts(558,18)
+      TS2339: Property &#39;run&#39; does not exist on type &#39;SQLiteClient&#39;.</code></pre>
+<p><strong>根因</strong>: 1. <code>complete.ts:558</code> 调用
+<code>await db.run(...)</code> 2. <code>SQLiteClient</code> 类只有
+<code>execute</code> 方法（返回 <code>Result&lt;void&gt;</code>） 3.
+<code>ISQLiteClient</code> 接口也无 <code>run</code> 方法</p>
+<p><strong>代码差异</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// complete.ts:558 (错误)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> db<span class="op">.</span><span class="fu">run</span>(<span class="st">&#39;UPDATE slaver_instances SET status = ? WHERE id = ?&#39;</span><span class="op">,</span> [<span class="st">&#39;idle&#39;</span><span class="op">,</span> slaverId])<span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">// 正确接口 (ISQLiteClient)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">execute</span>(sql<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> params<span class="op">?:</span> <span class="dt">unknown</span>[])<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>Result<span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;&gt;;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">// 或直接使用底层（不推荐，已废弃）</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">db</span><span class="op">.</span><span class="fu">prepare</span>(sql)<span class="op">.</span><span class="fu">run</span>(<span class="op">...</span>params)<span class="op">;</span> <span class="co">// SQLiteClient 内部实现</span></span></code></pre></div>
+<p><strong>无法继续测试</strong>: - ✋ 无法验证 bundle 体积 - ✋
+无法检查动态 require - ✋ 无法验证依赖完整性</p>
+<h3 id="native-依赖列表">2.2 native 依赖列表</h3>
+<p><strong>必需依赖</strong> (package.json):</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;better-sqlite3&quot;</span><span class="er">:</span> <span class="st">&quot;^11.0.0&quot;</span><span class="er">,</span>  <span class="er">//</span> <span class="er">native</span> <span class="er">C++</span> <span class="er">binding</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;ioredis&quot;</span><span class="er">:</span> <span class="st">&quot;^5.3.2&quot;</span><span class="er">,</span>          <span class="er">//</span> <span class="er">pure</span> <span class="er">JS</span> <span class="er">(OK)</span></span></code></pre></div>
+<p><strong>可选依赖</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;bufferutil&quot;</span><span class="er">:</span> <span class="st">&quot;^4.0.8&quot;</span><span class="er">,</span>       <span class="er">//</span> <span class="er">WebSocket</span> <span class="er">性能优化</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;utf-8-validate&quot;</span><span class="er">:</span> <span class="st">&quot;^6.0.3&quot;</span>    <span class="er">//</span> <span class="er">WebSocket</span> <span class="er">性能优化</span></span></code></pre></div>
+<p><strong>ncc 打包策略</strong>: - ❌ <strong>无法打包
+better-sqlite3</strong>（C++ addon，需平台编译） - ✅ ioredis 可打包（纯
+JS） - ⚠️ bufferutil/utf-8-validate 可选（缺失不报错）</p>
+<p><strong>解决方案对比</strong>:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>方案</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A. 预编译 better-sqlite3 + ncc</td>
+<td>单文件分发</td>
+<td>需针对每平台编译 addon（工作量 = Rust 级别）</td>
+</tr>
+<tr>
+<td>B. ncc + <code>npm install better-sqlite3</code></td>
+<td>打包简单</td>
+<td>用户需有 npm 环境（违背”一键安装”）</td>
+</tr>
+<tr>
+<td>C. 纯 Rust 实现 + Node binding</td>
+<td>最佳性能</td>
+<td>工作量最大（M3 = 2-3 周）</td>
+</tr>
+<tr>
+<td>D. 运行时检测 + 降级（Shell → Node + npm）</td>
+<td>优雅降级</td>
+<td>复杂度高</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bundle-体积预估">2.3 Bundle 体积预估</h3>
+<p><strong>基于依赖树估算</strong> (未实际打包): - node_modules 总计:
+~180MB - 预估 ncc bundle (minify): <strong>5-8 MB</strong> - 加
+better-sqlite3.node (per-platform): +2MB</p>
+<p><strong>基准参考</strong>: - Vercel ncc 自身: 1.2MB - Next.js
+standalone: 3-5MB</p>
+<hr />
+<h2 id="架构风险评估">3. 架构风险评估</h2>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 31%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr>
+<th>风险</th>
+<th>级别</th>
+<th>缓解方案</th>
+<th>负责人</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Node 预编译阻塞</strong>（TypeScript 错误）</td>
+<td><strong>H</strong></td>
+<td><strong>先修 complete.ts:558，改用
+<code>execute</code></strong></td>
+<td>Slaver (代码修复)</td>
+</tr>
+<tr>
+<td><strong>better-sqlite3 打包不可行</strong></td>
+<td>H</td>
+<td>方案 D: 降级到 <code>npm install</code></td>
+<td>Master (架构调整)</td>
+</tr>
+<tr>
+<td>Windows 平台未覆盖</td>
+<td>M</td>
+<td>添加 <code>x86_64-pc-windows-msvc</code> target</td>
+<td>Slaver (CI 配置)</td>
+</tr>
+<tr>
+<td>musl target 缺失</td>
+<td>M</td>
+<td>添加 <code>x86_64-unknown-linux-musl</code> + 测试</td>
+<td>Slaver (CI 配置)</td>
+</tr>
+<tr>
+<td>预编译包体积超预期 (&gt;50MB)</td>
+<td>L</td>
+<td>upx 压缩 / 分包下载</td>
+<td>Slaver (优化)</td>
+</tr>
+<tr>
+<td>多版本命令冲突 (<code>eket</code> Rust vs Node)</td>
+<td>L</td>
+<td>PATH 优先级 + <code>eket-version</code> 命令</td>
+<td>Master (安装脚本)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="推荐调整">4. 推荐调整</h2>
+<h3 id="milestone-1-前置工作阻塞项">4.1 Milestone 1
+前置工作（阻塞项）</h3>
+<p><strong>必须先完成</strong> (否则无法测试 Node 预编译):</p>
+<ol type="1">
+<li><strong>修复 TypeScript 编译错误</strong>
+<ul>
+<li><p>文件: <code>node/src/commands/complete.ts:558</code></p></li>
+<li><p>改动:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 旧代码</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> db<span class="op">.</span><span class="fu">run</span>(<span class="st">&#39;UPDATE slaver_instances SET status = ? WHERE id = ?&#39;</span><span class="op">,</span> [<span class="st">&#39;idle&#39;</span><span class="op">,</span> slaverId])<span class="op">;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">// 新代码</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> db<span class="op">.</span><span class="fu">execute</span>(</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;UPDATE slaver_instances SET status = ? WHERE id = ?&#39;</span><span class="op">,</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  [<span class="st">&#39;idle&#39;</span><span class="op">,</span> slaverId]</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>)<span class="op">;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="op">!</span>result<span class="op">.</span><span class="at">success</span>) {</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">warn</span>(<span class="vs">`[slaver-status] Failed to update status: </span><span class="sc">${</span>result<span class="op">.</span><span class="at">error</span><span class="op">?.</span><span class="at">message</span><span class="sc">}</span><span class="vs">`</span>)<span class="op">;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div></li>
+<li><p>工时: 0.5h</p></li>
+<li><p>优先级: <strong>P0</strong>（阻塞 ncc 测试）</p></li>
+</ul></li>
+<li><strong>验证 ncc bundle 可行性</strong>（前置依赖: 修复 #1）
+<ul>
+<li>命令:
+<code>npx ncc build src/index.ts -o /tmp/test --minify</code></li>
+<li>检查点:
+<ul class="task-list">
+<li><label><input type="checkbox" />编译成功</label></li>
+<li><label><input type="checkbox" />体积 &lt; 10MB</label></li>
+<li><label><input type="checkbox" />无动态 require</label></li>
+<li><label><input type="checkbox" />better-sqlite3 问题确认</label></li>
+</ul></li>
+<li>工时: 1h</li>
+<li>优先级: <strong>P0</strong></li>
+</ul></li>
+</ol>
+<h3 id="ticket-拆分建议">4.2 Ticket 拆分建议</h3>
+<p><strong>原 M2（GitHub Actions 预编译）拆分为</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Ticket</th>
+<th>标题</th>
+<th>依赖</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>M2.0</strong></td>
+<td><strong>修复 complete.ts TypeScript 错误</strong></td>
+<td>无</td>
+<td><strong>P0</strong></td>
+</tr>
+<tr>
+<td><strong>M2.1</strong></td>
+<td><strong>验证 Node ncc 打包可行性</strong></td>
+<td>M2.0</td>
+<td><strong>P0</strong></td>
+</tr>
+<tr>
+<td>M2.2</td>
+<td>添加 Rust Windows target</td>
+<td>无</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>M2.3</td>
+<td>添加 Rust musl target</td>
+<td>无</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>M2.4</td>
+<td>实现 Node 预编译 workflow</td>
+<td>M2.1</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>M2.5</td>
+<td>实现安装脚本降级逻辑</td>
+<td>M2.1</td>
+<td>P1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>架构决策点</strong> (需 Expert Panel 讨论): - [ ] 是否接受
+Node 版需要 <code>npm install better-sqlite3</code>？ - [ ] 是否延后
+Node 预编译到 Phase 2（先做 Rust）？ - [ ] 是否引入 pkg/nexe 等替代
+ncc（支持 native addon）？</p>
+<h3 id="技术债标记">4.3 技术债标记</h3>
+<p><strong>新增技术债</strong>:</p>
+<ol type="1">
+<li><strong>TD-EPIC005-001</strong>: <code>SQLiteClient</code>
+已废弃但仍被使用
+<ul>
+<li>位置: <code>complete.ts:558</code>, 可能还有其他文件</li>
+<li>影响: 类型不安全，接口不一致</li>
+<li>修复: 全局搜索 <code>createSQLiteClient</code>，迁移到
+<code>createSQLiteManager</code></li>
+<li>工时: 4-8h（取决于使用范围）</li>
+</ul></li>
+<li><strong>TD-EPIC005-002</strong>: release.yml 缺失主流平台
+<ul>
+<li>影响: Windows/Alpine Linux 用户无法使用预编译包</li>
+<li>修复: 添加 3 个 target（见 §1.1）</li>
+<li>工时: 2h（含 CI 测试）</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="总结">5. 总结</h2>
+<h3 id="是否可以继续拆-ticket">5.1 是否可以继续拆 ticket？</h3>
+<p><strong>❌ 不建议立即拆分 M2（Node 预编译）</strong></p>
+<p><strong>原因</strong>: 1. TypeScript 编译错误阻塞 ncc
+测试（无法验证可行性） 2. better-sqlite3 打包方案未确定（需架构决策） 3.
+降级策略设计不完整（依赖 M2.1 结果）</p>
+<p><strong>建议路径</strong>: 1. <strong>先创建 M2.0 +
+M2.1</strong>（前置验证 ticket） 2. <strong>Slaver 完成 M2.0 + M2.1
+后，召唤 Expert Panel</strong> 3. <strong>根据测试结果，再拆分
+M2.2-M2.5</strong></p>
+<h3 id="rust-预编译可以并行推进">5.2 Rust 预编译可以并行推进</h3>
+<p><strong>✅ M1（安装脚本）+ Rust target 补全可立即开始</strong></p>
+<p>无依赖阻塞，可分配给 Slaver: - M2.2: 添加 Windows target (2h) - M2.3:
+添加 musl target (2h) - M1: 引导式安装脚本框架 (8h)</p>
+<h3 id="推荐优先级">5.3 推荐优先级</h3>
+<pre><code>P0 (立即):
+  ├─ M2.0: 修复 complete.ts 错误 (0.5h)
+  └─ M2.1: 验证 ncc 可行性 (1h)
+
+P1 (并行):
+  ├─ M2.2: Windows target (2h)
+  ├─ M2.3: musl target (2h)
+  └─ M1: 安装脚本框架 (8h)
+
+P2 (等待 M2.1 结果):
+  ├─ M2.4: Node 预编译 workflow
+  ├─ M2.5: 降级逻辑
+  └─ M3: Rust 核心实现</code></pre>
+<hr />
+<h2 id="附录">附录</h2>
+<h3 id="a.-完整-rust-target-推荐列表">A. 完整 Rust target 推荐列表</h3>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>用户占比</th>
+<th>优先级</th>
+<th>工时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x86_64-unknown-linux-gnu</td>
+<td>✅ 已有</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>x86_64-pc-windows-msvc</td>
+<td>~40%</td>
+<td>P1</td>
+<td>2h</td>
+</tr>
+<tr>
+<td>x86_64-unknown-linux-musl</td>
+<td>~15%</td>
+<td>P1</td>
+<td>2h</td>
+</tr>
+<tr>
+<td>aarch64-apple-darwin</td>
+<td>✅ 已有</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>x86_64-apple-darwin</td>
+<td>✅ 已有</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>aarch64-unknown-linux-gnu</td>
+<td>~5%</td>
+<td>P2</td>
+<td>2h</td>
+</tr>
+</tbody>
+</table>
+<h3 id="b.-ncc-替代方案对比">B. ncc 替代方案对比</h3>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>native addon 支持</th>
+<th>体积</th>
+<th>复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="citation"
+data-cites="vercel/ncc">@vercel/ncc</span></td>
+<td>❌</td>
+<td>小</td>
+<td>低</td>
+</tr>
+<tr>
+<td>pkg</td>
+<td>✅ (需配置)</td>
+<td>大 (30-50MB)</td>
+<td>中</td>
+</tr>
+<tr>
+<td>nexe</td>
+<td>✅ (需配置)</td>
+<td>大 (40-60MB)</td>
+<td>中</td>
+</tr>
+<tr>
+<td>esbuild</td>
+<td>❌</td>
+<td>小</td>
+<td>低</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c.-检查命令清单">C. 检查命令清单</h3>
+<p><strong>运行以下命令验证架构调整</strong>:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 检查 TypeScript 错误</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> run build <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="st">&quot;TS2339&quot;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 搜索废弃 API 使用</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-rn</span> <span class="st">&quot;createSQLiteClient\|new SQLiteClient&quot;</span> node/src</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 测试 ncc bundle (修复 M2.0 后)</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> ncc build src/index.ts <span class="at">-o</span> /tmp/test <span class="at">--minify</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">du</span> <span class="at">-sh</span> /tmp/test</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 检查 Rust 编译（验证 musl）</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> rust <span class="kw">&amp;&amp;</span> <span class="ex">cargo</span> build <span class="at">--release</span> <span class="at">--target</span> x86_64-unknown-linux-musl</span></code></pre></div>
+<hr />
+<p><strong>评审状态</strong>: ⚠️ 发现阻塞问题<br />
+<strong>下一步</strong>: Master 决策 Node 预编译方案（推荐召唤 Expert
+Panel）</p>
+</body>
+</html>
