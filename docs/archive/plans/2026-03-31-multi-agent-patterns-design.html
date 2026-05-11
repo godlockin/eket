@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 框架 v1.1.0 - 多 Agent 协作模式借鉴设计</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 框架 v1.1.0 - 多 Agent 协作模式借鉴设计</h1>
+</header>
+<h1 id="eket-框架-v1.1.0---多-agent-协作模式借鉴设计">EKET 框架 v1.1.0 -
+多 Agent 协作模式借鉴设计</h1>
+<p><strong>版本</strong>: v1.1.0 <strong>审查者</strong>: Linus
+(首席架构师) <strong>日期</strong>: 2026-03-31 <strong>来源</strong>:
+Claude Code 2.1.88 multi-agent-research 分析</p>
+<hr />
+<h2 id="执行摘要">执行摘要</h2>
+<h3 id="研究目的">研究目的</h3>
+<p>分析 Claude Code 2.1.88 的多 Agent
+框架实现，提取可复用的设计模式和代码参考，为 EKET
+框架的以下升级提供借鉴：</p>
+<ol type="1">
+<li><strong>常驻服务器做代理</strong> (Bridge 架构)</li>
+<li><strong>多 Agent 实例分角色协作</strong> (Swarm/Team 架构)</li>
+<li><strong>Agent 间通信系统</strong> (文件 Mailbox + 结构化协议)</li>
+<li><strong>生命周期感知</strong> (Hook 事件系统)</li>
+<li><strong>权限控制</strong> (leaderPermissionBridge →
+服务端统一审批)</li>
+</ol>
+<h3 id="核心发现">核心发现</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 34%" />
+<col style="width: 28%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>设计模式</th>
+<th>Claude Code 实现</th>
+<th>EKET 借鉴价值</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>文件 Mailbox</strong></td>
+<td><code>teammate-mailbox.ts</code> (763 行)</td>
+<td>P2P 消息总线，天然持久化，文件锁保证一致性</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><strong>Bridge 架构</strong></td>
+<td><code>bridge-main.ts</code> + <code>BackoffConfig</code></td>
+<td>生产级 Agent Pool，退避重连、容量唤醒、快照恢复</td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>Coordinator 模式</strong></td>
+<td><code>coordinator-mode.ts</code></td>
+<td>Orchestrator/Worker 权限分层</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><strong>Hook 事件系统</strong></td>
+<td>28 个生命周期事件 + HTTP Hook 后端</td>
+<td>集中式监控、审计、任务触发</td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>WebSocket 订阅</strong></td>
+<td><code>sessions-websocket.ts</code></td>
+<td>服务端-Agent 实时通信层</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><strong>RemoteAgentPool</strong></td>
+<td><code>remote-session-manager.ts</code></td>
+<td>多 Agent 并发管理、容量控制</td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>leaderPermissionBridge</strong></td>
+<td>权限上报机制</td>
+<td>扩展为服务端统一审批中心</td>
+<td>P1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="架构映射">架构映射</h3>
+<pre><code>EKET 框架需求          →  Claude Code 的对应实现
+─────────────────────────────────────────────────────────────
+常驻服务器            →  Bridge (bridgeMain.ts) + BackoffConfig
+多角色 Agent 实例     →  TeamFile.members + BackendType
+角色定义              →  agentType + loadAgentsDir (built-in/custom agents)
+Agent 间通信          →  TeammateMailbox (文件) + SendMessageTool (协议)
+消息总线              →  SessionsWebSocket (远程) / InProcessBackend (本地)
+权限控制              →  leaderPermissionBridge → 中心审批
+生命周期感知          →  28 个 HOOK_EVENTS + HTTP Hook 后端
+上下文管理            →  autoCompact + toolResultStorage + microCompact
+模型路由              →  providers.ts (多提供商) + agentModel (per-agent)
+任务状态              →  LocalAgentTask / RemoteAgentTask + tasks.ts</code></pre>
+<hr />
+<h2 id="一文件-mailbox-消息总线">一、文件 Mailbox 消息总线</h2>
+<h3 id="核心设计">1.1 核心设计</h3>
+<p><strong>源文件</strong>:
+<code>docs/ref/multi-agent-research/02-messaging/teammate-mailbox.ts</code>
+(763 行)</p>
+<p><strong>架构</strong>:</p>
+<pre><code>~/.claude/teams/{team_name}/inboxes/
+├── alice.json        # Alice 的收件箱
+├── alice.json.lock   # 文件锁，防止并发写入
+├── bob.json          # Bob 的收件箱
+└── bob.json.lock     # 文件锁</code></pre>
+<p><strong>关键设计</strong>: - <strong>P2P 通信</strong>: 每个 Agent
+有独立 inbox 文件，无需中间人 - <strong>文件锁</strong>:
+<code>lockfile.lock()</code> 防止多进程并发写入冲突 -
+<strong>重试退避</strong>: 10 次重试，5-100ms 随机间隔 -
+<strong>结构化协议</strong>: 10+ 种内置消息类型（权限、关机、plan
+审批等）</p>
+<h3 id="核心代码">1.2 核心代码</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ─── 写入接口（带文件锁） ──────────────────────────────────────────────────</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeToMailbox</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  recipientName<span class="op">:</span> <span class="dt">string</span><span class="op">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  message<span class="op">:</span> <span class="bu">Omit</span><span class="op">&lt;</span>TeammateMessage<span class="op">,</span> <span class="st">&#39;read&#39;</span><span class="op">&gt;,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  teamName<span class="op">?:</span> <span class="dt">string</span><span class="op">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span> {</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> <span class="fu">ensureInboxDir</span>(teamName)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> inboxPath <span class="op">=</span> <span class="fu">getInboxPath</span>(recipientName<span class="op">,</span> teamName)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> lockFilePath <span class="op">=</span> <span class="vs">`</span><span class="sc">${</span>inboxPath<span class="sc">}</span><span class="vs">.lock`</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 确保文件存在（lockfile 要求目标文件必须存在）</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">try</span> {</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">await</span> <span class="fu">writeFile</span>(inboxPath<span class="op">,</span> <span class="st">&#39;[]&#39;</span><span class="op">,</span> { encoding<span class="op">:</span> <span class="st">&#39;utf-8&#39;</span><span class="op">,</span> flag<span class="op">:</span> <span class="st">&#39;wx&#39;</span> })</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">catch</span> (error) {</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ((error <span class="im">as</span> NodeJS<span class="op">.</span><span class="at">ErrnoException</span>)<span class="op">.</span><span class="at">code</span> <span class="op">!==</span> <span class="st">&#39;EEXIST&#39;</span>) <span class="cf">throw</span> error</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> release<span class="op">:</span> (() <span class="kw">=&gt;</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span>) <span class="op">|</span> <span class="dt">undefined</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">try</span> {</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    release <span class="op">=</span> <span class="cf">await</span> lockfile<span class="op">.</span><span class="fu">lock</span>(inboxPath<span class="op">,</span> {</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>      lockfilePath<span class="op">:</span> lockFilePath<span class="op">,</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>      retries<span class="op">:</span> { retries<span class="op">:</span> <span class="dv">10</span><span class="op">,</span> minTimeout<span class="op">:</span> <span class="dv">5</span><span class="op">,</span> maxTimeout<span class="op">:</span> <span class="dv">100</span> }<span class="op">,</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 锁内重读确保最新状态（防止并发写入丢失）</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> messages <span class="op">=</span> <span class="cf">await</span> <span class="fu">readMailbox</span>(recipientName<span class="op">,</span> teamName)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">.</span><span class="fu">push</span>({ <span class="op">...</span>message<span class="op">,</span> read<span class="op">:</span> <span class="kw">false</span> })</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">await</span> <span class="fu">writeFile</span>(inboxPath<span class="op">,</span> <span class="bu">JSON</span><span class="op">.</span><span class="fu">stringify</span>(messages<span class="op">,</span> <span class="kw">null</span><span class="op">,</span> <span class="dv">2</span>)<span class="op">,</span> <span class="st">&#39;utf-8&#39;</span>)</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">finally</span> {</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (release) <span class="cf">await</span> <span class="fu">release</span>()</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="结构化消息类型">1.3 结构化消息类型</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ─── 10+ 种内置协议消息 ────────────────────────────────────────────────────</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Idle 通知：Agent 完成任务后向 team-lead 发送的空闲通知</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> IdleNotificationMessage <span class="op">=</span> {</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  type<span class="op">:</span> <span class="st">&#39;idle_notification&#39;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  from<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  timestamp<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  idleReason<span class="op">?:</span> <span class="st">&#39;available&#39;</span> <span class="op">|</span> <span class="st">&#39;interrupted&#39;</span> <span class="op">|</span> <span class="st">&#39;failed&#39;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  summary<span class="op">?:</span> <span class="dt">string</span>             <span class="co">// 最后一次 DM 的简短摘要</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  completedTaskId<span class="op">?:</span> <span class="dt">string</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  completedStatus<span class="op">?:</span> <span class="st">&#39;resolved&#39;</span> <span class="op">|</span> <span class="st">&#39;blocked&#39;</span> <span class="op">|</span> <span class="st">&#39;failed&#39;</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co">// 权限请求：Worker → Leader，申请执行敏感操作</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> PermissionRequestMessage <span class="op">=</span> {</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  type<span class="op">:</span> <span class="st">&#39;permission_request&#39;</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  request_id<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  agent_id<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  tool_name<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  tool_use_id<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  description<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  input<span class="op">:</span> <span class="bu">Record</span><span class="op">&lt;</span><span class="dt">string</span><span class="op">,</span> <span class="dt">unknown</span><span class="op">&gt;</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  permission_suggestions<span class="op">:</span> <span class="dt">unknown</span>[]</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="co">// 关机请求/响应：Leader ↔ Worker 的优雅关机协议</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> ShutdownRequestMessage <span class="op">=</span> {</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  type<span class="op">:</span> <span class="st">&#39;shutdown_request&#39;</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  requestId<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  from<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  reason<span class="op">?:</span> <span class="dt">string</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>  timestamp<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="co">// Plan 审批：Worker → Leader（请求）、Leader → Worker（响应）</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> PlanApprovalRequestMessage <span class="op">=</span> {</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  type<span class="op">:</span> <span class="st">&#39;plan_approval_request&#39;</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>  from<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>  timestamp<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>  planFilePath<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  planContent<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>  requestId<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="对-eket-的价值">1.4 对 EKET 的价值</h3>
+<p><strong>借鉴方式</strong>: 1. <strong>作为 Redis
+消息队列的容灾设计</strong>: 当前 EKET 使用 Redis/文件轮询，可借鉴文件
+Mailbox 作为 fallback 2. <strong>扩展结构化消息类型</strong>: 定义 EKET
+的角色协作协议（task delegation、result reporting） 3.
+<strong>文件锁机制</strong>: 借鉴 <code>lockfile.lock()</code>
+保证原子写入</p>
+<p><strong>实现建议</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// eket/node/src/core/agent-mailbox.ts</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">sendToAgent</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  recipientId<span class="op">:</span> <span class="dt">string</span><span class="op">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  message<span class="op">:</span> EketAgentMessage<span class="op">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span> {</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> inboxPath <span class="op">=</span> <span class="fu">join</span>(EKET_DIR<span class="op">,</span> <span class="st">&#39;inboxes&#39;</span><span class="op">,</span> <span class="vs">`</span><span class="sc">${</span>recipientId<span class="sc">}</span><span class="vs">.json`</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> lockPath <span class="op">=</span> <span class="vs">`</span><span class="sc">${</span>inboxPath<span class="sc">}</span><span class="vs">.lock`</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 文件锁保证原子写入</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> release <span class="op">=</span> <span class="cf">await</span> lockfile<span class="op">.</span><span class="fu">lock</span>(inboxPath<span class="op">,</span> { lockfilePath<span class="op">:</span> lockPath })</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">try</span> {</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> messages <span class="op">=</span> <span class="cf">await</span> <span class="fu">readMailbox</span>(recipientId)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    messages<span class="op">.</span><span class="fu">push</span>({ <span class="op">...</span>message<span class="op">,</span> read<span class="op">:</span> <span class="kw">false</span><span class="op">,</span> timestamp<span class="op">:</span> <span class="bu">Date</span><span class="op">.</span><span class="fu">now</span>() })</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">await</span> <span class="fu">writeFile</span>(inboxPath<span class="op">,</span> <span class="bu">JSON</span><span class="op">.</span><span class="fu">stringify</span>(messages<span class="op">,</span> <span class="kw">null</span><span class="op">,</span> <span class="dv">2</span>))</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">finally</span> {</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">await</span> <span class="fu">release</span>()</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="二bridge-架构---常驻服务代理">二、Bridge 架构 -
+常驻服务代理</h2>
+<h3 id="核心设计-1">2.1 核心设计</h3>
+<p><strong>源文件</strong>:
+<code>docs/ref/multi-agent-research/03-bridge-remote/bridge-main.ts</code>
+(246 行)</p>
+<p><strong>架构</strong>:</p>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                     Bridge Server                           │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  Agent Pool (maxSessions: 32)                         │  │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐     │  │
+│  │  │Session 1│ │Session 2│ │Session 3│ │   ...   │     │  │
+│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘     │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                              │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐   │
+│  │Poll Loop    │  │Capacity Wake │  │Snapshot Restore  │   │
+│  └─────────────┘  └──────────────┘  └──────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              │ WebSocket / Poll
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     Remote Server                           │
+│  - Work assignment API                                      │
+│  - Session snapshot storage                                 │
+│  - Capacity notification (WebSocket ping)                   │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+<h3 id="退避重连配置">2.2 退避重连配置</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ─── 生产级退避配置 ───────────────────────────────────────────────────────</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">export type</span> BackoffConfig <span class="op">=</span> {</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  connInitialMs<span class="op">:</span> <span class="dt">number</span>     <span class="co">// 连接初始退避</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  connCapMs<span class="op">:</span> <span class="dt">number</span>         <span class="co">// 连接最大退避间隔</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  connGiveUpMs<span class="op">:</span> <span class="dt">number</span>      <span class="co">// 连接放弃时间</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  generalInitialMs<span class="op">:</span> <span class="dt">number</span>  <span class="co">// 通用操作初始退避</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  generalCapMs<span class="op">:</span> <span class="dt">number</span>      <span class="co">// 通用操作最大退避间隔</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  generalGiveUpMs<span class="op">:</span> <span class="dt">number</span>   <span class="co">// 通用操作放弃时间</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  shutdownGraceMs<span class="op">?:</span> <span class="dt">number</span>  <span class="co">// SIGTERM→SIGKILL 优雅期，默认 30s</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  stopWorkBaseDelayMs<span class="op">?:</span> <span class="dt">number</span>  <span class="co">// stopWorkWithRetry 基础延迟，默认 1000ms</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">const</span> DEFAULT_BACKOFF<span class="op">:</span> BackoffConfig <span class="op">=</span> {</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  connInitialMs<span class="op">:</span> <span class="dv">2_000</span><span class="op">,</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  connCapMs<span class="op">:</span> <span class="dv">120_000</span><span class="op">,</span>     <span class="co">// 2 分钟最大重连间隔</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  connGiveUpMs<span class="op">:</span> <span class="dv">600_000</span><span class="op">,</span>  <span class="co">// 10 分钟后放弃</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  generalInitialMs<span class="op">:</span> <span class="dv">500</span><span class="op">,</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  generalCapMs<span class="op">:</span> <span class="dv">30_000</span><span class="op">,</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  generalGiveUpMs<span class="op">:</span> <span class="dv">600_000</span><span class="op">,</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="co">// ─── 指数退避算法 ─────────────────────────────────────────────────────────</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">function</span> <span class="fu">calculateBackoffDelay</span>(</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>  attempt<span class="op">:</span> <span class="dt">number</span><span class="op">,</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>  initialMs<span class="op">:</span> <span class="dt">number</span><span class="op">,</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>  capMs<span class="op">:</span> <span class="dt">number</span><span class="op">,</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> exponential <span class="op">=</span> initialMs <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">pow</span>(<span class="dv">2</span><span class="op">,</span> attempt)</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> capped <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">min</span>(exponential<span class="op">,</span> capMs)</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> jitter <span class="op">=</span> capped <span class="op">*</span> (<span class="fl">0.9</span> <span class="op">+</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">random</span>() <span class="op">*</span> <span class="fl">0.2</span>)  <span class="co">// ±10% 随机抖动</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">floor</span>(jitter)</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="bridge-生命周期">2.3 Bridge 生命周期</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ─── Bridge 主循环（精简版） ──────────────────────────────────────────────</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">runBridgeLoop</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  config<span class="op">:</span> BridgeConfig<span class="op">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  api<span class="op">:</span> BridgeApi<span class="op">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  spawner<span class="op">:</span> SessionSpawner<span class="op">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  signal<span class="op">:</span> AbortSignal<span class="op">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  backoff<span class="op">:</span> BackoffConfig<span class="op">,</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span> {</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 1. 注册 Worker</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> workSecret <span class="op">=</span> <span class="cf">await</span> api<span class="op">.</span><span class="fu">registerWorker</span>(config<span class="op">.</span><span class="at">bridgeId</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">//    失败时指数退避重试</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 2. 设置容量唤醒（WebSocket ping）</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> capacityWake <span class="op">=</span> <span class="cf">await</span> api<span class="op">.</span><span class="fu">setupCapacityWake</span>()</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 3. POLL LOOP</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> pollAttempt <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span> (<span class="op">!</span>signal<span class="op">.</span><span class="at">aborted</span>) {</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> work <span class="op">=</span> <span class="cf">await</span> api<span class="op">.</span><span class="fu">pollForWork</span>()</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (work) {</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>      <span class="co">// 有新工作：启动 Agent 会话</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> session <span class="op">=</span> spawner<span class="op">.</span><span class="fu">spawn</span>({</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>        sessionId<span class="op">:</span> work<span class="op">.</span><span class="at">sessionId</span><span class="op">,</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>        prompt<span class="op">:</span> work<span class="op">.</span><span class="at">prompt</span><span class="op">,</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>        restore<span class="op">:</span> work<span class="op">.</span><span class="at">restore</span><span class="op">,</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>        snapshot<span class="op">:</span> work<span class="op">.</span><span class="at">snapshot</span><span class="op">,</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>      }<span class="op">,</span> config<span class="op">.</span><span class="at">cwd</span>)</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>      <span class="fu">registerActiveSession</span>(session)</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>      <span class="co">// 不等待 session 完成，直接进入下一个 poll（非阻塞）</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>      <span class="co">// 无工作：指数退避 sleep</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>      <span class="kw">const</span> delay <span class="op">=</span> <span class="fu">calculateBackoffDelay</span>(</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>        pollAttempt<span class="op">++,</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>        backoff<span class="op">.</span><span class="at">generalInitialMs</span><span class="op">,</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>        backoff<span class="op">.</span><span class="at">generalCapMs</span><span class="op">,</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>      <span class="cf">await</span> <span class="fu">sleep</span>(delay)</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 收到容量唤醒时，重置 poll 状态，立即执行下一次 poll</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 4. ON SESSION DONE</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> status <span class="op">=</span> <span class="cf">await</span> session<span class="op">.</span><span class="fu">waitForDone</span>()</span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> api<span class="op">.</span><span class="fu">stopWork</span>(session<span class="op">.</span><span class="at">sessionId</span><span class="op">,</span> status)  <span class="co">// 带重试</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">removeFromActiveSessions</span>(session)</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 5. SHUTDOWN</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>  signal<span class="op">.</span><span class="fu">abort</span>()</span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 等待所有活跃 session 完成（最多 shutdownGraceMs）</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="对-eket-的价值-1">2.4 对 EKET 的价值</h3>
+<p><strong>借鉴方式</strong>: 1. <strong>作为 EKET
+常驻服务器的核心架构</strong>: 当前 EKET 使用 Master/Slaver
+文件轮询，可升级为 Bridge + Agent Pool 模式 2.
+<strong>退避重连配置</strong>: 直接应用于 EKET 的 ConnectionManager 3.
+<strong>容量唤醒机制</strong>: 消除轮询延迟，服务端有工作时立即通知 4.
+<strong>会话快照恢复</strong>: Agent 崩溃后可从中间状态恢复</p>
+<p><strong>实现建议</strong>:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">// eket/node/src/core/agent-pool.ts</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> AgentPool {</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> activeSessions <span class="op">=</span> <span class="kw">new</span> <span class="bu">Map</span><span class="op">&lt;</span><span class="dt">string</span><span class="op">,</span> AgentSession<span class="op">&gt;</span>()</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> config<span class="op">:</span> AgentPoolConfig</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>(config<span class="op">:</span> AgentPoolConfig) {</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">config</span> <span class="op">=</span> {</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>      maxConcurrent<span class="op">:</span> <span class="dv">32</span><span class="op">,</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>      enableSnapshotRestore<span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>      <span class="op">...</span>config</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">acquireAgent</span>(taskType<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>AgentSession<span class="op">&gt;</span> {</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 1. 优先找空闲 Agent</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">const</span> session <span class="kw">of</span> <span class="kw">this</span><span class="op">.</span><span class="at">activeSessions</span><span class="op">.</span><span class="fu">values</span>()) {</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (session<span class="op">.</span><span class="at">state</span> <span class="op">===</span> <span class="st">&#39;idle&#39;</span>) <span class="cf">return</span> session</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 2. 池未满，新建</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">activeSessions</span><span class="op">.</span><span class="at">size</span> <span class="op">&lt;</span> <span class="kw">this</span><span class="op">.</span><span class="at">config</span><span class="op">.</span><span class="at">maxConcurrent</span>) {</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="fu">createSession</span>(taskType)</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 3. 池已满，等待空闲</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="fu">waitForIdleAgent</span>()</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> <span class="kw">async</span> <span class="fu">createSession</span>(taskType<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>AgentSession<span class="op">&gt;</span> {</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> sessionId <span class="op">=</span> <span class="fu">generateSessionId</span>()</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> session <span class="op">=</span> <span class="kw">new</span> <span class="fu">AgentSession</span>({</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>      sessionId<span class="op">,</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>      taskType<span class="op">,</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>      snapshotRestore<span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">config</span><span class="op">.</span><span class="at">enableSnapshotRestore</span><span class="op">,</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">activeSessions</span><span class="op">.</span><span class="fu">set</span>(sessionId<span class="op">,</span> session)</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">await</span> session<span class="op">.</span><span class="fu">connect</span>()</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> session</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="三coordinator-模式---权限分层">三、Coordinator 模式 -
+权限分层</h2>
+<h3 id="核心设计-2">3.1 核心设计</h3>
+<p><strong>源文件</strong>:
+<code>docs/ref/multi-agent-research/01-swarm-team/coordinator-mode.ts</code>
+(146 行)</p>
+<p><strong>架构</strong>:</p>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                    Coordinator                              │
+│  权限：管理平面工具集                                        │
+│  - TeamCreate / TeamDelete    (团队生命周期管理)            │
+│  - SendMessage                  (广播/单播消息)              │
+│  - SyntheticOutput            (合成输出)                    │
+│  不能做：具体执行（Bash/Read/Edit/...）                     │
+└─────────────────────────────────────────────────────────────┘
+                              │ spawn
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      Workers                                │
+│  权限：执行工具集                                             │
+│  - Bash / Read / Edit / Write / Agent / ...                │
+│  不能做：操控团队结构（无 TeamCreate/Delete）               │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+<h3 id="核心代码-1">3.2 核心代码</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ─── Coordinator 独享的&quot;管理平面&quot;工具（Worker 不可使用） ─────────────────</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> INTERNAL_WORKER_TOOLS <span class="op">=</span> <span class="kw">new</span> <span class="bu">Set</span>([</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;TeamCreate&#39;</span><span class="op">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;TeamDelete&#39;</span><span class="op">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;SendMessage&#39;</span><span class="op">,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;SyntheticOutput&#39;</span><span class="op">,</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">function</span> <span class="fu">isCoordinatorMode</span>()<span class="op">:</span> <span class="dt">boolean</span> {</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 通过环境变量动态激活，支持运行时切换</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="fu">isEnvTruthy</span>(<span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">CLAUDE_CODE_COORDINATOR_MODE</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="co"> * 生成注入 Coordinator 上下文的 system prompt 片段。</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="co"> * 告知 Coordinator：Worker 有哪些工具、MCP 服务器、Scratchpad 目录。</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">function</span> <span class="fu">getCoordinatorUserContext</span>(</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>  mcpClients<span class="op">:</span> ReadonlyArray<span class="op">&lt;</span>{ name<span class="op">:</span> <span class="dt">string</span> }<span class="op">&gt;,</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>  scratchpadDir<span class="op">?:</span> <span class="dt">string</span><span class="op">,</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> { [k<span class="op">:</span> <span class="dt">string</span>]<span class="op">:</span> <span class="dt">string</span> } {</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="op">!</span><span class="fu">isCoordinatorMode</span>()) <span class="cf">return</span> {}</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Worker 可用工具 = 全部工具 - 管理平面工具</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> workerTools <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">from</span>(ASYNC_AGENT_ALLOWED_TOOLS)</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">filter</span>(name <span class="kw">=&gt;</span> <span class="op">!</span>INTERNAL_WORKER_TOOLS<span class="op">.</span><span class="fu">has</span>(name))</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">sort</span>()</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">join</span>(<span class="st">&#39;, &#39;</span>)</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> content <span class="op">=</span> <span class="vs">`Workers spawned via the Agent tool have access to these tools: </span><span class="sc">${</span>workerTools<span class="sc">}</span><span class="vs">`</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (mcpClients<span class="op">.</span><span class="at">length</span> <span class="op">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> serverNames <span class="op">=</span> mcpClients<span class="op">.</span><span class="fu">map</span>(c <span class="kw">=&gt;</span> c<span class="op">.</span><span class="at">name</span>)<span class="op">.</span><span class="fu">join</span>(<span class="st">&#39;, &#39;</span>)</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>    content <span class="op">+=</span> <span class="vs">`</span><span class="sc">\n\n</span><span class="vs">Workers also have access to MCP tools from connected MCP servers: </span><span class="sc">${</span>serverNames<span class="sc">}</span><span class="vs">`</span></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (scratchpadDir) {</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>    content <span class="op">+=</span> <span class="vs">`</span><span class="sc">\n\n</span><span class="vs">Scratchpad directory: </span><span class="sc">${</span>scratchpadDir<span class="sc">}\n</span><span class="vs">Workers can read and write here without permission prompts.`</span></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> { workerToolsContext<span class="op">:</span> content }</span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="对-eket-的价值-2">3.3 对 EKET 的价值</h3>
+<p><strong>借鉴方式</strong>: 1. <strong>Orchestrator/Worker
+权限分层</strong>: 当前 EKET 的 Master/Slaver 只有文件锁选举，可借鉴
+Coordinator 模式实现工具级权限控制 2. <strong>环境变量动态激活</strong>:
+支持运行时切换模式 3. <strong>Worker 上下文注入</strong>: 告知
+Coordinator Worker 有哪些能力</p>
+<p><strong>实现建议</strong>:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// eket/node/src/core/role-permissions.ts</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">const</span> ORCHESTRATOR_TOOLS <span class="op">=</span> <span class="kw">new</span> <span class="bu">Set</span>([</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;CreateTeam&#39;</span><span class="op">,</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;DeleteTeam&#39;</span><span class="op">,</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;AssignTask&#39;</span><span class="op">,</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;BroadcastMessage&#39;</span><span class="op">,</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;QueryStatus&#39;</span><span class="op">,</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">const</span> WORKER_TOOLS <span class="op">=</span> <span class="kw">new</span> <span class="bu">Set</span>([</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;Bash&#39;</span><span class="op">,</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;Read&#39;</span><span class="op">,</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;Edit&#39;</span><span class="op">,</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;Write&#39;</span><span class="op">,</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;RunTests&#39;</span><span class="op">,</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;SubmitPR&#39;</span><span class="op">,</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">function</span> <span class="fu">getRolePermissions</span>(role<span class="op">:</span> <span class="st">&#39;orchestrator&#39;</span> <span class="op">|</span> <span class="st">&#39;worker&#39;</span>)<span class="op">:</span> <span class="bu">Set</span><span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;</span> {</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> role <span class="op">===</span> <span class="st">&#39;orchestrator&#39;</span> <span class="op">?</span> ORCHESTRATOR_TOOLS <span class="op">:</span> WORKER_TOOLS</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="四hook-事件系统---全生命周期感知">四、Hook 事件系统 -
+全生命周期感知</h2>
+<h3 id="核心设计-3">4.1 核心设计</h3>
+<p><strong>源文件</strong>: -
+<code>docs/ref/multi-agent-research/04-hooks/hook-events-enum.ts</code>
+(28 个事件) -
+<code>docs/ref/multi-agent-research/04-hooks/hook-event-system.ts</code>
+(三种后端实现)</p>
+<p><strong>28 个生命周期事件</strong>:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> HOOK_EVENTS <span class="op">=</span> [</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 工具调用</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;PreToolUse&#39;</span><span class="op">,</span>        <span class="co">// 工具调用前：可用于权限决策、输入修改</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;PostToolUse&#39;</span><span class="op">,</span>       <span class="co">// 工具调用后（成功）：结果审计、触发后续动作</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;PostToolUseFailure&#39;</span><span class="op">,</span><span class="co">// 工具调用后（失败）：错误监控、重试触发</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 用户交互</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;Notification&#39;</span><span class="op">,</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;UserPromptSubmit&#39;</span><span class="op">,</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 会话生命周期</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;SessionStart&#39;</span><span class="op">,</span>      <span class="co">// 始终发送</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;SessionEnd&#39;</span><span class="op">,</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 停止</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;Stop&#39;</span><span class="op">,</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;StopFailure&#39;</span><span class="op">,</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Subagent 生命周期</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;SubagentStart&#39;</span><span class="op">,</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;SubagentStop&#39;</span><span class="op">,</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 上下文压缩</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;PreCompact&#39;</span><span class="op">,</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;PostCompact&#39;</span><span class="op">,</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 权限</span></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;PermissionRequest&#39;</span><span class="op">,</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;PermissionDenied&#39;</span><span class="op">,</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 初始化</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;Setup&#39;</span><span class="op">,</span>             <span class="co">// 始终发送</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 团队协作（关键！）</span></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;TeammateIdle&#39;</span><span class="op">,</span>      <span class="co">// Agent 空闲 → 触发新任务分配</span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;TaskCreated&#39;</span><span class="op">,</span></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;TaskCompleted&#39;</span><span class="op">,</span>     <span class="co">// 任务完成 → 触发下游 Agent</span></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 交互决策</span></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;Elicitation&#39;</span><span class="op">,</span></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;ElicitationResult&#39;</span><span class="op">,</span></span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 配置与文件系统</span></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;ConfigChange&#39;</span><span class="op">,</span></span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;WorktreeCreate&#39;</span><span class="op">,</span></span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;WorktreeRemove&#39;</span><span class="op">,</span></span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;InstructionsLoaded&#39;</span><span class="op">,</span></span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;CwdChanged&#39;</span><span class="op">,</span></span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;FileChanged&#39;</span><span class="op">,</span></span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div>
+<h3 id="http-hook-后端对-eket-最重要">4.2 HTTP Hook 后端（对 EKET
+最重要）</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ─── HTTP Hook 执行器 ─────────────────────────────────────────────────────</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">execHttpHook</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  config<span class="op">:</span> {</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    url<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    timeoutMs<span class="op">?:</span> <span class="dt">number</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    headers<span class="op">?:</span> <span class="bu">Record</span><span class="op">&lt;</span><span class="dt">string</span><span class="op">,</span> <span class="dt">string</span><span class="op">&gt;</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    onFailure<span class="op">?:</span> <span class="st">&#39;allow&#39;</span> <span class="op">|</span> <span class="st">&#39;deny&#39;</span> <span class="op">|</span> <span class="st">&#39;error&#39;</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  payload<span class="op">:</span> {</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    event<span class="op">:</span> HookEvent</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    sessionId<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    agentName<span class="op">?:</span> <span class="dt">string</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    teamName<span class="op">?:</span> <span class="dt">string</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    data<span class="op">:</span> <span class="bu">Record</span><span class="op">&lt;</span><span class="dt">string</span><span class="op">,</span> <span class="dt">unknown</span><span class="op">&gt;</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>HttpHookResponse<span class="op">&gt;</span> {</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> response <span class="op">=</span> <span class="cf">await</span> <span class="fu">fetch</span>(config<span class="op">.</span><span class="at">url</span><span class="op">,</span> {</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    method<span class="op">:</span> <span class="st">&#39;POST&#39;</span><span class="op">,</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    headers<span class="op">:</span> { <span class="st">&#39;Content-Type&#39;</span><span class="op">:</span> <span class="st">&#39;application/json&#39;</span><span class="op">,</span> <span class="op">...</span>config<span class="op">.</span><span class="at">headers</span> }<span class="op">,</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    body<span class="op">:</span> <span class="bu">JSON</span><span class="op">.</span><span class="fu">stringify</span>(payload)<span class="op">,</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="op">!</span>response<span class="op">.</span><span class="at">ok</span>) {</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fu">handleHookFailure</span>(config<span class="op">.</span><span class="at">onFailure</span> <span class="op">??</span> <span class="st">&#39;allow&#39;</span><span class="op">,</span> response<span class="op">.</span><span class="at">statusText</span>)</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> response<span class="op">.</span><span class="fu">json</span>()</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>    action<span class="op">:</span> result<span class="op">.</span><span class="at">action</span> <span class="op">??</span> <span class="st">&#39;allow&#39;</span><span class="op">,</span>  <span class="co">// &#39;allow&#39; | &#39;deny&#39;</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>    reason<span class="op">:</span> result<span class="op">.</span><span class="at">reason</span><span class="op">,</span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>    updatedInput<span class="op">:</span> result<span class="op">.</span><span class="at">updatedInput</span><span class="op">,</span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>    feedback<span class="op">:</span> result<span class="op">.</span><span class="at">feedback</span><span class="op">,</span></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="hook-事件广播实现">4.3 Hook 事件广播实现</h3>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ─── 事件广播器（单处理器模式） ───────────────────────────────────────────</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> MAX_PENDING_EVENTS <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> pendingEvents<span class="op">:</span> HookExecutionEvent[] <span class="op">=</span> []</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> eventHandler<span class="op">:</span> HookEventHandler <span class="op">|</span> <span class="dt">null</span> <span class="op">=</span> <span class="kw">null</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"> * 注册全局 Hook 事件处理器。</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co"> * 关键：注册时自动补发缓冲中的历史事件。</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">function</span> <span class="fu">registerHookEventHandler</span>(handler<span class="op">:</span> HookEventHandler <span class="op">|</span> <span class="dt">null</span>)<span class="op">:</span> <span class="dt">void</span> {</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  eventHandler <span class="op">=</span> handler</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (handler <span class="op">&amp;&amp;</span> pendingEvents<span class="op">.</span><span class="at">length</span> <span class="op">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">const</span> <span class="bu">event</span> <span class="kw">of</span> pendingEvents<span class="op">.</span><span class="fu">splice</span>(<span class="dv">0</span>)) {</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>      <span class="fu">handler</span>(<span class="bu">event</span>)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">emit</span>(event<span class="op">:</span> HookExecutionEvent)<span class="op">:</span> <span class="dt">void</span> {</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (eventHandler) {</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">eventHandler</span>(<span class="bu">event</span>)</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    pendingEvents<span class="op">.</span><span class="fu">push</span>(<span class="bu">event</span>)</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (pendingEvents<span class="op">.</span><span class="at">length</span> <span class="op">&gt;</span> MAX_PENDING_EVENTS) {</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>      pendingEvents<span class="op">.</span><span class="fu">shift</span>()</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a><span class="co">// 在 PreToolUse 时调用</span></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">function</span> <span class="fu">emitPreToolUse</span>(toolName<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> toolInput<span class="op">:</span> <span class="dt">unknown</span>)<span class="op">:</span> <span class="dt">void</span> {</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">emit</span>({</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>    type<span class="op">:</span> <span class="st">&#39;started&#39;</span><span class="op">,</span></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>    hookId<span class="op">:</span> <span class="fu">generateId</span>()<span class="op">,</span></span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>    hookName<span class="op">:</span> <span class="st">&#39;pre-tool-use&#39;</span><span class="op">,</span></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>    hookEvent<span class="op">:</span> <span class="st">&#39;PreToolUse&#39;</span><span class="op">,</span></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>    data<span class="op">:</span> { toolName<span class="op">,</span> toolInput }<span class="op">,</span></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="对-eket-的价值-3">4.4 对 EKET 的价值</h3>
+<p><strong>借鉴方式</strong>: 1. <strong>HTTP Hook 后端</strong>:
+常驻服务器在每个工具调用前后接收通知，实现集中式监控、审计、权限决策 2.
+<strong>TeammateIdle 事件</strong>: 触发新任务分配 3.
+<strong>TaskCompleted 事件</strong>: 触发下游 Agent 4.
+<strong>PreToolUse Hook</strong>: 权限审批中心</p>
+<p><strong>实现建议</strong>:</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">// eket/node/src/hooks/http-hook-server.ts</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> express <span class="im">from</span> <span class="st">&#39;express&#39;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> app <span class="op">=</span> <span class="fu">express</span>()</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>app<span class="op">.</span><span class="fu">use</span>(express<span class="op">.</span><span class="fu">json</span>())</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co">// PreToolUse Hook：权限审批</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>app<span class="op">.</span><span class="fu">post</span>(<span class="st">&#39;/hooks/pre-tool-use&#39;</span><span class="op">,</span> <span class="kw">async</span> (req<span class="op">,</span> res) <span class="kw">=&gt;</span> {</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> { <span class="bu">event</span><span class="op">,</span> sessionId<span class="op">,</span> agentName<span class="op">,</span> data } <span class="op">=</span> req<span class="op">.</span><span class="at">body</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 权限检查</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> isAllowed <span class="op">=</span> <span class="cf">await</span> permissionCenter<span class="op">.</span><span class="fu">check</span>({</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    agentId<span class="op">:</span> agentName<span class="op">,</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    toolName<span class="op">:</span> data<span class="op">.</span><span class="at">toolName</span><span class="op">,</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    toolInput<span class="op">:</span> data<span class="op">.</span><span class="at">toolInput</span><span class="op">,</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="op">!</span>isAllowed) {</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> res<span class="op">.</span><span class="fu">json</span>({</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>      action<span class="op">:</span> <span class="st">&#39;deny&#39;</span><span class="op">,</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>      reason<span class="op">:</span> <span class="st">&#39;Permission denied by central authority&#39;</span><span class="op">,</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>  res<span class="op">.</span><span class="fu">json</span>({ action<span class="op">:</span> <span class="st">&#39;allow&#39;</span> })</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a><span class="co">// TeammateIdle Hook：任务分配</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>app<span class="op">.</span><span class="fu">post</span>(<span class="st">&#39;/hooks/teammate-idle&#39;</span><span class="op">,</span> <span class="kw">async</span> (req<span class="op">,</span> res) <span class="kw">=&gt;</span> {</span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> { agentName<span class="op">,</span> data } <span class="op">=</span> req<span class="op">.</span><span class="at">body</span></span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (data<span class="op">.</span><span class="at">idleReason</span> <span class="op">===</span> <span class="st">&#39;available&#39;</span>) {</span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 分配下一个匹配任务</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> nextTask <span class="op">=</span> <span class="cf">await</span> taskScheduler<span class="op">.</span><span class="fu">findMatchingTask</span>(agentName)</span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (nextTask) {</span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>      <span class="cf">await</span> taskScheduler<span class="op">.</span><span class="fu">assignTask</span>(agentName<span class="op">,</span> nextTask)</span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>  res<span class="op">.</span><span class="fu">json</span>({ action<span class="op">:</span> <span class="st">&#39;allow&#39;</span> })</span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a><span class="co">// TaskCompleted Hook：触发下游</span></span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>app<span class="op">.</span><span class="fu">post</span>(<span class="st">&#39;/hooks/task-completed&#39;</span><span class="op">,</span> <span class="kw">async</span> (req<span class="op">,</span> res) <span class="kw">=&gt;</span> {</span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> { data } <span class="op">=</span> req<span class="op">.</span><span class="at">body</span></span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 通知下游 Agent</span></span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> pipeline<span class="op">.</span><span class="fu">notifyDownstream</span>({</span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>    taskId<span class="op">:</span> data<span class="op">.</span><span class="at">taskId</span><span class="op">,</span></span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>    status<span class="op">:</span> data<span class="op">.</span><span class="at">completedStatus</span><span class="op">,</span></span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>    result<span class="op">:</span> data<span class="op">.</span><span class="at">result</span><span class="op">,</span></span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a>  res<span class="op">.</span><span class="fu">json</span>({ action<span class="op">:</span> <span class="st">&#39;allow&#39;</span> })</span>
+<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>app<span class="op">.</span><span class="fu">listen</span>(<span class="dv">8080</span><span class="op">,</span> () <span class="kw">=&gt;</span> {</span>
+<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;[EKET Hook Server] Listening on port 8080&#39;</span>)</span>
+<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<hr />
+<h2 id="五websocket-会话订阅">五、WebSocket 会话订阅</h2>
+<h3 id="核心设计-4">5.1 核心设计</h3>
+<p><strong>源文件</strong>:
+<code>docs/ref/multi-agent-research/03-bridge-remote/sessions-websocket.ts</code>
+(358 行)</p>
+<p><strong>协议</strong>:</p>
+<pre><code>连接：wss://api.anthropic.com/v1/sessions/ws/{sessionId}/subscribe?organization_uuid=...
+认证：Authorization: Bearer {token}（请求头）
+心跳：30s ping/pong</code></pre>
+<p><strong>错误码分类</strong>:</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> PERMANENT_CLOSE_CODES <span class="op">=</span> <span class="kw">new</span> <span class="bu">Set</span>([<span class="dv">4003</span>])  <span class="co">// unauthorized</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> MAX_SESSION_NOT_FOUND_RETRIES <span class="op">=</span> <span class="dv">3</span>        <span class="co">// 4001: compaction 期间短暂不可用</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> MAX_RECONNECT_ATTEMPTS <span class="op">=</span> <span class="dv">5</span>               <span class="co">// 其他错误</span></span></code></pre></div>
+<h3 id="关键代码">5.2 关键代码</h3>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> SessionsWebSocket {</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> ws<span class="op">:</span> <span class="bu">WebSocket</span> <span class="op">|</span> <span class="dt">null</span> <span class="op">=</span> <span class="kw">null</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> state<span class="op">:</span> WebSocketState <span class="op">=</span> <span class="st">&#39;closed&#39;</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> reconnectAttempts <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> sessionNotFoundRetries <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> pingInterval<span class="op">:</span> <span class="bu">ReturnType</span><span class="op">&lt;</span><span class="kw">typeof</span> setInterval<span class="op">&gt;</span> <span class="op">|</span> <span class="dt">null</span> <span class="op">=</span> <span class="kw">null</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>(</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">private</span> <span class="kw">readonly</span> sessionId<span class="op">:</span> <span class="dt">string</span><span class="op">,</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">private</span> <span class="kw">readonly</span> orgUuid<span class="op">:</span> <span class="dt">string</span><span class="op">,</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">private</span> <span class="kw">readonly</span> getAccessToken<span class="op">:</span> () <span class="kw">=&gt;</span> <span class="dt">string</span><span class="op">,</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">private</span> <span class="kw">readonly</span> callbacks<span class="op">:</span> SessionsWebSocketCallbacks<span class="op">,</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  ) {}</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">connect</span>()<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;</span> {</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> baseUrl <span class="op">=</span> <span class="st">&#39;https://api.anthropic.com&#39;</span><span class="op">.</span><span class="fu">replace</span>(<span class="st">&#39;https://&#39;</span><span class="op">,</span> <span class="st">&#39;wss://&#39;</span>)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> url <span class="op">=</span> <span class="vs">`</span><span class="sc">${</span>baseUrl<span class="sc">}</span><span class="vs">/v1/sessions/ws/</span><span class="sc">${</span><span class="kw">this</span><span class="op">.</span><span class="at">sessionId</span><span class="sc">}</span><span class="vs">/subscribe?organization_uuid=</span><span class="sc">${</span><span class="kw">this</span><span class="op">.</span><span class="at">orgUuid</span><span class="sc">}</span><span class="vs">`</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> accessToken <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">getAccessToken</span>()</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">ws</span> <span class="op">=</span> <span class="kw">new</span> <span class="bu">WebSocket</span>(url<span class="op">,</span> {</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>      headers<span class="op">:</span> {</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>        Authorization<span class="op">:</span> <span class="vs">`Bearer </span><span class="sc">${</span>accessToken<span class="sc">}</span><span class="vs">`</span><span class="op">,</span></span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">&#39;anthropic-version&#39;</span><span class="op">:</span> <span class="st">&#39;2023-06-01&#39;</span><span class="op">,</span></span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>      }<span class="op">,</span></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">ws</span><span class="op">.</span><span class="fu">on</span>(<span class="st">&#39;open&#39;</span><span class="op">,</span> () <span class="kw">=&gt;</span> {</span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">state</span> <span class="op">=</span> <span class="st">&#39;connected&#39;</span></span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">reconnectAttempts</span> <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">sessionNotFoundRetries</span> <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="fu">startPingInterval</span>()</span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">callbacks</span><span class="op">.</span><span class="at">onConnected</span><span class="op">?.</span>()</span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">ws</span><span class="op">.</span><span class="fu">on</span>(<span class="st">&#39;close&#39;</span><span class="op">,</span> (code<span class="op">:</span> <span class="dt">number</span>) <span class="kw">=&gt;</span> {</span>
+<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="fu">handleClose</span>(code)</span>
+<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb19-39"><a href="#cb19-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-40"><a href="#cb19-40" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> <span class="fu">handleClose</span>(closeCode<span class="op">:</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">void</span> {</span>
+<span id="cb19-41"><a href="#cb19-41" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 永久错误：立即停止重连</span></span>
+<span id="cb19-42"><a href="#cb19-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (PERMANENT_CLOSE_CODES<span class="op">.</span><span class="fu">has</span>(closeCode)) {</span>
+<span id="cb19-43"><a href="#cb19-43" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">callbacks</span><span class="op">.</span><span class="at">onClose</span><span class="op">?.</span>()</span>
+<span id="cb19-44"><a href="#cb19-44" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span></span>
+<span id="cb19-45"><a href="#cb19-45" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb19-46"><a href="#cb19-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-47"><a href="#cb19-47" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 4001 session not found：有限重试</span></span>
+<span id="cb19-48"><a href="#cb19-48" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (closeCode <span class="op">===</span> <span class="dv">4001</span>) {</span>
+<span id="cb19-49"><a href="#cb19-49" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">sessionNotFoundRetries</span><span class="op">++</span></span>
+<span id="cb19-50"><a href="#cb19-50" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">sessionNotFoundRetries</span> <span class="op">&gt;</span> MAX_SESSION_NOT_FOUND_RETRIES) {</span>
+<span id="cb19-51"><a href="#cb19-51" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">callbacks</span><span class="op">.</span><span class="at">onClose</span><span class="op">?.</span>()</span>
+<span id="cb19-52"><a href="#cb19-52" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span></span>
+<span id="cb19-53"><a href="#cb19-53" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb19-54"><a href="#cb19-54" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="fu">scheduleReconnect</span>(RECONNECT_DELAY_MS <span class="op">*</span> <span class="kw">this</span><span class="op">.</span><span class="at">sessionNotFoundRetries</span>)</span>
+<span id="cb19-55"><a href="#cb19-55" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span></span>
+<span id="cb19-56"><a href="#cb19-56" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb19-57"><a href="#cb19-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-58"><a href="#cb19-58" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 其他错误：有限重试</span></span>
+<span id="cb19-59"><a href="#cb19-59" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">reconnectAttempts</span> <span class="op">&lt;</span> MAX_RECONNECT_ATTEMPTS) {</span>
+<span id="cb19-60"><a href="#cb19-60" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">reconnectAttempts</span><span class="op">++</span></span>
+<span id="cb19-61"><a href="#cb19-61" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="fu">scheduleReconnect</span>(RECONNECT_DELAY_MS)</span>
+<span id="cb19-62"><a href="#cb19-62" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb19-63"><a href="#cb19-63" aria-hidden="true" tabindex="-1"></a>      <span class="kw">this</span><span class="op">.</span><span class="at">callbacks</span><span class="op">.</span><span class="at">onClose</span><span class="op">?.</span>()</span>
+<span id="cb19-64"><a href="#cb19-64" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb19-65"><a href="#cb19-65" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb19-66"><a href="#cb19-66" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="对-eket-的价值-4">5.3 对 EKET 的价值</h3>
+<p><strong>借鉴方式</strong>: 1. <strong>服务端-Agent 通信层</strong>:
+当前 EKET 使用文件轮询（5 秒延迟），可升级为 WebSocket 实时通信 2.
+<strong>错误码分类策略</strong>: 永久错误 vs 可重试错误 3.
+<strong>只读观察者模式</strong> (<code>viewerOnly</code>): UI
+监控面板、调试观察</p>
+<hr />
+<h2 id="六remoteagentpool---多-agent-并发管理">六、RemoteAgentPool - 多
+Agent 并发管理</h2>
+<h3 id="核心设计-5">6.1 核心设计</h3>
+<p><strong>源文件</strong>:
+<code>docs/ref/multi-agent-research/03-bridge-remote/remote-session-manager.ts</code>
+(315 行)</p>
+<p><strong>架构</strong>:</p>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                    RemoteAgentPool                          │
+│  maxConcurrent: 32                                          │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │ Agent Sessions                                        │  │
+│  │ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐      │  │
+│  │ │Session A│ │Session B│ │Session C│ │   ...   │      │  │
+│  │ │ idle    │ │ running │ │ idle    │ │         │      │  │
+│  │ └─────────┘ └─────────┘ └─────────┘ └─────────┘      │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                              │
+│  能力：                                                      │
+│  1. acquireAgent(): 获取空闲 Agent，等待或新建               │
+│  2. releaseAgent(): 释放 Agent 回池                          │
+│  3. getPoolStats(): 获取池状态                              │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+<h3 id="核心代码-2">6.2 核心代码</h3>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> RemoteAgentPool {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> agents <span class="op">=</span> <span class="kw">new</span> <span class="bu">Map</span><span class="op">&lt;</span><span class="dt">string</span><span class="op">,</span> AgentPoolEntry<span class="op">&gt;</span>()</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>(</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">private</span> <span class="kw">readonly</span> config<span class="op">:</span> AgentPoolConfig<span class="op">,</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">private</span> <span class="kw">readonly</span> createSession<span class="op">:</span> (sessionId<span class="op">:</span> <span class="dt">string</span>) <span class="kw">=&gt;</span> RemoteSessionConfig<span class="op">,</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  ) {}</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">/**</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="co">   * 获取一个空闲 Agent，如有必要则等待。</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="co">   * 如果池未满则新建，否则等待空闲。</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="co">   */</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">acquireAgent</span>(agentType<span class="op">?:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>AgentPoolEntry <span class="op">|</span> <span class="dt">null</span><span class="op">&gt;</span> {</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 1. 优先找匹配类型的空闲 Agent</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">const</span> entry <span class="kw">of</span> <span class="kw">this</span><span class="op">.</span><span class="at">agents</span><span class="op">.</span><span class="fu">values</span>()) {</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>        entry<span class="op">.</span><span class="at">state</span> <span class="op">===</span> <span class="st">&#39;idle&#39;</span> <span class="op">&amp;&amp;</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>        (<span class="op">!</span>agentType <span class="op">||</span> entry<span class="op">.</span><span class="at">agentType</span> <span class="op">===</span> agentType)</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>      ) {</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> entry</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 2. 如果池未满，新建 Agent</span></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="kw">this</span><span class="op">.</span><span class="at">agents</span><span class="op">.</span><span class="at">size</span> <span class="op">&lt;</span> <span class="kw">this</span><span class="op">.</span><span class="at">config</span><span class="op">.</span><span class="at">maxConcurrent</span>) {</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="fu">createNewAgent</span>(agentType)</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 3. 池已满，等待空闲（简化版，实际应用 Promise 等待队列）</span></span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">null</span></span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> <span class="kw">async</span> <span class="fu">createNewAgent</span>(agentType<span class="op">?:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>AgentPoolEntry<span class="op">&gt;</span> {</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> sessionId <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">random</span>()<span class="op">.</span><span class="fu">toString</span>(<span class="dv">36</span>)<span class="op">.</span><span class="fu">slice</span>(<span class="dv">2</span>)</span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> sessionConfig <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">createSession</span>(sessionId)</span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> manager <span class="op">=</span> <span class="kw">new</span> <span class="fu">RemoteSessionManager</span>(sessionConfig<span class="op">,</span> {</span>
+<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a>      onStateChange<span class="op">:</span> (state) <span class="kw">=&gt;</span> {</span>
+<span id="cb21-39"><a href="#cb21-39" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> entry <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">agents</span><span class="op">.</span><span class="fu">get</span>(sessionId)</span>
+<span id="cb21-40"><a href="#cb21-40" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (entry) {</span>
+<span id="cb21-41"><a href="#cb21-41" aria-hidden="true" tabindex="-1"></a>          entry<span class="op">.</span><span class="at">state</span> <span class="op">=</span> state</span>
+<span id="cb21-42"><a href="#cb21-42" aria-hidden="true" tabindex="-1"></a>          entry<span class="op">.</span><span class="at">lastActivityAt</span> <span class="op">=</span> <span class="bu">Date</span><span class="op">.</span><span class="fu">now</span>()</span>
+<span id="cb21-43"><a href="#cb21-43" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb21-44"><a href="#cb21-44" aria-hidden="true" tabindex="-1"></a>      }<span class="op">,</span></span>
+<span id="cb21-45"><a href="#cb21-45" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb21-46"><a href="#cb21-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-47"><a href="#cb21-47" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> entry<span class="op">:</span> AgentPoolEntry <span class="op">=</span> {</span>
+<span id="cb21-48"><a href="#cb21-48" aria-hidden="true" tabindex="-1"></a>      sessionId<span class="op">,</span></span>
+<span id="cb21-49"><a href="#cb21-49" aria-hidden="true" tabindex="-1"></a>      manager<span class="op">,</span></span>
+<span id="cb21-50"><a href="#cb21-50" aria-hidden="true" tabindex="-1"></a>      state<span class="op">:</span> <span class="st">&#39;connecting&#39;</span><span class="op">,</span></span>
+<span id="cb21-51"><a href="#cb21-51" aria-hidden="true" tabindex="-1"></a>      agentType<span class="op">,</span></span>
+<span id="cb21-52"><a href="#cb21-52" aria-hidden="true" tabindex="-1"></a>      lastActivityAt<span class="op">:</span> <span class="bu">Date</span><span class="op">.</span><span class="fu">now</span>()<span class="op">,</span></span>
+<span id="cb21-53"><a href="#cb21-53" aria-hidden="true" tabindex="-1"></a>      createdAt<span class="op">:</span> <span class="bu">Date</span><span class="op">.</span><span class="fu">now</span>()<span class="op">,</span></span>
+<span id="cb21-54"><a href="#cb21-54" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-55"><a href="#cb21-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-56"><a href="#cb21-56" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">agents</span><span class="op">.</span><span class="fu">set</span>(sessionId<span class="op">,</span> entry)</span>
+<span id="cb21-57"><a href="#cb21-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">await</span> manager<span class="op">.</span><span class="fu">connect</span>()</span>
+<span id="cb21-58"><a href="#cb21-58" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> entry</span>
+<span id="cb21-59"><a href="#cb21-59" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb21-60"><a href="#cb21-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-61"><a href="#cb21-61" aria-hidden="true" tabindex="-1"></a>  <span class="co">/** 释放 Agent 回池 */</span></span>
+<span id="cb21-62"><a href="#cb21-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">releaseAgent</span>(sessionId<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="dt">void</span> {</span>
+<span id="cb21-63"><a href="#cb21-63" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> entry <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">agents</span><span class="op">.</span><span class="fu">get</span>(sessionId)</span>
+<span id="cb21-64"><a href="#cb21-64" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (entry) {</span>
+<span id="cb21-65"><a href="#cb21-65" aria-hidden="true" tabindex="-1"></a>      entry<span class="op">.</span><span class="at">currentTaskId</span> <span class="op">=</span> <span class="kw">undefined</span></span>
+<span id="cb21-66"><a href="#cb21-66" aria-hidden="true" tabindex="-1"></a>      entry<span class="op">.</span><span class="at">state</span> <span class="op">=</span> <span class="st">&#39;idle&#39;</span></span>
+<span id="cb21-67"><a href="#cb21-67" aria-hidden="true" tabindex="-1"></a>      entry<span class="op">.</span><span class="at">lastActivityAt</span> <span class="op">=</span> <span class="bu">Date</span><span class="op">.</span><span class="fu">now</span>()</span>
+<span id="cb21-68"><a href="#cb21-68" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-69"><a href="#cb21-69" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb21-70"><a href="#cb21-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-71"><a href="#cb21-71" aria-hidden="true" tabindex="-1"></a>  <span class="co">/** 获取当前池状态 */</span></span>
+<span id="cb21-72"><a href="#cb21-72" aria-hidden="true" tabindex="-1"></a>  <span class="fu">getPoolStats</span>()<span class="op">:</span> {</span>
+<span id="cb21-73"><a href="#cb21-73" aria-hidden="true" tabindex="-1"></a>    total<span class="op">:</span> <span class="dt">number</span></span>
+<span id="cb21-74"><a href="#cb21-74" aria-hidden="true" tabindex="-1"></a>    idle<span class="op">:</span> <span class="dt">number</span></span>
+<span id="cb21-75"><a href="#cb21-75" aria-hidden="true" tabindex="-1"></a>    running<span class="op">:</span> <span class="dt">number</span></span>
+<span id="cb21-76"><a href="#cb21-76" aria-hidden="true" tabindex="-1"></a>    connecting<span class="op">:</span> <span class="dt">number</span></span>
+<span id="cb21-77"><a href="#cb21-77" aria-hidden="true" tabindex="-1"></a>  } {</span>
+<span id="cb21-78"><a href="#cb21-78" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> idle <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> running <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> connecting <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb21-79"><a href="#cb21-79" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">const</span> entry <span class="kw">of</span> <span class="kw">this</span><span class="op">.</span><span class="at">agents</span><span class="op">.</span><span class="fu">values</span>()) {</span>
+<span id="cb21-80"><a href="#cb21-80" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (entry<span class="op">.</span><span class="at">state</span> <span class="op">===</span> <span class="st">&#39;idle&#39;</span>) idle<span class="op">++</span></span>
+<span id="cb21-81"><a href="#cb21-81" aria-hidden="true" tabindex="-1"></a>      <span class="cf">else</span> <span class="cf">if</span> (entry<span class="op">.</span><span class="at">state</span> <span class="op">===</span> <span class="st">&#39;running&#39;</span>) running<span class="op">++</span></span>
+<span id="cb21-82"><a href="#cb21-82" aria-hidden="true" tabindex="-1"></a>      <span class="cf">else</span> <span class="cf">if</span> (entry<span class="op">.</span><span class="at">state</span> <span class="op">===</span> <span class="st">&#39;connecting&#39;</span>) connecting<span class="op">++</span></span>
+<span id="cb21-83"><a href="#cb21-83" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-84"><a href="#cb21-84" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> { total<span class="op">:</span> <span class="kw">this</span><span class="op">.</span><span class="at">agents</span><span class="op">.</span><span class="at">size</span><span class="op">,</span> idle<span class="op">,</span> running<span class="op">,</span> connecting }</span>
+<span id="cb21-85"><a href="#cb21-85" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb21-86"><a href="#cb21-86" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="对-eket-的价值-5">6.3 对 EKET 的价值</h3>
+<p><strong>借鉴方式</strong>: 1. <strong>作为 EKET 常驻服务器的 Agent
+管理器</strong>: 当前 EKET 使用文件轮询 + Master 分配，可升级为 Agent
+Pool 模式 2. <strong>容量控制</strong>: 等待空闲 Agent，避免超出并发上限
+3. <strong>健康监控</strong>: 定期检查 Agent 状态，自动重连/恢复</p>
+<hr />
+<h2 id="七实现路线图">七、实现路线图</h2>
+<h3 id="v1.1.0-下周---基础消息总线">v1.1.0 (下周) - 基础消息总线</h3>
+<p><strong>目标</strong>: 实现文件 Mailbox 作为 Redis
+消息队列的容灾设计</p>
+<p><strong>任务</strong>: 1. [ ] 创建
+<code>node/src/core/agent-mailbox.ts</code> - 实现
+<code>writeToAgent()</code> / <code>readMailbox()</code> /
+<code>markAsRead()</code> - 集成 <code>lockfile</code> 文件锁 - 定义
+EKET 的 5+ 种结构化消息类型</p>
+<ol start="2" type="1">
+<li><label><input type="checkbox" />修改
+<code>node/src/core/message-queue.ts</code></label>
+<ul>
+<li>添加 <code>fallbackToMailbox()</code> 方法</li>
+<li>Redis 不可用时自动降级到文件 Mailbox</li>
+</ul></li>
+<li><label><input type="checkbox" />创建测试</label>
+<ul>
+<li><code>node/tests/agent-mailbox.test.ts</code></li>
+<li>并发写入测试（验证文件锁有效性）</li>
+</ul></li>
+</ol>
+<p><strong>预计工时</strong>: 8h</p>
+<hr />
+<h3 id="v1.2.0-下月---http-hook-后端">v1.2.0 (下月) - HTTP Hook
+后端</h3>
+<p><strong>目标</strong>: 实现 Hook
+事件系统，支持服务端监控和任务触发</p>
+<p><strong>任务</strong>: 1. [ ] 创建
+<code>node/src/hooks/http-hook-server.ts</code> - Express 服务器，监听
+8080 端口 - 实现
+<code>/hooks/pre-tool-use</code>、<code>/hooks/teammate-idle</code>、<code>/hooks/task-completed</code>
+端点</p>
+<ol start="2" type="1">
+<li><label><input type="checkbox" />集成到
+<code>node/src/core/agent-executor.ts</code></label>
+<ul>
+<li>在工具调用前后发送 HTTP Hook</li>
+<li>支持 Hook 响应（允许/拒绝/修改输入）</li>
+</ul></li>
+<li><label><input type="checkbox" />任务调度器集成</label>
+<ul>
+<li><code>TeammateIdle</code> → 分配下一个匹配任务</li>
+<li><code>TaskCompleted</code> → 触发下游 Agent</li>
+</ul></li>
+</ol>
+<p><strong>预计工时</strong>: 12h</p>
+<hr />
+<h3 id="v1.3.0-下季度---agent-pool-管理器">v1.3.0 (下季度) - Agent Pool
+管理器</h3>
+<p><strong>目标</strong>: 实现常驻服务器 + Agent Pool 模式</p>
+<p><strong>任务</strong>: 1. [ ] 创建
+<code>node/src/core/agent-pool.ts</code> - 实现
+<code>acquireAgent()</code> / <code>releaseAgent()</code> /
+<code>getPoolStats()</code> - 集成 Bridge 退避重连配置</p>
+<ol start="2" type="1">
+<li><label><input type="checkbox" />实现容量唤醒</label>
+<ul>
+<li>WebSocket ping 通知</li>
+<li>轮询退避优化</li>
+</ul></li>
+<li><label><input type="checkbox" />会话快照恢复</label>
+<ul>
+<li>保存 Agent 状态到 SQLite</li>
+<li>崩溃后从快照恢复</li>
+</ul></li>
+</ol>
+<p><strong>预计工时</strong>: 24h</p>
+<hr />
+<h3 id="v2.0.0-下下季度---websocket-实时通信">v2.0.0 (下下季度) -
+WebSocket 实时通信</h3>
+<p><strong>目标</strong>: 升级文件轮询为 WebSocket 实时通信</p>
+<p><strong>任务</strong>: 1. [ ] 创建
+<code>node/src/core/sessions-websocket.ts</code> - 实现 WebSocket
+连接、心跳、重连 - 错误码分类处理</p>
+<ol start="2" type="1">
+<li><label><input type="checkbox" />修改
+<code>node/src/core/message-queue.ts</code></label>
+<ul>
+<li>添加 <code>sendViaWebSocket()</code> 方法</li>
+<li>支持降级到文件轮询</li>
+</ul></li>
+<li><label><input type="checkbox" />只读观察者模式</label>
+<ul>
+<li>UI 监控面板集成</li>
+<li>调试观察</li>
+</ul></li>
+</ol>
+<p><strong>预计工时</strong>: 16h</p>
+<hr />
+<h2 id="八架构风险与缓解">八、架构风险与缓解</h2>
+<h3 id="风险-1-文件-mailbox-性能瓶颈">风险 1: 文件 Mailbox 性能瓶颈</h3>
+<p><strong>问题</strong>: 文件锁在高并发下可能成为瓶颈</p>
+<p><strong>缓解</strong>: - 仅作为 Redis 消息队列的容灾设计（fallback）
+- 正常情况使用 Redis，Redis 不可用时降级到文件</p>
+<hr />
+<h3 id="风险-2-http-hook-延迟">风险 2: HTTP Hook 延迟</h3>
+<p><strong>问题</strong>: 每个工具调用都发送 HTTP 请求，可能增加延迟</p>
+<p><strong>缓解</strong>: - Hook 服务器部署在本地（localhost:8080） -
+设置超时（5s），超时后按 <code>onFailure: 'allow'</code> 处理（容错） -
+异步发送 Hook（不阻塞主流程）</p>
+<hr />
+<h3 id="风险-3-agent-pool-复杂度">风险 3: Agent Pool 复杂度</h3>
+<p><strong>问题</strong>: Agent Pool 管理增加系统复杂度</p>
+<p><strong>缓解</strong>: - 先实现基础版本（支持 acquire/release） -
+逐步添加高级功能（容量唤醒、快照恢复） -
+添加完整的单元测试和集成测试</p>
+<hr />
+<h2 id="九测试覆盖">九、测试覆盖</h2>
+<h3 id="单元测试">单元测试</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 42%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr>
+<th>模块</th>
+<th>测试文件</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent Mailbox</td>
+<td><code>node/tests/agent-mailbox.test.ts</code></td>
+<td>待创建</td>
+</tr>
+<tr>
+<td>HTTP Hook Server</td>
+<td><code>node/tests/http-hook-server.test.ts</code></td>
+<td>待创建</td>
+</tr>
+<tr>
+<td>Agent Pool</td>
+<td><code>node/tests/agent-pool.test.ts</code></td>
+<td>待创建</td>
+</tr>
+<tr>
+<td>Sessions WebSocket</td>
+<td><code>node/tests/sessions-websocket.test.ts</code></td>
+<td>待创建</td>
+</tr>
+</tbody>
+</table>
+<h3 id="集成测试">集成测试</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 42%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr>
+<th>场景</th>
+<th>测试文件</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mailbox 并发写入</td>
+<td><code>node/tests/integration/mailbox-concurrent.test.ts</code></td>
+<td>待创建</td>
+</tr>
+<tr>
+<td>Hook 事件触发任务分配</td>
+<td><code>node/tests/integration/hook-task-assign.test.ts</code></td>
+<td>待创建</td>
+</tr>
+<tr>
+<td>Agent Pool 容量控制</td>
+<td><code>node/tests/integration/agent-pool-capacity.test.ts</code></td>
+<td>待创建</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="十结论">十、结论</h2>
+<h3 id="核心借鉴价值">核心借鉴价值</h3>
+<p>Claude Code 的 Swarm
+实现选择了”文件系统作为消息总线”，在多进程协作时极其健壮： -
+<strong>天然持久化</strong>: 无需额外基础设施 -
+<strong>文件锁保证一致性</strong>: 多进程安全 -
+<strong>结构化协议</strong>: 10+ 种内置消息类型</p>
+<p><strong>关键洞察</strong>: 你的”常驻服务器”模式可以直接借鉴 Bridge +
+Agent Pool 架构，实现生产级 Agent 管理。</p>
+<h3 id="下一步行动">下一步行动</h3>
+<ol type="1">
+<li><strong>v1.1.0 (本周)</strong>: 实现文件 Mailbox 基础功能</li>
+<li><strong>v1.2.0 (下周)</strong>: 实现 HTTP Hook 后端</li>
+<li><strong>v1.3.0 (下月)</strong>: 实现 Agent Pool 管理器</li>
+<li><strong>v2.0.0 (下季度)</strong>: 实现 WebSocket 实时通信</li>
+</ol>
+<h3 id="v1.0.0-就绪状态">v1.0.0 就绪状态</h3>
+<p>EKET 框架 v1.0.0 已完成基础架构修复，下一阶段可直接融入上述
+multi-agent 模式，逐步实现常驻服务器和多 Agent 协作能力。</p>
+<hr />
+<p><strong>报告生成时间</strong>: 2026-03-31
+<strong>审查完成者</strong>: Linus (首席架构师)
+<strong>审查状态</strong>: ✅ 完成 <strong>v1.1.0 设计就绪</strong>: ✅
+就绪</p>
+</body>
+</html>

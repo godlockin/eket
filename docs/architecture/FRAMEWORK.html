@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 框架白皮书</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 框架白皮书</h1>
+</header>
+<h1 id="eket-框架白皮书">EKET 框架白皮书</h1>
+<p><strong>版本</strong>: 2.0.0 <strong>日期</strong>: 2026-04-06
+<strong>类型</strong>: 框架说明文档</p>
+<hr />
+<h2 id="目录">目录</h2>
+<ol type="1">
+<li><a href="#初衷与愿景">初衷与愿景</a></li>
+<li><a href="#系统目标">系统目标</a></li>
+<li><a href="#核心设计理念">核心设计理念</a></li>
+<li><a href="#架构与实现方式">架构与实现方式</a></li>
+<li><a href="#workflow-设计">Workflow 设计</a></li>
+<li><a href="#agent-宪法与行为方式">Agent 宪法与行为方式</a></li>
+<li><a href="#通信协议">通信协议</a></li>
+<li><a href="#记忆系统">记忆系统</a></li>
+<li><a href="#技能体系">技能体系</a></li>
+<li><a href="#项目结构">项目结构</a></li>
+</ol>
+<hr />
+<h2 id="初衷与愿景">初衷与愿景</h2>
+<h3 id="初衷">初衷</h3>
+<p>在 AI 智能体技术快速发展的今天，我们发现：</p>
+<ol type="1">
+<li><strong>单点智能体能力强大但协作困难</strong> - 单个 Claude Code
+实例可以完成复杂任务，但多个实例之间缺乏可靠的协作机制</li>
+<li><strong>研发流程缺乏标准化</strong> -
+每次新项目都需要重新定义流程、沟通方式和工作规范</li>
+<li><strong>知识无法沉淀</strong> -
+项目经验、技术决策、最佳实践散落在对话历史中，无法有效传承</li>
+<li><strong>规模化困难</strong> -
+随着项目复杂度增加，智能体之间的协调成本呈指数级增长</li>
+</ol>
+<p>EKET
+框架的诞生就是为了解决这些问题：<strong>将多智能体协作研发变成一套可复用、可演进、可审计的工程化底座</strong>。</p>
+<h3 id="愿景">愿景</h3>
+<blockquote>
+<p>让智能体从零散的提示词执行升级为系统化协作，持续产出稳定的设计、代码与测试结果。</p>
+</blockquote>
+<p>我们期望通过 EKET 框架：</p>
+<ul>
+<li><strong>降低协作成本</strong> -
+把”口头约定”固化为可检索的文档与结构化流程</li>
+<li><strong>提升可控性</strong> -
+让决策与实现可追溯、可复盘、可调整</li>
+<li><strong>放大生产力</strong> - 系统化协作而非单点执行</li>
+<li><strong>支持规模化</strong> -
+适配不同规模与不同技术栈的研发项目</li>
+</ul>
+<hr />
+<h2 id="系统目标">系统目标</h2>
+<p>EKET 框架是一个<strong>多智能体协作系统</strong>，用于 AI 智能体（如
+Claude Code）进行研发任务的自动化处理。系统通过：</p>
+<ul>
+<li>规范化的流程</li>
+<li>清晰的职责划分</li>
+<li>可靠的通信机制</li>
+</ul>
+<p>实现多个智能体实例的高效协作。</p>
+<h3 id="核心能力">核心能力</h3>
+<table>
+<thead>
+<tr>
+<th>能力</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>任务自动化</strong></td>
+<td>从需求输入到代码提交的端到端自动化</td>
+</tr>
+<tr>
+<td><strong>多智能体协作</strong></td>
+<td>支持多个智能体实例并行工作、协调配合</td>
+</tr>
+<tr>
+<td><strong>状态持久化</strong></td>
+<td>通过 Git 实现任务状态、代码变更的持久化存储</td>
+</tr>
+<tr>
+<td><strong>人类在环</strong></td>
+<td>关键决策点引入人类确认，确保方向正确</td>
+</tr>
+<tr>
+<td><strong>知识沉淀</strong></td>
+<td>项目经验、技术决策自动归档，形成组织记忆</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="核心设计理念">核心设计理念</h2>
+<h3 id="混合架构">1. 混合架构</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                    顶层协调智能体小组                         │
+│  ┌─────────────┬─────────────┬─────────────┬─────────────┐  │
+│  │ 需求分析师   │  技术经理    │  项目经理    │  文档监控员  │  │
+│  └─────────────┴─────────────┴─────────────┴─────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  执行层智能体（去中心化网络）                   │
+│  ┌─────────┬─────────┬──────────┬──────────┬────────┬──────┐ │
+│  │ 设计师   │ 测试员   │ 前端开发  │ 后端开发   │ 运维    │ 存储 │ │
+│  └─────────┴─────────┴──────────┴──────────┴────────┴──────┘ │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+<ul>
+<li><strong>顶层协调小组</strong>：4
+个常驻智能体，负责任务分析、资源协调、PR 审核</li>
+<li><strong>执行层网络</strong>：6+ 个按需智能体，负责具体任务执行</li>
+</ul>
+<h3 id="混合通信">2. 混合通信</h3>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>用途</th>
+<th>位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>消息队列</strong></td>
+<td>实时通信</td>
+<td><code>shared/message_queue/</code></td>
+</tr>
+<tr>
+<td><strong>Git Commit</strong></td>
+<td>状态持久化</td>
+<td>三大 Git 仓库</td>
+</tr>
+<tr>
+<td><strong>共享状态文件</strong></td>
+<td>跨实例同步</td>
+<td><code>shared/.state/</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="混合决策">3. 混合决策</h3>
+<table>
+<thead>
+<tr>
+<th>决策类型</th>
+<th>决策者</th>
+<th>流程</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>常规任务</td>
+<td>执行智能体自主</td>
+<td>领取 → 执行 → 提交 PR</td>
+</tr>
+<tr>
+<td>技术方案</td>
+<td>技术经理</td>
+<td>提议 → 审批</td>
+</tr>
+<tr>
+<td>需求变更</td>
+<td>需求分析师 + 项目经理</td>
+<td>分析影响 → 评估优先级 → 决策</td>
+</tr>
+<tr>
+<td>架构变更</td>
+<td>技术经理 + 人类确认</td>
+<td>提案 → Review → 人类批准</td>
+</tr>
+</tbody>
+</table>
+<h3 id="混合生命周期">4. 混合生命周期</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>生命周期</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>协调智能体</strong></td>
+<td>常驻</td>
+<td>需求分析师、技术经理、项目经理</td>
+</tr>
+<tr>
+<td><strong>执行智能体</strong></td>
+<td>按需</td>
+<td>设计师、开发、测试、运维</td>
+</tr>
+</tbody>
+</table>
+<h3 id="文件系统隔离">5. 文件系统隔离</h3>
+<pre><code>project/
+├── shared/      # 共享区 - 三大 Git 仓库
+├── private/     # 私有区 - 智能体工作空间
+├── inbox/       # 输入区 - 人类需求
+├── outbox/      # 输出区 - Review 请求
+└── tasks/       # 任务区 - 任务定义</code></pre>
+<hr />
+<h2 id="架构与实现方式">架构与实现方式</h2>
+<h3 id="三大-git-仓库">三大 Git 仓库</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>仓库</th>
+<th>用途</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>shared/confluence</code></td>
+<td>文档中心</td>
+<td>需求文档、架构设计、技术规范、会议记录</td>
+</tr>
+<tr>
+<td><code>shared/code_repo</code></td>
+<td>代码仓库</td>
+<td>源代码、测试、部署配置、CI/CD</td>
+</tr>
+<tr>
+<td><code>shared/jira</code></td>
+<td>任务管理</td>
+<td>需求票、缺陷票、任务票、状态追踪</td>
+</tr>
+</tbody>
+</table>
+<h3 id="仓库关系">仓库关系</h3>
+<pre><code>my_project_code_repo/          # 主代码仓库
+├── .gitmodules                # 指向 confluence 和 jira
+├── confluence/                # submodule → confluence 仓库
+├── jira/                      # submodule → jira 仓库
+├── src/                       # 源代码
+└── ...</code></pre>
+<h3 id="智能体定义">智能体定义</h3>
+<p>每个智能体由 YAML 配置文件定义：</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># agents/agent_base_template.yml</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> &lt;agent_name&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">type</span><span class="kw">:</span><span class="at"> coordinator|executor</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="fl">1.0.0</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> &lt;简短描述&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">capabilities</span><span class="kw">:</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> &lt;capability_tag_1&gt;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> &lt;capability_tag_2&gt;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">inputs</span><span class="kw">:</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> jira_ticket</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">fields</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">title</span><span class="kw">,</span><span class="at"> description</span><span class="kw">,</span><span class="at"> acceptance_criteria</span><span class="kw">]</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">outputs</span><span class="kw">:</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> jira_transition</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">action</span><span class="kw">:</span><span class="at"> transition_ticket</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> pull_request</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">format</span><span class="kw">:</span><span class="at"> github_pr</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="fu">decision_policy</span><span class="kw">:</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">auto_decide</span><span class="kw">:</span><span class="at"> true|false</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">auto_decide_scope</span><span class="kw">:</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> &lt;允许自主决策的场景&gt;</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">escalation_rules</span><span class="kw">:</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">condition</span><span class="kw">:</span><span class="at"> &lt;条件&gt;</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">escalate_to</span><span class="kw">:</span><span class="at"> &lt;目标智能体&gt;</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="fu">lifecycle</span><span class="kw">:</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">mode</span><span class="kw">:</span><span class="at"> persistent|on_demand</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">spawn_method</span><span class="kw">:</span><span class="at"> process|thread</span></span></code></pre></div>
+<h3 id="技能体系">技能体系</h3>
+<p>技能是可复用、可配置的能力单元：</p>
+<pre><code>SKILL 体系
+├── 需求分析类
+│   ├── user_interview
+│   ├── requirement_decomposition
+│   └── acceptance_criteria_definition
+├── 技术设计类
+│   ├── architecture_design
+│   ├── api_design
+│   └── database_design
+├── 开发实现类
+│   ├── frontend_development
+│   ├── backend_development
+│   └── test_development
+├── 测试验证类
+│   ├── unit_test
+│   ├── e2e_test
+│   └── performance_test
+└── 运维部署类
+    ├── docker_build
+    ├── kubernetes_deploy
+    └── monitoring_setup</code></pre>
+<hr />
+<h2 id="workflow-设计">Workflow 设计</h2>
+<h3 id="标准任务流转">标准任务流转</h3>
+<pre><code>1. 人类输入需求 → 需求分析师接收
+       ↓
+2. 需求分析师 → 拆解为 Jira tickets
+       ↓
+3. 执行智能体 → 轮询并领取任务
+       ↓
+4. 执行智能体 → 创建 git 分支 → 开发 → 提交 PR
+       ↓
+5. 执行智能体 → 通过消息队列唤醒协调智能体
+       ↓
+6. 协调智能体 → review PR → 合并或要求修改
+       ↓
+7. 任务完成 → 更新 Jira 状态 → 通知相关方</code></pre>
+<h3 id="ticket-状态机">Ticket 状态机</h3>
+<pre><code>                                    ┌─────────────────────────────────────────┐
+                                    │                                         │
+    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐  │  ┌─────────┐
+    │ backlog │───→│ analysis│───→│ design  │───→│  dev    │───→│  test   │───→│ review  │
+    └─────────┘    └────┬────┘    └────┬────┘    └────┬────┘    └────┬────┘  │  └────┬────┘
+         │              │              │              │              │       │       │
+         │              ▼              │              │              │       │       │
+         │         needs_info          │              │              │       │       │
+         │              │              │              │              │       │       │
+         │              └──────────────┘              │              │       │       │
+         │                                            │              │       │       │
+         │                                            ▼              │       │       │
+         │                                       approved            │       │       │
+         │                                            │              │       │       │
+         │                                            ▼              │       │       │
+         │                                       ready               │       │       │
+         │                                                             ↓     │       │
+         │                                                          passed   │       │
+         │                                                                    │       │
+         │                                                                    ▼       │
+         │                                                           changes_requested│
+         │                                                                            │
+         └────────────────────────────────────────────────────────────────────────────┘
+                                      rejected</code></pre>
+<h3 id="分支管理">分支管理</h3>
+<pre><code>分支命名规范:
+- feature/{ticket-id}-{short-desc}    # 功能开发
+- bugfix/{ticket-id}-{short-desc}     # 缺陷修复
+- hotfix/{ticket-id}-{short-desc}     # 紧急修复
+- docs/{ticket-id}-{short-desc}       # 文档更新
+
+合并流程:
+1. 执行智能体完成开发
+2. 执行智能体创建 PR，指定协调智能体为 reviewer
+3. 执行智能体发送 review 请求消息
+4. 协调智能体接收消息 → 执行 review
+5. review 通过 → 合并到主分支
+6. review 不通过 → 评论反馈 → 执行智能体修改</code></pre>
+<h3 id="反馈循环">反馈循环</h3>
+<pre><code>┌──────────────┐
+│  智能体执行   │
+│  一轮工作     │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────────────────────────┐
+│ 创建状态报告                       │
+│ inbox/human_feedback/            │
+│ status-&lt;task-id&gt;-&lt;timestamp&gt;.md  │
+└──────┬───────────────────────────┘
+       │
+       │ 状态：pending_confirmation
+       ▼
+┌──────────────┐
+│  等待人类确认  │
+│  (智能体暂停)  │
+└──────┬───────┘
+       │
+       │ 人类回复
+       ▼
+┌──────────────────────────────────┐
+│ 人类在同一个文件中回复             │
+│ - 确认成果                        │
+│ - 选择推荐答案                    │
+│ - 提供额外指示                    │
+└──────┬───────────────────────────┘
+       │
+       ▼
+┌──────────────┐
+│  智能体读取   │
+│  人类反馈     │
+└──────┬───────┘
+       │
+       │ 根据反馈
+       ▼
+┌──────────────────────────────────┐
+│ 继续执行或修改                    │
+│ - 进入下一阶段                    │
+│ - 调整方案重新执行                │
+└──────────────────────────────────┘</code></pre>
+<hr />
+<h2 id="agent-宪法与行为方式">Agent 宪法与行为方式</h2>
+<h3 id="第一原则安全优先">第一原则：安全优先</h3>
+<blockquote>
+<p>任何操作不得损害项目、数据或系统安全。</p>
+</blockquote>
+<ul>
+<li>删除操作必须经过确认</li>
+<li>敏感信息不得提交到 Git</li>
+<li>发现安全风险立即上报</li>
+</ul>
+<h3 id="第二原则人类在环">第二原则：人类在环</h3>
+<blockquote>
+<p>重大决策必须引入人类确认。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>必须上报的场景</th>
+<th>上报对象</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务复杂度超出预估（&gt;4 小时）</td>
+<td>项目经理</td>
+</tr>
+<tr>
+<td>技术选型存在争议</td>
+<td>技术经理</td>
+</tr>
+<tr>
+<td>需要跨模块协调</td>
+<td>项目经理</td>
+</tr>
+<tr>
+<td>发现需求不明确或矛盾</td>
+<td>需求分析师</td>
+</tr>
+<tr>
+<td>遇到阻塞性问题超过 30 分钟</td>
+<td>协调智能体小组</td>
+</tr>
+</tbody>
+</table>
+<h3 id="第三原则文档即契约">第三原则：文档即契约</h3>
+<blockquote>
+<p>所有决策、变更、经验必须文档化。</p>
+</blockquote>
+<ul>
+<li>需求分析完成 → 更新 Confluence 需求文档</li>
+<li>技术方案确定 → 更新 Confluence 架构文档</li>
+<li>代码提交 → 关联 Jira ticket</li>
+<li>PR 合并 → 更新 Release Notes</li>
+</ul>
+<h3 id="第四原则职责分离">第四原则：职责分离</h3>
+<blockquote>
+<p>各智能体在职责范围内自主决策，不得越权。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>负责智能体</th>
+<th>决策权限</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需求文档</td>
+<td>需求分析师</td>
+<td>完全自主</td>
+</tr>
+<tr>
+<td>架构设计</td>
+<td>技术经理</td>
+<td>完全自主</td>
+</tr>
+<tr>
+<td>前端代码</td>
+<td>前端开发</td>
+<td>自主实现，PR 审核</td>
+</tr>
+<tr>
+<td>后端代码</td>
+<td>后端开发</td>
+<td>自主实现，PR 审核</td>
+</tr>
+<tr>
+<td>测试代码</td>
+<td>测试员</td>
+<td>完全自主</td>
+</tr>
+<tr>
+<td>部署配置</td>
+<td>运维</td>
+<td>自主实施，事后报告</td>
+</tr>
+</tbody>
+</table>
+<h3 id="第五原则持续改进">第五原则：持续改进</h3>
+<blockquote>
+<p>每轮任务结束后必须总结经验，优化流程。</p>
+</blockquote>
+<ul>
+<li>任务完成 → 生成本次任务的经验总结</li>
+<li>发现问题 → 创建改进建议 ticket</li>
+<li>优秀实践 → 归档到长期记忆</li>
+</ul>
+<hr />
+<h2 id="通信协议">通信协议</h2>
+<h3 id="消息队列">消息队列</h3>
+<pre><code>shared/message_queue/
+├── inbox/          # 入队消息
+│   ├── msg_001.json
+│   └── msg_002.json
+├── outbox/         # 出队消息
+│   ├── msg_003.json
+│   └── msg_004.json
+└── broadcast/      # 广播消息
+    └── announcement_001.json</code></pre>
+<h3 id="消息格式">消息格式</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;msg_20240115_001&quot;</span><span class="fu">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timestamp&quot;</span><span class="fu">:</span> <span class="st">&quot;2024-01-15T10:30:00Z&quot;</span><span class="fu">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;from&quot;</span><span class="fu">:</span> <span class="st">&quot;agent_frontend_dev_001&quot;</span><span class="fu">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;to&quot;</span><span class="fu">:</span> <span class="st">&quot;agent_tech_manager&quot;</span><span class="fu">,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;pr_review_request&quot;</span><span class="fu">,</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;priority&quot;</span><span class="fu">:</span> <span class="st">&quot;normal&quot;</span><span class="fu">,</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payload&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ticket_id&quot;</span><span class="fu">:</span> <span class="st">&quot;FEAT-123&quot;</span><span class="fu">,</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;pr_number&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">,</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;branch&quot;</span><span class="fu">:</span> <span class="st">&quot;feature/feat-123-user-auth&quot;</span><span class="fu">,</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;summary&quot;</span><span class="fu">:</span> <span class="st">&quot;实现用户登录功能&quot;</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="消息类型">消息类型</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>用途</th>
+<th>格式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>task_assigned</code></td>
+<td>分配任务</td>
+<td>JSON</td>
+</tr>
+<tr>
+<td><code>task_claimed</code></td>
+<td>领取任务</td>
+<td>JSON</td>
+</tr>
+<tr>
+<td><code>pr_review_request</code></td>
+<td>请求 PR 审核</td>
+<td>JSON</td>
+</tr>
+<tr>
+<td><code>help_request</code></td>
+<td>请求帮助</td>
+<td>JSON</td>
+</tr>
+<tr>
+<td><code>status_update</code></td>
+<td>状态更新</td>
+<td>JSON</td>
+</tr>
+<tr>
+<td><code>blocker_alert</code></td>
+<td>阻塞告警</td>
+<td>JSON</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="记忆系统">记忆系统</h2>
+<h3 id="三级记忆架构">三级记忆架构</h3>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 30%" />
+<col style="width: 20%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>类型</th>
+<th>存储位置</th>
+<th>内容</th>
+<th>保留策略</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>短期记忆</strong></td>
+<td><code>runtime/memory/short_term/</code></td>
+<td>当前任务上下文、临时变量</td>
+<td>任务结束清除</td>
+</tr>
+<tr>
+<td><strong>长期记忆</strong></td>
+<td><code>runtime/memory/long_term/</code></td>
+<td>项目知识、技术决策、经验</td>
+<td>永久保留</td>
+</tr>
+<tr>
+<td><strong>外部记忆</strong></td>
+<td><code>shared/confluence/memory/</code></td>
+<td>文档化知识、最佳实践</td>
+<td>永久保留，可检索</td>
+</tr>
+</tbody>
+</table>
+<h3 id="记忆内容示例">记忆内容示例</h3>
+<pre><code>短期记忆 (任务执行中):
+- 任务描述和验收标准
+- 临时变量和中间结果
+- 当前分支和文件路径
+
+长期记忆 (永久保存):
+- 项目技术栈和架构图
+- 编码规范和最佳实践
+- 历史决策记录和原因
+
+外部记忆 (共享知识):
+- Confluence 文档
+- API 接口定义
+- 数据库 Schema</code></pre>
+<hr />
+<h2 id="项目结构">项目结构</h2>
+<pre><code>eket/
+├── CLAUDE.md                 # 系统核心文档
+├── AGENTS.md                 # 智能体定义和协作规范
+├── SKILLS.md                 # 技能库
+├── docs/
+│   ├── expert-review.md      # 专家组审查报告
+│   ├── STATE_MACHINE.md      # Ticket 状态机文档
+│   ├── CODE_REVIEW_CHECKLIST.md  # 代码审查清单
+│   └── WORKFLOW_DIAGRAM.md   # 可视化工作流程图
+├── agents/                   # 智能体定义
+│   ├── coordinator/          # 协调智能体
+│   ├── executor/             # 执行智能体
+│   └── runtime/              # 运行时组件
+├── runtime/                  # 运行时核心
+│   ├── scheduler/            # 调度器
+│   ├── communication/        # 通信系统
+│   └── memory/               # 记忆系统
+├── shared/                   # 共享文件系统（Git 仓库）
+│   ├── confluence/           # 文档
+│   ├── code_repo/            # 代码
+│   ├── jira/                 # 任务
+│   └── message_queue/        # 消息队列
+├── private/                  # 私有工作区
+│   └── workspaces/           # 智能体工作空间
+├── config/                   # 配置文件
+│   ├── system.yml            # 系统配置
+│   ├── agents.yml            # 智能体配置
+│   └── groups.yml            # 小组配置
+├── template/                 # 项目模板
+│   ├── CLAUDE.md             # 项目 CLAUDE.md 模板
+│   ├── README.md             # README 模板
+│   ├── SECURITY.md           # 安全指南
+│   ├── .gitignore            # Git 忽略规则
+│   ├── .github/workflows/    # CI/CD 配置
+│   ├── .claude/              # Claude Code 配置
+│   ├── .eket/                # EKET 配置
+│   ├── inbox/                # 输入模板
+│   ├── outbox/               # 输出模板
+│   ├── tasks/                # 任务模板
+│   ├── examples/             # 快速开始示例
+│   └── docs/                 # 文档模板
+├── hooks/                    # Git hooks
+└── scripts/                  # 工具脚本
+    ├── init.sh               # 初始化
+    ├── init-project.sh       # 项目初始化
+    ├── cleanup-project.sh    # 项目清理
+    ├── start.sh              # 启动
+    └── manage.sh             # 管理</code></pre>
+<hr />
+<h2 id="快速开始">快速开始</h2>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 初始化项目</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/init-project.sh</span> <span class="op">&lt;</span>project-name<span class="op">&gt;</span> /path/to/project</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 进入项目目录</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /path/to/project</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 在 inbox/human_input.md 中描述需求</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 启动 Claude Code</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="ex">claude</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. 使用 EKET 命令</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-status</span>   <span class="co"># 查看状态</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-task</span>     <span class="co"># 创建任务</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-review</span>   <span class="co"># 请求 Review</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-claim</span>    <span class="co"># 领取任务</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-help</span>     <span class="co"># 获取帮助</span></span></code></pre></div>
+<hr />
+<h2 id="附录">附录</h2>
+<h3 id="专家组审查结果">专家组审查结果</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>评分</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>架构设计</td>
+<td>8/10</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>用户体验</td>
+<td>7/10</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>安全性</td>
+<td>6/10 → 8/10</td>
+<td>✅ 已修复</td>
+</tr>
+<tr>
+<td>DevOps</td>
+<td>7/10</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>开发者体验</td>
+<td>8/10</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p><strong>总体评分</strong>: 7.5/10 → <strong>9.0/10</strong></p>
+<p>所有 11 项专家提出的改进项目已全部完成 (100%)。</p>
+<h3 id="版本历史">版本历史</h3>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>日期</th>
+<th>变更内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.1.0</td>
+<td>2026-03-18</td>
+<td>初始版本</td>
+</tr>
+<tr>
+<td>0.1.0</td>
+<td>2026-03-19</td>
+<td>引入专家组审查</td>
+</tr>
+<tr>
+<td>0.1.0</td>
+<td>2026-03-20</td>
+<td>完成所有 P0/P1/P2 改进项目</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team <strong>许可证</strong>:
+MIT</p>
+</body>
+</html>

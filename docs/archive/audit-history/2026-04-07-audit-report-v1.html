@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 项目文档审查报告</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 项目文档审查报告</h1>
+</header>
+<h1 id="eket-项目文档审查报告">EKET 项目文档审查报告</h1>
+<p><strong>审查日期</strong>: 2026-04-07 <strong>审查范围</strong>:
+全项目文档、配置文件、示例代码 <strong>当前版本</strong>: 2.0.0
+<strong>审查者</strong>: Claude (Opus 4.6)</p>
+<hr />
+<h2 id="执行摘要">执行摘要</h2>
+<p>本次审查发现 <strong>59
+个文件</strong>包含过时版本引用，<strong>多个关键架构不一致</strong>问题，以及<strong>环境配置缺失</strong>等问题。</p>
+<h3 id="问题汇总">问题汇总</h3>
+<table>
+<thead>
+<tr>
+<th>严重等级</th>
+<th>数量</th>
+<th>影响范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P0 (严重)</strong></td>
+<td>8</td>
+<td>阻碍项目使用</td>
+</tr>
+<tr>
+<td><strong>P1 (高)</strong></td>
+<td>15</td>
+<td>影响开发体验</td>
+</tr>
+<tr>
+<td><strong>P2 (中)</strong></td>
+<td>23</td>
+<td>文档不一致</td>
+</tr>
+<tr>
+<td><strong>P3 (低)</strong></td>
+<td>12</td>
+<td>优化建议</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="p0-问题必须立即修复">P0 问题（必须立即修复）</h2>
+<h3 id="架构三仓库不存在但文档声称存在">1.
+【架构】三仓库不存在但文档声称存在</h3>
+<p><strong>问题描述</strong>: -
+多个文档声称项目使用三仓库架构（confluence/jira/code_repo） -
+实际项目根目录下只有 <code>jira/</code> 目录，<strong>缺失
+<code>confluence/</code> 和 <code>code_repo/</code></strong> - 没有
+<code>.gitmodules</code> 文件，说明 submodule 未配置</p>
+<p><strong>影响文件</strong>:</p>
+<pre><code>- README.md (行 139-192)
+- docs/02-architecture/FRAMEWORK.md (行 134-152)
+- docs/01-getting-started/QUICKSTART.md (行 122-133)
+- CLAUDE.md (行 165-192)</code></pre>
+<p><strong>风险</strong>: - 用户按文档操作会失败 -
+框架核心架构说明与实际不符 - 所有三仓库相关命令无法执行</p>
+<p><strong>建议修复</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 方案 A: 创建三仓库结构</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> confluence code_repo</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> submodule add <span class="op">&lt;</span>confluence-repo-url<span class="op">&gt;</span> confluence</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> submodule add <span class="op">&lt;</span>code-repo-url<span class="op">&gt;</span> code_repo</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 方案 B: 更新所有文档，说明当前为单仓库模式</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 将三仓库描述改为&quot;可选的扩展模式&quot;</span></span></code></pre></div>
+<p><strong>优先级</strong>: ⚠️ P0 - 必须立即修复</p>
+<hr />
+<h3 id="环境node.js-依赖未安装">2. 【环境】Node.js 依赖未安装</h3>
+<p><strong>问题描述</strong>: - <code>node/</code> 目录不存在 -
+package.json 存在于 <code>node/package.json</code> 但未安装依赖 -
+编译失败，缺少 i18next, date-fns, ora 等核心依赖</p>
+<p><strong>影响</strong>: - 所有 <code>node dist/index.js</code>
+命令无法执行 - Web Dashboard、API Gateway、Hook Server 无法启动 - CLI
+命令完全不可用</p>
+<p><strong>当前错误</strong>:</p>
+<pre><code>error TS2307: Cannot find module &#39;i18next&#39;
+error TS2307: Cannot find module &#39;date-fns&#39;
+error TS2307: Cannot find module &#39;ora&#39;</code></pre>
+<p><strong>建议修复</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run build</span></code></pre></div>
+<p><strong>优先级</strong>: ⚠️ P0 - 阻塞所有 Node.js 功能</p>
+<hr />
+<h3 id="配置实例身份系统未初始化">3. 【配置】实例身份系统未初始化</h3>
+<p><strong>问题描述</strong>: - <code>.eket/state/</code> 目录为空 -
+缺失 <code>instance_config.yml</code> 配置文件 -
+身份检查机制无法工作</p>
+<p><strong>影响文件</strong>: - <code>.eket/IDENTITY.md</code>
+描述的身份确认流程无法执行 - docs/IDENTITY.md 的所有身份检查命令失效</p>
+<p><strong>建议修复</strong>: 1. 创建默认配置模板 2.
+在初始化脚本中自动生成 3. 提供 <code>/eket-init</code> 命令初始化</p>
+<p><strong>优先级</strong>: ⚠️ P0 - 核心功能不可用</p>
+<hr />
+<h3 id="版本项目版本号严重不一致">4. 【版本】项目版本号严重不一致</h3>
+<p><strong>问题描述</strong>: - README.md 声称版本
+<strong>2.0.0</strong> (更新于 2026-04-06) - node/package.json 版本
+<strong>2.0.0</strong> - 但 59 个文档仍引用 v0.2, v0.5, v0.6.x
+等过时版本 - docs/IDENTITY.md 版本 <strong>0.9.3</strong> -
+docs/03-implementation/IMPLEMENTATION_STATUS.md 版本
+<strong>0.6.2</strong></p>
+<p><strong>版本混乱示例</strong>:</p>
+<pre><code>README.md:              2.0.0 (2026-04-06)
+IDENTITY.md:            0.9.3 (2026-03-27)
+IMPLEMENTATION_STATUS:  0.6.2 (2026-03-20)
+CHANGELOG_v0.2.md:      0.2.0 (2026-03-20)</code></pre>
+<p><strong>建议修复</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 批量更新所有文档版本号</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">find</span> docs/ <span class="at">-name</span> <span class="st">&quot;*.md&quot;</span> <span class="at">-type</span> f <span class="at">-exec</span> sed <span class="at">-i</span> <span class="st">&#39;&#39;</span> <span class="st">&#39;s/v0\.[0-9]\+/2.0.0/g&#39;</span> {} <span class="dt">\;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 手动审查关键文档</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">-</span> docs/IDENTITY.md → 2.0.0</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">-</span> docs/03-implementation/IMPLEMENTATION_STATUS.md → 2.0.0</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">-</span> 所有 v0.x 文件考虑归档到 docs/archive/</span></code></pre></div>
+<p><strong>优先级</strong>: ⚠️ P0 - 严重影响可信度</p>
+<hr />
+<h3 id="文档claude.md-与-readme.md-内容冲突">5. 【文档】CLAUDE.md 与
+README.md 内容冲突</h3>
+<p><strong>问题描述</strong>: - CLAUDE.md 第 4 行声称”最后更新
+2026-04-06”，但 Git 状态显示已修改 - CLAUDE.md 描述 Node.js CLI
+为核心，但文档结构混乱 - README.md 与 CLAUDE.md 对项目结构描述不一致</p>
+<p><strong>冲突示例</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>内容</th>
+<th>CLAUDE.md</th>
+<th>README.md</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>项目类型</td>
+<td>Node.js CLI 开发指南</td>
+<td>AI 协作框架</td>
+</tr>
+<tr>
+<td>核心目录</td>
+<td><code>node/src/</code></td>
+<td><code>template/</code>, <code>docs/</code>,
+<code>scripts/</code></td>
+</tr>
+<tr>
+<td>主要用途</td>
+<td>CLI 命令参考</td>
+<td>框架使用说明</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议修复</strong>: 1. 明确角色分工： - CLAUDE.md →
+开发者指南（框架贡献者） - README.md → 用户指南（框架使用者） 2.
+移除重复内容 3. 互相引用而非复制</p>
+<p><strong>优先级</strong>: ⚠️ P0 - 用户困惑</p>
+<hr />
+<h3 id="安全.env-配置文件缺失">6. 【安全】.env 配置文件缺失</h3>
+<p><strong>问题描述</strong>: - CLAUDE.md 第 301 行要求”复制
+<code>.env.example</code> 为 <code>.env</code>” - 项目根目录无
+<code>.env.example</code> 文件 - <code>OPENCLAW_API_KEY</code>
+等关键配置无示例</p>
+<p><strong>影响</strong>: - API Gateway 无法启动（需要
+OPENCLAW_API_KEY） - Redis 连接配置不明确 -
+用户不知道需要哪些环境变量</p>
+<p><strong>建议修复</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 创建 .env.example</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&gt;</span> .env.example <span class="op">&lt;&lt;&#39;EOF&#39;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="st"># EKET Configuration (v2.0.0)</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="st"># OpenCLAW API Gateway (minimum 16 characters)</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="st">OPENCLAW_API_KEY=your-secret-key-here-min-16-chars</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="st"># Redis Configuration</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="st">EKET_REDIS_HOST=localhost</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="st">EKET_REDIS_PORT=6379</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="st">EKET_REMOTE_REDIS_HOST=</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="st">EKET_REMOTE_REDIS_PORT=6379</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="st"># SQLite Configuration</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="st">EKET_SQLITE_PATH=~/.eket/data/sqlite/eket.db</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="st"># Logging</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="st">EKET_LOG_LEVEL=info</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="st">EKET_LOG_DIR=./logs</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="st"># Monitoring</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="st">EKET_MEMORY_WARNING_THRESHOLD=0.75</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span></code></pre></div>
+<p><strong>优先级</strong>: ⚠️ P0 - 阻碍高级功能使用</p>
+<hr />
+<h3 id="脚本关键初始化脚本缺失执行权限">7.
+【脚本】关键初始化脚本缺失执行权限</h3>
+<p><strong>问题描述</strong>: - 部分脚本有执行权限，部分没有 -
+用户可能遇到 “Permission denied” 错误</p>
+<p><strong>建议修复</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> +x scripts/<span class="pp">*</span>.sh</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> +x template/.claude/commands/<span class="pp">*</span>.sh</span></code></pre></div>
+<p><strong>优先级</strong>: ⚠️ P0 - 影响首次使用体验</p>
+<hr />
+<h3 id="架构node-目录位置错误">8. 【架构】node/ 目录位置错误</h3>
+<p><strong>问题描述</strong>: - 当前 <code>node/</code> 在项目根目录 -
+但文档描述的项目结构中没有 <code>node/</code> 目录 - 看起来 EKET
+本身是一个”框架项目”，而 <code>node/</code> 是其实现</p>
+<p><strong>困惑点</strong>:</p>
+<pre><code>当前结构:
+eket/
+├── node/                 # ← 这是什么？
+│   ├── src/
+│   └── package.json
+├── template/             # ← 这是给用户的模板？
+├── docs/                 # ← 这是框架文档？
+└── README.md             # ← 这是框架说明？</code></pre>
+<p><strong>建议澄清</strong>: 1. 明确 EKET 是一个”框架项目”还是”框架 +
+CLI 工具” 2. 如果是后者，应该有：
+<code>eket/    ├── cli/              # 或 core/    ├── framework/    └── docs/</code>
+3. 更新 README.md 明确说明目录职责</p>
+<p><strong>优先级</strong>: ⚠️ P0 - 架构理解问题</p>
+<hr />
+<h2 id="p1-问题应尽快修复">P1 问题（应尽快修复）</h2>
+<h3 id="文档过时版本文档未归档">9. 【文档】过时版本文档未归档</h3>
+<p><strong>问题列表</strong>:</p>
+<pre><code>docs/05-reference/CHANGELOG_v0.2.md          # v0.2.0
+docs/05-reference/v0.5-implementation-review.md
+docs/05-reference/v0.5.1-framework-risk-review.md
+docs/05-reference/REPAIR_PLAN_v0.6.1.md      # v0.6.1
+docs/01-getting-started/COMPLETE_FRAMEWORK_v0.2.md
+docs/03-implementation/v0.5.1-implementation-summary.md
+docs/v0.6-docker-heartbeat.md
+docs/IMPLEMENTATION-v0.6.2.md</code></pre>
+<p><strong>建议</strong>: 1. 创建 <code>docs/archive/</code> 目录 2.
+移动所有 <code>v0.x</code> 文档到归档 3. 在 docs/README.md
+中添加归档链接 4. 添加”历史版本”说明</p>
+<p><strong>优先级</strong>: 🔶 P1 - 文档混乱</p>
+<hr />
+<h3 id="文档docsreadme.md-内容过于简单">10. 【文档】docs/README.md
+内容过于简单</h3>
+<p><strong>当前内容</strong>:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># EKET 框架文档索引</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>本目录包含 EKET 框架的核心文档。</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">## 文档列表</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">### 用户指南</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 文档 <span class="pp">|</span> 说明 <span class="pp">|</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">身份卡片系统</span><span class="co">](IDENTITY.md)</span> <span class="pp">|</span> Master/Slaver 身份确认和职责说明 <span class="pp">|</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>...</span></code></pre></div>
+<p><strong>问题</strong>: - 缺少目录结构总览 - 没有文档更新日期 -
+缺少各目录用途说明</p>
+<p><strong>建议结构</strong>:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># EKET 框架文档</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>版本: 2.0.0 | 最后更新: 2026-04-07</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">## 📖 快速导航</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="fu">### 新手入门</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">快速开始</span><span class="co">](01-getting-started/QUICKSTART.md)</span> - 5 分钟上手</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">设计理念</span><span class="co">](01-getting-started/DESIGN_PHILOSOPHY.md)</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">完整指南</span><span class="co">](01-getting-started/USAGE.md)</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="fu">### 架构设计</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">框架白皮书</span><span class="co">](02-architecture/FRAMEWORK.md)</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">三仓库架构</span><span class="co">](02-architecture/THREE_REPO_ARCHITECTURE.md)</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Agent 配置</span><span class="co">](02-architecture/AGENTS_CONFIG.md)</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Skills 系统</span><span class="co">](02-architecture/SKILLS_SYSTEM.md)</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="fu">### 实现细节</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">分支策略</span><span class="co">](03-implementation/BRANCH_STRATEGY.md)</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">状态机</span><span class="co">](03-implementation/STATE_MACHINE.md)</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Agent 行为</span><span class="co">](03-implementation/AGENT_BEHAVIOR.md)</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="fu">### 测试与验证</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">测试框架</span><span class="co">](04-testing/TEST_FRAMEWORK.md)</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="fu">### 参考资料</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">工作流图</span><span class="co">](05-reference/WORKFLOW_DIAGRAM.md)</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">代码审查清单</span><span class="co">](05-reference/CODE_REVIEW_CHECKLIST.md)</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="fu">### 标准操作流程</span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">人类介入模型</span><span class="co">](06-sop/HUMAN-INVOLVEMENT-MODEL.md)</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">工作流重设计</span><span class="co">](06-sop/WORKFLOW-REDESIGN.md)</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a><span class="fu">## 📂 目录结构</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>docs/</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>├── 01-getting-started/   # 新手入门、快速开始</span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>├── 02-architecture/      # 架构设计、系统设计</span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>├── 03-implementation/    # 实现细节、技术细节</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>├── 04-testing/           # 测试策略、验证方法</span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a>├── 05-reference/         # 参考资料、历史文档</span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a>├── 06-sop/               # 标准操作流程</span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a>├── plans/                # 设计方案、改进计划</span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a>└── archive/              # 历史版本归档 (v0.x)</span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span></span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a><span class="fu">## 🔄 文档版本</span></span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 组件 <span class="pp">|</span> 当前版本 <span class="pp">|</span> 状态 <span class="pp">|</span></span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|---------|------|</span></span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 核心框架 <span class="pp">|</span> 2.0.0 <span class="pp">|</span> ✅ 稳定 <span class="pp">|</span></span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Node.js CLI <span class="pp">|</span> 2.0.0 <span class="pp">|</span> ✅ 稳定 <span class="pp">|</span></span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 文档系统 <span class="pp">|</span> 2.0.0 <span class="pp">|</span> 🔄 审查中 <span class="pp">|</span></span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a><span class="fu">## 🗂️ 历史版本</span></span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a>历史版本文档已归档到 <span class="co">[</span><span class="ot">docs/archive/</span><span class="co">](archive/)</span></span></code></pre></div>
+<p><strong>优先级</strong>: 🔶 P1 - 改善导航</p>
+<hr />
+<h3 id="命令claude-code-命令缺失">11. 【命令】Claude Code 命令缺失</h3>
+<p><strong>问题描述</strong>: - 文档描述了大量 <code>/eket-xxx</code>
+命令 - 但 <code>.claude/commands/</code> 目录结构不明确 -
+缺少命令列表和实现状态</p>
+<p><strong>文档中的命令</strong>:</p>
+<pre><code>/eket-init
+/eket-start
+/eket-status
+/eket-claim
+/eket-review
+/eket-analyze
+/eket-review-pr
+/eket-merge-pr
+/eket-check-progress
+/eket-list-prs
+/eket-submit-pr
+/eket-role
+/eket-help
+/eket-ask</code></pre>
+<p><strong>建议</strong>: 1. 检查
+<code>template/.claude/commands/</code> 中哪些已实现 2. 创建命令实现清单
+3. 标注哪些是 Master 专用，哪些是 Slaver 专用 4. 对未实现的命令添加 TODO
+或从文档移除</p>
+<p><strong>优先级</strong>: 🔶 P1 - 用户体验</p>
+<hr />
+<h3 id="测试测试文档与实际不符">12. 【测试】测试文档与实际不符</h3>
+<p><strong>问题</strong>: - <code>tests/</code> 目录结构与
+docs/04-testing/ 描述不一致 - 缺少测试覆盖率报告 - 没有 CI/CD
+配置验证</p>
+<p><strong>建议</strong>: 1. 更新测试文档，反映实际目录结构 2.
+添加测试运行指南 3. 添加预期测试覆盖率目标</p>
+<p><strong>优先级</strong>: 🔶 P1 - 质量保证</p>
+<hr />
+<h3 id="架构redis-依赖未明确说明为可选">13. 【架构】Redis
+依赖未明确说明为可选</h3>
+<p><strong>问题描述</strong>: - 多处文档将 Redis 描述为”核心依赖” -
+但架构图显示有”四级降级”可以降级到 File Queue - 用户不清楚 Redis
+是否必须</p>
+<p><strong>建议澄清</strong>:</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## Redis 依赖说明</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>Redis 是**可选依赖**，框架提供四级降级：</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Level <span class="pp">|</span> 模式 <span class="pp">|</span> 功能 <span class="pp">|</span> Redis 要求 <span class="pp">|</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="pp">|-------|------|------|-----------|</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 1 <span class="pp">|</span> Remote Redis <span class="pp">|</span> 完整分布式 <span class="pp">|</span> ✅ 必须 <span class="pp">|</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 2 <span class="pp">|</span> Local Redis <span class="pp">|</span> 本地实时 <span class="pp">|</span> ✅ 必须 <span class="pp">|</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 3 <span class="pp">|</span> SQLite <span class="pp">|</span> 持久化降级 <span class="pp">|</span> ❌ 不需要 <span class="pp">|</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 4 <span class="pp">|</span> File Queue <span class="pp">|</span> 离线模式 <span class="pp">|</span> ❌ 不需要 <span class="pp">|</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>**推荐配置**:</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>开发环境：Local Redis (Docker)</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>生产环境：Remote Redis (HA 配置)</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>测试环境：SQLite 或 File Queue</span></code></pre></div>
+<p><strong>优先级</strong>: 🔶 P1 - 环境配置困惑</p>
+<hr />
+<h3 id="文档template-目录用途不清晰">14. 【文档】template/
+目录用途不清晰</h3>
+<p><strong>问题</strong>: - <code>template/</code>
+目录包含完整的项目模板 - 但没有说明它与项目根目录的关系 -
+用户不知道如何使用这些模板</p>
+<p><strong>建议添加 template/README.md</strong>:</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># EKET 项目模板</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>本目录包含用于初始化新项目的模板文件。</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">## 用途</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>当你使用 <span class="in">`./scripts/init-project.sh`</span> 创建新项目时，</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>这些文件会被复制到新项目目录中。</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="fu">## 模板文件</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 文件/目录 <span class="pp">|</span> 复制到新项目 <span class="pp">|</span> 说明 <span class="pp">|</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|------------|------|</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`CLAUDE.md`</span> <span class="pp">|</span> ✅ <span class="pp">|</span> 项目级 Claude Code 指南 <span class="pp">|</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`README.md`</span> <span class="pp">|</span> ✅ <span class="pp">|</span> 项目 README 模板 <span class="pp">|</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`.claude/commands/`</span> <span class="pp">|</span> ✅ <span class="pp">|</span> EKET 命令脚本 <span class="pp">|</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`.eket/`</span> <span class="pp">|</span> ✅ <span class="pp">|</span> EKET 配置目录 <span class="pp">|</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`inbox/`</span> <span class="pp">|</span> ✅ <span class="pp">|</span> 需求输入目录 <span class="pp">|</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`skills/`</span> <span class="pp">|</span> ✅ <span class="pp">|</span> Skills 定义 <span class="pp">|</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a><span class="fu">## 自定义模板</span></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>你可以修改这些模板以适应组织需求：</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>编辑 <span class="in">`template/CLAUDE.md`</span> 添加公司规范</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>修改 <span class="in">`template/.eket/`</span> 添加默认配置</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>在 <span class="in">`template/skills/`</span> 添加自定义 Skills</span></code></pre></div>
+<p><strong>优先级</strong>: 🔶 P1 - 理解模板系统</p>
+<hr />
+<h3 id="文档skills-系统文档不完整">15. 【文档】Skills
+系统文档不完整</h3>
+<p><strong>问题</strong>: - docs/02-architecture/SKILLS_SYSTEM.md
+描述了概念 - 但缺少： - 如何创建新 Skill - Skill 文件格式规范 - 内置
+Skills 清单 - Skill 调用机制</p>
+<p><strong>建议</strong>: 1. 添加 Skills 开发指南 2. 列出所有内置 Skills
+3. 提供 Skill 模板 4. 说明 Skills 与 Claude Code Superpowers 的关系</p>
+<p><strong>优先级</strong>: 🔶 P1 - 扩展性文档</p>
+<hr />
+<h3 id="其他-p1-问题">16-23. 【其他 P1 问题】</h3>
+<p>由于篇幅限制，其他 P1 问题包括： - Git hooks 未配置 - Docker
+配置缺失但文档提及 - 监控面板端口冲突可能性 - 国际化配置不完整 -
+错误码文档缺失 - 日志配置不明确 - 性能基准测试缺失 -
+安全最佳实践未文档化</p>
+<hr />
+<h2 id="p2-问题建议修复">P2 问题（建议修复）</h2>
+<h3 id="格式markdown-格式不一致">24. 【格式】Markdown 格式不一致</h3>
+<p><strong>问题</strong>: - 部分文档使用 ATX 标题
+(<code>#</code>)，部分使用 Setext 标题 - 代码块语言标记不统一 -
+表格格式不一致</p>
+<p><strong>建议</strong>:</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 使用 markdownlint 检查</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> markdownlint-cli docs/<span class="pp">**</span>/<span class="pp">*</span>.md <span class="at">--fix</span></span></code></pre></div>
+<p><strong>优先级</strong>: 🟡 P2 - 代码质量</p>
+<hr />
+<h3 id="其他-p2-问题">25-46. 【其他 P2 问题】</h3>
+<p>包括： - 链接失效检查 - 图片引用缺失 - 代码示例过时 - 术语不统一 -
+日期格式混乱 - 版权信息缺失 - 贡献指南缺失 - Issue 模板缺失 - PR
+模板缺失 - Release notes 缺失 - Migration guide 缺失 - Troubleshooting
+guide 缺失 - FAQ 缺失 - Glossary 缺失 - Architecture Decision Records
+缺失 - API 文档缺失 - 性能调优指南缺失 - 部署指南不完整 - 监控配置缺失 -
+备份恢复策略缺失 - 灾难恢复计划缺失 - SLA 定义缺失 - 成本估算缺失</p>
+<hr />
+<h2 id="p3-问题优化建议">P3 问题（优化建议）</h2>
+<h3 id="优化建议">47-58. 【优化建议】</h3>
+<ul>
+<li>添加文档搜索功能</li>
+<li>生成 PDF 版本文档</li>
+<li>添加交互式教程</li>
+<li>视频教程制作</li>
+<li>在线文档站点</li>
+<li>社区论坛链接</li>
+<li>示例项目库</li>
+<li>最佳实践库</li>
+<li>反模式警告</li>
+<li>性能优化技巧</li>
+<li>调试技巧</li>
+<li>工具推荐</li>
+</ul>
+<hr />
+<h2 id="修复优先级路线图">修复优先级路线图</h2>
+<h3 id="第一阶段本周--p0-问题">第一阶段（本周）- P0 问题</h3>
+<pre><code>Week 1: P0 修复
+├── Day 1-2: 环境修复
+│   ├── 安装 Node.js 依赖
+│   ├── 构建 TypeScript
+│   └── 创建 .env.example
+├── Day 3-4: 架构澄清
+│   ├── 明确三仓库状态
+│   ├── 更新架构文档
+│   └── 修复 CLAUDE.md 冲突
+└── Day 5: 版本统一
+    ├── 批量更新版本号
+    ├── 归档 v0.x 文档
+    └── 验证关键流程</code></pre>
+<h3 id="第二阶段下周--p1-问题">第二阶段（下周）- P1 问题</h3>
+<pre><code>Week 2: P1 改进
+├── 完善文档索引
+├── 补全命令清单
+├── 澄清依赖关系
+└── 添加快速参考</code></pre>
+<h3 id="第三阶段后续--p2p3-优化">第三阶段（后续）- P2/P3 优化</h3>
+<pre><code>Week 3+: 持续优化
+├── 格式化所有文档
+├── 添加缺失的指南
+├── 建立文档维护流程
+└── 建立文档审查机制</code></pre>
+<hr />
+<h2 id="立即行动项">立即行动项</h2>
+<h3 id="最小可行修复mvf---minimum-viable-fix">最小可行修复（MVF -
+Minimum Viable Fix）</h3>
+<ol type="1">
+<li><p><strong>安装依赖</strong> (5 分钟)</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> install <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> run build</span></code></pre></div></li>
+<li><p><strong>创建环境配置</strong> (2 分钟)</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> .env.example .env</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 编辑 .env 设置 OPENCLAW_API_KEY</span></span></code></pre></div></li>
+<li><p><strong>明确架构状态</strong> (10 分钟)</p>
+<ul>
+<li>在 README.md 顶部添加 “⚠️ 架构说明” 章节</li>
+<li>说明三仓库当前为”可选功能”</li>
+<li>提供单仓库模式使用指南</li>
+</ul></li>
+<li><p><strong>版本号快速修复</strong> (5 分钟)</p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 更新关键文档版本号</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sed</span> <span class="at">-i</span> <span class="st">&#39;&#39;</span> <span class="st">&#39;s/版本.*:.*0\.[0-9]\+/版本: 2.0.0/&#39;</span> docs/IDENTITY.md</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sed</span> <span class="at">-i</span> <span class="st">&#39;&#39;</span> <span class="st">&#39;s/版本.*:.*0\.[0-9]\+/版本: 2.0.0/&#39;</span> docs/03-implementation/IMPLEMENTATION_STATUS.md</span></code></pre></div></li>
+<li><p><strong>添加文档审查检查清单</strong> (5 分钟)</p>
+<ul>
+<li>将本报告提交到 docs/</li>
+<li>创建 docs/DOCUMENT_CHECKLIST.md</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="文档维护流程建议">文档维护流程建议</h2>
+<h3 id="建立文档门禁">建立文档门禁</h3>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .github/workflows/docs-check.yml</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> Documentation Check</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="fu">on</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">push</span><span class="kw">,</span><span class="at"> pull_request</span><span class="kw">]</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">check-docs</span><span class="kw">:</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v3</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Check for outdated versions</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="fu">        run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>          if grep -r &quot;v0\.[0-9]&quot; docs/; then</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>            echo &quot;❌ Found outdated version references&quot;</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>            exit 1</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>          fi</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Check for broken links</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">run</span><span class="kw">:</span><span class="at"> npx markdown-link-check docs/**/*.md</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Lint markdown</span></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">run</span><span class="kw">:</span><span class="at"> npx markdownlint-cli docs/**/*.md</span></span></code></pre></div>
+<h3 id="文档更新规范">文档更新规范</h3>
+<ol type="1">
+<li><strong>每次代码变更必须同步更新文档</strong></li>
+<li><strong>版本号统一管理</strong>:
+<ul>
+<li>使用 <code>version.txt</code> 作为唯一版本来源</li>
+<li>脚本自动同步版本号</li>
+</ul></li>
+<li><strong>文档审查流程</strong>:
+<ul>
+<li>每月进行一次全面审查</li>
+<li>使用本报告模板</li>
+<li>自动生成问题清单</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="结论">结论</h2>
+<p>EKET
+项目具有良好的设计理念和架构思想，但<strong>文档与实际实现存在显著差异</strong>。核心问题在于：</p>
+<ol type="1">
+<li><strong>版本演进过快</strong>但文档未及时同步（0.x → 2.0.0）</li>
+<li><strong>架构描述超前</strong>于实际实现（三仓库未完整实现）</li>
+<li><strong>环境配置缺失</strong>导致首次使用门槛高</li>
+</ol>
+<h3 id="建议行动">建议行动</h3>
+<p><strong>短期</strong>（本周）: - ✅ 修复所有 P0 问题 - ✅ 安装并验证
+Node.js 环境 - ✅ 明确当前架构状态</p>
+<p><strong>中期</strong>（本月）: - 🔄 完成 P1 问题修复 - 🔄
+建立文档维护流程 - 🔄 补全缺失的关键文档</p>
+<p><strong>长期</strong>（持续）: - 📝 建立文档审查机制 - 📝
+引入自动化检查 - 📝 培养文档更新习惯</p>
+<hr />
+<p><strong>审查完成</strong> <strong>下一步</strong>:
+请决策是否立即开始修复，或需要进一步讨论优先级</p>
+</body>
+</html>

@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>&gt; ⚠️ **DEPRECATED** — 此文档已过时，当前版本请参考：[template/docs/MASTER-RULES.md](../../template/docs/MASTER-RULES.md)。</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">&gt; ⚠️ **DEPRECATED** —
+此文档已过时，当前版本请参考：[template/docs/MASTER-RULES.md](../../template/docs/MASTER-RULES.md)。</h1>
+</header>
+<blockquote>
+<p>⚠️ <strong>DEPRECATED</strong> — 此文档已过时，当前版本请参考：<a
+href="../../template/docs/MASTER-RULES.md">template/docs/MASTER-RULES.md</a>。</p>
+</blockquote>
+<hr />
+<h1 id="eket-masterslaver-职责分工">EKET Master/Slaver 职责分工</h1>
+<p><strong>版本</strong>: 0.4.0 <strong>最后更新</strong>:
+2026-03-23</p>
+<hr />
+<h2 id="架构概述">架构概述</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                        EKET v0.4 架构                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   Master 实例 (协调者)                     Slaver 实例 (执行者)   │
+│   ┌─────────────────┐                    ┌─────────────────┐   │
+│   │                 │                    │   独立 Instance   │   │
+│   │  • 任务分析      │                    │   • 前端开发     │   │
+│   │  • 任务拆解      │◄──── 任务分配 ───► │   • 后端开发     │   │
+│   │  • 进度 Check    │                    │   • 测试员       │   │
+│   │  • 代码 Review   │                    │   • 设计师       │   │
+│   │  • 合并到 main   │◄──── PR 审核 ─────► │   • 运维         │   │
+│   │                 │                    │                 │   │
+│   │  主分支权限：✅  │                    │  主分支权限：❌  │   │
+│   └─────────────────┘                    └─────────────────┘   │
+│         │                                      │               │
+│         └──────────────┬───────────────────────┘               │
+│                        │                                       │
+│                        ▼                                       │
+│            ┌───────────────────────┐                          │
+│            │    三仓库 + Worktree   │                          │
+│            │  confluence / jira /  │                          │
+│            │     code_repo         │                          │
+│            └───────────────────────┘                          │
+└───────────────────────────────────────────────────────────────┘</code></pre>
+<hr />
+<h2 id="master-实例职责">Master 实例职责</h2>
+<h3 id="核心职责">核心职责</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>职责</th>
+<th>说明</th>
+<th>输出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>任务分析</strong></td>
+<td>分析 <code>inbox/human_input.md</code> 中的需求</td>
+<td>需求分析文档</td>
+</tr>
+<tr>
+<td><strong>任务拆解</strong></td>
+<td>将需求拆解为 Epic 和 Jira tickets</td>
+<td><code>jira/epics/</code>, <code>jira/tickets/</code></td>
+</tr>
+<tr>
+<td><strong>进度 Check</strong></td>
+<td>定时检查 Slaver 任务进度</td>
+<td>进度报告</td>
+</tr>
+<tr>
+<td><strong>代码 Review</strong></td>
+<td>审核 Slaver 提交的 PR</td>
+<td>PR 评论/批准</td>
+</tr>
+<tr>
+<td><strong>合并到主分支</strong></td>
+<td>审核通过后合并到 <code>main</code> 分支</td>
+<td>合并提交</td>
+</tr>
+</tbody>
+</table>
+<h3 id="权限">权限</h3>
+<ul>
+<li>✅ <strong>唯一</strong>可以操作主分支 (<code>main</code>)
+的实例</li>
+<li>✅ 创建/更新 Jira tickets</li>
+<li>✅ 创建/更新 Confluence 文档</li>
+<li>✅ 分配任务给 Slaver</li>
+<li>✅ 审核和合并 PR</li>
+</ul>
+<h3 id="master-工作流程">Master 工作流程</h3>
+<pre><code>1. 启动检测
+   │
+   ├─ 检查 Master 标记 → 不存在则创建
+   ├─ 创建三仓库目录 → confluence/, jira/, code_repo/
+   ├─ 设置 Master 标记 → .eket_master_marker
+   │
+   ▼
+2. 需求分析
+   │
+   ├─ 读取 inbox/human_input.md
+   ├─ 调用 requirement_analysis SKILL
+   ├─ 输出需求分析文档
+   │
+   ▼
+3. 任务拆解
+   │
+   ├─ 创建 Epic → jira/epics/EPIC-XXX.md
+   ├─ 创建 Tickets → jira/tickets/feature/FEAT-XXX.md
+   ├─ 设定优先级和依赖
+   │
+   ▼
+4. 进度 Check (定时)
+   │
+   ├─ 检查 jira/state/active_tasks.json
+   ├─ 读取 Slaver 状态报告
+   ├─ 输出进度报告到 inbox/human_feedback/
+   │
+   ▼
+5. 代码 Review
+   │
+   ├─ 接收 PR 通知 (消息队列)
+   ├─ 审查代码变更
+   ├─ 批准或要求修改
+   │
+   ▼
+6. 合并到主分支
+   │
+   ├─ 从 testing 合并到 main
+   ├─ 更新 Jira 状态为 done
+   └─ 通知相关方</code></pre>
+<h3 id="master-命令">Master 命令</h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/eket-start</code></td>
+<td>启动 Master 实例</td>
+</tr>
+<tr>
+<td><code>/eket-analyze</code></td>
+<td>分析需求并拆解任务</td>
+</tr>
+<tr>
+<td><code>/eket-review-pr</code></td>
+<td>审核 Slaver 提交的 PR</td>
+</tr>
+<tr>
+<td><code>/eket-merge</code></td>
+<td>合并 PR 到 main 分支</td>
+</tr>
+<tr>
+<td><code>/eket-check-progress</code></td>
+<td>检查 Slaver 任务进度</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="slaver-实例职责">Slaver 实例职责</h2>
+<h3 id="核心职责-1">核心职责</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>职责</th>
+<th>说明</th>
+<th>输出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>领取任务</strong></td>
+<td>从 Jira 领取状态为 <code>ready</code> 的 tickets</td>
+<td>任务状态更新为 <code>in_progress</code></td>
+</tr>
+<tr>
+<td><strong>自主规划</strong></td>
+<td>根据任务内容制定实现计划</td>
+<td>实现方案文档</td>
+</tr>
+<tr>
+<td><strong>开发</strong></td>
+<td>编写代码实现功能</td>
+<td>源代码</td>
+</tr>
+<tr>
+<td><strong>测试</strong></td>
+<td>编写和执行测试</td>
+<td>测试报告</td>
+</tr>
+<tr>
+<td><strong>迭代</strong></td>
+<td>根据测试结果修改</td>
+<td>更新后的代码</td>
+</tr>
+<tr>
+<td><strong>提交 PR</strong></td>
+<td>提交 PR 请求 Master 审核</td>
+<td>PR 到 testing 分支</td>
+</tr>
+</tbody>
+</table>
+<h3 id="约束">约束</h3>
+<ul>
+<li>❌ <strong>不得</strong>直接操作主分支 (<code>main</code>)</li>
+<li>✅ 每个 Slaver 是独立的 instance/session</li>
+<li>✅ 启动时必须创建 worktree 同步三仓库状态</li>
+<li>✅ 完成开发后提交 PR 到 <code>testing</code> 分支</li>
+</ul>
+<h3 id="worktree-机制">Worktree 机制</h3>
+<p>每个 Slaver 实例启动时自动创建 worktree：</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Worktree 路径配置</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">.eket/state/worktree_paths.yml:</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">confluence_path:</span> /path/to/project/confluence</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">jira_path:</span> /path/to/project/jira</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">code_repo_path:</span> /path/to/project/code_repo</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="ex">worktree_path:</span> .eket/worktrees/slaver_YYYYMMDD_HHMMSS</span></code></pre></div>
+<p><strong>目的</strong>: - 隔离 Master 和 Slaver 的工作区 -
+避免文件锁冲突 - 支持多个 Slaver 并行工作</p>
+<h3 id="slaver-工作流程">Slaver 工作流程</h3>
+<h4 id="自动模式">自动模式</h4>
+<pre><code>1. 启动检测
+   │
+   ├─ 检测 Master 标记存在 → 进入 Slaver 模式
+   ├─ 创建 worktree
+   ├─ 同步三仓库状态
+   │
+   ▼
+2. 初始化 Profile
+   │
+   ├─ 读取 Jira tickets
+   ├─ 分析任务优先级
+   ├─ 根据任务类型匹配角色 (frontend_dev/backend_dev/...)
+   │
+   ▼
+3. 领取任务
+   │
+   ├─ 选择最高优先级任务
+   ├─ 更新状态为 in_progress
+   ├─ 通知 Master (消息队列)
+   │
+   ▼
+4. 自主规划
+   │
+   ├─ 阅读 Confluence 背景文档
+   ├─ 制定实现方案
+   ├─ 创建 Git 分支 (feature/XXX)
+   │
+   ▼
+5. 开发 → 测试 → 迭代
+   │
+   ├─ 编写代码
+   ├─ 编写测试
+   ├─ 运行测试
+   └─ 修复问题
+   │
+   ▼
+6. 提交 PR
+   │
+   ├─ 提交代码到 feature 分支
+   ├─ 创建 PR 到 testing 分支
+   ├─ 发送 Review 请求给 Master
+   │
+   ▼
+7. 等待审核
+   │
+   ├─ Master 批准 → 等待合并到 main
+   └─ Master 要求修改 → 返回步骤 5</code></pre>
+<h4 id="手动模式">手动模式</h4>
+<pre><code>1. 启动检测
+   │
+   ├─ 检测 Master 标记存在 → 进入 Slaver 模式
+   ├─ 创建 worktree
+   ├─ 同步三仓库状态
+   │
+   ▼
+2. 分析项目状态
+   │
+   ├─ 读取 Confluence 文档
+   ├─ 读取 Jira tickets
+   ├─ 读取代码仓库
+   │
+   ▼
+3. 整理建议
+   │
+   ├─ 项目背景总结
+   ├─ 当前状态分析
+   ├─ Ticket 列表整理
+   │
+   ▼
+4. 等待人类指示
+   │
+   ├─ 显示建议给人类
+   ├─ 人类选择任务
+   └─ 进入自动模式流程</code></pre>
+<h3 id="slaver-命令">Slaver 命令</h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/eket-start</code></td>
+<td>启动 Slaver 实例</td>
+</tr>
+<tr>
+<td><code>/eket-start -a</code></td>
+<td>自动模式启动</td>
+</tr>
+<tr>
+<td><code>/eket-role &lt;role&gt;</code></td>
+<td>设置角色类型</td>
+</tr>
+<tr>
+<td><code>/eket-claim &lt;id&gt;</code></td>
+<td>领取任务</td>
+</tr>
+<tr>
+<td><code>/eket-submit-pr</code></td>
+<td>提交 PR 请求审核</td>
+</tr>
+<tr>
+<td><code>/eket-status</code></td>
+<td>查看任务状态</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="通信机制">通信机制</h2>
+<h3 id="master-slaver-通信">Master ↔︎ Slaver 通信</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>类型</th>
+<th>方向</th>
+<th>内容</th>
+<th>位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务分配</td>
+<td>Master → Slaver</td>
+<td>新任务通知</td>
+<td><code>shared/message_queue/inbox/</code></td>
+</tr>
+<tr>
+<td>进度报告</td>
+<td>Slaver → Master</td>
+<td>任务进度更新</td>
+<td><code>shared/message_queue/inbox/</code></td>
+</tr>
+<tr>
+<td>PR 审核请求</td>
+<td>Slaver → Master</td>
+<td>PR 链接 + 说明</td>
+<td><code>shared/message_queue/inbox/</code></td>
+</tr>
+<tr>
+<td>PR 审核结果</td>
+<td>Master → Slaver</td>
+<td>批准/修改意见</td>
+<td><code>shared/message_queue/inbox/</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="消息格式">消息格式</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;msg_20260323_001&quot;</span><span class="fu">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timestamp&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-03-23T10:30:00Z&quot;</span><span class="fu">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;from&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver_frontend_dev_001&quot;</span><span class="fu">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;to&quot;</span><span class="fu">:</span> <span class="st">&quot;master&quot;</span><span class="fu">,</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;pr_review_request&quot;</span><span class="fu">,</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;priority&quot;</span><span class="fu">:</span> <span class="st">&quot;normal&quot;</span><span class="fu">,</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payload&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ticket_id&quot;</span><span class="fu">:</span> <span class="st">&quot;FEAT-001&quot;</span><span class="fu">,</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;pr_number&quot;</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">,</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;branch&quot;</span><span class="fu">:</span> <span class="st">&quot;feature/FEAT-001-login-form&quot;</span><span class="fu">,</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;target&quot;</span><span class="fu">:</span> <span class="st">&quot;testing&quot;</span><span class="fu">,</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;summary&quot;</span><span class="fu">:</span> <span class="st">&quot;实现用户登录表单组件&quot;</span><span class="fu">,</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;changes&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;新增 LoginFrom 组件&quot;</span><span class="ot">,</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;新增表单验证逻辑&quot;</span><span class="ot">,</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;新增单元测试&quot;</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="ot">]</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<hr />
+<h2 id="ticket-状态流转">Ticket 状态流转</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    Jira Ticket 状态机                            │
+└─────────────────────────────────────────────────────────────────┘
+
+    backlog
+       │
+       │ Master 创建任务
+       ▼
+    analysis ──────→ needs_info (需要更多信息)
+       │
+       │ Master 分析完成
+       ▼
+    approved
+       │
+       │ Master 设定优先级
+       ▼
+    ready ──┬────────────────────────────────────┐
+       │    │ Slaver 领取任务                     │
+       ▼    ▼                                     │
+    dev    in_progress                            │
+       │    │                                     │
+       │    │ 开发/测试                             │
+       ▼    ▼                                     │
+    test ──┬──────────────────────────────────────┤
+       │    │ 测试失败                             │
+       │    ▼                                     │
+       │  fix_bug                                 │
+       │    │                                     │
+       │    └─────────────────────────────────────┘
+       │
+       │ 测试通过
+       ▼
+    review ──┬────────────────────────────────────┐
+       │    │ Master 审核不通过                    │
+       ▼    ▼                                     │
+    done  changes_requested                       │
+       │    │                                     │
+       │    └─────────────────────────────────────┘
+       │
+       │ Master 合并到 main
+       ▼
+    merged</code></pre>
+<h3 id="状态说明">状态说明</h3>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>负责方</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>backlog</td>
+<td>Master</td>
+<td>新建任务，等待分析</td>
+</tr>
+<tr>
+<td>analysis</td>
+<td>Master</td>
+<td>需求分析中</td>
+</tr>
+<tr>
+<td>needs_info</td>
+<td>Master</td>
+<td>需要更多信息 (等待人类)</td>
+</tr>
+<tr>
+<td>approved</td>
+<td>Master</td>
+<td>需求已批准，等待拆解</td>
+</tr>
+<tr>
+<td>ready</td>
+<td>-</td>
+<td>准备就绪，等待 Slaver 领取</td>
+</tr>
+<tr>
+<td>in_progress</td>
+<td>Slaver</td>
+<td>任务进行中</td>
+</tr>
+<tr>
+<td>dev</td>
+<td>Slaver</td>
+<td>开发中</td>
+</tr>
+<tr>
+<td>test</td>
+<td>Slaver</td>
+<td>测试中</td>
+</tr>
+<tr>
+<td>review</td>
+<td>Master</td>
+<td>等待 Master 审核</td>
+</tr>
+<tr>
+<td>changes_requested</td>
+<td>Slaver</td>
+<td>需要修改</td>
+</tr>
+<tr>
+<td>done</td>
+<td>Master</td>
+<td>任务完成</td>
+</tr>
+<tr>
+<td>merged</td>
+<td>Master</td>
+<td>已合并到 main</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="分支策略">分支策略</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                        分支策略图                                │
+└─────────────────────────────────────────────────────────────────┘
+
+main (生产分支)
+  │
+  │ ◄── Master 合并 (PR 审核通过后)
+  │
+  ▼
+testing (测试分支)
+  │
+  │ ◄── Slaver 提交 PR
+  │
+  ▼
+feature/* (功能分支)
+  │
+  │ Slaver 开发
+  │
+  ▼
+开发提交</code></pre>
+<h3 id="分支权限">分支权限</h3>
+<table>
+<thead>
+<tr>
+<th>分支</th>
+<th>Master</th>
+<th>Slaver</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main</code></td>
+<td>✅ 读/写</td>
+<td>❌ 只读</td>
+</tr>
+<tr>
+<td><code>testing</code></td>
+<td>✅ 读/写</td>
+<td>✅ 提交 PR</td>
+</tr>
+<tr>
+<td><code>feature/*</code></td>
+<td>✅ 读</td>
+<td>✅ 读/写 (自己的分支)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="快速开始">快速开始</h2>
+<h3 id="master-实例启动">Master 实例启动</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 在项目根目录</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /path/to/project</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 启动 Master 实例</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 首次启动会自动：</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 创建三仓库目录</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 设置 Master 标记</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 初始化 main 分支</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 创建/检查 inbox/human_input.md</span></span></code></pre></div>
+<h3 id="slaver-实例启动">Slaver 实例启动</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 在项目根目录 (Master 已初始化后)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /path/to/project</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 启动 Slaver 实例 (手动模式)</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 启动 Slaver 实例 (自动模式)</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span> <span class="at">-a</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 设置角色类型</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-role</span> frontend_dev</span></code></pre></div>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>

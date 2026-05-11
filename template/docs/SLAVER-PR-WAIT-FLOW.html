@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Slaver PR 等待流程 (v2.1.0)</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Slaver PR 等待流程 (v2.1.0)</h1>
+</header>
+<h1 id="slaver-pr-等待流程-v2.1.0">Slaver PR 等待流程 (v2.1.0)</h1>
+<p><strong>版本</strong>: v2.1.0<br />
+<strong>创建日期</strong>: 2026-04-10<br />
+<strong>目的</strong>: 定义 Slaver 提交 PR 后等待 Master
+反馈期间的行为规范</p>
+<hr />
+<h2 id="pr-提交流程">1. PR 提交流程</h2>
+<h3 id="提交-pr-前的自检">1.1 提交 PR 前的自检</h3>
+<p>在运行 <code>/eket-submit-pr</code> 之前，Slaver
+必须完成以下自检：</p>
+<pre><code>开发完成
+    │
+    ▼
+自测通过？
+    ├── 否 → 修复测试 → 重新测试
+    └── 是 → 继续
+            │
+            ▼
+代码质量检查？
+    ├── 否 → 重构优化 → 重新测试
+    └── 是 → 继续
+            │
+            ▼
+文档已更新？
+    ├── 否 → 补充文档 → 重新测试
+    └── 是 → 继续
+            │
+            ▼
+准备提交 PR</code></pre>
+<h3 id="提交-pr-步骤">1.2 提交 PR 步骤</h3>
+<p><strong>运行命令</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-submit-pr</span></span></code></pre></div>
+<p><strong>脚本自动执行</strong>： 1. ✅ 检查当前分支是否有未提交的变更
+2. ✅ 提交所有变更到远程仓库 3. ✅ 创建 PR 描述文件到
+<code>outbox/review_requests/</code> 4. ✅ 更新 Ticket
+状态：<code>in_progress</code> → <code>review</code> 5. ✅ 发送 Review
+请求消息到消息队列 6. ✅ 记录 PR 提交时间到 Ticket</p>
+<p><strong>PR 描述文件格式</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># PR 请求：FEAT-001</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>**提交者**: slaver_20260410_150000_x9y8z7w6</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>**分支**: slaver_20260410_150000_x9y8z7w6-FEAT-001</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>**目标分支**: testing</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>**创建时间**: 2026-04-10T17<span class="sc">:30:</span>00+08:00</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">## 关联 Ticket</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>FEAT-001</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## 变更摘要</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a> src/components/Login.tsx       | 150 +++++++++++</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a> src/hooks/useAuth.ts           |  80 ++++++</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a> tests/Login.test.tsx           | 120 +++++++++</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="fu">## 变更详情</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- 详细描述变更内容 --&gt;</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="fu">## 验收标准</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> 代码符合项目规范</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> 测试覆盖关键逻辑</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> 文档已更新</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="fu">## 测试情况</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> 单元测试通过</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[x]</span> 手动测试完成（如需要）</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="fu">## 状态：pending_review</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>**等待 Master 审核**</span></code></pre></div>
+<hr />
+<h2 id="pr-等待流程">2. PR 等待流程</h2>
+<h3 id="等待期间的状态">2.1 等待期间的状态</h3>
+<p>提交 PR 后，Slaver 进入<strong>等待反馈</strong>状态：</p>
+<pre><code>PR 提交完成
+    │
+    ▼
+等待 Master Review
+    │
+    ├── 状态：review
+    ├── PR 文件：outbox/review_requests/pr_FEAT-001_*.md
+    └── 分支：slaver_20260410_150000_x9y8z7w6-FEAT-001</code></pre>
+<h3 id="slaver-自主执行原则v2.1.2">2.2 Slaver
+自主执行原则（v2.1.2）</h3>
+<p><strong>核心原则</strong>：Slaver
+在等待期间的常规操作<strong>不需要等待确认，直接执行</strong>。</p>
+<p><strong>可直接执行的操作</strong>： - [ ] 检查 PR 反馈（每 10 秒/5
+分钟） - [ ] 读取 Master Review 意见 - [ ] 根据反馈修改代码 - [ ]
+重新提交 PR - [ ] 领取新任务（Master approve 后） - [ ] 更新 Ticket 状态
+- [ ] 提交进度报告</p>
+<p><strong>需要等待的情况</strong>： - 用户明确要求「等我确认」 -
+用户明确要求「merge 后再继续」</p>
+<h3 id="等待期间的行为选择">2.3 等待期间的行为选择</h3>
+<p>Slaver 在等待期间有两种选择：</p>
+<h4 id="选项-a等待反馈推荐用于紧急复杂任务">选项
+A：等待反馈（推荐用于紧急/复杂任务）</h4>
+<p><strong>适用场景</strong>： - P0/P1 紧急任务 - 架构复杂度高的任务 -
+预计 Master 会快速响应的任务</p>
+<p><strong>检查频率</strong>： | Slaver 状态 | 检查频率 | 说明 |
+|————|———|——| | 空闲等待 | 每 10 秒 | 无其他任务，专注等待反馈 | |
+工作中 | 每 5 分钟 | 并行处理其他任务，间隙检查 |</p>
+<p><strong>检查清单</strong>： - [ ] 检查
+<code>inbox/human_feedback/</code> 是否有新文件 - [ ] 检查消息队列是否有
+<code>pr_review_result</code> 类型消息 - [ ] 检查 Ticket
+状态是否变更</p>
+<p><strong>行为</strong>： 1. 根据当前状态按频率检查 Master 反馈 2. 如果
+Master 要求修改，立即响应 3. 如果 Master 批准，准备领取新任务</p>
+<h4 id="选项-b领取新任务推荐用于常规任务">选项
+B：领取新任务（推荐用于常规任务）</h4>
+<p><strong>适用场景</strong>： - P2/P3 常规任务 - 预计 Review
+周期较长的任务 - Slaver 有充足处理能力</p>
+<p><strong>行为</strong>： 1. 检查 <code>jira/tickets/</code> 中
+<code>ready</code> 状态的任务 2. 领取匹配角色的新任务 3.
+为新任务创建独立 worktree 4. 并行处理多个任务 5. 收到 Master
+反馈时，暂停手头工作，优先处理反馈</p>
+<p><strong>决策树</strong>：</p>
+<pre><code>PR 提交完成
+    │
+    ▼
+Master 预计响应时间？
+    ├── &lt; 30 分钟 → 选项 A：等待反馈
+    └── &gt; 30 分钟 → 选项 B：领取新任务
+            │
+            ▼
+        领取新任务
+            │
+            ▼
+        收到 Master 反馈？
+            ├── 是，需要修改 → 暂停当前任务 → 处理反馈
+            ├── 是，批准 → 继续当前任务 → 准备 merge
+            └── 否 → 继续当前任务</code></pre>
+<hr />
+<h2 id="master-反馈处理">3. Master 反馈处理</h2>
+<h3 id="反馈类型">3.1 反馈类型</h3>
+<p>Master Review 后有三种可能的结果：</p>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 35%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr>
+<th>结果</th>
+<th>状态变更</th>
+<th>Slaver 行动</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>批准</strong></td>
+<td><code>review</code> → <code>approved</code></td>
+<td><strong>直接领取新任务</strong>（无需等待 merge 完成）</td>
+</tr>
+<tr>
+<td><strong>需要修改</strong></td>
+<td><code>review</code> → <code>changes_requested</code></td>
+<td>立即修改，重新提交 PR</td>
+</tr>
+<tr>
+<td><strong>驳回</strong></td>
+<td><code>review</code> → <code>rejected</code></td>
+<td>重新分析需求，重新开发</td>
+</tr>
+</tbody>
+</table>
+<h3 id="批准后直接领取v2.1.1">批准后直接领取（v2.1.1）</h3>
+<p><strong>核心原则</strong>：Master approve 后，Slaver
+<strong>不需要等待 merge 完成</strong>，可以直接领取新任务开始操作。</p>
+<p><strong>流程</strong>：</p>
+<pre><code>Master 批准 (review → approved)
+    │
+    ▼
+Slaver 检测到状态变更
+    │
+    ▼
+检查索引文件：jira/state/ticket-index.yml
+    │
+    ▼
+状态 = approved → 可以领取新任务
+    │
+    ▼
+运行 /eket-claim &lt;new-ticket-id&gt;
+    │
+    ▼
+新任务状态：ready → in_progress
+    │
+    ▼
+开始新任务开发</code></pre>
+<p><strong>例外情况</strong>：只有用户明确要求等待时，Slaver
+才暂停领取新任务。 - 用户指令：「这个 PR 批准后等我确认再开始新任务」 -
+用户指令：「merge 到 main 后再继续」</p>
+<h3 id="需要修改changes_requested">3.2
+需要修改（changes_requested）</h3>
+<p><strong>Master 行动</strong>： 1. 在 PR 描述文件中添加 Review 意见 2.
+更新 Ticket 状态为 <code>changes_requested</code> 3.
+发送消息到消息队列</p>
+<p><strong>Slaver 行动</strong>：</p>
+<pre><code>收到修改请求
+    │
+    ▼
+读取 Review 意见
+    │
+    ▼
+评估修改工作量
+    ├── &lt; 1 小时 → 立即修改 → 重新提交 PR
+    └── &gt; 1 小时 → 通知 Master → 更新优先级 → 修改 → 重新提交</code></pre>
+<p><strong>修改流程</strong>： 1. 切换到
+worktree：<code>.eket/worktrees/{instance_id}-{ticket_id}</code> 2. 根据
+Review 意见修改代码 3. 运行测试验证 4. 更新 PR 描述文件 5.
+重新提交通知</p>
+<h3 id="批准approved">3.3 批准（approved）</h3>
+<p><strong>Master 行动</strong>： 1. 更新 Ticket 状态为
+<code>approved</code> 2. 合并代码到 <code>main</code> 分支 3. 删除
+worktree 分支 4. 通知 Slaver</p>
+<p><strong>Slaver 行动</strong>： 1. 确认 Ticket 状态已更新 2. 清理本地
+worktree（可选） 3. 领取新任务</p>
+<hr />
+<h2 id="并发任务管理">4. 并发任务管理</h2>
+<h3 id="多任务并行">4.1 多任务并行</h3>
+<p>Slaver 可以同时处理多个任务：</p>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│  Slaver 实例：slaver_20260410_150000_x9y8z7w6                │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Task 1: FEAT-001                                           │
+│    状态：review (等待 Master 反馈)                            │
+│    分支：slaver_...-FEAT-001                                │
+│    Worktree: .eket/worktrees/slaver_...-FEAT-001            │
+│                                                             │
+│  Task 2: FEAT-002                                           │
+│    状态：in_progress (开发中)                                │
+│    分支：slaver_...-FEAT-002                                │
+│    Worktree: .eket/worktrees/slaver_...-FEAT-002            │
+│                                                             │
+│  Task 3: FIX-001                                            │
+│    状态：ready (等待领取)                                    │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+<h3 id="任务切换策略">4.2 任务切换策略</h3>
+<pre><code>收到 Master 反馈
+    │
+    ▼
+是否需要修改？
+    ├── 是 → 暂停当前任务 → 切换到反馈任务 worktree → 处理修改
+    └── 否（批准）→ 记录 → 继续当前任务 → 准备领取新任务</code></pre>
+<h3 id="并发限制">4.3 并发限制</h3>
+<table>
+<thead>
+<tr>
+<th>Slaver 角色</th>
+<th>最大并发任务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>frontend_dev</td>
+<td>2-3</td>
+</tr>
+<tr>
+<td>backend_dev</td>
+<td>2-3</td>
+</tr>
+<tr>
+<td>fullstack</td>
+<td>2-3</td>
+</tr>
+<tr>
+<td>tester</td>
+<td>3-4</td>
+</tr>
+<tr>
+<td>devops</td>
+<td>2-3</td>
+</tr>
+</tbody>
+</table>
+<p><strong>超过并发限制时</strong>： - 新任务状态设为
+<code>blocked_by_capacity</code> - 通知 Master 当前容量已满 -
+完成一个任务后再领取</p>
+<hr />
+<h2 id="worktree-管理">5. Worktree 管理</h2>
+<h3 id="命名规则">5.1 命名规则</h3>
+<pre><code>{instance_id}-{ticket_id}
+例：slaver_20260410_150000_x9y8z7w6-FEAT-001</code></pre>
+<h3 id="创建时机">5.2 创建时机</h3>
+<ul>
+<li><strong>领取任务时</strong>：<code>/eket-claim</code>
+脚本自动创建</li>
+<li><strong>位置</strong>：<code>.eket/worktrees/{instance_id}-{ticket_id}/</code></li>
+</ul>
+<h3 id="清理时机">5.3 清理时机</h3>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>清理时间</th>
+<th>清理方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PR 批准并 merge</td>
+<td>Master 合并后</td>
+<td>Master 删除分支</td>
+</tr>
+<tr>
+<td>PR 驳回</td>
+<td>Slaver 重新开发前</td>
+<td>Slaver 删除并重建</td>
+</tr>
+<tr>
+<td>任务取消</td>
+<td>收到通知后</td>
+<td>Slaver 删除</td>
+</tr>
+</tbody>
+</table>
+<h3 id="worktree-同步">5.4 Worktree 同步</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 同步主仓库状态</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> .eket/worktrees/{worktree_name}</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> fetch origin</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> rebase origin/main</span></code></pre></div>
+<hr />
+<h2 id="消息队列通信">6. 消息队列通信</h2>
+<h3 id="pr-提交通知">6.1 PR 提交通知</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;msg_20260410173000&quot;</span><span class="fu">,</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timestamp&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-04-10T17:30:00+08:00&quot;</span><span class="fu">,</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;from&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver_20260410_150000_x9y8z7w6&quot;</span><span class="fu">,</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;to&quot;</span><span class="fu">:</span> <span class="st">&quot;master&quot;</span><span class="fu">,</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;pr_review_request&quot;</span><span class="fu">,</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;priority&quot;</span><span class="fu">:</span> <span class="st">&quot;normal&quot;</span><span class="fu">,</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payload&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ticket_id&quot;</span><span class="fu">:</span> <span class="st">&quot;FEAT-001&quot;</span><span class="fu">,</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;branch&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver_...-FEAT-001&quot;</span><span class="fu">,</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;pr_file&quot;</span><span class="fu">:</span> <span class="st">&quot;outbox/review_requests/pr_FEAT-001_*.md&quot;</span><span class="fu">,</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;summary&quot;</span><span class="fu">:</span> <span class="st">&quot;请求审核 FEAT-001&quot;</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="master-反馈通知">6.2 Master 反馈通知</h3>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;msg_20260410180000&quot;</span><span class="fu">,</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timestamp&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-04-10T18:00:00+08:00&quot;</span><span class="fu">,</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;from&quot;</span><span class="fu">:</span> <span class="st">&quot;master_20260410_143000_a1b2c3d4&quot;</span><span class="fu">,</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;to&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver_20260410_150000_x9y8z7w6&quot;</span><span class="fu">,</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;pr_review_result&quot;</span><span class="fu">,</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;priority&quot;</span><span class="fu">:</span> <span class="st">&quot;normal&quot;</span><span class="fu">,</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payload&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ticket_id&quot;</span><span class="fu">:</span> <span class="st">&quot;FEAT-001&quot;</span><span class="fu">,</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;result&quot;</span><span class="fu">:</span> <span class="st">&quot;changes_requested&quot;</span><span class="fu">,</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;comments&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;需要添加错误处理&quot;</span><span class="ot">,</span> <span class="st">&quot;测试覆盖率不足&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;pr_file&quot;</span><span class="fu">:</span> <span class="st">&quot;outbox/review_requests/pr_FEAT-001_*.md&quot;</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<hr />
+<h2 id="相关文档">7. 相关文档</h2>
+<ul>
+<li><a
+href="./SLAVER-HEARTBEAT-CHECKLIST.md"><code>SLAVER-HEARTBEAT-CHECKLIST.md</code></a>
+- Slaver 心跳检查</li>
+<li><a href="./MASTER-WORKFLOW.md"><code>MASTER-WORKFLOW.md</code></a> -
+Master Review 流程</li>
+<li><a
+href="./COMMUNICATION-PROTOCOL.md"><code>COMMUNICATION-PROTOCOL.md</code></a>
+- 消息队列通信</li>
+</ul>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team<br />
+<strong>版本</strong>: v2.1.0<br />
+<strong>最后更新</strong>: 2026-04-10</p>
+</body>
+</html>

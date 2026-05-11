@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>专家组评审：EPIC-005 — 一键安装系统 + 预编译包发布</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">专家组评审：EPIC-005 — 一键安装系统 +
+预编译包发布</h1>
+</header>
+<h1
+id="专家组评审epic-005-一键安装系统-预编译包发布">专家组评审：EPIC-005 —
+一键安装系统 + 预编译包发布</h1>
+<p><strong>日期</strong>: 2026-05-07 <strong>主题</strong>:
+引导式安装脚本 + GitHub Actions 预编译 + Claude/MCP 唤醒机制
+<strong>Master</strong>: master-001 <strong>关联</strong>: <a
+href="../../jira/tickets/EPIC-005/requirement-analysis.md">jira/tickets/EPIC-005/requirement-analysis.md</a></p>
+<hr />
+<h2 id="召唤理由">召唤理由</h2>
+<p>按 <a
+href="../../template/docs/EXPERT-PANEL-PLAYBOOK.md#0-何时召唤专家组">EXPERT-PANEL-PLAYBOOK
+§0</a> 表，“新功能 → PRD”场景需 3 名专家：产品 / 架构 / QA。本 EPIC
+涉及： - <strong>一键安装脚本</strong>：跨平台兼容（Linux/macOS/WSL2）+
+环境检测 + 5 级选择 - <strong>GitHub Actions
+预编译</strong>：Node（ncc）+ Rust（已有） - <strong>Claude/MCP
+唤醒</strong>：<code>/eket</code> 命令 + skill description 间接触发</p>
+<p>符合新功能场景 + 架构决策（预编译方案选型）。</p>
+<h2 id="发言规则已遵循">发言规则（已遵循）</h2>
+<ol type="1">
+<li>✅ 每位专家先独立给出分析（禁止先看他人意见）</li>
+<li>✅ 发言结构：观察 → 担忧 → 建议</li>
+<li>✅ 分歧留在文档中</li>
+<li>✅ Master 汇总末尾给出最终决策</li>
+</ol>
+<hr />
+<h2 id="架构师architect">1. 架构师（Architect）</h2>
+<h3 id="观察">观察</h3>
+<ul>
+<li><strong>Rust 代码已存在</strong>：<code>rust/src/</code> 目录 +
+GitHub Actions 编译流程 → 工作量降低 75%</li>
+<li><strong>Node 版功能完整</strong>：<code>node/src/</code>
+2.9.0-alpha，测试通过率 44%（EPIC-003 待修）</li>
+<li><strong>现有命令分散</strong>：<code>/eket-init</code> /
+<code>/eket-start</code> / <code>/eket-claim</code> 等 8+
+命令，无统一入口</li>
+<li><strong>预编译方案空白</strong>：当前无 GitHub Actions job
+产出预编译包</li>
+</ul>
+<h3 id="担忧">担忧</h3>
+<ul>
+<li><strong>U-1</strong>：ncc 打包 Node 版后体积可能 &gt;50MB（含
+Redis/SQLite 依赖）</li>
+<li><strong>U-2</strong>：<code>/eket</code> 统一入口可能与现有
+<code>/eket-*</code> 命令冲突（向后兼容问题）</li>
+<li><strong>U-3</strong>：安装脚本下载失败时（GitHub Release 不可用）无
+fallback</li>
+<li><strong>U-4</strong>：Claude Code skill description “召唤 EKET 团队”
+匹配可能过于宽泛（如用户说”召唤 XXX 团队”误触发）</li>
+</ul>
+<h3 id="建议">建议</h3>
+<ul>
+<li>✅ <strong>建议-A1</strong>：ncc
+打包前<strong>先测试体积</strong>（TASK-426 已完成）→ 若
+&gt;50MB，拆分为 core + plugins</li>
+<li>✅ <strong>建议-A2</strong>：<code>/eket</code> 作主入口，保留
+<code>/eket-*</code> 向后兼容（deprecation warning，计划在 v3.0
+移除）</li>
+<li>✅ <strong>建议-A3</strong>：安装脚本 3-tier fallback：
+<ol type="1">
+<li>GitHub Release 预编译包</li>
+<li>jsDelivr CDN 镜像</li>
+<li>本地编译（需源码）</li>
+</ol></li>
+<li>⚠️ <strong>建议-A4</strong>：skill description 精确匹配”召唤 EKET
+团队”（大小写敏感），避免误触发</li>
+</ul>
+<hr />
+<h2 id="devopsdevops-engineer">2. DevOps（DevOps Engineer）</h2>
+<h3 id="观察-1">观察</h3>
+<ul>
+<li><strong>GitHub Actions
+现状</strong>：<code>.github/workflows/test.yml</code> 已有 CI，缺预编译
+job</li>
+<li><strong>Rust 编译依赖</strong>：已在 Actions 中配置
+<code>cargo build --release</code></li>
+<li><strong>Node 打包工具</strong>：有两种方案：ncc（Vercel）vs
+pkg（Vercel 已 deprecated）</li>
+<li><strong>跨平台测试覆盖</strong>：CI 仅跑
+<code>ubuntu-latest</code>，未测 macOS/WSL2</li>
+</ul>
+<h3 id="担忧-1">担忧</h3>
+<ul>
+<li><strong>U-5</strong>：pkg 工具已 deprecated（2023 年停止维护）→
+不应使用</li>
+<li><strong>U-6</strong>：ncc 打包后动态 <code>require()</code>
+可能失效（如 Redis/SQLite native 模块）</li>
+<li><strong>U-7</strong>：跨平台 SHA256 校验一致性（Linux/macOS/WSL2
+<code>shasum</code> 命令差异）</li>
+<li><strong>U-8</strong>：Release asset 命名不规范（缺 <code>v</code>
+前缀 / 缺架构后缀）</li>
+</ul>
+<h3 id="建议-1">建议</h3>
+<ul>
+<li><p>✅ <strong>建议-D1</strong>：Node 预编译方案：<strong>ncc + npm
+fallback</strong></p>
+<ul>
+<li>ncc bundle → <code>eket-node-standalone-v2.9.0.js</code></li>
+<li>若 native 模块失效，安装脚本自动切换 <code>npm install</code>
+模式</li>
+</ul></li>
+<li><p>✅ <strong>建议-D2</strong>：统一 asset 命名规范：</p>
+<pre><code>eket-node-standalone-v${VERSION}.js
+eket-rust-${OS}-${ARCH}-v${VERSION}
+eket-node-standalone-v${VERSION}.js.sha256
+eket-rust-${OS}-${ARCH}-v${VERSION}.sha256</code></pre></li>
+<li><p>✅ <strong>建议-D3</strong>：跨平台测试矩阵：</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">strategy</span><span class="kw">:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">matrix</span><span class="kw">:</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">os</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">ubuntu-latest</span><span class="kw">,</span><span class="at"> macos-latest</span><span class="kw">,</span><span class="at"> windows-latest</span><span class="kw">]</span></span></code></pre></div>
+<p>（Windows 仅测 WSL2 模式）</p></li>
+<li><p>⚠️ <strong>建议-D4</strong>：SHA256 生成统一用
+<code>sha256sum</code>（GNU coreutils），macOS 需
+<code>brew install coreutils</code></p></li>
+</ul>
+<hr />
+<h2 id="cliux-专家cli-specialist">3. CLI/UX 专家（CLI Specialist）</h2>
+<h3 id="观察-2">观察</h3>
+<ul>
+<li><strong>当前安装体验</strong>：手动 <code>git clone</code> +
+<code>npm install</code> → 失败率高（环境依赖）</li>
+<li><strong>引导式安装需求明确</strong>：5 级选择（完整 / Rust+Shell /
+Node+Shell / Shell / 本地编译）</li>
+<li><strong>命令发现性差</strong>：用户不知道有 <code>/eket-*</code>
+命令，需文档查找</li>
+<li><strong>“召唤 EKET 团队”
+自然语言期望</strong>：用户期望自然语言触发，但 Claude Code 不支持（仅
+skill description 间接）</li>
+</ul>
+<h3 id="担忧-2">担忧</h3>
+<ul>
+<li><strong>U-9</strong>：5 级选择可能过于复杂（新用户不理解”Rust +
+Shell”vs”Node + Shell”区别）</li>
+<li><strong>U-10</strong>：环境检测失败时（无
+Rust/Node），菜单显示所有选项可能误导用户</li>
+<li><strong>U-11</strong>：“召唤 EKET 团队” skill description
+匹配需精确，否则用户输入”召唤帮助”等也触发</li>
+<li><strong>U-12</strong>：安装后未自动验证（用户不知道
+<code>eket --version</code> 是否正常）</li>
+</ul>
+<h3 id="建议-2">建议</h3>
+<ul>
+<li>✅ <strong>建议-C1</strong>：简化 5 级选择为 <strong>3 级 + 1
+高级</strong>：
+<ul>
+<li><strong>[1] 推荐安装</strong>（自动检测最优层次）</li>
+<li><strong>[2] 最小化安装</strong>（Shell only）</li>
+<li><strong>[3] 高级选项</strong> → 展开子菜单（Rust+Shell / Node+Shell
+/ 本地编译）</li>
+</ul></li>
+<li>✅ <strong>建议-C2</strong>：环境检测后动态调整菜单（无 Rust
+时隐藏”Rust + Shell”选项）</li>
+<li>✅ <strong>建议-C3</strong>：skill description 精确匹配 + 用户教育：
+<ul>
+<li>description: <code>"召唤 EKET 团队"（精确匹配）</code></li>
+<li>README 明确说明：<strong>使用 <code>/eket</code>
+命令更可靠</strong></li>
+</ul></li>
+<li>✅ <strong>建议-C4</strong>：安装后自动运行
+<code>eket doctor</code>（健康检查）并输出结果</li>
+<li>⚠️ <strong>建议-C5</strong>：安装脚本支持 <code>--yes</code>
+参数（CI 环境无交互模式）</li>
+</ul>
+<hr />
+<h2 id="master-汇总与决策">Master 汇总与决策</h2>
+<h3 id="分歧解决">分歧解决</h3>
+<table>
+<colgroup>
+<col style="width: 34%" />
+<col style="width: 39%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr>
+<th>分歧点</th>
+<th>专家立场</th>
+<th>决策</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Node 预编译方案</strong></td>
+<td>架构：ncc；DevOps：ncc + npm fallback</td>
+<td>✅ <strong>采纳 DevOps</strong>：ncc + npm fallback（更稳健）</td>
+</tr>
+<tr>
+<td><strong>5 级选择 vs 3 级</strong></td>
+<td>CLI：简化为 3 级；需求原文：5 级</td>
+<td>✅ <strong>采纳 CLI 折衷</strong>：3 级 +
+高级子菜单（平衡简洁与灵活）</td>
+</tr>
+<tr>
+<td><strong>skill description 匹配</strong></td>
+<td>架构：精确；CLI：精确 + 用户教育</td>
+<td>✅ <strong>采纳 CLI</strong>：精确匹配 + README 明确说明</td>
+</tr>
+<tr>
+<td><strong>SHA256 工具</strong></td>
+<td>DevOps：统一 <code>sha256sum</code></td>
+<td>✅ <strong>采纳</strong>：CI 用 <code>sha256sum</code>，macOS 需
+coreutils</td>
+</tr>
+</tbody>
+</table>
+<h3 id="最终任务调整">最终任务调整</h3>
+<h4 id="核心功能未变">核心功能（未变）</h4>
+<ol type="1">
+<li><strong>TASK-416</strong>: 引导式安装脚本（环境检测 + 3 级菜单 +
+下载）</li>
+<li><strong>TASK-417</strong>: sha256 校验逻辑</li>
+<li><strong>TASK-418</strong>: 本地编译 fallback</li>
+<li><strong>TASK-419</strong>: Claude 命令注册（<code>/eket</code> +
+skill description）</li>
+</ol>
+<h4 id="github-actions调整">GitHub Actions（调整）</h4>
+<ol start="5" type="1">
+<li><strong>TASK-420</strong>: Node 预编译 job（<strong>ncc + npm
+fallback 双模式</strong>）</li>
+<li><strong>TASK-421</strong>: 统一 asset 命名 + sha256
+生成（<strong>采纳 D2 规范</strong>）</li>
+<li><strong>TASK-422</strong>: 跨平台测试矩阵（<strong>ubuntu / macos /
+windows-wsl2</strong>）</li>
+</ol>
+<h4 id="ux-优化调整">UX 优化（调整）</h4>
+<ol start="8" type="1">
+<li><strong>TASK-423</strong>: Skill description 更新（<strong>精确匹配
++ README 说明</strong>）</li>
+<li><strong>TASK-424</strong>: 安装后验证（<code>eket doctor</code>
+<strong>自动运行</strong>）</li>
+<li><strong>TASK-425</strong>: 文档更新（README + 安装指南 + <strong>CLI
+参数 <code>--yes</code></strong>）</li>
+</ol>
+<h4 id="新增任务">新增任务</h4>
+<ol start="11" type="1">
+<li><strong>TASK-428</strong>: 3-tier fallback 机制（GitHub Release →
+jsDelivr → 本地编译）</li>
+<li><strong>TASK-429</strong>: ncc 打包体积测试 + 拆分策略（若
+&gt;50MB）</li>
+</ol>
+<h3 id="采纳建议汇总">采纳建议汇总</h3>
+<table>
+<thead>
+<tr>
+<th>建议 ID</th>
+<th>内容</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td>ncc 打包体积测试</td>
+<td>✅ 采纳（新增 TASK-429）</td>
+</tr>
+<tr>
+<td>A2</td>
+<td><code>/eket</code> 向后兼容</td>
+<td>✅ 采纳（TASK-419）</td>
+</tr>
+<tr>
+<td>A3</td>
+<td>3-tier fallback</td>
+<td>✅ 采纳（新增 TASK-428）</td>
+</tr>
+<tr>
+<td>A4</td>
+<td>skill description 精确匹配</td>
+<td>✅ 采纳（TASK-423）</td>
+</tr>
+<tr>
+<td>D1</td>
+<td>ncc + npm fallback</td>
+<td>✅ 采纳（TASK-420）</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>asset 命名规范</td>
+<td>✅ 采纳（TASK-421）</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>跨平台测试矩阵</td>
+<td>✅ 采纳（TASK-422）</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>SHA256 统一 <code>sha256sum</code></td>
+<td>✅ 采纳（TASK-421）</td>
+</tr>
+<tr>
+<td>C1</td>
+<td>3 级 + 高级子菜单</td>
+<td>✅ 采纳（TASK-416）</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>动态菜单调整</td>
+<td>✅ 采纳（TASK-416）</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>skill description + README</td>
+<td>✅ 采纳（TASK-423）</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>自动 <code>eket doctor</code></td>
+<td>✅ 采纳（TASK-424）</td>
+</tr>
+<tr>
+<td>C5</td>
+<td><code>--yes</code> 参数</td>
+<td>✅ 采纳（TASK-425）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="驳回建议无">驳回建议（无）</h3>
+<hr />
+<h2 id="依赖关系调整">依赖关系调整</h2>
+<pre class="mermaid"><code>graph LR
+  TASK-429[ncc 体积测试] --&gt; TASK-420[Node 预编译 job]
+  TASK-420 --&gt; TASK-421[asset 命名 + sha256]
+  TASK-421 --&gt; TASK-422[跨平台测试]
+  
+  TASK-416[引导式安装脚本] --&gt; TASK-417[sha256 校验]
+  TASK-417 --&gt; TASK-418[本地编译 fallback]
+  TASK-418 --&gt; TASK-428[3-tier fallback]
+  
+  TASK-428 --&gt; TASK-419[Claude 命令注册]
+  TASK-422 --&gt; TASK-419
+  
+  TASK-419 --&gt; TASK-423[Skill description]
+  TASK-423 --&gt; TASK-424[安装后验证]
+  TASK-424 --&gt; TASK-425[文档更新]</code></pre>
+<p><strong>关键路径</strong>：</p>
+<pre><code>TASK-429 → TASK-420 → TASK-421 → TASK-422 → TASK-419 → TASK-423 → TASK-424 → TASK-425</code></pre>
+<p>（约 16 小时顺序执行，或 3 个 Slaver 并行 6-8 小时）</p>
+<hr />
+<h2 id="风险更新">风险更新</h2>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 24%" />
+<col style="width: 27%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr>
+<th>风险项</th>
+<th>原评估</th>
+<th>更新评估</th>
+<th>缓解策略</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ncc 体积 &gt;50MB</td>
+<td>L</td>
+<td><strong>M</strong></td>
+<td>TASK-429 先测试，&gt;50MB 则拆 core + plugins</td>
+</tr>
+<tr>
+<td><code>/eket</code> 命令冲突</td>
+<td>L</td>
+<td><strong>L</strong></td>
+<td>向后兼容，deprecation warning</td>
+</tr>
+<tr>
+<td>GitHub Release 不可用</td>
+<td>M</td>
+<td><strong>L</strong></td>
+<td>3-tier fallback（jsDelivr 镜像）</td>
+</tr>
+<tr>
+<td>skill description 误触发</td>
+<td>L</td>
+<td><strong>L</strong></td>
+<td>精确匹配 + README 说明</td>
+</tr>
+<tr>
+<td>ncc 动态 require 失效</td>
+<td>M</td>
+<td><strong>L</strong></td>
+<td>npm fallback（TASK-420 双模式）</td>
+</tr>
+<tr>
+<td>跨平台测试覆盖不足</td>
+<td>H</td>
+<td><strong>M</strong></td>
+<td>TASK-422 测试矩阵（ubuntu/macos/wsl2）</td>
+</tr>
+<tr>
+<td>用户不理解 5 级选择</td>
+<td>M</td>
+<td><strong>L</strong></td>
+<td>简化为 3 级 + 高级（TASK-416）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="下一步行动">下一步行动</h2>
+<ol type="1">
+<li><strong>Master</strong> 创建 12 个 ticket（TASK-416 ~
+TASK-429）</li>
+<li><strong>Master</strong> 更新
+<code>jira/tickets/EPIC-005/requirement-analysis.md</code>（标记
+<strong>approved</strong>）</li>
+<li><strong>Master</strong> 更新
+<code>confluence/architecture/EPIC-005-dependency-graph.md</code>（新依赖图）</li>
+<li><strong>Master</strong> 初始化 Slaver 团队（至少 3 个角色：Backend /
+DevOps / CLI/UX）</li>
+<li><strong>Master</strong> 优先派发 TASK-429（ncc 体积测试，阻塞
+TASK-420）</li>
+</ol>
+<hr />
+<p><strong>审核状态</strong>: ✅ 专家组评审完成 <strong>决策者</strong>:
+master-001 <strong>决策时间</strong>: 2026-05-07 16:30 GMT+8</p>
+</body>
+</html>

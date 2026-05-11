@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET SOP 总览</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET SOP 总览</h1>
+</header>
+<h1 id="eket-sop-总览">EKET SOP 总览</h1>
+<p><strong>版本</strong>: 1.1.0 <strong>最后更新</strong>:
+2026-03-25</p>
+<hr />
+<h2 id="文档优先审查模式-v1.1.0-新增">文档优先审查模式 (v1.1.0
+新增)</h2>
+<p>EKET
+框架采用<strong>文档优先审查模式</strong>，将人类审查重心前移到文档阶段，代码阶段只做验证性审查。</p>
+<h3 id="核心理念">核心理念</h3>
+<blockquote>
+<p><strong>人类审查重心前移</strong>：在文档阶段投入更多审查精力，代码阶段只做验证性审查</p>
+</blockquote>
+<pre><code>做计划 → 更新文档 → 审查 + 批准 → 代码开发和测试 → 验证审查 → 合并
+                            ↑                        ↑
+                      主要审查点 (人类)        次要审查点 (验证性)</code></pre>
+<h3 id="审查点分布">审查点分布</h3>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 18%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr>
+<th>阶段</th>
+<th>审查点</th>
+<th>审查对象</th>
+<th>审查重点</th>
+<th>预计耗时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phase 1</td>
+<td>A1-A4</td>
+<td>需求/架构/任务规划</td>
+<td>需求理解、技术选型、任务优先级</td>
+<td>2-4 小时</td>
+</tr>
+<tr>
+<td>Phase 2</td>
+<td>B1</td>
+<td>任务分析文档</td>
+<td>实现方案、测试策略</td>
+<td>10-20 min/任务</td>
+</tr>
+<tr>
+<td>Phase 2</td>
+<td>B2</td>
+<td>PR 验证审查</td>
+<td>与批准文档的一致性</td>
+<td>5-10 min/任务</td>
+</tr>
+<tr>
+<td>Phase 3</td>
+<td>C1</td>
+<td>批量合并报告</td>
+<td>整体质量把控 (可选)</td>
+<td>30-60 min/批次</td>
+</tr>
+</tbody>
+</table>
+<h3 id="主要变更-v1.1.0">主要变更 (v1.1.0)</h3>
+<ol type="1">
+<li><strong>Phase 1 增加人类审查点</strong> -
+需求分析、架构设计、任务规划后需人类审查批准</li>
+<li><strong>Phase 2 新增任务分析文档</strong> -
+执行前创建《任务分析文档》，人类批准后方可实施</li>
+<li><strong>Phase 3 简化为验证审查</strong> - PR
+审查聚焦于”是否与批准的文档一致”</li>
+</ol>
+<p>详见 <a href="WORKFLOW-REDESIGN.md">WORKFLOW-REDESIGN.md</a></p>
+<hr />
+<h2 id="两层流程模型">两层流程模型</h2>
+<p>EKET 框架采用<strong>两层流程模型</strong>：Phase 级流程和 Task
+级流程。两者遵循相似的流程模式，但交付的粒度和详细程度不同。</p>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                        Phase 级流程                              │
+│  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐   │
+│  │需求  │→ │功能  │  │系统  │→ │技术  │  │任务  │→ │审查  │   │
+│  │收集  │  │整理  │  │设计  │  │设计  │  │规划  │  │通过  │   │
+│  └──────┘  └──────┘  └──────┘  └──────┘  └──────┘  └──────┘   │
+│     ↓          ↓          ↓          ↓          ↓         ↓     │
+│  业务语言   功能模块    组件级     技术细节    可执行     N/A    │
+│  (粗粒度)   (中粒度)    (粗粒度)   (细粒度)    (细粒度)         │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                        Task 级流程                              │
+│  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐   │
+│  │任务  │→ │任务  │  │拆解  │  │任务  │  │Review│→ │任务  │   │
+│  │认领  │  │分析  │  │(可选)│  │实现  │  │&amp;UT   │  │完成  │   │
+│  └──────┘  └──────┘  └──────┘  └──────┘  └──────┘  └──────┘   │
+│     ↓          ↓          ↓          ↓          ↓         ↓     │
+│  标记状态   理解需求    子任务     代码实现    质量保障   状态更新│
+│  (粗粒度)   (中粒度)    (细粒度)   (细粒度)    (细粒度)  (粗粒度)│
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<hr />
+<h2 id="phase-级流程">Phase 级流程</h2>
+<h3 id="phase-定义">Phase 定义</h3>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 24%" />
+<col style="width: 24%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr>
+<th>Phase</th>
+<th>名称</th>
+<th>目标</th>
+<th>产出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Phase 1</strong></td>
+<td>项目初始化</td>
+<td>从需求到任务规划</td>
+<td>需求文档、架构设计、Jira tickets</td>
+</tr>
+<tr>
+<td><strong>Phase 2</strong></td>
+<td>开发阶段</td>
+<td>任务实现和测试</td>
+<td>功能代码、测试代码、PR</td>
+</tr>
+<tr>
+<td><strong>Phase 3</strong></td>
+<td>Review &amp; Merge</td>
+<td>代码审查和合并</td>
+<td>合并后的代码、测试报告</td>
+</tr>
+<tr>
+<td><strong>Phase 4</strong></td>
+<td>运维监控</td>
+<td>线上监控和迭代</td>
+<td>监控数据、优化建议</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-1-子阶段">Phase 1 子阶段</h3>
+<table>
+<thead>
+<tr>
+<th>子阶段</th>
+<th>输入</th>
+<th>输出</th>
+<th>详细程度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1.1 需求收集</strong></td>
+<td>人类原始需求</td>
+<td>需求清单</td>
+<td>业务语言，粗粒度</td>
+</tr>
+<tr>
+<td><strong>1.2 功能整理</strong></td>
+<td>需求清单</td>
+<td>功能列表</td>
+<td>功能模块，中粒度</td>
+</tr>
+<tr>
+<td><strong>1.3 系统设计</strong></td>
+<td>功能列表</td>
+<td>系统架构图</td>
+<td>组件级，粗粒度</td>
+</tr>
+<tr>
+<td><strong>1.4 技术设计</strong></td>
+<td>系统架构</td>
+<td>API/DB/技术栈</td>
+<td>技术细节，细粒度</td>
+</tr>
+<tr>
+<td><strong>1.5 任务规划</strong></td>
+<td>技术设计</td>
+<td>Epics/Tickets</td>
+<td>可执行任务，细粒度</td>
+</tr>
+<tr>
+<td><strong>1.6 审查通过</strong></td>
+<td>所有产出</td>
+<td>审查报告</td>
+<td>N/A</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-2-子阶段">Phase 2 子阶段</h3>
+<table>
+<thead>
+<tr>
+<th>子阶段</th>
+<th>输入</th>
+<th>输出</th>
+<th>详细程度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>2.1 任务认领</strong></td>
+<td>任务列表</td>
+<td>已领取任务</td>
+<td>状态标记，粗粒度</td>
+</tr>
+<tr>
+<td><strong>2.2 任务分析</strong></td>
+<td>任务文档</td>
+<td>理解记录</td>
+<td>中粒度</td>
+</tr>
+<tr>
+<td><strong>2.3 任务拆解</strong></td>
+<td>复杂任务</td>
+<td>子任务 (可选)</td>
+<td>细粒度</td>
+</tr>
+<tr>
+<td><strong>2.4 依赖上报</strong></td>
+<td>依赖分析</td>
+<td>依赖澄清 (可选)</td>
+<td>细粒度</td>
+</tr>
+<tr>
+<td><strong>2.5 任务实现</strong></td>
+<td>任务设计</td>
+<td>功能代码</td>
+<td>细粒度</td>
+</tr>
+<tr>
+<td><strong>2.6 Review &amp; UT</strong></td>
+<td>完成代码</td>
+<td>测试报告</td>
+<td>细粒度</td>
+</tr>
+<tr>
+<td><strong>2.7 任务验收</strong></td>
+<td>验收结果</td>
+<td>验收通过</td>
+<td>中粒度</td>
+</tr>
+<tr>
+<td><strong>2.8 任务完成</strong></td>
+<td>所有产出</td>
+<td>状态更新</td>
+<td>粗粒度</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-3-子阶段">Phase 3 子阶段</h3>
+<table>
+<thead>
+<tr>
+<th>子阶段</th>
+<th>输入</th>
+<th>输出</th>
+<th>详细程度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>3.1 PR Review</strong></td>
+<td>PR 请求</td>
+<td>Review 意见</td>
+<td>细粒度</td>
+</tr>
+<tr>
+<td><strong>3.2 问题修复</strong></td>
+<td>Review 意见</td>
+<td>修复代码</td>
+<td>细粒度</td>
+</tr>
+<tr>
+<td><strong>3.3 合并验证</strong></td>
+<td>通过代码</td>
+<td>验证报告</td>
+<td>中粒度</td>
+</tr>
+<tr>
+<td><strong>3.4 合并到 Main</strong></td>
+<td>验证通过</td>
+<td>合并完成</td>
+<td>粗粒度</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-4-子阶段">Phase 4 子阶段</h3>
+<table>
+<thead>
+<tr>
+<th>子阶段</th>
+<th>输入</th>
+<th>输出</th>
+<th>详细程度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>4.1 监控部署</strong></td>
+<td>部署完成</td>
+<td>监控配置</td>
+<td>细粒度</td>
+</tr>
+<tr>
+<td><strong>4.2 数据收集</strong></td>
+<td>监控配置</td>
+<td>运行数据</td>
+<td>中粒度</td>
+</tr>
+<tr>
+<td><strong>4.3 问题分析</strong></td>
+<td>运行数据</td>
+<td>问题报告</td>
+<td>细粒度</td>
+</tr>
+<tr>
+<td><strong>4.4 优化迭代</strong></td>
+<td>问题报告</td>
+<td>优化任务</td>
+<td>中粒度</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="task-级流程">Task 级流程</h2>
+<h3 id="任务生命周期">任务生命周期</h3>
+<pre><code>backlog → analysis → approved → design → ready → dev → test → review → done</code></pre>
+<h3 id="详细流程">详细流程</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                        Task 级流程                               │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  1. 任务认领 (Claim)                                            │
+│  - 查看任务列表                                                  │
+│  - 检查依赖关系                                                  │
+│  - 标记状态：in_progress                                        │
+│  - 启动计时器                                                    │
+│  输出：任务状态更新                                              │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  2. 任务分析 (Analyze)                                          │
+│  - 阅读任务文档                                                  │
+│  - 理解验收标准                                                  │
+│  - 识别技术要点                                                  │
+│  输出：任务理解记录                                              │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  3. 任务拆解 (Decompose) - 可选                                 │
+│  - 复杂任务拆分为子任务                                          │
+│  - 创建依赖关系                                                  │
+│  输出：子任务列表 (如需要)                                       │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  4. 依赖上报 (Dependency) - 可选                                │
+│  - 识别缺失依赖                                                  │
+│  - 创建依赖澄清请求                                              │
+│  输出：依赖澄清任务 (如需要)                                     │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  5. 任务实现 (Implement)                                        │
+│  - 创建分支和 worktree                                           │
+│  - 编写代码                                                      │
+│  - 编写单元测试                                                  │
+│  - 定期更新心跳                                                  │
+│  输出：功能代码、测试代码                                        │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  6. Review &amp; UT                                                 │
+│  - 运行单元测试                                                  │
+│  - 运行 Lint 检查                                                 │
+│  - 代码覆盖率检查                                                │
+│  - 提交 PR 请求 Review                                           │
+│  输出：测试报告、PR 请求                                          │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  7. 任务验收 (Accept)                                           │
+│  - 验证所有验收标准                                              │
+│  - 处理 Review 反馈                                               │
+│  - 更新文档                                                      │
+│  输出：验收通过确认                                              │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  8. 任务完成 (Complete)                                         │
+│  - 更新任务状态：done                                           │
+│  - 记录经验教训                                                  │
+│  - 创建 Checkpoint                                              │
+│  输出：任务完成状态                                              │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<hr />
+<h2 id="两层流程的对应关系">两层流程的对应关系</h2>
+<h3 id="粒度对比">粒度对比</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Phase 级</th>
+<th>Task 级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>时间跨度</strong></td>
+<td>天/周</td>
+<td>小时/天</td>
+</tr>
+<tr>
+<td><strong>参与智能体</strong></td>
+<td>多个</td>
+<td>单个为主</td>
+</tr>
+<tr>
+<td><strong>产出物</strong></td>
+<td>文档集/代码集</td>
+<td>单个功能</td>
+</tr>
+<tr>
+<td><strong>审查级别</strong></td>
+<td>正式审查</td>
+<td>同行 Review</td>
+</tr>
+<tr>
+<td><strong>人类参与</strong></td>
+<td>关键决策点</td>
+<td>依赖澄清</td>
+</tr>
+</tbody>
+</table>
+<h3 id="流程映射">流程映射</h3>
+<table>
+<thead>
+<tr>
+<th>Phase 1 阶段</th>
+<th>对应 Task 级流程</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需求收集</td>
+<td>任务分析（理解需求）</td>
+</tr>
+<tr>
+<td>功能整理</td>
+<td>任务拆解（分解功能）</td>
+</tr>
+<tr>
+<td>系统设计</td>
+<td>依赖上报（识别约束）</td>
+</tr>
+<tr>
+<td>技术设计</td>
+<td>任务实现（技术细节）</td>
+</tr>
+<tr>
+<td>任务规划</td>
+<td>Review &amp; UT（质量保障）</td>
+</tr>
+<tr>
+<td>审查通过</td>
+<td>任务验收/完成（验收）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="核心原则">核心原则</h2>
+<h3 id="流程同构">1. 流程同构</h3>
+<p>Phase 级和 Task 级流程遵循相同的模式：</p>
+<pre><code>输入 → 分析 → 设计 → 实现 → 验证 → 输出</code></pre>
+<h3 id="粒度递进">2. 粒度递进</h3>
+<p>每个阶段都比前一阶段更详细：</p>
+<pre><code>业务需求 → 功能规格 → 系统设计 → 技术实现 → 可执行任务</code></pre>
+<h3 id="质量门禁">3. 质量门禁</h3>
+<p>每个阶段都有审查/验证环节： - Phase 级：正式审查（文档监控员） - Task
+级：Review &amp; UT（Master/测试员）</p>
+<h3 id="持续反馈">4. 持续反馈</h3>
+<p>每个阶段都可能产生反馈循环： - 审查不通过 → 返回修改 - Review 不通过
+→ 返回修复 - 依赖缺失 → 创建澄清任务</p>
+<hr />
+<h2 id="相关文件">相关文件</h2>
+<h3 id="phase-sop">Phase SOP</h3>
+<ul>
+<li><a href="phase-1-initiation/README.md">Phase 1 SOP -
+项目初始化</a></li>
+<li><a href="phase-2-development/README.md">Phase 2 SOP -
+开发阶段</a></li>
+<li><a href="phase-3-review-merge/README.md">Phase 3 SOP - Review &amp;
+Merge</a></li>
+<li><a href="phase-4-ops/README.md">Phase 4 SOP - 运维监控</a></li>
+</ul>
+<h3 id="task-sop">Task SOP</h3>
+<ul>
+<li><a href="task-types/feature-development.md">功能开发任务
+SOP</a></li>
+<li><a href="task-types/bugfix.md">缺陷修复任务 SOP</a></li>
+<li><a href="task-types/documentation.md">文档任务 SOP</a></li>
+<li><a href="task-types/research-spike.md">技术调研任务 SOP</a></li>
+</ul>
+<hr />
+<p><strong>SOP 版本</strong>: 1.0.0 <strong>创建日期</strong>:
+2026-03-23 <strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>

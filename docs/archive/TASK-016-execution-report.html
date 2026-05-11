@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>TASK-016: SQLite Manager 完整迁移 - 执行报告</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">TASK-016: SQLite Manager 完整迁移 - 执行报告</h1>
+</header>
+<h1 id="task-016-sqlite-manager-完整迁移---执行报告">TASK-016: SQLite
+Manager 完整迁移 - 执行报告</h1>
+<p><strong>任务 ID</strong>: TASK-016 <strong>负责人</strong>: Slaver A
+(Backend Architecture Expert) <strong>开始时间</strong>: 2026-04-08
+<strong>状态</strong>: IN_PROGRESS <strong>优先级</strong>: P1
+<strong>当前分支</strong>:
+<code>feature/TASK-016-sqlite-migration-exec</code></p>
+<hr />
+<h2 id="执行概况">📊 执行概况</h2>
+<h3 id="任务目标">任务目标</h3>
+<p>将剩余使用 <code>SQLiteClient</code> 的 10-11 个文件迁移到统一的
+<code>SQLiteManager</code>，消除代码重复，提升架构一致性。</p>
+<h3 id="已完成进度">已完成进度</h3>
+<ul>
+<li>✅ <strong>1/11 文件</strong> 迁移完成（9% 完成率）</li>
+<li>✅ <strong>1 个原子提交</strong> (commit: 19baac0)</li>
+<li>✅ <strong>测试通过率维持</strong> (20 failed, 18 passed -
+与基线一致)</li>
+<li>✅ <strong>构建成功</strong> (TypeScript 编译无错误)</li>
+</ul>
+<hr />
+<h2 id="已迁移文件清单">✅ 已迁移文件清单</h2>
+<h3 id="srchealth-check.ts">1. <code>src/health-check.ts</code> ✅</h3>
+<p><strong>迁移时间</strong>: 2026-04-08 <strong>复杂度</strong>: 低
+<strong>Commit</strong>: <code>19baac0</code></p>
+<p><strong>主要修改</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="st">- import { createSQLiteClient } from &#39;./core/sqlite-client.js&#39;;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="va">+ import { createSQLiteManager } from &#39;./core/sqlite-manager.js&#39;;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="st">- export function checkSqlite(): Promise&lt;...&gt; {</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="st">-   return new Promise((resolve) =&gt; {</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="st">-     const client = createSQLiteClient();</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="st">-     const connectResult = client.connect();</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="st">-     client.execute(&#39;SELECT 1&#39;);</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="st">-     client.close();</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="va">+ export async function checkSqlite(): Promise&lt;...&gt; {</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="va">+   const client = createSQLiteManager({ useWorker: false });</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="va">+   const connectResult = await client.connect();</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="va">+   await client.execute(&#39;SELECT 1&#39;);</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="va">+   await client.close();</span></span></code></pre></div>
+<p><strong>迁移模式</strong>: Pattern A (简单 async/await 转换)</p>
+<p><strong>测试结果</strong>: ✅ 构建通过，测试基线稳定</p>
+<hr />
+<h2 id="待迁移文件清单-10-个">📋 待迁移文件清单 (10 个)</h2>
+<h3 id="核心模块-5-个---高复杂度">核心模块 (5 个 - 高复杂度)</h3>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 25%" />
+<col style="width: 28%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>复杂度</th>
+<th>阻塞因素</th>
+<th>预计工时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/core/knowledge-base.ts</code></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>使用 <code>getDB()</code> + 大量直接 SQL</td>
+<td>2-3h</td>
+</tr>
+<tr>
+<td><code>src/core/context-snapshot.ts</code></td>
+<td>⭐⭐⭐⭐</td>
+<td>使用 <code>getDB()</code> + prepared statements</td>
+<td>1.5h</td>
+</tr>
+<tr>
+<td><code>src/core/history-tracker.ts</code></td>
+<td>⭐⭐⭐⭐</td>
+<td>使用 <code>db.exec()</code> + 直接访问</td>
+<td>1.5h</td>
+</tr>
+<tr>
+<td><code>src/core/master-election.ts</code></td>
+<td>⭐⭐⭐</td>
+<td>使用 <code>new SQLiteClient()</code></td>
+<td>1h</td>
+</tr>
+<tr>
+<td><code>src/core/connection-manager.ts</code></td>
+<td>⭐⭐⭐</td>
+<td>降级逻辑，使用 <code>new SQLiteClient()</code></td>
+<td>1h</td>
+</tr>
+</tbody>
+</table>
+<h3 id="api-模块-3-个---中复杂度">API 模块 (3 个 - 中复杂度)</h3>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 25%" />
+<col style="width: 28%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>复杂度</th>
+<th>阻塞因素</th>
+<th>预计工时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/api/audit-logger.ts</code></td>
+<td>⭐⭐⭐⭐</td>
+<td>使用 <code>getDB()</code> + 签名验证逻辑</td>
+<td>2h</td>
+</tr>
+<tr>
+<td><code>src/api/data-access.ts</code></td>
+<td>⭐⭐⭐</td>
+<td>大文件 + 多处 async 转换</td>
+<td>1.5h</td>
+</tr>
+<tr>
+<td><code>src/api/data-deletion.ts</code></td>
+<td>⭐⭐⭐</td>
+<td>使用 <code>getDB()</code></td>
+<td>1h</td>
+</tr>
+</tbody>
+</table>
+<h3 id="webserver-模块-2-个---低复杂度">Web/Server 模块 (2 个 -
+低复杂度)</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>复杂度</th>
+<th>阻塞因素</th>
+<th>预计工时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/api/eket-server.ts</code></td>
+<td>⭐⭐</td>
+<td>简单 CRUD 调用</td>
+<td>0.5h</td>
+</tr>
+<tr>
+<td><code>src/api/web-server.ts</code></td>
+<td>⭐⭐</td>
+<td>简单 CRUD 调用</td>
+<td>0.5h</td>
+</tr>
+<tr>
+<td><code>src/hooks/http-hook-server.ts</code></td>
+<td>⭐⭐</td>
+<td>简单 CRUD 调用</td>
+<td>0.5h</td>
+</tr>
+<tr>
+<td><code>src/index.ts</code></td>
+<td>⭐</td>
+<td>CLI 入口，简单调用</td>
+<td>0.3h</td>
+</tr>
+</tbody>
+</table>
+<p><strong>总预计工时</strong>: 13-14 小时</p>
+<hr />
+<h2 id="遇到的技术挑战">⚠️ 遇到的技术挑战</h2>
+<h3 id="挑战-1-getdb-直接访问模式">挑战 1: <code>getDB()</code>
+直接访问模式 ⚠️</h3>
+<p><strong>问题描述</strong>: 7 个文件使用 <code>client.getDB()</code>
+直接获取 better-sqlite3 Database 实例，执行原生 SQL 操作。</p>
+<p><strong>影响文件</strong>: - <code>knowledge-base.ts</code> -
+<code>context-snapshot.ts</code> - <code>history-tracker.ts</code> -
+<code>master-election.ts</code> - <code>audit-logger.ts</code> -
+<code>data-deletion.ts</code></p>
+<p><strong>示例代码</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 当前代码</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> db <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqlite</span><span class="op">.</span><span class="fu">getDB</span>()<span class="op">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> stmt <span class="op">=</span> db<span class="op">.</span><span class="fu">prepare</span>(<span class="st">&#39;INSERT INTO ...&#39;</span>)<span class="op">;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>stmt<span class="op">.</span><span class="fu">run</span>(<span class="op">...</span>)<span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">// SQLiteManager 问题</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> db <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqlite</span><span class="op">.</span><span class="fu">getDB</span>()<span class="op">;</span> <span class="co">// 在 Worker 模式下返回 null!</span></span></code></pre></div>
+<p><strong>解决方案</strong>: 1. <strong>方案 A (推荐)</strong>: 使用
+SQLiteManager 的高级方法
+<code>typescript    // 改为使用 SQLiteManager 的 execute/get/all    await this.sqlite.execute('INSERT INTO ...', [...]);</code></p>
+<ol start="2" type="1">
+<li><p><strong>方案 B</strong>: 明确使用同步模式 +
+<code>getDB()</code></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 构造时强制同步模式</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">this</span><span class="op">.</span><span class="at">sqlite</span> <span class="op">=</span> <span class="fu">createSQLiteManager</span>({ useWorker<span class="op">:</span> <span class="kw">false</span> })<span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">// getDB() 在同步模式下可用</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> db <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqlite</span><span class="op">.</span><span class="fu">getDB</span>()<span class="op">;</span></span></code></pre></div></li>
+<li><p><strong>方案 C</strong>: 重构为 transaction API</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 对于批量操作，使用事务</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqlite</span><span class="op">.</span><span class="fu">transaction</span>(<span class="kw">async</span> () <span class="kw">=&gt;</span> {</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqlite</span><span class="op">.</span><span class="fu">execute</span>(<span class="st">&#39;INSERT ...&#39;</span>)<span class="op">;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="at">sqlite</span><span class="op">.</span><span class="fu">execute</span>(<span class="st">&#39;UPDATE ...&#39;</span>)<span class="op">;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div></li>
+</ol>
+<p><strong>当前采用</strong>: 方案
+B（明确使用同步模式），因为这些模块需要同步性能。</p>
+<hr />
+<h3 id="挑战-2-asyncawait-级联转换">挑战 2: Async/Await 级联转换</h3>
+<p><strong>问题描述</strong>: SQLiteManager 的所有方法都是异步的（返回
+Promise），导致调用链需要级联添加 <code>async/await</code>。</p>
+<p><strong>示例</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Before (同步)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">saveData</span>() {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> client <span class="op">=</span> <span class="fu">createSQLiteClient</span>()<span class="op">;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  client<span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  client<span class="op">.</span><span class="fu">execute</span>(<span class="st">&#39;INSERT ...&#39;</span>)<span class="op">;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  client<span class="op">.</span><span class="fu">close</span>()<span class="op">;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">// After (异步)</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">saveData</span>() {  <span class="co">// +async</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> client <span class="op">=</span> <span class="fu">createSQLiteManager</span>({ useWorker<span class="op">:</span> <span class="kw">false</span> })<span class="op">;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> client<span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span>    <span class="co">// +await</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> client<span class="op">.</span><span class="fu">execute</span>(<span class="st">&#39;INSERT ...&#39;</span>)<span class="op">;</span>  <span class="co">// +await</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> client<span class="op">.</span><span class="fu">close</span>()<span class="op">;</span>      <span class="co">// +await</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>影响范围</strong>: - 所有调用 SQLite 方法的函数都需要变成
+<code>async</code> - 调用这些函数的地方也需要添加 <code>await</code> -
+可能影响接口定义（同步接口 → 异步接口）</p>
+<p><strong>风险</strong>: - 破坏现有 API 契约 - 需要更新所有测试用例 -
+可能触发级联修改（调用者的调用者也需要改）</p>
+<hr />
+<h3 id="挑战-3-eslint-auto-fix-自动还原">挑战 3: ESLint Auto-Fix
+自动还原</h3>
+<p><strong>问题描述</strong> (继承自 TASK-011): 在编辑文件时，ESLint 的
+<code>import/order</code> 规则可能自动还原导入语句的修改。</p>
+<p><strong>当前配置</strong> (<code>eslint.config.js</code>):</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="st">&#39;import/order&#39;</span><span class="op">:</span> [</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;warn&#39;</span><span class="op">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  {</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">groups</span><span class="op">:</span> [<span class="st">&#39;builtin&#39;</span><span class="op">,</span> <span class="st">&#39;external&#39;</span><span class="op">,</span> <span class="st">&#39;internal&#39;</span><span class="op">,</span> <span class="st">&#39;parent&#39;</span><span class="op">,</span> <span class="st">&#39;sibling&#39;</span><span class="op">,</span> <span class="st">&#39;index&#39;</span>]<span class="op">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">alphabetize</span><span class="op">:</span> { <span class="dt">order</span><span class="op">:</span> <span class="st">&#39;asc&#39;</span><span class="op">,</span> <span class="dt">caseInsensitive</span><span class="op">:</span> <span class="kw">true</span> }<span class="op">,</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;newlines-between&#39;</span><span class="op">:</span> <span class="st">&#39;always&#39;</span><span class="op">,</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div>
+<p><strong>解决方案</strong>: 1. ✅ <strong>批量迁移策略</strong>:
+迁移多个文件后，统一运行 <code>npm run lint:fix</code> 2. ✅
+<strong>原子提交</strong>: 每迁移 1-3 个文件立即提交，避免丢失修改 3. ⏸️
+<strong>临时禁用</strong> (未采用): 修改 <code>.eslintrc</code> 暂时禁用
+<code>import/order</code></p>
+<p><strong>当前采用</strong>: 策略 1 + 2</p>
+<hr />
+<h2 id="迁移模式总结">📐 迁移模式总结</h2>
+<h3 id="pattern-a-简单-asyncawait-转换适用于低复杂度文件">Pattern A:
+简单 async/await 转换（适用于低复杂度文件）</h3>
+<p><strong>适用文件</strong>: - ✅ <code>health-check.ts</code> (已完成)
+- <code>index.ts</code> - <code>eket-server.ts</code> -
+<code>web-server.ts</code> - <code>http-hook-server.ts</code></p>
+<p><strong>步骤</strong>: 1. 替换导入: <code>createSQLiteClient</code> →
+<code>createSQLiteManager</code> 2. 替换创建:
+<code>createSQLiteClient()</code> →
+<code>createSQLiteManager({ useWorker: false })</code> 3. 替换类型:
+<code>SQLiteClient</code> → <code>SQLiteManager</code> 4. 添加
+<code>async</code>: 所有调用 SQLite 方法的函数 5. 添加
+<code>await</code>: 所有 SQLite 方法调用</p>
+<p><strong>时间</strong>: 15-30 分钟/文件</p>
+<hr />
+<h3 id="pattern-b-getdb-重构适用于中复杂度文件">Pattern B: getDB()
+重构（适用于中复杂度文件）</h3>
+<p><strong>适用文件</strong>: - <code>data-access.ts</code> -
+<code>data-deletion.ts</code></p>
+<p><strong>步骤</strong>: 1. 执行 Pattern A 的步骤 1-3 2. 查找所有
+<code>getDB()</code> 调用 3. 将 <code>db.prepare().run()</code> 替换为
+<code>await this.sqlite.execute()</code> 4. 将
+<code>db.prepare().get()</code> 替换为
+<code>await this.sqlite.get()</code> 5. 将
+<code>db.prepare().all()</code> 替换为
+<code>await this.sqlite.all()</code> 6. 处理级联 async/await</p>
+<p><strong>时间</strong>: 1-1.5 小时/文件</p>
+<hr />
+<h3 id="pattern-c-深度重构适用于高复杂度文件">Pattern C:
+深度重构（适用于高复杂度文件）</h3>
+<p><strong>适用文件</strong>: - <code>knowledge-base.ts</code> -
+<code>context-snapshot.ts</code> - <code>history-tracker.ts</code> -
+<code>audit-logger.ts</code> - <code>master-election.ts</code> -
+<code>connection-manager.ts</code></p>
+<p><strong>挑战</strong>: - 大量 <code>getDB()</code> + prepared
+statements - 复杂的事务逻辑 - 性能敏感代码 - 多层级调用栈</p>
+<p><strong>步骤</strong>: 1. 执行 Pattern A 的步骤 1-3 2.
+<strong>评估是否保留 getDB()</strong>: 如果性能关键，使用方案
+B（明确同步模式） 3. <strong>或</strong>，重构为 SQLiteManager 的
+transaction API 4. 更新所有调用链为 async/await 5. 更新测试用例 6.
+性能基准测试</p>
+<p><strong>时间</strong>: 1.5-3 小时/文件</p>
+<hr />
+<h2 id="测试策略">🧪 测试策略</h2>
+<h3 id="单元测试基线">单元测试基线</h3>
+<p><strong>当前基线</strong>:</p>
+<pre><code>Test Suites: 20 failed, 18 passed, 38 total
+Tests:       119 failed, 945 passed, 1064 total</code></pre>
+<p><strong>迁移目标</strong>: 保持或改善测试通过率（≥ 945 passed）</p>
+<h3 id="测试命令">测试命令</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 全量测试</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># SQLite 相关测试</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>sqlite</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 单个模块测试</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>knowledge-base</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>context-snapshot</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>audit</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 构建验证</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run build</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Lint 检查</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run lint:fix</span></code></pre></div>
+<h3 id="测试检查点">测试检查点</h3>
+<p>每迁移 1-3 个文件后执行： - [ ] <code>npm run build</code> - 构建成功
+- [ ] <code>npm test</code> - 测试通过率不下降 - [ ]
+<code>npm run lint:fix</code> - 代码质量检查 - [ ] Git 原子提交</p>
+<hr />
+<h2 id="下一步计划">📅 下一步计划</h2>
+<h3 id="立即行动-今天">立即行动 (今天)</h3>
+<ol type="1">
+<li><strong>迁移简单文件 (Pattern A)</strong> - 预计 2 小时
+<ul class="task-list">
+<li><label><input
+type="checkbox" /><code>src/index.ts</code></label></li>
+<li><label><input
+type="checkbox" /><code>src/api/eket-server.ts</code></label></li>
+<li><label><input
+type="checkbox" /><code>src/api/web-server.ts</code></label></li>
+<li><label><input
+type="checkbox" /><code>src/hooks/http-hook-server.ts</code></label></li>
+</ul></li>
+<li><strong>测试验证</strong> - 预计 30 分钟
+<ul class="task-list">
+<li><label><input type="checkbox" />运行全量测试</label></li>
+<li><label><input type="checkbox" />原子提交 (每 2-3
+个文件)</label></li>
+</ul></li>
+</ol>
+<h3 id="短期计划-明天">短期计划 (明天)</h3>
+<ol start="3" type="1">
+<li><strong>迁移中等复杂度文件 (Pattern B)</strong> - 预计 3 小时
+<ul class="task-list">
+<li><label><input
+type="checkbox" /><code>src/api/data-access.ts</code></label></li>
+<li><label><input
+type="checkbox" /><code>src/api/data-deletion.ts</code></label></li>
+<li><label><input
+type="checkbox" /><code>src/core/master-election.ts</code></label></li>
+</ul></li>
+<li><strong>测试验证 + 提交</strong></li>
+</ol>
+<h3 id="中期计划-本周">中期计划 (本周)</h3>
+<ol start="5" type="1">
+<li><strong>迁移高复杂度文件 (Pattern C)</strong> - 预计 8-9 小时
+<ul class="task-list">
+<li><label><input
+type="checkbox" /><code>src/core/knowledge-base.ts</code>
+(最复杂)</label></li>
+<li><label><input
+type="checkbox" /><code>src/core/context-snapshot.ts</code></label></li>
+<li><label><input
+type="checkbox" /><code>src/core/history-tracker.ts</code></label></li>
+<li><label><input
+type="checkbox" /><code>src/api/audit-logger.ts</code></label></li>
+<li><label><input
+type="checkbox" /><code>src/core/connection-manager.ts</code></label></li>
+</ul></li>
+<li><strong>全量测试验证</strong>
+<ul class="task-list">
+<li><label><input type="checkbox" />确保测试通过率 ≥ 87%</label></li>
+<li><label><input type="checkbox" />性能基准测试</label></li>
+<li><label><input type="checkbox" />代码重复检测 (jscpd)</label></li>
+</ul></li>
+<li><strong>创建 Pull Request</strong>
+<ul class="task-list">
+<li><label><input type="checkbox" />合并到 <code>testing</code>
+分支</label></li>
+<li><label><input type="checkbox" />请求 Master 审核</label></li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="成功标准">📊 成功标准</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>11 个文件全部迁移</strong>
+到 SQLiteManager</label></li>
+<li><label><input type="checkbox" /><strong>测试通过率</strong> ≥ 945
+passed (87%)</label></li>
+<li><label><input type="checkbox" /><strong>构建成功</strong>
+(<code>npm run build</code> 无错误)</label></li>
+<li><label><input type="checkbox" /><strong>Lint 通过</strong>
+(<code>npm run lint:fix</code>)</label></li>
+<li><label><input type="checkbox" /><strong>代码重复减少</strong> ~300
+行 (jscpd 验证)</label></li>
+<li><label><input type="checkbox" /><strong>所有数据库操作</strong>
+使用统一 SQLiteManager 接口</label></li>
+<li><label><input type="checkbox" /><strong>向后兼容</strong> (保留旧
+SQLiteClient 但标记 <span class="citation"
+data-cites="deprecated">@deprecated</span>)</label></li>
+</ul>
+<hr />
+<h2 id="与-task-011-的关系">🔄 与 TASK-011 的关系</h2>
+<p><strong>TASK-011</strong>: 规划和基础设施准备（已完成） - ✅ 创建
+<code>SQLiteManager</code> 统一接口 - ✅ 创建
+<code>sqlite-shared.ts</code> 工具函数 - ✅ 创建
+<code>SyncSQLiteAdapter</code> 适配器 - ⚠️ 遇到 Linter
+自动还原问题（已在本任务解决）</p>
+<p><strong>TASK-016</strong>: 实际执行迁移（进行中） - ✅ 迁移 1/11 文件
+(health-check.ts) - ⏸️ 剩余 10 个文件待迁移 - 📝
+创建详细执行报告（本文档）</p>
+<hr />
+<h2 id="需要-master-确认的决策">🤝 需要 Master 确认的决策</h2>
+<h3 id="决策-1-getdb-的处理方式">决策 1: getDB() 的处理方式 ⚠️</h3>
+<p><strong>问题</strong>: 7 个文件使用 <code>getDB()</code>
+直接访问数据库，Worker 模式下会返回 null。</p>
+<p><strong>选项</strong>: - <strong>A</strong>:
+强制所有模块使用同步模式（<code>useWorker: false</code>），保留
+<code>getDB()</code> - <strong>B</strong>: 重构所有 <code>getDB()</code>
+调用为 SQLiteManager 的高级 API - <strong>C</strong>: 混合模式 -
+性能关键模块用 A，其他用 B</p>
+<p><strong>建议</strong>: 采用 <strong>选项 A</strong>（短期）→
+<strong>选项 C</strong>（长期）</p>
+<p><strong>理由</strong>: - 当前 Worker 模式尚未生产使用 - 保留
+<code>getDB()</code> 可减少重构风险 - 后续可渐进式迁移到事务 API</p>
+<p><strong>请求 Master 确认</strong>: [ ]</p>
+<hr />
+<h3 id="决策-2-测试覆盖率目标">决策 2: 测试覆盖率目标</h3>
+<p><strong>当前基线</strong>: 87% 通过率（945/1064 tests passed）</p>
+<p><strong>迁移目标</strong>: - <strong>保守</strong>: 维持 ≥ 87% 通过率
+- <strong>激进</strong>: 提升到 ≥ 90% 通过率（修复现有失败测试）</p>
+<p><strong>建议</strong>: 采用 <strong>保守目标</strong></p>
+<p><strong>理由</strong>: - 迁移任务已足够复杂，避免范围蔓延 - 失败的 20
+个测试套件多数与 Redis/缓存相关，与 SQLite 迁移无关 -
+可在后续独立任务中修复失败测试</p>
+<p><strong>请求 Master 确认</strong>: [ ]</p>
+<hr />
+<h2 id="备注">📝 备注</h2>
+<h3 id="技术债务识别">技术债务识别</h3>
+<ol type="1">
+<li><strong>Worker 模式未启用</strong>
+<ul>
+<li>所有迁移使用 <code>{ useWorker: false }</code></li>
+<li>未来需要验证 Worker 模式的稳定性</li>
+</ul></li>
+<li><strong>getDB() 依赖</strong>
+<ul>
+<li>7 个文件直接访问底层数据库</li>
+<li>绕过 SQLiteManager 抽象层</li>
+<li>需要后续重构为事务 API</li>
+</ul></li>
+<li><strong>异步转换不彻底</strong>
+<ul>
+<li>部分模块仍然同步调用 SQLite</li>
+<li>未来可能需要完全异步化</li>
+</ul></li>
+</ol>
+<h3 id="经验教训">经验教训</h3>
+<ol type="1">
+<li><strong>ESM 模块路径</strong>
+<ul>
+<li>所有导入必须使用 <code>.js</code> 扩展名</li>
+<li>TypeScript 编译器不会自动添加</li>
+</ul></li>
+<li><strong>批量迁移策略</strong>
+<ul>
+<li>小步快跑，频繁提交</li>
+<li>避免大文件一次性修改</li>
+</ul></li>
+<li><strong>测试驱动迁移</strong>
+<ul>
+<li>每次修改后立即运行测试</li>
+<li>发现问题时回退更容易</li>
+</ul></li>
+</ol>
+<hr />
+<p><strong>文档版本</strong>: v1.0.0 <strong>最后更新</strong>:
+2026-04-08 <strong>作者</strong>: Slaver A (Backend Architecture Expert)
+<strong>状态</strong>: 🟡 IN_PROGRESS - 已完成 1/11 文件 (9%)</p>
+</body>
+</html>

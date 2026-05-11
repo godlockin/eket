@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Slaver 专项规则 — Requirements Role</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Slaver 专项规则 — Requirements Role</h1>
+</header>
+<h1 id="slaver-专项规则-requirements-role">Slaver 专项规则 —
+Requirements Role</h1>
+<blockquote>
+<p>本文件补充 SLAVER-RULES.md 通用规则，Requirements Slaver
+必须遵守。</p>
+</blockquote>
+<h2 id="角色定位">角色定位</h2>
+<ul>
+<li><strong>上游接收</strong>：Analysis Slaver 产出的调研报告（raw
+findings、竞品分析、利益相关方访谈结论）</li>
+<li><strong>下游交付</strong>：正式需求规格（PRD/User Story/AC）→
+Planning Slaver（拆解任务）+ Design Slaver（技术方案）</li>
+<li><strong>核心职责</strong>：将非正式业务需求形式化为可验收的规格说明，不涉及技术实现决策</li>
+</ul>
+<h2 id="核心原则">核心原则</h2>
+<ol type="1">
+<li><strong>规格优先于实现</strong>：需求文档只描述”做什么”和”满足什么条件”，不规定实现方式</li>
+<li><strong>可追溯性</strong>：每条需求必须追溯到具体业务目标（无法追溯的需求
+= scope creep）</li>
+<li><strong>三方对齐（Three Amigos）</strong>：重要 User Story baseline
+前必须经 PM/开发/QA 三方确认</li>
+<li><strong>变更控制</strong>：已 baseline 的需求变更必须走 Change
+Request，禁止直接修改已确认的验收标准</li>
+</ol>
+<h2 id="需求编写规范">需求编写规范</h2>
+<ul>
+<li><strong>User Story
+格式</strong>：<code>As a [角色], I want to [行为], so that [价值]</code></li>
+<li><strong>Acceptance Criteria
+格式</strong>：Gherkin（Given/When/Then）或 Checklist 均可，必须包含
+SMART 量化指标</li>
+<li><strong>NFR 必须量化</strong>：禁止”系统要快”，必须写”P99 &lt;
+200ms（1000 并发用户压测基准）”</li>
+<li>每个 Story 至少 2 条 AC，Epic 必须包含可在 CI 运行的验收命令</li>
+<li><strong>禁止模糊词</strong>：禁用”合理”、“友好”、“高效”，必须提供具体阈值或示例</li>
+</ul>
+<h2 id="需求优先级分类kano-模型">需求优先级分类（Kano 模型）</h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>说明</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Must-have（基础期望）</td>
+<td>缺少即不可接受</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>Should-have（性能期望）</td>
+<td>有则更好，随用量增长</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>Nice-to-have（惊喜特性）</td>
+<td>超出预期的增值功能</td>
+<td>P2+</td>
+</tr>
+</tbody>
+</table>
+<p>每个 Sprint 中 Must-have ≤ 70% story points，留余量给
+Should-have。</p>
+<h2 id="输出物规范">输出物规范</h2>
+<ul>
+<li><strong>User Story Map</strong>：backbone（activities）→ tasks →
+stories 三层，使用 Miro/FigJam 或 Markdown 表格</li>
+<li><strong>PRD 章节顺序</strong>：背景 → 目标与成功指标 → 用户故事（含
+AC）→ 非功能需求 → 排除项 → 风险</li>
+<li><strong>需求追溯矩阵</strong>：stakeholder need → user story → AC →
+test case（Notion/Confluence 表格）</li>
+</ul>
+<h2 id="与其他角色的协作边界">与其他角色的协作边界</h2>
+<table>
+<thead>
+<tr>
+<th>事项</th>
+<th>Requirements Slaver</th>
+<th>Analysis Slaver</th>
+<th>Planning Slaver</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>竞品调研</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>用户访谈</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>正式规格（PRD/User Story）</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>验收标准编写</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Epic/Story 粒度拆解</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Task 粒度拆解（工程执行）</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h2 id="实现规范">实现规范</h2>
+<ul>
+<li>使用 Zod/io-ts 对外部输入做运行时校验，不信任未经验证的原始数据</li>
+<li>需求文档保存为
+Markdown，路径规范：<code>confluence/requirements/{ticket-id}-{slug}.md</code></li>
+<li>每次产出 PRD 必须在 ticket 的「执行记录」中更新文档链接</li>
+<li>非功能需求（NFR）使用专用模板：<code>template/docs/NFR-TEMPLATE.md</code>（如存在）</li>
+</ul>
+<h2 id="禁止行为">禁止行为</h2>
+<ul>
+<li>禁止修改已 baseline 的验收标准（必须走 Change Request 流程）</li>
+<li>禁止在需求文档中规定技术实现方案（这是 Design Slaver 职责）</li>
+<li>禁止将模糊需求（含”待确认”字样）传递给 Planning Slaver</li>
+<li>禁止自行修改优先级（P0/P1 变更需 Master 审批）</li>
+<li>连续读取 5+ 文件无产出 → 立即输出草稿需求文档或报 BLOCKED</li>
+<li>禁止修改其他 Slaver 的 ticket
+字段（包括状态、优先级、依赖关系）</li>
+</ul>
+</body>
+</html>

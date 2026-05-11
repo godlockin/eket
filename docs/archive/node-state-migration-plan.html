@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Node State Migration Plan — `core/state/writer.ts` 收口</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Node State Migration Plan — `core/state/writer.ts`
+收口</h1>
+</header>
+<h1 id="node-state-migration-plan-corestatewriter.ts-收口">Node State
+Migration Plan — <code>core/state/writer.ts</code> 收口</h1>
+<p><strong>状态</strong>: Draft v1.0 · Phase 0 / Task 0.4 执行方案
+<strong>日期</strong>: 2026-04-17 <strong>上游</strong>: <a
+href="../audit/fs-write-points.md"><code>docs/audit/fs-write-points.md</code></a>
+· <a
+href="../../node/src/OWNERSHIP.md"><code>node/src/OWNERSHIP.md</code></a>
+· <a
+href="../../node/src/core/state/README.md"><code>node/src/core/state/README.md</code></a>
+<strong>范围</strong>: 仅 <code>node/src/</code> 非测试非 state/skills
+路径下的 <code>fs.{write,append}File{,Sync}</code> 直写</p>
+<hr />
+<h2 id="summary">1. Summary</h2>
+<p>重新扫描（不信任 audit 文档的聚合数字）：</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>维度</th>
+<th>数量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>总直写点（fs.{write,append}File{,Sync}）</td>
+<td><strong>42</strong></td>
+</tr>
+<tr>
+<td><code>fs-extra.outputFile</code> /
+<code>fs-extra.writeFile</code></td>
+<td><strong>0</strong>（仅 writer.ts 注释提及）</td>
+</tr>
+<tr>
+<td>涉及文件</td>
+<td><strong>18</strong></td>
+</tr>
+<tr>
+<td>可直接迁移（writer.ts 已有 API）</td>
+<td><strong>6</strong></td>
+</tr>
+<tr>
+<td>需新增 writer API 才能迁移（blocked）</td>
+<td><strong>30</strong></td>
+</tr>
+<tr>
+<td>脚手架豁免（<code>.gitkeep</code> / 项目
+<code>.gitignore</code>）</td>
+<td><strong>6</strong>（按 OWNERSHIP.md <code>// allow:</code>
+例外处理）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="分类统计">分类统计</h3>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 51%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>分类</th>
+<th>计数</th>
+<th>writer.ts 现有 API</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[heartbeat]</code></td>
+<td>2</td>
+<td>✅ <code>updateHeartbeat</code></td>
+<td><a
+href="../../node/src/commands/slaver-poll.ts#L500">slaver-poll.ts:500</a>,
+<a
+href="../../node/src/commands/master-poll.ts#L378">master-poll.ts:378</a></td>
+</tr>
+<tr>
+<td><code>[ticket-write]</code></td>
+<td>3</td>
+<td>✅ <code>writeTicket</code> / <code>transitionTicket</code></td>
+<td>claim/gate-review；<strong>claim.ts
+现有代码写错字段名</strong>（<code>**状态**</code> 而非
+<code>**Status**</code>）</td>
+</tr>
+<tr>
+<td><code>[ticket-index]</code></td>
+<td>7</td>
+<td>❌ 需新增 <code>writeTicketIndex</code></td>
+<td><code>ticket-index.ts</code> 全部 6 条 by-*.md + 1 条
+ticket-registry.yml</td>
+</tr>
+<tr>
+<td><code>[message]</code></td>
+<td>4</td>
+<td>❌ 需新增 <code>enqueueMessage</code></td>
+<td>claim-helpers / submit-pr / file-queue-manager /
+optimized-file-queue</td>
+</tr>
+<tr>
+<td><code>[queue-internal]</code></td>
+<td>2</td>
+<td>❌ 需新增 <code>writeQueueIndex</code></td>
+<td><code>processed.json</code> 去重索引（两套队列实现各一处）</td>
+</tr>
+<tr>
+<td><code>[audit/log]</code></td>
+<td>1</td>
+<td>⚠️ 部分 — <code>audit()</code> 存在但签名不匹配</td>
+<td><a
+href="../../node/src/commands/gate-review.ts#L460">gate-review.ts:460</a>
+写哈希链 jsonl</td>
+</tr>
+<tr>
+<td><code>[election]</code></td>
+<td>4</td>
+<td>❌ 需新增 <code>writeElectionLock/Declaration/Marker</code></td>
+<td>master-election.ts 477/512/590/643</td>
+</tr>
+<tr>
+<td><code>[master-marker]</code></td>
+<td>1</td>
+<td>❌ 需新增 <code>writeMasterMarker</code></td>
+<td><a
+href="../../node/src/commands/start-instance.ts#L231">start-instance.ts:231</a>（与
+election.ts:590 同语义）</td>
+</tr>
+<tr>
+<td><code>[master-context]</code></td>
+<td>1</td>
+<td>❌ 需新增 <code>writeMasterContext</code></td>
+<td><a
+href="../../node/src/core/master-context.ts#L687">master-context.ts:687</a></td>
+</tr>
+<tr>
+<td><code>[project-status]</code></td>
+<td>1</td>
+<td>❌ 需新增 <code>writeProjectStatus</code></td>
+<td><a
+href="../../node/src/commands/master-poll.ts#L357">master-poll.ts:357</a></td>
+</tr>
+<tr>
+<td><code>[profile]</code></td>
+<td>2</td>
+<td>❌ 需新增 <code>writeAgentProfile</code></td>
+<td><a
+href="../../node/src/commands/set-role.ts#L84">set-role.ts:84</a>, <a
+href="../../node/src/commands/claim-helpers.ts#L166">claim-helpers.ts:166</a></td>
+</tr>
+<tr>
+<td><code>[instance-config]</code></td>
+<td>3</td>
+<td>❌ 需新增 <code>writeInstanceConfig</code></td>
+<td>set-role.ts:97, start-instance.ts:359/602</td>
+</tr>
+<tr>
+<td><code>[project-config]</code></td>
+<td>1</td>
+<td>❌ 需新增 <code>writeProjectConfig</code></td>
+<td><a
+href="../../node/src/commands/init-wizard.ts#L439">init-wizard.ts:439</a>（.eket/config/config.yml）</td>
+</tr>
+<tr>
+<td><code>[node-register]</code></td>
+<td>1</td>
+<td>❌ 需新增 <code>registerNode</code></td>
+<td><a
+href="../../node/src/commands/slaver-register.ts#L136">slaver-register.ts:136</a></td>
+</tr>
+<tr>
+<td><code>[human-feedback]</code></td>
+<td>1</td>
+<td>❌ 需新增 <code>writeHumanFeedback</code></td>
+<td><a
+href="../../node/src/core/agent-pool.ts#L568">agent-pool.ts:568</a>
+handoff 通知</td>
+</tr>
+<tr>
+<td><code>[alert]</code></td>
+<td>2</td>
+<td>❌ 需新增 <code>writeAlert</code>（或 <code>[node-only]</code>
+降级不走 writer）</td>
+<td>alerting.ts 414/450 — 写 <code>&lt;alertsDir&gt;/*.json</code></td>
+</tr>
+<tr>
+<td><code>[review-request]</code></td>
+<td>0</td>
+<td>—</td>
+<td>本轮扫描未发现对 <code>outbox/review_requests/</code> 直写（task
+模板提及但未落地）</td>
+</tr>
+<tr>
+<td><code>[scaffold-exempt]</code></td>
+<td>6</td>
+<td>—</td>
+<td>按 OWNERSHIP 例外条款保留：.gitkeep × 4（start-instance.ts
+264/281/297, init-wizard.ts 467），.gitignore × 2（init-wizard.ts
+299/302）</td>
+</tr>
+</tbody>
+</table>
+<p>与 audit 文档 58 处的差异：audit 文档把 <code>scripts/**/*.sh</code>
+合并统计，且当前节点树中部分旧文件已裁撤；本计划以当次 <code>grep</code>
+为准。</p>
+<hr />
+<h2 id="top-10-priority-migration-table">2. Top-10 Priority Migration
+Table</h2>
+<p>排序依据：<code>frequency_in_hot_path × write_surface_criticality</code>。前两名为每轮轮询必触发；3-4
+名为状态机收口关键；其余按阻塞影响降序。</p>
+<table>
+<colgroup>
+<col style="width: 7%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 26%" />
+<col style="width: 19%" />
+<col style="width: 19%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>位置</th>
+<th>分类</th>
+<th>Writer API</th>
+<th>阻塞？</th>
+<th>工作量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a
+href="../../node/src/commands/slaver-poll.ts#L500">slaver-poll.ts:500</a></td>
+<td>heartbeat</td>
+<td><code>updateHeartbeat</code></td>
+<td>否</td>
+<td>S</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a
+href="../../node/src/commands/master-poll.ts#L378">master-poll.ts:378</a></td>
+<td>heartbeat</td>
+<td><code>updateHeartbeat</code></td>
+<td>否</td>
+<td>S</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a
+href="../../node/src/commands/claim.ts#L106">claim.ts:106</a></td>
+<td>ticket-write</td>
+<td><code>transitionTicket</code></td>
+<td>否（且<strong>修复现有字段名 bug</strong>）</td>
+<td>S</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a
+href="../../node/src/commands/gate-review.ts#L425">gate-review.ts:425</a></td>
+<td>ticket-write</td>
+<td><code>writeTicket</code> × N + 需 <code>appendTicketBlock</code>
+扩展</td>
+<td>部分</td>
+<td>M</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a
+href="../../node/src/commands/claim-helpers.ts#L196">claim-helpers.ts:196</a></td>
+<td>message</td>
+<td><code>enqueueMessage</code></td>
+<td>是</td>
+<td>M</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a
+href="../../node/src/commands/submit-pr.ts#L554">submit-pr.ts:554</a></td>
+<td>message</td>
+<td><code>enqueueMessage</code></td>
+<td>是</td>
+<td>M</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a
+href="../../node/src/commands/ticket-index.ts#L185">ticket-index.ts:185/213/252/286/309/319/356</a></td>
+<td>ticket-index</td>
+<td><code>writeTicketIndex</code> +
+<code>writeTicketRegistry</code></td>
+<td>是</td>
+<td>M</td>
+</tr>
+<tr>
+<td>8</td>
+<td><a
+href="../../node/src/commands/master-poll.ts#L357">master-poll.ts:357</a></td>
+<td>project-status</td>
+<td><code>writeProjectStatus</code></td>
+<td>是</td>
+<td>S</td>
+</tr>
+<tr>
+<td>9</td>
+<td><a
+href="../../node/src/core/master-election.ts#L477">master-election.ts:477/512/643</a></td>
+<td>election</td>
+<td><code>writeElectionLock</code> +
+<code>writeElectionDeclaration</code></td>
+<td>是</td>
+<td>L</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a
+href="../../node/src/commands/gate-review.ts#L460">gate-review.ts:460</a></td>
+<td>audit/log</td>
+<td>扩展 <code>audit()</code> 支持哈希链 jsonl</td>
+<td>部分</td>
+<td>M</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="top-10-concrete-diffs">3. Top-10 Concrete Diffs</h2>
+<h3 id="slaver-poll.ts500-心跳">#1 · <code>slaver-poll.ts:500</code> —
+心跳</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="st">-import fs from &#39;node:fs&#39;;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="va">+import { updateHeartbeat } from &#39;../core/state/index.js&#39;;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">@@</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="st">-function updateHeartbeat(instanceId: string, status: SlaverStatus): void {</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="st">-  const stateDir = &#39;.eket/state&#39;;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="st">-  fs.mkdirSync(stateDir, { recursive: true });</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="st">-  const now = new Date().toISOString();</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="st">-  const heartbeatContent = `# Slaver 心跳</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="st">-instance_id: ${instanceId}</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="st">-... (7 行)</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="st">-`;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="st">-  fs.writeFileSync(path.join(stateDir, `slaver_${instanceId}_heartbeat.yml`), heartbeatContent, &#39;utf-8&#39;);</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="st">-}</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="va">+async function writeSlaverHeartbeat(instanceId: string, status: SlaverStatus): Promise&lt;void&gt; {</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="va">+  await updateHeartbeat({</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="va">+    role: &#39;slaver&#39;,</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="va">+    instanceId,</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="va">+    status: status.status,</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="va">+    currentTask: status.currentTicket ?? null,</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="va">+  });</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="va">+}</span></span></code></pre></div>
+<p><strong>注意</strong>：writer.ts 当前心跳格式只输出 6
+个字段（instance_id/role/status/current_task/timestamp/host/pid），<strong>丢失</strong>
+<code>specialty / pending_pr_feedback / new_messages / ready_tasks</code>。需在
+<code>HeartbeatOpts</code> 新增可选扩展字段或接受
+<code>extra: Record&lt;string,string&gt;</code>（见 §4）。</p>
+<h3 id="master-poll.ts378-心跳">#2 · <code>master-poll.ts:378</code> —
+心跳</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="st">-import fs from &#39;node:fs&#39;;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">+import { updateHeartbeat } from &#39;../core/state/index.js&#39;;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">@@</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">-  fs.writeFileSync(path.join(stateDir, `master_${instanceId}_heartbeat.yml`), heartbeatContent, &#39;utf-8&#39;);</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="va">+  await updateHeartbeat({</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="va">+    role: &#39;master&#39;,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="va">+    instanceId,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="va">+    status: status.status,</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="va">+    currentTask: null,</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="va">+  });</span></span></code></pre></div>
+<p>同样缺字段：<code>pending_prs / pending_arbitrations / pending_human_decisions</code>
+— 依赖 §4 的 <code>extra</code> 扩展。</p>
+<h3 id="claim.ts106-ticket-状态附带-bug-修复">#3 ·
+<code>claim.ts:106</code> — ticket 状态（<strong>附带 bug
+修复</strong>）</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="st">-for (const dir of dirs) {</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="st">-  const ticketFile = path.join(jiraPath, dir, `${ticketId}.md`);</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">-  if (fs.existsSync(ticketFile)) {</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">-    let content = fs.readFileSync(ticketFile, &#39;utf-8&#39;);</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">-    content = content.replace(/\*\*状态\*\*:\s*\w+/i, `**状态**: ${status}`);</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="st">-    fs.writeFileSync(ticketFile, content);</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="st">-    return;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="st">-  }</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="st">-}</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="va">+// writer.ts 内部已 locateTicketFile + schema 校验 + 锁 + 原子写</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="va">+// bug: 原代码写中文 **状态**，与 writer.ts / ticket schema 英文 **Status** 不一致</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="va">+await transitionTicket(ticketId, status);</span></span></code></pre></div>
+<h3 id="gate-review.ts425-审查后多字段写">#4 ·
+<code>gate-review.ts:425</code> — 审查后多字段写</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="st">-content = content.replace(/(\*\*状态\*\*:\s*)\S+/, `$1${newStatus}`);</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="st">-// ... 多处 content.replace / trimEnd 拼接 veto 块 ...</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">-fs.writeFileSync(ticket.filePath, content);</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="va">+// 字段级写入，锁、原子写、审计交给 writer</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="va">+await writeTicket(report.ticketId, &#39;status&#39;, newStatus);</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="va">+if (report.vetoCount &gt; 0) {</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="va">+  await writeTicketField(report.ticketId, &#39;gate_review_veto_count&#39;, String(report.vetoCount));</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="va">+}</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="va">+if (report.decision === &#39;VETO&#39; &amp;&amp; report.vetoDetails) {</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="va">+  await appendTicketBlock(report.ticketId, buildVetoBlock(report));  // §4 新 API</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="va">+}</span></span></code></pre></div>
+<h3 id="claim-helpers.ts196-task_claimed-消息">#5 ·
+<code>claim-helpers.ts:196</code> — task_claimed 消息</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="st">-const messageFile = path.join(queueDir, `${messageId}.json`);</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="st">-const message = { id: messageId, timestamp: new Date().toISOString(), type: &#39;task_claimed&#39;, ... };</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">-fs.writeFileSync(messageFile, JSON.stringify(message, null, 2));</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="va">+await enqueueMessage({</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="va">+  channel: &#39;coordinator&#39;,</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="va">+  type: &#39;task_claimed&#39;,</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="va">+  from: `agent_${role}`,</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="va">+  to: &#39;coordinator&#39;,</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="va">+  payload: { ticket_id: ticketId, role, status: &#39;in_progress&#39; },</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="va">+});</span></span></code></pre></div>
+<h3 id="submit-pr.ts554-pr_review_request-消息">#6 ·
+<code>submit-pr.ts:554</code> — pr_review_request 消息</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="st">-fs.writeFileSync(messageFile, JSON.stringify(message, null, 2));</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="va">+await enqueueMessage({</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="va">+  channel: &#39;coordinator&#39;,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="va">+  type: &#39;pr_review_request&#39;,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="va">+  from: &#39;system&#39;,</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="va">+  to: &#39;coordinator&#39;,</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="va">+  payload: {</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="va">+    pr_number: prData.number,</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="va">+    pr_url: prData.htmlUrl,</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="va">+    pr_title: prData.title,</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="va">+    status: &#39;pending_review&#39;,</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="va">+  },</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="va">+});</span></span></code></pre></div>
+<h3
+id="ticket-index.ts-7-处by-statusroleprioritysprintmilestonetop-level-registry">#7
+· <code>ticket-index.ts</code> 7
+处（by-status/role/priority/sprint/milestone/top-level + registry）</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="st">-const file = path.join(indexDir, &#39;by-status.md&#39;);</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="st">-fs.writeFileSync(file, lines.join(&#39;\n&#39;));</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="va">+await writeTicketIndex(&#39;by-status&#39;, lines.join(&#39;\n&#39;));</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="dt">@@</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="st">-const registryFile = path.join(stateDir, &#39;ticket-registry.yml&#39;);</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="st">-fs.writeFileSync(registryFile, lines.join(&#39;\n&#39;));</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="va">+await writeTicketRegistry(lines.join(&#39;\n&#39;));</span></span></code></pre></div>
+<p>一个函数收敛全部 6 份索引（kind 参数枚举），注册表单列。</p>
+<h3 id="master-poll.ts357-project-status.yml">#8 ·
+<code>master-poll.ts:357</code> — project-status.yml</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="st">-fs.writeFileSync(path.join(stateDir, &#39;project-status.yml&#39;), statusContent, &#39;utf-8&#39;);</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="va">+await writeProjectStatus(statusContent);     // 内部：加 `project-status` 锁 + 原子写 + audit</span></span></code></pre></div>
+<h3 id="master-election.ts477512643-election-文件">#9 ·
+<code>master-election.ts:477/512/643</code> — election 文件</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="st">-fs.writeFileSync(lockFile, JSON.stringify(lockInfo, null, 2));</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="va">+await writeElectionLock(lockInfo);           // .eket/state/master.lock/info.json</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="dt">@@</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">-fs.writeFileSync(declarationFile, JSON.stringify(declaration, null, 2));</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="va">+await writeElectionDeclaration(declaration); // .eket/state/master.declaration.json</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="dt">@@</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="st">-// 续租路径 (line 643)</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="st">-fs.writeFileSync(lockFile, JSON.stringify(lockInfo, null, 2));</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="va">+await writeElectionLock(lockInfo);</span></span></code></pre></div>
+<p><code>master-election.ts:590</code>（confluence/MASTER_MARKER）与
+<code>start-instance.ts:231</code> 语义一致 → 合并到
+<code>writeMasterMarker()</code>。</p>
+<h3 id="gate-review.ts460-哈希链审计日志">#10 ·
+<code>gate-review.ts:460</code> — 哈希链审计日志</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="st">-fs.appendFileSync(logFile, finalLine + &#39;\n&#39;);</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="va">+// writer.ts `audit()` 当前只写单行 action|id|node|extra</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="va">+// 扩展签名：audit({ channel: &#39;gate-review&#39;, record, hashChain: true })</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="va">+await audit({</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="va">+  channel: &#39;gate-review&#39;,</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="va">+  action: `gate_review_${report.decision.toLowerCase()}`,</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="va">+  subject: report.ticketId,</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="va">+  node: getNodeId(),</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="va">+  extra: entry,</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="va">+  hashChain: true,  // 触发 prev_hash + hash 字段</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="va">+});</span></span></code></pre></div>
+<hr />
+<h2 id="new-writer.ts-apis-required-signatures-only">4. New writer.ts
+APIs Required (signatures only)</h2>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ───── Ticket 扩展 ─────────────────────────────────────────────</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeTicketField</span>(</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  field<span class="op">:</span> <span class="dt">string</span><span class="op">,</span>         <span class="co">// 任意元数据键（非枚举限定）— 用于 gate_review_veto_count 等动态字段</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  value<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">appendTicketBlock</span>(</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">,</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  block<span class="op">:</span> <span class="dt">string</span><span class="op">,</span>         <span class="co">// 追加到文件末尾的 Markdown 块（先幂等删除旧同签名块再 append）</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  marker<span class="op">?:</span> <span class="dt">string</span>        <span class="co">// HTML 注释匹配签名，用于幂等替换</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="co">// ───── Ticket 索引 &amp; 注册表 ─────────────────────────────────────</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="im">export type</span> TicketIndexKind <span class="op">=</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="st">&#39;top&#39;</span>                 <span class="co">// jira/tickets/index/index.md</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="st">&#39;by-status&#39;</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="st">&#39;by-role&#39;</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="st">&#39;by-priority&#39;</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="st">&#39;by-sprint&#39;</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="st">&#39;by-milestone&#39;</span><span class="op">;</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeTicketIndex</span>(kind<span class="op">:</span> TicketIndexKind<span class="op">,</span> content<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeTicketRegistry</span>(content<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a><span class="co">// ───── 消息队列 ────────────────────────────────────────────────</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">interface</span> EnqueueOpts<span class="op">&lt;</span>P <span class="op">=</span> <span class="dt">unknown</span><span class="op">&gt;</span> {</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>  channel<span class="op">:</span> <span class="dt">string</span><span class="op">;</span>                                   <span class="co">// coordinator / master / slaver-&lt;id&gt;</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>  type<span class="op">:</span> <span class="dt">string</span><span class="op">;</span>                                      <span class="co">// task_claimed / pr_review_request / ...</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>  from<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>  to<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>  payload<span class="op">:</span> P<span class="op">;</span></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>  id<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span>                                       <span class="co">// 预生成 id；缺省自动分配</span></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>  dedupe<span class="op">?:</span> <span class="dt">boolean</span><span class="op">;</span>                                  <span class="co">// 去重 (默认 true)</span></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">enqueueMessage</span><span class="op">&lt;</span>P<span class="op">&gt;</span>(opts<span class="op">:</span> EnqueueOpts<span class="op">&lt;</span>P<span class="op">&gt;</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>{ id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span> path<span class="op">:</span> <span class="dt">string</span> }<span class="op">&gt;;</span></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeQueueIndex</span>(</span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>  channel<span class="op">:</span> <span class="dt">string</span><span class="op">,</span></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>  processed<span class="op">:</span> <span class="kw">readonly</span> <span class="dt">string</span>[]                       <span class="co">// processed.json 去重索引</span></span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a><span class="co">// ───── Review Request（当前代码尚未落地，预留占位） ──────────────</span></span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">submitReviewRequest</span>(</span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>  ticketId<span class="op">:</span> <span class="dt">string</span><span class="op">,</span></span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>  prMeta<span class="op">:</span> { <span class="dt">number</span><span class="op">:</span> <span class="dt">number</span><span class="op">;</span> url<span class="op">:</span> <span class="dt">string</span><span class="op">;</span> title<span class="op">:</span> <span class="dt">string</span><span class="op">;</span> branch<span class="op">:</span> <span class="dt">string</span> }</span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>{ path<span class="op">:</span> <span class="dt">string</span> }<span class="op">&gt;;</span></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a><span class="co">// ───── 心跳扩展字段 ─────────────────────────────────────────────</span></span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a><span class="co">// 修改 HeartbeatOpts，新增：</span></span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a><span class="co">//   specialty?: string;</span></span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a><span class="co">//   extra?: Record&lt;string, string | number | boolean&gt;;   // 按 key 字母序追加 YAML 行</span></span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">interface</span> HeartbeatOpts {</span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>  role<span class="op">:</span> <span class="st">&#39;master&#39;</span> <span class="op">|</span> <span class="st">&#39;slaver&#39;</span><span class="op">;</span></span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a>  instanceId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a>  status<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a>  currentTask<span class="op">?:</span> <span class="dt">string</span> <span class="op">|</span> <span class="dt">null</span><span class="op">;</span></span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>  specialty<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a>  extra<span class="op">?:</span> <span class="bu">Record</span><span class="op">&lt;</span><span class="dt">string</span><span class="op">,</span> <span class="dt">string</span> <span class="op">|</span> <span class="dt">number</span> <span class="op">|</span> <span class="dt">boolean</span><span class="op">&gt;;</span></span>
+<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a><span class="co">// ───── 节点/实例注册 ───────────────────────────────────────────</span></span>
+<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">interface</span> RegisterNodeOpts {</span>
+<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a>  role<span class="op">:</span> <span class="st">&#39;master&#39;</span> <span class="op">|</span> <span class="st">&#39;slaver&#39;</span><span class="op">;</span></span>
+<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a>  instanceId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a>  specialty<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a>  worktreeDir<span class="op">?:</span> <span class="dt">string</span> <span class="op">|</span> <span class="dt">null</span><span class="op">;</span></span>
+<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a>  skills<span class="op">?:</span> <span class="kw">readonly</span> <span class="dt">string</span>[]<span class="op">;</span></span>
+<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">registerNode</span>(opts<span class="op">:</span> RegisterNodeOpts)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>{ path<span class="op">:</span> <span class="dt">string</span> }<span class="op">&gt;;</span></span>
+<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a><span class="co">// ───── 选举文件 ────────────────────────────────────────────────</span></span>
+<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeElectionLock</span>(info<span class="op">:</span> {</span>
+<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a>  masterId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a>  acquiredAt<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb11-76"><a href="#cb11-76" aria-hidden="true" tabindex="-1"></a>  expiresAt<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb11-77"><a href="#cb11-77" aria-hidden="true" tabindex="-1"></a>})<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb11-78"><a href="#cb11-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-79"><a href="#cb11-79" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeElectionDeclaration</span>(declaration<span class="op">:</span> {</span>
+<span id="cb11-80"><a href="#cb11-80" aria-hidden="true" tabindex="-1"></a>  masterId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb11-81"><a href="#cb11-81" aria-hidden="true" tabindex="-1"></a>  declaredAt<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb11-82"><a href="#cb11-82" aria-hidden="true" tabindex="-1"></a>  expiresAt<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb11-83"><a href="#cb11-83" aria-hidden="true" tabindex="-1"></a>})<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb11-84"><a href="#cb11-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-85"><a href="#cb11-85" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeMasterMarker</span>(markerContent<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb11-86"><a href="#cb11-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-87"><a href="#cb11-87" aria-hidden="true" tabindex="-1"></a><span class="co">// ───── Master / Project / 配置 ─────────────────────────────────</span></span>
+<span id="cb11-88"><a href="#cb11-88" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeMasterContext</span>(serializedYaml<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb11-89"><a href="#cb11-89" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeProjectStatus</span>(yamlContent<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb11-90"><a href="#cb11-90" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeProjectConfig</span>(yamlContent<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span>   <span class="co">// .eket/config/config.yml</span></span>
+<span id="cb11-91"><a href="#cb11-91" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeInstanceConfig</span>(yamlContent<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span>  <span class="co">// .eket/state/instance_config.yml</span></span>
+<span id="cb11-92"><a href="#cb11-92" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeAgentProfile</span>(</span>
+<span id="cb11-93"><a href="#cb11-93" aria-hidden="true" tabindex="-1"></a>  roleOrSlot<span class="op">:</span> <span class="st">&#39;current&#39;</span> <span class="op">|</span> <span class="dt">string</span><span class="op">,</span>                   <span class="co">// &#39;current&#39; → agent_profile.yml；否则 &lt;role&gt;_profile.json</span></span>
+<span id="cb11-94"><a href="#cb11-94" aria-hidden="true" tabindex="-1"></a>  content<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb11-95"><a href="#cb11-95" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb11-96"><a href="#cb11-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-97"><a href="#cb11-97" aria-hidden="true" tabindex="-1"></a><span class="co">// ───── 人类反馈 / 告警 ─────────────────────────────────────────</span></span>
+<span id="cb11-98"><a href="#cb11-98" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeHumanFeedback</span>(</span>
+<span id="cb11-99"><a href="#cb11-99" aria-hidden="true" tabindex="-1"></a>  filename<span class="op">:</span> <span class="dt">string</span><span class="op">,</span>                                 <span class="co">// 相对 inbox/human_feedback/</span></span>
+<span id="cb11-100"><a href="#cb11-100" aria-hidden="true" tabindex="-1"></a>  markdown<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb11-101"><a href="#cb11-101" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>{ path<span class="op">:</span> <span class="dt">string</span> }<span class="op">&gt;;</span></span>
+<span id="cb11-102"><a href="#cb11-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-103"><a href="#cb11-103" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">writeAlert</span>(</span>
+<span id="cb11-104"><a href="#cb11-104" aria-hidden="true" tabindex="-1"></a>  kind<span class="op">:</span> <span class="st">&#39;email&#39;</span> <span class="op">|</span> <span class="st">&#39;saved&#39;</span><span class="op">,</span></span>
+<span id="cb11-105"><a href="#cb11-105" aria-hidden="true" tabindex="-1"></a>  alertId<span class="op">:</span> <span class="dt">string</span><span class="op">,</span></span>
+<span id="cb11-106"><a href="#cb11-106" aria-hidden="true" tabindex="-1"></a>  json<span class="op">:</span> <span class="dt">unknown</span></span>
+<span id="cb11-107"><a href="#cb11-107" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span>
+<span id="cb11-108"><a href="#cb11-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-109"><a href="#cb11-109" aria-hidden="true" tabindex="-1"></a><span class="co">// ───── 审计日志扩展 ───────────────────────────────────────────</span></span>
+<span id="cb11-110"><a href="#cb11-110" aria-hidden="true" tabindex="-1"></a><span class="co">// 现有签名 audit(action, id, node, extra) 保留；新增结构化重载：</span></span>
+<span id="cb11-111"><a href="#cb11-111" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">audit</span>(params<span class="op">:</span> {</span>
+<span id="cb11-112"><a href="#cb11-112" aria-hidden="true" tabindex="-1"></a>  channel<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span>                                 <span class="co">// 默认 shared/audit.log；channel=&#39;gate-review&#39; → confluence/audit/gate-review-log.jsonl</span></span>
+<span id="cb11-113"><a href="#cb11-113" aria-hidden="true" tabindex="-1"></a>  action<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb11-114"><a href="#cb11-114" aria-hidden="true" tabindex="-1"></a>  subject<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb11-115"><a href="#cb11-115" aria-hidden="true" tabindex="-1"></a>  node<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb11-116"><a href="#cb11-116" aria-hidden="true" tabindex="-1"></a>  extra<span class="op">?:</span> <span class="bu">Record</span><span class="op">&lt;</span><span class="dt">string</span><span class="op">,</span> <span class="dt">unknown</span><span class="op">&gt;;</span></span>
+<span id="cb11-117"><a href="#cb11-117" aria-hidden="true" tabindex="-1"></a>  hashChain<span class="op">?:</span> <span class="dt">boolean</span><span class="op">;</span>                              <span class="co">// true → 计算 prev_hash/hash 字段</span></span>
+<span id="cb11-118"><a href="#cb11-118" aria-hidden="true" tabindex="-1"></a>})<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">void</span><span class="op">&gt;;</span></span></code></pre></div>
+<hr />
+<h2 id="risks-out-of-scope">5. Risks &amp; Out-of-Scope</h2>
+<h3 id="数据格式兼容风险必须由-task-0.5-dual-engine-测试把关">5.1
+数据格式兼容风险（必须由 Task 0.5 dual-engine 测试把关）</h3>
+<ul>
+<li><strong>心跳字段漂移</strong>：writer.ts 当前不输出
+<code>specialty / pending_prs / ready_tasks</code>
+等业务字段。若直接迁移，<strong>行为变更</strong>——Master
+面板读取方会缺字段。必须先扩展
+<code>HeartbeatOpts.extra</code>（§4）再迁移 #1/#2。</li>
+<li><strong>Ticket 字段名双语混用</strong>：claim.ts 写中文
+<code>**状态**</code>，writer.ts <code>_replaceTicketField</code>
+大小写不敏感但要求英文标题化（<code>Status</code>）。迁移 #3
+会<strong>改变实际写入的字段名</strong>——必须同步检查 Shell 写 +
+模板里现存 ticket 文件是否全部为英文字段，否则会有一批 ticket
+<code>transition_ticket</code> 抛 <code>field not found</code>。</li>
+<li><strong>Gate-review veto 块</strong>：现有实现有正则替换旧 veto
+块的幂等逻辑；<code>appendTicketBlock</code> 必须支持
+<code>marker</code> 参数否则多次否决会叠加。</li>
+</ul>
+<h3 id="并发-锁粒度">5.2 并发 / 锁粒度</h3>
+<ul>
+<li><code>ticket-index</code> 7 份索引从同一份 tickets 数据生成。若迁成
+7 次 <code>writeTicketIndex</code>，每次单独取锁成本高；建议 writer
+内再提供 <code>batchWriteTicketIndex(kvPairs)</code>
+一次性批写。（未列入 top10 以避免接口膨胀，但实现时可内部并发）</li>
+<li><code>master-election</code> 续租 + 冲突检测路径当前依赖
+<code>fs.writeFileSync</code> 的同步语义（立即可见）。迁移到
+<code>withLock</code> async 写入后，必须验证续租时间窗口不受 lock
+等待拖长导致 leaseTime 逾期。</li>
+</ul>
+<h3 id="out-of-scope本轮不迁">5.3 Out-of-Scope（本轮不迁）</h3>
+<ul>
+<li><strong><code>[scaffold-exempt]</code> 6
+处</strong>：<code>.gitkeep</code>（start-instance.ts 264/281/297,
+init-wizard.ts 467）+ 项目根 <code>.gitignore</code>（init-wizard.ts
+299/302）。OWNERSHIP.md 明确允许脚手架首次创建豁免，加
+<code>// allow: shared-fs-write reason: scaffold-bootstrap</code>
+即可。</li>
+<li><strong><code>[queue-internal]</code> processed.json ×
+2</strong>：<code>optimized-file-queue.ts:197</code>、<code>file-queue-manager.ts:132</code>
+是队列实现自身的去重索引。应在 Task 0.6 合并
+<code>file-queue-manager</code> /
+<code>optimized-file-queue</code>（OWNERSHIP 已标记
+<code>deprecated</code> 二选一）之后，由胜出实现统一通过
+<code>writeQueueIndex</code> 落地。</li>
+<li><strong><code>[alert]</code> × 2
+(alerting.ts)</strong>：<code>core/alerting.ts</code> 归类
+<code>[node-only]</code>，但写入目录是否 <code>shared/alerts/</code>
+由运行时决定。需先决定 alertsDir 是否纳入共享 FS 再定；本轮仅登记为
+blocker。</li>
+<li><strong><code>[review-request]</code></strong>：本次 grep 未发现
+<code>outbox/review_requests/*.md</code> 的 Node 直写点。上游 audit
+文档列出的 submit-pr 写入实际落在消息队列（本计划 #6）。预留
+<code>submitReviewRequest</code> 签名但不在本轮迁移范围。</li>
+<li><strong>Shell 51 处</strong>：属 Task 0.3
+<code>lib/state/writer.sh</code>，不在本计划。</li>
+</ul>
+<h3 id="推进顺序建议">5.4 推进顺序建议</h3>
+<ol type="1">
+<li><strong>先做 §4 API 扩展</strong>：<code>HeartbeatOpts.extra</code>
++ <code>writeTicketField</code> + <code>enqueueMessage</code> +
+<code>audit</code> 结构化重载。</li>
+<li><strong>再迁 top-4（S 类）</strong>：#1/#2/#3/#8 →
+立即消除漂移最痛的心跳 + ticket 状态 + project-status。</li>
+<li><strong>解阻塞</strong>：加
+<code>writeTicketIndex / writeElectionLock / writeMasterMarker</code>
+后收 #7/#9。</li>
+<li><strong>message 相关</strong>：等 <code>enqueueMessage</code> 与
+<code>file-queue-manager</code> / <code>optimized-file-queue</code>
+合并决策（OWNERSHIP Task 0.6）联动推进 #5/#6。</li>
+<li><strong>剩余低频点</strong>：profile / instance-config /
+human-feedback 一批补齐。</li>
+<li><strong>ESLint 规则
+<code>eket/no-direct-shared-fs-write</code></strong>
+收尾，防止倒退。</li>
+</ol>
+<hr />
+<blockquote>
+<p>本计划每一条声明均引用实际文件行号。未引用的决策建议（如何分配 lock
+key、是否批写）留给实现时评审。</p>
+</blockquote>
+</body>
+</html>
