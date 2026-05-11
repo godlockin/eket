@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Round 13b Sprint 计划 - CI/CD + 健康检查</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Round 13b Sprint 计划 - CI/CD + 健康检查</h1>
+</header>
+<h1 id="round-13b-sprint-计划---cicd-健康检查">Round 13b Sprint 计划 -
+CI/CD + 健康检查</h1>
+<p><strong>制定时间</strong>: 2026-04-09 <strong>当前版本</strong>:
+v2.4.0 (Round 13a 完成) <strong>目标版本</strong>: v2.5.0
+<strong>状态</strong>: 🔄 进行中</p>
+<hr />
+<h2 id="背景">📋 背景</h2>
+<p>Round 13a 完成了清账工作（1079/1079 tests, openclaw-adapter
+降级修复，版本对齐 v2.4.0）。</p>
+<p>Round 13b 目标：补齐 CI/CD 和生产可观测性基础设施。</p>
+<hr />
+<h2 id="任务清单">🎯 任务清单</h2>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 17%" />
+</colgroup>
+<thead>
+<tr>
+<th>JIRA</th>
+<th>任务</th>
+<th>负责</th>
+<th>状态</th>
+<th>PR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TASK-013</td>
+<td>GitHub Actions CI 流水线</td>
+<td>Slaver-1</td>
+<td>🔄 进行中</td>
+<td>#1 open</td>
+</tr>
+<tr>
+<td>TASK-014</td>
+<td>健康检查端点 /health /ready /live</td>
+<td>Master</td>
+<td>✅ 完成</td>
+<td>#2 open</td>
+</tr>
+<tr>
+<td>TASK-015</td>
+<td>Roadmap 文档对齐</td>
+<td>Slaver</td>
+<td>🔄 进行中</td>
+<td>#3 open</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="task-013-github-actions-ci">📌 TASK-013: GitHub Actions CI</h2>
+<p><strong>分支</strong>:
+<code>feature/TASK-013-github-actions-ci</code> <strong>PR</strong>:
+https://github.com/godlockin/eket/pull/1</p>
+<h3 id="实现内容">实现内容</h3>
+<ul>
+<li><code>.github/workflows/ci.yml</code> — 自动测试流水线</li>
+<li>触发条件：push 任意分支 + PR 到 main/testing/miao</li>
+<li>Node.js 20 +
+<code>NODE_OPTIONS=--experimental-vm-modules</code></li>
+<li>步骤：checkout → setup-node → npm ci → build → test</li>
+</ul>
+<h3 id="验收标准">验收标准</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />YAML
+语法正确</label></li>
+<li><label><input type="checkbox" checked="" />包含
+experimental-vm-modules 标志</label></li>
+<li><label><input type="checkbox" checked="" />PR 已创建</label></li>
+</ul>
+<hr />
+<h2 id="task-014-健康检查端点">📌 TASK-014: 健康检查端点</h2>
+<p><strong>分支</strong>: <code>feature/TASK-014-health-endpoints</code>
+<strong>PR</strong>: https://github.com/godlockin/eket/pull/2</p>
+<h3 id="实现内容-1">实现内容</h3>
+<p><strong>EketServer (Express)</strong>: - <code>GET /health</code> —
+200, <code>{status, version, uptime, timestamp, dependencies}</code> -
+<code>GET /ready</code> — 200, <code>{ready: true}</code> -
+<code>GET /live</code> — 200, <code>{alive: true}</code></p>
+<p><strong>WebDashboardServer (raw http)</strong>: -
+<code>GET /health</code> — 200,
+<code>{status, version, uptime, timestamp, checks}</code> -
+<code>GET /ready</code> — 200, <code>{ready: true}</code> -
+<code>GET /live</code> — 200, <code>{alive: true}</code></p>
+<p><strong>Bug fix</strong>: <code>config.port || 3000</code> →
+<code>config.port ?? 3000</code>（修复 port=0 误判）</p>
+<h3 id="测试">测试</h3>
+<ul>
+<li><code>tests/api/health.test.ts</code> — 7 tests, 7 passed</li>
+<li>全套 1079/1079 通过</li>
+</ul>
+<h3 id="验收标准-1">验收标准</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />EketServer 三端点
+200</label></li>
+<li><label><input type="checkbox" checked="" />WebDashboardServer 三端点
+200</label></li>
+<li><label><input type="checkbox" checked="" />1079/1079 tests
+通过</label></li>
+<li><label><input type="checkbox" checked="" />PR 已创建</label></li>
+</ul>
+<hr />
+<h2 id="task-015-roadmap-文档对齐">📌 TASK-015: Roadmap 文档对齐</h2>
+<p><strong>分支</strong>: <code>feature/TASK-015-roadmap-docs</code></p>
+<h3 id="实现内容-2">实现内容</h3>
+<ul>
+<li><code>docs/roadmap/v3.0-strategy.md</code> — 版本号 v2.4.0，Round
+历史更新，健康检查✅</li>
+<li><code>docs/roadmap/round10-14-plan.md</code> — Round 10-12
+标记完成，13a/13b 内容准确，Round 14 改为 SDK</li>
+<li><code>docs/roadmap/round13b-plan.md</code> — 本文件，新建</li>
+</ul>
+<h3 id="验收标准-2">验收标准</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />v3.0-strategy.md
+版本号正确</label></li>
+<li><label><input type="checkbox" checked="" />round10-14-plan.md
+与实际进度对齐</label></li>
+<li><label><input type="checkbox" checked="" />round13b-plan.md
+创建</label></li>
+</ul>
+<hr />
+<h2 id="完成标准v2.5.0">📊 完成标准（v2.5.0）</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />PR #1 合并（GitHub Actions
+CI）</label></li>
+<li><label><input type="checkbox" />PR #2
+合并（健康检查端点）</label></li>
+<li><label><input type="checkbox" />PR #3 合并（Roadmap
+文档）</label></li>
+<li><label><input
+type="checkbox" />分支保护规则配置（main/miao）</label></li>
+<li><label><input type="checkbox" />v2.5.0 tag 打出</label></li>
+</ul>
+<hr />
+<h2 id="相关文档">🔗 相关文档</h2>
+<ul>
+<li><a href="v3.0-strategy.md">v3.0 战略规划</a></li>
+<li><a href="round10-14-plan.md">Round 10-14 计划</a></li>
+<li><a href="../../jira/tickets/TASK-013.md">JIRA TASK-013</a></li>
+<li><a href="../../jira/tickets/TASK-014.md">JIRA TASK-014</a></li>
+<li><a href="../../jira/tickets/TASK-015.md">JIRA TASK-015</a></li>
+</ul>
+<hr />
+<p><strong>制定者</strong>: Master Agent <strong>审批状态</strong>:
+执行中</p>
+</body>
+</html>

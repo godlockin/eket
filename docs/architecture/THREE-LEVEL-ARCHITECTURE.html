@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 三级架构设计</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 三级架构设计</h1>
+</header>
+<h1 id="eket-三级架构设计">EKET 三级架构设计</h1>
+<blockquote>
+<p>⚠️ <strong>已过时（2026-04-26）</strong>：EKET
+已迁移至四级架构（Shell / Rust / Node.js / Shell fallback）。
+本文档保留作历史参考。最新架构见 <a
+href="../../README.md"><code>README.md</code></a> 和 <a
+href="DEGRADATION-STRATEGY.md"><code>DEGRADATION-STRATEGY.md</code></a>。</p>
+</blockquote>
+<p><strong>版本</strong>: v2.3.0（已冻结） <strong>最后更新</strong>:
+2026-04-08</p>
+<hr />
+<h2 id="设计理念">🎯 设计理念</h2>
+<p>EKET
+采用<strong>渐进式三级架构</strong>设计，确保在不同环境下都能稳定运行：</p>
+<pre><code>┌─────────────────────────────────────────────────────┐
+│ Level 1: Shell + 文档 (基础版)                      │
+│ ✅ 目标: 所有核心功能可用                           │
+│ 📦 依赖: Bash 4.0+, 文件系统, Markdown 文档         │
+│ 👥 用户: 快速启动, 零配置, 最小依赖                │
+│ ⭐ 优先级: P0 (最高) - 必须 100% 可用               │
+└─────────────────────────────────────────────────────┘
+           ↓ 渐进增强 (文档从上往下写)
+┌─────────────────────────────────────────────────────┐
+│ Level 2: Node.js + 文件队列 (增强版)                │
+│ ✅ 目标: 更高效、更专业、更丰富                     │
+│ 📦 依赖: Node.js 18+, npm, TypeScript, 文件队列     │
+│ 👥 用户: 开发者, 需要更好的性能和类型安全          │
+│ ⭐ 优先级: P1 (高) - 应该完整                       │
+└─────────────────────────────────────────────────────┘
+           ↓ 完整功能 (文档从上往下写)
+┌─────────────────────────────────────────────────────┐
+│ Level 3: Node.js + Redis + SQLite (满血版)          │
+│ ✅ 目标: 生产级、高并发、持久化                     │
+│ 📦 依赖: Level 2 + Redis 6.0+, SQLite 3.35+, Docker│
+│ 👥 用户: 生产环境, 高并发, 分布式协作              │
+│ ⭐ 优先级: P2 (中) - 可以渐进优化                   │
+└─────────────────────────────────────────────────────┘</code></pre>
+<p><strong>关键原则</strong>： 1. <strong>文档组织</strong>：从 Level 1
+→ Level 3（用户从简单到复杂） 2. <strong>运行时降级</strong>：从 Level 3
+→ Level 1（系统从高级到基础）</p>
+<hr />
+<h2 id="level-1-shell-文档-基础版">📚 Level 1: Shell + 文档
+(基础版)</h2>
+<h3 id="核心功能">核心功能</h3>
+<p><strong>Master-Slaver 协作</strong>： - ✅ Master 启动和角色分配 - ✅
+Slaver 任务认领和执行 - ✅ 文件队列消息传递 - ✅ 状态跟踪和同步</p>
+<p><strong>依赖要求</strong>：</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查环境</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> <span class="at">--version</span>  <span class="co"># &gt;= 4.0</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> <span class="at">--version</span>   <span class="co"># &gt;= 2.30</span></span></code></pre></div>
+<p><strong>无需安装</strong>： - ❌ 不需要 Node.js - ❌ 不需要 Redis -
+❌ 不需要 SQLite - ❌ 不需要 Docker</p>
+<h3 id="快速启动-30-秒">快速启动 (30 秒)</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 克隆仓库</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/godlockin/eket.git</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> eket</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 启动 Master (Shell 模式)</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/eket-start.sh</span> <span class="at">--role</span> master</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 启动 Slaver (Shell 模式)</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/eket-start.sh</span> <span class="at">--role</span> slaver <span class="at">--profile</span> backend_dev</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 完成！Level 1 已就绪</span></span></code></pre></div>
+<h3 id="核心脚本">核心脚本</h3>
+<table>
+<thead>
+<tr>
+<th>脚本</th>
+<th>功能</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scripts/eket-start.sh</code></td>
+<td>启动 Master/Slaver</td>
+<td>P0</td>
+</tr>
+<tr>
+<td><code>scripts/heartbeat-monitor.sh</code></td>
+<td>心跳监控</td>
+<td>P0</td>
+</tr>
+<tr>
+<td><code>scripts/generate-stats.sh</code></td>
+<td>生成统计报告</td>
+<td>P0</td>
+</tr>
+<tr>
+<td><code>scripts/cleanup-idle-agents.sh</code></td>
+<td>清理空闲 Agent</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><code>scripts/broadcast-task-reset.sh</code></td>
+<td>广播任务重置</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><code>lib/adapters/hybrid-adapter.sh</code></td>
+<td>命令路由和降级</td>
+<td>P0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="文件队列机制">文件队列机制</h3>
+<p><strong>队列目录结构</strong>：</p>
+<pre><code>.eket/
+├── data/
+│   └── queue/
+│       ├── pending/        # 待处理消息
+│       ├── processing/     # 处理中消息
+│       ├── processed/      # 已处理消息
+│       └── failed/         # 失败消息
+├── inboxes/
+│   ├── master/            # Master 收件箱
+│   └── slaver-{id}/       # Slaver 收件箱
+└── heartbeats/
+    └── {instance-id}.json # 心跳文件</code></pre>
+<p><strong>消息格式</strong> (JSON):</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;msg_abc123&quot;</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;from&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver-001&quot;</span><span class="fu">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;to&quot;</span><span class="fu">:</span> <span class="st">&quot;master&quot;</span><span class="fu">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;task_complete&quot;</span><span class="fu">,</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timestamp&quot;</span><span class="fu">:</span> <span class="dv">1234567890</span><span class="fu">,</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payload&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;task_id&quot;</span><span class="fu">:</span> <span class="st">&quot;TASK-001&quot;</span><span class="fu">,</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;status&quot;</span><span class="fu">:</span> <span class="st">&quot;done&quot;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>队列操作</strong>：</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 发送消息</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;{&quot;id&quot;:&quot;msg1&quot;,&quot;from&quot;:&quot;master&quot;,&quot;to&quot;:&quot;slaver-001&quot;,&quot;type&quot;:&quot;assign_task&quot;}&#39;</span> <span class="dt">\</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">&gt;</span> .eket/inboxes/slaver-001/msg1.json</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 读取消息</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> .eket/inboxes/master/<span class="pp">*</span>.json</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 清理已处理</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> .eket/data/queue/pending/<span class="pp">*</span>.json .eket/data/queue/processed/</span></code></pre></div>
+<h3 id="降级保障">降级保障</h3>
+<p>Level 1
+是<strong>最后的降级目标</strong>，确保即使所有高级功能失败，系统仍可用：</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查当前运行级别</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./lib/adapters/hybrid-adapter.sh</span> check</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 输出示例：</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># [INFO] Node.js: ❌ 不可用</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># [INFO] Redis: ❌ 不可用</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># [INFO] Shell: ✅ 可用</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># [INFO] 当前级别: Level 1 (Shell + 文件队列)</span></span></code></pre></div>
+<hr />
+<h2 id="level-2-node.js-文件队列-增强版">🚀 Level 2: Node.js + 文件队列
+(增强版)</h2>
+<h3 id="功能增强">功能增强</h3>
+<p><strong>相比 Level 1 增加</strong>： - ✅ TypeScript 类型安全 - ✅
+丰富的 CLI 命令 - ✅ 更高效的文件队列（去重、归档、校验和） - ✅
+断路器和重试机制 - ✅ LRU 内存缓存 - ✅ 日志和监控 - ✅ Web
+Dashboard（可选） - ✅ OpenCLAW Gateway（可选）</p>
+<p><strong>依赖要求</strong>：</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 安装 Node.js</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> <span class="at">--version</span>  <span class="co"># &gt;= 18.0.0</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> <span class="at">--version</span>   <span class="co"># &gt;= 9.0.0</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 安装依赖</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> install</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 构建</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run build</span></code></pre></div>
+<h3 id="快速启动">快速启动</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 构建 Node.js 版本</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run build</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ..</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 启动 Master (Node.js 模式)</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> node/dist/index.js instance:start <span class="at">--role</span> master</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 启动 Slaver (Node.js 模式)</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> node/dist/index.js instance:start <span class="at">--role</span> slaver <span class="at">--profile</span> backend_dev</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 或使用 hybrid adapter 自动选择最佳模式</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="ex">./lib/adapters/hybrid-adapter.sh</span> instance:start <span class="at">--role</span> master</span></code></pre></div>
+<h3 id="cli-命令">CLI 命令</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 系统诊断</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js system:doctor</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js system:check</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 实例管理</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js instance:start <span class="at">--auto</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js instance:start <span class="at">--human</span> <span class="at">--role</span> frontend_dev</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js instance:set-role <span class="op">&lt;</span>role<span class="op">&gt;</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 任务管理</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js project:init</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js task:claim <span class="pp">[</span><span class="ss">id</span><span class="pp">]</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Web 服务</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js web:dashboard <span class="at">--port</span> 3000</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js hooks:start <span class="at">--port</span> 8899</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="co"># 消息队列测试</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js queue:test</span></code></pre></div>
+<h3 id="优化的文件队列">优化的文件队列</h3>
+<p><strong>特性</strong>： - ✅ 原子写入（临时文件 + rename） - ✅
+校验和验证（防止损坏） - ✅ 自动去重（基于消息 ID） - ✅
+自动归档（已处理消息） - ✅ 重试机制（失败重试 3 次）</p>
+<p><strong>实现</strong>
+(<code>src/core/optimized-file-queue.ts</code>):</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { OptimizedFileMessageQueue } <span class="im">from</span> <span class="st">&#39;./core/optimized-file-queue.js&#39;</span><span class="op">;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> queue <span class="op">=</span> <span class="kw">new</span> <span class="fu">OptimizedFileMessageQueue</span>({</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  queueDir<span class="op">:</span> <span class="st">&#39;.eket/data/queue&#39;</span><span class="op">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  maxRetries<span class="op">:</span> <span class="dv">3</span><span class="op">,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  deduplication<span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  archiveProcessed<span class="op">:</span> <span class="kw">true</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> queue<span class="op">.</span><span class="fu">enqueue</span>(message)<span class="op">;</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> msg <span class="op">=</span> <span class="cf">await</span> queue<span class="op">.</span><span class="fu">dequeue</span>()<span class="op">;</span></span></code></pre></div>
+<h3 id="降级逻辑">降级逻辑</h3>
+<p>Level 2 在以下情况自动降级到 Level 1：</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// hybrid-adapter.sh 自动判断</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (nodeAvailable <span class="op">&amp;&amp;</span> nodeBinExists) {</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 使用 Level 2 (Node.js)</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  node dist<span class="op">/</span>index<span class="op">.</span><span class="at">js</span> $command</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 降级到 Level 1 (Shell)</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  bash scripts<span class="op">/</span>$command<span class="op">.</span><span class="at">sh</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="level-3-node.js-redis-sqlite-满血版">💎 Level 3: Node.js + Redis
++ SQLite (满血版)</h2>
+<h3 id="完整功能">完整功能</h3>
+<p><strong>相比 Level 2 增加</strong>： - ✅ Redis Pub/Sub 实时消息 - ✅
+Redis 连接池和主从切换 - ✅ SQLite 持久化存储 (WAL 模式) - ✅ 三级
+Master 选举（Redis → SQLite → File） - ✅ 分布式缓存（LRU + Redis 二级）
+- ✅ 性能监控和告警 - ✅ 事务支持 - ✅ 知识库系统</p>
+<p><strong>依赖要求</strong>：</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Redis (推荐 Docker)</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">--name</span> eket-redis <span class="at">-p</span> 6379:6379 redis:7-alpine</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 或手动安装</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="ex">redis-server</span> <span class="at">--version</span>  <span class="co"># &gt;= 6.0.0</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 环境变量</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_REDIS_HOST</span><span class="op">=</span>localhost</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_REDIS_PORT</span><span class="op">=</span>6379</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_SQLITE_PATH</span><span class="op">=</span>~/.eket/data/sqlite/eket.db</span></code></pre></div>
+<h3 id="快速启动-1">快速启动</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 启动 Redis</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">--name</span> eket-redis <span class="at">-p</span> 6379:6379 redis:7-alpine</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 或使用脚本</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/docker-redis.sh</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 启动 Master (满血模式)</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> node/dist/index.js instance:start <span class="at">--role</span> master</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 系统自动检测 Redis 可用，使用 Level 3</span></span></code></pre></div>
+<h3 id="redis-功能">Redis 功能</h3>
+<p><strong>消息队列</strong> (Pub/Sub):</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { MessageQueue } <span class="im">from</span> <span class="st">&#39;./core/message-queue.js&#39;</span><span class="op">;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> queue <span class="op">=</span> <span class="kw">new</span> <span class="fu">MessageQueue</span>({</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  useRedis<span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  fallbackToFile<span class="op">:</span> <span class="kw">true</span>  <span class="co">// Redis 不可用时降级到文件</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> queue<span class="op">.</span><span class="fu">publish</span>(<span class="st">&#39;tasks&#39;</span><span class="op">,</span> message)<span class="op">;</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>queue<span class="op">.</span><span class="fu">subscribe</span>(<span class="st">&#39;tasks&#39;</span><span class="op">,</span> handler)<span class="op">;</span></span></code></pre></div>
+<p><strong>缓存层</strong> (LRU + Redis):</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { CacheLayer } <span class="im">from</span> <span class="st">&#39;./core/cache-layer.js&#39;</span><span class="op">;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> cache <span class="op">=</span> <span class="kw">new</span> <span class="fu">CacheLayer</span>({</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  useRedis<span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  maxMemorySize<span class="op">:</span> <span class="dv">100</span> <span class="op">*</span> <span class="dv">1024</span> <span class="op">*</span> <span class="dv">1024</span>  <span class="co">// 100MB</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> cache<span class="op">.</span><span class="fu">set</span>(<span class="st">&#39;key&#39;</span><span class="op">,</span> value<span class="op">,</span> <span class="dv">300</span>)<span class="op">;</span>  <span class="co">// 5分钟 TTL</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> val <span class="op">=</span> <span class="cf">await</span> cache<span class="op">.</span><span class="fu">get</span>(<span class="st">&#39;key&#39;</span>)<span class="op">;</span></span></code></pre></div>
+<p><strong>Master 选举</strong> (三级降级):</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { electMaster } <span class="im">from</span> <span class="st">&#39;./core/master-election.js&#39;</span><span class="op">;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">// 尝试顺序: Redis SETNX → SQLite 行锁 → 文件 mkdir</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> <span class="fu">electMaster</span>({</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  instanceId<span class="op">:</span> <span class="st">&#39;instance-001&#39;</span><span class="op">,</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  leaseDuration<span class="op">:</span> <span class="dv">30000</span>  <span class="co">// 30秒租约</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (result<span class="op">.</span><span class="at">success</span> <span class="op">&amp;&amp;</span> result<span class="op">.</span><span class="at">data</span><span class="op">.</span><span class="at">isMaster</span>) {</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;I am Master!&#39;</span>)<span class="op">;</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="sqlite-功能">SQLite 功能</h3>
+<p><strong>知识库</strong> (Retrospective, Pattern, Decision):</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { KnowledgeBase } <span class="im">from</span> <span class="st">&#39;./core/knowledge-base.js&#39;</span><span class="op">;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> kb <span class="op">=</span> <span class="kw">new</span> <span class="fu">KnowledgeBase</span>()<span class="op">;</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> kb<span class="op">.</span><span class="fu">addRetrospective</span>({</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  project<span class="op">:</span> <span class="st">&#39;eket&#39;</span><span class="op">,</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  content<span class="op">:</span> <span class="st">&#39;Round 3 completed with 87% test pass rate&#39;</span><span class="op">,</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  tags<span class="op">:</span> [<span class="st">&#39;round3&#39;</span><span class="op">,</span> <span class="st">&#39;testing&#39;</span>]</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> patterns <span class="op">=</span> <span class="cf">await</span> kb<span class="op">.</span><span class="fu">searchPatterns</span>(<span class="st">&#39;optimization&#39;</span>)<span class="op">;</span></span></code></pre></div>
+<p><strong>连接管理</strong> (四级降级):</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { ConnectionManager } <span class="im">from</span> <span class="st">&#39;./core/connection-manager.js&#39;</span><span class="op">;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co">// 尝试顺序: Remote Redis → Local Redis → SQLite → File</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> conn <span class="op">=</span> <span class="cf">await</span> ConnectionManager<span class="op">.</span><span class="fu">getInstance</span>()<span class="op">;</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> level <span class="op">=</span> conn<span class="op">.</span><span class="fu">getCurrentLevel</span>()<span class="op">;</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="co">// 返回: &#39;remote_redis&#39; | &#39;local_redis&#39; | &#39;sqlite&#39; | &#39;file&#39;</span></span></code></pre></div>
+<h3 id="性能优化">性能优化</h3>
+<p><strong>WAL 模式</strong> (Round 2 优化):</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>PRAGMA journal_mode <span class="op">=</span> WAL;</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>PRAGMA synchronous <span class="op">=</span> <span class="kw">NORMAL</span>;</span></code></pre></div>
+<p><strong>基准测试结果</strong> (Round 4 验证): - Redis Write P95:
+0.96ms (目标 &lt;5ms) ✅ - Redis Read P95: 0.53ms (目标 &lt;5ms) ✅ -
+SQLite Insert P95: 0.04ms (目标 &lt;10ms) ✅ - SQLite Select P95: 0.00ms
+(目标 &lt;10ms) ✅</p>
+<p><strong>运行基准测试</strong>:</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> node/benchmarks/simple-benchmark.js</span></code></pre></div>
+<h3 id="四级降级逻辑">四级降级逻辑</h3>
+<p>Level 3 在运行时根据依赖可用性自动降级：</p>
+<pre><code>Level 3: Redis + SQLite
+  ↓ Redis 不可用
+Level 2: Node.js + 文件队列
+  ↓ Node.js 不可用
+Level 1: Shell + 文件队列
+  ↓ 所有失败
+优雅退出 + 错误日志</code></pre>
+<p><strong>自动降级示例</strong>:</p>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">// MessageQueue 自动降级</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> queue <span class="op">=</span> <span class="kw">new</span> <span class="fu">MessageQueue</span>({ useRedis<span class="op">:</span> <span class="kw">true</span><span class="op">,</span> fallbackToFile<span class="op">:</span> <span class="kw">true</span> })<span class="op">;</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co">// 如果 Redis 连接失败，自动切换到文件队列</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> queue<span class="op">.</span><span class="fu">publish</span>(<span class="st">&#39;tasks&#39;</span><span class="op">,</span> message)<span class="op">;</span>  <span class="co">// 透明降级</span></span></code></pre></div>
+<p><strong>查看当前级别</strong>:</p>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js system:check</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 输出：</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ✅ Redis: Connected (localhost:6379)</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ✅ SQLite: /Users/xxx/.eket/data/sqlite/eket.db</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ✅ Node.js: v18.x</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 🎯 当前运行级别: Level 3 (满血版)</span></span></code></pre></div>
+<hr />
+<h2 id="降级决策树">🔄 降级决策树</h2>
+<pre class="mermaid"><code>graph TD
+    A[启动 EKET] --&gt; B{Node.js 可用?}
+    B --&gt;|否| C[Level 1: Shell]
+    B --&gt;|是| D{Redis 可用?}
+    D --&gt;|否| E[Level 2: Node.js + 文件]
+    D --&gt;|是| F{SQLite 可用?}
+    F --&gt;|否| E
+    F --&gt;|是| G[Level 3: 满血版]
+
+    G --&gt; H{运行时 Redis 断开?}
+    H --&gt;|是| E
+    E --&gt; I{运行时 Node.js 崩溃?}
+    I --&gt;|是| C
+
+    C --&gt; J[文件队列模式]
+    E --&gt; K[优化文件队列模式]
+    G --&gt; L[Redis Pub/Sub + SQLite]</code></pre>
+<hr />
+<h2 id="功能对比矩阵">📊 功能对比矩阵</h2>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>Level 1</th>
+<th>Level 2</th>
+<th>Level 3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Master-Slaver 协作</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>任务分配和认领</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>心跳监控</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>消息传递</strong></td>
+<td>文件队列</td>
+<td>优化文件队列</td>
+<td>Redis Pub/Sub</td>
+</tr>
+<tr>
+<td><strong>消息持久化</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>消息去重</strong></td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>消息归档</strong></td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>断路器</strong></td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>重试机制</strong></td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>LRU 缓存</strong></td>
+<td>❌</td>
+<td>内存</td>
+<td>内存 + Redis</td>
+</tr>
+<tr>
+<td><strong>Master 选举</strong></td>
+<td>文件锁</td>
+<td>文件锁</td>
+<td>Redis + SQLite + 文件</td>
+</tr>
+<tr>
+<td><strong>知识库</strong></td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>性能监控</strong></td>
+<td>❌</td>
+<td>基础</td>
+<td>完整</td>
+</tr>
+<tr>
+<td><strong>Web Dashboard</strong></td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>OpenCLAW 集成</strong></td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>事务支持</strong></td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>分布式部署</strong></td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="使用建议">🎯 使用建议</h2>
+<h3 id="场景-1-快速试用">场景 1: 快速试用</h3>
+<p><strong>推荐</strong>: <strong>Level 1</strong> (Shell + 文档)</p>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/godlockin/eket.git</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> eket</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/eket-start.sh</span> <span class="at">--role</span> master</span></code></pre></div>
+<p><strong>优点</strong>: 零配置，30 秒启动</p>
+<h3 id="场景-2-本地开发">场景 2: 本地开发</h3>
+<p><strong>推荐</strong>: <strong>Level 2</strong> (Node.js +
+文件队列)</p>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> install <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> run build</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js instance:start <span class="at">--role</span> master</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js web:dashboard <span class="at">--port</span> 3000</span></code></pre></div>
+<p><strong>优点</strong>: 丰富功能，无需外部依赖</p>
+<h3 id="场景-3-团队协作">场景 3: 团队协作</h3>
+<p><strong>推荐</strong>: <strong>Level 3</strong> (Redis + SQLite)</p>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">--name</span> eket-redis <span class="at">-p</span> 6379:6379 redis:7-alpine</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js instance:start <span class="at">--role</span> master</span></code></pre></div>
+<p><strong>优点</strong>: 实时消息，分布式支持</p>
+<h3 id="场景-4-生产环境">场景 4: 生产环境</h3>
+<p><strong>推荐</strong>: <strong>Level 3</strong> + 高可用配置</p>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Redis 主从</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="co"># SQLite 定期备份</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 多 Master 选举</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 完整监控告警</span></span></code></pre></div>
+<hr />
+<h2 id="环境变量">🔧 环境变量</h2>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Level 2/3 共用</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_LOG_LEVEL</span><span class="op">=</span>info          <span class="co"># debug | info | warn | error</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_LOG_DIR</span><span class="op">=</span>./logs</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Level 3 专用</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_REDIS_HOST</span><span class="op">=</span>localhost</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_REDIS_PORT</span><span class="op">=</span>6379</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_REDIS_PASSWORD</span><span class="op">=</span>          <span class="co"># 可选</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_REMOTE_REDIS_HOST</span><span class="op">=</span>       <span class="co"># 远程 Redis（主从）</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_REMOTE_REDIS_PORT</span><span class="op">=</span>6379</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_SQLITE_PATH</span><span class="op">=</span>~/.eket/data/sqlite/eket.db</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_MEMORY_WARNING_THRESHOLD</span><span class="op">=</span>0.75</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_MEMORY_CRITICAL_THRESHOLD</span><span class="op">=</span>0.9</span></code></pre></div>
+<hr />
+<h2 id="相关文档">📚 相关文档</h2>
+<ul>
+<li><strong>Level 1 详细指南</strong>: <a
+href="../guides/SHELL-MODE.md">docs/guides/SHELL-MODE.md</a></li>
+<li><strong>Level 2 详细指南</strong>: <a
+href="../guides/NODEJS-MODE.md">docs/guides/NODEJS-MODE.md</a></li>
+<li><strong>Level 3 详细指南</strong>: <a
+href="../guides/FULL-STACK-MODE.md">docs/guides/FULL-STACK-MODE.md</a></li>
+<li><strong>降级策略</strong>: <a
+href="./DEGRADATION-STRATEGY.md">docs/architecture/DEGRADATION-STRATEGY.md</a></li>
+<li><strong>性能基准</strong>: <a
+href="../performance/TASK-015-completion-report.md">docs/performance/TASK-015-completion-report.md</a></li>
+</ul>
+<hr />
+<p><strong>版本</strong>: v2.3.0 <strong>最后更新</strong>: 2026-04-08
+<strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>

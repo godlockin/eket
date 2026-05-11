@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Ticket 编号模板总结</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Ticket 编号模板总结</h1>
+</header>
+<h1 id="eket-ticket-编号模板总结">EKET Ticket 编号模板总结</h1>
+<p><strong>版本</strong>: v2.9.0-alpha <strong>创建时间</strong>:
+2026-04-06 <strong>更新时间</strong>: 2026-04-10</p>
+<hr />
+<h2 id="重要职责边界">重要：职责边界</h2>
+<p><strong>在创建或使用 Ticket 前，请先阅读</strong>：</p>
+<ul>
+<li>📄 <a
+href="./TICKET-RESPONSIBILITIES.md">TICKET-RESPONSIBILITIES.md</a> —
+Master/Slaver 职责边界规范
+<ul>
+<li>Master 只能写：需求文档、架构文档、Ticket、PR 审查报告</li>
+<li>Slaver 只能写：代码、测试、PR、分析报告</li>
+<li><strong>红线</strong>：Master 禁止写代码，Slaver 禁止修改 Ticket
+元数据</li>
+</ul></li>
+</ul>
+<hr />
+<h2 id="ticket-编号一览">Ticket 编号一览</h2>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 26%" />
+<col style="width: 19%" />
+<col style="width: 19%" />
+<col style="width: 21%" />
+</colgroup>
+<thead>
+<tr>
+<th>序号</th>
+<th>Ticket 类型</th>
+<th>编号前缀</th>
+<th>编号示例</th>
+<th>模板文件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>功能需求卡</td>
+<td><code>FEAT</code></td>
+<td><code>FEAT-001</code>, <code>FEAT-002</code>,
+<code>FEAT-003</code></td>
+<td><code>jira/templates/feature-ticket.md</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>任务卡</td>
+<td><code>TASK</code></td>
+<td><code>TASK-001</code>, <code>TASK-002</code>,
+<code>TASK-003</code></td>
+<td><code>jira/templates/task-ticket.md</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>缺陷修复卡</td>
+<td><code>FIX</code></td>
+<td><code>FIX-001</code>, <code>FIX-002</code>,
+<code>FIX-003</code></td>
+<td><code>jira/templates/bugfix-ticket.md</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>测试卡</td>
+<td><code>TEST</code></td>
+<td><code>TEST-001</code>, <code>TEST-002</code>,
+<code>TEST-003</code></td>
+<td><code>jira/templates/test-ticket.md</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>产品需求卡</td>
+<td><code>PRD</code></td>
+<td><code>PRD-001</code>, <code>PRD-002</code>,
+<code>PRD-003</code></td>
+<td><code>jira/templates/prd-ticket.md</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td>UI/UX 设计卡</td>
+<td><code>U-DESIGN</code></td>
+<td><code>U-DESIGN-001</code>, <code>U-DESIGN-002</code></td>
+<td><code>jira/templates/ui-design-ticket.md</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td>技术设计卡</td>
+<td><code>T-DESIGN</code></td>
+<td><code>T-DESIGN-001</code>, <code>T-DESIGN-002</code></td>
+<td><code>jira/templates/tech-design-ticket.md</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td>部署卡</td>
+<td><code>DEPL</code></td>
+<td><code>DEPL-001</code>, <code>DEPL-002</code>,
+<code>DEPL-003</code></td>
+<td><code>jira/templates/deployment-ticket.md</code></td>
+</tr>
+<tr>
+<td>9</td>
+<td>文档卡</td>
+<td><code>DOC</code></td>
+<td><code>DOC-001</code>, <code>DOC-002</code>,
+<code>DOC-003</code></td>
+<td><code>jira/templates/doc-ticket.md</code></td>
+</tr>
+<tr>
+<td>10</td>
+<td>用户调研卡</td>
+<td><code>USER-RES</code></td>
+<td><code>USER-RES-001</code>, <code>USER-RES-002</code></td>
+<td><code>jira/templates/user-research-ticket.md</code></td>
+</tr>
+<tr>
+<td>11</td>
+<td>数据分析卡</td>
+<td><code>DATA-ANALYSIS</code></td>
+<td><code>DATA-ANALYSIS-001</code>, <code>DATA-ANALYSIS-002</code></td>
+<td><code>jira/templates/data-analysis-ticket.md</code></td>
+</tr>
+<tr>
+<td>12</td>
+<td>合规审查卡</td>
+<td><code>COMPLIANCE</code></td>
+<td><code>COMPLIANCE-001</code>, <code>COMPLIANCE-002</code></td>
+<td><code>jira/templates/compliance-review-ticket.md</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="编号规则">编号规则</h2>
+<pre><code>{PREFIX}-{SEQUENCE_NUMBER}
+
+PREFIX: 大写英文字母前缀
+SEQUENCE_NUMBER: 3 位数字序号（从 001 开始）</code></pre>
+<hr />
+<h2 id="ticket-分类">Ticket 分类</h2>
+<h3 id="研发类">研发类</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>前缀</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功能需求卡</td>
+<td><code>FEAT</code></td>
+<td>功能开发任务</td>
+</tr>
+<tr>
+<td>任务卡</td>
+<td><code>TASK</code></td>
+<td>一般任务（文档/重构等）</td>
+</tr>
+<tr>
+<td>缺陷修复卡</td>
+<td><code>FIX</code></td>
+<td>Bug 修复任务</td>
+</tr>
+<tr>
+<td>测试卡</td>
+<td><code>TEST</code></td>
+<td>测试编写任务</td>
+</tr>
+<tr>
+<td>文档卡</td>
+<td><code>DOC</code></td>
+<td>文档编写任务</td>
+</tr>
+</tbody>
+</table>
+<h3 id="设计类">设计类</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>前缀</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UI/UX 设计卡</td>
+<td><code>U-DESIGN</code></td>
+<td>UI/UX 设计任务</td>
+</tr>
+<tr>
+<td>技术设计卡</td>
+<td><code>T-DESIGN</code></td>
+<td>技术设计任务</td>
+</tr>
+</tbody>
+</table>
+<h3 id="产品业务类">产品/业务类</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>前缀</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>产品需求卡</td>
+<td><code>PRD</code></td>
+<td>产品需求文档</td>
+</tr>
+<tr>
+<td>用户调研卡</td>
+<td><code>USER-RES</code></td>
+<td>用户调研任务</td>
+</tr>
+<tr>
+<td>数据分析卡</td>
+<td><code>DATA-ANALYSIS</code></td>
+<td>数据分析任务</td>
+</tr>
+<tr>
+<td>合规审查卡</td>
+<td><code>COMPLIANCE</code></td>
+<td>合规审查任务</td>
+</tr>
+</tbody>
+</table>
+<h3 id="运维类">运维类</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>前缀</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>部署卡</td>
+<td><code>DEPL</code></td>
+<td>部署任务</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="典型工作流程中的-ticket-流转">典型工作流程中的 Ticket 流转</h2>
+<h3 id="完整功能开发流程">完整功能开发流程</h3>
+<pre><code>┌─────────────┐
+│  PRD-001    │ 产品需求定义
+│  (产品经理)  │
+└──────┬──────┘
+       │ 批准后
+       ▼
+┌─────────────┐
+│ T-DESIGN-001│ 技术设计
+│  (架构师)   │
+└──────┬──────┘
+       │ 批准后
+       ▼
+┌─────────────┐
+│ U-DESIGN-001│ UI/UX 设计
+│  (设计师)   │
+└──────┬──────┘
+       │ 批准后
+       ▼
+┌─────────────┐
+│  FEAT-001   │ 功能开发
+│  (开发工程)  │
+└──────┬──────┘
+       │ 完成后
+       ▼
+┌─────────────┐
+│  TEST-001   │ 测试编写
+│  (测试工程)  │
+└──────┬──────┘
+       │ 通过后
+       ▼
+┌─────────────┐
+│  DEPL-001   │ 部署发布
+│  (运维工程)  │
+└──────┬──────┘
+       │ 完成后
+       ▼
+    上线</code></pre>
+<h3 id="bug-修复流程">Bug 修复流程</h3>
+<pre><code>┌─────────────┐
+│   FIX-001   │ Bug 修复
+│  (开发工程)  │
+└──────┬──────┘
+       │ 完成后
+       ▼
+┌─────────────┐
+│  TEST-001   │ 回归测试
+│  (测试工程)  │
+└──────┬──────┘
+       │ 通过后
+       ▼
+┌─────────────┐
+│  DEPL-001   │ 热修复部署
+│  (运维工程)  │
+└─────────────┘</code></pre>
+<h3 id="用户调研流程">用户调研流程</h3>
+<pre><code>┌─────────────┐
+│  PRD-001    │ 产品需求
+│  (产品经理)  │
+└──────┬──────┘
+       │ 需要用户调研
+       ▼
+┌─────────────┐
+│ USER-RES-001│ 用户调研
+│  (用研工程)  │
+└──────┬──────┘
+       │ 调研洞察
+       ▼
+┌─────────────┐
+│  PRD-001    │ 更新 PRD
+│  (产品经理)  │
+└─────────────┘</code></pre>
+<h3 id="数据分析流程">数据分析流程</h3>
+<pre><code>┌─────────────┐
+│ DATA-ANALYSIS-001 │ 数据分析
+│  (数据工程)       │
+└──────┬──────┘
+       │ 分析洞察
+       ▼
+┌─────────────┐
+│  PRD-001    │ 产品决策
+│  (产品经理)  │
+└─────────────┘</code></pre>
+<h3 id="合规审查流程">合规审查流程</h3>
+<pre><code>┌─────────────┐
+│ COMPLIANCE-001 │ 合规审查
+│  (合规工程)     │
+└──────┬──────┘
+       │ Legal 批准
+       ▼
+┌─────────────┐
+│  FEAT-001   │ 功能上线
+│  (开发工程)  │
+└─────────────┘</code></pre>
+<hr />
+<h2 id="ticket-模板核心字段">Ticket 模板核心字段</h2>
+<h3 id="所有-ticket-共有字段">所有 Ticket 共有字段</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+<th>填写者</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ticket ID</strong></td>
+<td>编号（如：FEAT-001）</td>
+<td>Master</td>
+</tr>
+<tr>
+<td><strong>创建时间</strong></td>
+<td>ISO8601 格式</td>
+<td>Master</td>
+</tr>
+<tr>
+<td><strong>创建者</strong></td>
+<td>Master Agent / Human</td>
+<td>Master</td>
+</tr>
+<tr>
+<td><strong>优先级</strong></td>
+<td>P0/P1/P2/P3</td>
+<td>Master</td>
+</tr>
+<tr>
+<td><strong>状态</strong></td>
+<td>见状态机</td>
+<td>Master/Slaver</td>
+</tr>
+<tr>
+<td><strong>标签</strong></td>
+<td>分类标签</td>
+<td>Master</td>
+</tr>
+<tr>
+<td><strong>分配给</strong></td>
+<td>Slaver ID</td>
+<td>Master</td>
+</tr>
+</tbody>
+</table>
+<h3 id="元数据字段">元数据字段</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>重要性</strong></td>
+<td>critical/high/medium/low</td>
+<td><code>high</code></td>
+</tr>
+<tr>
+<td><strong>优先级</strong></td>
+<td>P0/P1/P2/P3</td>
+<td><code>P1</code></td>
+</tr>
+<tr>
+<td><strong>依赖关系</strong></td>
+<td>YAML 格式</td>
+<td><code>blocked_by: [FEAT-001]</code></td>
+</tr>
+<tr>
+<td><strong>背景信息</strong></td>
+<td>任务背景和业务价值</td>
+<td>Markdown</td>
+</tr>
+<tr>
+<td><strong>技能要求</strong></td>
+<td>需要的技术栈</td>
+<td><code>react, typescript</code></td>
+</tr>
+<tr>
+<td><strong>预估工时</strong></td>
+<td>预计完成时间</td>
+<td><code>4h</code>, <code>2d</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="状态机">状态机</h2>
+<h3 id="通用状态">通用状态</h3>
+<pre><code>backlog → analysis → approved → design → ready → in_progress → review → done</code></pre>
+<h3 id="各类型状态流转">各类型状态流转</h3>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr>
+<th>Ticket 类型</th>
+<th>完整状态流</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>FEAT</strong></td>
+<td><code>backlog</code> → <code>analysis</code> → <code>approved</code>
+→ <code>design</code> → <code>ready</code> → <code>in_progress</code> →
+<code>design_review</code> → <code>testing</code> → <code>review</code>
+→ <code>done</code></td>
+</tr>
+<tr>
+<td><strong>TASK</strong></td>
+<td><code>backlog</code> → <code>ready</code> → <code>in_progress</code>
+→ <code>documentation</code> → <code>testing</code> →
+<code>review</code> → <code>done</code></td>
+</tr>
+<tr>
+<td><strong>FIX</strong></td>
+<td><code>backlog</code> → <code>analysis</code> → <code>ready</code> →
+<code>in_progress</code> → <code>testing</code> → <code>review</code> →
+<code>done</code></td>
+</tr>
+<tr>
+<td><strong>TEST</strong></td>
+<td><code>backlog</code> → <code>ready</code> → <code>in_progress</code>
+→ <code>testing</code> → <code>review</code> → <code>done</code></td>
+</tr>
+<tr>
+<td><strong>PRD</strong></td>
+<td><code>backlog</code> → <code>analysis</code> → <code>drafting</code>
+→ <code>review</code> → <code>approved</code> → <code>done</code></td>
+</tr>
+<tr>
+<td><strong>U-DESIGN</strong></td>
+<td><code>backlog</code> → <code>analysis</code> → <code>concept</code>
+→ <code>draft</code> → <code>review</code> → <code>approved</code> →
+<code>done</code></td>
+</tr>
+<tr>
+<td><strong>T-DESIGN</strong></td>
+<td><code>backlog</code> → <code>analysis</code> → <code>draft</code> →
+<code>review</code> → <code>approved</code> → <code>done</code></td>
+</tr>
+<tr>
+<td><strong>DEPL</strong></td>
+<td><code>backlog</code> → <code>ready</code> → <code>in_progress</code>
+→ <code>preparing</code> → <code>dry_run</code> → <code>staging</code> →
+<code>production</code> → <code>verifying</code> →
+<code>done</code></td>
+</tr>
+<tr>
+<td><strong>DOC</strong></td>
+<td><code>backlog</code> → <code>ready</code> → <code>in_progress</code>
+→ <code>drafting</code> → <code>review</code> → <code>done</code></td>
+</tr>
+<tr>
+<td><strong>USER-RES</strong></td>
+<td><code>backlog</code> → <code>ready</code> → <code>in_progress</code>
+→ <code>planning</code> → <code>analyzing</code> → <code>report</code> →
+<code>done</code></td>
+</tr>
+<tr>
+<td><strong>DATA-ANALYSIS</strong></td>
+<td><code>backlog</code> → <code>ready</code> → <code>in_progress</code>
+→ <code>extracting</code> → <code>cleaning</code> →
+<code>analyzing</code> → <code>report</code> → <code>done</code></td>
+</tr>
+<tr>
+<td><strong>COMPLIANCE</strong></td>
+<td><code>backlog</code> → <code>ready</code> → <code>in_progress</code>
+→ <code>assessing</code> → <code>auditing</code> →
+<code>remediating</code> → <code>review</code> → <code>done</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="目录结构">目录结构</h2>
+<pre><code>jira/
+├── tickets/
+│   ├── feature/          # FEAT
+│   │   └── FEAT-001.md
+│   ├── task/             # TASK
+│   │   └── TASK-001.md
+│   ├── bugfix/           # FIX
+│   │   └── FIX-001.md
+│   ├── test/             # TEST
+│   │   └── TEST-001.md
+│   ├── prd/              # PRD
+│   │   └── PRD-001.md
+│   ├── design/
+│   │   ├── ui/           # U-DESIGN
+│   │   │   └── U-DESIGN-001.md
+│   │   └── tech/         # T-DESIGN
+│   │       └── T-DESIGN-001.md
+│   ├── deployment/       # DEPL
+│   │   └── DEPL-001.md
+│   ├── doc/              # DOC
+│   │   └── DOC-001.md
+│   ├── research/         # USER-RES
+│   │   └── USER-RES-001.md
+│   ├── analysis/         # DATA-ANALYSIS
+│   │   └── DATA-ANALYSIS-001.md
+│   └── compliance/       # COMPLIANCE
+│       └── COMPLIANCE-001.md
+├── epics/
+│   └── EPIC-001.md
+├── templates/            # 模板文件
+│   ├── feature-ticket.md
+│   ├── task-ticket.md
+│   ├── bugfix-ticket.md
+│   ├── test-ticket.md
+│   ├── prd-ticket.md
+│   ├── ui-design-ticket.md
+│   ├── tech-design-ticket.md
+│   ├── deployment-ticket.md
+│   ├── doc-ticket.md
+│   ├── user-research-ticket.md
+│   ├── data-analysis-ticket.md
+│   └── compliance-review-ticket.md
+└── index/                # 索引
+    ├── by-feature/
+    ├── by-status/
+    └── by-assignee/</code></pre>
+<hr />
+<h2 id="使用示例">使用示例</h2>
+<h3 id="创建-feature-ticket">创建 Feature Ticket</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Feature Ticket: FEAT-001 - 用户登录功能</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>**创建时间**: 2026-03-28T10<span class="sc">:30:</span>00+08:00</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>**创建者**: Master Agent</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>**重要性**: high</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>**优先级**: P1</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>**状态**: backlog</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>**标签**: <span class="in">`feature`</span>, <span class="in">`auth`</span>, <span class="in">`frontend`</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>**Epic**: EPIC-001</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>**分配给**: null</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## 0. 任务元数据</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="fu">### 0.3 依赖关系</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="in">```yaml</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="fu">blocks</span><span class="kw">:</span><span class="at"> </span><span class="kw">[]</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="fu">blocked_by</span><span class="kw">:</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span>PRD-001</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span>T-DESIGN-001</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="fu">related</span><span class="kw">:</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span>U-DESIGN-001</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="fu">external</span><span class="kw">:</span><span class="at"> </span><span class="kw">[]</span></span></code></pre></div>
+<h3 id="技能要求">0.5 技能要求</h3>
+<p>react, typescript, jwt</p>
+<h3 id="预估工时">0.6 预估工时</h3>
+<p>4h</p>
+<pre><code>
+### 创建 Bugfix Ticket
+
+```markdown
+# Bugfix Ticket: FIX-001 - 登录页面在 Safari 下样式错乱
+
+**创建时间**: 2026-03-28T14:00:00+08:00
+**创建者**: Master Agent
+**优先级**: P1
+**状态**: backlog
+**标签**: `bug`, `frontend`, `safari`
+**关联 Feature**: FEAT-001</code></pre>
+<h3 id="创建文档卡">创建文档卡</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Documentation Ticket: DOC-001 - API 文档编写</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>**创建时间**: 2026-03-28T15<span class="sc">:00:</span>00+08:00</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>**创建者**: Master Agent</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>**优先级**: P2</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>**状态**: backlog</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>**标签**: <span class="in">`documentation`</span>, <span class="in">`api`</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>**关联 Feature**: FEAT-001</span></code></pre></div>
+<h3 id="创建用户调研卡">创建用户调研卡</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># User Research Ticket: USER-RES-001 - 用户登录流程调研</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>**创建时间**: 2026-03-28T16<span class="sc">:00:</span>00+08:00</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>**创建者**: Master Agent</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>**优先级**: P1</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>**状态**: backlog</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>**标签**: <span class="in">`research`</span>, <span class="in">`user`</span>, <span class="in">`auth`</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>**关联 PRD**: PRD-001</span></code></pre></div>
+<h3 id="创建数据分析卡">创建数据分析卡</h3>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Data Analysis Ticket: DATA-ANALYSIS-001 - 用户留存率分析</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>**创建时间**: 2026-03-28T17<span class="sc">:00:</span>00+08:00</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>**创建者**: Master Agent</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>**优先级**: P1</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>**状态**: backlog</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>**标签**: <span class="in">`data`</span>, <span class="in">`analysis`</span>, <span class="in">`retention`</span></span></code></pre></div>
+<h3 id="创建合规审查卡">创建合规审查卡</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Compliance Review Ticket: COMPLIANCE-001 - GDPR 合规审查</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>**创建时间**: 2026-03-28T18<span class="sc">:00:</span>00+08:00</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>**创建者**: Master Agent</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>**优先级**: P0</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>**状态**: backlog</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>**标签**: <span class="in">`compliance`</span>, <span class="in">`legal`</span>, <span class="in">`gdpr`</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>**关联 Feature**: FEAT-001</span></code></pre></div>
+<hr />
+<h2 id="相关文档">相关文档</h2>
+<ul>
+<li><a
+href="./TICKET-RESPONSIBILITIES.md">TICKET-RESPONSIBILITIES.md</a> —
+Ticket 职责边界规范</li>
+<li><a href="./MASTER-WORKFLOW.md">MASTER-WORKFLOW.md</a> — Master
+工作流程</li>
+<li><a href="./SLAVER-AUTO-EXEC-GUIDE.md">SLAVER-AUTO-EXEC-GUIDE.md</a>
+— Slaver 自动执行指南</li>
+<li><a href="./MASTER-PR-REVIEW-FLOW.md">MASTER-PR-REVIEW-FLOW.md</a> —
+PR 审核流程</li>
+<li><a href="./jira/TICKET-NUMBERING.md">TICKET-NUMBERING.md</a> —
+Ticket 编号规则（jira/ 目录下）</li>
+<li><a href="./jira/templates/README.md">Jira Ticket 模板使用规范</a> —
+模板使用说明</li>
+</ul>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team
+<strong>最后更新</strong>: 2026-03-28</p>
+</body>
+</html>

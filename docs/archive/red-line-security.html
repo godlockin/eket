@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Red Line - 敏感信息零容忍政策</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Red Line - 敏感信息零容忍政策</h1>
+</header>
+<h1 id="eket-red-line---敏感信息零容忍政策">EKET Red Line -
+敏感信息零容忍政策</h1>
+<p><strong>版本</strong>: 1.0.0 <strong>生效日期</strong>: 2026-03-21
+<strong>优先级</strong>: P0 - 最高优先级</p>
+<hr />
+<h2 id="red-line-定义">🚫 Red Line 定义</h2>
+<p><strong>所有敏感信息，包括而不仅限于 API
+Key、认证文件、本地文件绝对路径、账号密码等，禁止上传到
+GitHub。</strong></p>
+<p>这是一条不可逾越的 Red Line，违反此政策可能导致： - 凭证泄露和滥用 -
+未授权访问 - 数据泄露 - 法律责任</p>
+<hr />
+<h2 id="敏感信息清单">敏感信息清单</h2>
+<h3 id="api-密钥和令牌-api-keys-tokens">1. API 密钥和令牌 (API Keys
+&amp; Tokens)</h3>
+<p><strong>禁止上传</strong>: - <code>GEMINI_API_KEY</code> -
+<code>OPENAI_API_KEY</code> - <code>ANTHROPIC_API_KEY</code> -
+<code>AWS_ACCESS_KEY_ID</code> - <code>AWS_SECRET_ACCESS_KEY</code> -
+GitHub Tokens - 任何第三方服务的 API 密钥</p>
+<p><strong>正确做法</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 使用 .env 文件（已在 .gitignore 中）</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="va">GEMINI_API_KEY</span><span class="op">=</span>your_key_here</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ✗ 不要硬编码在代码中</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">const</span> API_KEY = <span class="st">&quot;sk-xxxxx&quot;</span><span class="kw">;</span>  <span class="ex">//</span> ❌ RED LINE VIOLATION</span></code></pre></div>
+<hr />
+<h3 id="认证文件和凭证-credentials">2. 认证文件和凭证 (Credentials)</h3>
+<p><strong>禁止上传</strong>: - <code>*.pem</code> - 私钥文件 -
+<code>*.key</code> - 密钥文件 - <code>*.p12</code>, <code>*.pfx</code> -
+PKCS12 证书 - <code>credentials.json</code> - 凭证文件 -
+<code>secrets.json</code> - 机密文件 - <code>auth.json</code> - 认证文件
+- <code>.netrc</code> - 网络认证</p>
+<p><strong>正确做法</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 使用密钥管理服务</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># - AWS Secrets Manager</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># - Azure Key Vault</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># - HashiCorp Vault</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># - GitHub Secrets (用于 CI/CD)</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 本地开发使用 .env 文件</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 确保 .env 在 .gitignore 中</span></span></code></pre></div>
+<hr />
+<h3 id="本地文件绝对路径-local-file-paths">3. 本地文件绝对路径 (Local
+File Paths)</h3>
+<p><strong>禁止上传</strong>: - <code>/Users/username/.config/...</code>
+- 用户配置路径 - <code>C:\Users\username\Documents\...</code> - Windows
+用户路径 - <code>/home/username/.ssh/...</code> - SSH 密钥路径 -
+任何包含用户名的绝对路径</p>
+<p><strong>正确做法</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ✗ 不要硬编码绝对路径</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> configPath <span class="op">=</span> <span class="st">&quot;/Users/chenchen/.config/app/config.json&quot;</span><span class="op">;</span>  <span class="co">// ❌</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">// ✓ 使用相对路径或环境变量</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> configPath <span class="op">=</span> path<span class="op">.</span><span class="fu">join</span>(<span class="bu">process</span><span class="op">.</span><span class="fu">cwd</span>()<span class="op">,</span> <span class="st">&#39;config&#39;</span><span class="op">,</span> <span class="st">&#39;config.json&#39;</span>)<span class="op">;</span>  <span class="co">// ✓</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> configPath <span class="op">=</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">CONFIG_PATH</span> <span class="op">||</span> <span class="st">&#39;./config.json&#39;</span><span class="op">;</span>  <span class="co">// ✓</span></span></code></pre></div>
+<hr />
+<h3 id="账号密码-usernames-passwords">4. 账号密码 (Usernames &amp;
+Passwords)</h3>
+<p><strong>禁止上传</strong>: - 数据库密码 - 邮箱密码 - 服务器登录密码 -
+任何明文密码</p>
+<p><strong>正确做法</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 使用环境变量</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="va">DATABASE_PASSWORD</span><span class="op">=</span><span class="va">${DB_PASSWORD}</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 使用密钥管理服务</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 使用密码管理器</span></span></code></pre></div>
+<hr />
+<h3 id="数据库连接字符串-database-connection-strings">5.
+数据库连接字符串 (Database Connection Strings)</h3>
+<p><strong>禁止上传</strong>:</p>
+<pre><code>✗ mongodb://admin:password123@host:27017/db
+✗ postgres://user:pass@localhost:5432/mydb
+✗ mysql://root:root@localhost/test</code></pre>
+<p><strong>正确做法</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 使用环境变量</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="va">DATABASE_URL</span><span class="op">=</span><span class="va">${DATABASE_URL}</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ .env 文件示例</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="va">DATABASE_URL</span><span class="op">=</span>mongodb://localhost:27017/mydb</span></code></pre></div>
+<hr />
+<h3 id="ssh-密钥-ssh-keys">6. SSH 密钥 (SSH Keys)</h3>
+<p><strong>禁止上传</strong>: - <code>~/.ssh/id_rsa</code> - SSH 私钥 -
+<code>~/.ssh/id_ed25519</code> - Ed25519 私钥 -
+<code>~/.ssh/known_hosts</code> - 已知主机 - 任何 SSH 私钥文件</p>
+<p><strong>正确做法</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ SSH 私钥永远不要提交</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 使用 SSH agent 管理密钥</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 在 CI/CD 中使用 deploy keys</span></span></code></pre></div>
+<hr />
+<h3 id="私有配置文件-private-configuration">7. 私有配置文件 (Private
+Configuration)</h3>
+<p><strong>禁止上传</strong>: - <code>.env.local</code> -
+<code>.env.*.local</code> - <code>*.private</code> -
+<code>*.local.yml</code> - <code>*.local.json</code></p>
+<p><strong>正确做法</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 提供示例文件</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">.env.example</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">.env.template</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 在示例文件中不包含真实值</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># .env.example</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="va">API_KEY</span><span class="op">=</span>your_api_key_here</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="va">DATABASE_URL</span><span class="op">=</span>postgres://localhost:5432/mydb</span></code></pre></div>
+<hr />
+<h2 id="gitignore-配置">.gitignore 配置</h2>
+<p>EKET 框架已在 <code>.gitignore</code> 中包含以下敏感信息保护：</p>
+<pre class="gitignore"><code># 敏感信息 - 凭证和密钥
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets.json
+credentials.json
+credentials.yml
+*.secret
+*.secrets
+
+# API 密钥和令牌
+api_keys.txt
+tokens.json
+auth.json
+
+# 私有配置
+private/
+*.private
+*.local.yml
+*.local.json
+
+# 人类反馈中的敏感内容
+inbox/human_feedback/*-sensitive.md
+inbox/human_feedback/credentials*
+inbox/human_feedback/passwords*</code></pre>
+<hr />
+<h2 id="代码审查检查清单">代码审查检查清单</h2>
+<p>在提交代码前，请确认：</p>
+<ul class="task-list">
+<li><label><input type="checkbox" />代码中没有硬编码的 API
+密钥</label></li>
+<li><label><input type="checkbox" />代码中没有硬编码的密码</label></li>
+<li><label><input
+type="checkbox" />代码中没有硬编码的绝对路径</label></li>
+<li><label><input type="checkbox" /><code>.env</code> 文件未被添加到
+git</label></li>
+<li><label><input type="checkbox" />凭证文件未被添加到 git</label></li>
+<li><label><input type="checkbox" />SSH 密钥未被添加到 git</label></li>
+<li><label><input type="checkbox" />提交历史中没有敏感信息</label></li>
+</ul>
+<h3 id="使用工具检查">使用工具检查</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查是否有敏感文件被跟踪</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> ls-files <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-E</span> <span class="st">&#39;\.(pem|key|p12|pfx|secret)$&#39;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查提交历史中是否有敏感信息</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log <span class="at">--all</span> <span class="at">--full-history</span> <span class="at">--</span> <span class="st">&#39;**/.env&#39;</span> <span class="st">&#39;**/credentials*&#39;</span> <span class="st">&#39;**/secrets*&#39;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 使用 truffleHog 检测敏感信息</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install <span class="at">-g</span> trufflehog</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="ex">trufflehog</span> filesystem .</span></code></pre></div>
+<hr />
+<h2 id="如果意外提交了敏感信息">如果意外提交了敏感信息</h2>
+<h3 id="立即行动">立即行动</h3>
+<ol type="1">
+<li><p><strong>立即撤销凭证</strong></p>
+<ul>
+<li>在相关服务中撤销/重置 API 密钥</li>
+<li>更改密码</li>
+<li>撤销 SSH 密钥</li>
+</ul></li>
+<li><p><strong>从 Git 历史中删除</strong></p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 使用 BFG Repo-Cleaner</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">java</span> <span class="at">-jar</span> bfg.jar <span class="at">--delete-files</span> <span class="st">&#39;*.pem&#39;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="ex">java</span> <span class="at">-jar</span> bfg.jar <span class="at">--replace-text</span> passwords.txt</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 或使用 git filter-branch</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> filter-branch <span class="at">--force</span> <span class="at">--index-filter</span> <span class="dt">\</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;git rm --cached --ignore-unmatch path/to/sensitive/file&#39;</span> <span class="dt">\</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--prune-empty</span> <span class="at">--tag-name-filter</span> cat <span class="at">--</span> <span class="at">--all</span></span></code></pre></div></li>
+<li><p><strong>强制推送</strong></p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push origin <span class="at">--force</span> <span class="at">--all</span></span></code></pre></div></li>
+<li><p><strong>通知相关人员</strong></p>
+<ul>
+<li>通知团队其他成员</li>
+<li>如果是公开仓库，考虑将仓库设为私有</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="cicd-中的敏感信息管理">CI/CD 中的敏感信息管理</h2>
+<h3 id="github-actions">GitHub Actions</h3>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 使用 GitHub Secrets</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> Deploy</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">on</span><span class="kw">:</span><span class="at"> push</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">deploy</span><span class="kw">:</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Deploy</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">API_KEY</span><span class="kw">:</span><span class="at"> ${{ secrets.API_KEY }}</span><span class="co">  # ✓ 从 Secrets 读取</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">run</span><span class="kw">:</span><span class="at"> ./deploy.sh</span></span></code></pre></div>
+<h3 id="本地测试">本地测试</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 在本地设置环境变量</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">API_KEY</span><span class="op">=</span>your_key</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ✓ 或使用 .env 文件</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># .env.local (确保在 .gitignore 中)</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="va">API_KEY</span><span class="op">=</span>your_key</span></code></pre></div>
+<hr />
+<h2 id="最佳实践">最佳实践</h2>
+<h3 id="使用密钥管理服务">1. 使用密钥管理服务</h3>
+<table>
+<thead>
+<tr>
+<th>服务</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AWS Secrets Manager</td>
+<td>生产环境密钥管理</td>
+</tr>
+<tr>
+<td>Azure Key Vault</td>
+<td>Azure 环境密钥管理</td>
+</tr>
+<tr>
+<td>HashiCorp Vault</td>
+<td>多环境密钥管理</td>
+</tr>
+<tr>
+<td>GitHub Secrets</td>
+<td>CI/CD 密钥管理</td>
+</tr>
+<tr>
+<td>1Password</td>
+<td>团队密码管理</td>
+</tr>
+</tbody>
+</table>
+<h3 id="环境变量管理">2. 环境变量管理</h3>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 开发环境</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="ex">.env.development</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 测试环境</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="ex">.env.test</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 生产环境</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="ex">.env.production</span>  <span class="co"># 永远不要提交！</span></span></code></pre></div>
+<h3 id="代码审查流程">3. 代码审查流程</h3>
+<p>在 PR 审查时，审查者应该： - 检查是否有新的敏感文件被添加 -
+检查代码中是否有硬编码的密钥 - 检查是否有绝对路径 - 运行安全扫描工具</p>
+<hr />
+<h2 id="违反-red-line-的后果">违反 Red Line 的后果</h2>
+<h3 id="技术后果">技术后果</h3>
+<ul>
+<li>凭证可能被滥用</li>
+<li>服务可能被未授权访问</li>
+<li>数据可能泄露</li>
+</ul>
+<h3 id="组织后果">组织后果</h3>
+<ul>
+<li>安全审计失败</li>
+<li>合规性问题</li>
+<li>声誉损失</li>
+</ul>
+<h3 id="个人后果">个人后果</h3>
+<ul>
+<li>可能需要承担法律责任</li>
+<li>影响职业声誉</li>
+</ul>
+<hr />
+<h2 id="培训和教育">培训和教育</h2>
+<p>所有使用 EKET 框架的团队成员必须： 1. 阅读并理解此 Red Line 政策 2.
+完成安全编码培训 3. 定期参加安全更新会议</p>
+<hr />
+<h2 id="联系和报告">联系和报告</h2>
+<p>如果发现敏感信息被提交： 1. 立即报告给技术负责人 2.
+按照「如果意外提交了敏感信息」流程处理 3. 记录事件并制定预防措施</p>
+<hr />
+<p><strong>最后更新</strong>: 2026-03-21 <strong>维护者</strong>: EKET
+Security Team</p>
+</body>
+</html>
