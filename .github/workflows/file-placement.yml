@@ -1,0 +1,37 @@
+name: File Placement Check
+
+on:
+  pull_request:
+    branches:
+      - main
+      - testing
+      - feature/**
+  push:
+    branches:
+      - main
+      - testing
+
+jobs:
+  check-file-placement:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run file placement check
+        run: |
+          bash scripts/check-file-placement.sh
+
+      - name: Report results
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ File placement check passed"
+          else
+            echo "❌ File placement check failed"
+            echo "Please check the logs above for details"
+            exit 1
+          fi
