@@ -1,7 +1,7 @@
 # TASK-627: Agent Dispatch 模板更新（时间盒 + 反瘫痪）
 
 **优先级**: P0  
-**状态**: `ready`  
+**状态**: `review`  
 **预估工时**: 1h  
 **父级**: EPIC-006  
 **角色**: fullstack
