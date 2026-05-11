@@ -177,13 +177,16 @@ describe('writeTicketFile', () => {
 
 describe('runTaskCreate', () => {
   let tmpDir: string;
+  let projectRoot: string;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'eket-test-'));
+    projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'eket-test-'));
+    tmpDir = path.join(projectRoot, 'jira', 'tickets');
+    fs.mkdirSync(tmpDir, { recursive: true });
   });
 
   afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    fs.rmSync(projectRoot, { recursive: true, force: true });
   });
 
   function makeMockRl(answers: string[]): any {
@@ -202,7 +205,7 @@ describe('runTaskCreate', () => {
       '支持邮箱/密码登录，JWT token，7天有效期，包含记住我功能',
       '1. POST /auth/login 返回 token  2. token 过期后返回401',
     ]);
-    const filePath = await runTaskCreate('实现用户登录', rl, tmpDir);
+    const filePath = await runTaskCreate('实现用户登录', rl, tmpDir, projectRoot);
     expect(fs.existsSync(filePath)).toBe(true);
     const content = fs.readFileSync(filePath, 'utf-8');
     expect(content).toContain('TASK-1:');
@@ -212,7 +215,7 @@ describe('runTaskCreate', () => {
   it('infers type and priority correctly in generated file', async () => {
     const longDesc = 'P0 urgent: fix production login API crash causing all users unable to authenticate - critical bug';
     const rl = makeMockRl(['1. 接口恢复正常  2. 错误日志不再出现']);
-    const filePath = await runTaskCreate(longDesc, rl, tmpDir);
+    const filePath = await runTaskCreate(longDesc, rl, tmpDir, projectRoot);
     const content = fs.readFileSync(filePath, 'utf-8');
     expect(content).toContain('**类型**: bug');
     expect(content).toContain('**优先级**: P0');
@@ -222,7 +225,7 @@ describe('runTaskCreate', () => {
     // 51 chars to exceed threshold
     const longDesc = 'Implement complete user authentication system with email/password login, JWT tokens, and remember-me';
     const rl = makeMockRl(['1. POST /auth/login returns 200  2. Invalid creds return 401']);
-    const filePath = await runTaskCreate(longDesc, rl, tmpDir);
+    const filePath = await runTaskCreate(longDesc, rl, tmpDir, projectRoot);
     const content = fs.readFileSync(filePath, 'utf-8');
     // Only acceptance question (Q1) was asked, no Q2
     expect(content).toContain('## 澄清记录');
