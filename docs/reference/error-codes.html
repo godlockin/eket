@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Framework 错误码参考</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Framework 错误码参考</h1>
+</header>
+<h1 id="eket-framework-错误码参考">EKET Framework 错误码参考</h1>
+<p><strong>版本</strong>: 2.0.0 <strong>最后更新</strong>:
+2026-04-02</p>
+<hr />
+<h2 id="目录">目录</h2>
+<ol type="1">
+<li><a href="#错误码分类">错误码分类</a></li>
+<li><a href="#完整错误码列表">完整错误码列表</a></li>
+<li><a href="#错误处理最佳实践">错误处理最佳实践</a></li>
+</ol>
+<hr />
+<h2 id="错误码分类">错误码分类</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>分类</th>
+<th>前缀</th>
+<th>数量</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>通用错误</td>
+<td>-</td>
+<td>3</td>
+<td>基础错误类型</td>
+</tr>
+<tr>
+<td>Redis 相关</td>
+<td><code>REDIS_*</code></td>
+<td>2</td>
+<td>Redis 连接和操作</td>
+</tr>
+<tr>
+<td>SQLite 相关</td>
+<td><code>SQLITE_*</code></td>
+<td>2</td>
+<td>SQLite 连接和操作</td>
+</tr>
+<tr>
+<td>任务相关</td>
+<td><code>TASK_*</code></td>
+<td>3</td>
+<td>任务管理</td>
+</tr>
+<tr>
+<td>票务相关</td>
+<td><code>TICKET_*</code></td>
+<td>2</td>
+<td>票务管理</td>
+</tr>
+<tr>
+<td>依赖分析</td>
+<td><code>DEPENDENCY_*</code></td>
+<td>1</td>
+<td>依赖分析</td>
+</tr>
+<tr>
+<td>告警相关</td>
+<td><code>ALERT_*</code></td>
+<td>4</td>
+<td>告警系统</td>
+</tr>
+<tr>
+<td>消息队列</td>
+<td><code>MESSAGE_QUEUE_*</code></td>
+<td>1</td>
+<td>消息队列</td>
+</tr>
+<tr>
+<td>数据库</td>
+<td><code>DB_*</code></td>
+<td>1</td>
+<td>通用数据库</td>
+</tr>
+<tr>
+<td>知识条目</td>
+<td><code>ENTRY_*</code></td>
+<td>6</td>
+<td>知识库系统</td>
+</tr>
+<tr>
+<td>工作流</td>
+<td><code>WORKFLOW_*</code></td>
+<td>3</td>
+<td>工作流引擎</td>
+</tr>
+<tr>
+<td>通信协议</td>
+<td><code>PROTOCOL_*</code>, <code>MESSAGE_*</code></td>
+<td>3</td>
+<td>通信协议</td>
+</tr>
+<tr>
+<td>锁管理</td>
+<td><code>LOCK_*</code>, <code>QUEUE_*</code></td>
+<td>5</td>
+<td>资源锁</td>
+</tr>
+<tr>
+<td>推荐系统</td>
+<td><code>RECOMMENDATION_*</code></td>
+<td>1</td>
+<td>推荐系统</td>
+</tr>
+<tr>
+<td>错误恢复</td>
+<td><code>CIRCUIT_*</code>, <code>MAX_RETRIES_*</code>,
+<code>EXECUTION_*</code></td>
+<td>3</td>
+<td>断路器和重试</td>
+</tr>
+<tr>
+<td>缓存优化</td>
+<td><code>CACHE_*</code>, <code>REDIS_POOL_*</code></td>
+<td>4</td>
+<td>缓存层</td>
+</tr>
+<tr>
+<td>文件队列</td>
+<td><code>DUPLICATE_*</code>, <code>FILE_*</code>,
+<code>CHECKSUM_*</code></td>
+<td>4</td>
+<td>文件队列</td>
+</tr>
+<tr>
+<td>连接管理</td>
+<td><code>CONNECTION_*</code>, <code>*_NOT_CONFIGURED</code>,
+<code>*_CONNECT_FAILED</code></td>
+<td>7</td>
+<td>连接降级</td>
+</tr>
+<tr>
+<td>Master 选举</td>
+<td><code>ELECTION_*</code>, <code>MASTER_*</code>,
+<code>CONFLICT_*</code>, <code>LEASE_*</code>,
+<code>NOT_MASTER</code></td>
+<td>5</td>
+<td>Master 选举</td>
+</tr>
+</tbody>
+</table>
+<p><strong>总计</strong>: 57 个错误码</p>
+<hr />
+<h2 id="完整错误码列表">完整错误码列表</h2>
+<h3 id="通用错误">通用错误</h3>
+<h4 id="unknown_error"><code>UNKNOWN_ERROR</code></h4>
+<p><strong>说明</strong>: 未知错误</p>
+<p><strong>可能原因</strong>: - 未预期的异常情况 - 错误未正确分类</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 查看详细错误上下文</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">error</span>(<span class="st">&#39;Error context:&#39;</span><span class="op">,</span> error<span class="op">.</span><span class="at">context</span>)<span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">// 提交 Issue 报告此错误</span></span></code></pre></div>
+<hr />
+<h4 id="not_implemented"><code>NOT_IMPLEMENTED</code></h4>
+<p><strong>说明</strong>: 功能未实现</p>
+<p><strong>可能原因</strong>: - 调用了未实现的方法 -
+使用了占位符代码</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 检查代码版本，确认功能是否已实现</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 如果是预期行为，使用条件检查避免调用</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="op">!</span>feature<span class="op">.</span><span class="fu">isImplemented</span>()) {</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 使用替代方案</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h4 id="not_supported"><code>NOT_SUPPORTED</code></h4>
+<p><strong>说明</strong>: 功能不支持</p>
+<p><strong>可能原因</strong>: - 在当前模式下不支持该功能 -
+配置不允许该操作</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 检查当前配置和模式</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (config<span class="op">.</span><span class="fu">supportsFeature</span>(<span class="st">&#39;xxx&#39;</span>)) {</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 执行操作</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h3 id="redis-相关">Redis 相关</h3>
+<h4 id="redis_not_connected"><code>REDIS_NOT_CONNECTED</code></h4>
+<p><strong>说明</strong>: Redis 未连接</p>
+<p><strong>可能原因</strong>: - Redis 服务未启动 - 连接配置错误 -
+网络问题</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 检查 Redis 服务</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">redis-cli</span> ping</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 检查配置</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="va">$EKET_LOCAL_REDIS_HOST</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 重启 Redis</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">systemctl</span> restart redis</span></code></pre></div>
+<hr />
+<h4 id="redis_operation_failed"><code>REDIS_OPERATION_FAILED</code></h4>
+<p><strong>说明</strong>: Redis 操作失败</p>
+<p><strong>可能原因</strong>: - Redis 命令执行失败 - 内存不足 - Key
+不存在</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 检查具体错误信息</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span> {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> redis<span class="op">.</span><span class="fu">get</span>(key)<span class="op">;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>} <span class="cf">catch</span> (err) {</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">error</span>(<span class="st">&#39;Redis operation failed:&#39;</span><span class="op">,</span> err<span class="op">.</span><span class="at">message</span>)<span class="op">;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 使用降级方案</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h3 id="sqlite-相关">SQLite 相关</h3>
+<h4 id="sqlite_not_connected"><code>SQLITE_NOT_CONNECTED</code></h4>
+<p><strong>说明</strong>: SQLite 未连接</p>
+<p><strong>可能原因</strong>: - SQLite 文件不存在 - 权限不足 -
+磁盘空间满</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 检查 SQLite 文件</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-la</span> ~/.eket/data/sqlite/eket.db</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 检查权限</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> 755 ~/.eket/data/sqlite/</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 检查磁盘空间</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="fu">df</span> <span class="at">-h</span></span></code></pre></div>
+<hr />
+<h4
+id="sqlite_operation_failed"><code>SQLITE_OPERATION_FAILED</code></h4>
+<p><strong>说明</strong>: SQLite 操作失败</p>
+<p><strong>可能原因</strong>: - SQL 语法错误 - 表不存在 - 约束违反</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 检查具体错误信息</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span> {</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  db<span class="op">.</span><span class="fu">run</span>(<span class="st">&#39;INSERT INTO ...&#39;</span>)<span class="op">;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>} <span class="cf">catch</span> (err) {</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">error</span>(<span class="st">&#39;SQLite operation failed:&#39;</span><span class="op">,</span> err<span class="op">.</span><span class="at">message</span>)<span class="op">;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 检查 SQL 语句和表结构</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h3 id="任务相关">任务相关</h3>
+<h4 id="task_not_found"><code>TASK_NOT_FOUND</code></h4>
+<p><strong>说明</strong>: 任务不存在</p>
+<p><strong>可能原因</strong>: - 任务 ID 错误 - 任务已被删除 -
+任务未同步</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 验证任务 ID</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> task <span class="op">=</span> <span class="cf">await</span> <span class="fu">getTask</span>(taskId)<span class="op">;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="op">!</span>task) {</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 刷新任务列表或检查 ID</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> <span class="fu">refreshTasks</span>()<span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h4 id="task_already_claimed"><code>TASK_ALREADY_CLAIMED</code></h4>
+<p><strong>说明</strong>: 任务已被领取</p>
+<p><strong>可能原因</strong>: - 其他实例已领取该任务 - 锁未释放</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 等待任务释放（有超时机制）</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 检查锁状态</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-la</span> .eket/state/locks/</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 如有必要，清理锁</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> .eket/state/locks/</span></code></pre></div>
+<hr />
+<h4 id="task_claim_failed"><code>TASK_CLAIM_FAILED</code></h4>
+<p><strong>说明</strong>: 任务领取失败</p>
+<p><strong>可能原因</strong>: - 并发领取冲突 - 锁获取失败 -
+任务状态变更</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 重试领取（带退避）</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> retryExecutor<span class="op">.</span><span class="fu">execute</span>(</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  () <span class="kw">=&gt;</span> <span class="fu">claimTask</span>(taskId)<span class="op">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;claim-task&#39;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">;</span></span></code></pre></div>
+<hr />
+<h3 id="票务相关">票务相关</h3>
+<h4 id="ticket_not_found"><code>TICKET_NOT_FOUND</code></h4>
+<p><strong>说明</strong>: 票证不存在</p>
+<p><strong>可能原因</strong>: - 票证 ID 错误 - 票证未同步</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 Jira 票证是否存在</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 刷新票证列表</span></span></code></pre></div>
+<hr />
+<h4 id="ticket_update_failed"><code>TICKET_UPDATE_FAILED</code></h4>
+<p><strong>说明</strong>: 票证更新失败</p>
+<p><strong>可能原因</strong>: - API 调用失败 - 权限不足 -
+状态转换非法</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 检查票证状态转换</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 验证 API 权限</span></span></code></pre></div>
+<hr />
+<h3 id="依赖分析">依赖分析</h3>
+<h4
+id="dependency_analysis_failed"><code>DEPENDENCY_ANALYSIS_FAILED</code></h4>
+<p><strong>说明</strong>: 依赖分析失败</p>
+<p><strong>可能原因</strong>: - 依赖图构建失败 - 循环依赖检测错误</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查项目依赖配置</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> .eket/config/dependencies.yml</span></code></pre></div>
+<hr />
+<h3 id="告警相关">告警相关</h3>
+<h4 id="alert_rule_not_found"><code>ALERT_RULE_NOT_FOUND</code></h4>
+<p><strong>说明</strong>: 告警规则不存在</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 检查规则配置</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 确保规则已注册</span></span></code></pre></div>
+<hr />
+<h4 id="alert_rule_disabled"><code>ALERT_RULE_DISABLED</code></h4>
+<p><strong>说明</strong>: 告警规则已禁用</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 启用规则</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> alerting<span class="op">.</span><span class="fu">enableRule</span>(ruleId)<span class="op">;</span></span></code></pre></div>
+<hr />
+<h4 id="alert_in_cooldown"><code>ALERT_IN_COOLDOWN</code></h4>
+<p><strong>说明</strong>: 告警在冷却期</p>
+<p><strong>说明</strong>: 同一告警在冷却期内不会重复触发</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 等待冷却期结束</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 或调整冷却时间配置</span></span></code></pre></div>
+<hr />
+<h4 id="alert_not_found"><code>ALERT_NOT_FOUND</code></h4>
+<p><strong>说明</strong>: 告警不存在</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查告警列表</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-cli</span> alerts:status</span></code></pre></div>
+<hr />
+<h3 id="消息队列">消息队列</h3>
+<h4 id="message_queue_error"><code>MESSAGE_QUEUE_ERROR</code></h4>
+<p><strong>说明</strong>: 消息队列错误</p>
+<p><strong>可能原因</strong>: - 队列操作失败 - 消息格式错误</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 检查消息格式</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 查看队列状态</span></span></code></pre></div>
+<hr />
+<h3 id="数据库">数据库</h3>
+<h4 id="db_not_connected"><code>DB_NOT_CONNECTED</code></h4>
+<p><strong>说明</strong>: 数据库未连接</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查数据库配置和连接状态</span></span></code></pre></div>
+<hr />
+<h3 id="知识条目">知识条目</h3>
+<h4 id="entry_create_failed"><code>ENTRY_CREATE_FAILED</code></h4>
+<p><strong>说明</strong>: 知识条目创建失败</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 检查条目内容是否完整</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 验证权限</span></span></code></pre></div>
+<hr />
+<h4 id="entry_fetch_failed"><code>ENTRY_FETCH_FAILED</code></h4>
+<p><strong>说明</strong>: 知识条目获取失败</p>
+<hr />
+<h4 id="entry_query_failed"><code>ENTRY_QUERY_FAILED</code></h4>
+<p><strong>说明</strong>: 知识条目查询失败</p>
+<hr />
+<h4 id="entry_update_failed"><code>ENTRY_UPDATE_FAILED</code></h4>
+<p><strong>说明</strong>: 知识条目更新失败</p>
+<hr />
+<h4 id="entry_delete_failed"><code>ENTRY_DELETE_FAILED</code></h4>
+<p><strong>说明</strong>: 知识条目删除失败</p>
+<hr />
+<h4 id="entry_not_found"><code>ENTRY_NOT_FOUND</code></h4>
+<p><strong>说明</strong>: 知识条目不存在</p>
+<hr />
+<h3 id="工作流">工作流</h3>
+<h4 id="workflow_not_found"><code>WORKFLOW_NOT_FOUND</code></h4>
+<p><strong>说明</strong>: 工作流不存在</p>
+<hr />
+<h4 id="workflow_not_running"><code>WORKFLOW_NOT_RUNNING</code></h4>
+<p><strong>说明</strong>: 工作流未运行</p>
+<hr />
+<h4 id="workflow_not_paused"><code>WORKFLOW_NOT_PAUSED</code></h4>
+<p><strong>说明</strong>: 工作流未暂停</p>
+<hr />
+<h3 id="通信协议">通信协议</h3>
+<h4 id="protocol_not_connected"><code>PROTOCOL_NOT_CONNECTED</code></h4>
+<p><strong>说明</strong>: 通信协议未连接</p>
+<hr />
+<h4 id="message_send_failed"><code>MESSAGE_SEND_FAILED</code></h4>
+<p><strong>说明</strong>: 消息发送失败</p>
+<hr />
+<h4 id="message_send_error"><code>MESSAGE_SEND_ERROR</code></h4>
+<p><strong>说明</strong>: 消息发送错误</p>
+<hr />
+<h3 id="锁管理">锁管理</h3>
+<h4 id="lock_queued"><code>LOCK_QUEUED</code></h4>
+<p><strong>说明</strong>: 锁请求已排队</p>
+<hr />
+<h4 id="not_lock_holder"><code>NOT_LOCK_HOLDER</code></h4>
+<p><strong>说明</strong>: 不是锁持有者</p>
+<hr />
+<h4 id="lock_release_failed"><code>LOCK_RELEASE_FAILED</code></h4>
+<p><strong>说明</strong>: 锁释放失败</p>
+<hr />
+<h4 id="lock_status_failed"><code>LOCK_STATUS_FAILED</code></h4>
+<p><strong>说明</strong>: 锁状态查询失败</p>
+<hr />
+<h4 id="queue_length_failed"><code>QUEUE_LENGTH_FAILED</code></h4>
+<p><strong>说明</strong>: 队列长度查询失败</p>
+<hr />
+<h3 id="推荐系统">推荐系统</h3>
+<h4 id="recommendation_failed"><code>RECOMMENDATION_FAILED</code></h4>
+<p><strong>说明</strong>: 推荐失败</p>
+<hr />
+<h3 id="错误恢复phase-7">错误恢复（Phase 7）</h3>
+<h4 id="circuit_open"><code>CIRCUIT_OPEN</code></h4>
+<p><strong>说明</strong>: 断路器已打开，快速失败</p>
+<p><strong>可能原因</strong>: - 失败次数超过阈值 - 下游服务不可用</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 等待断路器自动恢复（超时后进入半开状态）</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 或手动重置</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>circuitBreaker<span class="op">.</span><span class="fu">reset</span>()<span class="op">;</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="co">// 检查下游服务状态</span></span></code></pre></div>
+<hr />
+<h4 id="max_retries_exceeded"><code>MAX_RETRIES_EXCEEDED</code></h4>
+<p><strong>说明</strong>: 超过最大重试次数</p>
+<p><strong>可能原因</strong>: - 问题持续存在 - 重试配置不当</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 检查根本原因</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 调整重试配置</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> executor <span class="op">=</span> <span class="fu">createRetryExecutor</span>({</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  maxRetries<span class="op">:</span> <span class="dv">5</span><span class="op">,</span>         <span class="co">// 增加重试次数</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  initialDelay<span class="op">:</span> <span class="dv">1000</span><span class="op">,</span>    <span class="co">// 增加初始延迟</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  maxDelay<span class="op">:</span> <span class="dv">10000</span><span class="op">,</span>       <span class="co">// 增加最大延迟</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<hr />
+<h4 id="execution_error"><code>EXECUTION_ERROR</code></h4>
+<p><strong>说明</strong>: 执行错误</p>
+<p><strong>可能原因</strong>: - 操作执行失败 - 运行时错误</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 查看详细错误上下文</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">error</span>(<span class="st">&#39;Execution error:&#39;</span><span class="op">,</span> error<span class="op">.</span><span class="at">context</span>)<span class="op">;</span></span></code></pre></div>
+<hr />
+<h3 id="缓存优化phase-7">缓存优化（Phase 7）</h3>
+<h4 id="cache_miss"><code>CACHE_MISS</code></h4>
+<p><strong>说明</strong>: 缓存未命中</p>
+<p><strong>说明</strong>: 这不是错误，是正常情况，会回源加载数据</p>
+<hr />
+<h4 id="cache_penetration"><code>CACHE_PENETRATION</code></h4>
+<p><strong>说明</strong>: 缓存穿透</p>
+<p><strong>可能原因</strong>: - 查询不存在的数据 - 恶意攻击</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 使用 getOrCompute 防止穿透</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> value <span class="op">=</span> <span class="cf">await</span> cache<span class="op">.</span><span class="fu">getOrCompute</span>(</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  key<span class="op">,</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  () <span class="kw">=&gt;</span> <span class="fu">computeValue</span>()<span class="op">,</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="dv">300000</span>  <span class="co">// 5 分钟 TTL</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>)<span class="op">;</span></span></code></pre></div>
+<hr />
+<h4 id="redis_pool_exhausted"><code>REDIS_POOL_EXHAUSTED</code></h4>
+<p><strong>说明</strong>: Redis 连接池耗尽</p>
+<p><strong>可能原因</strong>: - 并发请求过多 - 连接泄漏</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 增加连接池大小</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> pool <span class="op">=</span> <span class="fu">createRedisConnectionPool</span>({</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  poolSize<span class="op">:</span> <span class="dv">20</span><span class="op">,</span>  <span class="co">// 增加连接数</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co">// 检查连接泄漏（确保释放连接）</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>pool<span class="op">.</span><span class="fu">release</span>(connection)<span class="op">;</span></span></code></pre></div>
+<hr />
+<h4 id="redis_pool_init_failed"><code>REDIS_POOL_INIT_FAILED</code></h4>
+<p><strong>说明</strong>: Redis 连接池初始化失败</p>
+<hr />
+<h3 id="文件队列优化phase-7">文件队列优化（Phase 7）</h3>
+<h4 id="duplicate_message"><code>DUPLICATE_MESSAGE</code></h4>
+<p><strong>说明</strong>: 重复消息</p>
+<p><strong>可能原因</strong>: - 消息已存在于去重队列</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 检查消息 ID 是否已处理</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 清理去重缓存（如果需要）</span></span></code></pre></div>
+<hr />
+<h4 id="file_lock_failed"><code>FILE_LOCK_FAILED</code></h4>
+<p><strong>说明</strong>: 文件锁获取失败</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 清理残留锁</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> .eket/data/queue/<span class="pp">*</span>.lock</span></code></pre></div>
+<hr />
+<h4 id="checksum_mismatch"><code>CHECKSUM_MISMATCH</code></h4>
+<p><strong>说明</strong>: 校验和不匹配</p>
+<p><strong>可能原因</strong>: - 文件损坏 - 数据被篡改</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 从备份恢复</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 重新生成数据</span></span></code></pre></div>
+<hr />
+<h4 id="file_corrupted"><code>FILE_CORRUPTED</code></h4>
+<p><strong>说明</strong>: 文件损坏</p>
+<hr />
+<h3 id="连接管理phase-9.1">连接管理（Phase 9.1）</h3>
+<h4 id="connection_failed"><code>CONNECTION_FAILED</code></h4>
+<p><strong>说明</strong>: 所有连接级别都失败</p>
+<p><strong>可能原因</strong>: - 所有后端服务不可用 - 配置完全错误</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 检查所有配置</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">env</span> <span class="kw">|</span> <span class="fu">grep</span> EKET</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 至少确保一种连接可用</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Redis: systemctl start redis</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="co"># SQLite: 确保目录可写</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="co"># File: 确保目录存在</span></span></code></pre></div>
+<hr />
+<h4
+id="remote_redis_not_configured"><code>REMOTE_REDIS_NOT_CONFIGURED</code></h4>
+<p><strong>说明</strong>: 未配置远程 Redis</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 配置远程 Redis</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_REMOTE_REDIS_HOST</span><span class="op">=</span>redis-cluster.example.com</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_REMOTE_REDIS_PORT</span><span class="op">=</span>6380</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_REMOTE_REDIS_PASSWORD</span><span class="op">=</span>xxx</span></code></pre></div>
+<hr />
+<h4
+id="local_redis_not_configured"><code>LOCAL_REDIS_NOT_CONFIGURED</code></h4>
+<p><strong>说明</strong>: 未配置本地 Redis</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 配置本地 Redis</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_LOCAL_REDIS_HOST</span><span class="op">=</span>localhost</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_LOCAL_REDIS_PORT</span><span class="op">=</span>6379</span></code></pre></div>
+<hr />
+<h4 id="sqlite_connect_failed"><code>SQLITE_CONNECT_FAILED</code></h4>
+<p><strong>说明</strong>: SQLite 连接失败</p>
+<hr />
+<h4 id="file_connect_failed"><code>FILE_CONNECT_FAILED</code></h4>
+<p><strong>说明</strong>: 文件系统连接失败</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 确保目录存在且可写</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> .eket/data/queue</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> 755 .eket/data/queue</span></code></pre></div>
+<hr />
+<h4 id="upgrade_failed"><code>UPGRADE_FAILED</code></h4>
+<p><strong>说明</strong>: 连接升级失败</p>
+<p><strong>说明</strong>: 尝试从低级连接升级到高级连接失败</p>
+<hr />
+<h4 id="downgrade_failed"><code>DOWNGRADE_FAILED</code></h4>
+<p><strong>说明</strong>: 连接降级失败</p>
+<p><strong>说明</strong>: 降级到备用连接失败，这是严重问题</p>
+<hr />
+<h3 id="master-选举phase-9.1">Master 选举（Phase 9.1）</h3>
+<h4 id="election_failed"><code>ELECTION_FAILED</code></h4>
+<p><strong>说明</strong>: Master 选举失败</p>
+<p><strong>可能原因</strong>: - 所有选举级别都失败 - 配置错误</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 清理锁文件</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> .eket/state/master_lock/</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> confluence/.eket_master_marker</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 重新启动实例</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js start-instance</span></code></pre></div>
+<hr />
+<h4 id="master_already_exists"><code>MASTER_ALREADY_EXISTS</code></h4>
+<p><strong>说明</strong>: Master 已存在</p>
+<p><strong>说明</strong>: 这不是错误，表示当前实例应作为 Slaver 运行</p>
+<hr />
+<h4 id="conflict_detected"><code>CONFLICT_DETECTED</code></h4>
+<p><strong>说明</strong>: 检测到冲突</p>
+<p><strong>可能原因</strong>: - 多个实例同时声明为 Master -
+声明等待期检测到其他 Master</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 自动降级为 Slaver</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 等待下次选举</span></span></code></pre></div>
+<hr />
+<h4 id="lease_renewal_failed"><code>LEASE_RENEWAL_FAILED</code></h4>
+<p><strong>说明</strong>: 租约续期失败</p>
+<p><strong>可能原因</strong>: - 锁已过期 - 网络问题</p>
+<p><strong>解决方案</strong>:</p>
+<div class="sourceCode" id="cb35"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Master 会自动放弃身份</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 触发新的选举</span></span></code></pre></div>
+<hr />
+<h4 id="not_master"><code>NOT_MASTER</code></h4>
+<p><strong>说明</strong>: 当前实例不是 Master</p>
+<p><strong>说明</strong>: 尝试执行 Master 专属操作时返回</p>
+<hr />
+<h2 id="错误处理最佳实践">错误处理最佳实践</h2>
+<h3 id="使用类型守卫">1. 使用类型守卫</h3>
+<div class="sourceCode" id="cb36"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ✓ 好的做法</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>} <span class="cf">catch</span> (e<span class="op">:</span> <span class="dt">unknown</span>) {</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">isEketError</span>(e)) {</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">console</span><span class="op">.</span><span class="fu">error</span>(<span class="st">&#39;Error code:&#39;</span><span class="op">,</span> e<span class="op">.</span><span class="at">code</span>)<span class="op">;</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">console</span><span class="op">.</span><span class="fu">error</span>(<span class="st">&#39;Error message:&#39;</span><span class="op">,</span> e<span class="op">.</span><span class="at">message</span>)<span class="op">;</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">console</span><span class="op">.</span><span class="fu">error</span>(<span class="st">&#39;Error context:&#39;</span><span class="op">,</span> e<span class="op">.</span><span class="at">context</span>)<span class="op">;</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">console</span><span class="op">.</span><span class="fu">error</span>(<span class="st">&#39;Unknown error:&#39;</span><span class="op">,</span> e)<span class="op">;</span></span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a><span class="co">// ✗ 避免的做法</span></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>} <span class="cf">catch</span> (e<span class="op">:</span> <span class="dt">any</span>) {</span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">error</span>(e)<span class="op">;</span></span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="提供上下文信息">2. 提供上下文信息</h3>
+<div class="sourceCode" id="cb37"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ✓ 好的做法</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> {</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  success<span class="op">:</span> <span class="kw">false</span><span class="op">,</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  error<span class="op">:</span> <span class="kw">new</span> <span class="fu">EketError</span>(</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;TASK_CLAIM_FAILED&#39;</span><span class="op">,</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    <span class="vs">`Failed to claim task </span><span class="sc">${</span>taskId<span class="sc">}</span><span class="vs">: </span><span class="sc">${</span>errorMessage<span class="sc">}</span><span class="vs">`</span><span class="op">,</span></span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    { taskId<span class="op">,</span> instanceId<span class="op">,</span> timestamp<span class="op">:</span> <span class="bu">Date</span><span class="op">.</span><span class="fu">now</span>() }</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>  )<span class="op">,</span></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a><span class="co">// ✗ 避免的做法</span></span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> {</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>  success<span class="op">:</span> <span class="kw">false</span><span class="op">,</span></span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>  error<span class="op">:</span> <span class="kw">new</span> <span class="fu">EketError</span>(<span class="st">&#39;TASK_CLAIM_FAILED&#39;</span><span class="op">,</span> <span class="st">&#39;Failed&#39;</span>)<span class="op">,</span></span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span></code></pre></div>
+<h3 id="使用重试执行器">3. 使用重试执行器</h3>
+<div class="sourceCode" id="cb38"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 对可恢复错误使用重试</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> executor <span class="op">=</span> <span class="fu">createRetryExecutor</span>({</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  maxRetries<span class="op">:</span> <span class="dv">3</span><span class="op">,</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  initialDelay<span class="op">:</span> <span class="dv">500</span><span class="op">,</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  maxDelay<span class="op">:</span> <span class="dv">5000</span><span class="op">,</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>  retryableErrors<span class="op">:</span> [</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;REDIS_CONNECTION_FAILED&#39;</span><span class="op">,</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;SQLITE_OPERATION_FAILED&#39;</span><span class="op">,</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;CONNECTION_FAILED&#39;</span><span class="op">,</span></span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>  ]<span class="op">,</span></span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> executor<span class="op">.</span><span class="fu">execute</span>(</span>
+<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a>  () <span class="kw">=&gt;</span> <span class="fu">redisOperation</span>()<span class="op">,</span></span>
+<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;redis-operation&#39;</span></span>
+<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a>)<span class="op">;</span></span></code></pre></div>
+<h3 id="使用断路器">4. 使用断路器</h3>
+<div class="sourceCode" id="cb39"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 对下游服务使用断路器</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> breaker <span class="op">=</span> <span class="fu">createCircuitBreaker</span>({</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  failureThreshold<span class="op">:</span> <span class="dv">5</span><span class="op">,</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  successThreshold<span class="op">:</span> <span class="dv">3</span><span class="op">,</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  timeout<span class="op">:</span> <span class="dv">30000</span><span class="op">,</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> breaker<span class="op">.</span><span class="fu">execute</span>(() <span class="kw">=&gt;</span> <span class="fu">callDownstream</span>())<span class="op">;</span></span></code></pre></div>
+<h3 id="记录结构化的错误日志">5. 记录结构化的错误日志</h3>
+<div class="sourceCode" id="cb40"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 结构化日志便于分析</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>logger<span class="op">.</span><span class="fu">error</span>({</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  level<span class="op">:</span> <span class="st">&#39;error&#39;</span><span class="op">,</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  code<span class="op">:</span> error<span class="op">.</span><span class="at">code</span><span class="op">,</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  message<span class="op">:</span> error<span class="op">.</span><span class="at">message</span><span class="op">,</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  context<span class="op">:</span> error<span class="op">.</span><span class="at">context</span><span class="op">,</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>  stack<span class="op">:</span> error<span class="op">.</span><span class="at">stack</span><span class="op">,</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>  timestamp<span class="op">:</span> <span class="kw">new</span> <span class="bu">Date</span>()<span class="op">.</span><span class="fu">toISOString</span>()<span class="op">,</span></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="相关文档">相关文档</h2>
+<ul>
+<li><a href="../api/README.md">API 参考</a></li>
+<li><a href="../troubleshooting/common-issues.md">故障排查指南</a></li>
+<li><a href="../../node/src/types/index.ts">类型定义</a></li>
+</ul>
+<hr />
+<p><strong>文档维护</strong>: EKET Framework Team</p>
+</body>
+</html>

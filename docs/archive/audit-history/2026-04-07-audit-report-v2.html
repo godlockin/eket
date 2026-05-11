@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Agent 协作框架文档审查报告（修正版）</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Agent 协作框架文档审查报告（修正版）</h1>
+</header>
+<h1 id="eket-agent-协作框架文档审查报告修正版">EKET Agent
+协作框架文档审查报告（修正版）</h1>
+<p><strong>审查日期</strong>: 2026-04-07 <strong>审查范围</strong>:
+Agent 协作指导文档 <strong>当前版本</strong>: 2.0.0
+<strong>审查者</strong>: Claude (Opus 4.6)</p>
+<hr />
+<h2 id="项目定位修正">🎯 项目定位修正</h2>
+<p><strong>EKET 不是软件，而是 Agent 协作框架指南集</strong></p>
+<ul>
+<li><strong>核心产品</strong>:
+CLAUDE.md、IDENTITY.md、SYSTEM-SETTINGS.md 等文档</li>
+<li><strong>用户</strong>: AI Agent (如 Claude Code 实例)</li>
+<li><strong>目的</strong>: 指导多个 Agent 实例协作完成软件开发</li>
+<li><strong>三仓库</strong>: 是 Agent
+“应该创建”的结构，不是框架自带</li>
+<li><strong>node/</strong>: 可选的辅助工具，用于支持框架运行</li>
+</ul>
+<hr />
+<h2 id="执行摘要">执行摘要</h2>
+<p>从 <strong>Agent 协作指导</strong> 的角度，本次审查发现：</p>
+<table>
+<thead>
+<tr>
+<th>严重等级</th>
+<th>数量</th>
+<th>核心问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P0 (严重)</strong></td>
+<td>5</td>
+<td>Agent 无法理解或执行关键流程</td>
+</tr>
+<tr>
+<td><strong>P1 (高)</strong></td>
+<td>8</td>
+<td>协作流程不清晰</td>
+</tr>
+<tr>
+<td><strong>P2 (中)</strong></td>
+<td>12</td>
+<td>指令不完整或有歧义</td>
+</tr>
+<tr>
+<td><strong>P3 (低)</strong></td>
+<td>6</td>
+<td>优化建议</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="p0-问题agent-无法执行">P0 问题（Agent 无法执行）</h2>
+<h3 id="关键.claudecommands-脚本完全缺失">1.
+【关键】<code>.claude/commands/</code> 脚本完全缺失</h3>
+<p><strong>问题描述</strong>: - <code>template/CLAUDE.md</code> 和
+<code>template/.claude/CLAUDE.md</code> 都详细描述了命令： -
+<code>/eket-init</code>, <code>/eket-start</code>,
+<code>/eket-claim</code>, <code>/eket-submit-pr</code> 等 - 但
+<code>template/.claude/</code> 目录<strong>不存在</strong> - Agent
+读取文档后会尝试执行这些命令，但会失败</p>
+<p><strong>影响</strong>: - Agent 无法启动实例 - 无法领取任务 - 无法提交
+PR - 整个协作流程完全阻塞</p>
+<p><strong>当前状态</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ls template/.claude/</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ls:</span> template/.claude/: No such file or directory</span></code></pre></div>
+<p><strong>必需的脚本</strong>:</p>
+<pre><code>template/.claude/commands/
+├── eket-init.sh          # 初始化向导
+├── eket-start.sh         # 启动实例（Master/Slaver 检测）
+├── eket-status.sh        # 查看状态
+├── eket-claim.sh         # 领取任务
+├── eket-submit-pr.sh     # 提交 PR
+├── eket-review-pr.sh     # Master 审核 PR
+├── eket-merge-pr.sh      # Master 合并 PR
+├── eket-analyze.sh       # Master 需求分析
+├── eket-check-progress.sh # Master 进度检查
+├── eket-role.sh          # 设置角色
+├── eket-ask.sh           # 依赖追问
+└── eket-help.sh          # 帮助</code></pre>
+<p><strong>建议修复</strong>: 1. <strong>立即创建</strong>
+<code>template/.claude/commands/</code> 目录 2.
+<strong>实现核心脚本</strong>（至少前 5 个） 3.
+或<strong>修改文档</strong>，改为”概念性命令”并提供手动操作指南</p>
+<p><strong>优先级</strong>: ⚠️⚠️⚠️ <strong>P0-CRITICAL</strong> -
+阻塞所有 Agent 操作</p>
+<hr />
+<h3 id="身份identity.md-使用未定义的变量">2. 【身份】IDENTITY.md
+使用未定义的变量</h3>
+<p><strong>问题描述</strong>: - <code>.eket/IDENTITY.md</code> 第 9
+行：<code>**角色**: \</code>${ROLE}`
+(请根据实际配置确认)<code>- 第 10 行：</code><strong>启动时间</strong>:
+<span class="math inline">$(date -Iseconds)`
+- 第 13 行：`**实例 ID**: agent_$</span>{ROLE}_$(date +%s)`</p>
+<p><strong>问题</strong>: - <code>${ROLE}</code> 是 shell 变量，但文档是
+Markdown - Agent 读取时看到的是字面量 <code>${ROLE}</code>，不会替换 -
+<code>$(date -Iseconds)</code> 也不会执行</p>
+<p><strong>Agent 实际看到的内容</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>**角色**: <span class="in">`${ROLE}`</span> (请根据实际配置确认)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>**启动时间**: $(date -Iseconds)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>**实例 ID**: agent_${ROLE}_$(date +%s)</span></code></pre></div>
+<p><strong>导致问题</strong>: - Agent 不知道自己是什么角色 -
+无法确认身份 - 可能误操作（Slaver 执行 Master 任务）</p>
+<p><strong>建议修复</strong>:</p>
+<p><strong>方案 A: 模板化（推荐）</strong></p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 当前实例身份</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; ⚠️ 首次使用前，请运行 </span><span class="in">`/eket-init`</span><span class="at"> 初始化身份配置</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>**配置文件**: <span class="in">`.eket/state/instance_config.yml`</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>检查你的角色：</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span>bash</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>cat .eket/state/instance_config.yml | grep role</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>可能的值:</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`master`</span> - 协调实例</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`slaver`</span> - 执行实例</span></code></pre></div>
+<p><strong>方案 B: 脚本生成</strong></p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 在 eket-init.sh 中生成实际的 IDENTITY.md</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&gt;</span> .eket/state/IDENTITY_CURRENT.md <span class="op">&lt;&lt;EOF</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st"># 当前实例身份</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="st">**角色**: </span><span class="va">${ROLE}</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="st">**启动时间**: </span><span class="va">$(</span><span class="fu">date</span> <span class="at">-Iseconds</span><span class="va">)</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="st">**实例 ID**: agent_</span><span class="va">${ROLE}</span><span class="st">_</span><span class="va">$(</span><span class="fu">date</span> +%s<span class="va">)</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span></code></pre></div>
+<p><strong>优先级</strong>: ⚠️⚠️ <strong>P0</strong> -
+身份混淆风险极高</p>
+<hr />
+<h3 id="流程三仓库初始化指令不明确">3.
+【流程】三仓库初始化指令不明确</h3>
+<p><strong>问题描述</strong>: - 多处文档提到”三仓库架构” -
+但<strong>从未说明 Agent 应该何时、如何创建这三个仓库</strong> -
+缺少明确的初始化流程</p>
+<p><strong>Agent 困惑点</strong>: 1. <strong>何时创建三仓库</strong>？ -
+首次启动时？ - Master 分析需求后？ - 人类明确要求时？</p>
+<ol start="2" type="1">
+<li><strong>如何创建</strong>？
+<ul>
+<li>运行 <code>./scripts/init-three-repos.sh</code>？</li>
+<li>手动 <code>git init</code> 每个目录？</li>
+<li>使用 Git submodule？</li>
+</ul></li>
+<li><strong>是否必须</strong>？
+<ul>
+<li>可以不创建吗？</li>
+<li>单仓库模式如何工作？</li>
+</ul></li>
+</ol>
+<p><strong>建议修复</strong>:</p>
+<p>在 <code>template/CLAUDE.md</code> 开头添加：</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## ⚠️ 首次启动必读</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 三仓库架构初始化</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>EKET 使用三仓库分离架构：</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`confluence/`</span> - 文档仓库</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`jira/`</span> - 任务仓库</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`code_repo/`</span> - 代码仓库</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>**初始化时机**: Master 首次分析需求后，创建三仓库</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>**初始化方法**:</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span>bash</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="fu"># 方式 1: 使用脚本（推荐）</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>./scripts/init-three-repos.sh <span class="dt">&lt;</span><span class="kw">project-name</span><span class="dt">&gt;</span> <span class="dt">&lt;</span><span class="kw">org</span><span class="dt">&gt;</span> <span class="dt">&lt;</span><span class="kw">platform</span><span class="dt">&gt;</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="fu"># 方式 2: 手动创建</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>mkdir -p confluence jira code_repo</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>cd confluence &amp;&amp; git init &amp;&amp; cd ..</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>cd jira &amp;&amp; git init &amp;&amp; cd ..</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>cd code_repo &amp;&amp; git init &amp;&amp; cd ..</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>**验证**:</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span>bash</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>ls -la confluence/ jira/ code_repo/</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="fu"># 应该都存在且包含 .git 目录</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>**如果三仓库不存在**:</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Master 应先创建三仓库</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Slaver 不应领取任务</span></code></pre></div>
+<p><strong>优先级</strong>: ⚠️⚠️ <strong>P0</strong> -
+协作流程核心步骤缺失</p>
+<hr />
+<h3 id="通信消息队列机制未实现">4. 【通信】消息队列机制未实现</h3>
+<p><strong>问题描述</strong>: - 文档描述详细的消息队列机制： -
+<code>shared/message_queue/inbox/</code> -
+<code>shared/message_queue/outbox/</code> - 消息格式 JSON - 但没有说明：
+- Agent 如何读取消息？ - Agent 如何发送消息？ - 消息如何触发 Agent
+唤醒？</p>
+<p><strong>Agent 困惑</strong>: - Slaver 提交 PR 后，如何”通知 Master”？
+- Master 如何”监听”新的 PR 请求？ - 是轮询文件？还是有其他机制？</p>
+<p><strong>建议修复</strong>:</p>
+<p><strong>方案 A: 文件轮询（简单）</strong></p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">### 消息通信机制</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>**发送消息** (Slaver):</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span>bash</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu"># 创建消息文件</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>cat &gt; shared/message_queue/inbox/msg_$(date +%s).json &lt;<span class="dt">&lt;</span><span class="kw">EOF</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="er">{</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ot">  </span><span class="er">&quot;</span><span class="ot">from</span><span class="er">&quot;</span><span class="ot">: </span><span class="er">&quot;</span><span class="ot">slaver_frontend_001</span><span class="er">&quot;,</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="ot">  </span><span class="er">&quot;</span><span class="ot">to</span><span class="er">&quot;</span><span class="ot">: </span><span class="er">&quot;</span><span class="ot">master</span><span class="er">&quot;,</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="ot">  </span><span class="er">&quot;</span><span class="ot">type</span><span class="er">&quot;</span><span class="ot">: </span><span class="er">&quot;</span><span class="ot">pr_review_request</span><span class="er">&quot;,</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="ot">  </span><span class="er">&quot;</span><span class="ot">payload</span><span class="er">&quot;</span><span class="ot">: </span><span class="er">{</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="ot">    </span><span class="er">&quot;</span><span class="ot">ticket_id</span><span class="er">&quot;</span><span class="ot">: </span><span class="er">&quot;</span><span class="ot">FEAT-001</span><span class="er">&quot;,</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="ot">    </span><span class="er">&quot;</span><span class="ot">branch</span><span class="er">&quot;</span><span class="ot">: </span><span class="er">&quot;</span><span class="ot">feature</span><span class="er">/</span><span class="ot">feat-001-login</span><span class="er">&quot;</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="ot">  </span><span class="er">}</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="ot">EOF</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="er">\`\`\`</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="ot">**接收消息** (Master):</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="er">\`\`\`</span><span class="ot">bash</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="ot"># Master </span><span class="er">定期检查</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="ot">ls shared</span><span class="er">/</span><span class="ot">message_queue</span><span class="er">/</span><span class="ot">inbox</span><span class="er">/</span><span class="ot">*.json </span><span class="er">2</span><span class="dt">&gt;</span>/dev/null</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="fu"># 如果有文件，读取处理后移至 outbox/</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>**注意**: Agent 无法主动&quot;唤醒&quot;，依赖人类手动触发 Master 检查</span></code></pre></div>
+<p><strong>方案 B: 人类中转（实用）</strong></p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">### 协作通信机制</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>由于 Agent 无法互相唤醒，采用&quot;人类中转&quot;模式：</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Slaver 完成工作** → 在 <span class="in">`outbox/review_requests/`</span> 创建文件</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**人类发现新文件** → 提醒或启动 Master 实例</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Master 处理请求** → 审核完成后通知人类</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**人类转告 Slaver** → Slaver 继续修改或进入下一任务</span></code></pre></div>
+<p><strong>优先级</strong>: ⚠️⚠️ <strong>P0</strong> -
+协作机制不可用</p>
+<hr />
+<h3 id="模板system-settings.md-占位符未说明">5.
+【模板】SYSTEM-SETTINGS.md 占位符未说明</h3>
+<p><strong>问题描述</strong>: - <code>template/SYSTEM-SETTINGS.md</code>
+包含大量占位符： - <code>{{PROJECT_NAME}}</code> -
+<code>{{CREATE_DATE}}</code> - <code>{{MAINTAINER}}</code> - 等等 -
+但<strong>没有说明谁应该替换这些占位符</strong>： - Agent 自动替换？ -
+人类手动替换？ - 初始化脚本替换？</p>
+<p><strong>Agent 困惑</strong>: - 读取到 <code>{{PROJECT_NAME}}</code>
+时应该怎么处理？ - 是把它当成实际项目名吗？ - 还是应该提示人类填写？</p>
+<p><strong>建议修复</strong>:</p>
+<p>在 <code>template/SYSTEM-SETTINGS.md</code> 开头添加：</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># {{PROJECT_NAME}} 系统设定文档</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **⚠️ 模板说明**:</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="at">&gt;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; 本文件是模板，使用前需要替换所有 </span><span class="in">`{{VARIABLE}}`</span><span class="at"> 占位符。</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="at">&gt;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **替换时机**:</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; - **自动替换**: 使用 </span><span class="in">`./scripts/init-project.sh`</span><span class="at"> 时自动替换</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; - **手动替换**: 复制此文件到新项目后，手动搜索替换所有 </span><span class="in">`{{...}}`</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="at">&gt;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **必须替换的占位符**:</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; - </span><span class="in">`{{PROJECT_NAME}}`</span><span class="at"> - 项目名称</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; - </span><span class="in">`{{CREATE_DATE}}`</span><span class="at"> - 创建日期 (YYYY-MM-DD)</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; - </span><span class="in">`{{MAINTAINER}}`</span><span class="at"> - 维护者姓名</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; - </span><span class="in">`{{MODULE1}}`</span><span class="at">, </span><span class="in">`{{MODULE2}}`</span><span class="at"> - 实际模块名</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="at">&gt;</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; **删除本说明块**: 替换完成后删除此说明块</span></span></code></pre></div>
+<p><strong>优先级</strong>: ⚠️ <strong>P0</strong> - 模板使用不明确</p>
+<hr />
+<h2 id="p1-问题协作流程不清晰">P1 问题（协作流程不清晰）</h2>
+<h3 id="流程masterslaver-启动顺序不明确">6. 【流程】Master/Slaver
+启动顺序不明确</h3>
+<p><strong>问题</strong>: - 新项目初始化后，应该先启动谁？ - Master 和
+Slaver 可以同时运行吗？ - 如果只有一个 Agent，应该怎么办？</p>
+<p><strong>建议补充</strong>:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## Agent 启动顺序</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 标准流程（多 Agent 模式）</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**首次启动**: 启动 Master 实例</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>   <span class="sc">\`\`\`</span>bash</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>   # 在项目根目录</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>   /eket-start</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>   # 自动检测到无三仓库 → 进入任务设定模式</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>   <span class="sc">\`\`\`</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Master 完成任务拆解**: 创建三仓库和 Jira tickets</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**启动 Slaver 实例**:</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>   <span class="sc">\`\`\`</span>bash</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>   # 在新的 Claude Code 会话中</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>   /eket-start</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>   # 自动检测到三仓库存在 → 进入任务承接模式</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>   <span class="sc">\`\`\`</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="fu">### 单 Agent 模式</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>如果只有一个 Agent：</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>以 Master 身份启动</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>完成需求分析和任务拆解</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>手动切换到 Slaver 角色</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>领取任务并开发</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>切换回 Master 审核自己的代码</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>**切换角色**:</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span>bash</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>/eket-role master   # 切换到 Master</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>/eket-role slaver   # 切换到 Slaver</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span></span></code></pre></div>
+<p><strong>优先级</strong>: 🔶 <strong>P1</strong> - 首次使用困惑</p>
+<hr />
+<h3 id="文档分析报告流程描述位置不当">7.
+【文档】分析报告流程描述位置不当</h3>
+<p><strong>问题</strong>: - <code>template/CLAUDE.md</code> 第 200+
+行才提到”分析报告流程” - 但这是 Slaver
+领取任务后的<strong>第一步</strong> - 应该在更显眼的位置</p>
+<p><strong>建议</strong>: - 移动到 “Slaver 职责” 章节 - 添加醒目标记 -
+提供流程图</p>
+<p><strong>优先级</strong>: 🔶 <strong>P1</strong> - 关键流程不明显</p>
+<hr />
+<h3 id="冲突claude.md-两个版本内容不一致">8. 【冲突】CLAUDE.md
+两个版本内容不一致</h3>
+<p><strong>问题</strong>: - <code>template/CLAUDE.md</code> (278 行) -
+<code>template/.claude/CLAUDE.md</code> (85 行) -
+内容部分重复但不完全一致</p>
+<p><strong>Agent 困惑</strong>: 应该读哪个？</p>
+<p><strong>建议</strong>:</p>
+<pre><code>template/
+├── CLAUDE.md                    # 完整指南（主文档）
+└── .claude/
+    └── CLAUDE.md                # 命令快速参考（索引）</code></pre>
+<p>在 <code>.claude/CLAUDE.md</code> 开头添加：</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># EKET Commands - Quick Reference</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; 📚 **完整文档**: 请参阅 </span><span class="co">[</span><span class="ot">../CLAUDE.md</span><span class="co">](../CLAUDE.md)</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="at">&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; 本文件仅列出命令快速参考，详细说明请查阅主文档。</span></span></code></pre></div>
+<p><strong>优先级</strong>: 🔶 <strong>P1</strong> - 文档歧义</p>
+<hr />
+<h3 id="其他-p1-问题">9-13. 【其他 P1 问题】</h3>
+<ul>
+<li>任务状态机转换条件不明确</li>
+<li>PR 审核标准主观性强</li>
+<li>错误处理和重试机制缺失</li>
+<li>Slaver 角色类型定义不完整</li>
+<li>Git 冲突解决策略缺失</li>
+</ul>
+<hr />
+<h2 id="p2-问题指令不完整">P2 问题（指令不完整）</h2>
+<h3 id="示例缺少完整的端到端示例">14. 【示例】缺少完整的端到端示例</h3>
+<p><strong>建议添加</strong>:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 📚 完整示例：从需求到发布</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 场景</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>人类需求：&quot;添加用户登录功能&quot;</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 1: Master 需求分析</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span>markdown</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="fu"># inbox/human_input.md</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>需求：实现用户登录功能，支持邮箱+密码登录</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>Master 分析后创建:</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>confluence/projects/my-app/requirements/user-auth.md</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>jira/tickets/FEAT-001-user-login.md</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 2: Slaver 领取任务</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span>bash</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>/eket-claim FEAT-001</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 3: Slaver 提交分析报告</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>创建 jira/tickets/FEAT-001/analysis-report.md</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 4: Master 审批分析报告</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>批准 → Ticket 状态变为 approved</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 5: Slaver 开发</span></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span>bash</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>git checkout -b feature/FEAT-001-user-login</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="fu"># 开发...</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>git commit -m &quot;feat: add user login&quot;</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>/eket-submit-pr</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a><span class="sc">\`\`\`</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 6: Master 审核 PR</span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>批准 → 合并到 main</span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 7: 任务完成</span></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>Ticket 状态 → done</span></code></pre></div>
+<p><strong>优先级</strong>: 🟡 <strong>P2</strong> - 缺少实战指导</p>
+<hr />
+<h3 id="其他-p2-问题">15-25. 【其他 P2 问题】</h3>
+<ul>
+<li>环境变量配置说明缺失</li>
+<li>日志和调试指南缺失</li>
+<li>性能监控指标未定义</li>
+<li>安全检查清单不完整</li>
+<li>依赖追问模板过于简单</li>
+<li>Skills 系统未与 Superpowers 集成说明</li>
+<li>测试策略未明确</li>
+<li>文档版本控制策略缺失</li>
+<li>多语言支持未说明</li>
+<li>时区处理未说明</li>
+<li>文件编码规范缺失</li>
+</ul>
+<hr />
+<h2 id="p3-问题优化建议">P3 问题（优化建议）</h2>
+<h3 id="优化建议">26-31. 【优化建议】</h3>
+<ul>
+<li>添加 Mermaid 流程图</li>
+<li>提供配置检查工具</li>
+<li>添加常见问题排查</li>
+<li>提供性能调优建议</li>
+<li>建立文档维护流程</li>
+<li>添加社区贡献指南</li>
+</ul>
+<hr />
+<h2 id="修正后的问题优先级">修正后的问题优先级</h2>
+<h3 id="之前认为是-p0-但实际不是的">之前认为是 P0 但实际不是的</h3>
+<ol type="1">
+<li><del>“三仓库不存在”</del> → <strong>不是问题</strong>，应该由 Agent
+创建</li>
+<li><del>“Node.js 依赖未安装”</del> → <strong>P2
+问题</strong>，辅助工具而非核心</li>
+<li><del>“版本号不一致”</del> → <strong>P2
+问题</strong>，历史文档可以保留不同版本</li>
+<li><del>“.env 缺失”</del> → <strong>P2 问题</strong>，高级功能配置</li>
+</ol>
+<h3 id="真正的-p0-问题">真正的 P0 问题</h3>
+<ol type="1">
+<li><strong><code>.claude/commands/</code> 脚本缺失</strong> → Agent
+无法执行任何操作</li>
+<li><strong>IDENTITY.md 变量未定义</strong> → 身份混淆</li>
+<li><strong>三仓库初始化流程缺失</strong> → 不知道何时如何创建</li>
+<li><strong>消息队列机制不可用</strong> → 协作无法进行</li>
+<li><strong>模板占位符使用不明</strong> → 配置错误</li>
+</ol>
+<hr />
+<h2 id="立即行动项从-agent-视角">立即行动项（从 Agent 视角）</h2>
+<h3 id="最高优先级今天必须修复">🚨 最高优先级（今天必须修复）</h3>
+<ol type="1">
+<li><p><strong>创建命令脚本骨架</strong> (30 分钟)</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> template/.claude/commands</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 创建核心命令（即使是 stub）</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> cmd <span class="kw">in</span> init start status claim submit-pr role help<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span> <span class="op">&gt;</span> template/.claude/commands/eket-<span class="va">$cmd</span>.sh <span class="op">&lt;&lt;&#39;EOF&#39;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="st">#!/bin/bash</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="st">echo &quot;🚧 eket-$cmd 正在实现中&quot;</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="st">echo &quot;请参考 template/CLAUDE.md 手动执行相应操作&quot;</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">chmod</span> +x template/.claude/commands/eket-<span class="va">$cmd</span>.sh</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code></pre></div></li>
+<li><p><strong>修复 IDENTITY.md 变量</strong> (10 分钟)</p>
+<ul>
+<li>改为纯文档描述</li>
+<li>移除 shell 变量语法</li>
+<li>添加初始化说明</li>
+</ul></li>
+<li><p><strong>添加三仓库初始化明确指令</strong> (15 分钟)</p>
+<ul>
+<li>在 CLAUDE.md 开头添加”首次启动必读”</li>
+<li>明确初始化时机和方法</li>
+<li>提供验证步骤</li>
+</ul></li>
+<li><p><strong>说明消息通信机制</strong> (15 分钟)</p>
+<ul>
+<li>文档中明确说明”人类中转”模式</li>
+<li>或提供文件轮询脚本</li>
+<li>设定合理预期</li>
+</ul></li>
+<li><p><strong>模板占位符说明</strong> (5 分钟)</p>
+<ul>
+<li>在 SYSTEM-SETTINGS.md 顶部添加说明块</li>
+<li>列出所有占位符</li>
+<li>说明替换时机</li>
+</ul></li>
+</ol>
+<p><strong>总时间</strong>: 约 75 分钟</p>
+<hr />
+<h2 id="修正后的结论">修正后的结论</h2>
+<h3 id="eket-作为-agent-协作框架的核心优势">EKET 作为 Agent
+协作框架的核心优势</h3>
+<p>✅ <strong>清晰的角色定义</strong> - Master/Slaver 职责明确 ✅
+<strong>完整的协作流程</strong> - 从需求到发布全覆盖 ✅
+<strong>文档即协议</strong> - 所有规则都文档化 ✅
+<strong>灵活的架构</strong> - 支持单/多 Agent 模式</p>
+<h3 id="核心问题">核心问题</h3>
+<p>❌ <strong>操作层缺失</strong> - 文档描述了”做什么”，但缺少”怎么做”
+❌ <strong>Agent 执行障碍</strong> - 关键命令脚本不存在 ❌
+<strong>协作机制未实现</strong> - 消息通信依赖外部触发 ❌
+<strong>初始化流程不明</strong> - Agent 不知道从哪里开始</p>
+<h3 id="建议">建议</h3>
+<p><strong>短期</strong>（本周）: 1. ✅ 实现核心命令脚本（至少 stub） 2.
+✅ 修复文档中的执行障碍 3. ✅ 明确初始化和协作流程</p>
+<p><strong>中期</strong>（本月）: 1. 🔄 完善命令脚本实现 2. 🔄
+添加端到端示例 3. 🔄 建立测试验证机制</p>
+<p><strong>长期</strong>（持续）: 1. 📝 收集 Agent 使用反馈 2. 📝
+迭代优化协作流程 3. 📝 构建 Agent 行为模式库</p>
+<hr />
+<h2 id="附录文档结构建议">附录：文档结构建议</h2>
+<pre><code>eket/
+├── README.md                    # 框架概述（给人类看）
+├── template/
+│   ├── CLAUDE.md                # 完整 Agent 指南（主文档）
+│   ├── .claude/
+│   │   ├── CLAUDE.md            # 命令快速参考（索引）
+│   │   └── commands/            # 可执行命令脚本 ⚠️ 缺失
+│   ├── .eket/
+│   │   └── IDENTITY.md          # 身份卡片模板 ⚠️ 需修复
+│   ├── SYSTEM-SETTINGS.md       # 项目配置模板 ⚠️ 需说明
+│   └── inbox/
+│       └── human_input.md       # 需求输入模板
+├── docs/
+│   ├── README.md                # 文档索引
+│   ├── 01-getting-started/      # 给人类的入门指南
+│   ├── 02-architecture/         # 架构设计（给人类理解用）
+│   ├── MASTER-WORKFLOW.md       # Master Agent 详细流程
+│   ├── SLAVER-AUTO-EXEC-GUIDE.md # Slaver Agent 详细流程
+│   └── IDENTITY.md              # 身份系统说明
+├── scripts/
+│   ├── init-project.sh          # 项目初始化
+│   └── init-three-repos.sh      # 三仓库初始化
+└── node/                        # 可选辅助工具
+    ├── src/                     # CLI 实现
+    └── package.json             # 版本 2.0.0</code></pre>
+<hr />
+<p><strong>审查完成（修正版）</strong> <strong>下一步</strong>:
+请确认是否立即开始修复 P0 问题</p>
+</body>
+</html>
