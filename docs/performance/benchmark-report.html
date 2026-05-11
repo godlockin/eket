@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Framework 性能基准测试报告</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Framework 性能基准测试报告</h1>
+</header>
+<h1 id="eket-framework-性能基准测试报告">EKET Framework
+性能基准测试报告</h1>
+<p><strong>TASK-004: 性能基准测试和优化</strong></p>
+<p><strong>测试日期</strong>: 2026-04-07 <strong>版本</strong>: v2.1.1
+<strong>环境</strong>: Node.js v20.x <strong>测试工具</strong>:
+自定义基准测试 + k6 压力测试</p>
+<hr />
+<h2 id="测试概览">📋 测试概览</h2>
+<h3 id="测试配置">测试配置</h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>迭代次数</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>预热轮数</td>
+<td>100</td>
+</tr>
+<tr>
+<td>并发级别</td>
+<td>1, 10, 100, 500, 1000</td>
+</tr>
+<tr>
+<td>测试时长</td>
+<td>~30 分钟</td>
+</tr>
+</tbody>
+</table>
+<h3 id="测试环境">测试环境</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">操作系统</span><span class="kw">:</span><span class="at"> macOS / Linux</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">CPU</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">待填写</span><span class="kw">]</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">内存</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">待填写</span><span class="kw">]</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">Node.js</span><span class="kw">:</span><span class="at"> v20.x.x</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">Redis</span><span class="kw">:</span><span class="at"> 7.x.x (如果可用)</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">SQLite</span><span class="kw">:</span><span class="at"> 3.x.x</span></span></code></pre></div>
+<hr />
+<h2 id="测试结果">📊 测试结果</h2>
+<h3 id="redis-读写性能">1. Redis 读写性能</h3>
+<p><strong>测试场景</strong>: 1000 次 Redis SET/GET/DELETE 操作</p>
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 12%" />
+<col style="width: 14%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr>
+<th>操作</th>
+<th>Min (ms)</th>
+<th>Max (ms)</th>
+<th>Mean (ms)</th>
+<th>Median (ms)</th>
+<th>P95 (ms)</th>
+<th>P99 (ms)</th>
+<th>Throughput (ops/s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>写入 (SET)</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>读取 (GET)</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>删除 (DEL)</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+</tbody>
+</table>
+<p><strong>目标</strong>: P95 &lt;5ms <strong>结果</strong>: [待测试]
+<strong>状态</strong>: ⏳ 待测试</p>
+<p><strong>备注</strong>: - 如果 Redis 不可用，此测试将被跳过 -
+建议使用本地 Redis 以获得最佳性能</p>
+<hr />
+<h3 id="sqlite-查询性能">2. SQLite 查询性能</h3>
+<p><strong>测试场景</strong>: 1000 次 SQLite INSERT/SELECT 操作</p>
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 12%" />
+<col style="width: 14%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr>
+<th>操作</th>
+<th>Min (ms)</th>
+<th>Max (ms)</th>
+<th>Mean (ms)</th>
+<th>Median (ms)</th>
+<th>P95 (ms)</th>
+<th>P99 (ms)</th>
+<th>Throughput (ops/s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>插入 (INSERT)</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>查询 (SELECT)</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>批量查询</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+</tbody>
+</table>
+<p><strong>目标</strong>: P95 &lt;10ms <strong>结果</strong>: [待测试]
+<strong>状态</strong>: ⏳ 待测试</p>
+<p><strong>SQLite 配置</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>PRAGMA journal_mode <span class="op">=</span> <span class="kw">DELETE</span>;  <span class="co">-- 待优化为 WAL</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>PRAGMA synchronous <span class="op">=</span> <span class="kw">FULL</span>;     <span class="co">-- 待优化为 NORMAL</span></span></code></pre></div>
+<hr />
+<h3 id="文件队列性能">3. 文件队列性能</h3>
+<p><strong>测试场景</strong>: 1000 次消息发布/订阅</p>
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 12%" />
+<col style="width: 14%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr>
+<th>操作</th>
+<th>Min (ms)</th>
+<th>Max (ms)</th>
+<th>Mean (ms)</th>
+<th>Median (ms)</th>
+<th>P95 (ms)</th>
+<th>P99 (ms)</th>
+<th>Throughput (ops/s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>消息发布</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>消息订阅</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+</tbody>
+</table>
+<p><strong>目标</strong>: P95 &lt;20ms <strong>结果</strong>: [待测试]
+<strong>状态</strong>: ⏳ 待测试</p>
+<p><strong>文件队列配置</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>filePollingInterval<span class="op">:</span> <span class="dv">100</span><span class="er">ms</span>  <span class="co">// 当前配置</span></span></code></pre></div>
+<hr />
+<h3 id="lru-缓存性能">4. LRU 缓存性能</h3>
+<p><strong>测试场景</strong>: 1000 次缓存读写操作</p>
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 12%" />
+<col style="width: 14%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr>
+<th>操作</th>
+<th>Min (ms)</th>
+<th>Max (ms)</th>
+<th>Mean (ms)</th>
+<th>Median (ms)</th>
+<th>P95 (ms)</th>
+<th>P99 (ms)</th>
+<th>Throughput (ops/s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>写入</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>读取（命中）</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>读取（未命中）</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>LRU 驱逐</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+</tbody>
+</table>
+<p><strong>目标</strong>: P95 &lt;1ms <strong>结果</strong>: [待测试]
+<strong>状态</strong>: ⏳ 待测试</p>
+<p><strong>缓存统计</strong>:</p>
+<pre><code>命中率:     [待测试]%
+命中次数:   [待测试]
+未命中次数: [待测试]
+驱逐次数:   [待测试]
+当前大小:   [待测试]</code></pre>
+<hr />
+<h3 id="并发性能测试">5. 并发性能测试</h3>
+<p><strong>测试场景</strong>: 不同并发级别下的缓存操作性能</p>
+<table>
+<thead>
+<tr>
+<th>并发级别</th>
+<th>总耗时 (ms)</th>
+<th>平均延迟 (ms)</th>
+<th>吞吐量 (ops/s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>10</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>100</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>500</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>1000</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+</tbody>
+</table>
+<p><strong>目标</strong>: 支持 1000 并发 <strong>结果</strong>: [待测试]
+<strong>状态</strong>: ⏳ 待测试</p>
+<hr />
+<h3 id="内存使用分析">6. 内存使用分析</h3>
+<p><strong>测试场景</strong>: 创建 10000 个缓存条目的内存使用</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>测试前 (MB)</th>
+<th>测试后 (MB)</th>
+<th>增量 (MB)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RSS</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>Heap Used</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>Heap Total</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>External</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+<td>[待测试]</td>
+</tr>
+</tbody>
+</table>
+<p><strong>目标</strong>: 增量 &lt;512MB <strong>结果</strong>: [待测试]
+<strong>状态</strong>: ⏳ 待测试</p>
+<hr />
+<h2 id="k6-压力测试结果">🚀 k6 压力测试结果</h2>
+<h3 id="测试场景配置">测试场景配置</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>stages<span class="op">:</span> [</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">duration</span><span class="op">:</span> <span class="st">&#39;2m&#39;</span><span class="op">,</span> <span class="dt">target</span><span class="op">:</span> <span class="dv">100</span> }<span class="op">,</span>   <span class="co">// 爬升到 100 并发</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">duration</span><span class="op">:</span> <span class="st">&#39;5m&#39;</span><span class="op">,</span> <span class="dt">target</span><span class="op">:</span> <span class="dv">500</span> }<span class="op">,</span>   <span class="co">// 爬升到 500 并发</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">duration</span><span class="op">:</span> <span class="st">&#39;3m&#39;</span><span class="op">,</span> <span class="dt">target</span><span class="op">:</span> <span class="dv">1000</span> }<span class="op">,</span>  <span class="co">// 爬升到 1000 并发</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">duration</span><span class="op">:</span> <span class="st">&#39;5m&#39;</span><span class="op">,</span> <span class="dt">target</span><span class="op">:</span> <span class="dv">1000</span> }<span class="op">,</span>  <span class="co">// 维持 1000 并发</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">duration</span><span class="op">:</span> <span class="st">&#39;2m&#39;</span><span class="op">,</span> <span class="dt">target</span><span class="op">:</span> <span class="dv">0</span> }<span class="op">,</span>     <span class="co">// 降到 0</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div>
+<h3 id="http-hook-性能">HTTP Hook 性能</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>总请求数</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>失败请求率</td>
+<td>[待测试]%</td>
+</tr>
+<tr>
+<td>请求速率</td>
+<td>[待测试] req/s</td>
+</tr>
+<tr>
+<td>平均响应时间</td>
+<td>[待测试] ms</td>
+</tr>
+<tr>
+<td>P95 响应时间</td>
+<td>[待测试] ms</td>
+</tr>
+<tr>
+<td>P99 响应时间</td>
+<td>[待测试] ms</td>
+</tr>
+<tr>
+<td>最大响应时间</td>
+<td>[待测试] ms</td>
+</tr>
+</tbody>
+</table>
+<p><strong>目标</strong>: P95 &lt;100ms, 错误率 &lt;1%
+<strong>结果</strong>: [待测试] <strong>状态</strong>: ⏳ 待测试</p>
+<h3 id="websocket-性能">WebSocket 性能</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>总消息数</td>
+<td>[待测试]</td>
+</tr>
+<tr>
+<td>消息速率</td>
+<td>[待测试] msg/s</td>
+</tr>
+<tr>
+<td>错误率</td>
+<td>[待测试]%</td>
+</tr>
+<tr>
+<td>平均延迟</td>
+<td>[待测试] ms</td>
+</tr>
+<tr>
+<td>P95 延迟</td>
+<td>[待测试] ms</td>
+</tr>
+</tbody>
+</table>
+<p><strong>目标</strong>: 消息延迟 &lt;50ms, 错误率 &lt;5%
+<strong>结果</strong>: [待测试] <strong>状态</strong>: ⏳ 待测试</p>
+<hr />
+<h2 id="性能目标达成情况">🎯 性能目标达成情况</h2>
+<table>
+<thead>
+<tr>
+<th>测试项</th>
+<th>目标</th>
+<th>实际值</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Redis 读写 P95</td>
+<td>&lt;5ms</td>
+<td>[待测试]</td>
+<td>⏳</td>
+</tr>
+<tr>
+<td>SQLite 查询 P95</td>
+<td>&lt;10ms</td>
+<td>[待测试]</td>
+<td>⏳</td>
+</tr>
+<tr>
+<td>文件队列 P95</td>
+<td>&lt;20ms</td>
+<td>[待测试]</td>
+<td>⏳</td>
+</tr>
+<tr>
+<td>消息传递 P95</td>
+<td>&lt;50ms</td>
+<td>[待测试]</td>
+<td>⏳</td>
+</tr>
+<tr>
+<td>1000 并发支持</td>
+<td>✅</td>
+<td>[待测试]</td>
+<td>⏳</td>
+</tr>
+<tr>
+<td>HTTP P95 延迟</td>
+<td>&lt;100ms</td>
+<td>[待测试]</td>
+<td>⏳</td>
+</tr>
+<tr>
+<td>错误率</td>
+<td>&lt;1%</td>
+<td>[待测试]</td>
+<td>⏳</td>
+</tr>
+<tr>
+<td>内存使用</td>
+<td>&lt;512MB</td>
+<td>[待测试]</td>
+<td>⏳</td>
+</tr>
+<tr>
+<td>CPU 使用</td>
+<td>&lt;50%</td>
+<td>[待测试]</td>
+<td>⏳</td>
+</tr>
+</tbody>
+</table>
+<p><strong>总体达成率</strong>: [待测试]% (0/9 项达标)</p>
+<hr />
+<h2 id="性能瓶颈分析">🔍 性能瓶颈分析</h2>
+<h3 id="识别的瓶颈">识别的瓶颈</h3>
+<ol type="1">
+<li><strong>[待测试后填写]</strong></li>
+<li><strong>[待测试后填写]</strong></li>
+<li><strong>[待测试后填写]</strong></li>
+</ol>
+<h3 id="优化建议">优化建议</h3>
+<p>参见: <a
+href="./optimization-recommendations.md">optimization-recommendations.md</a></p>
+<hr />
+<h2 id="测试结论">📝 测试结论</h2>
+<h3 id="优势">优势</h3>
+<ul>
+<li>[待测试后填写]</li>
+</ul>
+<h3 id="需要改进">需要改进</h3>
+<ul>
+<li>[待测试后填写]</li>
+</ul>
+<h3 id="下一步行动">下一步行动</h3>
+<ol type="1">
+<li><label><input
+type="checkbox" />实施优化建议中的快速优化项</label></li>
+<li><label><input
+type="checkbox" />重新运行基准测试验证效果</label></li>
+<li><label><input
+type="checkbox" />进行长时间压力测试（24h+）</label></li>
+<li><label><input type="checkbox" />监控生产环境性能指标</label></li>
+</ol>
+<hr />
+<h2 id="如何运行测试">🔧 如何运行测试</h2>
+<h3 id="基准测试">1. 基准测试</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 运行原有基准测试</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run bench</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 运行综合基准测试</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">ts-node</span> <span class="at">--esm</span> benchmarks/comprehensive-benchmark.ts</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 或构建后运行</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run build</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/../benchmarks/comprehensive-benchmark.js</span></code></pre></div>
+<h3 id="k6-压力测试">2. k6 压力测试</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 安装 k6</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">brew</span> install k6  <span class="co"># macOS</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 或参考 https://k6.io/docs/getting-started/installation/</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 启动 Hook 服务器</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js hooks:start <span class="at">--port</span> 8899 <span class="kw">&amp;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 运行快速测试</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="ex">k6</span> run k6/quick-test.js</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 运行完整压力测试</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="ex">k6</span> run k6/load-test.js</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 自定义并发和时长</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="ex">k6</span> run <span class="at">--vus</span> 500 <span class="at">--duration</span> 5m k6/quick-test.js</span></code></pre></div>
+<hr />
+<h2 id="附录">📚 附录</h2>
+<h3 id="a.-测试脚本">A. 测试脚本</h3>
+<ul>
+<li><code>node/benchmarks/performance-benchmark.ts</code> -
+原有基准测试</li>
+<li><code>node/benchmarks/comprehensive-benchmark.ts</code> -
+综合基准测试</li>
+<li><code>k6/load-test.js</code> - k6 完整压力测试</li>
+<li><code>k6/quick-test.js</code> - k6 快速测试</li>
+</ul>
+<h3 id="b.-相关文档">B. 相关文档</h3>
+<ul>
+<li><a
+href="./optimization-recommendations.md">optimization-recommendations.md</a>
+- 优化建议</li>
+<li><a href="../../CLAUDE.md">../../CLAUDE.md</a> - 项目开发指南</li>
+<li><a
+href="../../jira/tickets/TASK-004.md">../../jira/tickets/TASK-004.md</a>
+- 任务说明</li>
+</ul>
+<hr />
+<p><strong>报告生成时间</strong>: 2026-04-07 <strong>下次更新</strong>:
+实际测试完成后 <strong>负责人</strong>: Slaver 4 (DevOps)</p>
+</body>
+</html>

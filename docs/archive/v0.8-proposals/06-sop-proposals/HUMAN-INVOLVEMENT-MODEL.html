@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>人类参与模式设计</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">人类参与模式设计</h1>
+</header>
+<h1 id="人类参与模式设计">人类参与模式设计</h1>
+<p><strong>版本</strong>: 1.0.0 <strong>创建日期</strong>: 2026-03-25
+<strong>状态</strong>: 提案</p>
+<hr />
+<h2 id="核心理念">核心理念</h2>
+<p>将人类参与分为<strong>必须参与</strong>和<strong>选择性参与</strong>两类，最大化
+Agent 自主性，同时在关键节点保留人类判断。</p>
+<hr />
+<h2 id="人类参与分类">人类参与分类</h2>
+<h3 id="第一类人类必须参与-mandatory">第一类：人类必须参与
+(Mandatory)</h3>
+<p>这些环节<strong>必须</strong>有人类参与，Agent 不能自主决定：</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>环节</th>
+<th>说明</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>M1: 需求提出</strong></td>
+<td>人类提出原始需求、业务目标</td>
+<td>只有人类知道真正想要什么</td>
+</tr>
+<tr>
+<td><strong>M2: 背景知识补充</strong></td>
+<td>提供领域知识、业务规则、约束条件</td>
+<td>Agent 无法获取内部/隐性知识</td>
+</tr>
+<tr>
+<td><strong>M3: 项目方向把握</strong></td>
+<td>重大方向变更、优先级调整</td>
+<td>涉及战略决策，需人类判断</td>
+</tr>
+</tbody>
+</table>
+<h3 id="第二类人类选择性参与-optional">第二类：人类选择性参与
+(Optional)</h3>
+<p>这些环节人类<strong>可以选择性参与</strong>，Agent 可自主执行：</p>
+<table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 15%" />
+<col style="width: 37%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr>
+<th>环节</th>
+<th>说明</th>
+<th>Agent 自主模式</th>
+<th>人类参与模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>O1: 文档审查</strong></td>
+<td>需求/架构/任务分析文档审查</td>
+<td>Agent 交叉审查</td>
+<td>人类审查关键文档</td>
+</tr>
+<tr>
+<td><strong>O2: 任务承接</strong></td>
+<td>领取/分配任务</td>
+<td>Agent 自动领取</td>
+<td>人类手动分配</td>
+</tr>
+<tr>
+<td><strong>O3: 角色扮演</strong></td>
+<td>项目中扮演特定角色 (如 PM、测试)</td>
+<td>Agent 自主扮演</td>
+<td>人类亲自扮演</td>
+</tr>
+<tr>
+<td><strong>O4: PR 审查</strong></td>
+<td>代码审查</td>
+<td>Agent 交叉审查</td>
+<td>人类审查关键 PR</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="工作流程设计">工作流程设计</h2>
+<h3 id="模式-a全自主模式-人类最小参与">模式 A：全自主模式
+(人类最小参与)</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ Phase 1: 项目初始化 (Agent 主导)                                │
+├─────────────────────────────────────────────────────────────────┤
+│ M1: 人类提出需求 → inbox/human_input.md                         │
+│      ↓                                                          │
+│ M2: 人类补充背景知识 (Agent 追问时)                              │
+│      ↓                                                          │
+│ Agent: 需求分析 → 架构设计 → 任务规划                            │
+│      ↓                                                          │
+│ M3: 人类确认项目方向 (可选，默认自动通过)                         │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Phase 2: 任务执行 (Agent 主导)                                  │
+├─────────────────────────────────────────────────────────────────┤
+│ O2: Agent 自动领取任务 (或人类手动分配)                          │
+│      ↓                                                          │
+│ Agent: 任务分析 → 实现方案 → 测试策略                            │
+│      ↓                                                          │
+│ O1: Agent 交叉审查文档 (或人类审查)                              │
+│      ↓                                                          │
+│ Agent: 开发 → 测试 → 自验证                                      │
+│      ↓                                                          │
+│ O4: Agent 交叉审查 PR (或人类审查)                               │
+│      ↓                                                          │
+│ Agent: 合并到 testing → 集成测试 → 合并到 main                   │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<p><strong>适用场景</strong>： - 人类时间有限 - 任务复杂度低 - Agent
+能力强、可信度高</p>
+<p><strong>人类参与时间</strong>： - 需求提出：30-60 min -
+背景补充：10-20 min（分散在各轮追问） - 方向确认：5-10 min（可选） -
+<strong>总计</strong>: ~1 小时 + 可选 10 min</p>
+<hr />
+<h3 id="模式-b人类深度参与模式">模式 B：人类深度参与模式</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ Phase 1: 项目初始化 (人类深度参与)                               │
+├─────────────────────────────────────────────────────────────────┤
+│ M1: 人类提出需求 → inbox/human_input.md                         │
+│      ↓                                                          │
+│ M2: 人类补充背景知识 (Agent 追问)                                │
+│      ↓                                                          │
+│ Agent: 需求分析文档                                              │
+│      ↓                                                          │
+│ O1: 人类审查需求文档 ← 审查点 A1                                 │
+│      ↓ (批准后)                                                  │
+│ Agent: 架构设计文档                                              │
+│      ↓                                                          │
+│ O1: 人类审查架构文档 ← 审查点 A2                                 │
+│      ↓ (批准后)                                                  │
+│ Agent: 任务规划文档                                              │
+│      ↓                                                          │
+│ O1: 人类审查任务规划 ← 审查点 A3                                 │
+│      ↓ (批准后)                                                  │
+│ M3: 人类确认项目方向 ← 审查点 A4 (综合审查)                       │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Phase 2: 任务执行 (人类选择性参与)                               │
+├─────────────────────────────────────────────────────────────────┤
+│ O2: 人类选择要承接的任务 (或 Agent 自动领取)                      │
+│      ↓                                                          │
+│ Agent: 任务分析文档                                              │
+│      ↓                                                          │
+│ O1: 人类审查任务分析文档 ← 审查点 B1                             │
+│      ↓ (批准后)                                                  │
+│ Agent: 开发 → 测试                                               │
+│      ↓                                                          │
+│ O4: 人类审查 PR ← 审查点 B2                                      │
+│      ↓ (批准后)                                                  │
+│ Agent: 合并                                                      │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<p><strong>适用场景</strong>： - 项目复杂度高 - 人类对质量要求高 -
+人类希望深度参与过程 - Agent 能力尚需验证</p>
+<p><strong>人类参与时间</strong>： - Phase 1: 2-4 小时 - Phase 2
+(每个任务): 15-30 min - <strong>总计</strong>: ~4 小时 + 任务数 × 20
+min</p>
+<hr />
+<h3 id="模式-c混合模式-推荐">模式 C：混合模式 (推荐)</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ Phase 1: 项目初始化 (人类深度参与)                               │
+├─────────────────────────────────────────────────────────────────┤
+│ M1, M2, M3: 人类深度参与                                         │
+│ O1: 人类审查关键文档 (需求、架构)                                 │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Phase 2: 任务执行 (Agent 主导，人类选择性介入)                    │
+├─────────────────────────────────────────────────────────────────┤
+│ 常规任务: Agent 自主执行                                         │
+│ 关键任务: 人类审查任务分析文档 + PR                               │
+│                                                                  │
+│ 判断规则:                                                        │
+│ - 工作量 &gt; 8h → 人类审查任务分析                                 │
+│ - 核心功能 → 人类审查 PR                                          │
+│ - 边缘功能 → Agent 自主执行                                      │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<p><strong>适用场景</strong>： - 大部分项目 - 平衡效率与质量</p>
+<p><strong>人类参与时间</strong>： - Phase 1: 2-4 小时 - Phase 2
+(关键任务): 10-20% 的任务需要人类审查 - <strong>总计</strong>: ~4 小时 +
+关键任务数 × 20 min</p>
+<hr />
+<h2 id="配置方式">配置方式</h2>
+<p>在 <code>.eket/config.yml</code> 中配置人类参与模式：</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 人类参与模式配置</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">human_involvement</span><span class="kw">:</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">  # 模式选择：autonomous | deep_involvement | hybrid</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">mode</span><span class="kw">:</span><span class="at"> hybrid</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">  # 必须参与环节 (不可关闭)</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">mandatory</span><span class="kw">:</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> requirement_input</span><span class="co">       # M1: 需求提出</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> context_supplement</span><span class="co">      # M2: 背景知识补充</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> direction_setting</span><span class="co">       # M3: 项目方向把握</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">  # 选择性参与环节 (可配置)</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">optional</span><span class="kw">:</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">document_review</span><span class="kw">:</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span><span class="co">           # O1: 文档审查</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">threshold</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;critical&quot;</span><span class="co">   # 审查门槛：all | critical | none</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co">      # all=全部审查，critical=只审查关键文档，none=Agent 审查</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">task_claim</span><span class="kw">:</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span><span class="co">          # O2: 任务承接</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co">      # true=人类分配任务，false=Agent 自动领取</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">role_playing</span><span class="kw">:</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span><span class="co">          # O3: 角色扮演</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">roles</span><span class="kw">:</span><span class="at"> </span><span class="kw">[]</span><span class="co">               # 人类要扮演的角色列表</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">pr_review</span><span class="kw">:</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span><span class="co">           # O4: PR 审查</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">threshold</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;critical&quot;</span><span class="co">   # 审查门槛：all | critical | none</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="co">      # 判断规则：</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="co">      # - 工作量 &gt; 8h → 人类审查</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="co">      # - 核心功能 → 人类审查</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="co">      # - 边缘功能 → Agent 审查</span></span></code></pre></div>
+<hr />
+<h2 id="人类参与点详细说明">人类参与点详细说明</h2>
+<h3 id="m1-需求提出">M1: 需求提出</h3>
+<p><strong>内容</strong>: - 业务目标描述 - 目标用户定义 - 核心功能期望 -
+约束条件（时间、预算、技术）</p>
+<p><strong>Agent 行为</strong>: - 追问澄清（通过
+<code>/eket-ask</code>） - 整理需求文档 - 确认理解正确</p>
+<hr />
+<h3 id="m2-背景知识补充">M2: 背景知识补充</h3>
+<p><strong>触发时机</strong>: - Agent 检测到知识盲区 -
+涉及内部系统/业务流程 - 需要特定领域知识</p>
+<p><strong>补充方式</strong>: - 回答 Agent 追问 - 提供文档链接 -
+邀请领域专家参与</p>
+<hr />
+<h3 id="m3-项目方向把握">M3: 项目方向把握</h3>
+<p><strong>决策内容</strong>: - 技术方案重大变更 - 优先级调整 -
+资源投入决策 - 是否进入下一阶段</p>
+<p><strong>Agent 上报规则</strong>: - 任务复杂度 &gt; 8 小时 -
+技术选型存在争议 - 需求不明确或矛盾</p>
+<hr />
+<h3 id="o1-文档审查选择性">O1: 文档审查（选择性）</h3>
+<p><strong>审查对象</strong>: - 需求分析文档 - 架构设计文档 -
+任务分析文档</p>
+<p><strong>人类审查价值</strong>: - 确保需求理解正确 - 技术选型符合预期
+- 实现方案合理</p>
+<p><strong>Agent 自主模式</strong>: - Agent 交叉审查（需求分析师 →
+技术经理 → 项目经理） - 文档监控员最终审核</p>
+<hr />
+<h3 id="o2-任务承接选择性">O2: 任务承接（选择性）</h3>
+<p><strong>人类参与方式</strong>: - 手动分配任务给特定 Agent -
+调整任务优先级 - 决定任务并发数</p>
+<p><strong>Agent 自主模式</strong>: - 基于角色匹配自动领取 -
+基于优先级自动排序 - 基于负载自动调节</p>
+<hr />
+<h3 id="o3-角色扮演选择性">O3: 角色扮演（选择性）</h3>
+<p><strong>人类可扮演角色</strong>: - 产品经理（需求优先级决策） -
+技术经理（技术方案审批） - 测试员（验收测试） - 用户体验师（UI/UX
+审查）</p>
+<p><strong>Agent 自主模式</strong>: - Agent 扮演所有角色 - 人类只参与
+M1/M2/M3</p>
+<hr />
+<h3 id="o4-pr-审查选择性">O4: PR 审查（选择性）</h3>
+<p><strong>人类审查价值</strong>: - 核心功能质量把控 - 代码规范检查 -
+安全性审查</p>
+<p><strong>Agent 自主模式</strong>: - Agent 交叉审查（开发者 → 测试员 →
+技术经理） - 自动化测试 + 静态分析</p>
+<hr />
+<h2 id="推荐配置">推荐配置</h2>
+<h3 id="新项目启动前-2-周">新项目启动（前 2 周）</h3>
+<p><strong>推荐模式</strong>: 模式 B（人类深度参与）</p>
+<p><strong>原因</strong>: - 建立对 Agent 能力的信任 - 确保项目方向正确 -
+早期发现问题成本低</p>
+<p><strong>配置</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">human_involvement</span><span class="kw">:</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">mode</span><span class="kw">:</span><span class="at"> deep_involvement</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">optional</span><span class="kw">:</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">document_review</span><span class="kw">:</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">threshold</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;all&quot;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">pr_review</span><span class="kw">:</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">threshold</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;all&quot;</span></span></code></pre></div>
+<hr />
+<h3 id="成熟项目2-周后">成熟项目（2 周后）</h3>
+<p><strong>推荐模式</strong>: 模式 C（混合模式）</p>
+<p><strong>原因</strong>: - Agent 已证明能力 - 人类时间更宝贵 -
+平衡效率与质量</p>
+<p><strong>配置</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">human_involvement</span><span class="kw">:</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">mode</span><span class="kw">:</span><span class="at"> hybrid</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">optional</span><span class="kw">:</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">document_review</span><span class="kw">:</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">threshold</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;critical&quot;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">pr_review</span><span class="kw">:</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">threshold</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;critical&quot;</span></span></code></pre></div>
+<hr />
+<h3 id="高信任项目成熟团队">高信任项目（成熟团队）</h3>
+<p><strong>推荐模式</strong>: 模式 A（全自主）</p>
+<p><strong>原因</strong>: - Agent 能力经过验证 - 人类时间极其有限 -
+项目复杂度低</p>
+<p><strong>配置</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">human_involvement</span><span class="kw">:</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">mode</span><span class="kw">:</span><span class="at"> autonomous</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">optional</span><span class="kw">:</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">document_review</span><span class="kw">:</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">pr_review</span><span class="kw">:</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span></code></pre></div>
+<hr />
+<h2 id="成功指标">成功指标</h2>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>模式 A</th>
+<th>模式 B</th>
+<th>模式 C</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>人类时间投入</td>
+<td>低</td>
+<td>高</td>
+<td>中</td>
+</tr>
+<tr>
+<td>项目可控感</td>
+<td>低</td>
+<td>高</td>
+<td>中高</td>
+</tr>
+<tr>
+<td>返工率</td>
+<td>中</td>
+<td>低</td>
+<td>低中</td>
+</tr>
+<tr>
+<td>Agent 成长速度</td>
+<td>快</td>
+<td>中</td>
+<td>快</td>
+</tr>
+<tr>
+<td>适用项目复杂度</td>
+<td>低 - 中</td>
+<td>高</td>
+<td>中 - 高</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="总结">总结</h2>
+<p><strong>你的分类是合理的</strong>，但建议进一步优化：</p>
+<ol type="1">
+<li><strong>人类必须参与</strong> -
+这是<strong>信息输入</strong>环节，只有人类能提供：
+<ul>
+<li>需求提出（M1）</li>
+<li>背景知识补充（M2）</li>
+<li>项目方向把握（M3）</li>
+</ul></li>
+<li><strong>人类选择性参与</strong> -
+这是<strong>审查/执行</strong>环节，Agent 可自主：
+<ul>
+<li>文档审查（O1）- 可选审查深度</li>
+<li>任务承接（O2）- 可选分配方式</li>
+<li>角色扮演（O3）- 可选参与程度</li>
+<li>PR 审查（O4）- 可选审查门槛</li>
+</ul></li>
+</ol>
+<p><strong>关键设计原则</strong>： - M1/M2/M3
+是<strong>必须</strong>的，无法省略 - O1/O2/O3/O4
+是<strong>可选</strong>的，根据项目阶段和信任度配置 - 新项目建议从模式 B
+开始，逐步过渡到模式 C</p>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team
+<strong>审查状态</strong>: 等待人类审查批准 <strong>生效后版本</strong>:
+v0.9.0</p>
+</body>
+</html>

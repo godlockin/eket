@@ -34,8 +34,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **开发命令**:
 ```bash
+# 根目录（workspaces 聚合）
+npm install                              # 安装所有依赖
+npm test                                 # 运行所有测试
+npm run lint                             # 运行所有 lint
+npm run build                            # 构建所有包
+
+# node 子包（传统方式）
 cd node && npm install && npm run build  # 构建
-npm test                                  # 测试
 eket task:claim [id]                     # 领取任务
 eket knowledge:search "<关键词>"          # 检索经验
 ```

@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Framework v0.8.0 - 文件结构整理与卓越差距分析</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Framework v0.8.0 -
+文件结构整理与卓越差距分析</h1>
+</header>
+<h1 id="eket-framework-v0.8.0---文件结构整理与卓越差距分析">EKET
+Framework v0.8.0 - 文件结构整理与卓越差距分析</h1>
+<p><strong>日期</strong>: 2026-03-26 <strong>版本</strong>: v0.8.0
+<strong>阶段</strong>: Phase 5/6 完成</p>
+<hr />
+<h2 id="一phase-56-新增文件结构">一、Phase 5/6 新增文件结构</h2>
+<h3 id="核心模块-12-个">1.1 核心模块 (12 个)</h3>
+<pre><code>node/src/core/
+├── alerting.ts                  # 异常告警系统 (Phase 6.2)
+├── communication-protocol.ts    # Instance 间通信协议 (Phase 6.1)
+├── conflict-resolver.ts         # 冲突解决机制 (Phase 6.1)
+├── dependency-analyzer.ts       # 任务依赖分析 (Phase 5.3)
+├── file-queue-manager.ts        # 文件队列管理 (Phase 4)
+├── heartbeat-monitor.ts         # 心跳监控 (Phase 4)
+├── history-tracker.ts           # 历史追踪 (Phase 5.2)
+├── instance-registry.ts         # Instance 注册 (Phase 4)
+├── knowledge-base.ts            # 知识库系统 (Phase 6.1)
+├── message-queue.ts             # 消息队列 (Phase 4)
+├── recommender.ts               # 智能推荐引擎 (Phase 5.2)
+├── redis-client.ts              # Redis 客户端 (Phase 4)
+├── skill-executor.ts            # 技能执行器 (Phase 4)
+├── sqlite-client.ts             # SQLite 客户端 (Phase 4)
+├── task-assigner.ts             # 任务分配器 (Phase 4)
+└── workflow-engine.ts           # 工作流引擎 (Phase 6.1)</code></pre>
+<h3 id="命令模块-9-个">1.2 命令模块 (9 个)</h3>
+<pre><code>node/src/commands/
+├── alerts.ts                    # 告警管理命令 (Phase 6.2)
+├── claim-helpers.ts             # 任务领取辅助 (Phase 4)
+├── claim.ts                     # 任务领取命令 (Phase 4)
+├── dependency-analyze.ts        # 依赖分析命令 (Phase 5.3)
+├── init-wizard.ts               # 初始化向导 (Phase 4)
+├── recommend.ts                 # 智能推荐命令 (Phase 5.2)
+├── set-role.ts                  # 角色设置命令 (Phase 4)
+├── start-instance.ts            # Instance 启动命令 (Phase 4)
+├── submit-pr.ts                 # PR 提交命令 (Phase 3)
+└── team-status.ts               # 团队状态命令 (Phase 4)</code></pre>
+<h3 id="api-模块-1-个">1.3 API 模块 (1 个)</h3>
+<pre><code>node/src/api/
+└── web-server.ts                # Web 服务器和 API 端点 (Phase 5.1)</code></pre>
+<h3 id="类型定义-2-个">1.4 类型定义 (2 个)</h3>
+<pre><code>node/src/types/
+├── index.ts                     # 核心类型定义
+└── recommender.ts               # 推荐系统类型 (Phase 5.2)</code></pre>
+<h3 id="web-前端-3-个">1.5 Web 前端 (3 个)</h3>
+<pre><code>web/
+├── app.js                       # Dashboard 前端逻辑
+├── index.html                   # Dashboard 主页面
+└── styles.css                   # Dashboard 样式表</code></pre>
+<h3 id="测试文件-2-个">1.6 测试文件 (2 个)</h3>
+<pre><code>node/tests/
+├── collaboration.test.ts        # 多实例协同测试 (Phase 6.1)
+└── recommender.test.ts          # 推荐系统测试 (Phase 5.2)</code></pre>
+<h3 id="脚本文件-1-个">1.7 脚本文件 (1 个)</h3>
+<pre><code>scripts/
+└── start-web-dashboard.sh       # Web Dashboard 启动脚本 (Phase 5.1)</code></pre>
+<h3 id="文档-6-个">1.8 文档 (6 个)</h3>
+<pre><code>docs/
+├── plans/
+│   ├── 2026-03-26-phase-5-6-completion-report.md  # Phase 5/6 完成报告
+│   ├── PHASE-4-COMPLETION-REPORT.md               # Phase 4 完成报告
+│   ├── phase-4.3-completion-report.md             # Phase 4.3 完成报告
+│   └── phase-6.1-completion-report.md             # Phase 6.1 完成报告
+├── web-dashboard.md             # Web Dashboard 使用指南
+└── node/docs/
+    ├── phase-5.2-report.md      # Phase 5.2 实现报告
+    └── recommender.md           # 推荐系统使用指南</code></pre>
+<hr />
+<h2 id="二编译产物结构">二、编译产物结构</h2>
+<pre><code>node/dist/
+├── api/
+│   ├── web-server.js            (11,301 bytes)
+│   └── web-server.js.map
+├── commands/
+│   ├── alerts.js                (5,031 bytes)
+│   ├── dependency-analyze.js    (4,808 bytes)
+│   ├── recommend.js             (9,572 bytes)
+│   └── ... (7 个其他命令)
+├── core/
+│   ├── alerting.js              (10,350 bytes)
+│   ├── communication-protocol.js (6,834 bytes)
+│   ├── conflict-resolver.js     (19,598 bytes)
+│   ├── dependency-analyzer.js   (10,323 bytes)
+│   ├── knowledge-base.js        (13,731 bytes)
+│   ├── recommender.js           (13,335 bytes)
+│   ├── workflow-engine.js       (15,997 bytes)
+│   └── ... (9 个其他模块)
+├── types/
+│   ├── index.js
+│   └── recommender.js
+└── index.js                     # CLI 主入口</code></pre>
+<hr />
+<h2 id="三代码统计">三、代码统计</h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>文件数</th>
+<th>代码行数 (估算)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>核心模块</td>
+<td>16</td>
+<td>~6,500 行</td>
+</tr>
+<tr>
+<td>命令模块</td>
+<td>9</td>
+<td>~3,200 行</td>
+</tr>
+<tr>
+<td>API 模块</td>
+<td>1</td>
+<td>~450 行</td>
+</tr>
+<tr>
+<td>类型定义</td>
+<td>2</td>
+<td>~800 行</td>
+</tr>
+<tr>
+<td>Web 前端</td>
+<td>3</td>
+<td>~650 行</td>
+</tr>
+<tr>
+<td>测试文件</td>
+<td>2</td>
+<td>~800 行</td>
+</tr>
+<tr>
+<td>文档</td>
+<td>6</td>
+<td>~2,500 行</td>
+</tr>
+<tr>
+<td><strong>总计</strong></td>
+<td><strong>39</strong></td>
+<td><strong>~14,900 行</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="四距离卓越工程的差距分析">四、距离卓越工程的差距分析</h2>
+<h3 id="测试覆盖率">4.1 测试覆盖率 ❌</h3>
+<p><strong>现状</strong>: - 仅有 2 个测试文件 (44 个测试用例) - 仅覆盖
+recommender 和 collaboration 模块 - 核心模块无测试：alerting,
+workflow-engine, conflict-resolver, knowledge-base - 无 E2E 测试 -
+无性能测试 - 无集成测试</p>
+<p><strong>卓越标准</strong>: - 测试覆盖率 ≥ 80% - 单元测试 + 集成测试 +
+E2E 测试三层体系 - 关键路径 100% 覆盖 - 性能基准测试 -
+自动化回归测试</p>
+<p><strong>差距</strong>: - 缺少 10+ 个核心模块的单元测试 - 缺少 API
+端点集成测试 - 缺少 Web Dashboard E2E 测试 - 缺少负载测试和压力测试</p>
+<h3 id="文档完整性">4.2 文档完整性 ⚠️</h3>
+<p><strong>现状</strong>: - 有 Phase 完成报告 (4 个) - 有功能使用指南 (2
+个) - 缺少 API 文档 - 缺少架构设计文档 - 缺少开发者指南 -
+缺少运维手册</p>
+<p><strong>卓越标准</strong>: - 完整的 API 参考文档 (Swagger/OpenAPI) -
+架构决策记录 (ADR) - 开发者入门指南 - 运维部署手册 - 故障排查指南 -
+最佳实践文档</p>
+<p><strong>差距</strong>: - 需要生成 API 文档 (JSDoc → Markdown/HTML) -
+需要编写架构决策记录 - 需要创建运维手册 (监控、告警、备份) -
+需要补充故障排查指南</p>
+<h3 id="cicd-流程">4.3 CI/CD 流程 ❌</h3>
+<p><strong>现状</strong>: - 无自动化 CI 流水线 - 无自动化测试触发 -
+无代码质量检查 - 无自动化发布流程 - 手动编译和推送</p>
+<p><strong>卓越标准</strong>: - Git Push 触发自动化测试 - 代码质量检查
+(ESLint, Prettier) - 测试覆盖率报告 - 自动化版本发布 - 自动化部署</p>
+<p><strong>差距</strong>: - 需要配置 GitHub Actions / GitLab CI -
+需要集成代码质量工具 - 需要配置自动化发布流程 - 需要配置 Docker
+镜像构建</p>
+<h3 id="监控和可观测性">4.4 监控和可观测性 ⚠️</h3>
+<p><strong>现状</strong>: - 基础告警系统已实现 (Phase 6.2) - Web
+Dashboard 实时显示状态 - 无结构化日志 - 无指标收集 (Metrics) -
+无分布式追踪 (Tracing) - 无日志聚合</p>
+<p><strong>卓越标准</strong>: - 结构化日志 (JSON 格式) - 指标收集
+(Prometheus 兼容) - 分布式追踪 (OpenTelemetry) - 日志聚合 (ELK/Loki) -
+告警分级和升级机制</p>
+<p><strong>差距</strong>: - 需要实现结构化日志 - 需要导出系统指标
+(Redis/SQLite 连接数、任务处理速率) - 需要集成日志聚合服务 -
+需要完善告警升级机制</p>
+<h3 id="错误处理和恢复">4.5 错误处理和恢复 ⚠️</h3>
+<p><strong>现状</strong>: - 已定义 EketErrorCode 错误码 -
+已实现统一错误类 EketErrorClass - 5 级 Fallback 架构已定义 -
+部分模块错误处理不完善</p>
+<p><strong>卓越标准</strong>: - 统一的错误处理中间件 - 自动重试机制
+(指数退避) - 断路器模式 (Circuit Breaker) - 优雅降级策略 -
+错误恢复自动化</p>
+<p><strong>差距</strong>: - 需要实现自动重试机制 - 需要实现断路器模式 -
+需要完善 Fallback 实现 - 需要错误恢复自动化</p>
+<h3 id="安全性">4.6 安全性 ⚠️</h3>
+<p><strong>现状</strong>: - 无输入验证 (Zod 仅用于部分场景) - 无速率限制
+(Rate Limiting) - 无认证授权机制 - API 无访问控制 -
+敏感信息未加密存储</p>
+<p><strong>卓越标准</strong>: - 输入验证 (Zod/io-ts) - 速率限制 (Rate
+Limiting) - JWT/OAuth2 认证 - RBAC 权限控制 - 敏感数据加密存储 -
+安全审计日志</p>
+<p><strong>差距</strong>: - 需要完善输入验证 - 需要实现速率限制 -
+需要添加认证授权 - 需要加密敏感数据 - 需要安全审计</p>
+<h3 id="性能优化">4.7 性能优化 ⚠️</h3>
+<p><strong>现状</strong>: - Web Dashboard 5 秒轮询 (可能造成压力) -
+无缓存机制 - 无数据库连接池 - 无查询优化 - 无性能基准</p>
+<p><strong>卓越标准</strong>: - 缓存策略 (Redis 缓存) - 数据库连接池 -
+查询优化 (索引、分页) - WebSocket 实时推送 - 性能基准测试</p>
+<p><strong>差距</strong>: - 需要实现 Redis 缓存层 - 需要实现数据库连接池
+- 需要将轮询改为 WebSocket - 需要建立性能基准</p>
+<h3 id="配置管理">4.8 配置管理 ⚠️</h3>
+<p><strong>现状</strong>: - 配置文件分散 - 环境变量管理不统一 -
+无配置验证 - 无配置热更新</p>
+<p><strong>卓越标准</strong>: - 统一配置中心 - 配置验证 (Zod Schema) -
+配置热更新 - 多环境配置 (dev/staging/prod)</p>
+<p><strong>差距</strong>: - 需要统一配置管理 - 需要配置验证 -
+需要支持多环境</p>
+<h3 id="可维护性">4.9 可维护性 ✅</h3>
+<p><strong>现状</strong>: - TypeScript 类型完整 - 代码结构清晰 - 遵循
+DRY 原则 - 模块职责明确</p>
+<p><strong>卓越标准</strong>: - 代码复杂度检查 - 代码风格统一 - 依赖注入
+- 模块化设计</p>
+<p><strong>已达标</strong>: - ✅ TypeScript 严格模式 - ✅ 模块职责清晰 -
+✅ DRY 原则执行良好</p>
+<h3 id="可扩展性">4.10 可扩展性 ⚠️</h3>
+<p><strong>现状</strong>: - 单体架构 - 无插件系统 - 无扩展点设计 -
+无事件总线</p>
+<p><strong>卓越标准</strong>: - 插件化架构 - 事件驱动设计 -
+扩展点明确定义 - 支持水平扩展</p>
+<p><strong>差距</strong>: - 需要设计插件系统 - 需要实现事件总线 -
+需要定义扩展点 - 需要支持水平扩展</p>
+<hr />
+<h2 id="五优先级建议">五、优先级建议</h2>
+<h3 id="短期-1-2-周">短期 (1-2 周) 🔴</h3>
+<ol type="1">
+<li><strong>完善测试覆盖</strong> - 为所有核心模块添加单元测试</li>
+<li><strong>配置 CI/CD</strong> - 自动化测试和构建</li>
+<li><strong>结构化日志</strong> - 实现 JSON 格式日志输出</li>
+</ol>
+<h3 id="中期-2-4-周">中期 (2-4 周) 🟡</h3>
+<ol start="4" type="1">
+<li><strong>API 文档</strong> - 生成 JSDoc 文档</li>
+<li><strong>错误恢复</strong> - 实现自动重试和断路器</li>
+<li><strong>输入验证</strong> - 完善 Zod Schema 验证</li>
+<li><strong>缓存优化</strong> - Redis 缓存层</li>
+</ol>
+<h3 id="长期-1-2-月">长期 (1-2 月) 🟢</h3>
+<ol start="8" type="1">
+<li><strong>监控指标</strong> - Prometheus 兼容指标导出</li>
+<li><strong>认证授权</strong> - JWT/OAuth2</li>
+<li><strong>插件系统</strong> - 可扩展架构设计</li>
+<li><strong>WebSocket</strong> - 实时推送替代轮询</li>
+</ol>
+<hr />
+<h2 id="六总结">六、总结</h2>
+<h3 id="已完成的优势">已完成的优势</h3>
+<ul>
+<li>✅ 功能完整 - Phase 5/6 核心功能全部实现</li>
+<li>✅ 类型安全 - 完整 TypeScript 类型定义</li>
+<li>✅ 架构清晰 - 模块职责明确</li>
+<li>✅ 代码质量 - 遵循 DRY、防御式编程</li>
+</ul>
+<h3 id="待改进的差距">待改进的差距</h3>
+<table>
+<thead>
+<tr>
+<th>领域</th>
+<th>当前评分</th>
+<th>目标评分</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>测试覆盖率</td>
+<td>2/10</td>
+<td>9/10</td>
+<td>🔴 高</td>
+</tr>
+<tr>
+<td>CI/CD</td>
+<td>1/10</td>
+<td>9/10</td>
+<td>🔴 高</td>
+</tr>
+<tr>
+<td>监控可观测</td>
+<td>4/10</td>
+<td>8/10</td>
+<td>🟡 中</td>
+</tr>
+<tr>
+<td>错误处理</td>
+<td>5/10</td>
+<td>9/10</td>
+<td>🟡 中</td>
+</tr>
+<tr>
+<td>安全性</td>
+<td>3/10</td>
+<td>9/10</td>
+<td>🟡 中</td>
+</tr>
+<tr>
+<td>性能优化</td>
+<td>4/10</td>
+<td>8/10</td>
+<td>🟡 中</td>
+</tr>
+<tr>
+<td>配置管理</td>
+<td>4/10</td>
+<td>8/10</td>
+<td>🟢 低</td>
+</tr>
+<tr>
+<td>可维护性</td>
+<td>8/10</td>
+<td>9/10</td>
+<td>✅ 良好</td>
+</tr>
+<tr>
+<td>可扩展性</td>
+<td>4/10</td>
+<td>8/10</td>
+<td>🟢 低</td>
+</tr>
+</tbody>
+</table>
+<p><strong>综合评分</strong>: 4.3/10 -
+<strong>功能完整，工程化待提升</strong></p>
+<hr />
+<p><strong>下一步行动</strong>: 创建 Phase 7 (工程化提升)
+计划，聚焦测试、CI/CD、监控三大领域。</p>
+</body>
+</html>

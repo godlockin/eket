@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Framework - 项目进度追踪</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Framework - 项目进度追踪</h1>
+</header>
+<h1 id="eket-framework---项目进度追踪">EKET Framework -
+项目进度追踪</h1>
+<blockquote>
+<p>⚠️ <strong>已停止维护</strong>：本文件最后更新于 Round
+19（v2.10.4，2026-04-14）。 Round 20+ 起改为 Rust
+迁移路线，进度追踪迁移至 JIRA tickets 和 git log。 本文件保留作为 Round
+1~19 的历史档案，不再更新。</p>
+</blockquote>
+<hr />
+<p><strong>当前版本</strong>: v2.10.4 <strong>更新时间</strong>:
+2026-04-14 <strong>维护者</strong>: Master Agent</p>
+<hr />
+<h2 id="总体进度">总体进度</h2>
+<table>
+<colgroup>
+<col style="width: 36%" />
+<col style="width: 27%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th>Pillar</th>
+<th>状态</th>
+<th>完成度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>测试覆盖</td>
+<td>✅ 完成</td>
+<td>1109/1109 (100%)</td>
+</tr>
+<tr>
+<td>TypeScript 编译</td>
+<td>✅ 完成</td>
+<td>0 errors (25 → 0, v2.9.1)</td>
+</tr>
+<tr>
+<td>三级架构</td>
+<td>✅ 完成</td>
+<td>Level 1/2/3 全部实现</td>
+</tr>
+<tr>
+<td>Docker 化</td>
+<td>✅ 完成</td>
+<td>Dockerfile + docker-compose</td>
+</tr>
+<tr>
+<td>文档站</td>
+<td>✅ 完成</td>
+<td>Docusaurus, 8 篇核心文档</td>
+</tr>
+<tr>
+<td>Mindset 注入</td>
+<td>✅ 完成</td>
+<td>实例启动时自动注入</td>
+</tr>
+<tr>
+<td>Python SDK</td>
+<td>✅ 完成</td>
+<td>sdk/python/ 26/26 tests 通过，7 examples</td>
+</tr>
+<tr>
+<td>JS SDK</td>
+<td>✅ 完成</td>
+<td>sdk/javascript/ 12/12 tests 通过，6 examples</td>
+</tr>
+<tr>
+<td>GitHub Actions CI</td>
+<td>✅ 完成</td>
+<td>.github/workflows/ci.yml + test.yml</td>
+</tr>
+<tr>
+<td>健康检查端点</td>
+<td>✅ 完成</td>
+<td>/health /ready /live</td>
+</tr>
+<tr>
+<td>分支保护规则</td>
+<td>✅ 完成</td>
+<td>miao: PR+CI 强制，1人 review</td>
+</tr>
+<tr>
+<td>SDK 版本策略</td>
+<td>✅ 完成</td>
+<td>sdk/VERSIONING.md + RELEASING.md x2</td>
+</tr>
+<tr>
+<td>SDK Examples</td>
+<td>✅ 完成</td>
+<td>Python 7个 + JS 6个 + README</td>
+</tr>
+<tr>
+<td>安全加固</td>
+<td>✅ 完成</td>
+<td>CORS/Auth/MD5→SHA256 三项修复</td>
+</tr>
+<tr>
+<td>防幻觉机制</td>
+<td>✅ 完成</td>
+<td>CI gate + PR template + CLAUDE.md 红线</td>
+</tr>
+<tr>
+<td>Repo 历史清理</td>
+<td>✅ 完成</td>
+<td>filter-repo 移除 docs-site 65MB→3.38MB</td>
+</tr>
+<tr>
+<td>EKET Claude Code Skill</td>
+<td>✅ 完成</td>
+<td>.claude/skills/eket/ + 3篇 references</td>
+</tr>
+<tr>
+<td>安装脚本</td>
+<td>✅ 完成</td>
+<td>scripts/setup.sh 四层 + install-skill.sh</td>
+</tr>
+<tr>
+<td>分支策略强制执行</td>
+<td>✅ 完成</td>
+<td>miao enforce_admins + testing 分支 + CI 覆盖</td>
+</tr>
+<tr>
+<td>Agent 专家设定升级</td>
+<td>✅ 完成</td>
+<td>routing_description + quality_gates + confidence_model</td>
+</tr>
+<tr>
+<td>三省六部制度借鉴</td>
+<td>✅ 完成</td>
+<td>gate_reviewer + independent_auditor + 状态机 + 协议文档</td>
+</tr>
+<tr>
+<td>gate:review CLI</td>
+<td>✅ 完成</td>
+<td>node dist/index.js gate:review — 16 tests，SHA256 hash
+链审计日志</td>
+</tr>
+<tr>
+<td>ticket-template v2.2.0</td>
+<td>✅ 完成</td>
+<td>gate_review 字段 + validate-ticket-template.sh + master:heartbeat
+CLI</td>
+</tr>
+<tr>
+<td>自动发布 workflow</td>
+<td>✅ 完成</td>
+<td>.github/workflows/release.yml — PyPI (OIDC/token) + npm + GitHub
+Release</td>
+</tr>
+<tr>
+<td>Harness-inspired Slaver 升级</td>
+<td>✅ 完成</td>
+<td>SlaverHeartbeat 能力声明 + 执行时长统计 + busyRatio 过载检测</td>
+</tr>
+<tr>
+<td>GSD-inspired 工程纪律升级</td>
+<td>✅ 完成</td>
+<td>Nyquist Rule + 4-Level Verification + Deviation Rules + Analysis
+Paralysis Guard</td>
+</tr>
+<tr>
+<td>跨项目借鉴知识库</td>
+<td>✅ 完成</td>
+<td>BORROWED-WISDOM.md — GSD/Harness/三省六部/OpenAI Agents SDK +
+通用经验</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="round-历史">Round 历史</h2>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 24%" />
+<col style="width: 24%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr>
+<th>Round</th>
+<th>主题</th>
+<th>版本</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1-5</td>
+<td>初始构建 + 核心功能</td>
+<td>v1.x</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>6-9</td>
+<td>质量建设 + 100% 测试</td>
+<td>v2.0-2.2</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>10</td>
+<td>CLI 改进 + Mindset 注入</td>
+<td>v2.3.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>11</td>
+<td>文档站建设</td>
+<td>v2.3.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Docker 化</td>
+<td>v2.3.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>13a</td>
+<td><strong>清账</strong>：测试 100% + 降级修复</td>
+<td>v2.4.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>13b</td>
+<td>CI/CD + 健康检查</td>
+<td>v2.5.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>14</td>
+<td>SDK 正式化 + 分支保护</td>
+<td>v2.6.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>15a</td>
+<td>安全加固 + 防幻觉 + Repo 清理</td>
+<td>v2.7.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>15b</td>
+<td>Skill + Setup + 分支策略 + Agent 专家升级</td>
+<td>v2.8.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>16a</td>
+<td>三省六部制度借鉴：gate_reviewer + independent_auditor</td>
+<td>v2.9.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>16b</td>
+<td><strong>填平空洞</strong>：TypeScript 编译错误清零（25 → 0）</td>
+<td>v2.9.1</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>16c</td>
+<td><strong>gate:review CLI</strong>：执行前关卡命令实现 + flaky
+测试修复</td>
+<td>v2.9.2</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>17a</td>
+<td><strong>Python SDK flake8 全清</strong>：46 个 lint 问题修复</td>
+<td>v2.9.3</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>17b</td>
+<td><strong>ticket-template v2.2.0 + validate script + master:heartbeat
++ release workflow</strong></td>
+<td>v2.10.0</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>18</td>
+<td><strong>Harness 借鉴</strong>：SlaverHeartbeat 能力声明 + 执行时长 +
+busyRatio 过载检测</td>
+<td>v2.10.1</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>19</td>
+<td><strong>GSD 借鉴</strong>：Nyquist Rule + 4-Level Artifact
+Verification + Deviation Rules + Analysis Paralysis Guard</td>
+<td>v2.10.2</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>19b</td>
+<td><strong>工程记忆</strong>：validate 误报修复 + BORROWED-WISDOM
+跨项目借鉴知识库</td>
+<td>v2.10.3~4</td>
+<td>✅ 完成</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="当前技术债务">当前技术债务</h2>
+<table>
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 25%" />
+<col style="width: 35%" />
+<col style="width: 19%" />
+</colgroup>
+<thead>
+<tr>
+<th>问题</th>
+<th>优先级</th>
+<th>目标 Round</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>分支保护规则未配置</td>
+<td>P0</td>
+<td>14</td>
+<td>✅ 完成（miao）</td>
+</tr>
+<tr>
+<td>SDK 版本策略未定义</td>
+<td>P2</td>
+<td>14</td>
+<td>✅ 完成（VERSIONING.md）</td>
+</tr>
+<tr>
+<td>node/package.json 版本与 tag 不同步</td>
+<td>P3</td>
+<td>持续</td>
+<td>✅ 已修正（2.6.0）</td>
+</tr>
+<tr>
+<td>CORS wildcard + credentials 冲突</td>
+<td>P1</td>
+<td>15a</td>
+<td>✅ 修复（需显式 CORS_ORIGIN）</td>
+</tr>
+<tr>
+<td>Hook Server 默认无认证</td>
+<td>P1</td>
+<td>15a</td>
+<td>✅ 修复（requireAuth 默认 true）</td>
+</tr>
+<tr>
+<td>MD5 用于完整性校验</td>
+<td>P2</td>
+<td>15a</td>
+<td>✅ 修复（→ SHA256）</td>
+</tr>
+<tr>
+<td>git 历史含 docs-site build 65MB</td>
+<td>P2</td>
+<td>15a</td>
+<td>✅ filter-repo 清理完成</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="next-steps-round-19-待规划">Next Steps (Round 19 — 待规划)</h2>
+<ul>
+<li>PyPI 发布：<code>python3 -m build</code> + <code>twine upload</code>
+(sdk/python/RELEASING.md)</li>
+<li>npm 发布：<code>npm pack</code> + <code>npm publish</code>
+(sdk/javascript/RELEASING.md)</li>
+<li>SDK 对外文档整合至 Docusaurus 文档站</li>
+<li>master:heartbeat 与 EKET Web Dashboard 集成（/api/heartbeat
+端点）</li>
+<li>Slaver heartbeat CLI（对应 master:heartbeat 的 Slaver 侧 3
+问自检）</li>
+<li>Slaver 领取任务时自动写入 started_at（task:claim 命令集成）</li>
+</ul>
+<h2 id="round-19b-完成详情2026-04-14">Round 19b
+完成详情（2026-04-14）</h2>
+<h3 id="v2.10.3-validate-ticket-template.sh-误报修复">v2.10.3 —
+validate-ticket-template.sh 误报修复</h3>
+<p><code>check_tbd()</code> 函数 <code>\bTODO\b</code> 正则误匹配
+TASK-024.md 中解释性文本”非仅修改注释或 TODO）“，导致 TASK-024 被误判
+WARN。</p>
+<p>新增排除规则：<code>| grep -vE '或\s*TODO|TODO\s*）|TODO\s*\)|or TODO|注释或'</code></p>
+<p>验证：33/33 PASS，0 WARN，0 FAIL。</p>
+<h3 id="v2.10.4-borrowed-wisdom.md-跨项目借鉴知识库">v2.10.4 —
+BORROWED-WISDOM.md 跨项目借鉴知识库</h3>
+<p>新建 <code>confluence/memory/BORROWED-WISDOM.md</code>，沉淀 EKET
+历次 Round 从外部项目借鉴的思想和规则：</p>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr>
+<th>来源</th>
+<th>借鉴内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GSD (52k ⭐)</td>
+<td>Nyquist Rule / 4-Level Verification / Deviation Rules / Analysis
+Paralysis Guard</td>
+</tr>
+<tr>
+<td>Harness CD</td>
+<td>4值状态 / Capacity Declaration / busyRatio / 时间戳</td>
+</tr>
+<tr>
+<td>唐代三省六部</td>
+<td>gate_reviewer 否决权 / independent_auditor 独立监察 /
+制度性分权</td>
+</tr>
+<tr>
+<td>OpenAI Agents SDK</td>
+<td>routing_description / quality_gates / confidence_model</td>
+</tr>
+<tr>
+<td>EKET 自身迭代</td>
+<td>squash merge hash / 误报 vs 漏报 / 分支保护 / 向后兼容模式等 8
+条</td>
+</tr>
+</tbody>
+</table>
+<p>附借鉴评估框架（5维度）防止盲目引入。</p>
+<h2 id="round-19-完成详情2026-04-14">Round 19
+完成详情（2026-04-14）</h2>
+<p>借鉴 <a
+href="https://github.com/gsd-build/get-shit-done">gsd-build/get-shit-done</a>（52k
+stars）的工程纪律框架，强化 EKET Slaver 执行规范。</p>
+<h3 id="task-023-nyquist-rule-验收标准自动化要求">TASK-023: Nyquist Rule
+— 验收标准自动化要求</h3>
+<ul>
+<li><code>template/jira/ticket-template.md</code>：验收标准 section 加入
+Nyquist Rule HTML 注释 + 格式示例
+<ul>
+<li>规则：每条验收标准必须附带 &lt;60s 可自动执行的 shell 命令</li>
+</ul></li>
+<li><code>CLAUDE.md</code>：Ticket 职责边界表后加
+<code>### Nyquist Rule</code> 段落（可自动化/有时限/客观可重复 3
+条规则）</li>
+<li><code>scripts/validate-ticket-template.sh</code>：新增 INFO 级别检查
+#9
+<ul>
+<li>done 状态 ticket 若验收标准无反引号命令 → <code>[CYAN][INFO]</code>
+提示</li>
+<li>不影响通过/失败判断，不受 <code>--strict</code> 影响，汇总行新增
+INFO 计数</li>
+</ul></li>
+</ul>
+<h3 id="task-024-4-level-artifact-verification-pr-review-框架">TASK-024:
+4-Level Artifact Verification — PR Review 框架</h3>
+<p>借鉴 GSD verifier 的 4 级产物验证，加强防幻觉机制：</p>
+<ul>
+<li><code>CLAUDE.md</code>：PR Review 强制 checklist 后加 4-Level 子段落
+<ul>
+<li>L1 存在性：文件在 diff 中可见</li>
+<li>L2 实质性：非空函数体/stub/return undefined</li>
+<li>L3 接线：被正确 import/export/注册（孤立文件不算完成）</li>
+<li>L4 数据流：有非纯-mock 测试（纯文档 PR 豁免）</li>
+<li>L1-L3 缺任意一项 = 直接 reject</li>
+</ul></li>
+<li><code>template/docs/MASTER-HEARTBEAT-CHECKLIST.md</code>：加 4-level
+对照表，明确 L2↔︎防幻觉/L4↔︎禁mock 的映射关系</li>
+<li><code>.github/PULL_REQUEST_TEMPLATE/pull_request_template.md</code>：加
+Artifact Verification 自检 section</li>
+</ul>
+<h3 id="task-025-deviation-rules-slaver-偏差处理协议">TASK-025:
+Deviation Rules — Slaver 偏差处理协议</h3>
+<p>为 Slaver 建立明确的”自动修复 vs 上报 Master”决策规则：</p>
+<ul>
+<li><code>template/docs/SLAVER-HEARTBEAT-CHECKLIST.md</code>：新增”偏差处理协议”章节
+<ul>
+<li>Rule 1 Bug Fix：自动修复（限当前 ticket 修改过的文件）</li>
+<li>Rule 2 Missing Critical：自动补充 error handling/null
+guard（限新增代码）</li>
+<li>Rule 3 Blocking：自动修复 broken import/missing dep（限当前 ticket
+阻塞点）</li>
+<li>Rule 4 Architectural：<strong>必须上报</strong> — DB schema/新
+service/公共 API/100+ 行重构</li>
+<li>兜底：3次修复失败 → 停止，记录 deferred_issues</li>
+</ul></li>
+<li><code>template/jira/ticket-template.md</code> 执行报告加
+<code>deferred_issues</code> 字段</li>
+<li><code>CLAUDE.md</code> Slaver 职责段加偏差处理协议一句话引用</li>
+</ul>
+<h3 id="task-026-analysis-paralysis-guard-行动阈值规则">TASK-026:
+Analysis Paralysis Guard — 行动阈值规则</h3>
+<ul>
+<li><code>template/docs/SLAVER-HEARTBEAT-CHECKLIST.md</code>：新增”行动阈值规则”章节
+<ul>
+<li>阈值：连续 5+ 次读操作无写操作 → 触发决策点</li>
+<li>决策：A) 立即写框架代码 / B) 报告
+BLOCKED（二选一，禁止继续探索）</li>
+<li>例外：Gate Review 首次分析豁免最多 10 次读操作</li>
+</ul></li>
+<li><code>CLAUDE.md</code> Slaver 心跳检查 3 问 → 4 问：加第 4
+问”我是否陷入分析瘫痪？”</li>
+</ul>
+<p><strong>测试</strong>: 1109/1109 ✅ | 纯文档/脚本改动，无 TS 变更</p>
+<h2 id="round-18-完成详情2026-04-14">Round 18
+完成详情（2026-04-14）</h2>
+<h3 id="task-020-slaverheartbeat-能力声明升级">TASK-020: SlaverHeartbeat
+能力声明升级</h3>
+<ul>
+<li><code>SlaverCapacity</code>
+新接口：<code>{ maxConcurrent: number; current: number }</code></li>
+<li><code>SlaverHeartbeat.status</code> 3值 →
+4值：<code>idle | busy | draining | offline</code>
+<ul>
+<li><code>idle</code>：空闲可接单；<code>busy</code>：满载拒绝新任务；<code>draining</code>：优雅关闭中；<code>offline</code>：已离线</li>
+</ul></li>
+<li>新增字段：<code>capabilities: string[]</code>（角色能力列表）、<code>capacity: SlaverCapacity</code>、<code>lastTaskCompletedAt?: number</code></li>
+<li><code>redis-client.ts</code> 向后兼容：老 <code>'active'</code> →
+<code>'idle'</code>，缺失字段补默认值</li>
+<li><code>heartbeat-monitor.ts</code> + <code>start-instance.ts</code>
+同步更新</li>
+</ul>
+<h3 id="task-021-ticket-执行时间戳-masterheartbeat-慢任务统计">TASK-021:
+Ticket 执行时间戳 + master:heartbeat 慢任务统计</h3>
+<ul>
+<li><code>ticket-template.md</code> v2.2.0 → v2.3.0：新增
+<code>started_at</code> / <code>completed_at</code> 字段（Slaver
+填写）</li>
+<li><code>master-heartbeat.ts</code> 新增：
+<ul>
+<li><code>SLOW_TASK_THRESHOLD_MINUTES = 120</code>（具名常量）</li>
+<li><code>parseTimestamp()</code> 工具函数（解析失败不 crash）</li>
+<li><code>HeartbeatReport.progress.slowTasks[]</code>：<code>in_progress</code>
+且 started_at &gt; 120min → YELLOW</li>
+<li><code>HeartbeatReport.progress.avgExecutionMinutes</code>：done
+ticket 平均执行分钟数</li>
+</ul></li>
+<li>新增 3 个测试：慢任务检测、均值计算、缺字段不 crash</li>
+</ul>
+<h3 id="task-022-validate-脚本新字段检查-busyratio-过载检测">TASK-022:
+validate 脚本新字段检查 + busyRatio 过载检测</h3>
+<ul>
+<li><code>validate-ticket-template.sh</code> WARN
+#7：<code>in_progress</code> 状态缺 <code>started_at</code></li>
+<li><code>validate-ticket-template.sh</code> WARN #8：<code>done</code>
+状态缺 <code>completed_at</code></li>
+<li><code>HeartbeatReport.slaverStatus</code> 新增
+<code>overloaded: SlaverHeartbeat[]</code> +
+<code>busyRatio: number</code></li>
+<li>健康逻辑：<code>busyRatio &gt;= 0.8</code> → YELLOW（80% Slaver
+满载告警）</li>
+<li>除零保护：无活跃 Slaver 时 <code>busyRatio = 0</code></li>
+<li>Master 修复：validate 脚本正则支持 <code>## N. 验收标准</code>
+编号格式</li>
+</ul>
+<p><strong>测试</strong>: 1109/1109 ✅ | build 零 TS 错误 ✅</p>
+<h2 id="round-17b-完成详情2026-04-14">Round 17b
+完成详情（2026-04-14）</h2>
+<h3 id="ticket-template-v2.2.0">ticket-template v2.2.0</h3>
+<ul>
+<li>新增
+<code>gate_review_veto_count</code>、<code>veto_reason</code>、<code>resubmit_conditions</code>
+字段（与 <code>gate:review</code> CLI 字段名完全对齐）</li>
+<li>状态机描述更新：<code>backlog → analysis → ready → gate_review → in_progress → test → pr_review → done</code></li>
+<li>领取记录表新增 Gate Review APPROVE/VETO 行</li>
+</ul>
+<h3
+id="scriptsvalidate-ticket-template.sh">scripts/validate-ticket-template.sh</h3>
+<ul>
+<li>bash 3 / macOS 兼容（<code>grep -E</code>，<code>while read</code>
+替代 <code>mapfile</code>）</li>
+<li>FAIL 检查：Ticket ID、H1 标题、状态字段、验收标准 section</li>
+<li>WARN
+检查：优先级、验收标准内容过短、<code>gate_review_veto_count</code>
+字段</li>
+<li>gate_review 状态额外 FAIL：缺 <code>veto_reason</code> /
+<code>resubmit_conditions</code></li>
+<li>TBD/TODO 检测（WARN 级别，与 gate:review 对齐）</li>
+<li><code>--dir</code> / <code>--strict</code> 参数；退出码 0/1/2</li>
+</ul>
+<h3 id="masterheartbeat-cli-命令">master:heartbeat CLI 命令</h3>
+<ul>
+<li><code>node dist/index.js master:heartbeat [--json] [--brief] [--project-root &lt;path&gt;]</code></li>
+<li>实现 Master 4 问自检：任务队列、Slaver 状态、项目进度、阻塞问题</li>
+<li>导出 <code>generateReport()</code> 供测试直接调用</li>
+<li>健康评级 GREEN / YELLOW / RED；RED 时 exit code 2</li>
+<li>10 个单元测试覆盖所有主要路径；总测试数 1105/1105</li>
+</ul>
+<h3 id="github-actions-自动发布-workflow">GitHub Actions 自动发布
+workflow</h3>
+<ul>
+<li><code>.github/workflows/release.yml</code>：tag <code>v*</code>
+触发</li>
+<li><code>publish-pypi</code>：OIDC Trusted Publishing
+优先（<code>vars.PYPI_USE_OIDC == 'true'</code>），token 降级</li>
+<li><code>publish-npm</code>：<code>npm ci</code> +
+<code>npm test</code> + <code>npm publish --access public</code></li>
+<li><code>create-release</code>：依赖两个发布 job 成功；从
+<code>confluence/progress-tracker.md</code> 提取 Release Notes</li>
+<li>CI 安全：版本号从 <code>GITHUB_REF_NAME</code> 提取（非用户控制
+body），prerelease 检查通过 env var 传入</li>
+</ul>
+<h2 id="round-16c-完成详情2026-04-13">Round 16c
+完成详情（2026-04-13）</h2>
+<h3 id="gatereview-cli-命令实现">gate:review CLI 命令实现</h3>
+<p>将 Round 16a 定义的 <code>gate_reviewer</code> agent.yml
+合约落地为可执行 CLI 命令：</p>
+<p><strong>文件</strong>：<code>node/src/commands/gate-review.ts</code>（~500
+行）</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>功能</th>
+<th>实现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ticket 解析</td>
+<td><code>parseTicket()</code> — 读取 YAML/Markdown ticket 文件</td>
+</tr>
+<tr>
+<td>验收标准检查</td>
+<td>无 AC 行 → hard fail (VETO)</td>
+</tr>
+<tr>
+<td>TBD/TODO 检测</td>
+<td>正则扫描全文 → hard fail (VETO)</td>
+</tr>
+<tr>
+<td>技术方案检查</td>
+<td>无设计描述 → warn only (不 VETO)</td>
+</tr>
+<tr>
+<td>死锁防止</td>
+<td><code>vetoCount &gt;= 2</code> → 第 3 次强制 APPROVE</td>
+</tr>
+<tr>
+<td>SHA256 hash 链</td>
+<td><code>appendAuditLog()</code> — append-only
+<code>confluence/audit/gate-review-log.jsonl</code></td>
+</tr>
+<tr>
+<td>Dry-run 模式</td>
+<td><code>--dry-run</code> — 只输出报告，不写文件</td>
+</tr>
+<tr>
+<td>批量扫描</td>
+<td><code>--scan-all</code> — 扫描所有 gate_review 状态 ticket</td>
+</tr>
+</tbody>
+</table>
+<p><strong>测试</strong>：16
+个测试全部通过（<code>node/tests/commands/gate-review.test.ts</code>）</p>
+<p><strong>CLI 注册</strong>：</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js gate:review <span class="pp">[</span><span class="ss">ticket</span><span class="pp">-</span><span class="ss">id</span><span class="pp">]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js gate:review <span class="at">--scan-all</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js gate:review TASK-001 <span class="at">--dry-run</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js gate:review TASK-001 <span class="at">--force-veto</span> <span class="st">&quot;依赖未完成&quot;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js gate:review TASK-001 <span class="at">--auto-approve</span></span></code></pre></div>
+<h3 id="master-election-flaky-测试修复">master-election flaky
+测试修复</h3>
+<p><strong>根因</strong>：<code>instanceId = instance_${hostname}_${pid}_${timestamp}</code>
+— CI 中同 PID+host 在 1ms 内创建两个实例，timestamp 相同导致 ID 碰撞</p>
+<p><strong>修复</strong>：添加随机后缀
+<code>const rand = Math.random().toString(36).slice(2, 7)</code> →
+<code>instance_host_pid_ts_xxxxx</code></p>
+<p><strong>结果</strong>：tests 1095/1095 passing，tagged v2.9.2</p>
+<h2 id="round-16b-完成详情2026-04-13">Round 16b
+完成详情（2026-04-13）</h2>
+<h3 id="typescript-编译错误清零">TypeScript 编译错误清零</h3>
+<p>消除积累的 25 个 TypeScript 严格编译错误，覆盖 6 个文件：</p>
+<table>
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 29%" />
+<col style="width: 48%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>修复数</th>
+<th>主要错误类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/commands/ticket-index.ts</code></td>
+<td>~10</td>
+<td>unused imports, wrong error type, unused params</td>
+</tr>
+<tr>
+<td><code>src/api/openclaw-gateway.ts</code></td>
+<td>4</td>
+<td>TS7030 不完整返回路径, unused params, reusePort 无效选项</td>
+</tr>
+<tr>
+<td><code>src/api/web-server.ts</code></td>
+<td>4</td>
+<td>ApiResponse timestamp 类型不匹配, health 端点类型冲突</td>
+</tr>
+<tr>
+<td><code>src/integration/openclaw-adapter.ts</code></td>
+<td>2</td>
+<td>unused variable in catch block</td>
+</tr>
+<tr>
+<td><code>src/skills/loader.ts</code></td>
+<td>1</td>
+<td>unused require parameter</td>
+</tr>
+<tr>
+<td><code>src/skills/unified-interface.ts</code></td>
+<td>4</td>
+<td>重复字段声明, unused generic, unused loop key</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关键修复</strong>： - <code>openclaw-gateway.ts</code>：移除
+<code>http.createServer({ reusePort: false })</code> 无效选项，修复
+TS7030（return in middleware） - <code>web-server.ts</code>：3
+个健康端点（/health /ready /live）绕过
+<code>sendJson&lt;ApiResponse&lt;T&gt;&gt;</code> 直写 raw JSON，避免
+timestamp <code>string vs number</code> 冲突同时保持测试兼容 -
+<code>ticket-index.ts</code>：引入 <code>makeError()</code> 辅助函数，用
+<code>new EketErrorClass(code, message)</code> 替代
+<code>{ code, message }</code> 对象直接量，满足
+<code>Result&lt;T, EketErrorClass&gt;</code> 约束 -
+<code>unified-interface.ts</code>：移除重复的
+<code>executionStats</code> 字段声明</p>
+<p><strong>结果</strong>：build 0 errors，tests 1079/1079
+passing，tagged v2.9.1</p>
+<h2 id="round-16a-完成详情2026-04-13">Round 16a
+完成详情（2026-04-13）</h2>
+<h3 id="三省六部制度借鉴">三省六部制度借鉴</h3>
+<p>借鉴唐代三省六部制的<strong>制度逻辑</strong>（而非角色命名）到 EKET
+框架：</p>
+<table>
+<thead>
+<tr>
+<th>制度原型</th>
+<th>EKET 映射</th>
+<th>核心价值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>门下省（封驳）</td>
+<td>gate_reviewer</td>
+<td>执行前阻断，有否决权</td>
+</tr>
+<tr>
+<td>御史台（独立监察）</td>
+<td>independent_auditor</td>
+<td>绕过 Master 直报 human</td>
+</tr>
+<tr>
+<td>三省分权</td>
+<td>状态机 gate_review 节点</td>
+<td>将审查嵌入流程，不依赖人工记忆</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gate_reviewer新角色">gate_reviewer（新角色）</h3>
+<ul>
+<li><strong>文件</strong>：<code>template/agents/reviewer/gate_reviewer/agent.yml</code></li>
+<li><strong>定位</strong>：执行前关卡，在
+<code>ready → in_progress</code> 间插入阻断点</li>
+<li><strong>否决政策</strong>：<code>must_veto</code>（TBD/无方案/依赖未完成）+
+<code>should_consider_veto</code>（范围蔓延/无回滚）</li>
+<li><strong>强制通过</strong>：同一 ticket 否决 ≥ 2 次，第 3
+次强制降级通过（死锁防止）</li>
+<li><strong>超时保护</strong>：30 分钟无响应自动
+APPROVE（审查员失联死锁防止）</li>
+<li><strong>MBTI</strong>：INTJ（建筑师型，预判式思维）</li>
+</ul>
+<h3 id="independent_auditor新角色">independent_auditor（新角色）</h3>
+<ul>
+<li><strong>文件</strong>：<code>template/agents/independent/independent_auditor/agent.yml</code></li>
+<li><strong>定位</strong>：独立审计，不受 Master 指挥，报告直达
+human</li>
+<li><strong>报告链路</strong>：写入
+<code>inbox/human_feedback/</code>（绕过 Master）</li>
+<li><strong>防篡改</strong>：审计日志 append-only + SHA256 hash
+链（<code>confluence/audit/independent-audit-log.jsonl</code>）</li>
+<li><strong>审计范围</strong>：执行偏差 + Master 决策质量 +
+gate_reviewer 否决质量 + 系统性风险</li>
+<li><strong>发现级别</strong>：CRITICAL（立即通知）/ HIGH / MEDIUM /
+LOW</li>
+<li><strong>MBTI</strong>：ISTJ（物流师型，极度严谨，不受权威影响）</li>
+</ul>
+<h3 id="状态机更新">状态机更新</h3>
+<p>新增 <code>gate_review</code> 状态节点：</p>
+<pre><code>backlog → analysis → ready → gate_review → in_progress → test → pr_review → done
+                                              ↓ VETO
+                                           analysis（打回）</code></pre>
+<h3 id="inbox-优先级分级">Inbox 优先级分级</h3>
+<p>新增指令分级规则（P0/P1/P2）写入
+CLAUDE.md，确保战略指令不被埋在任务队列中。</p>
+<h3 id="gate-review-protocol.md">GATE-REVIEW-PROTOCOL.md</h3>
+<p>新建 <code>template/docs/GATE-REVIEW-PROTOCOL.md</code>，记录： -
+完整流程图和步骤 - 死锁防止机制（含降级通过记录格式） -
+independent_auditor 触发协议和防篡改机制 - gate_reviewer
+质量监控指标（否决率 10-40% 为健康）</p>
+<h3 id="eket-claude-code-skill">EKET Claude Code Skill</h3>
+<ul>
+<li><strong>主文件</strong>：<code>.claude/skills/eket/SKILL.md</code>（242
+行）含 Preamble/Trigger/Commands/References</li>
+<li><strong>References</strong>：<code>architecture.md</code>（架构图+核心模块表）/
+<code>dev-commands.md</code>（构建/测试/发布命令）/
+<code>setup-guide.md</code>（四层安装详解+环境变量+FAQ）</li>
+<li><strong>Preamble</strong>：既存项目深度分析时自动询问团队加载方式（默认组合
+vs 引导式）</li>
+</ul>
+<h3 id="安装脚本">安装脚本</h3>
+<ul>
+<li><strong><code>scripts/setup.sh</code></strong>：四层分层安装（Level
+1 Shell → Level 2 Node.js → Level 3 Docker+Redis → Level 4 SQLite）
+<ul>
+<li><code>--level=N</code> / <code>--all</code> / <code>--yes</code>
+参数控制，交互式逐层询问</li>
+</ul></li>
+<li><strong><code>scripts/install-skill.sh</code></strong>：团队 Skill
+分发脚本，将项目内 Skill 安装至 <code>~/.claude/skills/eket/</code>
+<ul>
+<li><code>install / --update / --remove / --status</code> 四个操作</li>
+</ul></li>
+</ul>
+<h3 id="分支策略强制执行">分支策略强制执行</h3>
+<ul>
+<li><code>miao</code> 分支：<code>enforce_admins: true</code>，PR + CI
+<code>test</code> check 必须 + 1 review</li>
+<li><code>testing</code> 分支：创建，CI 覆盖（push/PR 触发）</li>
+<li><code>.github/workflows/test.yml</code>：触发分支
+<code>[miao, testing]</code></li>
+<li><code>node/package-lock.json</code>：从 <code>.gitignore</code>
+移除并纳入追踪（CI npm cache 依赖）</li>
+</ul>
+<h3 id="agent-专家设定升级业界调研后补齐三项-gap">Agent
+专家设定升级（业界调研后补齐三项 Gap）</h3>
+<ul>
+<li><strong><code>routing_description</code></strong>（P0，来自 OpenAI
+Agents SDK）：13 个角色全覆盖，声明”最适合/不适合”供 Master
+精准路由</li>
+<li><strong><code>quality_gates</code></strong>（P0，CI
+质量门概念移植）：代码类含 <code>code</code> +
+<code>pr_checklist</code>，文档类含 <code>doc</code></li>
+<li><strong><code>confidence_model</code></strong>（P1，业界首创）：high/medium/low/escalate
+四档，Agent 自知边界，超出边界必须上报</li>
+</ul>
+<h3 id="安全加固">安全加固</h3>
+<ol type="1">
+<li><strong>CORS 修复</strong>
+(<code>node/src/api/eket-server.ts</code>)
+<ul>
+<li>问题：<code>origin: '*'</code> + <code>credentials: true</code> 违反
+CORS spec，浏览器拒绝</li>
+<li>修复：未设置 <code>CORS_ORIGIN</code> 时完全禁用
+CORS（安全默认值）</li>
+</ul></li>
+<li><strong>Hook Server 认证</strong>
+(<code>node/src/hooks/http-hook-server.ts</code>)
+<ul>
+<li>问题：<code>requireAuth ?? isProduction</code> 导致非 prod
+环境默认无认证</li>
+<li>修复：<code>requireAuth ?? true</code>，仅在显式设置
+<code>requireAuth: false</code> 时跳过认证</li>
+</ul></li>
+<li><strong>校验和算法</strong>
+(<code>node/src/core/optimized-file-queue.ts</code>)
+<ul>
+<li>问题：MD5 用于消息完整性校验，密码学强度不足</li>
+<li>修复：→ SHA256</li>
+</ul></li>
+</ol>
+<h3 id="master-防幻觉系统">Master 防幻觉系统</h3>
+<ul>
+<li><strong>CI Gate</strong>：<code>.github/workflows/test.yml</code>
+激活分支保护已有的 <code>test</code> 必须通过 check</li>
+<li><strong>PR
+Template</strong>：<code>.github/PULL_REQUEST_TEMPLATE/pull_request_template.md</code>
+强制贴真实 stdout</li>
+<li><strong>CLAUDE.md 红线</strong>：5条禁止行为 + 4项 PR Review 强制
+checklist</li>
+</ul>
+<h3 id="repo-历史清理">Repo 历史清理</h3>
+<ul>
+<li><code>git filter-repo</code> 彻底移除
+<code>docs-site/{node_modules,build,.docusaurus}</code></li>
+<li>仓库体积：65.40 MiB → 3.38 MiB（-95%）</li>
+<li><code>.gitignore</code> 更新：新增 9 项排除规则</li>
+</ul>
+</body>
+</html>

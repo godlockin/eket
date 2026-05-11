@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Agent 框架设计理念 v0.6</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Agent 框架设计理念 v0.6</h1>
+</header>
+<h1 id="eket-agent-框架设计理念-v0.6">EKET Agent 框架设计理念 v0.6</h1>
+<p><strong>版本</strong>: 0.6.2 <strong>日期</strong>: 2026-03-23</p>
+<hr />
+<h2 id="核心设计理念">核心设计理念</h2>
+<blockquote>
+<p><strong>一切皆 Task</strong> ——
+从需求收集、分析、拆解，到研发、迭代、Review、Merge，所有工作都是
+Task，只是难度和持续时间不同。</p>
+</blockquote>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    Task 生命周期                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  需求收集 → 需求分析 → 任务拆解 → 系统设计 → 开发 → 测试 →    │
+│     ↑                                                        │
+│     └─────────────────── 迭代循环 ────────────────────────────┘
+│                              │
+│                              ▼
+│                         Review → Merge → Done
+│                                                                 │
+│  每个环节都是一个 Task，由对应角色的 Agent 主动承接                    │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<hr />
+<h2 id="agent-设计原则">Agent 设计原则</h2>
+<h3 id="去中心化网络">1. 去中心化网络</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    Agent 去中心化网络                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│         ┌───────────────┐                                      │
+│         │ Product Mgr   │  需求分析、任务拆解                     │
+│         └───────┬───────┘                                      │
+│                 │                                               │
+│         ┌───────┴───────┐                                      │
+│         │   Architect   │  系统设计、技术选型                     │
+│         └───────┬───────┘                                      │
+│                 │                                               │
+│    ┌────────────┼────────────┐                                  │
+│    │            │            │                                  │
+│    ▼            ▼            ▼                                  │
+│ ┌──────┐  ┌──────┐  ┌──────┐                                   │
+│ │Front │  │Back  │  │ QA   │  开发、测试                          │
+│ └──┬───┘  └──┬───┘  └──┬───┘                                   │
+│    │         │         │                                       │
+│    └─────────┼─────────┘                                       │
+│              │                                                  │
+│    ┌─────────┴─────────┐                                       │
+│    │                   │                                       │
+│    ▼                   ▼                                       │
+│ ┌──────┐         ┌──────────┐                                  │
+│ │DevOps │         │  Reviewer │  部署、审核、合并                   │
+│ └──────┘         └──────────┘                                  │
+│                                                                 │
+│  每个 Agent 都是独立节点，主动承接符合角色的任务                       │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<h3 id="独立实例">2. 独立实例</h3>
+<p>每个 Agent 是独立的 Instance/Session：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>独立运行</strong></td>
+<td>每个 Agent 有自己的进程/会话，互不干扰</td>
+</tr>
+<tr>
+<td><strong>主动承接</strong></td>
+<td>Agent 根据角色设定，主动领取匹配的任务</td>
+</tr>
+<tr>
+<td><strong>可插拔</strong></td>
+<td>可随时启动新的 Agent 实例加入协作</td>
+</tr>
+<tr>
+<td><strong>状态隔离</strong></td>
+<td>Agent 之间有明确的状态边界</td>
+</tr>
+</tbody>
+</table>
+<h3 id="角色驱动">3. 角色驱动</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Agent 角色定义</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">roles</span><span class="kw">:</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">product_manager</span><span class="kw">:</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> 产品经理</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">tasks</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">需求收集，需求分析，任务拆解，优先级设定</span><span class="kw">]</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">skills</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">requirement_analysis</span><span class="kw">,</span><span class="at"> task_decomposition</span><span class="kw">]</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">architect</span><span class="kw">:</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> 架构师</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">tasks</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">系统设计，技术选型，架构评审</span><span class="kw">]</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">skills</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">architecture_design</span><span class="kw">,</span><span class="at"> tech_stack_selection</span><span class="kw">]</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">frontend_dev</span><span class="kw">:</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> 前端开发</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">tasks</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">前端开发，UI 实现，状态管理</span><span class="kw">]</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">skills</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">frontend_development</span><span class="kw">,</span><span class="at"> ui_implementation</span><span class="kw">]</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">backend_dev</span><span class="kw">:</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> 后端开发</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">tasks</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">后端开发，API 设计，数据库设计</span><span class="kw">]</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">skills</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">backend_development</span><span class="kw">,</span><span class="at"> api_design</span><span class="kw">]</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">qa_engineer</span><span class="kw">:</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> 测试工程师</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">tasks</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">测试用例，单元测试，E2E 测试</span><span class="kw">]</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">skills</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">test_development</span><span class="kw">,</span><span class="at"> e2e_testing</span><span class="kw">]</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">devops_engineer</span><span class="kw">:</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> 运维工程师</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">tasks</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">CI/CD，部署，监控</span><span class="kw">]</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">skills</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">docker_build</span><span class="kw">,</span><span class="at"> kubernetes_deploy</span><span class="kw">]</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">reviewer</span><span class="kw">:</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> 审核员</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">tasks</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">代码 Review，合并审核</span><span class="kw">]</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">skills</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">code_review</span><span class="kw">,</span><span class="at"> quality_assurance</span><span class="kw">]</span></span></code></pre></div>
+<hr />
+<h2 id="task-分类">Task 分类</h2>
+<h3 id="按难度分级">按难度分级</h3>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 21%" />
+<col style="width: 21%" />
+<col style="width: 35%" />
+</colgroup>
+<thead>
+<tr>
+<th>等级</th>
+<th>描述</th>
+<th>示例</th>
+<th>处理 Agent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>L1</strong></td>
+<td>简单任务 (&lt;30min)</td>
+<td>修复 typo、更新配置</td>
+<td>任意 Agent</td>
+</tr>
+<tr>
+<td><strong>L2</strong></td>
+<td>常规任务 (&lt;2h)</td>
+<td>小功能开发、Bug 修复</td>
+<td>对应角色 Agent</td>
+</tr>
+<tr>
+<td><strong>L3</strong></td>
+<td>复杂任务 (&lt;1d)</td>
+<td>模块开发、API 设计</td>
+<td>资深 Agent</td>
+</tr>
+<tr>
+<td><strong>L4</strong></td>
+<td>大型任务 (&gt;1d)</td>
+<td>系统设计、架构重构</td>
+<td>架构师 + 多 Agent 协作</td>
+</tr>
+</tbody>
+</table>
+<h3 id="按持续时间">按持续时间</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>持续时间</th>
+<th>示例</th>
+<th>管理方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>瞬时 Task</strong></td>
+<td>&lt;5min</td>
+<td>文件重命名、格式调整</td>
+<td>Agent 自主完成</td>
+</tr>
+<tr>
+<td><strong>短期 Task</strong></td>
+<td>5min-2h</td>
+<td>功能开发、测试编写</td>
+<td>需要状态更新</td>
+</tr>
+<tr>
+<td><strong>中期 Task</strong></td>
+<td>2h-1d</td>
+<td>模块开发、集成测试</td>
+<td>需要进度报告</td>
+</tr>
+<tr>
+<td><strong>长期 Task</strong></td>
+<td>&gt;1d</td>
+<td>系统设计、架构变更</td>
+<td>需要分解为子 Task</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="agent-协作模式">Agent 协作模式</h2>
+<h3 id="模式-1任务链式传递">模式 1：任务链式传递</h3>
+<pre><code>需求收集 (Product Mgr)
+       │
+       ▼
+需求分析 (Product Mgr)
+       │
+       ▼
+任务拆解 (Product Mgr)
+       │
+       ├─────────────┬─────────────┐
+       ▼             ▼             ▼
+  系统设计       前端开发       后端开发
+  (Architect)   (Frontend)    (Backend)
+       │             │             │
+       └─────────────┼─────────────┘
+                     │
+                     ▼
+               测试验证 (QA)
+                     │
+                     ▼
+               代码 Review (Reviewer)
+                     │
+                     ▼
+               合并部署 (DevOps)</code></pre>
+<h3 id="模式-2并行协作">模式 2：并行协作</h3>
+<pre><code>          ┌───────────────┐
+          │   Epic: 用户系统  │
+          └───────┬───────┘
+                  │
+      ┌───────────┼───────────┐
+      │           │           │
+      ▼           ▼           ▼
+┌──────────┐ ┌──────────┐ ┌──────────┐
+│ 用户登录  │ │ 用户注册  │ │ 个人中心  │
+│ (Agent A)│ │ (Agent B)│ │ (Agent C)│
+└──────────┘ └──────────┘ └──────────┘
+      │           │           │
+      └───────────┼───────────┘
+                  │
+                  ▼
+          ┌───────────────┐
+          │  集成测试 (QA)  │
+          └───────────────┘</code></pre>
+<hr />
+<h2 id="agent-生命周期">Agent 生命周期</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                    Agent 生命周期                                │
+└─────────────────────────────────────────────────────────────────┘
+
+1. 初始化
+   │
+   ├─ 设置角色类型 (product_manager/frontend_dev/...)
+   ├─ 连接到项目工作区
+   ├─ 同步三仓库状态 (confluence/jira/code_repo)
+   │
+   ▼
+2. 任务发现
+   │
+   ├─ 轮询 Jira tickets
+   ├─ 检查消息队列
+   ├─ 分析任务匹配度
+   │
+   ▼
+3. 任务承接
+   │
+   ├─ 领取匹配的任务
+   ├─ 更新任务状态为 in_progress
+   ├─ 创建 Worktree(如需要)
+   │
+   ▼
+4. 任务执行
+   │
+   ├─ 制定实现方案
+   ├─ 执行具体工作
+   ├─ 更新进度状态
+   │
+   ▼
+5. 任务完成
+   │
+   ├─ 提交工作成果
+   ├─ 创建 Review 请求 (如需要)
+   ├─ 更新任务状态为 done/review
+   │
+   ▼
+6. 等待下一任务
+   │
+   └─ 返回步骤 2</code></pre>
+<hr />
+<h2 id="实例化方式">实例化方式</h2>
+<h3 id="方式-1用户主动初始化">方式 1：用户主动初始化</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 用户启动特定角色的 Agent</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span> <span class="at">--role</span> product_manager</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span> <span class="at">--role</span> frontend_dev</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span> <span class="at">--role</span> reviewer</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Agent 启动后：</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 检查项目状态</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 加载对应角色配置</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 开始执行该角色的任务</span></span></code></pre></div>
+<h3 id="方式-2自动承接">方式 2：自动承接</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 启用自动承接模式</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span> <span class="at">--auto-claim</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Agent 行为：</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 分析 Jira 中待处理任务</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 根据自身角色筛选匹配任务</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 自动领取优先级最高的任务</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 开始执行</span></span></code></pre></div>
+<h3 id="方式-3任务指派">方式 3：任务指派</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Master/Coordinator 指派任务</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-assign</span> <span class="at">--agent</span> frontend_dev <span class="at">--ticket</span> FEAT-001</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 被指派的 Agent：</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 接收任务通知</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 确认是否可承接</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 开始执行或转派</span></span></code></pre></div>
+<hr />
+<h2 id="状态管理">状态管理</h2>
+<h3 id="task-状态">Task 状态</h3>
+<pre><code>backlog → analysis → ready → in_progress → review → done
+   │          │          │         │         │        │
+   │          │          │         │         │        │
+   │          │          │         │         │        ▼
+   │          │          │         │         │    merged
+   │          │          │         │         │
+   │          │          │         │         └─ changes_requested ─┐
+   │          │          │         │                                │
+   │          │          │         └────────────────────────────────┘
+   │          │          │
+   │          │          └─ timeout (长时间未领取)
+   │          │
+   │          └─ rejected (需求不通过)
+   │
+   └─ cancelled (任务取消)</code></pre>
+<h3 id="agent-状态">Agent 状态</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">agent_state</span><span class="kw">:</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">id</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;agent_frontend_dev_001&quot;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">role</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;frontend_dev&quot;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">status</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;idle&quot;</span><span class="co">  # idle / busy / blocked / offline</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">current_task</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;FEAT-001&quot;</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">workload</span><span class="kw">:</span><span class="at"> 3/10</span><span class="co">  # 当前负载</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">capabilities</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">&quot;react&quot;</span><span class="kw">,</span><span class="at"> </span><span class="st">&quot;typescript&quot;</span><span class="kw">,</span><span class="at"> </span><span class="st">&quot;tailwind&quot;</span><span class="kw">]</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">last_active</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;2026-03-23T10:30:00Z&quot;</span></span></code></pre></div>
+<hr />
+<h2 id="通信机制">通信机制</h2>
+<h3 id="消息类型">消息类型</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>方向</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>task_claimed</code></td>
+<td>Agent → Jira</td>
+<td>任务已被领取</td>
+</tr>
+<tr>
+<td><code>task_assigned</code></td>
+<td>Master → Agent</td>
+<td>任务指派</td>
+</tr>
+<tr>
+<td><code>progress_update</code></td>
+<td>Agent → Master</td>
+<td>进度更新</td>
+</tr>
+<tr>
+<td><code>help_request</code></td>
+<td>Agent → Master</td>
+<td>请求协助</td>
+</tr>
+<tr>
+<td><code>review_request</code></td>
+<td>Agent → Reviewer</td>
+<td>请求审核</td>
+</tr>
+<tr>
+<td><code>review_result</code></td>
+<td>Reviewer → Agent</td>
+<td>审核结果</td>
+</tr>
+<tr>
+<td><code>blocker_alert</code></td>
+<td>Agent → Master</td>
+<td>阻塞告警</td>
+</tr>
+</tbody>
+</table>
+<h3 id="消息队列位置">消息队列位置</h3>
+<pre><code>shared/message_queue/
+├── inbox/           # 接收消息
+│   ├── msg_001.json
+│   └── msg_002.json
+├── outbox/          # 发送消息
+│   ├── msg_003.json
+│   └── msg_004.json
+└── broadcast/       # 广播消息
+    └── announcement_001.json</code></pre>
+<hr />
+<h2 id="项目初始化-vs-角色初始化">项目初始化 vs 角色初始化</h2>
+<h3 id="项目初始化-一次性">项目初始化 (一次性)</h3>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 创建项目基础结构</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/init-project.sh</span> my-project /path/to/project</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 此时尚无 Agent 运行，只是目录结构</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="ex">my-project/</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> confluence/      <span class="co"># 文档仓库 (空)</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> jira/            <span class="co"># 任务仓库 (空)</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> code_repo/       <span class="co"># 代码仓库 (空)</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> inbox/           <span class="co"># 需求输入</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> .eket/           <span class="co"># 配置</span></span></code></pre></div>
+<h3 id="角色初始化-多次每个-agent-独立">角色初始化 (多次，每个 Agent
+独立)</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 用户启动 Product Manager Agent</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> my-project</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span> <span class="at">--role</span> product_manager</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Product Manager:</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 读取 inbox/human_input.md</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 分析需求</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 创建 Epic 和 Tasks 到 Jira</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 创建需求文档到 Confluence</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 用户另开终端启动 Frontend Dev Agent</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> my-project</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span> <span class="at">--role</span> frontend_dev</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Frontend Dev:</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 同步三仓库状态</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 查看 Jira 中前端相关任务</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 领取并开始开发</span></span></code></pre></div>
+<hr />
+<h2 id="关键特性对比">关键特性对比</h2>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>v0.3 (Master/Slaver)</th>
+<th>v0.5 (去中心化 Agent)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>架构</td>
+<td>中心协调</td>
+<td>去中心化网络</td>
+</tr>
+<tr>
+<td>实例</td>
+<td>Master + Slaver</td>
+<td>独立 Agent</td>
+</tr>
+<tr>
+<td>任务承接</td>
+<td>被动分配</td>
+<td>主动领取</td>
+</tr>
+<tr>
+<td>角色固定</td>
+<td>是 (Master 永远负责 Review)</td>
+<td>否 (可配置)</td>
+</tr>
+<tr>
+<td>扩展性</td>
+<td>受限</td>
+<td>高度可扩展</td>
+</tr>
+<tr>
+<td>灵活性</td>
+<td>一般</td>
+<td>高</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="快速开始">快速开始</h2>
+<h3 id="项目初始化">1. 项目初始化</h3>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/init-project.sh</span> my-project /path/to/project</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /path/to/project</span></code></pre></div>
+<h3 id="启动-product-manager-agent">2. 启动 Product Manager Agent</h3>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span> <span class="at">--role</span> product_manager</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 自动执行：</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 读取 inbox/human_input.md</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 分析需求并拆解为 Epic/Tasks</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 创建 Jira tickets</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 创建 Confluence 文档</span></span></code></pre></div>
+<h3 id="启动开发-agent">3. 启动开发 Agent</h3>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 新开终端/会话</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span> <span class="at">--role</span> frontend_dev</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 自动执行：</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 同步三仓库状态</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 查看匹配的任务</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 领取并开始开发</span></span></code></pre></div>
+<h3 id="启动-reviewer-agent">4. 启动 Reviewer Agent</h3>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 任务开发完成后，新开终端/会话</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span> <span class="at">--role</span> reviewer</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 自动执行：</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 检查待 Review 的 PR</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 审核代码</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 批准或要求修改</span></span></code></pre></div>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>

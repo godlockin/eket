@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Framework 路线图</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Framework 路线图</h1>
+</header>
+<h1 id="eket-framework-路线图">EKET Framework 路线图</h1>
+<blockquote>
+<p>⚠️ 本文档更新于 2026-04-26。历史规划文档已归档至
+<code>docs/archive/roadmap-history/</code>。</p>
+</blockquote>
+<hr />
+<h2 id="当前状态2026-04-26">当前状态（2026-04-26）</h2>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>状态</th>
+<th>测试</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Level 0 Shell</strong></td>
+<td>✅ 稳定</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Level 1 Rust</strong> (<code>eket</code> binary)</td>
+<td>✅ 迁移完成</td>
+<td>253 passed</td>
+</tr>
+<tr>
+<td><strong>Level 2 Node.js</strong> (Web/LLM)</td>
+<td>✅ 保留精简</td>
+<td>1519 passed</td>
+</tr>
+</tbody>
+</table>
+<p><strong>当前版本</strong>：Rust 迁移后（TASK-198~221 完成，含红队修复
+14 项）</p>
+<hr />
+<h2 id="已完成里程碑">已完成里程碑</h2>
+<table>
+<thead>
+<tr>
+<th>Round</th>
+<th>主题</th>
+<th>版本</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1~9</td>
+<td>初始构建 → 100% 测试</td>
+<td>v1.x ~ v2.6.0</td>
+</tr>
+<tr>
+<td>10~19</td>
+<td>CLI / 文档 / 安全 / GSD 工程纪律</td>
+<td>v2.7.0 ~ v2.10.4</td>
+</tr>
+<tr>
+<td>20~21</td>
+<td>Rust workspace 建立，eket-core/engine/server</td>
+<td>—</td>
+</tr>
+<tr>
+<td>22~24</td>
+<td>文档整理，协议规范化</td>
+<td>—</td>
+</tr>
+<tr>
+<td>25~26</td>
+<td>跨项目研究借鉴（Archon/MemOS/context-mode 等）</td>
+<td>—</td>
+</tr>
+<tr>
+<td>27</td>
+<td>openai-agents-python 借鉴 + GenericAgent + ContextBudget</td>
+<td>—</td>
+</tr>
+<tr>
+<td>28</td>
+<td>红队修复（TASK-214~221，P0×1 / P1×7 / P2×6）</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="近期方向未规划为正式-ticket">近期方向（未规划为正式
+ticket）</h2>
+<ul>
+<li>Rust <code>eket server</code> 与 Node.js Dashboard 完整对接</li>
+<li>eket-cli 高频命令实测（claim / complete / task:create）</li>
+<li>SDK 版本同步（Python / JS）</li>
+</ul>
+<hr />
+<h2 id="历史文档">历史文档</h2>
+<ul>
+<li><a
+href="../archive/roadmap-history/v3.0-strategy.md"><code>docs/archive/roadmap-history/v3.0-strategy.md</code></a>
+— Round 13a 的 v3.0 战略（已超越）</li>
+<li><a
+href="../archive/roadmap-history/EKET-ROADMAP-2026-Q2-Q4.md"><code>docs/archive/roadmap-history/EKET-ROADMAP-2026-Q2-Q4.md</code></a>
+— 2026-04-07 规划（Rust 迁移前）</li>
+<li><a
+href="../archive/roadmap-history/v3-phase0.md"><code>docs/archive/roadmap-history/v3-phase0.md</code></a>
+— Phase 0 夯基路线图（Draft，已执行）</li>
+<li><a href="RELEASE-POLICY.md"><code>RELEASE-POLICY.md</code></a> —
+发布策略</li>
+</ul>
+</body>
+</html>
