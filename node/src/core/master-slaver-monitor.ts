@@ -151,6 +151,118 @@ export class MasterSlaverMonitor {
   }
 
   /**
+   * TASK-AUTO-06: Handle timeout with auto retry logic
+   *
+   * AC-1: Record failure
+   * AC-2: Check retry eligibility
+   * AC-3: Alert if max retries reached
+   * AC-4: Trigger resume if within limits
+   */
+  private async handleTimeoutWithRetry(
+    taskId: string,
+    elapsed: number,
+    hasCheckpoint: boolean
+  ): Promise<void> {
+    try {
+      // AC-2: Check if can retry
+      const retryCheck = await this.retryManager.shouldRetry(taskId);
+
+      if (!retryCheck.canRetry) {
+        // AC-3: Max retries reached - alert human
+        console.error(
+          `[MasterMonitor] 🚨 ALERT: ${taskId} reached max retries (${retryCheck.reason})`
+        );
+        await this.sendHumanAlert(taskId, 'max_retries_reached');
+        return;
+      }
+
+      // AC-1: Record failure
+      const failureReason = `Timeout after ${Math.floor(elapsed / 1000)}s (threshold: ${Math.floor(this.timeoutThresholdMs / 1000)}s)`;
+      const state = await this.retryManager.recordFailure(taskId, failureReason);
+
+      console.log(
+        `[MasterMonitor] 🔄 Retry ${state.attempts}/${state.maxRetries} for ${taskId} (${retryCheck.attemptsRemaining} attempts remaining)`
+      );
+
+      // AC-4: Trigger resume if checkpoint exists
+      if (hasCheckpoint) {
+        const resumed = await this.triggerResume(taskId);
+        if (resumed) {
+          console.log(`[MasterMonitor] ✅ Auto-resumed ${taskId} (attempt ${state.attempts})`);
+        } else {
+          console.warn(`[MasterMonitor] ⚠️  Failed to auto-resume ${taskId}`);
+        }
+      } else {
+        console.warn(
+          `[MasterMonitor] ⚠️  Cannot resume ${taskId} - no checkpoint (failure recorded)`
+        );
+      }
+    } catch (error) {
+      console.error(
+        `[MasterMonitor] ❌ Retry handling failed for ${taskId}: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  /**
+   * Send human alert for tasks needing intervention
+   */
+  private async sendHumanAlert(taskId: string, alertType: string): Promise<void> {
+    try {
+      const alertDir = path.join(this.projectRoot, 'inbox/human_feedback');
+      await fs.mkdir(alertDir, { recursive: true });
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const alertPath = path.join(alertDir, `alert-${alertType}-${taskId}-${timestamp}.md`);
+
+      const retryState = await this.retryManager.getRetryState(taskId);
+      const failureHistory = retryState
+        ? retryState.failureReasons.map((r, i) => `  ${i + 1}. ${r}`).join('\n')
+        : '  (No failure history)';
+
+      const content = `# 🚨 HUMAN INTERVENTION REQUIRED
+
+**Task ID**: ${taskId}
+**Alert Type**: ${alertType}
+**Timestamp**: ${new Date().toISOString()}
+
+---
+
+## Issue
+
+Task **${taskId}** has reached the maximum retry limit (3 attempts) and requires human intervention.
+
+## Failure History
+
+${failureHistory}
+
+## Retry State
+
+- **Attempts**: ${retryState?.attempts ?? 0} / ${retryState?.maxRetries ?? 3}
+- **Last Failed At**: ${retryState ? new Date(retryState.lastFailedAt).toISOString() : 'N/A'}
+
+## Required Actions
+
+1. **Investigate Root Cause**: Review logs and failure reasons above
+2. **Manual Fix**: Apply necessary fixes to resolve the issue
+3. **Reset Retry State**: Run \`eket task:reset-retry ${taskId}\` to reset retry counter
+4. **Re-dispatch**: Manually re-assign the task to a Slaver
+
+---
+
+**Status**: \`pending_human_action\`
+`;
+
+      await fs.writeFile(alertPath, content, 'utf-8');
+      console.log(`[MasterMonitor] 📧 Human alert sent: ${alertPath}`);
+    } catch (error) {
+      console.error(
+        `[MasterMonitor] ❌ Failed to send human alert: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  /**
    * Extract task ID from heartbeat filename
    * e.g., "slaver-TASK-001-heartbeat" -> "TASK-001"
    */
