@@ -98,6 +98,8 @@ export interface ProgressTrackerOptions {
   progressFileName?: string;
   /** Sync flush phases (trigger immediate write) */
   syncPhases?: (TaskPhase | string)[];
+  /** Enable git commit + push checkpoint (default: true) */
+  gitEnabled?: boolean;
 }
 
 /**
