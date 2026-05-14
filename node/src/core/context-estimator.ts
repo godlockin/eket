@@ -5,12 +5,14 @@
  * - Rough: 0.3 bytes/token heuristic (fast, ±30% error)
  * - Precise: tiktoken tokenization (slow, ±10% error)
  * - Smart: rough < 40K → skip tiktoken
+ * - Alert: triggers Master notification at 150K+ threshold
  */
 
 import { encoding_for_model } from '@dqbd/tiktoken';
 import glob from 'glob';
 import { readFileSync, statSync } from 'fs';
 import { promisify } from 'util';
+import { ContextAlert, AlertContext } from './context-alert.js';
 
 const globAsync = promisify(glob);
 
@@ -18,9 +20,15 @@ export interface EstimateResult {
   tokens: number;
   method: 'rough' | 'precise';
   duration?: number;
+  alerted?: boolean;
 }
 
 export class ContextEstimator {
+  private alert: ContextAlert;
+
+  constructor(private taskId?: string) {
+    this.alert = new ContextAlert();
+  }
   /**
    * Rough estimation via byte count heuristic
    * Fast O(n) file stat, no content reading
@@ -107,6 +115,7 @@ export class ContextEstimator {
    * 1. Quick rough estimate
    * 2. If < 40K → return rough (fast path)
    * 3. Else → precise tokenization (accuracy path)
+   * 4. Check for 150K+ threshold → alert Master if needed
    */
   async estimate(): Promise<EstimateResult> {
     const start = performance.now();
@@ -124,10 +133,24 @@ export class ContextEstimator {
 
     // Slow path: high token count needs accurate measurement
     const precise = await this.preciseEstimate();
+    const duration = performance.now() - start;
+
+    // Alert Master if approaching token limit
+    let alerted = false;
+    if (this.taskId) {
+      const alertContext: AlertContext = {
+        taskId: this.taskId,
+        tokens: precise,
+        timestamp: new Date().toISOString()
+      };
+      alerted = await this.alert.alertMaster(alertContext);
+    }
+
     return {
       tokens: precise,
       method: 'precise',
-      duration: performance.now() - start
+      duration,
+      alerted
     };
   }
 }
