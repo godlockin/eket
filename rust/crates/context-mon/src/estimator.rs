@@ -1,151 +1,144 @@
-use anyhow::Result;
-use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
-use tiktoken_rs::cl100k_base;
 use walkdir::WalkDir;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct EstimateResult {
-    pub tokens: usize,
-    pub method: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub duration: Option<f64>,
+#[serde(rename_all = "lowercase")]
+pub enum EstimateMethod {
+    Rough,
+    Precise,
 }
 
-pub struct ContextEstimator {
-    dirs: Vec<(String, String)>, // (base_path, extension)
-    files: Vec<String>,
+#[derive(Debug, Serialize)]
+pub struct EstimateResult {
+    pub tokens: usize,
+    pub method: EstimateMethod,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub duration: Option<u128>,
 }
+
+const PATTERNS: &[&str] = &[
+    "jira/tickets",
+    "confluence/memory",
+    ".eket/ACTIVE_CONTEXT",
+    "CLAUDE.md",
+    ".claude/CLAUDE.md",
+];
+
+const ROUGH_THRESHOLD: usize = 40_000;
+
+pub struct ContextEstimator;
 
 impl ContextEstimator {
     pub fn new() -> Self {
-        Self {
-            dirs: vec![
-                ("jira/tickets".to_string(), ".md".to_string()),
-                ("confluence/memory".to_string(), ".md".to_string()),
-            ],
-            files: vec![
-                ".eket/ACTIVE_CONTEXT".to_string(),
-                "CLAUDE.md".to_string(),
-                ".claude/CLAUDE.md".to_string(),
-            ],
-        }
+        Self
     }
 
-    /// Rough estimation via byte count heuristic
+    /// Rough estimate via byte count heuristic (1 token ≈ 3.3 bytes)
     /// Fast O(n) file stat, no content reading
-    /// Error: ±30% typical
-    pub fn rough_estimate(&self) -> Result<usize> {
-        let mut total_size: u64 = 0;
-        const MAX_FILES_PER_DIR: usize = 20; // Match Node baseline
+    pub fn rough_estimate(&self) -> usize {
+        let mut total_size = 0;
 
-        // Process directories with walkdir
-        for (base, ext) in &self.dirs {
-            if !Path::new(base).exists() {
-                continue;
-            }
+        for pattern in PATTERNS {
+            let path = Path::new(pattern);
 
-            for entry in WalkDir::new(base)
-                .max_depth(10)
-                .into_iter()
-                .filter_map(Result::ok)
-                .filter(|e| e.file_type().is_file())
-                .filter(|e| e.path().extension().map_or(false, |x| x == &ext[1..]))
-                .take(MAX_FILES_PER_DIR)
-            {
-                if let Ok(metadata) = entry.metadata() {
-                    total_size += metadata.len();
+            if path.is_file() {
+                if let Ok(metadata) = fs::metadata(path) {
+                    total_size += metadata.len() as usize;
+                }
+            } else if path.is_dir() {
+                // Collect and sort for deterministic results
+                let mut entries: Vec<_> = WalkDir::new(path)
+                    .follow_links(false)
+                    .into_iter()
+                    .filter_map(|e| e.ok())
+                    .filter(|e| {
+                        e.path()
+                            .extension()
+                            .and_then(|s| s.to_str())
+                            .map(|ext| ext == "md")
+                            .unwrap_or(false)
+                    })
+                    .collect();
+
+                entries.sort_by(|a, b| a.path().cmp(b.path()));
+
+                for entry in entries.into_iter().take(20) {
+                    if let Ok(metadata) = entry.metadata() {
+                        total_size += metadata.len() as usize;
+                    }
                 }
             }
         }
 
-        // Process individual files
-        for file in &self.files {
-            if let Ok(metadata) = fs::metadata(file) {
-                if metadata.is_file() {
-                    total_size += metadata.len();
-                }
-            }
-        }
-
-        // Heuristic: 1 token ≈ 3.3 bytes for English + code
-        Ok((total_size as f64 * 0.3) as usize)
+        (total_size * 3) / 10
     }
 
-    /// Precise estimation via tiktoken encoding
-    /// Reads top-priority files only (cap at 20 per dir to avoid OOM)
-    /// Error: ±10% typical
-    pub fn precise_estimate(&self) -> Result<usize> {
-        let bpe = cl100k_base()?;
+    /// Precise estimate via tiktoken tokenization
+    /// Reads top-priority files (cap at 20 per pattern)
+    pub fn precise_estimate(&self) -> usize {
+        use tiktoken_rs::cl100k_base;
+
+        let bpe = cl100k_base().expect("Failed to load tiktoken model");
         let mut total = 0;
-        const MAX_FILES_PER_DIR: usize = 20; // Match Node baseline
 
-        // Process directories
-        for (base, ext) in &self.dirs {
-            if !Path::new(base).exists() {
-                continue;
-            }
+        for pattern in PATTERNS {
+            let path = Path::new(pattern);
 
-            for entry in WalkDir::new(base)
-                .max_depth(10)
-                .into_iter()
-                .filter_map(Result::ok)
-                .filter(|e| e.file_type().is_file())
-                .filter(|e| e.path().extension().map_or(false, |x| x == &ext[1..]))
-                .take(MAX_FILES_PER_DIR)
-            {
-                if let Ok(content) = fs::read_to_string(entry.path()) {
+            if path.is_file() {
+                if let Ok(content) = fs::read_to_string(path) {
                     total += bpe.encode_with_special_tokens(&content).len();
                 }
+            } else if path.is_dir() {
+                // Collect and sort for deterministic results
+                let mut entries: Vec<_> = WalkDir::new(path)
+                    .follow_links(false)
+                    .into_iter()
+                    .filter_map(|e| e.ok())
+                    .filter(|e| {
+                        e.path()
+                            .extension()
+                            .and_then(|s| s.to_str())
+                            .map(|ext| ext == "md")
+                            .unwrap_or(false)
+                    })
+                    .collect();
+
+                entries.sort_by(|a, b| a.path().cmp(b.path()));
+
+                for entry in entries.into_iter().take(20) {
+                    if let Ok(content) = fs::read_to_string(entry.path()) {
+                        total += bpe.encode_with_special_tokens(&content).len();
+                    }
+                }
             }
         }
 
-        // Process individual files
-        for file in &self.files {
-            if let Ok(content) = fs::read_to_string(file) {
-                total += bpe.encode_with_special_tokens(&content).len();
-            }
-        }
-
-        Ok(total)
+        total
     }
 
-    /// Intelligent estimation with automatic method selection
-    ///
-    /// Logic:
-    /// 1. Quick rough estimate
-    /// 2. If < 70K → return rough (fast path, most repos)
-    /// 3. Else → precise tokenization (accuracy path for large repos)
-    ///
-    /// Note: Threshold raised from 40K to 70K to prioritize <10ms startup.
-    /// For repos 40-70K, rough estimate (±30%) is acceptable tradeoff.
-    pub fn estimate(&self) -> Result<EstimateResult> {
+    /// Smart estimation with automatic method selection
+    /// Logic: rough < 40K → return rough (fast path)
+    ///        rough >= 40K → precise tokenization (accuracy path)
+    pub fn estimate(&self) -> EstimateResult {
         let start = std::time::Instant::now();
 
-        let rough = self.rough_estimate()?;
+        let rough = self.rough_estimate();
 
-        // Fast path: low token count doesn't need precision
-        if rough < 70000 {
-            return Ok(EstimateResult {
+        if rough < ROUGH_THRESHOLD {
+            return EstimateResult {
                 tokens: rough,
-                method: "rough".to_string(),
-                duration: Some(start.elapsed().as_secs_f64() * 1000.0),
-            });
+                method: EstimateMethod::Rough,
+                duration: Some(start.elapsed().as_millis()),
+            };
         }
 
-        // Slow path: high token count needs accurate measurement
-        let precise = self.precise_estimate()?;
-        Ok(EstimateResult {
+        let precise = self.precise_estimate();
+        EstimateResult {
             tokens: precise,
-            method: "precise".to_string(),
-            duration: Some(start.elapsed().as_secs_f64() * 1000.0),
-        })
-    }
-}
-
-impl Default for ContextEstimator {
-    fn default() -> Self {
-        Self::new()
+            method: EstimateMethod::Precise,
+            duration: Some(start.elapsed().as_millis()),
+        }
     }
 }
