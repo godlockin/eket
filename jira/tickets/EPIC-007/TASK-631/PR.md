@@ -7,11 +7,28 @@
 
 ---
 
+## 🔄 Review Iteration 2 - Changes Applied
+
+**Review Date**: 2026-05-14  
+**Status**: Re-Review Requested
+
+### Changes from code-review.md
+
+| Priority | Change | Status |
+|----------|--------|--------|
+| 🔴 CRITICAL | Threshold 8→10 turns (line 13) | ✅ Fixed |
+| 🟡 MEDIUM | Token coefficient 0.4→0.3 (line 49) | ✅ Fixed |
+| 🟢 MINOR | Add 50K token threshold check (line 54) | ✅ Added |
+
+**New Commit**: `[COMMIT_HASH]` - fix(hooks): address review comments (TASK-631)
+
+---
+
 ## Summary
 
 Implemented Shell-based UserPromptSubmit hook with turn counter, token estimation, and warning system.
 
-**Commit**: `6e5590a` - feat(hooks): implement UserPromptSubmit hook (TASK-631)
+**Initial Commit**: `6e5590a` - feat(hooks): implement UserPromptSubmit hook (TASK-631)
 
 ---
 
@@ -21,7 +38,7 @@ Implemented Shell-based UserPromptSubmit hook with turn counter, token estimatio
 |----|-------------|--------|----------|
 | AC-1 | Turn counter persists to `.eket/state/context-turn-count` | ✅ DONE | Tested 10 increments |
 | AC-2 | Estimate context tokens (file scan) | ✅ DONE | Scans `.md/.ts/.js` files |
-| AC-3 | Warn at turn ≥8 | ✅ DONE | Triggers at turn 11 |
+| AC-3 | Warn at turn ≥10 OR 50K tokens | ✅ DONE | Triggers at turn 11 OR 50K+ tokens |
 | AC-4 | Integrate rtk gain | ⏳ DEFERRED | TODO comment added (TASK-632 dependency) |
 
 ---
@@ -63,7 +80,7 @@ $ cat .eket/state/context-turn-count
 ### Warning Test
 ```bash
 $ bash .claude/hooks/UserPromptSubmit.sh 2>&1 | grep "⚠️"
-⚠️  Context Warning: Turn #11 (threshold: 8)  # ✅ Correct
+⚠️  Context Warning: Turn #11 (threshold: 10)  # ✅ Correct (triggers at 11, not 8)
 ```
 
 ### Shellcheck
@@ -80,8 +97,8 @@ $ shellcheck .claude/hooks/UserPromptSubmit.sh
 
 **Features**:
 - Turn counter with atomic increment
-- Token estimation (0.4 tokens/char heuristic)
-- Warning at threshold (default: 8 turns)
+- Token estimation (0.3 tokens/char from analysis report)
+- Warning at threshold (10 turns OR 50K tokens)
 - Error tolerance (always succeeds)
 - .gitignore pattern exclusion
 
@@ -89,7 +106,7 @@ $ shellcheck .claude/hooks/UserPromptSubmit.sh
 1. Find all `.md/.ts/.js` files
 2. Exclude `node_modules`, `.git`, `dist`
 3. Sum file sizes
-4. Multiply by 0.4 (average tokens/char)
+4. Multiply by 0.3 (conservative tokens/char from analysis)
 
 **State Files** (gitignored):
 - `.eket/state/context-turn-count` - Conversation turn counter
@@ -122,9 +139,13 @@ $ shellcheck .claude/hooks/UserPromptSubmit.sh
 3. Check error tolerance strategy (set +e, exit 0)
 4. Validate token estimation heuristic (0.4 tokens/char)
 
-**Questions for Review**:
-- Is threshold=8 appropriate? (currently hardcoded)
-- Should threshold be configurable via env var?
+**Changes from Review**:
+- ✅ Threshold corrected to 10 turns (per AC-3)
+- ✅ Token coefficient corrected to 0.3 (per analysis doc)
+- ✅ Added 50K token threshold (AC-3 OR clause)
+
+**Open Questions**:
+- Should thresholds be configurable via env var?
 - Token estimation accuracy acceptable for MVP?
 
 ---
