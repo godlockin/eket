@@ -17,6 +17,7 @@ import { createInstanceRegistry } from '../core/instance-registry.js';
 import { selectRole, getRulesFileName, getRulesPath } from '../core/role-selector.js';
 import { SagaExecutor } from '../core/saga-executor.js';
 import { SkillStacker } from '../core/skill-stacker.js';
+import { initializeProgressTracker } from '../core/slaver-progress-integration.js';
 import { createSQLiteManager } from '../core/sqlite-manager.js';
 import { sseBus } from '../core/sse-bus.js';
 import { createTaskAssigner, type AssignmentResult } from '../core/task-assigner.js';
@@ -565,6 +566,9 @@ ${reviewResult.issues.map((i: string) => `- ${i}`).join('\n')}
         claimedAt: new Date().toISOString(),
         status: 'in_progress',
       });
+
+      // 13. 初始化 ProgressTracker（TASK-X02）
+      await initializeProgressTracker(selectedTicket.id, slaverId);
 
       logSuccess('Task claimed successfully', [
         `Task: ${selectedTicket.id}`,
