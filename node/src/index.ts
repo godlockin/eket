@@ -160,6 +160,12 @@ export {
   type ElectionLevel,
 } from './core/master-election.js';
 
+export {
+  // Context Estimation (TASK-632)
+  ContextEstimator,
+  type EstimateResult,
+} from './core/context-estimator.js';
+
 // ============================================================================
 // Utility Exports (TASK-004: Progress Bar)
 // ============================================================================
