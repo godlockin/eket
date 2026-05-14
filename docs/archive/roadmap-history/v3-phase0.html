@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET v3 Phase 0 — 夯基路线图</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET v3 Phase 0 — 夯基路线图</h1>
+</header>
+<h1 id="eket-v3-phase-0-夯基路线图">EKET v3 Phase 0 — 夯基路线图</h1>
+<p><strong>状态</strong>: Draft <strong>创建</strong>: 2026-04-17
+<strong>目标期限</strong>: 6 周（硬截止） <strong>原则</strong>:
+冻结新功能，专注架构收口</p>
+<hr />
+<h2 id="背景">背景</h2>
+<p>当前 EKET 已出现结构性风险： - <strong>Node/Shell 各写各的 FS
+状态</strong>：审计发现 Node 58 处 <code>writeFile</code>，Shell 51 处
+<code>cat &gt;</code>，<strong>无共享 writer</strong> -
+<strong>无权威协议</strong>：ticket/message/heartbeat 格式靠约定俗成 -
+<strong>无等价性测试</strong>：三级降级是口号，非验证事实 -
+<strong>文档/代码膨胀</strong>：根目录 14 个 MD、<code>core/</code> 40
+个 ts、<code>skills/</code> 19 子目录</p>
+<p>继续加功能只会加深漂移。Phase 0 的唯一工作：<strong>把”双引擎 +
+同心圆”架构落地到代码与测试</strong>。</p>
+<hr />
+<h2 id="架构心智图冻结为-v3-设计基准">架构心智图（冻结为 v3
+设计基准）</h2>
+<pre><code>           Human / IM / Webhook / IDE / AI
+                        ↓
+       ┌────────────────────────────────────┐
+       │ Node 独有外环 (Node-only)          │
+       │ Web UI · API Gateway · IM Adapters │
+       │ 实时推送 · 向量搜索 · 智能推荐       │
+       └────────────────────────────────────┘
+                        ↓
+       ┌────────────────────────────────────┐
+       │ 共同核心 (Shared Core Protocol)    │
+       │ ticket 状态机 · 消息队列 · 心跳      │
+       │ 选举 · 节点身份 · 审计              │
+       └────────────────────────────────────┘
+             ↑ (Shell)          ↑ (Node)
+       lib/state/*.sh     node/src/core/*.ts
+         两套实现，行为等价，FS 字节级一致
+                        ↓
+       可选共享缓存：Redis · SQLite（FS 的投影）</code></pre>
+<hr />
+<h2 id="六项硬任务">六项硬任务</h2>
+<h3 id="task-0.1-模块归属分类-ownership.md">Task 0.1 — 模块归属分类
+<code>OWNERSHIP.md</code></h3>
+<p><strong>产出</strong>: <a
+href="../../node/src/OWNERSHIP.md"><code>node/src/OWNERSHIP.md</code></a>
+<strong>验收</strong>: 所有 <code>core/</code> + <code>commands/</code>
++ <code>api/</code> 模块明确归入 <code>[shared-core]</code> /
+<code>[node-only]</code> /
+<code>[deprecated]</code>；<code>[unclear]</code> ≤ 3
+<strong>当前状态</strong>: 初稿已出</p>
+<h3 id="task-0.2-协议-schema-化">Task 0.2 — 协议 Schema 化</h3>
+<p><strong>产出</strong>: <code>protocol/</code> 目录</p>
+<pre><code>protocol/
+├── VERSION                               # 协议版本号（Shell + Node 启动校验）
+├── schemas/
+│   ├── ticket.meta.schema.yml            # ticket Markdown 元数据块
+│   ├── message.schema.json               # 消息队列消息
+│   ├── node.profile.schema.json          # 节点身份（为 Phase 1 预留）
+│   └── heartbeat.schema.json
+├── state-machines/
+│   └── ticket-status.yml                 # 状态转移表（唯一真相）
+└── conventions/
+    ├── atomic-write.md                   # tmp + rename 协议
+    ├── file-locking.md                   # flock 协议
+    └── node-id.md                        # 节点 ID 生成规则</code></pre>
+<p><strong>验收</strong>: Shell / Node 所有读写必须通过 schema
+校验；<code>protocol/VERSION</code> 不匹配时启动报错
+<strong>当前状态</strong>: 目录骨架已出</p>
+<h3 id="task-0.3-shell-权威写入层-libstate">Task 0.3 — Shell 权威写入层
+<code>lib/state/</code></h3>
+<p><strong>产出</strong>:</p>
+<pre><code>lib/state/
+├── writer.sh       # state_write_ticket / state_transition_ticket / ...
+├── reader.sh       # state_read_ticket / state_list_tickets / ...
+├── schema.sh       # 读 protocol/schemas/ 校验
+├── lock.sh         # flock 封装
+├── atomic.sh       # tmp + rename 封装
+└── audit.sh        # 审计日志</code></pre>
+<p><strong>验收</strong>: - 所有 <code>scripts/*.sh</code> 的写操作
+<code>source</code> 此库，不再直接 <code>cat &gt;</code> /
+<code>echo &gt;</code> - CI 加 forbidden-pattern 扫描拒绝绕过 - ≥ 20 个
+<code>state_*</code> 函数覆盖全部状态写操作</p>
+<h3 id="task-0.4-node-写入收口">Task 0.4 — Node 写入收口</h3>
+<p><strong>产出</strong>: <code>node/src/core/state/</code></p>
+<pre><code>state/
+├── writer.ts       # writeTicket / transitionTicket / ...
+├── reader.ts
+├── schema.ts       # 读同一份 protocol/schemas/
+├── lock.ts         # proper-lockfile
+├── atomic.ts
+└── audit.ts</code></pre>
+<p><strong>验收</strong>: - 所有 <code>node/src/</code> 对
+<code>jira/</code> / <code>inbox/</code> / <code>outbox/</code> /
+<code>shared/</code> / <code>.eket/state/</code> 的写入必须走
+<code>state/writer.ts</code> - 其他模块对这些目录的直接
+<code>fs.writeFile</code> → ESLint 自定义规则禁止 -
+保留的例外：初始化脚手架（<code>init-wizard.ts</code>）可豁免，加显式标注</p>
+<h3 id="task-0.5-等价性测试框架">Task 0.5 — 等价性测试框架</h3>
+<p><strong>产出</strong>: <code>tests/dual-engine/</code></p>
+<pre><code>tests/dual-engine/
+├── framework.sh              # 工具函数（setup/snapshot/diff-ignore-time）
+├── scenarios/
+│   ├── 01-claim-ticket.sh
+│   ├── 02-submit-pr.sh
+│   ├── 03-ticket-transition.sh
+│   ├── 04-heartbeat-write.sh
+│   └── 05-master-election.sh
+└── run-all.sh</code></pre>
+<p><strong>验收</strong>: - 每个 scenario 跑 3 遍（Shell-only /
+Node-only / 混合），FS 快照除时间戳外必须 byte-equal - 加入 CI，失败则
+PR 拒合 - ≥ 5 个 scenario 覆盖核心状态转移</p>
+<h3 id="task-0.6-代码瘦身">Task 0.6 — 代码瘦身</h3>
+<p><strong>量化目标</strong>: | 指标 | 当前 | 目标 | |——|——|——| | 根目录
+MD | 14 | ≤ 4 | | <code>node/src/core/</code> 文件数 | 40 | ≤ 25 | |
+<code>node/src/skills/</code> 子目录 | 19 | ≤ 8 | | SQLite 客户端实现 |
+3+ | 1 | | 文件队列实现 | 2 | 1 | | 重复的 <code>CLAUDE.*.md</code> | 4
+| 1 |</p>
+<p><strong>手段</strong>: - <code>[deprecated]</code> 分类的模块直接删 -
+重复实现合并（保留一个 <code>@deprecated</code> 旧的作为过渡，下版本删）
+- 未被使用的 Skill 子目录删除 - <code>CLAUDE.master.md</code> /
+<code>CLAUDE.slaver.md</code> 合并进 <code>AGENTS.md</code> -
+<code>CLAUDE.md.bak</code> / <code>README_TEMPLATE.md</code> 删</p>
+<hr />
+<h2 id="纪律">纪律</h2>
+<ol type="1">
+<li><strong>Phase 0 期间禁止新功能 PR</strong>（除 bug
+修复）；新需求归档到 <code>docs/roadmap/v3-deferred/</code></li>
+<li><strong>每个 PR 必须回答</strong>：“这属于 0.1–0.6
+哪个子任务？”</li>
+<li><strong>不在 OWNERSHIP 里的模块</strong> → 不允许改</li>
+<li><strong>不通过 schema 校验的写入</strong> → 不允许合并</li>
+<li><strong>不过等价性测试</strong> → 不允许合并</li>
+<li><strong>每周五
+checkpoint</strong>：更新本文件进度，到期未达目标停一切专注收尾</li>
+</ol>
+<hr />
+<h2 id="截止日期">截止日期</h2>
+<p><strong>硬截止</strong>: 2026-05-29（6 周）</p>
+<p>到期无论状态如何进入 <strong>Phase 1（单机多 session
+协作）</strong>。夯基是手段，价值落地是目的。</p>
+<hr />
+<h2 id="进度跟踪">进度跟踪</h2>
+<table>
+<thead>
+<tr>
+<th>子任务</th>
+<th>状态</th>
+<th>负责人</th>
+<th>完成日</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.1 OWNERSHIP 初稿</td>
+<td>🟡 进行中</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>0.2 protocol 骨架</td>
+<td>🟡 进行中</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>0.3 lib/state/</td>
+<td>🟡 进行中</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>0.4 node state/</td>
+<td>⚪ 未开始</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>0.5 dual-engine tests</td>
+<td>🟡 进行中</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>0.6 瘦身</td>
+<td>⚪ 未开始</td>
+<td>-</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

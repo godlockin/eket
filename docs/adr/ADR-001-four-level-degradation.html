@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>ADR-001: 为什么选择四级降级架构</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">ADR-001: 为什么选择四级降级架构</h1>
+</header>
+<h1 id="adr-001-为什么选择四级降级架构">ADR-001:
+为什么选择四级降级架构</h1>
+<p><strong>状态</strong>: 已采纳 <strong>日期</strong>: 2026-03-26
+<strong>决策者</strong>: EKET Framework Team</p>
+<hr />
+<h2 id="背景">背景</h2>
+<p>EKET
+框架需要在多种部署环境下可靠运行，从开发环境到生产环境，基础设施条件可能差异巨大。我们需要一个能够在不同条件下都能工作的连接策略。</p>
+<h3 id="问题陈述">问题陈述</h3>
+<ol type="1">
+<li><strong>基础设施异构性</strong>: 不同项目有不同的基础设施条件
+<ul>
+<li>有些项目有企业级 Redis 集群</li>
+<li>有些项目只有本地 Redis</li>
+<li>有些项目无法使用 Redis</li>
+</ul></li>
+<li><strong>可用性要求</strong>: 框架必须在任何条件下都能运行
+<ul>
+<li>不能因为 Redis 不可用就完全失效</li>
+<li>需要优雅降级而非完全崩溃</li>
+</ul></li>
+<li><strong>透明性</strong>: 降级过程对使用者透明
+<ul>
+<li>API 保持一致</li>
+<li>无需修改业务代码</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="决策">决策</h2>
+<p>我们选择实现四级降级架构：</p>
+<pre><code>Level 1: 远程共享 Redis (最优)
+    ↓ 降级
+Level 2: 本地 Redis
+    ↓ 降级
+Level 3: 本地 SQLite
+    ↓ 降级
+Level 4: 本地文件系统 (最终降级)</code></pre>
+<h3 id="架构设计">架构设计</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> ConnectionManagerConfig {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  remoteRedis<span class="op">?:</span> { host<span class="op">,</span> port<span class="op">,</span> password<span class="op">,</span> db }<span class="op">;</span>  <span class="co">// Level 1</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  localRedis<span class="op">?:</span> { host<span class="op">,</span> port }<span class="op">;</span>                  <span class="co">// Level 2</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  sqlitePath<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span>                          <span class="co">// Level 3</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  fileQueueDir<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span>                        <span class="co">// Level 4</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  driverMode<span class="op">?:</span> <span class="st">&#39;js&#39;</span> <span class="op">|</span> <span class="st">&#39;shell&#39;</span><span class="op">;</span>                  <span class="co">// 驱动模式</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="实现细节">实现细节</h3>
+<ol type="1">
+<li><strong>启动时自动检测</strong>: 初始化时按优先级尝试连接</li>
+<li><strong>降级透明</strong>: 上层业务感知不到降级</li>
+<li><strong>支持升级</strong>: 高级别连接恢复时可自动升级</li>
+</ol>
+<hr />
+<h2 id="理由">理由</h2>
+<h3 id="为什么选择这个顺序">为什么选择这个顺序？</h3>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>技术</th>
+<th>优势</th>
+<th>劣势</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Level 1</td>
+<td>远程 Redis</td>
+<td>分布式、高可用、共享</td>
+<td>依赖外部服务</td>
+</tr>
+<tr>
+<td>Level 2</td>
+<td>本地 Redis</td>
+<td>快速、简单</td>
+<td>单机、数据易失</td>
+</tr>
+<tr>
+<td>Level 3</td>
+<td>SQLite</td>
+<td>可靠、ACID</td>
+<td>性能较低</td>
+</tr>
+<tr>
+<td>Level 4</td>
+<td>文件系统</td>
+<td>零依赖、最可靠</td>
+<td>性能最低</td>
+</tr>
+</tbody>
+</table>
+<h3 id="为什么不是其他方案">为什么不是其他方案？</h3>
+<p><strong>方案对比</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>优点</th>
+<th>缺点</th>
+<th>为什么不用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>仅 Redis</td>
+<td>性能好</td>
+<td>单点故障</td>
+<td>不符合高可用要求</td>
+</tr>
+<tr>
+<td>Redis + 数据库</td>
+<td>数据持久化</td>
+<td>增加依赖</td>
+<td>过度设计</td>
+</tr>
+<tr>
+<td>仅文件系统</td>
+<td>零依赖</td>
+<td>性能差</td>
+<td>用户体验差</td>
+</tr>
+<tr>
+<td><strong>四级降级</strong></td>
+<td><strong>兼顾性能和可用性</strong></td>
+<td><strong>实现复杂</strong></td>
+<td><strong>✓ 最佳平衡</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="影响">影响</h2>
+<h3 id="积极影响">积极影响</h3>
+<ol type="1">
+<li><strong>高可用性</strong>: 系统在任何条件下都能运行</li>
+<li><strong>部署灵活性</strong>: 适应不同基础设施条件</li>
+<li><strong>优雅降级</strong>: 降级过程透明，不影响业务</li>
+<li><strong>可观测性</strong>: 提供降级统计和监控</li>
+</ol>
+<h3 id="消极影响">消极影响</h3>
+<ol type="1">
+<li><strong>实现复杂度</strong>: 需要维护多套后端实现</li>
+<li><strong>测试负担</strong>: 每套降级方案都需要测试</li>
+<li><strong>性能差异</strong>: 不同级别性能差异较大</li>
+</ol>
+<h3 id="缓解措施">缓解措施</h3>
+<ul>
+<li>统一接口抽象，降低维护成本</li>
+<li>自动化测试覆盖所有降级路径</li>
+<li>监控降级状态，及时告警</li>
+</ul>
+<hr />
+<h2 id="使用示例">使用示例</h2>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> manager <span class="op">=</span> <span class="fu">createConnectionManager</span>({</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  remoteRedis<span class="op">:</span> { host<span class="op">:</span> <span class="st">&#39;redis-cluster&#39;</span><span class="op">,</span> port<span class="op">:</span> <span class="dv">6380</span><span class="op">,</span> password<span class="op">:</span> <span class="st">&#39;xxx&#39;</span> }<span class="op">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  localRedis<span class="op">:</span> { host<span class="op">:</span> <span class="st">&#39;localhost&#39;</span><span class="op">,</span> port<span class="op">:</span> <span class="dv">6379</span> }<span class="op">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  sqlitePath<span class="op">:</span> <span class="st">&#39;~/.eket/data/sqlite/eket.db&#39;</span><span class="op">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  fileQueueDir<span class="op">:</span> <span class="st">&#39;./.eket/data/queue&#39;</span><span class="op">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> manager<span class="op">.</span><span class="fu">initialize</span>()<span class="op">;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="vs">`Current level: </span><span class="sc">${</span>result<span class="op">.</span><span class="at">data</span><span class="sc">}</span><span class="vs">`</span>)<span class="op">;</span>  <span class="co">// e.g., &#39;local_redis&#39;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">// 查看统计</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> stats <span class="op">=</span> manager<span class="op">.</span><span class="fu">getStats</span>()<span class="op">;</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(stats)<span class="op">;</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co">// {</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">//   currentLevel: &#39;local_redis&#39;,</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">//   fallbackCount: 1,</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">//   remoteRedisAvailable: false,</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co">//   localRedisAvailable: true,</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">//   ...</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">// }</span></span></code></pre></div>
+<hr />
+<h2 id="相关文档">相关文档</h2>
+<ul>
+<li><a href="../../node/src/core/connection-manager.ts">Connection
+Manager 实现</a></li>
+<li><a href="./error-codes.md">错误码参考</a></li>
+</ul>
+<hr />
+<h2 id="备注">备注</h2>
+<p>此决策基于以下假设： 1. 大多数生产环境有 Redis 集群 2.
+开发环境通常可以运行本地 Redis 3. SQLite 和文件系统作为最后保障</p>
+<p>如果假设不成立，需要重新评估此决策。</p>
+</body>
+</html>

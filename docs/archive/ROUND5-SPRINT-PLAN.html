@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Round 5 Sprint 计划</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Round 5 Sprint 计划</h1>
+</header>
+<h1 id="eket-round-5-sprint-计划">EKET Round 5 Sprint 计划</h1>
+<p><strong>Sprint</strong>: Round 5 - 性能与质量双提升
+<strong>启动时间</strong>: 2026-04-08 <strong>目标版本</strong>: v2.4.0
+<strong>Master</strong>: 协调实例 <strong>Slaver 团队</strong>: 4
+人并行开发</p>
+<hr />
+<h2 id="任务分派总览">📊 任务分派总览</h2>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 16%" />
+<col style="width: 12%" />
+<col style="width: 16%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th>任务 ID</th>
+<th>负责人</th>
+<th>角色</th>
+<th>优先级</th>
+<th>工时</th>
+<th>分支</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TASK-005</td>
+<td>Slaver A</td>
+<td>Backend Architect</td>
+<td>P0</td>
+<td>7h</td>
+<td><code>feature/TASK-005-sqlite-manager-impl</code></td>
+<td>🟡 IN_PROGRESS</td>
+</tr>
+<tr>
+<td>TASK-006</td>
+<td>Slaver C</td>
+<td>Performance Expert</td>
+<td>P1</td>
+<td>8h</td>
+<td><code>feature/TASK-006-performance-optimization</code></td>
+<td>🟡 IN_PROGRESS</td>
+</tr>
+<tr>
+<td>TASK-007</td>
+<td>Slaver B</td>
+<td>QA Specialist</td>
+<td>P1</td>
+<td>10h</td>
+<td><code>feature/TASK-007-fix-remaining-tests</code></td>
+<td>🟡 IN_PROGRESS</td>
+</tr>
+<tr>
+<td>TASK-008</td>
+<td>Slaver D</td>
+<td>DevOps Expert</td>
+<td>P2</td>
+<td>6h</td>
+<td><code>feature/TASK-008-test-environment</code></td>
+<td>🟡 IN_PROGRESS</td>
+</tr>
+</tbody>
+</table>
+<p><strong>总工时</strong>: 31 小时 <strong>预期完成</strong>: 2-3 天
+(并行执行)</p>
+<hr />
+<h2 id="sprint-目标">🎯 Sprint 目标</h2>
+<h3 id="主要目标-must-have">主要目标 (Must Have)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />SQLite Manager 统一架构完善
+(TASK-005)</label></li>
+<li><label><input type="checkbox" />测试通过率 87% → 100%
+(TASK-007)</label></li>
+<li><label><input type="checkbox" />性能基准测试验证
+(TASK-006)</label></li>
+<li><label><input type="checkbox" />测试环境隔离 (TASK-008)</label></li>
+</ul>
+<h3 id="期望目标-should-have">期望目标 (Should Have)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />P95 延迟 &lt;100ms</label></li>
+<li><label><input type="checkbox" />1000 并发测试通过</label></li>
+<li><label><input type="checkbox" />Redis Mock 功能完整</label></li>
+</ul>
+<h3 id="可选目标-nice-to-have">可选目标 (Nice to Have)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />性能对比报告</label></li>
+<li><label><input type="checkbox" />测试最佳实践文档</label></li>
+</ul>
+<hr />
+<h2 id="执行计划">📅 执行计划</h2>
+<h3 id="phase-1-并行开发-day-1-2">Phase 1: 并行开发 (Day 1-2)</h3>
+<pre><code>Slaver A → TASK-005 (SQLite Manager 验证和完善)
+Slaver B → TASK-007 (测试修复 Phase 1-2)
+Slaver C → TASK-006 (性能基准测试)
+Slaver D → TASK-008 (Redis Mock + SQLite 内存)</code></pre>
+<h3 id="phase-2-集成验证-day-2-3">Phase 2: 集成验证 (Day 2-3)</h3>
+<pre><code>Slaver A → 协助 TASK-007 (SQLite 相关测试)
+Slaver B → TASK-007 (Phase 3-5 完成)
+Slaver C → TASK-006 (k6 压力测试)
+Slaver D → TASK-008 (Docker Compose 环境)</code></pre>
+<h3 id="phase-3-蓝队审查-day-3">Phase 3: 蓝队审查 (Day 3)</h3>
+<pre><code>蓝队 → 审查 4 个 PR
+     → Level 1: 构建 + 测试
+     → Level 2: 架构审查
+     → Level 3: 核心模块深度审查</code></pre>
+<h3 id="phase-4-合并发布-day-3-4">Phase 4: 合并发布 (Day 3-4)</h3>
+<pre><code>Master → 合并到 testing 分支
+       → 验证集成测试
+       → 合并到 main 分支
+       → 发布 v2.4.0</code></pre>
+<hr />
+<h2 id="任务依赖关系">🔗 任务依赖关系</h2>
+<pre><code>TASK-005 (SQLite Manager) ──┬──&gt; TASK-007 (测试修复)
+                            │
+TASK-008 (测试环境) ────────┘
+          │
+          └──&gt; TASK-006 (性能测试)</code></pre>
+<p><strong>说明</strong>: - TASK-005 和 TASK-008 可独立开始 - TASK-007
+部分依赖 TASK-005 (SQLite 相关测试) - TASK-006 依赖 TASK-008
+(测试环境稳定)</p>
+<hr />
+<h2 id="沟通机制">📢 沟通机制</h2>
+<h3 id="每日站会-建议">每日站会 (建议)</h3>
+<ul>
+<li>时间：每天 10:00 (各 Slaver 自我同步)</li>
+<li>内容：
+<ul>
+<li>昨天完成了什么</li>
+<li>今天计划做什么</li>
+<li>遇到什么阻塞</li>
+</ul></li>
+</ul>
+<h3 id="pr-审查请求">PR 审查请求</h3>
+<p>Slaver 完成开发后： 1. 将 PR 提交到
+<code>outbox/review_requests/</code> 2. 通知蓝队审查 3. 蓝队在 4
+小时内响应 (P1 优先级)</p>
+<h3 id="问题升级">问题升级</h3>
+<p>遇到阻塞问题时： 1. Slaver → Master (架构决策/资源协调) 2. Slaver →
+蓝队 (技术问题) 3. Slaver ↔︎ Slaver (协作问题)</p>
+<hr />
+<h2 id="进度追踪">📊 进度追踪</h2>
+<h3 id="任务状态定义">任务状态定义</h3>
+<ul>
+<li>🟢 READY: 准备开始</li>
+<li>🟡 IN_PROGRESS: 进行中</li>
+<li>🔵 BLOCKED: 被阻塞</li>
+<li>🟣 REVIEW: 待审查</li>
+<li>✅ DONE: 已完成并合并</li>
+</ul>
+<h3 id="更新频率">更新频率</h3>
+<ul>
+<li>Slaver: 每 2 小时更新任务状态</li>
+<li>Master: 每日汇总进度报告</li>
+<li>蓝队：审查完成后立即反馈</li>
+</ul>
+<hr />
+<h2 id="验收标准">🎯 验收标准</h2>
+<h3 id="代码质量">代码质量</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />所有 PR 通过蓝队审查</label></li>
+<li><label><input type="checkbox" />无 P0 阻塞性问题</label></li>
+<li><label><input type="checkbox" />测试覆盖率 ≥80%</label></li>
+</ul>
+<h3 id="功能完整性">功能完整性</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />TASK-005: SQLite Manager
+统一接口完善</label></li>
+<li><label><input type="checkbox" />TASK-006:
+性能优化验证完成</label></li>
+<li><label><input type="checkbox" />TASK-007: 100% 测试通过</label></li>
+<li><label><input type="checkbox" />TASK-008:
+测试环境隔离完成</label></li>
+</ul>
+<h3 id="文档完整性">文档完整性</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />每个任务有完成报告</label></li>
+<li><label><input type="checkbox" />性能对比报告</label></li>
+<li><label><input type="checkbox" />测试修复总结</label></li>
+</ul>
+<hr />
+<h2 id="风险管理">🚨 风险管理</h2>
+<table>
+<thead>
+<tr>
+<th>风险</th>
+<th>概率</th>
+<th>影响</th>
+<th>缓解措施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>测试修复复杂度超预期</td>
+<td>中</td>
+<td>高</td>
+<td>优先修复 P0/P1 测试</td>
+</tr>
+<tr>
+<td>性能优化效果不达标</td>
+<td>低</td>
+<td>中</td>
+<td>调整优化策略，聚焦瓶颈</td>
+</tr>
+<tr>
+<td>Slaver 资源不足</td>
+<td>低</td>
+<td>高</td>
+<td>Master 协调，调整优先级</td>
+</tr>
+<tr>
+<td>蓝队审查延迟</td>
+<td>中</td>
+<td>中</td>
+<td>设置响应时间 SLA</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="成功指标">📈 成功指标</h2>
+<h3 id="技术指标">技术指标</h3>
+<ul>
+<li>测试通过率：87% → 100% (+15%)</li>
+<li>P95 延迟：≥100ms → &lt;100ms</li>
+<li>并发支持：≥1000 并发</li>
+<li>代码重复：减少 ~300 行</li>
+</ul>
+<h3 id="流程指标">流程指标</h3>
+<ul>
+<li>PR 审查响应时间：&lt;4 小时</li>
+<li>任务完成时间：≤3 天</li>
+<li>阻塞问题数量：≤2 个</li>
+</ul>
+<hr />
+<h2 id="备注">📝 备注</h2>
+<p><strong>Master 职责</strong>: - 协调 Slaver 任务分配 -
+架构决策和技术指导 - PR 最终合并 - 进度追踪和报告</p>
+<p><strong>蓝队职责</strong>: - 代码审查 (Level 1/2/3) - 质量把关 -
+提供改进建议</p>
+<p><strong>Slaver 职责</strong>: - 领取任务并执行 - 提交 PR 请求审查 -
+根据反馈修改 - 完成任务报告</p>
+<hr />
+<p><strong>Sprint 启动</strong>: 2026-04-08 <strong>预计完成</strong>:
+2026-04-11 <strong>版本发布</strong>: v2.4.0</p>
+<hr />
+<h2 id="启动通知">🚀 启动通知</h2>
+<p>各 Slaver 团队成员：</p>
+<p>本 Sprint 计划已批准，请立即开始执行各自任务。</p>
+<p><strong>行动项</strong>: 1. 切换到对应 feature 分支 2. 阅读任务详情
+(<code>jira/tickets/TASK-XXX.md</code>) 3. 开始执行 Phase 1 4. 每 2
+小时更新任务状态</p>
+<p><strong>Master 联络</strong>: 遇到阻塞问题时立即联系</p>
+<p>Good luck! 🎯</p>
+<hr />
+<p><strong>创建者</strong>: Master (协调实例) <strong>创建时间</strong>:
+2026-04-08 <strong>版本</strong>: v1.0</p>
+</body>
+</html>
