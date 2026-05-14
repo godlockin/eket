@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Framework 并行任务执行看板</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Framework 并行任务执行看板</h1>
+</header>
+<h1 id="eket-framework-并行任务执行看板">EKET Framework
+并行任务执行看板</h1>
+<p><strong>启动时间</strong>: 2026-04-07 <strong>执行模式</strong>: 并行
+(3 个 Agent) <strong>预计完成</strong>: 9 小时 → 实际将根据 Agent
+速度调整</p>
+<hr />
+<h2 id="运行中的-agent">🚀 运行中的 Agent</h2>
+<h3 id="agent-1-核心模块-bug-修复">Agent 1: 核心模块 Bug 修复 🔧</h3>
+<p><strong>状态</strong>: 🟢 运行中 <strong>任务</strong>: BUG-001 ~
+BUG-007 (7 个核心模块 Bug) <strong>预计时间</strong>: 9h</p>
+<p><strong>任务清单</strong>: - [ ] BUG-001: SQLite Worker dbPath
+参数失效 (2h) - [ ] BUG-002: master-context Redis 连接池缺失 (3h) - [ ]
+BUG-003: OptimizedFileQueue 校验和逻辑错误 (4h) - [ ] BUG-004:
+ConnectionLevel 类型重复定义 (2h) - [ ] BUG-005: 未注册的错误码字符串
+(1h) - [ ] BUG-006: hashFunction 拼写错误 (0.5h) - [ ] BUG-007:
+master-election 类型重复声明 (1h)</p>
+<p><strong>关键文件</strong>: -
+<code>node/src/core/sqlite-async-client.ts</code> -
+<code>node/src/core/master-context.ts</code> -
+<code>node/src/core/optimized-file-queue.ts</code> -
+<code>node/src/core/master-election.ts</code> -
+<code>node/src/types/index.ts</code></p>
+<hr />
+<h3 id="agent-2-脚本与模板-bug-修复">Agent 2: 脚本与模板 Bug 修复
+📝</h3>
+<p><strong>状态</strong>: 🟢 运行中 <strong>任务</strong>: BUG-008 ~
+BUG-015 (8 个脚本和模板 Bug) <strong>预计时间</strong>: 6h</p>
+<p><strong>域 B: 脚本 Bug (4 个)</strong>: - [ ] BUG-008: eket-start.sh
+脚本名称错误 (0.5h) - [ ] BUG-009: start.sh 僵尸脚本清理 (0.5h) - [ ]
+BUG-010: web/app.js i18n 路径 404 (1h) - [ ] BUG-011:
+init-three-repos.sh 错误提示过时 (0.5h)</p>
+<p><strong>域 C: 模板 Bug (4 个)</strong>: - [ ] BUG-012: IDENTITY.md
+Shell 表达式未执行 (0.5h) - [ ] BUG-013: eket-slaver-auto.sh
+状态解析不匹配 (2h) - [ ] BUG-014: eket-start.sh -r 参数错误 (0.5h) - [
+] BUG-015: eket-init.sh 路径失效 (1h)</p>
+<p><strong>关键文件</strong>: - <code>scripts/eket-start.sh</code> -
+<code>scripts/start.sh</code> - <code>scripts/init-three-repos.sh</code>
+- <code>web/app.js</code> - <code>template/.eket/IDENTITY.md</code> -
+<code>template/.claude/commands/eket-slaver-auto.sh</code> -
+<code>template/.claude/commands/eket-start.sh</code> -
+<code>template/.claude/commands/eket-init.sh</code></p>
+<hr />
+<h3 id="agent-3-http-server-安全增强">Agent 3: HTTP Server 安全增强
+🔒</h3>
+<p><strong>状态</strong>: 🟢 运行中 <strong>任务</strong>: HTTP-001 ~
+HTTP-005 (5 个安全特性) <strong>预计时间</strong>: 11h</p>
+<p><strong>安全特性清单</strong>: - [ ] HTTP-001: 添加 Rate Limiting
+(2h) - [ ] HTTP-002: 配置 CORS (1h) - [ ] HTTP-003: 输入验证 (JSON
+Schema) (4h) - [ ] HTTP-004: 请求日志增强 (2h) - [ ] HTTP-005:
+健康检查增强 (2h)</p>
+<p><strong>关键文件</strong>: - <code>node/src/api/eket-server.ts</code>
+- <code>node/package.json</code> (添加依赖)</p>
+<p><strong>新增依赖</strong>: - express-rate-limit - cors - ajv -
+morgan</p>
+<hr />
+<h2 id="整体进度">📊 整体进度</h2>
+<pre><code>总任务数: 20 个 (7 + 8 + 5)
+已完成:   0  (0%)
+进行中:   20 (100%)
+待开始:   0  (0%)
+
+进度条: ░░░░░░░░░░░░░░░░░░░░ 0%</code></pre>
+<hr />
+<h2 id="时间估算">⏱️ 时间估算</h2>
+<table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>预计时间</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent 1</td>
+<td>9h</td>
+<td>🟢 运行中</td>
+</tr>
+<tr>
+<td>Agent 2</td>
+<td>6h</td>
+<td>🟢 运行中</td>
+</tr>
+<tr>
+<td>Agent 3</td>
+<td>11h</td>
+<td>🟢 运行中</td>
+</tr>
+</tbody>
+</table>
+<p><strong>并行执行时间</strong>: max(9h, 6h, 11h) = <strong>11
+小时</strong> <strong>顺序执行时间</strong>: 9h + 6h + 11h = <strong>26
+小时</strong> <strong>提速比</strong>: 2.4x</p>
+<hr />
+<h2 id="验收标准">✅ 验收标准</h2>
+<h3 id="代码质量">代码质量</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>npm run build</code>
+零错误</label></li>
+<li><label><input type="checkbox" /><code>npm test</code>
+全部通过</label></li>
+<li><label><input type="checkbox" />ESLint 零警告</label></li>
+<li><label><input type="checkbox" />TypeScript strict
+模式通过</label></li>
+</ul>
+<h3 id="测试覆盖">测试覆盖</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />每个 Bug
+修复添加测试用例</label></li>
+<li><label><input type="checkbox" />新增安全特性有测试覆盖</label></li>
+<li><label><input type="checkbox" />回归测试通过</label></li>
+<li><label><input type="checkbox" />代码覆盖率 ≥ 65%</label></li>
+</ul>
+<h3 id="文档更新">文档更新</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />CHANGELOG.md 更新</label></li>
+<li><label><input type="checkbox" />错误码文档更新</label></li>
+<li><label><input type="checkbox" />API
+文档更新（安全特性）</label></li>
+<li><label><input
+type="checkbox" />配置文档更新（环境变量）</label></li>
+</ul>
+<h3 id="版本发布准备">版本发布准备</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />版本号升级到 v2.1.1</label></li>
+<li><label><input type="checkbox" />Git commit 消息规范</label></li>
+<li><label><input type="checkbox" />准备 Release notes</label></li>
+</ul>
+<hr />
+<h2 id="依赖关系">🔄 依赖关系</h2>
+<pre><code>Agent 1 (核心模块) ──┐
+                    ├──► 编译测试
+Agent 2 (脚本模板) ──┤
+                    ├──► 集成测试
+Agent 3 (HTTP增强) ──┘
+                    └──► 版本发布</code></pre>
+<p>所有 Agent
+的工作是独立的，没有相互依赖。完成后需要进行整体集成测试。</p>
+<hr />
+<h2 id="后续步骤">📋 后续步骤</h2>
+<h3 id="当-agent-完成时">当 Agent 完成时</h3>
+<ol type="1">
+<li><strong>检查输出</strong> - 查看每个 Agent 的执行报告</li>
+<li><strong>运行测试</strong> - 执行完整测试套件</li>
+<li><strong>代码审查</strong> - Review 所有修改</li>
+<li><strong>编译验证</strong> - 确保编译通过</li>
+<li><strong>集成测试</strong> - 测试整体功能</li>
+<li><strong>文档更新</strong> - 更新 CHANGELOG 和版本号</li>
+<li><strong>Git 提交</strong> - 创建规范的 commit</li>
+</ol>
+<h3 id="如果遇到问题">如果遇到问题</h3>
+<ul>
+<li><strong>Agent 失败</strong> - 查看错误日志，手动修复或重新启动</li>
+<li><strong>测试失败</strong> - 定位失败原因，修复后重新测试</li>
+<li><strong>冲突解决</strong> - 如果有文件冲突，优先保证功能正确</li>
+</ul>
+<hr />
+<h2 id="实时监控">📊 实时监控</h2>
+<h3 id="查看-agent-进度">查看 Agent 进度</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Agent 1 输出</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span> <span class="at">-f</span> /private/tmp/claude-502/.../tasks/af4d44f160fd58e82.output</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Agent 2 输出</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span> <span class="at">-f</span> /private/tmp/claude-502/.../tasks/a3eba564003ffc711.output</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Agent 3 输出</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span> <span class="at">-f</span> /private/tmp/claude-502/.../tasks/aa600b36eba2778a3.output</span></code></pre></div>
+<h3 id="检查编译状态">检查编译状态</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run build</span></code></pre></div>
+<h3 id="运行测试">运行测试</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test</span></code></pre></div>
+<hr />
+<h2 id="预期成果">🎯 预期成果</h2>
+<h3 id="agent-1-交付物">Agent 1 交付物</h3>
+<ul>
+<li>7 个核心 Bug 修复</li>
+<li>单元测试覆盖</li>
+<li>类型系统优化</li>
+<li>错误码统一</li>
+</ul>
+<h3 id="agent-2-交付物">Agent 2 交付物</h3>
+<ul>
+<li>8 个脚本/模板 Bug 修复</li>
+<li>脚本健壮性提升</li>
+<li>模板格式统一</li>
+<li>文档更新</li>
+</ul>
+<h3 id="agent-3-交付物">Agent 3 交付物</h3>
+<ul>
+<li>5 个安全特性</li>
+<li>Rate Limiting 配置</li>
+<li>CORS 支持</li>
+<li>输入验证机制</li>
+<li>增强的日志和健康检查</li>
+</ul>
+<hr />
+<h2 id="风险提示">🚨 风险提示</h2>
+<table>
+<thead>
+<tr>
+<th>风险</th>
+<th>影响</th>
+<th>缓解措施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent 修复引入新 Bug</td>
+<td>高</td>
+<td>完整测试套件验证</td>
+</tr>
+<tr>
+<td>依赖安装失败</td>
+<td>中</td>
+<td>手动安装依赖</td>
+</tr>
+<tr>
+<td>类型系统冲突</td>
+<td>中</td>
+<td>严格 TypeScript 检查</td>
+</tr>
+<tr>
+<td>性能下降</td>
+<td>低</td>
+<td>性能基准测试</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>看板创建时间</strong>: 2026-04-07
+<strong>预计完成时间</strong>: 2026-04-07 (11 小时后)
+<strong>下次更新</strong>: Agent 完成时自动通知</p>
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>SKILL-ANATOMY-TEMPLATE.md</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">SKILL-ANATOMY-TEMPLATE.md</h1>
+</header>
+<h1 id="skill-anatomy-template.md">SKILL-ANATOMY-TEMPLATE.md</h1>
+<blockquote>
+<p>7 节标准结构 + Frontmatter，统一所有
+<code>.claude/skills/eket/experts/</code> 下专家文件的解剖。
+校验脚本：<code>scripts/check-skill-anatomy.sh</code>（full / minimal /
+–all 模式）。</p>
+</blockquote>
+<h2 id="何时用-7-节-vs-3-节">何时用 7 节 vs 3 节</h2>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 27%" />
+<col style="width: 27%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件类型</th>
+<th>适用节数</th>
+<th>校验命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>default 专家（7位）</td>
+<td>7 节 full</td>
+<td><code>check-skill-anatomy.sh &lt;file&gt;</code></td>
+<td>高频调用，必须完整 Overview/When/Process 指引</td>
+</tr>
+<tr>
+<td>optional 专家（53位）</td>
+<td>3 节 minimal</td>
+<td><code>check-skill-anatomy.sh --minimal &lt;file&gt;</code></td>
+<td>TASK-225 codemod 注入 TODO skeleton；Overview 等可逐步补充</td>
+</tr>
+<tr>
+<td>新建 Skill 文件（非专家）</td>
+<td>7 节 full</td>
+<td><code>check-skill-anatomy.sh &lt;file&gt;</code></td>
+<td>技能本身需完整文档，不走 minimal 兜底</td>
+</tr>
+</tbody>
+</table>
+<p><strong>示范文件</strong>： - 7 节
+full：<code>.claude/skills/eket/experts/default/architect.md</code> - 3
+节
+minimal：<code>eket-experts-extended/experts/ai/aiml.md</code>（subrepo）</p>
+<hr />
+<h2 id="expert-persona-frontmatter带注解">Expert Persona
+Frontmatter（带注解）</h2>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">id</span><span class="kw">:</span><span class="at"> eket.&lt;domain&gt;.001</span><span class="co">          # 命名空间 + 领域 + 序号；同领域多人时递增 .002</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> &lt;英文名&gt;</span><span class="co">                  # 用于代码引用；单字符串无空格</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">name_cn</span><span class="kw">:</span><span class="at"> &lt;中文名 3 字&gt;</span><span class="co">          # 拟人化召唤用；建议 &quot;姓+领域&quot; 如 &quot;陈架构&quot;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">role</span><span class="kw">:</span><span class="at"> &lt;职位&gt;</span><span class="co">                    # 中文岗位名；与 default 7 位的命名风格一致</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">emoji</span><span class="kw">:</span><span class="at"> &lt;emoji&gt;</span><span class="co">                  # 单 emoji；用于 Master 召唤回执醒目标识</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">domain</span><span class="kw">:</span><span class="at"> &lt;domain&gt;</span><span class="co">                # 与 id 中的 domain 段一致；用于按领域筛选</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">tier</span><span class="kw">:</span><span class="at"> default</span><span class="co">                   # default = 7 节 full；optional = 3 节 minimal 起步</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> &lt;一句话核心职责&gt;</span><span class="co">    # ≤ 60 字；frontmatter 级 description（被 INDEX 引用）</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">rationalizations_count</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span><span class="co">      # Common Rationalizations 表的实际行数；default 强制 ≥6</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 以下字段保留原有结构：</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># personality / background / thinking_framework / analysis_focus / output_format / phase</span></span></code></pre></div>
+<blockquote>
+<p>校验脚本会从 frontmatter 仅强制 <code>description</code> +
+<code>rationalizations_count</code> 两字段； 其余字段由
+EXPERT-PANEL-PLAYBOOK 的内容质量审查兜底。</p>
+</blockquote>
+<h2 id="overview">Overview</h2>
+<p>2-3 句话：专家核心职责定位、思维框架关键词、在专家组中的作用。 不重复
+Frontmatter；写”活的” narrative，说明何时 Master 优先召唤此专家。</p>
+<h2 id="when-to-use">When to Use</h2>
+<p>3-5
+个触发场景，用动词短语列出。强调此专家在哪类问题下有独特价值。</p>
+<h2 id="when-not-to-use">When NOT to Use</h2>
+<p>2-4 个反向场景，防止过度召唤，帮助 Master 节约 token。</p>
+<h2 id="process">Process</h2>
+<p>3-6 步有序执行流程，强调分析产出物（图表/表格/清单）。 与 Frontmatter
+<code>output_format</code> 互补，不重复。</p>
+<h2 id="common-rationalizations">Common Rationalizations</h2>
+<blockquote>
+<p>⚠️ 非穷举清单 — LLM 可能用未列措辞绕过；Master 二次 review
+是最后兜底。 保留已验证条目，不得删减。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>借口</th>
+<th>反驳</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h2 id="red-flags">Red Flags</h2>
+<p>3-5 条可观测警示信号，格式：“如果你看到 X，说明 Y”。 区别于 Common
+Rationalizations（借口=主观话术，Red Flags=客观迹象）。</p>
+<h2 id="verification">Verification</h2>
+<p>2-4 条可执行自查命令或客观验证方法（呼应 Nyquist
+Rule），每条带预期输出说明。</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 示例：检查依赖集中度</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-r</span> <span class="st">&quot;import&quot;</span> src/ <span class="kw">|</span> <span class="fu">awk</span> <span class="at">-F:</span> <span class="st">&#39;{print $1}&#39;</span> <span class="kw">|</span> <span class="fu">sort</span> <span class="kw">|</span> <span class="fu">uniq</span> <span class="at">-c</span> <span class="kw">|</span> <span class="fu">sort</span> <span class="at">-rn</span> <span class="kw">|</span> <span class="fu">head</span> <span class="at">-20</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 预期：无单一文件被 import 超过模块总数的 30%</span></span></code></pre></div>
+<hr />
+<h2 id="reference">Reference</h2>
+<ul>
+<li><strong>示范文件</strong>：<code>.claude/skills/eket/experts/default/architect.md</code>（7
+节 full + 完整 frontmatter）</li>
+<li><strong>示范文件（minimal）</strong>：subrepo
+<code>eket-experts-extended/experts/ai/aiml.md</code></li>
+<li><strong>校验脚本</strong>：<code>scripts/check-skill-anatomy.sh</code>
+<ul>
+<li><code>&lt;file&gt;</code> — 单文件 full 模式</li>
+<li><code>--minimal &lt;file&gt;</code> — 3 节 minimal 模式</li>
+<li><code>--all</code> — 主仓 default + 主仓 optional + subrepo 53
+文件全量扫描（subrepo 不可达走 SKIP）</li>
+<li><code>--self-test</code> — 跑 <code>tests/fixtures/anatomy/</code>
+内置 6 case</li>
+</ul></li>
+<li><strong>codemod</strong>：<code>scripts/codemod-inject-3sections.sh</code>（含
+<code>--exclude=INDEX.md</code> 参数防误注入索引文件）</li>
+</ul>
+</body>
+</html>

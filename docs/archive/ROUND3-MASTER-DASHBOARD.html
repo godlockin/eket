@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Round 3 自举系统 - Master 监控仪表板</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Round 3 自举系统 - Master 监控仪表板</h1>
+</header>
+<h1 id="eket-round-3-自举系统---master-监控仪表板">EKET Round 3 自举系统
+- Master 监控仪表板</h1>
+<p><strong>Master</strong>: Claude Opus 4.6 <strong>启动时间</strong>:
+2026-04-08 (当前时间) <strong>目标版本</strong>: v2.3.0
+<strong>模式</strong>: 1 Master + 4 Slavers 并行协作</p>
+<hr />
+<h2 id="slaver-团队状态">📊 Slaver 团队状态</h2>
+<h3 id="slaver-b---测试修复完善-task-009">Slaver B - 测试修复完善
+(TASK-009)</h3>
+<p><strong>Agent ID</strong>: aa38e8775988b5c77 <strong>状态</strong>:
+🔄 进行中 <strong>分支</strong>:
+<code>feature/TASK-009-test-fixes-completion</code>
+<strong>优先级</strong>: P0 - Critical <strong>预估</strong>: 3-4 小时
+<strong>目标</strong>: 测试通过率 47% → 90%+</p>
+<p><strong>子任务</strong>: - [ ] Task 9.1: 修复模块路径问题 (1h) - [ ]
+Task 9.2: 修复 Redis 连接超时 (1h) - [ ] Task 9.3: 环境依赖测试改造 (1h)
+- [ ] Task 9.4: 测试用例批量修复 (1.5h)</p>
+<p><strong>当前进度</strong>: 启动中 <strong>输出文件</strong>:
+<code>/private/tmp/claude-502/.../tasks/aa38e8775988b5c77.output</code></p>
+<hr />
+<h3 id="slaver-c---性能验证与优化-task-010">Slaver C - 性能验证与优化
+(TASK-010)</h3>
+<p><strong>Agent ID</strong>: a4977cca6c6890a96 <strong>状态</strong>:
+🔄 进行中 <strong>分支</strong>:
+<code>feature/TASK-010-performance-validation</code>
+<strong>优先级</strong>: P0 <strong>预估</strong>: 3-4 小时
+<strong>目标</strong>: 验证 4 项性能优化效果</p>
+<p><strong>子任务</strong>: - [ ] Task 10.1: 性能基准测试执行 (1.5h) - [
+] Task 10.2: 性能对比分析 (1h) - [ ] Task 10.3: 性能调优 (1h,
+条件触发)</p>
+<p><strong>当前进度</strong>: 启动中 <strong>输出文件</strong>:
+<code>/private/tmp/claude-502/.../tasks/a4977cca6c6890a96.output</code></p>
+<hr />
+<h3 id="slaver-a---sqlite-manager-迁移-task-011">Slaver A - SQLite
+Manager 迁移 (TASK-011)</h3>
+<p><strong>Agent ID</strong>: a1a0811e6a6d7a18e <strong>状态</strong>:
+🔄 进行中 <strong>分支</strong>:
+<code>feature/TASK-011-sqlite-migration-complete</code>
+<strong>优先级</strong>: P1 <strong>预估</strong>: 4-5 小时
+<strong>目标</strong>: 迁移 8-15 个文件到 SQLiteManager</p>
+<p><strong>迁移清单</strong>: - [ ] 核心模块 (5 个文件) - 必须 - [ ]
+命令模块 (3 个文件) - 尽量 - [ ] API 模块 (2 个文件) - 可选 - [ ]
+工具模块 (5 个文件) - 可选</p>
+<p><strong>当前进度</strong>: 启动中 <strong>输出文件</strong>:
+<code>/private/tmp/claude-502/.../tasks/a1a0811e6a6d7a18e.output</code></p>
+<hr />
+<h3 id="slaver-e---文档归档与维护-task-012">Slaver E - 文档归档与维护
+(TASK-012)</h3>
+<p><strong>Agent ID</strong>: a88a4b7e9f6db2b5b <strong>状态</strong>:
+🔄 进行中 <strong>分支</strong>:
+<code>feature/TASK-012-documentation-health</code>
+<strong>优先级</strong>: P1 <strong>预估</strong>: 3-4 小时
+<strong>目标</strong>: 文档健康评分 65/100 → 85/100</p>
+<p><strong>子任务</strong>: - [ ] Task 12.1: 归档 13 个过时文档 (1.5h) -
+[ ] Task 12.2: 更新 18 个需刷新文档 (1.5h) - [ ] Task 12.3: .gitignore
+完善 (0.5h) - [ ] Task 12.4: 文档质量验证 (0.5h)</p>
+<p><strong>当前进度</strong>: 启动中 <strong>输出文件</strong>:
+<code>/private/tmp/claude-502/.../tasks/a88a4b7e9f6db2b5b.output</code></p>
+<hr />
+<h2 id="总体目标跟踪">🎯 总体目标跟踪</h2>
+<h3 id="代码质量">代码质量</h3>
+<ul>
+<li><strong>测试通过率</strong>: 47% → 目标 90-100%</li>
+<li><strong>测试用例</strong>: 75% → 目标 95%+</li>
+<li><strong>SQLite 架构</strong>: 双实现 → 单一管理类</li>
+<li><strong>代码重复</strong>: 减少 ~300 行</li>
+</ul>
+<h3 id="性能指标">性能指标</h3>
+<ul>
+<li><strong>基准测试</strong>: 未执行 → 完整报告</li>
+<li><strong>性能对比</strong>: 无 → v2.1.2 vs v2.2.0 vs v2.3.0</li>
+<li><strong>优化验证</strong>: 4 项优化效果量化</li>
+</ul>
+<h3 id="文档质量">文档质量</h3>
+<ul>
+<li><strong>文档健康</strong>: 65/100 → 85/100</li>
+<li><strong>过时文档</strong>: 27 个 → 0 个</li>
+<li><strong>运行时数据</strong>: 分离完成</li>
+</ul>
+<hr />
+<h2 id="master-职责">📋 Master 职责</h2>
+<h3 id="实时监控-持续">1. 实时监控 (持续)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />监控 4 个 Slaver 的进度</label></li>
+<li><label><input
+type="checkbox" />检查输出文件获取实时状态</label></li>
+<li><label><input type="checkbox" />识别阻塞和依赖问题</label></li>
+</ul>
+<h3 id="协调与支持-按需">2. 协调与支持 (按需)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />解决 Slaver
+间的依赖冲突</label></li>
+<li><label><input type="checkbox" />提供技术指导和问题解答</label></li>
+<li><label><input
+type="checkbox" />调整任务优先级和资源分配</label></li>
+</ul>
+<h3 id="质量审核-完成后">3. 质量审核 (完成后)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />审核各 Slaver 产出质量</label></li>
+<li><label><input
+type="checkbox" />验证测试通过率和性能指标</label></li>
+<li><label><input type="checkbox" />确保文档完整性</label></li>
+</ul>
+<h3 id="集成与发布-最后阶段">4. 集成与发布 (最后阶段)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />合并所有 Slaver 成果到
+miao</label></li>
+<li><label><input type="checkbox" />运行完整测试验证</label></li>
+<li><label><input type="checkbox" />更新 CHANGELOG 和 Release
+Notes</label></li>
+<li><label><input type="checkbox" />创建 v2.3.0 tag 并发布</label></li>
+</ul>
+<hr />
+<h2 id="风险监控">🚨 风险监控</h2>
+<h3 id="高风险项">高风险项</h3>
+<ul>
+<li>⚠️ 测试修复复杂度可能超预期</li>
+<li>⚠️ SQLite 迁移可能引入回归</li>
+<li>⚠️ Slaver 间可能存在文件冲突</li>
+</ul>
+<h3 id="应对措施">应对措施</h3>
+<ul>
+<li>优先完成 P0 任务 (TASK-009, TASK-010)</li>
+<li>允许部分 P1 任务延后到 v2.3.1</li>
+<li>保持 Slaver 间通信和协调</li>
+</ul>
+<hr />
+<h2 id="进度检查点">📊 进度检查点</h2>
+<h3 id="checkpoint-1-启动完成-0-30分钟">Checkpoint 1: 启动完成
+(0-30分钟)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />4 个 Slaver
+成功启动</label></li>
+<li><label><input type="checkbox" />各 Slaver 开始执行任务</label></li>
+<li><label><input type="checkbox" />Master 建立监控机制</label></li>
+</ul>
+<h3 id="checkpoint-2-中期检查-2-3小时">Checkpoint 2: 中期检查
+(2-3小时)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />至少 2 个 Slaver 完成
+50%+</label></li>
+<li><label><input type="checkbox" />识别并解决阻塞问题</label></li>
+<li><label><input type="checkbox" />调整任务计划（如需要）</label></li>
+</ul>
+<h3 id="checkpoint-3-完成审核-4-6小时">Checkpoint 3: 完成审核
+(4-6小时)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />所有 Slaver 完成任务</label></li>
+<li><label><input type="checkbox" />Master 审核产出质量</label></li>
+<li><label><input type="checkbox" />准备合并和发布</label></li>
+</ul>
+<hr />
+<h2 id="实时状态更新">📈 实时状态更新</h2>
+<p><strong>上次更新</strong>: 2026-04-08 (启动时间)</p>
+<h3 id="slaver-b-测试修复">Slaver B (测试修复)</h3>
+<ul>
+<li>状态: 启动中</li>
+<li>进度: 0%</li>
+<li>备注: 等待初始化完成</li>
+</ul>
+<h3 id="slaver-c-性能验证">Slaver C (性能验证)</h3>
+<ul>
+<li>状态: 启动中</li>
+<li>进度: 0%</li>
+<li>备注: 等待初始化完成</li>
+</ul>
+<h3 id="slaver-a-sqlite-迁移">Slaver A (SQLite 迁移)</h3>
+<ul>
+<li>状态: 启动中</li>
+<li>进度: 0%</li>
+<li>备注: 等待初始化完成</li>
+</ul>
+<h3 id="slaver-e-文档维护">Slaver E (文档维护)</h3>
+<ul>
+<li>状态: 启动中</li>
+<li>进度: 0%</li>
+<li>备注: 等待初始化完成</li>
+</ul>
+<hr />
+<h2 id="master-通知日志">🔔 Master 通知日志</h2>
+<h3 id="启动阶段">[启动阶段]</h3>
+<ul>
+<li>✅ Round 3 启动计划创建完成</li>
+<li>✅ 5 个 Feature 分支创建完成</li>
+<li>✅ 4 个 Jira Tickets 创建完成</li>
+<li>✅ 4 个 Slaver Agents 启动完成</li>
+<li>🔄 等待 Slaver 初始化和执行</li>
+</ul>
+<hr />
+<p><strong>Master 签名</strong>: Claude Opus 4.6
+<strong>仪表板版本</strong>: v1.0 <strong>自动更新</strong>: 每 30
+分钟或收到 Slaver 通知时</p>
+</body>
+</html>

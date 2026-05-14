@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EPIC-006 Slaver 协作经验教训</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EPIC-006 Slaver 协作经验教训</h1>
+</header>
+<h1 id="epic-006-slaver-协作经验教训">EPIC-006 Slaver 协作经验教训</h1>
+<p><strong>执行时间</strong>: 2026-05-08～05-09<br />
+<strong>Master</strong>: master-001<br />
+<strong>范围</strong>: TASK-601 实施 + Slaver 工作方式调整</p>
+<hr />
+<h2 id="一背景-agent-幻觉问题">一、背景 Agent 幻觉问题</h2>
+<h3 id="问题发现">1.1 问题发现</h3>
+<p><strong>初次召唤</strong>（background agents）: - 使用
+<code>run_in_background: true</code> 启动 5 个 Slaver agents - Slavers
+汇报”完成实现 + 测试 + PR” - <strong>实际验证</strong>: ❌
+文件不存在，commits 不存在，<strong>完全幻觉</strong></p>
+<p><strong>根因</strong>: - Background agents 在 <strong>isolated
+context</strong> 中运行 - <strong>无文件系统写权限</strong>（Read-only
+mode） - Agents 以为自己执行了 Write/Edit，实际未生效 - Git
+命令在隔离环境中执行，未影响真实 repo</p>
+<h3 id="幻觉特征">1.2 幻觉特征</h3>
+<table>
+<thead>
+<tr>
+<th>Slaver 汇报</th>
+<th>实际状态</th>
+<th>幻觉类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“已创建 error-identifier.ts”</td>
+<td>❌ 文件不存在</td>
+<td>Write 幻觉</td>
+</tr>
+<tr>
+<td>“18 tests passing”</td>
+<td>❌ 测试文件不存在</td>
+<td>测试幻觉</td>
+</tr>
+<tr>
+<td>“PR #184 已提交”</td>
+<td>❌ GitHub 无此 PR</td>
+<td>Git 幻觉</td>
+</tr>
+<tr>
+<td>“Branch synced to miao”</td>
+<td>❌ origin/miao 无新 commits</td>
+<td>Push 幻觉</td>
+</tr>
+</tbody>
+</table>
+<p><strong>影响</strong>: Master 误以为任务完成 → 实际零进展 →
+时间浪费</p>
+<hr />
+<h2 id="二解决方案">二、解决方案</h2>
+<h3 id="工作方式调整">2.1 工作方式调整</h3>
+<p><strong>错误方式</strong> (run_in_background: true):</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Agent</span>({</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  description<span class="op">:</span> <span class="st">&quot;Slaver-001: TASK-601&quot;</span><span class="op">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  prompt<span class="op">:</span> <span class="st">&quot;实现 400 recovery...&quot;</span><span class="op">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  run_in_background<span class="op">:</span> <span class="kw">true</span><span class="op">,</span>  <span class="co">// ❌ 隔离环境，无写权限</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<p><strong>正确方式</strong> (foreground execution):</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Agent</span>({</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  description<span class="op">:</span> <span class="st">&quot;Slaver-001: TASK-601&quot;</span><span class="op">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  prompt<span class="op">:</span> <span class="st">&quot;实现 400 recovery...&quot;</span><span class="op">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 不设置 run_in_background，默认 foreground</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<p><strong>区别</strong>: | 模式 | 文件系统 | Git 操作 | 适用场景 |
+|——|———|———|———| | <strong>Background</strong> | ❌ Read-only | ❌ 隔离
+| 纯分析/研究任务 | | <strong>Foreground</strong> | ✅ Read-write | ✅
+真实 repo | 代码实现/文件修改 |</p>
+<h3 id="slaver-召唤模板修订">2.2 Slaver 召唤模板（修订）</h3>
+<p><strong>分析阶段</strong>（可用 background）:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 仅读取 + 分析，无文件修改</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Agent</span>({</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  description<span class="op">:</span> <span class="st">&quot;Slaver: 分析 TASK-XXX&quot;</span><span class="op">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  prompt<span class="op">:</span> <span class="st">&quot;读取 ticket + 创建 analysis-report...&quot;</span><span class="op">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  run_in_background<span class="op">:</span> <span class="kw">true</span><span class="op">,</span>  <span class="co">// ✅ OK（仅读取）</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<p><strong>实现阶段</strong>（必须 foreground）:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 需要 Write/Edit 文件</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Agent</span>({</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  description<span class="op">:</span> <span class="st">&quot;Slaver: 实现 TASK-XXX&quot;</span><span class="op">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  prompt<span class="op">:</span> <span class="st">&quot;实现代码 + 测试 + 提交 PR...&quot;</span><span class="op">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ❌ 不设置 run_in_background</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<hr />
+<h2 id="三task-601-实际执行修正后">三、TASK-601 实际执行（修正后）</h2>
+<h3 id="foreground-agent-成功案例">3.1 Foreground Agent 成功案例</h3>
+<p><strong>召唤方式</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Agent</span>({</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  description<span class="op">:</span> <span class="st">&quot;Slaver-backend-001: TASK-601 实现&quot;</span><span class="op">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  prompt<span class="op">:</span> <span class="st">&quot;实现 400 Auto-Recovery...&quot;</span><span class="op">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Foreground mode（默认）</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<p><strong>真实产出</strong>: - ✅ <code>error-identifier.ts</code> (62
+lines) - ✅ <code>recovery-logger.ts</code> (137 lines) - ✅
+<code>claude-runner.ts</code> (+169 lines) - ✅ 3 个测试文件 (34 tests
+✅) - ✅ Commits: 4 个，全部真实 - ✅ Branch sync: feature → main ✅</p>
+<p><strong>验证方式</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 文件存在性</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> ls-tree HEAD node/src/core/ <span class="kw">|</span> <span class="fu">grep</span> <span class="st">&quot;error-identifier\|recovery-logger&quot;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Git commit 真实性</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log <span class="at">--oneline</span> <span class="at">--grep</span><span class="op">=</span><span class="st">&quot;TASK-601&quot;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 测试通过</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span><span class="st">&quot;error-identifier|recovery-logger&quot;</span></span></code></pre></div>
+<h3 id="工时对比">3.2 工时对比</h3>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>汇报工时</th>
+<th>实际产出</th>
+<th>真实性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Background</strong></td>
+<td>3.5h</td>
+<td>0 files</td>
+<td>❌ 幻觉</td>
+</tr>
+<tr>
+<td><strong>Foreground</strong></td>
+<td>3h</td>
+<td>8 files (code + tests + docs)</td>
+<td>✅ 真实</td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论</strong>: Background mode 100% 幻觉，Foreground mode
+100% 真实。</p>
+<hr />
+<h2 id="四防幻觉-checklistmaster-必查">四、防幻觉 Checklist（Master
+必查）</h2>
+<h3 id="slaver-汇报验证流程">4.1 Slaver 汇报验证流程</h3>
+<p><strong>Slaver 说”完成”时，Master 必须</strong>:</p>
+<ol type="1">
+<li><p>✅ <strong>文件存在性验证</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="op">&lt;</span>Slaver 声称创建的文件<span class="op">&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 或</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> ls-tree HEAD <span class="op">&lt;</span>文件路径<span class="op">&gt;</span></span></code></pre></div></li>
+<li><p>✅ <strong>Git commit 真实性</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log <span class="at">--oneline</span> <span class="at">--grep</span><span class="op">=</span><span class="st">&quot;&lt;TASK-ID&gt;&quot;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> show <span class="op">&lt;</span>commit-hash<span class="op">&gt;</span> --stat</span></code></pre></div></li>
+<li><p>✅ <strong>测试真实运行</strong>:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span><span class="st">&quot;&lt;test-file&gt;&quot;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 验证 stdout 包含 &quot;PASS&quot;</span></span></code></pre></div></li>
+<li><p>✅ <strong>PR 真实存在</strong>:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gh</span> pr list <span class="kw">|</span> <span class="fu">grep</span> <span class="st">&quot;&lt;TASK-ID&gt;&quot;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 或 GitHub Web UI 检查</span></span></code></pre></div></li>
+</ol>
+<p><strong>任一项失败 = 幻觉输出 = Reject</strong></p>
+<h3 id="红旗信号早期识别幻觉">4.2 红旗信号（早期识别幻觉）</h3>
+<table>
+<thead>
+<tr>
+<th>信号</th>
+<th>幻觉概率</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Slaver 汇报”文件已创建”但未调用 Write 工具</td>
+<td>100%</td>
+<td>❌ Reject</td>
+</tr>
+<tr>
+<td>Slaver 汇报”tests passing”但未调用 Bash(npm test)</td>
+<td>100%</td>
+<td>❌ Reject</td>
+</tr>
+<tr>
+<td>Slaver 汇报”PR #XXX”但 GitHub 无此 PR</td>
+<td>100%</td>
+<td>❌ Reject</td>
+</tr>
+<tr>
+<td>Slaver 用 background mode 却声称修改文件</td>
+<td>100%</td>
+<td>❌ Reject</td>
+</tr>
+<tr>
+<td>Tool use 记录与汇报不符</td>
+<td>90%</td>
+<td>⚠️ 验证</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="五slaver-架构改进建议">五、Slaver 架构改进建议</h2>
+<h3 id="强制验证机制">5.1 强制验证机制</h3>
+<p><strong>实现</strong>: Pre-complete hook（Slaver 侧）</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .eket/hooks/slaver-pre-complete.sh</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="va">TASK_ID</span><span class="op">=</span><span class="va">$1</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;=== Slaver Pre-Complete Verification ===&quot;</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 1: 声称的文件是否真实存在</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;已创建.*\.ts&quot;</span> <span class="st">&quot;jira/tickets/</span><span class="va">$TASK_ID</span><span class="st">/implementation-report.md&quot;</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="va">FILES</span><span class="op">=</span><span class="va">$(</span><span class="fu">grep</span> <span class="st">&quot;已创建&quot;</span> <span class="st">&quot;jira/tickets/</span><span class="va">$TASK_ID</span><span class="st">/implementation-report.md&quot;</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-oE</span> <span class="st">&quot;[a-z-]+\.ts&quot;</span><span class="va">)</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> f <span class="kw">in</span> <span class="va">$FILES</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-f</span> <span class="st">&quot;node/src/**/</span><span class="va">$f</span><span class="st">&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>      <span class="bu">echo</span> <span class="st">&quot;❌ Claimed file </span><span class="va">$f</span><span class="st"> does NOT exist&quot;</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>      <span class="bu">exit</span> 1</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  <span class="cf">done</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 2: 声称的测试是否真实通过</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;tests passing&quot;</span> <span class="st">&quot;jira/tickets/</span><span class="va">$TASK_ID</span><span class="st">/implementation-report.md&quot;</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>  <span class="bu">cd</span> node <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> test <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;PASS&quot;</span> <span class="kw">||</span> <span class="kw">{</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;❌ Tests NOT passing&quot;</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 1</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>  <span class="kw">}</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;✅ Verification passed&quot;</span></span></code></pre></div>
+<h3 id="slaver-模式选择指南">5.2 Slaver 模式选择指南</h3>
+<p><strong>Master 召唤时必须明确</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>任务类型</th>
+<th>模式</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>分析报告</strong></td>
+<td>Background ✅</td>
+<td>仅读取 + 思考，无文件修改</td>
+</tr>
+<tr>
+<td><strong>代码实现</strong></td>
+<td>Foreground ✅</td>
+<td>需要 Write/Edit 工具</td>
+</tr>
+<tr>
+<td><strong>测试编写</strong></td>
+<td>Foreground ✅</td>
+<td>需要创建测试文件</td>
+</tr>
+<tr>
+<td><strong>PR Review</strong></td>
+<td>Background ✅</td>
+<td>仅读取代码，无修改</td>
+</tr>
+<tr>
+<td><strong>文档更新</strong></td>
+<td>Foreground ✅</td>
+<td>需要 Edit Markdown</td>
+</tr>
+<tr>
+<td><strong>Git 操作</strong></td>
+<td>Foreground ✅</td>
+<td>需要真实 commit/push</td>
+</tr>
+</tbody>
+</table>
+<p><strong>口诀</strong>: <strong>能改就 Foreground，只读才
+Background</strong></p>
+<hr />
+<h2 id="六task-601-复盘master-视角">六、TASK-601 复盘（Master
+视角）</h2>
+<h3 id="拆卡质量">6.1 拆卡质量</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>目标</th>
+<th>实际</th>
+<th>评级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>涉及模块</td>
+<td>≤2</td>
+<td>1（claude-runner + 2 新模块）</td>
+<td>✅ 合适</td>
+</tr>
+<tr>
+<td>AC 数量</td>
+<td>≤7</td>
+<td>7</td>
+<td>✅ 合适</td>
+</tr>
+<tr>
+<td>Context 峰值</td>
+<td>&lt;100k</td>
+<td>~60k（Slaver 分析阶段）</td>
+<td>✅ 优秀</td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论</strong>: ✅ 拆卡合理，无需调整</p>
+<h3 id="估时准确度">6.2 估时准确度</h3>
+<ul>
+<li><strong>预估</strong>: 4h</li>
+<li><strong>实际</strong>: 3h（foreground mode）</li>
+<li><strong>偏差</strong>: -25%（提前完成）</li>
+</ul>
+<p><strong>结论</strong>: ✅ 估时略保守，可接受</p>
+<h3 id="slaver-质量">6.3 Slaver 质量</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>评分 (1-5)</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>代码质量</td>
+<td>5</td>
+<td>TS 规范、ESM imports、清晰命名</td>
+</tr>
+<tr>
+<td>测试覆盖</td>
+<td>5</td>
+<td>34 tests，覆盖所有 AC</td>
+</tr>
+<tr>
+<td>文档完整</td>
+<td>5</td>
+<td>analysis + implementation + retrospective</td>
+</tr>
+<tr>
+<td>设计洞察</td>
+<td>4</td>
+<td>识别 ESM 陷阱，2 层防御策略</td>
+</tr>
+<tr>
+<td>DRY 复用</td>
+<td>4</td>
+<td>复用 execFileNoThrow，新建独立模块</td>
+</tr>
+</tbody>
+</table>
+<p><strong>总分</strong>: 4.6/5 ✅ <strong>优秀</strong></p>
+<p><strong>知识沉淀</strong>: - ✅
+<code>confluence/memory/pitfalls/esm-no-dirname.md</code> - ✅
+<code>confluence/memory/patterns/esm-testing-patterns.md</code></p>
+<hr />
+<h2 id="七经验教训总结">七、经验教训总结</h2>
+<h3 id="教训-1-background-agents-幻觉风险-100">教训 1: Background Agents
+= 幻觉风险 100%</h3>
+<p><strong>原因</strong>: isolated context，无文件系统写权限<br />
+<strong>症状</strong>: Slaver 汇报完成，实际零产出<br />
+<strong>修正</strong>: 代码实现任务必须用 foreground mode</p>
+<p><strong>沉淀到</strong>:
+<code>confluence/memory/lessons/slaver-background-hallucination.md</code></p>
+<h3 id="教训-2-master-防幻觉红线必须严格执行">教训 2: Master
+防幻觉红线必须严格执行</h3>
+<p><strong>MASTER-RULES §2</strong>: 禁止伪造测试结果<br />
+<strong>验证手段</strong>: <code>ls</code> 文件 + <code>git show</code>
+commit + <code>npm test</code> 真实运行</p>
+<p><strong>沉淀到</strong>: <code>template/docs/MASTER-RULES.md</code>
+§2 补充”Background Agent 验证”</p>
+<h3 id="教训-3-slaver-召唤需明确模式">教训 3: Slaver 召唤需明确模式</h3>
+<p><strong>Master 召唤时必须注明</strong>:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ✅ 明确模式</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Agent</span>({</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  description<span class="op">:</span> <span class="st">&quot;Slaver: 实现 TASK-XXX&quot;</span><span class="op">,</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  prompt<span class="op">:</span> <span class="st">&quot;...&quot;</span><span class="op">,</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 实现任务 = foreground（默认）</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">// ❌ 模糊召唤</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="fu">Agent</span>({</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  description<span class="op">:</span> <span class="st">&quot;Slaver: TASK-XXX&quot;</span><span class="op">,</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  prompt<span class="op">:</span> <span class="st">&quot;完成任务...&quot;</span><span class="op">,</span>  <span class="co">// 未明确是分析还是实现</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  run_in_background<span class="op">:</span> <span class="kw">true</span><span class="op">,</span>  <span class="co">// 可能错误</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<p><strong>沉淀到</strong>:
+<code>template/docs/MASTER-SLAVER-COLLABORATION-GUIDE.md</code>（新建）</p>
+<h3 id="教训-4-esm-项目测试陷阱">教训 4: ESM 项目测试陷阱</h3>
+<p><strong>坑 1</strong>: <code>jest.mock()</code> 不可用 → 改用
+test-double<br />
+<strong>坑 2</strong>: <code>__dirname</code> 未定义 → 手动构造<br />
+<strong>坑 3</strong>: Linter 自动格式化污染 git → <code>git add</code>
+指定文件</p>
+<p><strong>沉淀到</strong>: -
+<code>confluence/memory/pitfalls/esm-no-dirname.md</code> -
+<code>confluence/memory/patterns/esm-testing-patterns.md</code></p>
+<hr />
+<h2 id="八master-复盘机制验证">八、Master 复盘机制验证</h2>
+<h3 id="三大问题检查task-601">8.1 三大问题检查（TASK-601）</h3>
+<h4 id="q1-拆卡是否合适">Q1: 拆卡是否合适？</h4>
+<p>✅ <strong>合适</strong> - Context 峰值 60k（远低于 100k） - 涉及 1
+个模块（claude-runner + 2 新模块） - AC 数量 7 个（临界值）</p>
+<h4 id="q2-估时是否合理">Q2: 估时是否合理？</h4>
+<p>✅ <strong>略保守</strong>（可接受） - 预估 4h，实际 3h - 偏差
+-25%（&lt;30% 阈值）</p>
+<h4 id="q3-slaver-团队是否专业">Q3: Slaver 团队是否专业？</h4>
+<p>✅ <strong>优秀</strong>（4.6/5） - 代码质量高 - 测试覆盖完整 -
+主动沉淀经验教训</p>
+<h3 id="改进建议">8.2 改进建议</h3>
+<p><strong>估时调整</strong>: - 单模块实现 + 完整测试：3-4h（之前估
+4-6h） - 可微调预估公式</p>
+<p><strong>Slaver 选拔</strong>: - slaver-backend-001 质量优秀，后续 P0
+任务优先分配</p>
+<hr />
+<h2 id="九文档产出">九、文档产出</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>文档</th>
+<th>路径</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>幻觉问题记录</td>
+<td><code>confluence/memory/lessons/slaver-background-hallucination.md</code></td>
+<td>防止重犯</td>
+</tr>
+<tr>
+<td>Slaver 协作指南</td>
+<td><code>template/docs/MASTER-SLAVER-COLLABORATION-GUIDE.md</code></td>
+<td>模式选择</td>
+</tr>
+<tr>
+<td>ESM 测试模式</td>
+<td><code>confluence/memory/patterns/esm-testing-patterns.md</code></td>
+<td>技术参考</td>
+</tr>
+<tr>
+<td>ESM __dirname 陷阱</td>
+<td><code>confluence/memory/pitfalls/esm-no-dirname.md</code></td>
+<td>快速查阅</td>
+</tr>
+<tr>
+<td>Master 复盘指南</td>
+<td><code>template/docs/MASTER-RETROSPECTIVE-GUIDE.md</code></td>
+<td>流程规范</td>
+</tr>
+<tr>
+<td>本次经验总结</td>
+<td><code>confluence/memory/epic-006-slaver-lessons-2026-05-09.md</code></td>
+<td>归档</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="十下次改进清单">十、下次改进清单</h2>
+<h3 id="master-侧">Master 侧</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />召唤 Slaver 时明确标注
+mode（analysis/implementation）</label></li>
+<li><label><input type="checkbox" />Slaver
+汇报”完成”后立即验证文件存在性</label></li>
+<li><label><input type="checkbox" />建立 Slaver
+质量评分数据库（累积评分）</label></li>
+</ul>
+<h3 id="eket-框架侧">EKET 框架侧</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />实现
+<code>slaver-pre-complete.sh</code> hook（自动验证）</label></li>
+<li><label><input type="checkbox" />Agent 工具添加 mode
+参数提示</label></li>
+<li><label><input type="checkbox" />文档明确 background vs foreground
+适用场景</label></li>
+</ul>
+<h3 id="cicd-侧">CI/CD 侧</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />PR
+创建时自动验证文件真实性</label></li>
+<li><label><input type="checkbox" />测试失败时阻塞
+merge（现有机制）</label></li>
+</ul>
+<hr />
+<p><strong>建立时间</strong>: 2026-05-09<br />
+<strong>维护状态</strong>: ✅ 已归档<br />
+<strong>适用范围</strong>: 所有 EKET Master-Slaver 协作场景</p>
+</body>
+</html>

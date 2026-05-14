@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 代码审查清单</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 代码审查清单</h1>
+</header>
+<h1 id="eket-代码审查清单">EKET 代码审查清单</h1>
+<h2 id="pr-审查流程">PR 审查流程</h2>
+<pre><code>1. 执行智能体提交 PR
+2. 自动运行 CI 检查
+3. 协调智能体执行审查
+4. 审查通过 → 合并
+5. 审查不通过 → 反馈修改</code></pre>
+<h2 id="审查清单">审查清单</h2>
+<h3 id="一代码质量-25-分">一、代码质量 [25 分]</h3>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>说明</th>
+<th>分值</th>
+<th>得分</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>代码规范</td>
+<td>遵循项目代码风格（缩进、命名等）</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr>
+<td>函数复杂度</td>
+<td>单一职责，函数不超过 50 行</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr>
+<td>重复代码</td>
+<td>无明显重复，DRY 原则</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr>
+<td>可读性</td>
+<td>变量命名清晰，逻辑易懂</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr>
+<td>注释质量</td>
+<td>关键逻辑有注释，无废话注释</td>
+<td>5</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="二测试覆盖-25-分">二、测试覆盖 [25 分]</h3>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>说明</th>
+<th>分值</th>
+<th>得分</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单元测试</td>
+<td>新增代码有对应单元测试</td>
+<td>10</td>
+<td></td>
+</tr>
+<tr>
+<td>边界条件</td>
+<td>测试覆盖边界情况和异常</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr>
+<td>测试通过</td>
+<td>所有测试通过（CI 绿灯）</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr>
+<td>覆盖率</td>
+<td>覆盖率不低于项目平均水平</td>
+<td>5</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="三安全性-20-分">三、安全性 [20 分]</h3>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>说明</th>
+<th>分值</th>
+<th>得分</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入验证</td>
+<td>所有外部输入经过验证</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr>
+<td>敏感信息</td>
+<td>无硬编码密码、密钥</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr>
+<td>SQL 注入</td>
+<td>使用参数化查询</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr>
+<td>XSS 防护</td>
+<td>输出经过转义</td>
+<td>5</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="四功能正确性-20-分">四、功能正确性 [20 分]</h3>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>说明</th>
+<th>分值</th>
+<th>得分</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需求符合</td>
+<td>实现与需求一致</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr>
+<td>验收标准</td>
+<td>满足所有验收标准</td>
+<td>10</td>
+<td></td>
+</tr>
+<tr>
+<td>回归测试</td>
+<td>不影响现有功能</td>
+<td>5</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="五文档-10-分">五、文档 [10 分]</h3>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>说明</th>
+<th>分值</th>
+<th>得分</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>变更日志</td>
+<td>PR 描述清晰，包含变更说明</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr>
+<td>API 文档</td>
+<td>接口变更有文档更新</td>
+<td>3</td>
+<td></td>
+</tr>
+<tr>
+<td>类型定义</td>
+<td>TypeScript 类型完整</td>
+<td>2</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="审查评分标准">审查评分标准</h2>
+<table>
+<thead>
+<tr>
+<th>总分</th>
+<th>结果</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>90-100</td>
+<td>✅ 优秀</td>
+<td>直接合并，可作为示例</td>
+</tr>
+<tr>
+<td>75-89</td>
+<td>✅ 通过</td>
+<td>合并，可后续优化</td>
+</tr>
+<tr>
+<td>60-74</td>
+<td>⚠️ 需要改进</td>
+<td>修改后重新审查</td>
+</tr>
+<tr>
+<td>&lt;60</td>
+<td>❌ 不通过</td>
+<td>重新设计实现</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="快速审查模板">快速审查模板</h2>
+<p>复制以下模板到 PR 评论：</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 代码审查结果</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 评分</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 类别 <span class="pp">|</span> 得分 <span class="pp">|</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 代码质量 <span class="pp">|</span> /25 <span class="pp">|</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 测试覆盖 <span class="pp">|</span> /25 <span class="pp">|</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 安全性 <span class="pp">|</span> /20 <span class="pp">|</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 功能正确 <span class="pp">|</span> /20 <span class="pp">|</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 文档 <span class="pp">|</span> /10 <span class="pp">|</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **总计** | **/100** <span class="pp">|</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="fu">### 审查结论</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> ✅ 通过（≥75 分）</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> ⚠️ 需要改进（60-74 分）</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> ❌ 不通过（&lt;60 分）</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="fu">### 审查意见</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="fu">#### 优点</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>-</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="fu">#### 需要改进</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[ ]</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="fu">#### 必须修复（阻碍合并）</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[ ]</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="fu">### 审查者</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>@reviewer • 日期：YYYY-MM-DD</span></code></pre></div>
+<hr />
+<h2 id="常见问题检查">常见问题检查</h2>
+<h3 id="javascripttypescript">JavaScript/TypeScript</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />无 <code>any</code>
+类型滥用</label></li>
+<li><label><input type="checkbox" />Promise 有 error
+handling</label></li>
+<li><label><input
+type="checkbox" />无内存泄漏（定时器、事件监听清理）</label></li>
+<li><label><input type="checkbox" />异步操作有 timeout</label></li>
+</ul>
+<h3 id="python">Python</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />类型注解完整</label></li>
+<li><label><input type="checkbox" />异常处理恰当</label></li>
+<li><label><input type="checkbox" />无循环导入</label></li>
+<li><label><input type="checkbox" />使用 context manager
+处理资源</label></li>
+</ul>
+<h3 id="api-设计">API 设计</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />RESTful 路径设计</label></li>
+<li><label><input type="checkbox" />错误码规范</label></li>
+<li><label><input type="checkbox" />响应格式一致</label></li>
+<li><label><input type="checkbox" />有版本控制</label></li>
+</ul>
+<h3 id="数据库">数据库</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />索引优化</label></li>
+<li><label><input type="checkbox" />无 N+1 查询</label></li>
+<li><label><input type="checkbox" />迁移脚本完整</label></li>
+<li><label><input type="checkbox" />事务处理正确</label></li>
+</ul>
+<hr />
+<h2 id="审查自动化">审查自动化</h2>
+<p>以下检查应集成到 CI 流程：</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .github/workflows/pr-check.yml</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> PR Checks</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">on</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">pull_request</span><span class="kw">]</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">lint</span><span class="kw">:</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Run linter</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">run</span><span class="kw">:</span><span class="at"> npm run lint</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">test</span><span class="kw">:</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Run tests</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">run</span><span class="kw">:</span><span class="at"> npm test</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">security</span><span class="kw">:</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Run security scan</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">run</span><span class="kw">:</span><span class="at"> npm audit</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">typecheck</span><span class="kw">:</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v4</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Type check</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">run</span><span class="kw">:</span><span class="at"> npm run typecheck</span></span></code></pre></div>
+<hr />
+<h2 id="审查者责任">审查者责任</h2>
+<ol type="1">
+<li><strong>及时响应</strong>: 24 小时内完成审查</li>
+<li><strong>建设性反馈</strong>: 指出问题的同时提供改进建议</li>
+<li><strong>关注重点</strong>: 优先关注架构、安全、功能正确性</li>
+<li><strong>尊重作者</strong>: 对事不对人，使用客观语言</li>
+<li><strong>跟踪到底</strong>: 确保反馈问题解决后再批准</li>
+</ol>
+<hr />
+<h2 id="审查示例">审查示例</h2>
+<h3 id="好的审查意见">好的审查意见</h3>
+<p>✅ “这个函数的复杂度较高，建议拆分为
+<code>validateInput()</code>、<code>processData()</code>、<code>formatOutput()</code>
+三个函数，每个函数职责更清晰。”</p>
+<p>✅ “这里缺少错误处理，如果 API 调用失败会导致页面卡住。建议添加
+try-catch 并显示错误提示。”</p>
+<h3 id="不好的审查意见">不好的审查意见</h3>
+<p>❌ “这代码太乱了” （不具体，无建设性）</p>
+<p>❌ “为什么要这样写？”
+（质问语气，应改为”能否解释一下这样设计的考虑？“）</p>
+</body>
+</html>

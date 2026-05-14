@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Step 4: 文档审查 SOP</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Step 4: 文档审查 SOP</h1>
+</header>
+<h1 id="step-4-文档审查-sop">Step 4: 文档审查 SOP</h1>
+<p><strong>版本</strong>: 1.0.0 <strong>最后更新</strong>: 2026-03-23
+<strong>负责智能体</strong>: 文档监控员</p>
+<hr />
+<h2 id="目标">目标</h2>
+<p>审查 Phase 1 产生的所有文档，确保需求清晰、架构合理、任务完整，无
+P0/P1 级别问题。</p>
+<hr />
+<h2 id="输入">输入</h2>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 30%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>输入项</th>
+<th>位置</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需求文档</td>
+<td><code>confluence/projects/{project}/requirements/requirements.md</code></td>
+<td>需求规格说明</td>
+</tr>
+<tr>
+<td>架构文档</td>
+<td><code>confluence/projects/{project}/architecture/</code></td>
+<td>系统架构设计</td>
+</tr>
+<tr>
+<td>Jira tickets</td>
+<td><code>jira/epics/</code>, <code>jira/tickets/</code></td>
+<td>任务定义</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="输出">输出</h2>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 30%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>输出项</th>
+<th>位置</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>审查报告</td>
+<td><code>confluence/memory/reviews/phase1-review.md</code></td>
+<td>Phase 1 审查结果</td>
+</tr>
+<tr>
+<td>问题清单</td>
+<td><code>inbox/human_feedback/phase1-issues.md</code></td>
+<td>需要修复的问题</td>
+</tr>
+<tr>
+<td>Checkpoint</td>
+<td><code>.eket/state/checkpoints/{project}-phase1-review.md</code></td>
+<td>Phase 1 审查通过证明</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="审查维度">审查维度</h2>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>权重</th>
+<th>检查内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>完整性</strong></td>
+<td>高</td>
+<td>文档是否覆盖所有必要内容</td>
+</tr>
+<tr>
+<td><strong>一致性</strong></td>
+<td>高</td>
+<td>需求、架构、任务是否一致</td>
+</tr>
+<tr>
+<td><strong>清晰性</strong></td>
+<td>中</td>
+<td>文档是否清晰易读</td>
+</tr>
+<tr>
+<td><strong>可执行性</strong></td>
+<td>高</td>
+<td>任务是否可以独立执行</td>
+</tr>
+<tr>
+<td><strong>可测试性</strong></td>
+<td>中</td>
+<td>验收标准是否可测试</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="详细步骤">详细步骤</h2>
+<h3 id="需求文档审查">4.1 需求文档审查</h3>
+<p><strong>审查清单</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>权重</th>
+<th>评分标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>项目愿景清晰</td>
+<td>高</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>目标用户定义</td>
+<td>高</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>核心功能覆盖</td>
+<td>高</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>验收标准可测试</td>
+<td>高</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>非功能需求定义</td>
+<td>中</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>术语表完整</td>
+<td>低</td>
+<td>1-5 分</td>
+</tr>
+</tbody>
+</table>
+<p><strong>问题分级</strong>: | 级别 | 说明 | 处理要求 | |——|——|———| |
+<strong>P0</strong> | 严重缺失，无法继续 | 必须修复 | |
+<strong>P1</strong> | 重要缺失，影响理解 | 强烈建议修复 | |
+<strong>P2</strong> | 一般问题，可后续完善 | 建议修复 | |
+<strong>P3</strong> | 轻微问题，可选修复 | 可选修复 |</p>
+<p><strong>审查记录模板</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 需求文档审查</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 评分</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 维度 <span class="pp">|</span> 得分 <span class="pp">|</span> 说明 <span class="pp">|</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|------|</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 完整性 <span class="pp">|</span> 4/5 <span class="pp">|</span> 缺少非功能需求 <span class="pp">|</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 一致性 <span class="pp">|</span> 5/5 <span class="pp">|</span> 需求内部一致 <span class="pp">|</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 清晰性 <span class="pp">|</span> 4/5 <span class="pp">|</span> 部分术语需澄清 <span class="pp">|</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 可执行性 <span class="pp">|</span> 5/5 <span class="pp">|</span> 需求可转化为任务 <span class="pp">|</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">### 发现的问题</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ID <span class="pp">|</span> 问题描述 <span class="pp">|</span> 级别 <span class="pp">|</span> 建议 <span class="pp">|</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="pp">|----|---------|------|------|</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> REQ-01 <span class="pp">|</span> 缺少性能需求定义 <span class="pp">|</span> P1 <span class="pp">|</span> 补充性能指标 <span class="pp">|</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> REQ-02 <span class="pp">|</span> 术语&quot;用户&quot;定义模糊 <span class="pp">|</span> P2 <span class="pp">|</span> 在术语表中明确定义 <span class="pp">|</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">### 结论</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 通过（无 P0/P1 问题）</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 有条件通过（P1 问题已修复）</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 不通过（存在 P0 问题）</span></code></pre></div>
+<hr />
+<h3 id="架构文档审查">4.2 架构文档审查</h3>
+<p><strong>审查清单</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>权重</th>
+<th>评分标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>架构模式选择</td>
+<td>高</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>技术选型合理</td>
+<td>高</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>API 设计规范</td>
+<td>高</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>数据库设计合理</td>
+<td>高</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>架构决策记录</td>
+<td>中</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>部署方案完整</td>
+<td>中</td>
+<td>1-5 分</td>
+</tr>
+</tbody>
+</table>
+<p><strong>审查要点</strong>:</p>
+<p><strong>架构设计</strong>: - [ ] 架构满足功能需求 - [ ]
+架构满足非功能需求（性能、扩展性、安全性） - [ ] 组件职责清晰 - [ ]
+组件间解耦良好 - [ ] 架构决策有记录</p>
+<p><strong>技术选型</strong>: - [ ] 技术栈一致性好 - [ ] 技术选型有评估
+- [ ] 团队能够胜任</p>
+<p><strong>API 设计</strong>: - [ ] 使用 RESTful 规范 - [ ] 命名一致 - [
+] 错误处理统一 - [ ] 认证机制完善</p>
+<p><strong>数据库设计</strong>: - [ ] 范式化合理 - [ ] 索引设计合理 - [
+] 扩展性考虑</p>
+<p><strong>审查记录模板</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 架构文档审查</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 评分</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 维度 <span class="pp">|</span> 得分 <span class="pp">|</span> 说明 <span class="pp">|</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|------|</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 架构设计 <span class="pp">|</span> 4/5 <span class="pp">|</span> 架构合理，缺少容灾设计 <span class="pp">|</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 技术选型 <span class="pp">|</span> 5/5 <span class="pp">|</span> 技术栈选择合理 <span class="pp">|</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> API 设计 <span class="pp">|</span> 4/5 <span class="pp">|</span> 设计规范，部分端点命名不一致 <span class="pp">|</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 数据库设计 <span class="pp">|</span> 5/5 <span class="pp">|</span> 设计合理 <span class="pp">|</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">### 发现的问题</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ID <span class="pp">|</span> 问题描述 <span class="pp">|</span> 级别 <span class="pp">|</span> 建议 <span class="pp">|</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="pp">|----|---------|------|------|</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ARCH-01 <span class="pp">|</span> API 端点命名不一致 <span class="pp">|</span> P2 <span class="pp">|</span> 统一使用复数形式 <span class="pp">|</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ARCH-02 <span class="pp">|</span> 缺少容灾设计 <span class="pp">|</span> P1 <span class="pp">|</span> 补充故障处理方案 <span class="pp">|</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="fu">### 结论</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 通过</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 有条件通过</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 不通过</span></code></pre></div>
+<hr />
+<h3 id="jira-tickets-审查">4.3 Jira Tickets 审查</h3>
+<p><strong>审查清单</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>权重</th>
+<th>评分标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务粒度适中</td>
+<td>高</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>验收标准可测试</td>
+<td>高</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>依赖关系明确</td>
+<td>高</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>优先级合理</td>
+<td>高</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>估算准确</td>
+<td>中</td>
+<td>1-5 分</td>
+</tr>
+<tr>
+<td>标签使用规范</td>
+<td>低</td>
+<td>1-5 分</td>
+</tr>
+</tbody>
+</table>
+<p><strong>审查要点</strong>:</p>
+<p><strong>任务粒度</strong>: - [ ] 任务可在 4-8 小时内完成 - [ ]
+任务可独立开发和测试 - [ ] 任务职责单一</p>
+<p><strong>验收标准</strong>: - [ ] 每个任务有验收标准 - [ ]
+验收标准可测试 - [ ] 覆盖正常和异常流程</p>
+<p><strong>依赖关系</strong>: - [ ] 依赖关系已识别 - [ ]
+依赖关系记录正确 - [ ] 无循环依赖</p>
+<p><strong>优先级</strong>: - [ ] 优先级评估一致 - [ ]
+关键路径任务优先级高 - [ ] 阻塞任务优先</p>
+<p><strong>审查记录模板</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## Jira Tickets 审查</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 任务统计</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 类型 <span class="pp">|</span> 数量 <span class="pp">|</span> 平均预估工时 <span class="pp">|</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|-------------|</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Epics <span class="pp">|</span> 3 <span class="pp">|</span> - <span class="pp">|</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Features <span class="pp">|</span> 12 <span class="pp">|</span> 6 小时 <span class="pp">|</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Tasks <span class="pp">|</span> 5 <span class="pp">|</span> 3 小时 <span class="pp">|</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Bugfixes <span class="pp">|</span> 0 <span class="pp">|</span> - <span class="pp">|</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="fu">### 评分</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 维度 <span class="pp">|</span> 得分 <span class="pp">|</span> 说明 <span class="pp">|</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|------|</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 任务粒度 <span class="pp">|</span> 4/5 <span class="pp">|</span> 大部分任务粒度适中 <span class="pp">|</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 验收标准 <span class="pp">|</span> 5/5 <span class="pp">|</span> 验收标准清晰可测试 <span class="pp">|</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 依赖关系 <span class="pp">|</span> 4/5 <span class="pp">|</span> 依赖关系明确 <span class="pp">|</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 优先级 <span class="pp">|</span> 5/5 <span class="pp">|</span> 优先级合理 <span class="pp">|</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="fu">### 发现的问题</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ID <span class="pp">|</span> 问题描述 <span class="pp">|</span> 级别 <span class="pp">|</span> 建议 <span class="pp">|</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="pp">|----|---------|------|------|</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> TKT-01 <span class="pp">|</span> FEAT-005 任务粒度过大 <span class="pp">|</span> P1 <span class="pp">|</span> 拆分为 2 个任务 <span class="pp">|</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> TKT-02 <span class="pp">|</span> FEAT-008 缺少验收标准 <span class="pp">|</span> P1 <span class="pp">|</span> 补充验收标准 <span class="pp">|</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="fu">### 结论</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 通过</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 有条件通过</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 不通过</span></code></pre></div>
+<hr />
+<h3 id="一致性审查">4.4 一致性审查</h3>
+<p><strong>目的</strong>: 确保需求、架构、任务之间的一致性</p>
+<p><strong>审查要点</strong>:</p>
+<p><strong>需求→架构</strong>: - [ ] 每个功能需求在架构中有对应设计 - [
+] 非功能需求在架构中有对应方案</p>
+<p><strong>架构→任务</strong>: - [ ] 架构中的组件在任务中有开发计划 - [
+] API 设计在任务中有实现</p>
+<p><strong>需求→任务</strong>: - [ ] 每个需求有对应的任务 - [ ]
+验收标准在任务中可验证</p>
+<p><strong>审查记录模板</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 一致性审查</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 需求→架构追溯</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 需求 ID <span class="pp">|</span> 需求描述 <span class="pp">|</span> 架构对应 <span class="pp">|</span> 状态 <span class="pp">|</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------|---------|---------|------|</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> REQ-01 <span class="pp">|</span> 用户注册 <span class="pp">|</span> API /api/v1/users, DB users 表 <span class="pp">|</span> ✓ <span class="pp">|</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> REQ-02 <span class="pp">|</span> 用户登录 <span class="pp">|</span> JWT 认证模块 <span class="pp">|</span> ✓ <span class="pp">|</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="fu">### 架构→任务追溯</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 架构组件 <span class="pp">|</span> 对应任务 <span class="pp">|</span> 状态 <span class="pp">|</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="pp">|---------|---------|------|</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 用户认证模块 <span class="pp">|</span> FEAT-001, FEAT-002 <span class="pp">|</span> ✓ <span class="pp">|</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 数据库设计 <span class="pp">|</span> FEAT-003 <span class="pp">|</span> ✓ <span class="pp">|</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="fu">### 需求→任务追溯</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 需求 ID <span class="pp">|</span> 对应任务 <span class="pp">|</span> 状态 <span class="pp">|</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------|---------|------|</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> REQ-01 <span class="pp">|</span> FEAT-001 <span class="pp">|</span> ✓ <span class="pp">|</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> REQ-02 <span class="pp">|</span> FEAT-002 <span class="pp">|</span> ✓ <span class="pp">|</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="fu">### 发现的问题</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ID <span class="pp">|</span> 问题描述 <span class="pp">|</span> 级别 <span class="pp">|</span> 建议 <span class="pp">|</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="pp">|----|---------|------|------|</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> CON-01 <span class="pp">|</span> REQ-05(性能监控) 无对应任务 <span class="pp">|</span> P1 <span class="pp">|</span> 创建监控任务 <span class="pp">|</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="fu">### 结论</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 一致</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 基本一致（有遗漏）</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 不一致</span></code></pre></div>
+<hr />
+<h3 id="创建审查报告">4.5 创建审查报告</h3>
+<p><strong>目的</strong>: 汇总所有审查结果</p>
+<p><strong>报告模板</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Phase 1 审查报告</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>**项目**: {project_name}</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>**审查时间**: {timestamp}</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>**审查者**: 文档监控员</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## 审查摘要</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 文档类型 <span class="pp">|</span> 得分 <span class="pp">|</span> 结论 <span class="pp">|</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="pp">|---------|------|------|</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 需求文档 <span class="pp">|</span> 4.2/5 <span class="pp">|</span> 通过 <span class="pp">|</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 架构文档 <span class="pp">|</span> 4.5/5 <span class="pp">|</span> 通过 <span class="pp">|</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Jira Tickets <span class="pp">|</span> 4.0/5 <span class="pp">|</span> 通过 <span class="pp">|</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 一致性 <span class="pp">|</span> 4.0/5 <span class="pp">|</span> 通过 <span class="pp">|</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>**总体得分**: 4.2/5</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>**审查结论**: **通过**</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="fu">## 问题汇总</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="fu">### P0 问题（严重）</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ID <span class="pp">|</span> 问题描述 <span class="pp">|</span> 状态 <span class="pp">|</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="pp">|----|---------|------|</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> - <span class="pp">|</span> 无 <span class="pp">|</span> - <span class="pp">|</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="fu">### P1 问题（重要）</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ID <span class="pp">|</span> 问题描述 <span class="pp">|</span> 建议 <span class="pp">|</span> 状态 <span class="pp">|</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="pp">|----|---------|------|------|</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> TKT-01 <span class="pp">|</span> FEAT-005 任务粒度过大 <span class="pp">|</span> 拆分为 2 个任务 <span class="pp">|</span> 待修复 <span class="pp">|</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="fu">### P2 问题（一般）</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ID <span class="pp">|</span> 问题描述 <span class="pp">|</span> 建议 <span class="pp">|</span> 状态 <span class="pp">|</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="pp">|----|---------|------|------|</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ARCH-01 <span class="pp">|</span> API 端点命名不一致 <span class="pp">|</span> 统一使用复数形式 <span class="pp">|</span> 待修复 <span class="pp">|</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a><span class="fu">## 改进建议</span></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**任务拆分**: FEAT-005 任务过大，建议拆分为登录和注册两个任务</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**命名规范**: API 端点统一使用复数形式</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**补充监控**: 添加性能监控相关任务</span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a><span class="fu">## 下一步行动</span></span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 修复 P1 问题</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 考虑 P2 问题修复</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 进入 Phase 2</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>**审查状态**: passed_with_conditions</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>**修复截止时间**: {timestamp + 24h}</span></code></pre></div>
+<hr />
+<h3 id="创建-checkpoint">4.6 创建 Checkpoint</h3>
+<p><strong>Checkpoint 名称</strong>:
+<code>phase1_review_passed</code></p>
+<p><strong>Checkpoint 文件</strong>:
+<code>.eket/state/checkpoints/{project}-phase1-review.md</code></p>
+<p><strong>内容</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Checkpoint: Phase1 Review Passed</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>**项目**: {project}</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>**时间**: {timestamp}</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>**审查者**: 文档监控员</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## 审查结果</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 需求文档审查通过</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 架构文档审查通过</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> Jira Tickets 审查通过</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 一致性审查通过</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## 问题统计</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 级别 <span class="pp">|</span> 数量 <span class="pp">|</span> 已修复 <span class="pp">|</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|--------|</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> P0 <span class="pp">|</span> {N} <span class="pp">|</span> {N} <span class="pp">|</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> P1 <span class="pp">|</span> {N} <span class="pp">|</span> {N} <span class="pp">|</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> P2 <span class="pp">|</span> {N} <span class="pp">|</span> {N} <span class="pp">|</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="fu">## 审查报告</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">查看审查报告</span><span class="co">](../../../confluence/memory/reviews/phase1-review.md)</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>**状态**: phase1_complete</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>**下一步**: Phase 2 - Development</span></code></pre></div>
+<hr />
+<h2 id="质量检查">质量检查</h2>
+<h3 id="审查质量">审查质量</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />所有文档已审查</label></li>
+<li><label><input type="checkbox" />问题分级合理</label></li>
+<li><label><input type="checkbox" />建议可执行</label></li>
+<li><label><input type="checkbox" />审查记录完整</label></li>
+</ul>
+<h3 id="追溯质量">追溯质量</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />需求→架构追溯完整</label></li>
+<li><label><input type="checkbox" />架构→任务追溯完整</label></li>
+<li><label><input type="checkbox" />需求→任务追溯完整</label></li>
+<li><label><input type="checkbox" />遗漏项已识别</label></li>
+</ul>
+<hr />
+<h2 id="相关文件">相关文件</h2>
+<ul>
+<li><a href="../phase-1-initiation/README.md">Phase 1 SOP</a></li>
+<li><a
+href="../../../confluence/templates/review_template.md">审查报告模板</a></li>
+</ul>
+<hr />
+<p><strong>SOP 版本</strong>: 1.0.0 <strong>创建日期</strong>:
+2026-03-23 <strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>
