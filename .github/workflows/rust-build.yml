@@ -1,0 +1,143 @@
+name: Rust Context Monitor - Build
+
+on:
+  push:
+    branches: [main, testing, feature/TASK-637-*]
+    tags: ['v*', 'context-mon-v*']
+  pull_request:
+    paths:
+      - 'rust/crates/context-mon/**'
+      - '.github/workflows/rust-build.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # macOS Intel (x86_64)
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: eket-context-monitor-darwin-amd64
+
+          # macOS ARM (Apple Silicon)
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: eket-context-monitor-darwin-arm64
+
+          # Linux x86_64
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: eket-context-monitor-linux-amd64
+            use_cross: false
+
+          # Linux ARM64 (cross-compile)
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            artifact_name: eket-context-monitor-linux-arm64
+            use_cross: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust/crates/context-mon
+          key: ${{ matrix.target }}
+
+      - name: Install cross-compilation tools (Linux ARM only)
+        if: matrix.use_cross == true
+        run: |
+          cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build binary
+        working-directory: rust/crates/context-mon
+        run: |
+          if [[ "${{ matrix.use_cross }}" == "true" ]]; then
+            cross build --release --target ${{ matrix.target }}
+          else
+            cargo build --release --target ${{ matrix.target }}
+          fi
+
+      - name: Strip binary (Unix)
+        if: runner.os != 'Windows'
+        working-directory: rust/crates/context-mon
+        run: |
+          if [[ "${{ matrix.target }}" == *"linux"* ]]; then
+            strip target/${{ matrix.target }}/release/context-mon || true
+          elif [[ "${{ matrix.target }}" == *"darwin"* ]]; then
+            strip target/${{ matrix.target }}/release/context-mon || true
+          fi
+
+      - name: Rename binary
+        working-directory: rust/crates/context-mon
+        run: |
+          cp target/${{ matrix.target }}/release/context-mon \
+             ${{ matrix.artifact_name }}
+
+      - name: Generate SHA256 checksum
+        working-directory: rust/crates/context-mon
+        run: |
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            shasum -a 256 ${{ matrix.artifact_name }} > ${{ matrix.artifact_name }}.sha256
+          else
+            sha256sum ${{ matrix.artifact_name }} > ${{ matrix.artifact_name }}.sha256
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: |
+            rust/crates/context-mon/${{ matrix.artifact_name }}
+            rust/crates/context-mon/${{ matrix.artifact_name }}.sha256
+          retention-days: 7
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/context-mon-v')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          find artifacts -type f -name "eket-context-monitor-*" -exec cp {} release-assets/ \;
+
+          # Generate combined SHA256SUMS file
+          cd release-assets
+          cat *.sha256 > SHA256SUMS
+          rm *.sha256
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

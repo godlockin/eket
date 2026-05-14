@@ -3,7 +3,7 @@ members = [
     "crates/eket-core",
     "crates/eket-engine",
     "crates/eket-cli",
-    "crates/eket-server",
+    "crates/eket-server", "crates/context-mon",
 ]
 resolver = "2"
 

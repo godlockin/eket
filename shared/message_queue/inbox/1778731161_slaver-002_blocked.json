@@ -1,0 +1,17 @@
+{
+  "type": "blocked_report",
+  "slaver_id": "slaver-002",
+  "ticket_id": "TASK-633",
+  "timestamp": "2026-05-14T11:58:52+08:00",
+  "blocked_by": "Conflict: context-snapshot.ts already exists with different purpose",
+  "blocked_duration_min": 0,
+  "details": {
+    "issue": "TASK-633 spec requires JSON-based snapshot generator (120K trigger, LRU cleanup, <500KB), but node/src/core/context-snapshot.ts already exists as SQLite-based tacit knowledge manager (completely different schema/purpose)",
+    "options": [
+      "A. Rename existing to context-tacit-knowledge.ts, implement TASK-633 as specified",
+      "B. Merge TASK-633 into existing manager (add LRU + JSON export methods)",
+      "C. Create separate context-incremental-snapshot.ts for TASK-633"
+    ],
+    "recommendation": "Option C — separate file. Existing manager is for tacit knowledge (post-task retrospective), TASK-633 is for runtime context backup (120K threshold). Different triggers, lifecycles, and purposes. Clean separation maintains SRP."
+  }
+}
