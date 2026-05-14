@@ -27,12 +27,18 @@
  */
 
 import { ProgressTracker } from './progress-tracker.js';
+import { SlaverWatchdog } from './slaver-watchdog.js';
 import { CheckpointMetadata, TaskPhase, type ResumeContext } from '../types/progress-tracker.js';
 
 /**
  * Global singleton ProgressTracker instance
  */
 let globalTracker: ProgressTracker | null = null;
+
+/**
+ * Global singleton Watchdog instance (TASK-AUTO-03)
+ */
+let globalWatchdog: SlaverWatchdog | null = null;
 
 /**
  * Flag to enable/disable progress tracking (controlled by env var)
@@ -84,6 +90,12 @@ export async function initializeProgressTracker(
     }
 
     console.log(`[ProgressTracker] Initialized for ${taskId} (slaver: ${slaverId})`);
+
+    // TASK-AUTO-03: Start Watchdog
+    if (process.env.ENABLE_SLAVER_WATCHDOG !== 'false') {
+      globalWatchdog = new SlaverWatchdog(taskId, globalTracker);
+      console.log('[Watchdog] Started (timeout: 500s, heartbeat: 60s)');
+    }
   } catch (error) {
     // Non-critical: log warning but don't block task execution
     console.warn(
@@ -191,6 +203,21 @@ export async function completeAC(acId: string, metadata?: CheckpointMetadata): P
  * Called by submit-pr command or when task is completed/abandoned.
  */
 export async function closeProgressTracker(): Promise<void> {
+  // TASK-AUTO-03: Close Watchdog first
+  if (globalWatchdog) {
+    try {
+      await globalWatchdog.close();
+      console.log('[Watchdog] Closed successfully');
+    } catch (error) {
+      console.warn(
+        `[Watchdog] Close failed (non-critical): ${error instanceof Error ? error.message : String(error)}`
+      );
+    } finally {
+      globalWatchdog = null;
+    }
+  }
+
+  // Close ProgressTracker
   if (!globalTracker) {
     return;
   }
@@ -219,4 +246,12 @@ export function getProgressTracker(): ProgressTracker | null {
  */
 export function isTrackingActive(): boolean {
   return ENABLE_TRACKING && globalTracker !== null;
+}
+
+/**
+ * Get current Watchdog instance (for debugging/testing)
+ * TASK-AUTO-03
+ */
+export function getWatchdog(): SlaverWatchdog | null {
+  return globalWatchdog;
 }
