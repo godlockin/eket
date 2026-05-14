@@ -27,3 +27,5 @@
 {"timestamp":1778731578415,"tokens":16215,"method":"rough","threshold":"safe","duration":0.280959}
 {"timestamp":1778731670303,"tokens":39752,"method":"rough","threshold":"safe","duration":0.466833}
 {"timestamp":1778731670484,"tokens":62469,"method":"precise","threshold":"safe","duration":135.54525}
+{"timestamp":1778731762774,"tokens":39752,"method":"rough","threshold":"safe","duration":0.314791}
+{"timestamp":1778732005001,"tokens":51960,"method":"rough","threshold":"safe","duration":1.775417}
