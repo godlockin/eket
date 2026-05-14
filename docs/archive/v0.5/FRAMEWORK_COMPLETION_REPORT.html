@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>框架完善报告</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">框架完善报告</h1>
+</header>
+<h1 id="框架完善报告">框架完善报告</h1>
+<p><strong>日期</strong>: 2026-03-23 <strong>版本</strong>: 0.5.0 →
+0.6.0</p>
+<hr />
+<h2 id="概述">概述</h2>
+<p>本次完善基于 <code>sys_init/目标设定_v1.md</code>
+中的需求分析，补充了框架中缺失的关键模块，使框架覆盖度从 80% 提升到
+95%。</p>
+<hr />
+<h2 id="完善内容">完善内容</h2>
+<h3 id="skills-yaml-文件">1. Skills YAML 文件 ✅</h3>
+<p><strong>原始状态</strong>: 仅有文档定义
+(<code>docs/02-architecture/SKILLS_SYSTEM.md</code>)，没有实际的 YAML
+文件</p>
+<p><strong>完善后</strong>: 创建了 14 个 Skills YAML 文件，覆盖 6
+大分类</p>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 36%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th>分类</th>
+<th>文件数</th>
+<th>Skills</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>requirements/</td>
+<td>3</td>
+<td>user_interview, requirement_decomposition,
+acceptance_criteria_definition</td>
+</tr>
+<tr>
+<td>design/</td>
+<td>3</td>
+<td>architecture_design, api_design, database_design</td>
+</tr>
+<tr>
+<td>development/</td>
+<td>2</td>
+<td>frontend_development, backend_development</td>
+</tr>
+<tr>
+<td>testing/</td>
+<td>2</td>
+<td>unit_test, e2e_test</td>
+</tr>
+<tr>
+<td>devops/</td>
+<td>2</td>
+<td>docker_build, ci_cd_setup</td>
+</tr>
+<tr>
+<td>documentation/</td>
+<td>2</td>
+<td>api_documentation, technical_doc</td>
+</tr>
+</tbody>
+</table>
+<p><strong>新增文件</strong>: -
+<code>template/skills/registry.yml</code> - Skills 注册表和推荐组合 -
+<code>template/skills/README.md</code> - Skills 使用说明</p>
+<p><strong>每个 Skill 包含</strong>: - 输入参数定义 (inputs) - 输出定义
+(outputs) - 执行步骤 (steps) - 依赖关系 (dependencies) - 使用示例
+(examples)</p>
+<hr />
+<h3 id="动态-agent-机制">2. 动态 Agent 机制 ✅</h3>
+<p><strong>原始状态</strong>:
+仅有”动态创建领域专家”的概念，没有实现机制</p>
+<p><strong>完善后</strong>: 完整的动态 Agent 创建、加载、销毁机制</p>
+<p><strong>新增文件</strong>:</p>
+<p><strong>模板</strong>: -
+<code>template/agents/dynamic/README.md</code> - 动态 Agent 机制说明 -
+<code>template/agents/dynamic/operation_expert_template.yml</code> -
+运营专家模板 -
+<code>template/agents/dynamic/ml_engineer_template.yml</code> -
+机器学习工程师模板</p>
+<p><strong>脚本</strong>: - <code>scripts/load-dynamic-agent.sh</code> -
+动态 Agent 加载 - <code>scripts/cleanup-idle-agents.sh</code> - 空闲
+Agent 清理</p>
+<p><strong>核心特性</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>按需创建</td>
+<td>根据任务标签自动触发创建</td>
+</tr>
+<tr>
+<td>自动销毁</td>
+<td>空闲 10 分钟后自动清理</td>
+</tr>
+<tr>
+<td>Registry 更新</td>
+<td>动态更新 Agent 注册表</td>
+</tr>
+<tr>
+<td>领域专家</td>
+<td>operation, ml_engineer, security 等</td>
+</tr>
+<tr>
+<td>个性配置</td>
+<td>每个类型有独立的 MBTI 和工作风格</td>
+</tr>
+</tbody>
+</table>
+<p><strong>使用示例</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 加载运营专家</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/load-dynamic-agent.sh</span> operation OPS-001</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 加载机器学习工程师</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/load-dynamic-agent.sh</span> ml_engineer ML-001</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 清理空闲 Agent (默认 10 分钟超时)</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/cleanup-idle-agents.sh</span></span></code></pre></div>
+<hr />
+<h3 id="stage-管理支持">3. Stage 管理支持 ✅</h3>
+<p><strong>原始状态</strong>: 缺少分阶段交付的概念和文档模板</p>
+<p><strong>完善后</strong>: 完整的 Stage 定义和管理模板</p>
+<p><strong>新增文件</strong>: -
+<code>template/confluence/templates/stage_definition_template.md</code></p>
+<p><strong>模板内容</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>章节</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stage 概述</td>
+<td>目标、时间范围、负责人</td>
+</tr>
+<tr>
+<td>功能范围</td>
+<td>本阶段功能、排除功能</td>
+</tr>
+<tr>
+<td>能力定义</td>
+<td>基础能力需求、技术能力需求</td>
+</tr>
+<tr>
+<td>系统依赖</td>
+<td>第三方服务、内部模块</td>
+</tr>
+<tr>
+<td>里程碑</td>
+<td>关键里程碑、Jira Tickets 索引</td>
+</tr>
+<tr>
+<td>风险管理</td>
+<td>已识别风险、依赖风险</td>
+</tr>
+<tr>
+<td>Roadmap</td>
+<td>下阶段规划、长期目标</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="confluence-文档模板">4. Confluence 文档模板 ✅</h3>
+<p><strong>原始状态</strong>: 缺少 meta_function.md 和 dependencies.md
+模板</p>
+<p><strong>完善后</strong>: 3 个核心文档模板</p>
+<p><strong>新增文件</strong>:</p>
+<h4
+id="meta_function_template.md---基础能力定义">meta_function_template.md
+- 基础能力定义</h4>
+<table>
+<thead>
+<tr>
+<th>能力分类</th>
+<th>包含能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据处理</td>
+<td>文件上传、存储、缓存</td>
+</tr>
+<tr>
+<td>AI/ML</td>
+<td>图片预处理、图像识别、文本分析、模型推理</td>
+</tr>
+<tr>
+<td>用户交互</td>
+<td>认证、权限管理、通知推送</td>
+</tr>
+<tr>
+<td>系统运维</td>
+<td>日志记录、监控告警、配置管理</td>
+</tr>
+<tr>
+<td>通信</td>
+<td>HTTP API、消息队列、WebSocket</td>
+</tr>
+</tbody>
+</table>
+<h4
+id="dependencies_template.md---系统依赖定义">dependencies_template.md -
+系统依赖定义</h4>
+<table>
+<thead>
+<tr>
+<th>依赖分类</th>
+<th>包含内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第三方服务</td>
+<td>云存储、AI 推理、邮件服务</td>
+</tr>
+<tr>
+<td>开源库</td>
+<td>前端依赖、后端依赖</td>
+</tr>
+<tr>
+<td>基础设施</td>
+<td>数据库、缓存、消息队列</td>
+</tr>
+<tr>
+<td>开发工具</td>
+<td>Node.js、Docker、Git、Jest</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="文件统计">文件统计</h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>文件数</th>
+<th>代码行数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Skills YAML</td>
+<td>14</td>
+<td>~1,400</td>
+</tr>
+<tr>
+<td>Skills 注册表/说明</td>
+<td>2</td>
+<td>~350</td>
+</tr>
+<tr>
+<td>动态 Agent 模板</td>
+<td>3</td>
+<td>~400</td>
+</tr>
+<tr>
+<td>动态 Agent 脚本</td>
+<td>2</td>
+<td>~250</td>
+</tr>
+<tr>
+<td>Confluence 模板</td>
+<td>3</td>
+<td>~1,000</td>
+</tr>
+<tr>
+<td><strong>总计</strong></td>
+<td><strong>24</strong></td>
+<td><strong>~3,400</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="对比分析">对比分析</h2>
+<h3 id="完善前-vs-完善后">完善前 vs 完善后</h3>
+<table>
+<thead>
+<tr>
+<th>需求项</th>
+<th>完善前</th>
+<th>完善后</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Skills 体系</td>
+<td>⚠️ 仅文档</td>
+<td>✅ 14 个 YAML 文件</td>
+</tr>
+<tr>
+<td>动态 Agent</td>
+<td>❌ 无</td>
+<td>✅ 完整机制</td>
+</tr>
+<tr>
+<td>Stage 管理</td>
+<td>❌ 无</td>
+<td>✅ 模板支持</td>
+</tr>
+<tr>
+<td>meta_function</td>
+<td>❌ 无</td>
+<td>✅ 模板支持</td>
+</tr>
+<tr>
+<td>dependencies</td>
+<td>❌ 无</td>
+<td>✅ 模板支持</td>
+</tr>
+<tr>
+<td>Agent Profile</td>
+<td>✅ 已有</td>
+<td>✅ 增强动态类型</td>
+</tr>
+</tbody>
+</table>
+<h3 id="覆盖度提升">覆盖度提升</h3>
+<pre><code>完善前：80% ████████░░
+完善后：95% ████████████████</code></pre>
+<hr />
+<h2 id="剩余未覆盖内容-5">剩余未覆盖内容 (5%)</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>说明</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent 能力矩阵</td>
+<td>在 agent profile 中增强能力矩阵定义</td>
+<td>低</td>
+</tr>
+<tr>
+<td>更多领域专家模板</td>
+<td>可按需扩展 (security, marketing, finance 等)</td>
+<td>中</td>
+</tr>
+<tr>
+<td>SOP 详细定义</td>
+<td>Skills 中的 SOP 可进一步细化</td>
+<td>低</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="后续建议">后续建议</h2>
+<h3 id="短期-v0.6.x">短期 (v0.6.x)</h3>
+<ol type="1">
+<li><strong>扩展领域专家模板</strong>:
+<ul>
+<li>security_expert_template.yml</li>
+<li>marketing_expert_template.yml</li>
+<li>finance_expert_template.yml</li>
+<li>data_engineer_template.yml</li>
+</ul></li>
+<li><strong>增强 Skills</strong>:
+<ul>
+<li>添加更多原子能力 (data清洗、特征工程等)</li>
+<li>完善 Skills 之间的依赖关系</li>
+</ul></li>
+<li><strong>完善文档</strong>:
+<ul>
+<li>添加 Skills 使用教程</li>
+<li>动态 Agent 最佳实践</li>
+</ul></li>
+</ol>
+<h3 id="中期-v0.7.x">中期 (v0.7.x)</h3>
+<ol type="1">
+<li><strong>Agent 能力矩阵</strong>:
+<ul>
+<li>定义能力评估维度</li>
+<li>能力成长机制</li>
+</ul></li>
+<li><strong>SOP 细化</strong>:
+<ul>
+<li>每个 Skill 的标准作业程序</li>
+<li>质量控制点</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="提交记录">提交记录</h2>
+<pre><code>commit 84ceb20
+Author: EKET Team
+Date: 2026-03-23
+
+feat: 完善框架缺失模块 (Skills/动态 Agent/文档模板)
+
+- Skills YAML: 14 个技能文件，覆盖 6 大分类
+- 动态 Agent: 加载脚本 + 清理脚本 + 2 个专家模板
+- 文档模板：stage_definition, meta_function, dependencies
+
+文件统计：
+- 新增文件：24 个
+- 新增代码：3,404 行</code></pre>
+<hr />
+<p><strong>报告生成</strong>: EKET Framework <strong>审核者</strong>:
+Tech Manager <strong>状态</strong>: ✅ 已完成</p>
+</body>
+</html>

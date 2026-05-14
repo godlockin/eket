@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 降级策略设计</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 降级策略设计</h1>
+</header>
+<h1 id="eket-降级策略设计">EKET 降级策略设计</h1>
+<p><strong>版本</strong>: v2.3.0 <strong>最后更新</strong>:
+2026-04-08</p>
+<hr />
+<h2 id="设计理念">🎯 设计理念</h2>
+<p>EKET
+采用<strong>多层自动降级</strong>策略，确保在任何环境下都能稳定运行。核心原则：</p>
+<blockquote>
+<p><strong>优雅降级，而非失败停止</strong> -
+当高级功能不可用时，自动降级到可用的低级功能，保证核心协作流程不中断。</p>
+</blockquote>
+<hr />
+<h2 id="三级运行时降级">📊 三级运行时降级</h2>
+<pre><code>┌─────────────────────────────────────────────────────┐
+│ Level 3: Redis + SQLite (满血版)                    │
+│ - Redis Pub/Sub 实时消息                            │
+│ - SQLite 持久化存储                                 │
+│ - 分布式 Master 选举                                │
+│ - 二级缓存 (内存 + Redis)                           │
+└─────────────────────────────────────────────────────┘
+           ↓ Redis 不可用或连接失败
+┌─────────────────────────────────────────────────────┐
+│ Level 2: Node.js + 文件队列 (增强版)                │
+│ - 优化的文件队列 (去重、归档)                       │
+│ - LRU 内存缓存                                      │
+│ - 断路器和重试                                      │
+│ - TypeScript 类型安全                               │
+└─────────────────────────────────────────────────────┘
+           ↓ Node.js 不可用或崩溃
+┌─────────────────────────────────────────────────────┐
+│ Level 1: Shell + 文件队列 (基础版)                  │
+│ - 基础文件队列                                      │
+│ - Master-Slaver 协作                                │
+│ - 任务分配和心跳                                    │
+│ - 纯 Bash 实现                                      │
+└─────────────────────────────────────────────────────┘
+           ↓ 所有失败
+┌─────────────────────────────────────────────────────┐
+│ 优雅退出 + 详细错误日志                             │
+└─────────────────────────────────────────────────────┘</code></pre>
+<hr />
+<h2 id="降级触发条件">🔧 降级触发条件</h2>
+<h3 id="level-3-level-2-降级">Level 3 → Level 2 降级</h3>
+<p><strong>触发条件</strong>： 1. Redis 连接超时（默认 5 秒） 2. Redis
+连接拒绝（端口不可达） 3. Redis 认证失败 4. Redis 命令执行错误（连续 3
+次） 5. SQLite 文件损坏或不可写</p>
+<p><strong>自动操作</strong>：</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 消息队列自动降级</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> queue <span class="op">=</span> <span class="kw">new</span> <span class="fu">MessageQueue</span>({</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  useRedis<span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  fallbackToFile<span class="op">:</span> <span class="kw">true</span>  <span class="co">// 自动降级到文件队列</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Redis 不可用时，透明降级</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> queue<span class="op">.</span><span class="fu">publish</span>(<span class="st">&#39;tasks&#39;</span><span class="op">,</span> message)<span class="op">;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">// ↑ 自动使用文件队列，无需改代码</span></span></code></pre></div>
+<p><strong>日志输出</strong>：</p>
+<pre><code>[WARN] Redis connection failed: ECONNREFUSED localhost:6379
+[INFO] Falling back to file queue
+[INFO] Current level: Level 2 (Node.js + File Queue)</code></pre>
+<hr />
+<h3 id="level-2-level-1-降级">Level 2 → Level 1 降级</h3>
+<p><strong>触发条件</strong>： 1. Node.js 进程崩溃 2.
+<code>dist/index.js</code> 不存在（未构建） 3. 关键 Node.js
+模块缺失（<code>ioredis</code>, <code>better-sqlite3</code>） 4. Node.js
+版本过低（&lt; 18.0.0） 5. 内存不足（使用率 &gt; 90%）</p>
+<p><strong>自动操作</strong>：</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># hybrid-adapter.sh 自动判断</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="ex">check_node_available</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">node</span> dist/index.js <span class="va">$command</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># 降级到 Shell 实现</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bash</span> scripts/<span class="va">$command</span>.sh</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span></code></pre></div>
+<p><strong>日志输出</strong>：</p>
+<pre><code>[WARN] Node.js not available or version too low
+[INFO] Falling back to Shell implementation
+[INFO] Current level: Level 1 (Shell + File Queue)</code></pre>
+<hr />
+<h2 id="四级连接降级level-3-内部">🔄 四级连接降级（Level 3 内部）</h2>
+<p>Level 3 的 <strong>ConnectionManager</strong> 实现四级连接降级：</p>
+<pre><code>Level 3-A: Remote Redis (分布式)
+  ↓ 远程 Redis 不可用
+Level 3-B: Local Redis (本地)
+  ↓ 本地 Redis 不可用
+Level 3-C: SQLite (持久化)
+  ↓ SQLite 不可用
+Level 3-D: File Queue (离线)</code></pre>
+<h3 id="代码实现">代码实现</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { ConnectionManager } <span class="im">from</span> <span class="st">&#39;./core/connection-manager.js&#39;</span><span class="op">;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> conn <span class="op">=</span> <span class="cf">await</span> ConnectionManager<span class="op">.</span><span class="fu">getInstance</span>()<span class="op">;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">// 自动尝试四级连接</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> level <span class="op">=</span> conn<span class="op">.</span><span class="fu">getCurrentLevel</span>()<span class="op">;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">// 返回: &#39;remote_redis&#39; | &#39;local_redis&#39; | &#39;sqlite&#39; | &#39;file&#39;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">// 使用连接（透明降级）</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> conn<span class="op">.</span><span class="fu">publish</span>(<span class="st">&#39;tasks&#39;</span><span class="op">,</span> message)<span class="op">;</span></span></code></pre></div>
+<h3 id="降级决策表">降级决策表</h3>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>级别</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EKET_REMOTE_REDIS_HOST</code> 设置 + 连接成功</td>
+<td>Remote Redis</td>
+<td>分布式部署</td>
+</tr>
+<tr>
+<td>Remote Redis 失败 + Local Redis 成功</td>
+<td>Local Redis</td>
+<td>单机高性能</td>
+</tr>
+<tr>
+<td>Redis 全部失败 + SQLite 可用</td>
+<td>SQLite</td>
+<td>持久化降级</td>
+</tr>
+<tr>
+<td>SQLite 失败 + 文件系统可写</td>
+<td>File Queue</td>
+<td>最终降级</td>
+</tr>
+<tr>
+<td>全部失败</td>
+<td>Error</td>
+<td>优雅退出</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="master-选举三级降级">💓 Master 选举三级降级</h2>
+<p>Master 选举也采用三级降级策略：</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">electMaster</span>(instanceId<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">boolean</span><span class="op">&gt;</span> {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Level 1: Redis SETNX (最快)</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (redisAvailable) {</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> redis<span class="op">.</span><span class="fu">set</span>(</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>      <span class="st">&#39;eket:master&#39;</span><span class="op">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>      instanceId<span class="op">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>      <span class="st">&#39;NX&#39;</span><span class="op">,</span>  <span class="co">// Only if Not eXists</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>      <span class="st">&#39;EX&#39;</span><span class="op">,</span> <span class="dv">30</span>  <span class="co">// 30秒租约</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    )<span class="op">;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (result <span class="op">===</span> <span class="st">&#39;OK&#39;</span>) <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Level 2: SQLite 行锁 (持久化)</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (sqliteAvailable) {</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> result <span class="op">=</span> db<span class="op">.</span><span class="fu">run</span>(<span class="vs">`</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="vs">      INSERT OR IGNORE INTO master_election (key, instance_id, expires_at)</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="vs">      VALUES (&#39;master&#39;, ?, datetime(&#39;now&#39;, &#39;+30 seconds&#39;))</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="vs">    `</span><span class="op">,</span> [instanceId])<span class="op">;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (result<span class="op">.</span><span class="at">changes</span> <span class="op">&gt;</span> <span class="dv">0</span>) <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Level 3: 文件锁 (最后手段)</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">try</span> {</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    fs<span class="op">.</span><span class="fu">mkdirSync</span>(<span class="st">&#39;.eket/master-lock&#39;</span>)<span class="op">;</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    fs<span class="op">.</span><span class="fu">writeFileSync</span>(<span class="st">&#39;.eket/master-lock/instance&#39;</span><span class="op">,</span> instanceId)<span class="op">;</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">catch</span> (err) {</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span>  <span class="co">// 其他实例已持有锁</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>选举降级表</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>性能</th>
+<th>可靠性</th>
+<th>分布式支持</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Redis SETNX</td>
+<td>极快 (&lt;1ms)</td>
+<td>高</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>SQLite 行锁</td>
+<td>快 (&lt;10ms)</td>
+<td>中</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>文件 mkdir</td>
+<td>慢 (~50ms)</td>
+<td>低</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="降级检测机制">🔍 降级检测机制</h2>
+<h3 id="健康检查">健康检查</h3>
+<p>所有组件定期执行健康检查：</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Redis 健康检查</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="pp">setInterval</span>(<span class="kw">async</span> () <span class="kw">=&gt;</span> {</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">try</span> {</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">await</span> redis<span class="op">.</span><span class="fu">ping</span>()<span class="op">;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    redisHealth<span class="op">.</span><span class="at">status</span> <span class="op">=</span> <span class="st">&#39;healthy&#39;</span><span class="op">;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">catch</span> (err) {</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    redisHealth<span class="op">.</span><span class="at">status</span> <span class="op">=</span> <span class="st">&#39;unhealthy&#39;</span><span class="op">;</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    redisHealth<span class="op">.</span><span class="at">failureCount</span><span class="op">++;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (redisHealth<span class="op">.</span><span class="at">failureCount</span> <span class="op">&gt;=</span> <span class="dv">3</span>) {</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>      logger<span class="op">.</span><span class="fu">warn</span>(<span class="st">&#39;Redis unhealthy, triggering fallback&#39;</span>)<span class="op">;</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>      <span class="cf">await</span> <span class="fu">triggerFallback</span>(<span class="st">&#39;redis&#39;</span>)<span class="op">;</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>}<span class="op">,</span> <span class="dv">10000</span>)<span class="op">;</span>  <span class="co">// 每 10 秒</span></span></code></pre></div>
+<h3 id="断路器模式">断路器模式</h3>
+<p>使用断路器防止级联故障：</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { CircuitBreaker } <span class="im">from</span> <span class="st">&#39;./core/circuit-breaker.js&#39;</span><span class="op">;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> redisBreaker <span class="op">=</span> <span class="kw">new</span> <span class="fu">CircuitBreaker</span>({</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  failureThreshold<span class="op">:</span> <span class="dv">5</span><span class="op">,</span>      <span class="co">// 5 次失败后打开</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  cooldownPeriod<span class="op">:</span> <span class="dv">30000</span><span class="op">,</span>    <span class="co">// 30 秒冷却</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  halfOpenRequests<span class="op">:</span> <span class="dv">3</span>       <span class="co">// 半开状态尝试 3 次</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co">// 使用断路器保护 Redis 调用</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> redisBreaker<span class="op">.</span><span class="fu">execute</span>(<span class="kw">async</span> () <span class="kw">=&gt;</span> {</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="cf">await</span> redis<span class="op">.</span><span class="fu">get</span>(<span class="st">&#39;key&#39;</span>)<span class="op">;</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="op">!</span>result<span class="op">.</span><span class="at">success</span>) {</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 断路器打开，自动降级</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="cf">await</span> fileQueue<span class="op">.</span><span class="fu">get</span>(<span class="st">&#39;key&#39;</span>)<span class="op">;</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="断路器状态机">断路器状态机</h3>
+<pre><code>┌──────────┐
+│  Closed  │ ← 正常工作
+└────┬─────┘
+     │ 失败次数 &gt;= threshold
+     ▼
+┌──────────┐
+│  Open    │ ← 拒绝所有请求，立即降级
+└────┬─────┘
+     │ 冷却时间到
+     ▼
+┌──────────┐
+│HalfOpen  │ ← 尝试恢复
+└────┬─────┘
+     │ 成功 → Closed
+     │ 失败 → Open</code></pre>
+<hr />
+<h2 id="降级性能影响">📊 降级性能影响</h2>
+<h3 id="消息传递延迟对比">消息传递延迟对比</h3>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>延迟 (P95)</th>
+<th>吞吐量</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Level 3 (Redis Pub/Sub)</td>
+<td><strong>0.5ms</strong></td>
+<td>~100k msg/s</td>
+<td>实时</td>
+</tr>
+<tr>
+<td>Level 2 (优化文件队列)</td>
+<td><strong>1.3ms</strong></td>
+<td>~2k msg/s</td>
+<td>去重+归档</td>
+</tr>
+<tr>
+<td>Level 1 (基础文件队列)</td>
+<td><strong>2.0ms</strong></td>
+<td>~500 msg/s</td>
+<td>基础功能</td>
+</tr>
+</tbody>
+</table>
+<h3 id="master-选举延迟对比">Master 选举延迟对比</h3>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>延迟 (P95)</th>
+<th>可靠性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Redis SETNX</td>
+<td><strong>0.96ms</strong></td>
+<td>高</td>
+</tr>
+<tr>
+<td>SQLite 行锁</td>
+<td><strong>5ms</strong></td>
+<td>中</td>
+</tr>
+<tr>
+<td>文件 mkdir</td>
+<td><strong>50ms</strong></td>
+<td>低</td>
+</tr>
+</tbody>
+</table>
+<h3 id="缓存命中率对比">缓存命中率对比</h3>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>内存缓存</th>
+<th>Redis 缓存</th>
+<th>总命中率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Level 3</td>
+<td>✅</td>
+<td>✅</td>
+<td>~95%</td>
+</tr>
+<tr>
+<td>Level 2</td>
+<td>✅</td>
+<td>❌</td>
+<td>~85%</td>
+</tr>
+<tr>
+<td>Level 1</td>
+<td>❌</td>
+<td>❌</td>
+<td>0%</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="降级策略最佳实践">🛡️ 降级策略最佳实践</h2>
+<h3 id="优雅降级而非功能缺失">1. 优雅降级，而非功能缺失</h3>
+<p><strong>❌ 错误做法</strong>：</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (redisAvailable) {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> <span class="fu">sendMessage</span>(message)<span class="op">;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">throw</span> <span class="kw">new</span> <span class="bu">Error</span>(<span class="st">&#39;Redis not available&#39;</span>)<span class="op">;</span>  <span class="co">// 功能完全失效</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>✅ 正确做法</strong>：</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (redisAvailable) {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> redis<span class="op">.</span><span class="fu">publish</span>(<span class="st">&#39;tasks&#39;</span><span class="op">,</span> message)<span class="op">;</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 降级到文件队列，功能仍可用</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> fileQueue<span class="op">.</span><span class="fu">enqueue</span>(message)<span class="op">;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  logger<span class="op">.</span><span class="fu">warn</span>(<span class="st">&#39;Using file queue fallback&#39;</span>)<span class="op">;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="透明降级无需代码改动">2. 透明降级，无需代码改动</h3>
+<p><strong>❌ 错误做法</strong>：</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 业务代码需要知道降级逻辑</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (level <span class="op">===</span> <span class="st">&#39;redis&#39;</span>) {</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> redisQueue<span class="op">.</span><span class="fu">send</span>(msg)<span class="op">;</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> <span class="cf">if</span> (level <span class="op">===</span> <span class="st">&#39;file&#39;</span>) {</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> fileQueue<span class="op">.</span><span class="fu">send</span>(msg)<span class="op">;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>✅ 正确做法</strong>：</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 业务代码无感知，Queue 内部处理降级</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> queue<span class="op">.</span><span class="fu">send</span>(msg)<span class="op">;</span>  <span class="co">// 自动选择可用实现</span></span></code></pre></div>
+<h3 id="及时告警但不阻塞服务">3. 及时告警，但不阻塞服务</h3>
+<p><strong>✅ 正确做法</strong>：</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (currentLevel <span class="op">===</span> <span class="st">&#39;file&#39;</span> <span class="op">&amp;&amp;</span> previousLevel <span class="op">===</span> <span class="st">&#39;redis&#39;</span>) {</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 降级发生，发送告警</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> alerting<span class="op">.</span><span class="fu">send</span>({</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    level<span class="op">:</span> <span class="st">&#39;warning&#39;</span><span class="op">,</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    message<span class="op">:</span> <span class="st">&#39;System degraded from Redis to File Queue&#39;</span><span class="op">,</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    impact<span class="op">:</span> <span class="st">&#39;Performance reduced, no data loss&#39;</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  })<span class="op">;</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 但服务继续运行</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="定期尝试恢复">4. 定期尝试恢复</h3>
+<p><strong>✅ 正确做法</strong>：</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 每 30 秒尝试恢复 Redis 连接</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="pp">setInterval</span>(<span class="kw">async</span> () <span class="kw">=&gt;</span> {</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (currentLevel <span class="op">===</span> <span class="st">&#39;file&#39;</span>) {</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> recovered <span class="op">=</span> <span class="cf">await</span> <span class="fu">tryRecoverRedis</span>()<span class="op">;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (recovered) {</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>      currentLevel <span class="op">=</span> <span class="st">&#39;redis&#39;</span><span class="op">;</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>      logger<span class="op">.</span><span class="fu">info</span>(<span class="st">&#39;Recovered to Redis, system upgraded&#39;</span>)<span class="op">;</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>}<span class="op">,</span> <span class="dv">30000</span>)<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="配置降级行为">🔧 配置降级行为</h2>
+<h3 id="环境变量">环境变量</h3>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 启用/禁用自动降级</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_AUTO_FALLBACK</span><span class="op">=</span>true          <span class="co"># 默认: true</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Redis 降级配置</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_REDIS_TIMEOUT</span><span class="op">=</span>5000          <span class="co"># 连接超时 (ms)</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_REDIS_RETRY_ATTEMPTS</span><span class="op">=</span>3      <span class="co"># 重试次数</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_REDIS_RETRY_DELAY</span><span class="op">=</span>1000      <span class="co"># 重试间隔 (ms)</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 断路器配置</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_CIRCUIT_BREAKER_THRESHOLD</span><span class="op">=</span>5       <span class="co"># 失败阈值</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_CIRCUIT_BREAKER_COOLDOWN</span><span class="op">=</span>30000    <span class="co"># 冷却时间 (ms)</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 降级告警</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_ALERT_ON_DEGRADATION</span><span class="op">=</span>true   <span class="co"># 降级时发送告警</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">EKET_ALERT_WEBHOOK_URL</span><span class="op">=</span>          <span class="co"># Webhook URL</span></span></code></pre></div>
+<h3 id="代码配置">代码配置</h3>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { ConnectionManager } <span class="im">from</span> <span class="st">&#39;./core/connection-manager.js&#39;</span><span class="op">;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> conn <span class="op">=</span> <span class="cf">await</span> ConnectionManager<span class="op">.</span><span class="fu">getInstance</span>({</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  redis<span class="op">:</span> {</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    timeout<span class="op">:</span> <span class="dv">5000</span><span class="op">,</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    retryAttempts<span class="op">:</span> <span class="dv">3</span><span class="op">,</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    retryDelay<span class="op">:</span> <span class="dv">1000</span><span class="op">,</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    autoFallback<span class="op">:</span> <span class="kw">true</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  circuitBreaker<span class="op">:</span> {</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    failureThreshold<span class="op">:</span> <span class="dv">5</span><span class="op">,</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    cooldownPeriod<span class="op">:</span> <span class="dv">30000</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  alerting<span class="op">:</span> {</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    enabled<span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    webhookUrl<span class="op">:</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">ALERT_WEBHOOK_URL</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="降级监控">📊 降级监控</h2>
+<h3 id="查看当前运行级别">查看当前运行级别</h3>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Level 1 (Shell)</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./lib/adapters/hybrid-adapter.sh</span> check</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Level 2/3 (Node.js)</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js system:check</span></code></pre></div>
+<p><strong>输出示例</strong>：</p>
+<pre><code>========================================
+EKET System Check
+========================================
+
+Node.js:  ✅ v18.16.0
+Redis:    ❌ Connection refused (localhost:6379)
+SQLite:   ✅ /Users/xxx/.eket/data/sqlite/eket.db
+Shell:    ✅ Bash 5.2.15
+
+Current Level: Level 2 (Node.js + File Queue)
+Fallback Status: Redis → File (degraded)
+Performance Impact: -40% throughput, +60% latency</code></pre>
+<h3 id="降级历史日志">降级历史日志</h3>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 查看降级事件</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span> <span class="at">-100</span> logs/eket.log <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-i</span> <span class="st">&quot;fallback\|degrad&quot;</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 输出示例:</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2026-04-08 14:30:15 WARN Redis connection failed, falling back to file queue</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 2026-04-08 14:30:15 INFO Current level degraded: Level 3 → Level 2</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 2026-04-08 14:32:45 INFO Redis connection recovered, upgrading to Level 3</span></span></code></pre></div>
+<hr />
+<h2 id="降级场景示例">🎓 降级场景示例</h2>
+<h3 id="场景-1-redis-维护窗口">场景 1: Redis 维护窗口</h3>
+<p><strong>情况</strong>：Redis 需要停机维护 30 分钟</p>
+<p><strong>系统行为</strong>：</p>
+<pre><code>14:00 - Redis 关闭
+14:00 - 自动降级到 Level 2 (文件队列)
+14:00 - 发送告警: &quot;Redis degraded, file queue active&quot;
+14:00-14:30 - 系统以 Level 2 模式运行
+14:30 - Redis 恢复
+14:30 - 自动升级到 Level 3
+14:30 - 发送通知: &quot;Redis recovered&quot;</code></pre>
+<p><strong>用户影响</strong>：消息延迟略增，但功能完全正常</p>
+<hr />
+<h3 id="场景-2-node.js-进程崩溃">场景 2: Node.js 进程崩溃</h3>
+<p><strong>情况</strong>：Node.js 进程因 OOM 崩溃</p>
+<p><strong>系统行为</strong>：</p>
+<pre><code>15:00 - Node.js 进程崩溃
+15:00 - hybrid-adapter.sh 检测到 Node.js 不可用
+15:00 - 自动降级到 Level 1 (Shell)
+15:00 - Shell 脚本接管，继续处理文件队列
+15:00 - 发送紧急告警: &quot;Node.js crashed, Shell fallback&quot;
+15:05 - 运维人员修复并重启 Node.js
+15:05 - 自动升级到 Level 2/3</code></pre>
+<p><strong>用户影响</strong>：短暂中断（~1分钟），然后以 Shell
+模式恢复</p>
+<hr />
+<h3 id="场景-3-网络分区">场景 3: 网络分区</h3>
+<p><strong>情况</strong>：分布式部署，网络分区导致 Remote Redis
+不可达</p>
+<p><strong>系统行为</strong>：</p>
+<pre><code>16:00 - Remote Redis 连接超时
+16:00 - ConnectionManager 降级到 Local Redis
+16:00 - 本地 Slaver 继续工作（单机模式）
+16:00 - 发送告警: &quot;Network partition detected&quot;
+16:30 - 网络恢复
+16:30 - 自动重连 Remote Redis
+16:30 - 恢复分布式模式</code></pre>
+<p><strong>用户影响</strong>：本地任务继续执行，分布式协作暂停</p>
+<hr />
+<h2 id="降级测试">🛠️ 降级测试</h2>
+<h3 id="测试-redis-降级">测试 Redis 降级</h3>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 启动 Level 3 模式</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">--name</span> eket-redis <span class="at">-p</span> 6379:6379 redis:7-alpine</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js instance:start <span class="at">--role</span> master</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 验证 Level 3</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js system:check</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 输出: Current Level: Level 3</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 停止 Redis</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> stop eket-redis</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 验证自动降级</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js system:check</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 输出: Current Level: Level 2 (File Queue)</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. 恢复 Redis</span></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> start eket-redis</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 6. 验证自动恢复</span></span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js system:check</span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a><span class="co"># 输出: Current Level: Level 3</span></span></code></pre></div>
+<h3 id="测试-node.js-降级">测试 Node.js 降级</h3>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 启动 Level 2 模式</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js instance:start <span class="at">--role</span> master <span class="kw">&amp;</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="va">NODE_PID</span><span class="op">=</span><span class="va">$!</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 验证 Level 2</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./lib/adapters/hybrid-adapter.sh</span> check</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 输出: Current Level: Level 2</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 杀死 Node.js 进程</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="bu">kill</span> <span class="va">$NODE_PID</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 验证自动降级</span></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a><span class="ex">./lib/adapters/hybrid-adapter.sh</span> check</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 输出: Current Level: Level 1 (Shell)</span></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. 使用 Shell 命令</span></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a><span class="ex">./lib/adapters/hybrid-adapter.sh</span> start <span class="at">--role</span> master</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Shell 模式正常工作</span></span></code></pre></div>
+<hr />
+<h2 id="相关文档">📚 相关文档</h2>
+<ul>
+<li><strong><a
+href="./THREE-LEVEL-ARCHITECTURE.md">三级架构设计</a></strong> -
+完整架构说明</li>
+<li><strong><a href="./CONNECTION-MANAGER.md">连接管理器</a></strong> -
+四级降级实现</li>
+<li><strong><a href="./MESSAGE-QUEUE.md">消息队列</a></strong> - Redis +
+文件队列实现</li>
+<li><strong><a href="./CIRCUIT-BREAKER.md">断路器模式</a></strong> -
+故障保护机制</li>
+</ul>
+<hr />
+<p><strong>降级策略核心</strong>：<strong>可用性 &gt; 性能 &gt;
+功能完整性</strong></p>
+<p>在任何情况下，EKET 都能保证核心协作功能可用。</p>
+<hr />
+<p><strong>版本</strong>: v2.3.0 <strong>最后更新</strong>: 2026-04-08
+<strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>

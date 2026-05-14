@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>TASK-016 Master 决策和授权</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">TASK-016 Master 决策和授权</h1>
+</header>
+<h1 id="task-016-master-决策和授权">TASK-016 Master 决策和授权</h1>
+<p><strong>Master</strong>: Claude Opus 4.6 <strong>决策时间</strong>:
+2026-04-08 <strong>针对</strong>: Slaver A - SQLite Manager 迁移任务</p>
+<hr />
+<h2 id="master-决策">✅ Master 决策</h2>
+<h3 id="决策-1-getdb-处理方式">决策 1: getDB() 处理方式</h3>
+<p><strong>Master 批准</strong>: <strong>选项 A - 允许同步模式 + 保留
+getDB()</strong></p>
+<p><strong>理由</strong>: 1. ✅ <strong>风险最低</strong>: Worker
+模式尚未生产验证，强制使用可能引入新问题 2. ✅
+<strong>快速交付</strong>: 避免大规模重构，专注于迁移 3. ✅
+<strong>渐进式</strong>: 未来可以平滑迁移到选项 C（混合模式） 4. ✅
+<strong>代码稳定</strong>: 保持现有逻辑不变，降低回归风险</p>
+<p><strong>实施指导</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 对于使用 getDB() 的文件</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> manager <span class="op">=</span> <span class="cf">await</span> <span class="fu">createSQLiteManager</span>({</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  useWorker<span class="op">:</span> <span class="kw">false</span>  <span class="co">// 明确使用同步模式</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">// 可以继续使用 getDB() 访问底层 Database</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> db <span class="op">=</span> manager<span class="op">.</span><span class="fu">getDB</span>()<span class="op">;</span></span></code></pre></div>
+<p><strong>适用文件</strong>（7 个）: -
+<code>src/core/knowledge-base.ts</code> -
+<code>src/core/context-snapshot.ts</code> -
+<code>src/core/history-tracker.ts</code> -
+<code>src/api/audit-logger.ts</code> -
+<code>src/api/data-deletion.ts</code> -
+<code>src/api/data-access.ts</code> -
+<code>src/core/master-election.ts</code></p>
+<hr />
+<h3 id="决策-2-测试覆盖率目标">决策 2: 测试覆盖率目标</h3>
+<p><strong>Master 批准</strong>: <strong>维持基线测试通过率
+≥87%</strong></p>
+<p><strong>理由</strong>: 1. ✅ <strong>聚焦任务</strong>: SQLite
+迁移不应修复无关的 Redis 测试 2. ✅ <strong>避免范围蔓延</strong>:
+保持任务边界清晰 3. ✅ <strong>可追溯性</strong>:
+如果测试下降，立即定位是迁移引起的</p>
+<p><strong>验证标准</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 每迁移 2-3 个文件后运行</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 期望结果</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Test</span> Suites: ≥18 passed <span class="er">(</span><span class="ex">47%+</span><span class="kw">)</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Tests:</span> ≥927 passed <span class="er">(</span><span class="ex">87%+</span><span class="kw">)</span></span></code></pre></div>
+<hr />
+<h2 id="master-授权和指导">🚀 Master 授权和指导</h2>
+<h3 id="阶段-2-执行计划授权">阶段 2 执行计划（授权）</h3>
+<p><strong>Master 授权 Slaver A 继续执行</strong>:</p>
+<h4 id="phase-1-快速胜利2-小时立即开始">Phase 1: 快速胜利（2
+小时，立即开始）</h4>
+<p><strong>目标</strong>: 迁移 4 个简单文件</p>
+<p><strong>文件清单</strong>: 1. <code>src/index.ts</code> - Pattern A
+2. <code>src/api/eket-server.ts</code> - Pattern A 3.
+<code>src/api/web-server.ts</code> - Pattern A 4.
+<code>src/hooks/http-hook-server.ts</code> - Pattern A</p>
+<p><strong>预期成果</strong>: - 完成度: 5/11 (45%) - 测试稳定: ≥87% -
+Git 提交: 4 个原子提交</p>
+<h4 id="phase-2-getdb-文件3-4-小时">Phase 2: getDB() 文件（3-4
+小时）</h4>
+<p><strong>目标</strong>: 迁移 7 个使用 getDB() 的文件</p>
+<p><strong>策略</strong>: 选项 A - 同步模式 + getDB()</p>
+<p><strong>文件清单</strong>: 1.
+<code>src/core/master-election.ts</code> - 高优先级 2.
+<code>src/api/data-access.ts</code> - 高优先级 3.
+<code>src/api/data-deletion.ts</code> - 高优先级 4.
+<code>src/api/audit-logger.ts</code> - 中优先级 5.
+<code>src/core/knowledge-base.ts</code> - 最复杂 6.
+<code>src/core/context-snapshot.ts</code> - 复杂 7.
+<code>src/core/history-tracker.ts</code> - 复杂</p>
+<p><strong>顺序建议</strong>: 按优先级递增复杂度</p>
+<p><strong>预期成果</strong>: - 完成度: 11/11 (100%) - 减少代码: ~300
+行（消除重复） - 统一架构: 单一 SQLiteManager</p>
+<h4 id="phase-3-质量验证1-小时">Phase 3: 质量验证（1 小时）</h4>
+<p><strong>检查清单</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 完整测试</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 目标: ≥87% 通过率</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 构建验证</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run build</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 目标: 无错误</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Lint 检查</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run lint</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 目标: 无新增警告</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 代码审查</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查所有迁移文件的 import 和用法</span></span></code></pre></div>
+<hr />
+<h2 id="master-要求">📋 Master 要求</h2>
+<h3 id="提交规范">提交规范</h3>
+<p><strong>每迁移 1-2 个文件提交一次</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add <span class="op">&lt;</span>files<span class="op">&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">&quot;feat(sqlite): migrate &lt;module&gt; to SQLiteManager</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">- 使用 SQLiteManager 替代 SQLiteClient</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">- 模式: Pattern A / useWorker: false</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">- getDB() 保留用于直接数据库访问 (若适用)</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="st">- 测试: ✅ 基线稳定</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="st">Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;&quot;</span></span></code></pre></div>
+<h3 id="进度报告">进度报告</h3>
+<p><strong>每完成 Phase 后汇报</strong>: 1. 完成文件清单 2.
+测试结果（通过率） 3. 遇到的问题和解决方案 4. 下一 Phase 预计时间</p>
+<hr />
+<h2 id="总体时间线">🎯 总体时间线</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>任务</th>
+<th>工时</th>
+<th>累计完成度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✅ Phase 0</td>
+<td>分析 + health-check</td>
+<td>6h</td>
+<td>9% (1/11)</td>
+</tr>
+<tr>
+<td>🔄 Phase 1</td>
+<td>简单文件迁移</td>
+<td>2h</td>
+<td>45% (5/11)</td>
+</tr>
+<tr>
+<td>⏳ Phase 2</td>
+<td>getDB() 文件迁移</td>
+<td>3-4h</td>
+<td>100% (11/11)</td>
+</tr>
+<tr>
+<td>⏳ Phase 3</td>
+<td>质量验证</td>
+<td>1h</td>
+<td>完成</td>
+</tr>
+</tbody>
+</table>
+<p><strong>总计</strong>: 12-13 小时（含已完成的 6h）
+<strong>预计完成</strong>: 2026-04-08 晚上或 2026-04-09 上午</p>
+<hr />
+<h2 id="master-评价阶段-1">✅ Master 评价（阶段 1）</h2>
+<p><strong>评分</strong>: <strong>8/10</strong> ⭐ 优秀</p>
+<p><strong>优点</strong>: 1. ✅ <strong>详细分析</strong>: 12.7KB
+执行报告，覆盖所有细节 2. ✅ <strong>模式验证</strong>: Pattern A
+已验证有效 3. ✅ <strong>风险识别</strong>: 提前识别 getDB()
+问题并请求决策 4. ✅ <strong>质量保证</strong>: 测试基线稳定，构建通过
+5. ✅ <strong>清晰沟通</strong>: 明确请求 Master 决策</p>
+<p><strong>改进空间</strong>: - 🟡 执行速度: 6 小时仅完成 1
+个文件（但分析工作扎实） - 🟡 可以更早请求决策（减少等待时间）</p>
+<p><strong>Master 期望</strong>: - 🎯 Phase 1 (2h) 完成后更新进度 - 🎯
+Phase 2 遇到困难及时汇报 - 🎯 保持当前的代码质量和文档标准</p>
+<hr />
+<h2 id="立即行动">🚀 立即行动</h2>
+<p><strong>Slaver A，你现在可以继续执行</strong>:</p>
+<ol type="1">
+<li>✅ <strong>决策已下达</strong>: 使用选项 A（同步模式 +
+getDB()）</li>
+<li>✅ <strong>目标已明确</strong>: 测试基线 ≥87%</li>
+<li>✅ <strong>计划已批准</strong>: Phase 1 → Phase 2 → Phase 3</li>
+<li>✅ <strong>授权已给予</strong>: 继续迁移所有 11 个文件</li>
+</ol>
+<p><strong>开始 Phase 1 吧！期待你的好消息！</strong> 🚀</p>
+<hr />
+<p><strong>Master 签名</strong>: Claude Opus 4.6
+<strong>授权时间</strong>: 2026-04-08 <strong>有效期</strong>: 至
+TASK-016 完成</p>
+</body>
+</html>
