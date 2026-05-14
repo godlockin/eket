@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Ticket 职责规范</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Ticket 职责规范</h1>
+</header>
+<h1 id="ticket-职责规范">Ticket 职责规范</h1>
+<p><strong>版本</strong>: v2.9.0-alpha<br />
+<strong>创建日期</strong>: 2026-04-10<br />
+<strong>目的</strong>: 明确定义 Master 和 Slaver 在 Ticket
+中的职责边界，禁止越权操作</p>
+<hr />
+<h2 id="核心原则">1. 核心原则</h2>
+<blockquote>
+<p><strong>Master 只写文档，Slaver 只写代码。</strong></p>
+</blockquote>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 40%" />
+<col style="width: 37%" />
+</colgroup>
+<thead>
+<tr>
+<th>角色</th>
+<th>唯一产出物</th>
+<th>禁止操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Master</strong></td>
+<td>需求文档、架构文档、Ticket、PR 审查报告、Slaver 团队初始化</td>
+<td>❌ 不得写任何代码、配置、测试</td>
+</tr>
+<tr>
+<td><strong>Slaver</strong></td>
+<td>代码、测试、PR、分析报告</td>
+<td>❌ 不得创建/修改 Ticket 元数据、不得审查自己的 PR</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关键流程规则</strong>：</p>
+<blockquote>
+<p>Master 在创建 Ticket 后，<strong>必须立即初始化 Slaver
+团队</strong>，将任务状态设为 <code>ready</code>，让 Slaver
+可立即领取。禁止创建任务后不初始化执行团队，导致任务积压在
+<code>backlog</code> 或 <code>analysis</code> 状态。</p>
+</blockquote>
+<hr />
+<h2 id="ticket-必须包含的内容">2. Ticket 必须包含的内容</h2>
+<h3 id="元数据区master-填写">2.1 元数据区（Master 填写）</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>**Ticket ID**: FEAT-001</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>**标题**: {{清晰描述功能}}</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>**类型**: feature | bugfix | task | improvement | research</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>**优先级**: P0(紧急) | P1(高) | P2(中) | P3(低)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>**重要性**: critical | high | medium | low</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>**状态**: backlog | analysis | approved | ready | in_progress | review | done</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>**创建时间**: {{ISO8601 时间}}</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>**创建者**: {{Master 实例 ID}}</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>**负责人**: {{Slaver 实例 ID，领取后填写}}</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>**所属 Epic**: {{EPIC-ID}}</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>**标签**: <span class="in">`frontend`</span>, <span class="in">`backend`</span>, <span class="in">`api`</span>, <span class="in">`database`</span>, etc.</span></code></pre></div>
+<p><strong>Master 职责</strong>： - ✅ 填写所有元数据字段 - ✅
+设置正确的优先级和重要性 - ✅ 添加准确的标签</p>
+<p><strong>Slaver 禁止</strong>： - ❌ 不得修改 Ticket
+ID、类型、优先级、重要性 - ❌ 不得修改创建者、所属 Epic</p>
+<hr />
+<h3 id="需求概述区master-填写">2.2 需求概述区（Master 填写）</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. 需求概述</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.1 功能描述</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>作为 {{用户角色}}，我需要 {{功能}}，以便 {{价值/目的}}</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.2 验收标准</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> {{验收标准 1}}</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> {{验收标准 2}}</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> {{验收标准 3}}</span></code></pre></div>
+<p><strong>Master 职责</strong>： - ✅ 用用户故事格式描述功能 - ✅
+定义清晰可验证的验收标准 - ✅ 说明业务价值</p>
+<p><strong>Slaver 禁止</strong>： - ❌ 不得修改验收标准（这是 Master
+和人类确认的合同）</p>
+<hr />
+<h3 id="依赖关系区master-填写">2.3 依赖关系区（Master 填写）</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">## 2. 依赖关系</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">blocks</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">FEAT</span><span class="dv">-002</span><span class="kw">]</span><span class="co">           # 本任务阻塞的任务</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">blocked_by</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">FEAT</span><span class="dv">-001</span><span class="kw">]</span><span class="co">       # 本任务依赖的任务</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">related</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">FEAT</span><span class="dv">-003</span><span class="kw">]</span><span class="co">          # 相关任务，可并行</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">external</span><span class="kw">:</span><span class="co">                    # 外部依赖</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> 等待 API 接口文档</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> 等待第三方服务接入</span></span></code></pre></div>
+<p><strong>Master 职责</strong>： - ✅ 分析并填写所有依赖关系 - ✅
+识别外部依赖并追踪</p>
+<p><strong>Slaver 禁止</strong>： - ❌ 不得修改依赖关系（发现错误时通知
+Master 修改）</p>
+<hr />
+<h3 id="技术设计区master-填写初稿slaver-可补充">2.4 技术设计区（Master
+填写初稿，Slaver 可补充）</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3. 技术设计</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.1 影响范围</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**涉及模块**: <span class="in">`module1`</span>, <span class="in">`module2`</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**向后兼容**: Yes/No</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.2 实现方案</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>{{技术方案概述}}</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.3 API/接口变更</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="in">```typescript</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">// 新增/修改的接口定义</span></span></code></pre></div>
+<pre><code>
+**Master 职责**：
+- ✅ 提供技术方案方向和架构约束
+- ✅ 标识影响范围
+
+**Slaver 允许**：
+- ✅ 可补充详细实现细节
+- ✅ 可添加代码示例
+- ✅ 可修改技术方案（但必须通知 Master 审查）
+
+---
+
+### 2.5 执行记录区（Slaver 填写）
+
+```markdown
+## 4. 执行记录
+
+### 4.1 领取信息
+- **领取者**: {{Slaver 实例 ID}}
+- **领取时间**: {{ISO8601 时间}}
+- **预计工时**: {{X}}h
+- **状态已更新**: [x] 是
+
+### 4.2 执行状态
+| 阶段 | 状态 | 完成时间 | 备注 |
+|------|------|----------|------|
+| 领取 | ✓ | {{时间}} | {{Slaver_ID}} |
+| 设计文档 | ✓ | {{时间}} | - |
+| 测试编写 | ✓ | {{时间}} | - |
+| PR 提交 | ✓ | {{时间}} | {{PR_NUMBER}} |
+
+### 4.3 实现细节
+{{实际实现说明，包括关键代码结构、算法选择等}}
+
+### 4.4 遇到的问题和解决方案
+| 问题 | 解决方案 | 备注 |
+|------|----------|------|
+| {{问题 1}} | {{方案 1}} | - |</code></pre>
+<p><strong>Slaver 职责</strong>： - ✅ 领取后立即填写领取信息 - ✅
+按顺序更新每个阶段状态 - ✅ 记录实现细节 - ✅
+记录遇到的问题和解决方案</p>
+<p><strong>Master 禁止</strong>： - ❌ 不得代填执行记录</p>
+<hr />
+<h3 id="分析报告区slaver-填写编码前必须完成">2.6 分析报告区（Slaver
+填写，编码前必须完成）</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 5. 分析报告（编码前必须完成）</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>**分析师**: {{Slaver 实例 ID}}</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>**分析时间**: {{ISO8601 时间}}</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>**预估工时**: {{X}} 小时</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.1 需求理解</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>{{核心目标和验收标准复述}}</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.2 技术方案</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>{{实现计划}}</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.3 影响分析</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 模块 <span class="pp">|</span> 影响 <span class="pp">|</span> 备注 <span class="pp">|</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|------|------|</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> {{mod}} <span class="pp">|</span> H/M/L <span class="pp">|</span> ... <span class="pp">|</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.4 任务分解</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 子任务 <span class="pp">|</span> 预估 <span class="pp">|</span> 优先级 <span class="pp">|</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------|------|--------|</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> {{task}} <span class="pp">|</span> 2h <span class="pp">|</span> P0 <span class="pp">|</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5.5 风险评估</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 风险 <span class="pp">|</span> 可能性 <span class="pp">|</span> 影响 <span class="pp">|</span> 缓解措施 <span class="pp">|</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|--------|------|----------|</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ... <span class="pp">|</span> H/M/L <span class="pp">|</span> H/M/L <span class="pp">|</span> ... <span class="pp">|</span></span></code></pre></div>
+<p><strong>Slaver 职责</strong>： - ✅
+<strong>编码前必须完成分析报告</strong> - ✅ 等待 Master
+批准后再开始编码 - ✅ 识别技术风险</p>
+<p><strong>Master 职责</strong>： - ✅ 审查分析报告 - ✅
+批准或提出修改意见 - ✅ 确认风险缓解措施</p>
+<hr />
+<h3 id="review-记录区master-填写">2.7 Review 记录区（Master 填写）</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6. Review 记录</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.1 Review 检查清单</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 代码符合项目规范</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 测试覆盖充分（覆盖率 ≥ 80%）</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 文档已更新</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 无安全漏洞（通过 <span class="in">`npm audit`</span> / <span class="in">`pip-audit`</span> / <span class="in">`cargo audit`</span>）</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 性能无显著退化</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 质量四件套全部通过（build + lint + test + audit）</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 状态已更新：review → done</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.2 Review 意见</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>{{Review 意见和修改建议}}</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.3 Review 结果</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> **批准合并** - 代码质量良好，状态已更新为 done</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> **需要修改** - 见 Review 意见，状态已改回 in_progress</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> **拒绝** - {{原因}}</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6.4 Merge 前必完成事项（Master 执行，顺序不可颠倒）</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>- <span class="co">[ ]</span> **所有测试通过** — CI 绿色 + 本地全量测试通过</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>- <span class="co">[ ]</span> **Review 完成** — 4-Level Artifact Verification 全部通过，明确批准</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>- <span class="co">[ ]</span> **更新 Confluence** — 相关技术文档/架构决策/API 变更已同步至 Confluence</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>- <span class="co">[ ]</span> **更新 Jira Ticket** — 状态推进为 <span class="in">`done`</span>，填写实际完成时间和交付物链接</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>- <span class="co">[ ]</span> **执行合并** — Master 合并 PR 到目标分支</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; ⚠️ 第 3、4 步（文档更新）必须在合并之前完成，不得事后补录。</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>**Reviewer**: {{Master 实例 ID}}</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>**Review 时间**: {{ISO8601 时间}}</span></code></pre></div>
+<p><strong>Master 职责</strong>： - ✅ 填写完整的 Review 检查清单 - ✅
+提供具体的修改建议 - ✅ 明确 Review 结果</p>
+<p><strong>Slaver 禁止</strong>： - ❌ 不得填写 Review 记录 - ❌
+不得审查自己的 PR</p>
+<hr />
+<h3 id="状态流转记录master-和-slaver-共同更新">2.8 状态流转记录（Master
+和 Slaver 共同更新）</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 状态流转</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 时间 <span class="pp">|</span> 状态变更 <span class="pp">|</span> 操作者 <span class="pp">|</span> 备注 <span class="pp">|</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|----------|--------|------|</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> {{时间}} <span class="pp">|</span> backlog → analysis <span class="pp">|</span> Master <span class="pp">|</span> 初始创建 <span class="pp">|</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> {{时间}} <span class="pp">|</span> analysis → approved <span class="pp">|</span> Master <span class="pp">|</span> 需求分析完成 <span class="pp">|</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> {{时间}} <span class="pp">|</span> approved → ready <span class="pp">|</span> Master <span class="pp">|</span> 准备就绪 <span class="pp">|</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> {{时间}} <span class="pp">|</span> ready → in_progress <span class="pp">|</span> {{Slaver_ID}} <span class="pp">|</span> 已领取 <span class="pp">|</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> {{时间}} <span class="pp">|</span> in_progress → review <span class="pp">|</span> {{Slaver_ID}} <span class="pp">|</span> PR 提交 <span class="pp">|</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> {{时间}} <span class="pp">|</span> review → done <span class="pp">|</span> Master <span class="pp">|</span> Review 通过 <span class="pp">|</span></span></code></pre></div>
+<p><strong>Master 职责</strong>： - ✅ 创建 ticket 时记录初始状态 - ✅
+审批分析报告后更新状态 - ✅ Review 通过后更新为 done</p>
+<p><strong>Slaver 职责</strong>： - ✅ 领取任务后立即更新为 in_progress
+- ✅ PR 提交后更新为 review</p>
+<hr />
+<h2 id="nyquist-rule验收标准自动化要求">Nyquist
+Rule（验收标准自动化要求）</h2>
+<p>每条验收标准必须满足： 1. <strong>可自动化</strong>：附带具体的 shell
+命令（而非手动运行/人眼确认） 2. <strong>有时限</strong>：命令在 60
+秒内完成（长时间运行的集成测试需拆分） 3.
+<strong>客观可重复</strong>：相同代码 + 相同命令 = 相同结果（无随机性）
+4. <strong>覆盖质量四件套</strong>：命令必须涵盖该技术栈的类型检查 +
+lint + test + 安全扫描（可用 <code>scripts/detect-stack.sh</code>
+查看当前栈要求）</p>
+<p>违反此规则的 PR
+描述（仅贴截图/文字描述而非命令输出）视同未完成验收。</p>
+<hr />
+<h2 id="禁止包含的内容">3. 禁止包含的内容</h2>
+<h3 id="ticket-中禁止的内容">3.1 Ticket 中禁止的内容</h3>
+<table>
+<thead>
+<tr>
+<th>内容</th>
+<th>原因</th>
+<th>正确位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>❌ 完整源代码</td>
+<td>Ticket 是任务追踪，不是代码仓库</td>
+<td>代码文件</td>
+</tr>
+<tr>
+<td>❌ 敏感信息（密码、API Key）</td>
+<td>安全风险</td>
+<td>环境变量/密钥管理</td>
+</tr>
+<tr>
+<td>❌ 人身攻击或负面情绪</td>
+<td>保持专业</td>
+<td>-</td>
+</tr>
+<tr>
+<td>❌ 模糊的验收标准</td>
+<td>必须可验证</td>
+<td>验收标准字段</td>
+</tr>
+<tr>
+<td>❌ 未授权的依赖变更</td>
+<td>需 Master 审批</td>
+<td>依赖关系字段</td>
+</tr>
+</tbody>
+</table>
+<h3 id="master-禁止在-ticket-中写的">3.2 Master 禁止在 Ticket
+中写的</h3>
+<table>
+<thead>
+<tr>
+<th>内容</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>❌ 代码实现细节</td>
+<td>这是 Slaver 的职责</td>
+</tr>
+<tr>
+<td>❌ 测试代码</td>
+<td>这是 Slaver 的职责</td>
+</tr>
+<tr>
+<td>❌ 配置文件内容</td>
+<td>这是 Slaver 的职责</td>
+</tr>
+<tr>
+<td>❌ “我来实现这个功能”</td>
+<td>Master 禁止写代码</td>
+</tr>
+</tbody>
+</table>
+<h3 id="slaver-禁止在-ticket-中写的">3.3 Slaver 禁止在 Ticket
+中写的</h3>
+<table>
+<thead>
+<tr>
+<th>内容</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>❌ 修改验收标准</td>
+<td>这是 Master 和人类确认的合同</td>
+</tr>
+<tr>
+<td>❌ 修改优先级/重要性</td>
+<td>这是 Master 的决策</td>
+</tr>
+<tr>
+<td>❌ 自行添加依赖</td>
+<td>需 Master 审批架构影响</td>
+</tr>
+<tr>
+<td>❌ Review 自己的 PR</td>
+<td>利益冲突</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="职责边界速查表">4. 职责边界速查表</h2>
+<table>
+<thead>
+<tr>
+<th>工作内容</th>
+<th>Master</th>
+<th>Slaver</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>创建 Ticket</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>填写需求描述</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>填写验收标准</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>设置优先级</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>填写依赖关系</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>技术方案初稿</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>技术方案补充</td>
+<td>⚠️ 审查</td>
+<td>✅ 补充细节</td>
+</tr>
+<tr>
+<td>编写分析报告</td>
+<td>⚠️ 审查批准</td>
+<td>✅ 编写</td>
+</tr>
+<tr>
+<td>领取任务</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>编写代码</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>编写测试</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>编写配置</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>提交 PR</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Review PR</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>合并到 main</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>更新状态为 done</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="违规处理">5. 违规处理</h2>
+<table>
+<thead>
+<tr>
+<th>违规行为</th>
+<th>处理措施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Master 写代码</td>
+<td>立即停止，删除代码，重新分配给 Slaver</td>
+</tr>
+<tr>
+<td>Slaver 修改验收标准</td>
+<td>恢复原状，通知 Master 重新确认</td>
+</tr>
+<tr>
+<td>Slaver 审查自己的 PR</td>
+<td>Review 无效，重新分配 Master 审查</td>
+</tr>
+<tr>
+<td>Slaver 跳过分析报告直接编码</td>
+<td>停止编码，补写分析报告，等待批准</td>
+</tr>
+<tr>
+<td>Master 代填执行记录</td>
+<td>删除记录，由 Slaver 重新填写</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<hr />
+<h2 id="slaver-执行报告-schemaartifact-schema-v1">Slaver 执行报告
+Schema（Artifact Schema v1）</h2>
+<p>Slaver 在 Ticket
+的「执行记录」部分填写时，必须包含以下结构化字段：</p>
+<h3 id="分析报告analysis-ready-前必填">分析报告（analysis → ready
+前必填）</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">analysis_report</span><span class="kw">:</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">summary</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;一句话描述方案&quot;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">approach</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;技术方案关键点（1-3 点）&quot;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">risks</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;已识别风险（无则填 none）&quot;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">estimated_hours</span><span class="kw">:</span><span class="at"> </span><span class="ch">N</span><span class="co">  # 预估工时（小时）</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">blocked_by</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;依赖的 ticket ID 或 none&quot;</span></span></code></pre></div>
+<h3 id="实现报告in_progress-test-前必填">实现报告（in_progress → test
+前必填）</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">implementation_report</span><span class="kw">:</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">files_changed</span><span class="kw">:</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;path/to/file1.ts (新增/修改/删除)&quot;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;path/to/file2.ts (新增/修改/删除)&quot;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">test_result</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;X/Y tests passing&quot;</span><span class="co">  # 必须是真实命令输出</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">pr_link</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;https://github.com/...&quot;</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">notes</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;实现过程中的重要决策（可选）&quot;</span></span></code></pre></div>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team
+<strong>最后更新</strong>: 2026-04-14</p>
+</body>
+</html>

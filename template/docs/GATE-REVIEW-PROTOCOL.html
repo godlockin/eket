@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Gate Review Protocol</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Gate Review Protocol</h1>
+</header>
+<h1 id="gate-review-protocol">Gate Review Protocol</h1>
+<p><strong>版本</strong>: 1.0.0 <strong>更新时间</strong>: 2026-04-13
+<strong>维护者</strong>: EKET Framework Team</p>
+<hr />
+<h2 id="概述">概述</h2>
+<p>Gate Review
+是借鉴三省六部制中<strong>门下省封驳制度</strong>的执行前关卡机制。</p>
+<ul>
+<li><strong>触发时机</strong>：Ticket 从 <code>ready</code>
+推进时自动触发</li>
+<li><strong>核心价值</strong>：在任务执行前（而非执行后）拦截不可执行的任务，避免高返工成本</li>
+<li><strong>有别于 phase_reviewer</strong>：phase_reviewer
+是事后回溯，gate_reviewer 是预判阻断</li>
+</ul>
+<hr />
+<h2 id="状态流转图">状态流转图</h2>
+<pre><code>                    ┌──────────────────────────────────────────┐
+                    ↓                                          │
+backlog → analysis → ready → gate_review → in_progress → ... → done
+                               │                ↓ VETO
+                               │           analysis（打回）
+                               │
+                               └─ [override:true] → in_progress（跳过）</code></pre>
+<hr />
+<h2 id="角色与职责">角色与职责</h2>
+<h3 id="gate_reviewer执行前关卡">gate_reviewer（执行前关卡）</h3>
+<ul>
+<li><strong>角色文件</strong>：<code>template/agents/reviewer/gate_reviewer/agent.yml</code></li>
+<li><strong>触发方式</strong>：自动（Ticket 进入
+<code>gate_review</code> 状态时）</li>
+<li><strong>权限</strong>：
+<ul>
+<li>✅ APPROVE：将 ticket 推进至 <code>in_progress</code></li>
+<li>✅ VETO：将 ticket 打回 <code>analysis</code></li>
+<li>❌ 无法修改 ticket 内容（只能审查，不能改写）</li>
+<li>❌ 无法审查独立审计员的报告</li>
+</ul></li>
+</ul>
+<h3
+id="independent_auditor独立审计员">independent_auditor（独立审计员）</h3>
+<ul>
+<li><strong>角色文件</strong>：<code>template/agents/independent/independent_auditor/agent.yml</code></li>
+<li><strong>触发方式</strong>：阶段完成率 &gt;= 90% 时自动触发，或 human
+直接调用</li>
+<li><strong>权限</strong>：
+<ul>
+<li>✅ 直接写入 <code>inbox/human_feedback/</code>（绕过 Master）</li>
+<li>✅ 追加写入
+<code>confluence/audit/independent-audit-log.jsonl</code></li>
+<li>✅ 审查 gate_reviewer 的否决质量</li>
+<li>❌ Master 不可修改审计日志</li>
+<li>❌ Master 不可强制终止审计进程</li>
+</ul></li>
+</ul>
+<hr />
+<h2 id="gate-review-流程详解">Gate Review 流程详解</h2>
+<h3 id="step-1-触发">Step 1: 触发</h3>
+<pre><code>Master/自动系统 将 ticket 状态从 ready → gate_review
+gate_reviewer 进程被自动唤醒，接收 ticket 全量数据</code></pre>
+<h3 id="step-2-核查清单gate_reviewer-执行">Step 2:
+核查清单（gate_reviewer 执行）</h3>
+<pre><code>必查项（任一不满足 → 强制 VETO）：
+☐ 验收标准不含 TBD / 待定 / 暂不明确
+☐ 技术方案存在（不只有功能描述）
+☐ blocked_by 依赖全部为 done 状态
+☐ 预估工时已填写（&gt; 0）
+☐ 每条验收标准都能写出验证命令
+
+选查项（需综合判断）：
+☐ 验收标准数量 ≤ 8 条（范围蔓延检查）
+☐ 预估工时 ≤ 2 天（超出建议拆分）
+☐ 无未评估的生产 schema 变更
+☐ 无未评估的新第三方依赖</code></pre>
+<h3 id="step-3-死锁计数检查">Step 3: 死锁计数检查</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>veto_count <span class="op">=</span> ticket.metadata.gate_review_veto_count <span class="kw">or</span> <span class="dv">0</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> veto_count <span class="op">&gt;=</span> <span class="dv">2</span>:</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 第 3 次强制降级通过</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> <span class="st">&quot;APPROVE（降级通过）&quot;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    add_warning_to_ticket(<span class="st">&quot;已达最大否决次数 2 次，强制降级通过&quot;</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    notify_master(<span class="st">&quot;GATE-REVIEW-DEADLOCK: ticket </span><span class="sc">{id}</span><span class="st"> 强制降级通过&quot;</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> evaluate_ticket()  <span class="co"># 正常审查</span></span></code></pre></div>
+<h3 id="step-4-输出审查报告">Step 4: 输出审查报告</h3>
+<p>写入 <code>jira/tickets/{ticket-id}/gate-review.md</code>（格式见
+gate_reviewer/agent.yml）</p>
+<h3 id="step-5-状态更新">Step 5: 状态更新</h3>
+<pre><code>APPROVE → ticket.status = in_progress
+VETO    → ticket.status = analysis
+           ticket.metadata.gate_review_veto_count += 1
+           ticket.metadata.veto_reason = &quot;...&quot;
+           ticket.metadata.resubmit_conditions = [...]</code></pre>
+<hr />
+<h2 id="死锁防止机制">死锁防止机制</h2>
+<h3 id="场景描述">场景描述</h3>
+<p>Gate reviewer 与 Master/Slaver 的否决循环可能导致 ticket
+永久卡死：</p>
+<pre><code>ready → gate_review → VETO → analysis → ready → gate_review → VETO → ...</code></pre>
+<h3 id="防止措施">防止措施</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>机制</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>最大否决次数</strong></td>
+<td>同一 ticket 最多否决 2 次，第 3 次强制通过</td>
+</tr>
+<tr>
+<td><strong>降级通过警告</strong></td>
+<td>强制通过时在 ticket 和审计日志中写入警告</td>
+</tr>
+<tr>
+<td><strong>超时自动通过</strong></td>
+<td>gate_reviewer 30 分钟无响应，自动 APPROVE</td>
+</tr>
+<tr>
+<td><strong>human override</strong></td>
+<td>human 标注 <code>override: true</code> 强制跳过 gate_review</td>
+</tr>
+<tr>
+<td><strong>Master 通知</strong></td>
+<td>任何强制通过都通知 Master，确保知情</td>
+</tr>
+</tbody>
+</table>
+<h3 id="降级通过记录格式">降级通过记录格式</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>⚠️ GATE-REVIEW-DEGRADED</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>Ticket: {ticket-id}</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>原因: 已达最大否决次数（2 次），强制降级通过</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>时间: YYYY-MM-DD HH:MM</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>前两次否决原因摘要:</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>第 1 次: {veto_reason_1}</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>第 2 次: {veto_reason_2}</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>执行风险提示: 以上问题可能在执行中出现，请 Slaver 执行时格外注意</span></code></pre></div>
+<hr />
+<h2 id="independent-auditor-触发协议">Independent Auditor 触发协议</h2>
+<h3 id="触发条件">触发条件</h3>
+<pre><code>阶段完成率 &gt;= 90%
+（完成 ticket 数 / 本阶段总 ticket 数 &gt;= 0.90）</code></pre>
+<h3 id="报告链路">报告链路</h3>
+<pre><code>independent_auditor
+    └── 写入 confluence/audit/independent-audit-log.jsonl（append-only）
+    └── 写入 inbox/human_feedback/audit-phase-{id}-{timestamp}.md
+              ↑
+         直接到达 human（绕过 Master）</code></pre>
+<h3 id="防篡改机制">防篡改机制</h3>
+<p>每条审计日志包含：</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;AUDIT-PHASE-X-1234567890&quot;</span><span class="fu">,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timestamp&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-04-13T10:00:00Z&quot;</span><span class="fu">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;phase_id&quot;</span><span class="fu">:</span> <span class="st">&quot;X&quot;</span><span class="fu">,</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;finding_level&quot;</span><span class="fu">:</span> <span class="st">&quot;HIGH&quot;</span><span class="fu">,</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;...&quot;</span><span class="fu">,</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;evidence&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;ticket-id&quot;</span><span class="ot">,</span> <span class="st">&quot;file-path&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;prev_hash&quot;</span><span class="fu">:</span> <span class="st">&quot;sha256-of-previous-entry&quot;</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><code>prev_hash</code> 形成链式结构，任何中间条目被修改都会导致后续
+hash 验证失败。</p>
+<h3 id="master-的限制">Master 的限制</h3>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 72%" />
+</colgroup>
+<thead>
+<tr>
+<th>操作</th>
+<th>Master 是否允许</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>读取审计报告</td>
+<td>✅ 允许</td>
+</tr>
+<tr>
+<td>修改审计报告</td>
+<td>❌ 禁止</td>
+</tr>
+<tr>
+<td>删除审计报告</td>
+<td>❌ 禁止</td>
+</tr>
+<tr>
+<td>提前终止审计进程</td>
+<td>❌ 禁止（会被记录为 CRITICAL 发现）</td>
+</tr>
+<tr>
+<td>对审计结论提出异议</td>
+<td>✅ 允许（写入 <code>inbox/human_feedback/</code> 供 human
+裁决）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="gate-review-质量监控">Gate Review 质量监控</h2>
+<p>independent_auditor 在阶段复盘时评估 gate_reviewer 质量：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>健康范围</th>
+<th>告警条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>否决率</td>
+<td>10% ~ 40%</td>
+<td>&lt; 10%（把关不力）或 &gt; 50%（过度严格）</td>
+</tr>
+<tr>
+<td>降级通过率</td>
+<td>&lt; 10%</td>
+<td>&gt; 20%（死锁频繁，需检讨验收标准设计）</td>
+</tr>
+<tr>
+<td>否决理由重复率</td>
+<td>&lt; 30%</td>
+<td>&gt; 50%（上游需求质量系统性问题）</td>
+</tr>
+<tr>
+<td>审查超时率</td>
+<td>&lt; 5%</td>
+<td>&gt; 10%（审查员可用性问题）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="与其他协议的关系">与其他协议的关系</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>协议</th>
+<th>文件</th>
+<th>关系</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ticket 职责边界</td>
+<td><code>template/docs/TICKET-RESPONSIBILITIES.md</code></td>
+<td>Gate review 记录由 gate_reviewer 填写</td>
+</tr>
+<tr>
+<td>Master 心跳检查</td>
+<td><code>template/docs/MASTER-HEARTBEAT-CHECKLIST.md</code></td>
+<td>心跳检查包含 gate_review 状态监控</td>
+</tr>
+<tr>
+<td>Slaver 心跳检查</td>
+<td><code>template/docs/SLAVER-HEARTBEAT-CHECKLIST.md</code></td>
+<td>Slaver 需响应 VETO 打回并修复</td>
+</tr>
+<tr>
+<td>防幻觉红线</td>
+<td>CLAUDE.md</td>
+<td>Gate review 不替代 CI 绿灯要求</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>

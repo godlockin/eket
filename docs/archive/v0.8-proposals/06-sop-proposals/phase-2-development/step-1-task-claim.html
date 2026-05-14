@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Step 1: 领取任务 SOP</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Step 1: 领取任务 SOP</h1>
+</header>
+<h1 id="step-1-领取任务-sop">Step 1: 领取任务 SOP</h1>
+<p><strong>版本</strong>: 1.0.0 <strong>最后更新</strong>: 2026-03-23
+<strong>负责智能体</strong>: 执行智能体</p>
+<hr />
+<h2 id="目标">目标</h2>
+<p>领取适合的任务，启动计时器和心跳机制，加载对应的 Agent Profile。</p>
+<hr />
+<h2 id="输入">输入</h2>
+<table>
+<thead>
+<tr>
+<th>输入项</th>
+<th>位置</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Jira tickets</td>
+<td><code>jira/tickets/</code></td>
+<td>待领取的任务</td>
+</tr>
+<tr>
+<td>Agent Profile</td>
+<td><code>template/agents/</code></td>
+<td>智能体配置</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="输出">输出</h2>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 30%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>输出项</th>
+<th>位置</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务状态更新</td>
+<td><code>jira/tickets/{type}/{ticket_id}.md</code></td>
+<td>状态：in_progress</td>
+</tr>
+<tr>
+<td>计时器启动</td>
+<td><code>.eket/state/active-tasks.log</code></td>
+<td>任务计时记录</td>
+</tr>
+<tr>
+<td>Checkpoint</td>
+<td><code>.eket/state/checkpoints/</code></td>
+<td>task_start checkpoint</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="前置条件">前置条件</h2>
+<ul class="task-list">
+<li><label><input
+type="checkbox" />实例已启动（<code>/eket-start</code>）</label></li>
+<li><label><input
+type="checkbox" />角色已设置（<code>/eket-role &lt;role&gt;</code>）</label></li>
+<li><label><input type="checkbox" />Agent Profile 已加载</label></li>
+</ul>
+<hr />
+<h2 id="详细步骤">详细步骤</h2>
+<h3 id="查看任务列表">1.1 查看任务列表</h3>
+<p><strong>命令</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-status</span></span></code></pre></div>
+<p><strong>输出示例</strong>:</p>
+<pre><code>待领取任务 (status: ready/backlog):
+
+  - FEAT-001: 用户注册功能 (priority: P1)
+  - FEAT-002: 用户登录功能 (priority: P0)
+  - BUGFIX-001: 修复登录页面崩溃 (priority: P0)</code></pre>
+<p><strong>任务筛选原则</strong>: 1. <strong>优先级优先</strong>: P0
+&gt; P1 &gt; P2 &gt; P3 2. <strong>依赖检查</strong>: 无阻塞依赖 3.
+<strong>角色匹配</strong>: 任务标签与 Agent 角色匹配</p>
+<p><strong>角色匹配表</strong>: | Agent 角色 | 匹配标签 | |———–|———| |
+<code>frontend_dev</code> | <code>frontend</code>, <code>ui</code>,
+<code>react</code>, <code>vue</code> | | <code>backend_dev</code> |
+<code>backend</code>, <code>api</code>, <code>database</code> | |
+<code>designer</code> | <code>design</code>, <code>ux</code> | |
+<code>tester</code> | <code>test</code>, <code>qa</code> | |
+<code>devops</code> | <code>devops</code>, <code>deploy</code>,
+<code>docker</code> |</p>
+<hr />
+<h3 id="检查任务状态">1.2 检查任务状态</h3>
+<p><strong>命令</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> jira/tickets/feature/FEAT-001.md</span></code></pre></div>
+<p><strong>检查项</strong>: - [ ] 状态为 <code>ready</code> 或
+<code>backlog</code> - [ ] 无阻塞依赖 - [ ] 验收标准清晰 - [ ]
+预估时间合理</p>
+<p><strong>依赖检查</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查依赖任务状态</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="st">&quot;^dependencies:&quot;</span> jira/tickets/feature/FEAT-001.md</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 输出：dependencies: FEAT-000</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查依赖任务是否完成</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="st">&quot;^status:&quot;</span> jira/tickets/feature/FEAT-000.md</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 应输出：status: done</span></span></code></pre></div>
+<hr />
+<h3 id="领取任务">1.3 领取任务</h3>
+<p><strong>命令</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-claim</span> FEAT-001</span></code></pre></div>
+<p><strong>执行流程</strong>: 1. 更新任务状态为 <code>in_progress</code>
+2. 设置负责人 (<code>assigned_to</code>) 3. 记录领取时间
+(<code>claimed_at</code>) 4. 启动任务计时器 5. 创建 task_start
+checkpoint</p>
+<p><strong>输出示例</strong>:</p>
+<pre><code>✓ 已领取任务：FEAT-001
+  状态已更新为：in_progress
+  负责人：slave-004
+  任务文件：jira/tickets/feature/FEAT-001.md
+
+## v0.5: 启动任务计时器
+启动任务计时器...
+  - Ticket: FEAT-001
+  - Slaver: slave-004
+  - 开始时间：2026-03-23T10:30:00+08:00
+  - 截止时间：2026-03-23T12:30:00+08:00
+  - 预估时长：120 分钟
+
+## v0.5: Slaver 权限配置
+Slaver 权限控制已加载
+
+## v0.5: 创建 Task Start Checkpoint
+Checkpoint: task_start
+✓ Checkpoint 已创建</code></pre>
+<hr />
+<h3 id="验证任务状态">1.4 验证任务状态</h3>
+<p><strong>命令</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> jira/tickets/feature/FEAT-001.md</span></code></pre></div>
+<p><strong>验证项</strong>: - [ ] <code>status: in_progress</code> - [ ]
+<code>assigned_to: &lt;your_agent_id&gt;</code> - [ ]
+<code>slaver: &lt;your_slaver_name&gt;</code> - [ ]
+<code>claimed_at: &lt;timestamp&gt;</code> - [ ]
+<code>开始时间：&lt;timestamp&gt;</code> - [ ]
+<code>截止时间：&lt;timestamp&gt;</code></p>
+<hr />
+<h3 id="记录心跳周期性">1.5 记录心跳（周期性）</h3>
+<p><strong>目的</strong>: 避免任务超时重置</p>
+<p><strong>命令</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/task-time-tracker.sh</span> heartbeat FEAT-001 slave-004 <span class="st">&quot;完成用户注册表单开发&quot;</span></span></code></pre></div>
+<p><strong>心跳间隔</strong>: ≤ 30 分钟</p>
+<p><strong>心跳内容</strong>: - 当前进度 - 遇到的问题 - 下一步计划</p>
+<hr />
+<h2 id="常见问题处理">常见问题处理</h2>
+<h3 id="问题-1-任务已被领取">问题 1: 任务已被领取</h3>
+<p><strong>现象</strong>:</p>
+<pre><code>⚠ 任务已被领取，当前状态：in_progress</code></pre>
+<p><strong>处理</strong>: 1. 选择其他任务 2. 或联系当前负责人协调</p>
+<h3 id="问题-2-依赖任务未完成">问题 2: 依赖任务未完成</h3>
+<p><strong>现象</strong>:</p>
+<pre><code>✗ 依赖任务 FEAT-000 未完成 (当前状态：ready)</code></pre>
+<p><strong>处理</strong>: 1. 选择其他无依赖任务 2. 或联系 Master
+协调依赖任务优先级</p>
+<h3 id="问题-3-角色不匹配">问题 3: 角色不匹配</h3>
+<p><strong>现象</strong>: 任务标签与 Agent 角色不匹配</p>
+<p><strong>处理</strong>: 1. 选择匹配的任务 2.
+或切换角色：<code>/eket-role &lt;new_role&gt;</code></p>
+<hr />
+<h2 id="检查清单">检查清单</h2>
+<p>领取任务前: - [ ] 查看任务列表 - [ ] 检查任务状态 - [ ] 检查依赖关系
+- [ ] 确认角色匹配</p>
+<p>领取任务后: - [ ] 状态已更新为 <code>in_progress</code> - [ ]
+计时器已启动 - [ ] Checkpoint 已创建 - [ ] 心跳机制已理解</p>
+<hr />
+<h2 id="相关文件">相关文件</h2>
+<ul>
+<li><a href="../phase-2-development/README.md">Phase 2 SOP</a></li>
+<li><a
+href="../../../scripts/task-time-tracker.sh">任务时间追踪</a></li>
+<li><a href="../../../scripts/slaver-permissions.sh">Slaver
+权限控制</a></li>
+</ul>
+<hr />
+<p><strong>SOP 版本</strong>: 1.0.0 <strong>创建日期</strong>:
+2026-03-23 <strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>

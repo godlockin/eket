@@ -37,25 +37,25 @@
 
 ## 🚀 Quick Start
 
-### 一键安装（推荐）
+### One-Click Installation (Recommended)
 
-下载预编译包，无需任何编译环境：
+Download prebuilt binaries (no compilation required):
 
 ```bash
 curl -fsSL https://github.com/godlockin/eket/releases/latest/download/install.sh | bash
 ```
 
-安装完成后验证：
+Verify installation:
 
 ```bash
-eket-rust --version  # Rust 版（~10 MB）
-eket-node --version  # Node 版（~50 MB）
-eket doctor          # 环境检查
+eket-rust --version  # Rust version (~10 MB)
+eket-node --version  # Node version (~50 MB)
+eket doctor          # Environment check
 ```
 
-### 开发者本地编译
+### Developer Local Build
 
-如需修改源码或调试：
+For source code modification or debugging:
 
 ```bash
 git clone https://github.com/godlockin/eket.git
