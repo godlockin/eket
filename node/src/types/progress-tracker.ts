@@ -83,6 +83,18 @@ export interface ProgressSnapshot {
 }
 
 /**
+ * Resume context loaded from checkpoint
+ */
+export interface ResumeContext {
+  /** Already completed phases */
+  completedPhases: Set<TaskPhase | string>;
+  /** Current phase at resume time */
+  currentPhase: TaskPhase | string;
+  /** Existing checkpoints */
+  checkpoints: Checkpoint[];
+}
+
+/**
  * ProgressTracker constructor options
  */
 export interface ProgressTrackerOptions {
@@ -100,6 +112,8 @@ export interface ProgressTrackerOptions {
   syncPhases?: (TaskPhase | string)[];
   /** Enable git commit + push checkpoint (default: true) */
   gitEnabled?: boolean;
+  /** Resume from existing checkpoint (TASK-X06) */
+  resumeFrom?: ResumeContext;
 }
 
 /**

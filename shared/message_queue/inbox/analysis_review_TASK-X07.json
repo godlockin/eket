@@ -1,0 +1,8 @@
+{
+  "type": "analysis_review_request",
+  "slaver_id": "Slaver-013",
+  "ticket_id": "TASK-X07",
+  "timestamp": "2026-05-14T10:00:00Z",
+  "analysis_report_path": "jira/tickets/TASK-X07/analysis-report.md",
+  "summary": "Checkpoint GC 命令实现分析完成，预估 5h (含测试 buffer)，无阻塞依赖，等待 Master 审批后开始编码"
+}

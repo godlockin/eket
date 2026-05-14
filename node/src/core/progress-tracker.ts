@@ -69,6 +69,16 @@ export class ProgressTracker {
     this.gitEnabled = options.gitEnabled ?? (process.env.ENABLE_GIT_CHECKPOINT !== 'false');
     this.checkpointBranch = `checkpoint/${this.taskId}`;
 
+    // Resume from checkpoint (TASK-X06, AC-4)
+    if (options.resumeFrom) {
+      this.completedPhases = options.resumeFrom.completedPhases;
+      this.currentPhase = options.resumeFrom.currentPhase;
+      this.checkpoints = options.resumeFrom.checkpoints;
+      console.log(
+        `[ProgressTracker] Resumed from checkpoint (${this.completedPhases.size} phases completed)`
+      );
+    }
+
     // Start auto-flush timer
     this.startFlushTimer();
   }
@@ -106,6 +116,12 @@ export class ProgressTracker {
    * @param metadata - Additional checkpoint data
    */
   async checkpoint(phase: string, metadata: CheckpointMetadata): Promise<void> {
+    // Skip already completed phases (TASK-X06, AC-4)
+    if (this.completedPhases.has(phase)) {
+      console.log(`[ProgressTracker] Skipping already completed phase: ${phase}`);
+      return;
+    }
+
     const checkpoint: Checkpoint = {
       timestamp: new Date().toISOString(),
       phase,
