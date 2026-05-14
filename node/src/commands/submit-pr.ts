@@ -8,6 +8,7 @@ import * as path from 'path';
 
 import { Command } from 'commander';
 
+import { safeCheckpoint, closeProgressTracker } from '../core/slaver-progress-integration.js';
 import type { Result } from '../types/index.js';
 import { EketError, EketErrorCode } from '../types/index.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
@@ -134,6 +135,15 @@ export function registerSubmitPR(program: Command): void {
       // 9. 发送通知
       await sendPRNotification(prData);
       console.log('✓ 通知已发送');
+
+      // 10. 记录 ready_for_pr checkpoint（TASK-X02）
+      await safeCheckpoint('ready_for_pr', {
+        commit: branchInfo.currentBranch,
+        notes: `PR created: ${prData.htmlUrl}`,
+      });
+
+      // 11. 关闭 ProgressTracker（TASK-X02）
+      await closeProgressTracker();
 
       console.log('\n========================================');
       console.log('  PR 提交完成');
