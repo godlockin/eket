@@ -22,6 +22,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { atomicWrite } from '../utils/atomic-write.js';
+import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import {
   Checkpoint,
   CheckpointMetadata,
@@ -38,6 +39,8 @@ export class ProgressTracker {
   private outputDir: string;
   private progressFilePath: string;
   private syncPhases: Set<string>;
+  private gitEnabled: boolean;
+  private checkpointBranch: string;
 
   // In-memory state
   private checkpoints: Checkpoint[] = [];
@@ -61,6 +64,10 @@ export class ProgressTracker {
 
     // Sync flush phases
     this.syncPhases = new Set(options.syncPhases ?? DEFAULT_SYNC_PHASES);
+
+    // Git checkpoint config
+    this.gitEnabled = options.gitEnabled ?? (process.env.ENABLE_GIT_CHECKPOINT !== 'false');
+    this.checkpointBranch = `checkpoint/${this.taskId}`;
 
     // Start auto-flush timer
     this.startFlushTimer();
@@ -110,6 +117,15 @@ export class ProgressTracker {
     // Sync flush for critical phases
     if (this.syncPhases.has(phase)) {
       await this.flush();
+
+      // Git commit + push (non-blocking)
+      if (this.gitEnabled) {
+        await this.gitCommitCheckpoint(phase, metadata).catch((error) => {
+          console.warn(
+            `[ProgressTracker] Git commit failed for ${phase}: ${error instanceof Error ? error.message : String(error)}`
+          );
+        });
+      }
     }
   }
 
@@ -320,6 +336,96 @@ export class ProgressTracker {
     } catch {
       // Ignore log failures (already in error path)
     }
+  }
+
+  /**
+   * Git commit checkpoint to checkpoint branch
+   * AC-1: Auto commit on critical checkpoint
+   * AC-3: Structured commit message with metadata
+   */
+  private async gitCommitCheckpoint(phase: string, metadata?: CheckpointMetadata): Promise<void> {
+    // 1. Ensure checkpoint branch exists
+    await this.ensureCheckpointBranch();
+
+    // 2. Stage progress.md
+    const result = await execFileNoThrow('git', ['add', this.progressFilePath]);
+    if (result.status !== 0) {
+      throw new Error(`git add failed: ${result.stderr}`);
+    }
+
+    // 3. Commit with structured message (AC-3)
+    const message = this.buildCommitMessage(phase, metadata);
+    const commitResult = await execFileNoThrow('git', ['commit', '-m', message, '--allow-empty']);
+    if (commitResult.status !== 0) {
+      throw new Error(`git commit failed: ${commitResult.stderr}`);
+    }
+
+    console.log(`[ProgressTracker] Git commit: ${this.checkpointBranch} @ ${phase}`);
+
+    // 4. Push to remote (non-blocking) (AC-2)
+    void this.gitPushCheckpoint().catch((error) => {
+      console.warn(
+        `[ProgressTracker] Git push failed: ${error instanceof Error ? error.message : String(error)}`
+      );
+    });
+  }
+
+  /**
+   * Ensure checkpoint branch exists
+   * Creates branch if needed, switches to it
+   */
+  private async ensureCheckpointBranch(): Promise<void> {
+    // Check if branch exists locally
+    const listResult = await execFileNoThrow('git', ['branch', '--list', this.checkpointBranch]);
+
+    if (!listResult.stdout.trim()) {
+      // Branch doesn't exist, create it
+      const createResult = await execFileNoThrow('git', ['checkout', '-b', this.checkpointBranch]);
+      if (createResult.status !== 0) {
+        throw new Error(`Failed to create checkpoint branch: ${createResult.stderr}`);
+      }
+    } else {
+      // Branch exists, switch to it
+      const checkoutResult = await execFileNoThrow('git', ['checkout', this.checkpointBranch]);
+      if (checkoutResult.status !== 0) {
+        throw new Error(`Failed to checkout checkpoint branch: ${checkoutResult.stderr}`);
+      }
+    }
+  }
+
+  /**
+   * Build structured commit message
+   * AC-3: Include JSON metadata (phase / slaver_id / timestamp / AC)
+   */
+  private buildCommitMessage(phase: string, metadata?: CheckpointMetadata): string {
+    const meta = {
+      phase,
+      slaver_id: this.slaverId,
+      timestamp: new Date().toISOString(),
+      task_id: this.taskId,
+      ...(metadata ?? {}),
+    };
+
+    return `checkpoint: ${phase}\n\n${JSON.stringify(meta, null, 2)}`;
+  }
+
+  /**
+   * Push checkpoint branch to remote
+   * AC-2: Push to remote checkpoint/<task-id> branch
+   * AC-4: Non-blocking, failure does not throw
+   */
+  private async gitPushCheckpoint(): Promise<void> {
+    const result = await execFileNoThrow(
+      'git',
+      ['push', '-u', 'origin', this.checkpointBranch, '--force-with-lease'],
+      { timeout: 60000 } // 60s timeout for network operations
+    );
+
+    if (result.status !== 0) {
+      throw new Error(`git push failed: ${result.stderr}`);
+    }
+
+    console.log(`[ProgressTracker] Git pushed: ${this.checkpointBranch}`);
   }
 
   /**
