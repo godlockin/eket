@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>工作流程重新设计：文档优先审查模式</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">工作流程重新设计：文档优先审查模式</h1>
+</header>
+<h1
+id="工作流程重新设计文档优先审查模式">工作流程重新设计：文档优先审查模式</h1>
+<p><strong>版本</strong>: 1.0.0 <strong>创建日期</strong>: 2026-03-25
+<strong>状态</strong>: 提案</p>
+<hr />
+<h2 id="当前工作流程分析">1. 当前工作流程分析</h2>
+<h3 id="当前流程概览">1.1 当前流程概览</h3>
+<pre><code>Phase 1: 项目初始化
+├── Step 1: 需求收集 (人类提供原始需求)
+├── Step 2: 功能整理 (Agent 自动)
+├── Step 3: 系统设计 (Agent 自动)
+├── Step 4: 审查通过 (← 人类审查点 1)
+└── Step 5: 任务规划 (Agent 自动)
+
+Phase 2: 开发阶段 (每个任务)
+├── Step 1: 任务认领 (Agent 自动)
+├── Step 2: 任务分析 (Agent 自动)
+├── Step 3: 任务拆解 (Agent 自动)
+├── Step 4: 依赖上报 (Agent 自动)
+├── Step 5: 任务实现 (Agent 自动)
+├── Step 6: Review &amp; UT (Agent 自动)
+├── Step 7: 任务验收 (Agent 自动)
+└── Step 8: 任务完成
+
+Phase 3: Review &amp; Merge
+├── Step 1: PR Review (← 人类审查点 2)
+├── Step 2: 问题修复 (Agent)
+├── Step 3: 合并验证 (Agent)
+└── Step 4: 合并到 Main</code></pre>
+<h3 id="当前人类参与点分析">1.2 当前人类参与点分析</h3>
+<table>
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 20%" />
+<col style="width: 33%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>审查点</th>
+<th>阶段</th>
+<th>审查内容</th>
+<th>问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>审查点 1</strong></td>
+<td>Phase 1 结束</td>
+<td>需求文档、架构设计、任务列表</td>
+<td>审查通过后，任务执行过程中仍可能发现需求理解偏差</td>
+</tr>
+<tr>
+<td><strong>审查点 2</strong></td>
+<td>Phase 3 开始</td>
+<td>代码实现、PR 描述</td>
+<td>此时发现问题需要大量返工</td>
+</tr>
+</tbody>
+</table>
+<h3 id="当前流程存在的问题">1.3 当前流程存在的问题</h3>
+<ol type="1">
+<li><strong>需求偏差发现过晚</strong>
+<ul>
+<li>Agent 在任务实现阶段可能发现需求理解有误</li>
+<li>此时已投入开发时间，造成浪费</li>
+</ul></li>
+<li><strong>设计决策缺乏人类确认</strong>
+<ul>
+<li>技术方案由 Agent 自主决定</li>
+<li>可能与人类期望不一致</li>
+</ul></li>
+<li><strong>代码审查负担重</strong>
+<ul>
+<li>人类需要在 PR 阶段审查代码质量、设计合理性、需求对齐</li>
+<li>审查维度太多，容易遗漏</li>
+</ul></li>
+<li><strong>返工成本高</strong>
+<ul>
+<li>代码写完后再发现设计问题，需要重写</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="文档优先审查模式提案">2. 文档优先审查模式（提案）</h2>
+<h3 id="核心理念">2.1 核心理念</h3>
+<blockquote>
+<p><strong>人类审查重心前移</strong>：在文档阶段投入更多审查精力，代码阶段只做验证性审查</p>
+</blockquote>
+<pre><code>做计划 → 更新文档 → 审查 + 批准 → 代码开发和测试 → 验证审查 → 合并
+                            ↑                        ↑
+                      主要审查点 (人类)        次要审查点 (验证性)</code></pre>
+<h3 id="新工作流程">2.2 新工作流程</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ Phase 1: 项目初始化 (人类深度参与)                               │
+├─────────────────────────────────────────────────────────────────┤
+│ Step 1: 需求收集                                                 │
+│   - 人类：提供原始需求、业务目标、约束条件                        │
+│   - Agent: 整理需求、追问澄清                                    │
+│                                                                  │
+│ Step 2: 需求分析                                                 │
+│   - Agent: 需求分析文档 (用户故事、验收标准)                      │
+│   - 人类：← 审查点 A1 - 需求理解是否正确                          │
+│                                                                  │
+│ Step 3: 系统设计                                                 │
+│   - Agent: 架构设计文档、技术方案                                │
+│   - 人类：← 审查点 A2 - 技术选型、架构是否合理                    │
+│                                                                  │
+│ Step 4: 任务规划                                                 │
+│   - Agent: 任务拆解 (Jira Tickets)                               │
+│   - 人类：← 审查点 A3 - 任务优先级、依赖是否合理                  │
+│                                                                  │
+│ Step 5: Phase 1 审查通过                                         │
+│   - 人类：← 审查点 A4 - 综合审查 (需求 + 架构 + 任务)              │
+│   - Agent: 标记 Phase 1 完成，解锁 Phase 2                        │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Phase 2: 任务执行 (Agent 主导，人类只做文档审查)                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│ 对每个任务 Ticket:                                               │
+│                                                                  │
+│ Step 1: 任务认领                                                 │
+│   - Agent: 根据角色匹配领取任务                                   │
+│                                                                  │
+│ Step 2: 任务分析计划 (← 人类审查点 B1)                           │
+│   - Agent: 创建《任务分析文档》包含：                            │
+│          • 需求理解 (链接到 Phase 1 需求文档)                      │
+│          • 实现方案 (技术细节、接口设计)                          │
+│          • 测试策略 (单元测试、集成测试)                          │
+│          • 工作量预估                                            │
+│   - 人类：审查并批准任务分析文档                                 │
+│          → 批准后 Agent 才能进入实现阶段                          │
+│                                                                  │
+│ Step 3: 代码开发和测试 (Agent 自动)                              │
+│   - Agent: 基于已批准的任务分析文档进行开发                       │
+│   - Agent: 编写测试并确保通过                                    │
+│                                                                  │
+│ Step 4: 验证审查 (← 人类审查点 B2)                               │
+│   - Agent: 提交 PR，附带验证清单：                               │
+│          • [x] 实现与批准的任务分析文档一致                        │
+│          • [x] 所有测试通过                                      │
+│          • [x] 代码质量检查通过                                  │
+│   - 人类：只做验证性审查：                                       │
+│          • 实现是否与批准的任务分析文档一致？                      │
+│          • 是否有明显的代码质量问题？                             │
+│          • 测试是否充分？                                        │
+│                                                                  │
+│ Step 5: 合并                                                     │
+│   - Agent: 自动合并到 testing 分支                               │
+│   - 人类：可选审查 Phase 3 的批量合并                             │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ Phase 3: 批量合并到 Main (可选人类审查)                           │
+├─────────────────────────────────────────────────────────────────┤
+│ Step 1: 批量 Review                                              │
+│   - Agent: 生成批量合并报告 (包含所有已验证的 PR)                 │
+│   - 人类：← 审查点 C1 - 批量批准 (可选)                           │
+│                                                                  │
+│ Step 2: 合并到 Main                                              │
+│   - Agent: 合并通过审查的 PR 到 main 分支                         │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<h3 id="审查点总结">2.3 审查点总结</h3>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 13%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr>
+<th>审查点</th>
+<th>阶段</th>
+<th>审查对象</th>
+<th>审查重点</th>
+<th>预计耗时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A1</strong></td>
+<td>Phase 1</td>
+<td>需求分析文档</td>
+<td>需求理解是否正确、完整</td>
+<td>30-60 min</td>
+</tr>
+<tr>
+<td><strong>A2</strong></td>
+<td>Phase 1</td>
+<td>架构设计文档</td>
+<td>技术选型、架构合理性</td>
+<td>30-60 min</td>
+</tr>
+<tr>
+<td><strong>A3</strong></td>
+<td>Phase 1</td>
+<td>任务规划</td>
+<td>优先级、依赖关系</td>
+<td>15-30 min</td>
+</tr>
+<tr>
+<td><strong>A4</strong></td>
+<td>Phase 1</td>
+<td>综合审查</td>
+<td>整体一致性、可行性</td>
+<td>60-90 min</td>
+</tr>
+<tr>
+<td><strong>B1</strong></td>
+<td>Phase 2</td>
+<td>任务分析文档</td>
+<td>实现方案、测试策略</td>
+<td>10-20 min/任务</td>
+</tr>
+<tr>
+<td><strong>B2</strong></td>
+<td>Phase 2</td>
+<td>PR 验证审查</td>
+<td>与批准文档的一致性</td>
+<td>5-10 min/任务</td>
+</tr>
+<tr>
+<td><strong>C1</strong></td>
+<td>Phase 3</td>
+<td>批量合并报告</td>
+<td>整体质量把控 (可选)</td>
+<td>30-60 min/批次</td>
+</tr>
+</tbody>
+</table>
+<h3 id="审查重心对比">2.4 审查重心对比</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 27%" />
+<col style="width: 38%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>维度</th>
+<th>当前流程</th>
+<th>文档优先流程</th>
+<th>改进</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>需求理解</strong></td>
+<td>Phase 1 审查一次</td>
+<td>Phase 1 + 每个任务分析文档</td>
+<td>问题更早发现</td>
+</tr>
+<tr>
+<td><strong>技术设计</strong></td>
+<td>Agent 自主决定</td>
+<td>任务分析文档中审查</td>
+<td>人类把控关键决策</td>
+</tr>
+<tr>
+<td><strong>代码审查</strong></td>
+<td>全面审查 (设计 + 质量)</td>
+<td>验证性审查 (一致性)</td>
+<td>审查负担减少 60%</td>
+</tr>
+<tr>
+<td><strong>返工率</strong></td>
+<td>较高 (设计问题发现晚)</td>
+<td>较低 (设计先批准)</td>
+<td>预计减少 50%</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="文档模板">3. 文档模板</h2>
+<h3 id="任务分析文档模板">3.1 任务分析文档模板</h3>
+<p><strong>位置</strong>:
+<code>confluence/tasks/{ticket-id}/task-analysis.md</code></p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># 任务分析：{TASK_TITLE}</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>**Ticket**: {TICKET_ID}</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>**执行 Agent**: {AGENT_ID}</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>**创建日期**: {DATE}</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>**状态**: pending_review | approved | rejected</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. 需求理解</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.1 原始需求</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>链接到 Phase 1 需求文档：{LINK_TO_REQUIREMENT}</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.2 本任务目标</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>-</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>-</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.3 验收标准</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[ ]</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[ ]</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2. 实现方案</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2.1 技术方案</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>使用的技术栈：</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>关键算法/设计模式：</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>与现有系统的集成点：</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2.2 接口设计 (如适用)</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="in">```yaml</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="fu">endpoints</span><span class="kw">:</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">path</span><span class="kw">:</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">method</span><span class="kw">:</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">request</span><span class="kw">:</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">response</span><span class="kw">:</span></span></code></pre></div>
+<h3 id="数据结构-如适用">2.3 数据结构 (如适用)</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">new_tables</span><span class="kw">:</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">columns</span><span class="kw">:</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">existing_changes</span><span class="kw">:</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">table</span><span class="kw">:</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">change</span><span class="kw">:</span></span></code></pre></div>
+<h3 id="依赖关系">2.4 依赖关系</h3>
+<ul>
+<li>依赖的其他任务：</li>
+<li>被哪些任务依赖：</li>
+</ul>
+<hr />
+<h2 id="测试策略">3. 测试策略</h2>
+<h3 id="单元测试">3.1 单元测试</h3>
+<ul>
+<li>需要测试的关键函数：</li>
+<li>边界情况：</li>
+</ul>
+<h3 id="集成测试">3.2 集成测试</h3>
+<ul>
+<li>需要测试的集成场景：</li>
+</ul>
+<h3 id="手动测试-如适用">3.3 手动测试 (如适用)</h3>
+<ul>
+<li>需要手动验证的场景：</li>
+</ul>
+<hr />
+<h2 id="工作量预估">4. 工作量预估</h2>
+<table>
+<thead>
+<tr>
+<th>活动</th>
+<th>预估时间</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>开发</td>
+<td></td>
+</tr>
+<tr>
+<td>测试</td>
+<td></td>
+</tr>
+<tr>
+<td>文档</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>总计</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="风险和问题">5. 风险和问题</h2>
+<ul>
+<li>潜在风险：</li>
+<li>需要人类确认的问题：</li>
+</ul>
+<hr />
+<h2 id="审查记录">6. 审查记录</h2>
+<h3 id="审查意见">6.1 审查意见</h3>
+<ul>
+<li>[待填写]</li>
+</ul>
+<h3 id="审查结果">6.2 审查结果</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />批准 - 可以开始实现</label></li>
+<li><label><input type="checkbox" />需要修改 -
+修改后可直接开始</label></li>
+<li><label><input type="checkbox" />重新审查 -
+需要重新提交分析文档</label></li>
+</ul>
+<p><strong>审查者</strong>: _______________ <strong>审查日期</strong>:
+_______________</p>
+<pre><code>
+### 3.2 PR 验证清单模板
+
+**位置**: PR 描述中自动包含
+
+```markdown
+## 验证清单
+
+### 文档一致性验证
+- [ ] 实现与批准的任务分析文档 (链接) 一致
+- [ ] 所有变更都在任务范围内
+- [ ] 没有未授权的范围蔓延
+
+### 代码质量
+- [ ] 通过所有单元测试
+- [ ] 通过所有集成测试
+- [ ] 代码符合项目规范
+- [ ] 没有明显的安全问题
+
+### 测试覆盖
+- [ ] 单元测试覆盖核心逻辑
+- [ ] 边界情况有测试
+- [ ] 集成测试验证关键场景
+
+### 文档更新
+- [ ] 更新了相关 API 文档
+- [ ] 更新了用户文档 (如适用)
+- [ ] 代码注释充分
+
+---
+
+**任务分析文档批准链接**: [查看批准的分析文档]()
+**批准日期**:
+**审查者**:</code></pre>
+<hr />
+<h2 id="需要修改的文件">4. 需要修改的文件</h2>
+<h3 id="sop-文档更新">4.1 SOP 文档更新</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>修改内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/06-sop/README.md</code></td>
+<td>添加文档优先审查模式说明</td>
+</tr>
+<tr>
+<td><code>docs/06-sop/phase-1-initiation/README.md</code></td>
+<td>细化各审查点的输入输出</td>
+</tr>
+<tr>
+<td><code>docs/06-sop/phase-2-execution/README.md</code></td>
+<td>新增任务分析文档审查步骤</td>
+</tr>
+<tr>
+<td><code>docs/06-sop/phase-3-review-merge/README.md</code></td>
+<td>简化为验证性审查流程</td>
+</tr>
+</tbody>
+</table>
+<h3 id="新增文件">4.2 新增文件</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>template/confluence/templates/task-analysis-template.md</code></td>
+<td>任务分析文档模板</td>
+</tr>
+<tr>
+<td><code>template/jira/tickets/{type}/analysis-review.yml</code></td>
+<td>分析审查状态追踪</td>
+</tr>
+</tbody>
+</table>
+<h3 id="脚本更新">4.3 脚本更新</h3>
+<table>
+<colgroup>
+<col style="width: 37%" />
+<col style="width: 62%" />
+</colgroup>
+<thead>
+<tr>
+<th>脚本</th>
+<th>修改内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scripts/manage.sh</code></td>
+<td>添加任务分析文档审查命令</td>
+</tr>
+<tr>
+<td><code>template/.claude/commands/eket-review-analysis.sh</code></td>
+<td>新增审查任务分析文档命令</td>
+</tr>
+<tr>
+<td><code>template/.claude/commands/eket-verify-pr.sh</code></td>
+<td>新增 PR 验证命令 (替代原 eket-review)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="实施计划">5. 实施计划</h2>
+<h3 id="phase-1-文档准备-优先级高">Phase 1: 文档准备 (优先级：高)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />创建任务分析文档模板</label></li>
+<li><label><input type="checkbox" />创建 PR 验证清单模板</label></li>
+<li><label><input type="checkbox" />更新 SOP 文档</label></li>
+</ul>
+<h3 id="phase-2-工具支持-优先级中">Phase 2: 工具支持 (优先级：中)</h3>
+<ul class="task-list">
+<li><label><input
+type="checkbox" />实现任务分析文档审查命令</label></li>
+<li><label><input type="checkbox" />实现 PR 验证命令</label></li>
+<li><label><input type="checkbox" />实现批准状态追踪</label></li>
+</ul>
+<h3 id="phase-3-流程切换-优先级低">Phase 3: 流程切换 (优先级：低)</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />在现有项目中试运行</label></li>
+<li><label><input type="checkbox" />收集反馈并调整</label></li>
+<li><label><input type="checkbox" />正式推广</label></li>
+</ul>
+<hr />
+<h2 id="预期收益">6. 预期收益</h2>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>当前</th>
+<th>预期改进</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需求偏差发现时间</td>
+<td>开发阶段</td>
+<td>任务分析阶段</td>
+<td>提前 2-3 天</td>
+</tr>
+<tr>
+<td>代码审查时间</td>
+<td>60 min/PR</td>
+<td>15 min/PR</td>
+<td>减少 75%</td>
+</tr>
+<tr>
+<td>返工率</td>
+<td>~30%</td>
+<td>~10%</td>
+<td>减少 67%</td>
+</tr>
+<tr>
+<td>人类审查满意度</td>
+<td>-</td>
+<td>提升</td>
+<td>审查更有针对性</td>
+</tr>
+<tr>
+<td>Agent 自主性</td>
+<td>中</td>
+<td>高</td>
+<td>批准后自主实施</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="风险缓解">7. 风险缓解</h2>
+<table>
+<thead>
+<tr>
+<th>风险</th>
+<th>影响</th>
+<th>缓解措施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文档审查增加前期时间</td>
+<td>项目启动延迟</td>
+<td>长期看总时间减少，因返工减少</td>
+</tr>
+<tr>
+<td>Agent 不遵守批准的文档</td>
+<td>实现偏差</td>
+<td>PR 验证阶段严格检查一致性</td>
+</tr>
+<tr>
+<td>人类审查负担过重</td>
+<td>流程瓶颈</td>
+<td>限制每个审查点的时间，超时自动批准</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team
+<strong>审查状态</strong>: 等待人类审查批准
+<strong>批准后生效版本</strong>: v0.8.0</p>
+</body>
+</html>

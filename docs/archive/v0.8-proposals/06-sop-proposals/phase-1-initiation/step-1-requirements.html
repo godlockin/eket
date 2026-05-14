@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Step 1: 需求分析 SOP</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Step 1: 需求分析 SOP</h1>
+</header>
+<h1 id="step-1-需求分析-sop">Step 1: 需求分析 SOP</h1>
+<p><strong>版本</strong>: 1.0.0 <strong>最后更新</strong>: 2026-03-23
+<strong>负责智能体</strong>: 需求分析师</p>
+<hr />
+<h2 id="目标">目标</h2>
+<p>将人类的模糊需求转化为结构化的需求文档，包含明确的用户故事和验收标准。</p>
+<hr />
+<h2 id="输入">输入</h2>
+<table>
+<thead>
+<tr>
+<th>输入项</th>
+<th>位置</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>人类需求</td>
+<td><code>inbox/human_input.md</code></td>
+<td>项目愿景、目标用户、核心功能</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="输出">输出</h2>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 30%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr>
+<th>输出项</th>
+<th>位置</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需求文档</td>
+<td><code>confluence/projects/{project}/requirements/requirements.md</code></td>
+<td>完整需求规格说明</td>
+</tr>
+<tr>
+<td>用户故事地图</td>
+<td><code>confluence/projects/{project}/requirements/user-stories.md</code></td>
+<td>用户故事和场景</td>
+</tr>
+<tr>
+<td>验收标准</td>
+<td><code>confluence/projects/{project}/requirements/acceptance-criteria.md</code></td>
+<td>功能验收标准</td>
+</tr>
+<tr>
+<td>术语表</td>
+<td><code>confluence/projects/{project}/requirements/glossary.md</code></td>
+<td>业务术语定义</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="使用-skills">使用 Skills</h2>
+<table>
+<thead>
+<tr>
+<th>Skill</th>
+<th>用途</th>
+<th>调用顺序</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user_interview</code></td>
+<td>需求澄清和追问</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>requirement_decomposition</code></td>
+<td>需求拆解为用户故事</td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>acceptance_criteria_definition</code></td>
+<td>定义验收标准</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="详细步骤">详细步骤</h2>
+<h3 id="读取并分析人类输入">1.1 读取并分析人类输入</h3>
+<p><strong>目的</strong>: 理解项目背景和核心需求</p>
+<p><strong>步骤</strong>: 1. 读取 <code>inbox/human_input.md</code> 2.
+识别关键信息： - 项目愿景 - 目标用户 - 核心功能 - 技术约束 -
+时间/预算限制</p>
+<p><strong>检查清单</strong>: - [ ] 项目愿景清晰 - [ ] 目标用户定义明确
+- [ ] 核心功能列表完整 - [ ] 技术约束识别 - [ ] 限制条件记录</p>
+<p><strong>输出</strong>: 需求分析笔记</p>
+<hr />
+<h3 id="需求澄清如需要">1.2 需求澄清（如需要）</h3>
+<p><strong>触发条件</strong>: 需求不明确、存在矛盾、缺少关键信息</p>
+<p><strong>步骤</strong>: 1. 列出需要澄清的问题 2. 创建
+<code>inbox/human_feedback/clarification-request-{timestamp}.md</code>
+3. 等待人类回复</p>
+<p><strong>问题模板</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># 需求澄清请求</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>**项目**: {project_name}</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>**时间**: {timestamp}</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">## 需要澄清的问题</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**问题描述**</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>背景：为什么需要澄清</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>选项 A: <span class="co">[</span><span class="ot">描述</span><span class="co">]</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>选项 B: <span class="co">[</span><span class="ot">描述</span><span class="co">]</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>**推荐**: <span class="co">[</span><span class="ot">选项 + 理由</span><span class="co">]</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**问题描述**</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>   ...</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>**状态**: awaiting_human_response</span></code></pre></div>
+<p><strong>检查清单</strong>: - [ ] 问题描述清晰 - [ ] 提供选项和推荐 -
+[ ] 等待人类确认后继续</p>
+<hr />
+<h3 id="用户访谈和需求分解">1.3 用户访谈和需求分解</h3>
+<p><strong>目的</strong>: 深入理解用户需求，拆解为可执行的用户故事</p>
+<p><strong>调用 Skill</strong>:
+<code>requirement_decomposition</code></p>
+<p><strong>步骤</strong>: 1. 识别目标用户群体 2.
+为每个用户群体创建用户画像 3. 定义用户场景和痛点 4.
+将需求拆解为用户故事</p>
+<p><strong>用户画像模板</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 用户画像：{user_persona_name}</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**角色**: {角色描述}</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**目标**: {用户想要达成什么}</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**痛点**: {当前遇到的问题}</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**场景**: {典型使用场景}</span></code></pre></div>
+<p><strong>用户故事格式</strong>:</p>
+<pre><code>作为 {角色}，
+我想要 {功能}，
+以便于 {价值}
+
+验收标准:
+- Given {前置条件}
+- When {操作}
+- Then {结果}</code></pre>
+<p><strong>检查清单</strong>: - [ ] 每个用户群体有画像 - [ ]
+每个需求有对应用户故事 - [ ] 用户故事符合 INVEST 原则 - [ ] 验收标准符合
+SMART 原则</p>
+<hr />
+<h3 id="定义验收标准">1.4 定义验收标准</h3>
+<p><strong>目的</strong>: 为每个功能定义明确的可测试的验收标准</p>
+<p><strong>调用 Skill</strong>:
+<code>acceptance_criteria_definition</code></p>
+<p><strong>步骤</strong>: 1. 为每个用户故事定义验收标准 2. 使用
+Given-When-Then 格式 3. 确保标准可测试</p>
+<p><strong>示例</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">### 功能：用户登录</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>**验收标准**:</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**成功登录**</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>Given 用户已注册</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>When 输入正确的用户名和密码</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>Then 登录成功并跳转到首页</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**密码错误**</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>Given 用户已注册</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>When 输入错误的密码</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>Then 显示错误提示&quot;用户名或密码错误&quot;</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**账号锁定**</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>Given 用户连续输错 5 次密码</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>When 尝试第 6 次登录</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="ss">   - </span>Then 账号被锁定 15 分钟</span></code></pre></div>
+<p><strong>检查清单</strong>: - [ ] 每个功能有验收标准 - [ ]
+验收标准可测试 - [ ] 覆盖正常流程和异常流程 - [ ] 无歧义</p>
+<hr />
+<h3 id="创建需求文档">1.5 创建需求文档</h3>
+<p><strong>目的</strong>: 将所有分析结果整合为正式的需求文档</p>
+<p><strong>文档结构</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># {项目名} - 需求规格说明书</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. 概述</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.1 项目愿景</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.2 目标用户</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1.3 核心功能</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2. 功能需求</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2.1 {功能 1}</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>用户故事</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>验收标准</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>优先级</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2.2 {功能 2}</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>...</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3. 非功能性需求</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.1 性能需求</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.2 安全需求</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3.3 可用性需求</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## 4. 约束和假设</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="fu">### 4.1 技术约束</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="fu">### 4.2 业务约束</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="fu">### 4.3 假设条件</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="fu">## 5. 术语表</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6. 变更历史</span></span></code></pre></div>
+<p><strong>输出位置</strong>:
+<code>confluence/projects/{project}/requirements/requirements.md</code></p>
+<hr />
+<h3 id="创建-checkpoint">1.6 创建 Checkpoint</h3>
+<p><strong>Checkpoint 名称</strong>:
+<code>phase1_requirements_complete</code></p>
+<p><strong>Checkpoint 文件</strong>:
+<code>.eket/state/checkpoints/{project}-requirements-complete.md</code></p>
+<p><strong>内容</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Checkpoint: Phase1 Requirements Complete</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>**项目**: {project}</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>**时间**: {timestamp}</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>**负责人**: 需求分析师</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## 检查项</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 需求文档已创建</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 用户故事地图完整</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 验收标准定义清晰</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> 文档审查通过</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## 交付物</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> requirements.md</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> user-stories.md</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="va">[ ]</span> acceptance-criteria.md</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>**状态**: checkpoint_recorded</span></code></pre></div>
+<hr />
+<h2 id="质量检查">质量检查</h2>
+<h3 id="完整性检查">完整性检查</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />所有核心功能有需求描述</label></li>
+<li><label><input type="checkbox" />每个需求有用户故事</label></li>
+<li><label><input type="checkbox" />每个用户故事有验收标准</label></li>
+<li><label><input type="checkbox" />非功能性需求已定义</label></li>
+</ul>
+<h3 id="一致性检查">一致性检查</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />需求与项目愿景一致</label></li>
+<li><label><input type="checkbox" />用户故事与需求一致</label></li>
+<li><label><input type="checkbox" />验收标准与用户故事一致</label></li>
+</ul>
+<h3 id="可测试性检查">可测试性检查</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />验收标准可测试</label></li>
+<li><label><input type="checkbox" />有明确的通过/失败标准</label></li>
+<li><label><input type="checkbox" />测试场景覆盖完整</label></li>
+</ul>
+<hr />
+<h2 id="常见问题处理">常见问题处理</h2>
+<h3 id="问题-1-人类需求过于模糊">问题 1: 人类需求过于模糊</h3>
+<p><strong>处理流程</strong>: 1. 记录模糊点 2. 创建澄清请求 3.
+等待人类回复 4. 基于回复重新分析</p>
+<h3 id="问题-2-需求之间存在矛盾">问题 2: 需求之间存在矛盾</h3>
+<p><strong>处理流程</strong>: 1. 识别矛盾点 2. 分析矛盾原因 3.
+创建澄清请求，说明矛盾 4. 请求人类决策</p>
+<h3 id="问题-3-需求超出范围">问题 3: 需求超出范围</h3>
+<p><strong>处理流程</strong>: 1. 记录超出范围的需求 2.
+创建后续任务（backlog） 3. 与人类确认优先级 4. 调整当前范围</p>
+<hr />
+<h2 id="相关文件">相关文件</h2>
+<ul>
+<li><a href="../phase-1-initiation/README.md">Phase 1 SOP</a></li>
+<li><a
+href="../../../template/skills/requirements/requirement_decomposition.yml">Requirement
+Decomposition Skill</a></li>
+<li><a
+href="../../../template/skills/requirements/acceptance_criteria_definition.yml">Acceptance
+Criteria Skill</a></li>
+</ul>
+<hr />
+<p><strong>SOP 版本</strong>: 1.0.0 <strong>创建日期</strong>:
+2026-03-23 <strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>

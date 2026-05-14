@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>月度分支维护计划</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">月度分支维护计划</h1>
+</header>
+<h1 id="月度分支维护计划">月度分支维护计划</h1>
+<p><strong>建立时间</strong>: 2026-05-07<br />
+<strong>维护周期</strong>: 每月 1 日<br />
+<strong>负责人</strong>: Master</p>
+<hr />
+<h2 id="执行清单">执行清单</h2>
+<h3 id="每月-1-日执行">每月 1 日执行</h3>
+<h4 id="检查已合并分支自动">1. 检查已合并分支（自动）</h4>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># scripts/monthly-branch-cleanup.sh</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="va">REPORT_DATE</span><span class="op">=</span><span class="va">$(</span><span class="fu">date</span> +%Y-%m<span class="va">)</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="va">REPORT_FILE</span><span class="op">=</span><span class="st">&quot;confluence/memory/branch-cleanup-</span><span class="va">${REPORT_DATE}</span><span class="st">.md&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;# 月度分支清理报告 - </span><span class="va">${REPORT_DATE}</span><span class="st">&quot;</span> <span class="op">&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;**执行时间**: </span><span class="va">$(</span><span class="fu">date</span> <span class="st">&#39;+%Y-%m-%d %H:%M:%S&#39;</span><span class="va">)</span><span class="st">&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;**执行人**: Master (自动化)&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查已合并超过 7 天的远程分支</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 检查已合并分支&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> fetch origin <span class="at">--prune</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 获取已合并到 main 的远程分支</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> branch <span class="at">-r</span> <span class="at">--merged</span> origin/main <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grep</span> <span class="st">&quot;origin/feature/&quot;</span> <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sed</span> <span class="st">&#39;s|[ *]*origin/||&#39;</span> <span class="op">&gt;</span> /tmp/merged-branches.txt</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="va">MERGED_COUNT</span><span class="op">=</span><span class="va">$(</span><span class="fu">wc</span> <span class="at">-l</span> <span class="op">&lt;</span> /tmp/merged-branches.txt<span class="va">)</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;发现 </span><span class="va">$MERGED_COUNT</span><span class="st"> 个已合并的 feature 分支&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$MERGED_COUNT</span><span class="st">&quot;</span> <span class="ot">-gt</span> 0 <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;### 待删除分支列表&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&#39;```&#39;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span> /tmp/merged-branches.txt <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&#39;```&#39;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># 删除远程分支</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;### 删除结果&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span> <span class="va">IFS</span><span class="op">=</span> <span class="bu">read</span> <span class="at">-r</span> <span class="va">branch</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="fu">git</span> push origin <span class="at">--delete</span> <span class="st">&quot;</span><span class="va">$branch</span><span class="st">&quot;</span> <span class="dv">2</span><span class="op">&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>      <span class="bu">echo</span> <span class="st">&quot;- ✅ </span><span class="va">$branch</span><span class="st">&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>      <span class="bu">echo</span> <span class="st">&quot;- ❌ </span><span class="va">$branch</span><span class="st"> (失败)&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>  <span class="cf">done</span> <span class="op">&lt;</span> /tmp/merged-branches.txt</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;✅ 无需清理，所有分支保持清洁&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;---&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;**状态**: ✅ 完成&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span></code></pre></div>
+<h4 id="检查分支健康度">2. 检查分支健康度</h4>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 统计分支数量</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 分支健康度&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="va">LOCAL_COUNT</span><span class="op">=</span><span class="va">$(</span><span class="fu">git</span> branch <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span><span class="va">)</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="va">REMOTE_COUNT</span><span class="op">=</span><span class="va">$(</span><span class="fu">git</span> branch <span class="at">-r</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="st">&quot;origin/&quot;</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-v</span> <span class="st">&quot;HEAD&quot;</span> <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span><span class="va">)</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;- 本地分支: </span><span class="va">$LOCAL_COUNT</span><span class="st">&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;- 远程分支: </span><span class="va">$REMOTE_COUNT</span><span class="st">&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$LOCAL_COUNT</span><span class="st">&quot;</span> <span class="ot">-gt</span> 5 <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;⚠️  警告: 本地分支数量超过 5 个，建议检查&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$REMOTE_COUNT</span><span class="st">&quot;</span> <span class="ot">-gt</span> 10 <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;⚠️  警告: 远程分支数量超过 10 个，建议清理&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span></code></pre></div>
+<h4 id="检查僵尸分支">3. 检查僵尸分支</h4>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 30 天无更新的分支</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 僵尸分支检查&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> for-each-ref <span class="at">--sort</span><span class="op">=</span>-committerdate refs/remotes/origin/feature/ <span class="dt">\</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--format</span><span class="op">=</span><span class="st">&#39;%(refname:short)|%(committerdate:relative)&#39;</span> <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span> <span class="va">IFS</span><span class="op">=</span><span class="st">&#39;|&#39;</span> <span class="bu">read</span> <span class="at">-r</span> <span class="va">branch</span> <span class="va">date</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">[[</span> <span class="st">&quot;</span><span class="va">$date</span><span class="st">&quot;</span> <span class="ot">==</span> <span class="pp">*</span><span class="st">&quot;month&quot;</span><span class="pp">*</span> <span class="kw">]]</span> <span class="kw">||</span> <span class="kw">[[</span> <span class="st">&quot;</span><span class="va">$date</span><span class="st">&quot;</span> <span class="ot">==</span> <span class="pp">*</span><span class="st">&quot;year&quot;</span><span class="pp">*</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      <span class="bu">echo</span> <span class="st">&quot;- ⚠️  </span><span class="va">$branch</span><span class="st"> (最后更新: </span><span class="va">$date</span><span class="st">)&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$REPORT_FILE</span><span class="st">&quot;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">done</span></span></code></pre></div>
+<hr />
+<h2 id="自动化设置">自动化设置</h2>
+<h3 id="github-actions-自动删除已合并分支">GitHub Actions
+自动删除已合并分支</h3>
+<p>已创建: `.github/workflows/cle时自动删除源分支</p>
+<p><strong>保护分支</strong>: main, testing, miao 不会被删除</p>
+<hr />
+<h3 id="cron-任务月度清理">Cron 任务（月度清理）</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 添加到 crontab（可选）</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 每月 1 日 9:00 执行</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">0</span> 9 1 <span class="pp">*</span> <span class="pp">*</span> cd /path/to/eket <span class="kw">&amp;&amp;</span> <span class="fu">bash</span> scripts/monthly-branch-cleanup.sh</span></code></pre></div>
+<hr />
+<h2 id="手动执行">手动执行</h2>
+<h3 id="立即执行月度清理">立即执行月度清理</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /path/to/eket</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/monthly-branch-cleanup.sh</span></code></pre></div>
+<h3 id="检查特定分支">检查特定分支</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查分支是否已合并</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> branch <span class="at">-r</span> <span class="at">--merged</span> origin/main <span class="kw">|</span> <span class="fu">grep</span> <span class="st">&quot;feature/TASK-XXX&quot;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查分支最后更新时间</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log origin/feature/TASK-XXX <span class="at">-1</span> <span class="at">--format</span><span class="op">=</span><span class="st">&quot;%ar&quot;</span></span></code></pre></div>
+<hr />
+<h2 id="报告归档">报告归档</h2>
+<p>每月清理报告自动保存到:</p>
+<pre><code>confluence/memory/branch-cleanup-YYYY-MM.md</code></pre>
+<hr />
+<h2 id="紧急清理流程">紧急清理流程</h2>
+<h3 id="当分支数量超过-20-个时">当分支数量超过 20 个时</h3>
+<ol type="1">
+<li><strong>立即审查</strong>: 运行
+<code>bash scripts/monthly-branch-cleanup.sh</code></li>
+<li><strong>人工确认</strong>: 检查生成的报告</li>
+<li><strong>批量删除</strong>: 确认后执行删除</li>
+<li><strong>记录原因</strong>: 在 confluence/memory/ 记录为何积压</li>
+</ol>
+<hr />
+<h2 id="分支命名规范强制">分支命名规范强制</h2>
+<h3 id="pre-commit-hook可选">Pre-commit Hook（可选）</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .git/hooks/pre-push（示例）</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="va">BRANCH</span><span class="op">=</span><span class="va">$(</span><span class="fu">git</span> rev-parse <span class="at">--abbrev-ref</span> HEAD<span class="va">)</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查分支命名</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">[[</span> <span class="st">&quot;</span><span class="va">$BRANCH</span><span class="st">&quot;</span> <span class="ot">!=</span> <span class="st">&quot;main&quot;</span> <span class="kw">&amp;&amp;</span> <span class="st">&quot;</span><span class="va">$BRANCH</span><span class="st">&quot;</span> <span class="ot">!=</span> <span class="st">&quot;testing&quot;</span> <span class="kw">&amp;&amp;</span> <span class="st">&quot;</span><span class="va">$BRANCH</span><span class="st">&quot;</span> <span class="ot">!=</span> <span class="st">&quot;miao&quot;</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="kw">[[</span> <span class="ot">!</span> <span class="st">&quot;</span><span class="va">$BRANCH</span><span class="st">&quot;</span> <span class="ot">=~</span> <span class="pp">^</span><span class="ss">feature/TASK-</span><span class="op">[</span><span class="ss">0</span><span class="op">-</span><span class="ss">9</span><span class="op">]</span><span class="pp">+</span><span class="ss">-</span><span class="op">[</span><span class="ss">a</span><span class="op">-</span><span class="ss">z0</span><span class="op">-</span><span class="ss">9-</span><span class="op">]</span><span class="pp">+</span><span class="op">$</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;❌ 分支命名不符合规范: </span><span class="va">$BRANCH</span><span class="st">&quot;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;应为: feature/TASK-{ID}-{description}&quot;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;示例: feature/TASK-123-add-login&quot;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 1</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span></code></pre></div>
+<hr />
+<h2 id="检查清单">检查清单</h2>
+<h3 id="月初检查每月-1-日">月初检查（每月 1 日）</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />运行
+<code>monthly-branch-cleanup.sh</code></label></li>
+<li><label><input type="checkbox" />检查生成的报告</label></li>
+<li><label><input type="checkbox" />确认删除的分支都已合并</label></li>
+<li><label><input type="checkbox" />检查分支健康度（&lt;10
+个远程分支）</label></li>
+<li><label><input type="checkbox" />检查僵尸分支（&gt;30
+天无更新）</label></li>
+<li><label><input type="checkbox" />归档报告到
+confluence/memory/</label></li>
+</ul>
+<h3 id="季度检查每季度末">季度检查（每季度末）</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />审查所有远程分支</label></li>
+<li><label><input type="checkbox" />检查 Ticket 归档情况</label></li>
+<li><label><input
+type="checkbox" />更新分支命名规范（如需要）</label></li>
+<li><label><input type="checkbox" />评估自动化清理效果</label></li>
+</ul>
+<hr />
+<h2 id="指标监控">指标监控</h2>
+<h3 id="健康指标">健康指标</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>目标值</th>
+<th>警告值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>本地分支数</td>
+<td>≤5</td>
+<td>&gt;10</td>
+</tr>
+<tr>
+<td>远程分支数</td>
+<td>≤10</td>
+<td>&gt;20</td>
+</tr>
+<tr>
+<td>僵尸分支（&gt;30天）</td>
+<td>0</td>
+<td>&gt;3</td>
+</tr>
+<tr>
+<td>月度删除分支数</td>
+<td>&lt;5</td>
+<td>&gt;10</td>
+</tr>
+</tbody>
+</table>
+<h3 id="趋势分析">趋势分析</h3>
+<p>每季度评估: - 分支创建速度 - 分支合并速度 - 分支平均生命周期 -
+僵尸分支比例</p>
+<hr />
+<p><strong>建立时间</strong>: 2026-05-07<br />
+<strong>下次执行</strong>: 2026-06-01<br />
+<strong>维护状态</strong>: ✅ 已激活</p>
+</body>
+</html>
