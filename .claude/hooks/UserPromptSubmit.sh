@@ -10,7 +10,7 @@ set +e
 # Initialize variables
 STATE_DIR=".eket/state"
 COUNTER_FILE="${STATE_DIR}/context-turn-count"
-CONTEXT_THRESHOLD=8
+CONTEXT_THRESHOLD=10  # AC-3: 10 turns threshold
 
 # Ensure state directory exists
 mkdir -p "${STATE_DIR}"
@@ -46,12 +46,14 @@ if command -v find &>/dev/null; then
     awk '{print $1}')
 
   if [[ -n "${FILE_SIZE}" ]] && [[ "${FILE_SIZE}" =~ ^[0-9]+$ ]]; then
-    TOTAL_TOKENS=$((FILE_SIZE * 4 / 10))  # 0.4 tokens per char
+    TOTAL_TOKENS=$((FILE_SIZE * 3 / 10))  # 0.3 tokens per char (from analysis)
   fi
 fi
 
-# AC-3: Warn if turn count exceeds threshold
-if [[ "${NEW_COUNT}" -ge "${CONTEXT_THRESHOLD}" ]]; then
+# AC-3: Warn if turn count OR token count exceeds threshold
+TOKEN_THRESHOLD=50000  # AC-3: 50K tokens threshold
+
+if [[ "${NEW_COUNT}" -ge "${CONTEXT_THRESHOLD}" ]] || [[ "${TOTAL_TOKENS}" -ge "${TOKEN_THRESHOLD}" ]]; then
   echo "⚠️  Context Warning: Turn #${NEW_COUNT} (threshold: ${CONTEXT_THRESHOLD})" >&2
   echo "📊 Estimated tokens: ~${TOTAL_TOKENS}" >&2
   echo "💡 Consider: /compact or branch completion" >&2
