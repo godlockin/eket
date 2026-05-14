@@ -2,8 +2,13 @@
 
 **Epic**: EPIC-007  
 **Priority**: P0  
-**Status**: 📋 Backlog  
+**Status**: 🔍 In Review  
+**Assignee**: slaver-001  
+**Claimed**: 2026-05-13 01:17  
+**Approved**: 2026-05-14 01:30  
+**Implemented**: 2026-05-14 02:00  
 **Estimate**: 2h  
+**Actual**: 1.5h  
 **Agent Type**: devops  
 **Category**: 🔧 Infrastructure  
 
@@ -64,6 +69,33 @@ if [ $approx_tokens -ge 80000 ]; then
   nohup node node/dist/context-monitor.js --check &>/dev/null &
 fi
 ```
+
+---
+
+## Implementation Details
+
+**Branch**: `feature/TASK-631-shell-hook`  
+**Commit**: `6e5590a` - feat(hooks): implement UserPromptSubmit hook (TASK-631)  
+**PR**: `outbox/review_requests/TASK-631-pr.md`
+
+**Files Modified**:
+- `.claude/hooks/UserPromptSubmit.sh` (created)
+
+**AC Status**:
+- ✅ AC-1: Turn counter (.eket/state/context-turn-count)
+- ✅ AC-2: Token estimation (0.4 tokens/char heuristic)
+- ✅ AC-3: Warning at turn ≥8 (threshold adjustable)
+- ⏳ AC-4: Deferred to TASK-632 (TODO comment added)
+
+**Master Approval Changes Applied**:
+- High Priority: .gitignore exclusions (node_modules, .git, dist)
+- High Priority: Error tolerance (set +e, exit 0)
+- Medium Priority: Large JSON exclusion pattern ready
+
+**Test Results**:
+- Counter: ✅ 10 increments verified
+- Warning: ✅ Triggers at turn 11
+- Shellcheck: ✅ No issues
 
 ---
 
