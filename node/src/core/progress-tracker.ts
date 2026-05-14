@@ -21,6 +21,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import { EventEmitter } from 'events';
 import { atomicWrite } from '../utils/atomic-write.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 import {
@@ -32,7 +33,7 @@ import {
   TaskPhase,
 } from '../types/progress-tracker.js';
 
-export class ProgressTracker {
+export class ProgressTracker extends EventEmitter {
   private taskId: string;
   private slaverId: string;
   private flushIntervalMs: number;
@@ -53,6 +54,7 @@ export class ProgressTracker {
   private flushTimer: NodeJS.Timeout | null = null;
 
   constructor(options: ProgressTrackerOptions) {
+    super(); // Initialize EventEmitter
     this.taskId = options.taskId;
     this.slaverId = options.slaverId;
     this.flushIntervalMs = options.flushIntervalMs ?? 30000; // 30s default
@@ -129,6 +131,9 @@ export class ProgressTracker {
     };
 
     this.checkpoints.push(checkpoint);
+
+    // Emit checkpoint event for IOActivityMonitor (TASK-AUTO-05)
+    this.emit('checkpoint', { phase, metadata });
 
     // Sync flush for critical phases
     if (this.syncPhases.has(phase)) {
