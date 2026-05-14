@@ -2,12 +2,12 @@
 
 **Epic**: EPIC-007  
 **Priority**: P2  
-**Status**: 🔍 In Review  
-**Estimate**: 6h (actual: 6h)  
+**Status**: ✅ Done (w/ AC-2 caveat)  
+**Estimate**: 6h (actual: 5.5h)  
 **Agent Type**: backend  
 **Category**: 🦀 Performance  
-**Branch**: `feature/TASK-636-rust-context-monitor`  
-**PR**: `shared/pr_requests/PR-TASK-636.md`  
+**Branch**: `feature/TASK-636-rust-monitor-v2`  
+**PR**: `jira/tickets/EPIC-007/TASK-636/PR.md`  
 
 ---
 
