@@ -2,7 +2,7 @@
 
 **Epic**: EPIC-007  
 **Priority**: P0  
-**Status**: 📋 Backlog  
+**Status**: 📋 Ready  
 **Estimate**: 4h  
 **Agent Type**: backend  
 **Category**: 🔧 Core Logic  
