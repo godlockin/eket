@@ -49,6 +49,7 @@ import { registerTaskProgress } from './commands/task-progress.js';
 import { registerTaskResume, registerTaskResumeCheckpoint } from './commands/task-resume.js';
 import { registerTaskStatus } from './commands/task-status.js';
 import { registerTaskVerify } from './commands/task-verify.js';
+import { taskResetRetryCommand } from './commands/task-reset-retry.js';
 import { registerTeamStatus } from './commands/team-status.js';
 import { registerUltrareview } from './commands/ultrareview.js';
 import { registerWorkflowCommands } from './commands/workflow.js';
@@ -631,6 +632,9 @@ Related Commands:
 
   // 注册 task:verify 命令 (TASK-X03)
   registerTaskVerify(program);
+
+  // TASK-AUTO-06: 注册 task:reset-retry 命令
+  program.addCommand(taskResetRetryCommand);
 
   // 注册 task:status 命令 (TASK-X05)
   registerTaskStatus(program);
