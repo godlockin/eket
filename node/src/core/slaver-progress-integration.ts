@@ -28,7 +28,11 @@
 
 import { ProgressTracker } from './progress-tracker.js';
 import { SlaverWatchdog } from './slaver-watchdog.js';
+import { IOActivityMonitor, type HangReport } from './io-activity-monitor.js';
 import { CheckpointMetadata, TaskPhase, type ResumeContext } from '../types/progress-tracker.js';
+import { createMessage } from './message-queue.js';
+import fs from 'fs/promises';
+import path from 'path';
 
 /**
  * Global singleton ProgressTracker instance
@@ -41,9 +45,46 @@ let globalTracker: ProgressTracker | null = null;
 let globalWatchdog: SlaverWatchdog | null = null;
 
 /**
+ * Global singleton IOActivityMonitor instance (TASK-AUTO-05)
+ */
+let globalIOMonitor: IOActivityMonitor | null = null;
+
+/**
  * Flag to enable/disable progress tracking (controlled by env var)
  */
 const ENABLE_TRACKING = process.env.ENABLE_PROGRESS_TRACKING !== 'false';
+
+/**
+ * Handle hang detection callback (TASK-AUTO-05)
+ * Sends alert message to Master via message queue
+ */
+async function handleHangDetected(report: HangReport): Promise<void> {
+  try {
+    // Create alert message
+    const message = createMessage(
+      'hang_detected',
+      report.slaverId,
+      'master',
+      report as unknown as Record<string, unknown>,
+      'high'
+    );
+
+    // Write to message queue
+    const inboxPath = path.resolve(process.cwd(), 'shared/message_queue/inbox');
+    await fs.mkdir(inboxPath, { recursive: true });
+
+    const fileName = `hang_${report.taskId}_${Date.now()}.json`;
+    const filePath = path.join(inboxPath, fileName);
+
+    await fs.writeFile(filePath, JSON.stringify(message, null, 2), 'utf-8');
+
+    console.error(`[IOActivityMonitor] Hang alert sent to Master: ${filePath}`);
+  } catch (error) {
+    console.error(
+      `[IOActivityMonitor] Failed to send hang alert: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
 
 /**
  * Initialize ProgressTracker for a new task
@@ -95,6 +136,26 @@ export async function initializeProgressTracker(
     if (process.env.ENABLE_SLAVER_WATCHDOG !== 'false') {
       globalWatchdog = new SlaverWatchdog(taskId, globalTracker);
       console.log('[Watchdog] Started (timeout: 500s, heartbeat: 60s)');
+    }
+
+    // TASK-AUTO-05: Start IOActivityMonitor
+    if (process.env.ENABLE_IO_ACTIVITY_MONITOR !== 'false') {
+      globalIOMonitor = new IOActivityMonitor({
+        taskId,
+        slaverId,
+        timeoutMs: 180000, // 180s
+        onHang: handleHangDetected,
+        enableHealthEndpoint: process.env.ENABLE_HEALTH_ENDPOINT === 'true',
+        healthPort: parseInt(process.env.HEALTH_PORT || '3001', 10),
+      });
+
+      // Hook checkpoint events
+      globalTracker.on('checkpoint', () => {
+        globalIOMonitor?.recordActivity();
+      });
+
+      await globalIOMonitor.start();
+      console.log('[IOActivityMonitor] Started (timeout: 180s)');
     }
   } catch (error) {
     // Non-critical: log warning but don't block task execution
@@ -214,6 +275,20 @@ export async function closeProgressTracker(): Promise<void> {
       );
     } finally {
       globalWatchdog = null;
+    }
+  }
+
+  // TASK-AUTO-05: Close IOActivityMonitor
+  if (globalIOMonitor) {
+    try {
+      await globalIOMonitor.stop();
+      console.log('[IOActivityMonitor] Closed successfully');
+    } catch (error) {
+      console.warn(
+        `[IOActivityMonitor] Close failed (non-critical): ${error instanceof Error ? error.message : String(error)}`
+      );
+    } finally {
+      globalIOMonitor = null;
     }
   }
 
