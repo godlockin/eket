@@ -9,11 +9,10 @@
  * AC-3: Trigger macOS notification (optional)
  */
 
-import { watch } from 'node:fs/promises';
-import { readFile, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import { readFile, watch, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 
