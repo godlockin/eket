@@ -46,6 +46,7 @@ import { registerSubmitPR } from './commands/submit-pr.js';
 import { registerTaskCreate } from './commands/task-create.js';
 import { registerTaskProgress } from './commands/task-progress.js';
 import { registerTaskResume, registerTaskResumeCheckpoint } from './commands/task-resume.js';
+import { registerTaskStatus } from './commands/task-status.js';
 import { registerTaskVerify } from './commands/task-verify.js';
 import { registerTeamStatus } from './commands/team-status.js';
 import { registerUltrareview } from './commands/ultrareview.js';
@@ -629,6 +630,9 @@ Related Commands:
 
   // 注册 task:verify 命令 (TASK-X03)
   registerTaskVerify(program);
+
+  // 注册 task:status 命令 (TASK-X05)
+  registerTaskStatus(program);
 
   // 注册 project:init 命令
   program
