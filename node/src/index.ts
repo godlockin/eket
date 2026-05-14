@@ -20,6 +20,7 @@ import ora from 'ora';
 import { OpenCLAWGateway } from './api/openclaw-gateway.js';
 import { createWebDashboardServer } from './api/web-server.js';
 import { registerAlerts } from './commands/alerts.js';
+import { registerCheckpointGC } from './commands/checkpoint-gc.js';
 import { registerClaim } from './commands/claim.js';
 import { registerComplete } from './commands/complete.js';
 import { registerContextStatus } from './commands/context-status.js';
@@ -633,6 +634,9 @@ Related Commands:
 
   // 注册 task:status 命令 (TASK-X05)
   registerTaskStatus(program);
+
+  // 注册 checkpoint:gc 命令 (TASK-X07)
+  registerCheckpointGC(program);
 
   // 注册 project:init 命令
   program
