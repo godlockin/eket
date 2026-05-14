@@ -59,9 +59,31 @@ if [[ "${NEW_COUNT}" -ge "${CONTEXT_THRESHOLD}" ]] || [[ "${TOTAL_TOKENS}" -ge "
   echo "💡 Consider: /compact or branch completion" >&2
 fi
 
-# TODO: AC-4 - Integrate with rtk gain (blocked by TASK-632)
-# Planned: Call rtk gain to fetch actual token usage from Claude API
-# Reference: jira/tickets/EPIC-007/TASK-632/TASK-632.md
+# AC-4: Auto-compact on 120K threshold (TASK-AUTO-01)
+COMPACT_THRESHOLD=120000
+COOLDOWN_FILE="${STATE_DIR}/last-compact-time"
+TRIGGER_FILE=".eket/triggers/compact.trigger"
+
+if [[ "${TOTAL_TOKENS}" -ge "${COMPACT_THRESHOLD}" ]]; then
+  # Check cooldown (5min = 300s)
+  NOW=$(date +%s)
+  LAST_COMPACT=$(cat "$COOLDOWN_FILE" 2>/dev/null || echo 0)
+  ELAPSED=$((NOW - LAST_COMPACT))
+
+  if [[ "$ELAPSED" -gt 300 ]]; then
+    echo "🔄 Auto-compact triggered at ${TOTAL_TOKENS} tokens (turn ${NEW_COUNT})" >&2
+
+    # Create trigger file (to be consumed by watcher or manual /compact)
+    mkdir -p .eket/triggers
+    echo "AUTO_COMPACT_REQUEST|${TOTAL_TOKENS}|$(date -Iseconds)" > "$TRIGGER_FILE"
+    echo "$NOW" > "$COOLDOWN_FILE"
+
+    # Alert: Suggest user run /compact manually
+    echo "💡 Run: /compact (or wait for auto-compact if watcher enabled)" >&2
+  else
+    echo "⏳ Compact cooldown active (${ELAPSED}s since last)" >&2
+  fi
+fi
 
 # Always exit successfully
 exit 0
