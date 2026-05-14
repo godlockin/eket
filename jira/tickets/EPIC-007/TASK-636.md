@@ -2,10 +2,12 @@
 
 **Epic**: EPIC-007  
 **Priority**: P2  
-**Status**: 📋 Backlog  
-**Estimate**: 6h  
+**Status**: 🔍 In Review  
+**Estimate**: 6h (actual: 6h)  
 **Agent Type**: backend  
 **Category**: 🦀 Performance  
+**Branch**: `feature/TASK-636-rust-context-monitor`  
+**PR**: `shared/pr_requests/PR-TASK-636.md`  
 
 ---
 
