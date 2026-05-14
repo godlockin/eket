@@ -521,3 +521,75 @@ describe('checkpoint:gc', () => {
 **后续优化**:
 - Cron job 定期自动执行（GitHub Actions）
 - Slack 通知（删除分支后通知 Master）
+
+---
+
+## 7. 复盘记录
+
+**复盘者**: Slaver-015 (DevOps Agent)  
+**时间**: 2026-05-14T09:25:00+08:00
+
+### 踩坑 / 警示
+
+**坑1: ESM 模块测试中 `__dirname` 未定义**
+- **说明**: Jest + ESM 环境下 `__dirname` 不可用
+- **解法**: 
+  ```typescript
+  import { fileURLToPath } from 'url';
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  ```
+- **如何规避**: 所有新测试文件默认加上此 polyfill
+
+**坑2: 测试 timeout (默认 5s 不够)**
+- **说明**: CLI 命令启动慢（logger/memory monitor 初始化），默认 5s 超时
+- **解法**: 每个测试用例显式传入 `35000` timeout
+- **如何规避**: 
+  ```typescript
+  it('test name', async () => { /* ... */ }, 35000); // 添加 timeout
+  ```
+
+### 可复用经验（带来复利的发现）
+
+**经验1: 并发扫描 git branches 的 chunk 策略**
+- **具体模式**: 
+  ```typescript
+  const chunkSize = 5;
+  for (let i = 0; i < branchNames.length; i += chunkSize) {
+    const chunk = branchNames.slice(i, i + chunkSize);
+    const results = await Promise.all(chunk.map(processBranch));
+    branches.push(...results);
+  }
+  ```
+- **价值**: 避免并发过高导致 git rate limit 或超时
+
+**经验2: Graceful fallback 模式 (gh CLI optional)**
+- **具体模式**: 
+  ```typescript
+  try {
+    const { stdout } = await execFileAsync('gh', [...], { timeout: 5000 });
+    // parse stdout
+  } catch {
+    // gh CLI unavailable → skip feature, continue execution
+    return false;
+  }
+  ```
+- **价值**: 提升容错性，依赖不可用时降级但不中断
+
+**经验3: 彩色输出 + 默认 dry-run (破坏性操作保护)**
+- **具体模式**: 
+  - `--dry-run` 为默认行为
+  - `--execute` 需显式传入
+  - 报告中用 ✅/⚠️/❌ + 颜色区分状态
+- **价值**: 防止误操作，提升 UX
+
+### 如果重做，最想改的一件事
+
+**分析阶段做得太详细，可直接进入编码（已有 Implementation Sketch）**
+
+- 分析报告耗时 20min，但 ticket 中已有完整 Implementation Sketch（435 行代码骨架）
+- 可直接参考 task-status.ts 开始写，边写边调整
+- 结果：分析 → 批准 → 实现，总耗时 ~3h（符合预估 4h，但分析环节可优化）
+
+**改进建议**: 若 ticket 含详细 Implementation Sketch，可简化分析报告为 1 页 checklist，直接开始实现
+
