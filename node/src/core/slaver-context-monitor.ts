@@ -10,6 +10,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { contextTracker } from './context-tracker.js';
+import { createIncrementalSnapshotGenerator } from './incremental-snapshot-generator.js';
 
 export interface SplitSuggestion {
   taskId: string;
@@ -99,6 +100,23 @@ eket task:split ${taskId}
   fs.writeFileSync(alertPath, content, 'utf-8');
 
   console.log(`📋 Context risk alert created: ${alertPath}`);
+
+  // TASK-633: Generate incremental snapshot
+  const snapshotGenerator = createIncrementalSnapshotGenerator();
+  const snapshotResult = snapshotGenerator.generate({
+    taskId,
+    turnCount: 0, // TODO: Track actual turn count
+    estimatedTokens: tokens,
+    criticalFiles: [], // TODO: Extract from context tracker
+    lastMessages: [], // TODO: Extract from conversation history
+  });
+
+  if (snapshotResult.success) {
+    console.log(`📸 Incremental snapshot saved: ${snapshotResult.data.filePath} (${snapshotResult.data.sizeBytes} bytes)`);
+  } else {
+    console.warn(`⚠️  Snapshot generation failed: ${snapshotResult.error?.message}`);
+  }
+
   return alertPath;
 }
 

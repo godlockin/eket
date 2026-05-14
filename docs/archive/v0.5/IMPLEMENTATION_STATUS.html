@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 框架实现状态</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 框架实现状态</h1>
+</header>
+<h1 id="eket-框架实现状态">EKET 框架实现状态</h1>
+<p><strong>版本</strong>: 0.6.2 <strong>日期</strong>: 2026-03-20
+<strong>状态</strong>: 核心功能已完成</p>
+<hr />
+<h2 id="实现概览">实现概览</h2>
+<h3 id="已完成的核心功能">✅ 已完成的核心功能</h3>
+<table>
+<thead>
+<tr>
+<th>功能模块</th>
+<th>文件/脚本</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>实例初始化</strong></td>
+<td><code>/eket-start</code></td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td><strong>模式检测</strong></td>
+<td><code>eket-start.sh</code> 行 81-96</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td><strong>任务设定模式</strong></td>
+<td><code>eket-start.sh</code> 行 107-194</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td><strong>任务承接模式</strong></td>
+<td><code>eket-start.sh</code> 行 196-349</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td><strong>自动模式任务领取</strong></td>
+<td><code>prioritize-tasks.sh</code></td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td><strong>手动模式任务推荐</strong></td>
+<td><code>recommend-tasks.sh</code></td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td><strong>Agent Profile 加载</strong></td>
+<td><code>load-agent-profile.sh</code></td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td><strong>任务领取命令</strong></td>
+<td><code>/eket-claim</code></td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td><strong>三仓库架构</strong></td>
+<td><code>init-three-repos.sh</code></td>
+<td>✅ 完成</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="核心流程实现">核心流程实现</h2>
+<h3 id="实例初始化流程">1. 实例初始化流程</h3>
+<p><strong>文件</strong>:
+<code>template/.claude/commands/eket-start.sh</code></p>
+<pre><code>启动实例
+    │
+    ▼
+检查三仓库目录 (confluence/, jira/, code_repo/)
+    │
+    ├───────┬───────────────┐
+    │       │               │
+    ▼       ▼               ▼
+不存在   部分存在        都存在
+    │       │               │
+    └───────┴───────────────┘
+            │
+            ▼
+    决定实例模式
+    │
+    ├──────────────────┐
+    │                  │
+    ▼                  ▼
+任务设定模式      任务承接模式
+(Task Setup)     (Task Execution)</code></pre>
+<p><strong>关键代码</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$CONFLUENCE_EXISTS</span><span class="st">&quot;</span> <span class="ot">=</span> false <span class="bu">]</span> <span class="kw">||</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$JIRA_EXISTS</span><span class="st">&quot;</span> <span class="ot">=</span> false <span class="bu">]</span> <span class="kw">||</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$CODE_REPO_EXISTS</span><span class="st">&quot;</span> <span class="ot">=</span> false <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">INSTANCE_MODE</span><span class="op">=</span><span class="st">&quot;setup&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;进入：任务设定模式 (Task Setup Mode)&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">INSTANCE_MODE</span><span class="op">=</span><span class="st">&quot;execution&quot;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;进入：任务承接模式 (Task Execution Mode)&quot;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span></code></pre></div>
+<hr />
+<h3 id="任务承接模式流程">2. 任务承接模式流程</h3>
+<p><strong>文件</strong>:
+<code>template/.claude/commands/eket-start.sh</code> 第 196-349 行</p>
+<pre><code>任务承接模式
+    │
+    ▼
+读取 Confluence 了解背景
+    │
+    ▼
+检查 Jira 任务列表
+    │
+    ├──────────────┐
+    │              │
+    ▼              ▼
+自动模式      手动模式
+    │              │
+    ▼              ▼
+调用 prioritize   调用 recommend
+    │              │
+    ▼              ▼
+自动领取任务     显示 Top3 推荐
+    │              │
+    ▼              ▼
+更新状态         用户选择
+    │              │
+    ▼              ▼
+加载 Profile     领取任务
+    │              │
+    ▼              ▼
+开始处理         加载 Profile
+                 │
+                 ▼
+                 开始处理</code></pre>
+<hr />
+<h3 id="自动模式任务领取">3. 自动模式任务领取</h3>
+<p><strong>文件</strong>: <code>scripts/prioritize-tasks.sh</code></p>
+<p><strong>优先级计算公式</strong>:</p>
+<pre><code>优先级分数 = 基础分数 + 类型加成 + 依赖惩罚
+
+基础分数:
+- urgent: 100
+- high: 75
+- normal: 50
+- low: 25
+
+类型加成:
+- Bugfix: +10
+
+依赖惩罚:
+- 有依赖：-20</code></pre>
+<p><strong>自动领取逻辑</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 获取最高优先级任务</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="va">TOP_TASK</span><span class="op">=</span><span class="st">&quot;&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="va">TOP_SCORE</span><span class="op">=</span>0</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> task_id <span class="kw">in</span> <span class="st">&quot;</span><span class="va">${</span><span class="op">!</span><span class="va">TASK_PRIORITY</span><span class="op">[@]</span><span class="va">}</span><span class="st">&quot;</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">${TASK_PRIORITY</span><span class="op">[</span><span class="va">$task_id</span><span class="op">]</span><span class="va">}</span><span class="st">&quot;</span> <span class="ot">-gt</span> <span class="st">&quot;</span><span class="va">$TOP_SCORE</span><span class="st">&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">TOP_SCORE</span><span class="op">=</span><span class="st">&quot;</span><span class="va">${TASK_PRIORITY</span><span class="op">[</span><span class="va">$task_id</span><span class="op">]</span><span class="va">}</span><span class="st">&quot;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">TOP_TASK</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$task_id</span><span class="st">&quot;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 更新任务状态</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="fu">sed</span> <span class="at">-i.bak</span> <span class="st">&quot;s/^status:.*/status: in_progress/&quot;</span> <span class="st">&quot;</span><span class="va">$TASK_FILE</span><span class="st">&quot;</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;assigned_to: agent-</span><span class="va">$(</span><span class="fu">date</span> +%Y%m%d%H%M%S<span class="va">)</span><span class="st">&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$TASK_FILE</span><span class="st">&quot;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 加载 Agent Profile</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/load-agent-profile.sh</span> <span class="st">&quot;</span><span class="va">$TOP_TASK</span><span class="st">&quot;</span></span></code></pre></div>
+<hr />
+<h3 id="手动模式任务推荐">4. 手动模式任务推荐</h3>
+<p><strong>文件</strong>: <code>scripts/recommend-tasks.sh</code></p>
+<p><strong>推荐理由分析</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">[[</span> <span class="st">&quot;</span><span class="va">$task_id</span><span class="st">&quot;</span> <span class="ot">==</span> <span class="pp">*</span><span class="st">&quot;bug&quot;</span><span class="pp">*</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">REASON</span><span class="op">=</span><span class="st">&quot;缺陷修复类任务，影响用户体验，应优先处理&quot;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="cf">elif</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$PRIORITY</span><span class="st">&quot;</span> <span class="ot">=</span> <span class="st">&quot;urgent&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">REASON</span><span class="op">=</span><span class="st">&quot;紧急任务，业务优先级最高&quot;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="cf">elif</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$PRIORITY</span><span class="st">&quot;</span> <span class="ot">=</span> <span class="st">&quot;high&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">REASON</span><span class="op">=</span><span class="st">&quot;高优先级任务，对业务影响较大&quot;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="cf">elif</span> <span class="bu">[</span> <span class="ot">-z</span> <span class="st">&quot;</span><span class="va">$DEPS</span><span class="st">&quot;</span> <span class="bu">]</span> <span class="kw">||</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$DEPS</span><span class="st">&quot;</span> <span class="ot">=</span> <span class="st">&quot;none&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">REASON</span><span class="op">=</span><span class="st">&quot;无依赖任务，可以独立开始执行&quot;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="va">REASON</span><span class="op">=</span><span class="st">&quot;任务已就绪，按优先级排序推荐&quot;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span></code></pre></div>
+<p><strong>输出格式</strong>:</p>
+<pre><code>┌──────────────────────────────────────────────────────────────┐
+│              推荐优先处理的任务                               │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  【推荐 1】FEAT-001-user-login                          │
+│  标题：实现用户登录功能                                      │
+│  优先级：high                                                │
+│  当前状态：ready                                             │
+│  依赖：无                                                    │
+│                                                              │
+│  推荐理由：                                                  │
+│  高优先级任务，对业务影响较大                                │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘</code></pre>
+<hr />
+<h3 id="agent-profile-加载">5. Agent Profile 加载</h3>
+<p><strong>文件</strong>: <code>scripts/load-agent-profile.sh</code></p>
+<p><strong>匹配规则</strong>: | 标签 | 匹配 Agent | Skills |
+|——|———-|——-| | <code>frontend</code>, <code>ui</code>,
+<code>react</code>, <code>vue</code> | frontend_dev |
+frontend_development, test_development, unit_test | |
+<code>backend</code>, <code>api</code>, <code>database</code> |
+backend_dev | backend_development, api_design, database_design | |
+<code>design</code>, <code>ux</code> | designer | ui_ux_design,
+icon_design | | <code>test</code>, <code>qa</code> | tester | unit_test,
+e2e_test, integration_test | | <code>devops</code>, <code>deploy</code>,
+<code>docker</code> | devops | docker_build, kubernetes_deploy,
+ci_cd_setup | | <code>docs</code>, <code>documentation</code> |
+doc_monitor | api_documentation, user_guide, technical_doc |</p>
+<p><strong>输出状态文件</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .eket/state/agents/FEAT-001.yml</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">task_id</span><span class="kw">:</span><span class="at"> FEAT-001</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">task_type</span><span class="kw">:</span><span class="at"> feature</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">agent_profile</span><span class="kw">:</span><span class="at"> frontend_dev</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">skills</span><span class="kw">:</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> development/frontend_development</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> development/test_development</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> testing/unit_test</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">loaded_at</span><span class="kw">:</span><span class="at"> 2026-03-20T13:30:00+08:00</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="fu">status</span><span class="kw">:</span><span class="at"> active</span></span></code></pre></div>
+<hr />
+<h2 id="文件结构总览">文件结构总览</h2>
+<pre><code>eket/
+├── docs/                              # 框架文档
+│   ├── INSTANCE_INITIALIZATION.md     # 实例初始化流程 ✅
+│   ├── COMPLETE_FRAMEWORK_v0.2.md     # v0.2 完整说明 ✅
+│   ├── THREE_REPO_ARCHITECTURE.md     # 三仓库架构 ✅
+│   ├── SKILLS_SYSTEM.md               # Skills 体系 ✅
+│   ├── AGENTS_CONFIG.md               # Agent 配置 ✅
+│   ├── BRANCH_STRATEGY.md             # 分支策略 ✅
+│   ├── AGENT_BEHAVIOR.md              # Agent 行为 ✅
+│   └── IMPLEMENTATION_STATUS.md       # 实现状态 (本文件) ✅
+│
+├── scripts/                           # 工具脚本
+│   ├── init-three-repos.sh            # 三仓库初始化 ✅
+│   ├── load-agent-profile.sh          # Agent Profile 加载 ✅
+│   ├── prioritize-tasks.sh            # 任务优先级排序 ✅
+│   └── recommend-tasks.sh             # 任务推荐 ✅
+│
+└── template/.claude/commands/         # Claude Code 命令
+    ├── eket-start.sh                  # 实例启动 ✅
+    ├── eket-claim.sh                  # 任务领取 ✅
+    ├── eket-mode.sh                   # 模式切换 ✅
+    ├── eket-status.sh                 # 状态查看 ✅
+    └── eket-init.sh                   # 初始化向导 ✅</code></pre>
+<hr />
+<h2 id="待实现功能">待实现功能</h2>
+<h3 id="p0---核心运行时">P0 - 核心运行时</h3>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>描述</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent 运行时</td>
+<td>实际执行加载的 Profile 和 Skills</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>Skills 调用机制</td>
+<td>YAML 定义的 Skills 的实际执行器</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>Jira 状态机</td>
+<td>完整的状态转换逻辑</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>消息队列系统</td>
+<td>智能体间通信</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>远程同步</td>
+<td>三仓库与远程服务器同步</td>
+<td>P1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="p1---增强功能">P1 - 增强功能</h3>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务依赖可视化</td>
+<td>图形化展示任务依赖关系</td>
+</tr>
+<tr>
+<td>Confluence 模板生成</td>
+<td>根据任务类型自动生成文档模板</td>
+</tr>
+<tr>
+<td>自动唤醒机制</td>
+<td>基于事件触发的智能体唤醒</td>
+</tr>
+<tr>
+<td>Web UI 监控</td>
+<td>智能体状态和任务进度可视化</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="使用示例">使用示例</h2>
+<h3 id="场景-1-新项目从零开始">场景 1: 新项目从零开始</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 初始化项目结构</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/init-project.sh</span> my-project /path/to/my-project</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 进入项目目录</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /path/to/my-project</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 启动 Claude</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="ex">claude</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 运行初始化向导</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-init</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. 初始化三仓库</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/init-three-repos.sh</span> my-project my-org github</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 6. 在 inbox/human_input.md 中写需求</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 保存并发送消息给 Claude</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 7. 进入任务设定模式 (自动)</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="co"># 协调智能体开始分析需求、创建 Tasks</span></span></code></pre></div>
+<h3 id="场景-2-已有项目继续开发">场景 2: 已有项目继续开发</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 进入项目目录</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /path/to/my-project</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 启动 Claude</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="ex">claude</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 启动实例 (自动检测模式)</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 4a. 自动模式：自动领取最高优先级任务</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span> <span class="at">-a</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 4b. 手动模式：查看推荐任务</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 选择合适的任务</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-claim</span> FEAT-001</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. 创建分支并开发</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout <span class="at">-b</span> feature/FEAT-001-login</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="co"># 6. 完成开发后提交 PR</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-review</span> FEAT-001</span></code></pre></div>
+<hr />
+<h2 id="测试清单">测试清单</h2>
+<table>
+<thead>
+<tr>
+<th>测试项</th>
+<th>状态</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>实例启动检测三仓库</td>
+<td>✅</td>
+<td>代码审查通过</td>
+</tr>
+<tr>
+<td>自动模式任务领取</td>
+<td>✅</td>
+<td>代码审查通过</td>
+</tr>
+<tr>
+<td>手动模式任务推荐</td>
+<td>✅</td>
+<td>代码审查通过</td>
+</tr>
+<tr>
+<td>Agent Profile 匹配</td>
+<td>✅</td>
+<td>代码审查通过</td>
+</tr>
+<tr>
+<td>任务状态更新</td>
+<td>✅</td>
+<td>代码审查通过</td>
+</tr>
+<tr>
+<td>端到端流程测试</td>
+<td>⏳</td>
+<td>待实际项目验证</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="下一步行动">下一步行动</h2>
+<h3 id="立即可做">立即可做</h3>
+<ol type="1">
+<li><strong>实际项目测试</strong>:
+在一个真实项目上运行完整的初始化流程</li>
+<li><strong>Skills YAML 创建</strong>: 创建文档中定义的 Skills 文件</li>
+<li><strong>Agent Profile YAML 创建</strong>: 创建 agents/*.yml
+配置文件</li>
+</ol>
+<h3 id="核心开发">核心开发</h3>
+<ol type="1">
+<li><strong>Agent 运行时</strong>: 实现读取 YAML 并执行对应 Skills
+的逻辑</li>
+<li><strong>Skills 执行器</strong>: 实现 Skills YAML
+中定义的实际操作</li>
+<li><strong>Jira 状态机</strong>: 实现完整的状态转换和验证逻辑</li>
+</ol>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team
+<strong>最后更新</strong>: 2026-03-20</p>
+</body>
+</html>

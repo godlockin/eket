@@ -1,0 +1,15 @@
+{
+  "type": "analysis_review_request",
+  "slaver_id": "slaver-001",
+  "ticket_id": "TASK-631",
+  "timestamp": "2026-05-13T01:21:00+08:00",
+  "analysis_report_path": "jira/tickets/EPIC-007/TASK-631/analysis-report.md",
+  "summary": "Shell Hook 轻量级 Context 计数器分析完成",
+  "estimated_hours": 2.25,
+  "risks": [
+    "Hook 失败可能卡住用户操作（已缓解：set +e 容错）",
+    "find 扫描大目录耗时（已缓解：-prune 排除 node_modules）",
+    "AC-4 依赖 TASK-632（软依赖，可先实现 AC-1/2/3）"
+  ],
+  "ready_for_implementation": true
+}

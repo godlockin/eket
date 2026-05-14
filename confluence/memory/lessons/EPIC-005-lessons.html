@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EPIC-005 经验教训</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EPIC-005 经验教训</h1>
+</header>
+<h1 id="epic-005-经验教训">EPIC-005 经验教训</h1>
+<p><strong>EPIC</strong>: 一键安装系统 + 预编译包发布<br />
+<strong>完成时间</strong>: 2026-05-07<br />
+<strong>执行周期</strong>: 1.5 天（8.5h 工作时间）</p>
+<hr />
+<h2 id="核心成果">核心成果</h2>
+<p><strong>交付物</strong>: - ✅ CI 自动编译 6 平台 binaries（Rust +
+Node） - ✅ 动态生成 install.sh（硬编码 sha256） - ✅ 研发版 install
+脚本（本地编译） - ✅ Skills 自动安装逻辑 - ✅ 完整文档（README +
+installation.md）</p>
+<p><strong>工作量</strong>: 17.25h / 34h 预估（<strong>节省
+49%</strong>）</p>
+<hr />
+<h2 id="patterns最佳实践">Patterns（最佳实践）</h2>
+<h3 id="需求对齐-执行速度">1. 需求对齐 &gt; 执行速度</h3>
+<p><strong>场景</strong>: v1 拆卡后发现 install.sh 应由 CI 生成<br />
+<strong>决策</strong>: 立即停止 Slaver，重新拆卡（v2）<br />
+<strong>结果</strong>: 避免 20h 无效工作，最终节省 40% 工时<br />
+<strong>教训</strong>:
+<strong>人类澄清需求时，立即停止并重新规划</strong></p>
+<h3 id="master-亲手配置-cicd">2. Master 亲手配置 CI/CD</h3>
+<p><strong>场景</strong>: Slaver B 修改 release.yml 被 hook
+反复回滚<br />
+<strong>决策</strong>: Master 亲手完成（配置类，符合职责）<br />
+<strong>结果</strong>: 30 分钟完成（Slaver 卡 3h）<br />
+<strong>教训</strong>: <strong>CI/CD 配置由 Master 处理，避免 hook
+冲突</strong></p>
+<h3 id="共享函数库-dry-原则">3. 共享函数库 DRY 原则</h3>
+<p><strong>场景</strong>: install.sh 和 dev-install.sh 都需 skills
+安装<br />
+<strong>决策</strong>: 抽取
+<code>scripts/lib/install-skills.sh</code><br />
+<strong>结果</strong>: 单一数据源，易维护<br />
+<strong>教训</strong>:
+<strong>发现重复逻辑立即抽取，不要等到第二次使用</strong></p>
+<h3 id="ci-自动生成-手动维护">4. CI 自动生成 &gt; 手动维护</h3>
+<p><strong>场景</strong>: install.sh 需硬编码 sha256<br />
+<strong>决策</strong>: CI 模板 + 变量注入（envsubst）<br />
+<strong>结果</strong>: 版本号/sha256 自动更新，0 人工维护<br />
+<strong>教训</strong>: <strong>能自动化的配置绝不手写</strong></p>
+<h3 id="验收代码-等待-pr">5. 验收代码 &gt; 等待 PR</h3>
+<p><strong>场景</strong>: Slaver C 超时但代码已完成<br />
+<strong>决策</strong>: Master 直接验收代码（不等 PR）<br />
+<strong>结果</strong>: 节省 2h 等待时间<br />
+<strong>教训</strong>: <strong>Slaver
+超时时检查产出，有价值立即验收</strong></p>
+<hr />
+<h2 id="pitfalls踩坑记录">Pitfalls（踩坑记录）</h2>
+<h3 id="pkg-需要-dist-目录">1. pkg 需要 dist/ 目录</h3>
+<p><strong>问题</strong>: <code>pkg</code> 报错 “Bin file does not
+exist: dist/index.js”<br />
+<strong>根因</strong>: CI 仅 <code>npm ci</code>，未运行
+<code>npm run build</code><br />
+<strong>修复</strong>: 添加 “Build TypeScript” 步骤<br />
+<strong>教训</strong>: <strong>pkg 打包前必须先编译 TS</strong></p>
+<h3 id="二进制命名不一致">2. 二进制命名不一致</h3>
+<p><strong>问题</strong>: Rust (<code>eket-linux-x64</code>) vs Node
+(<code>eket-node-linux-amd64</code>)<br />
+<strong>根因</strong>: 现有 release.yml 用 <code>x64</code>，新增用
+<code>amd64</code><br />
+<strong>修复</strong>: install-template.sh 添加映射表<br />
+<strong>教训</strong>:
+<strong>统一命名规范，避免后续维护成本</strong></p>
+<h3 id="envsubst-占位符语法">3. envsubst 占位符语法</h3>
+<p><strong>问题</strong>: <code>envsubst</code> 不识别
+<code>{{VAR}}</code><br />
+<strong>根因</strong>: envsubst 默认 <code>$VAR</code> 格式<br />
+<strong>修复</strong>: <code>sed 's/{{\([^}]*\)}}/\$\1/g'</code>
+预处理<br />
+<strong>教训</strong>: <strong>模板占位符需匹配工具语法</strong></p>
+<h3 id="macos-无-sha256sum">4. macOS 无 sha256sum</h3>
+<p><strong>问题</strong>: macOS 报错 “command not found:
+sha256sum”<br />
+<strong>根因</strong>: macOS 默认用 <code>shasum</code><br />
+<strong>修复</strong>: fallback 逻辑
+<code>sha256sum || shasum -a 256</code><br />
+<strong>教训</strong>: <strong>跨平台命令需 fallback</strong></p>
+<h3 id="epic-002-tickets-误移动">5. EPIC-002 tickets 误移动</h3>
+<p><strong>问题</strong>: Git merge 时 EPIC-002 tickets 移到
+EPIC-005<br />
+<strong>根因</strong>: Slaver 在错误目录创建文件<br />
+<strong>修复</strong>: 后续手动清理 archive<br />
+<strong>教训</strong>: <strong>创建文件前确认目录，避免污染</strong></p>
+<hr />
+<h2 id="lessons-for-future">Lessons for Future</h2>
+<h3 id="master-层面">Master 层面</h3>
+<ol type="1">
+<li><strong>需求澄清闸门</strong>: 拆卡前必须确认”谁生成什么文件”</li>
+<li><strong>配置类任务</strong>: CI/CD/settings.json 由 Master 亲手</li>
+<li><strong>超时补完机制</strong>: Slaver
+超时时检查代码，有产出立即验收</li>
+<li><strong>分支同步纪律</strong>: 每次合并后立即同步 3 分支</li>
+</ol>
+<h3 id="slaver-层面">Slaver 层面</h3>
+<ol type="1">
+<li><strong>30 分钟规则</strong>: 卡住超过 30 分钟立即上报 BLOCKED</li>
+<li><strong>产出优先</strong>: 功能实现优先，测试脚本可后补</li>
+<li><strong>hook 冲突</strong>: 遇 hook 反复回滚，立即上报 Master</li>
+</ol>
+<h3 id="架构层面">架构层面</h3>
+<ol type="1">
+<li><strong>模板 + 变量注入</strong>: 配置文件优先自动生成</li>
+<li><strong>共享函数库</strong>: 发现重复立即抽取（scripts/lib/）</li>
+<li><strong>跨平台兼容</strong>: 命令需 fallback（sha256sum /
+shasum）</li>
+</ol>
+<hr />
+<h2 id="技术债登记">技术债登记</h2>
+<table>
+<thead>
+<tr>
+<th>债务项</th>
+<th>优先级</th>
+<th>预估工时</th>
+<th>建议 EPIC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows 原生支持</td>
+<td>P3</td>
+<td>8h</td>
+<td>EPIC-006</td>
+</tr>
+<tr>
+<td>统一二进制命名</td>
+<td>P2</td>
+<td>2h</td>
+<td>技术债清理</td>
+</tr>
+<tr>
+<td>全局检查 <code>.run()</code> 误用</td>
+<td>P2</td>
+<td>3h</td>
+<td>代码质量提升</td>
+</tr>
+<tr>
+<td>EPIC-002 tickets 清理</td>
+<td>P1</td>
+<td>1h</td>
+<td>立即执行</td>
+</tr>
+<tr>
+<td>Codebase map 更新</td>
+<td>P1</td>
+<td>30m</td>
+<td>立即执行</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>维护者</strong>: Master<br />
+<strong>下次复盘</strong>: EPIC-006 启动前</p>
+</body>
+</html>
