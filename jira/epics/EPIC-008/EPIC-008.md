@@ -36,12 +36,17 @@
 ---
 
 ### M2: Git 集成 + 恢复流程（Week 2）
+**状态**: `ready` ✅  
 **交付物**: Checkpoint 进 git，新 Slaver 能 resume
 
-- TASK-X04: Checkpoint 分支自动创建/推送
-- TASK-X05: Master 读 checkpoint 分支
-- TASK-X06: `eket task:claim --resume` 实现
-- TASK-X07: GC 清理过期 checkpoint 分支
+- [TASK-X04](../../tickets/TASK-X04.md): Checkpoint 分支自动创建/推送 (6-8h, P0, backend)
+- [TASK-X05](../../tickets/TASK-X05.md): Master 读 checkpoint 分支 (4h, P0, backend)
+- [TASK-X06](../../tickets/TASK-X06.md): `eket task:claim --resume` 实现 (6h, P0, backend)
+- [TASK-X07](../../tickets/TASK-X07.md): GC 清理过期 checkpoint 分支 (4h, P1, devops)
+
+**总工时**: 20-22h  
+**依赖关系**: X04 → X05 → X06; X07 独立  
+**详细拆解**: [M2-task-breakdown.md](M2-task-breakdown.md)
 
 **Demo**: 模拟 Slaver 超时，新 Slaver resume 继续完成任务
 
@@ -155,6 +160,7 @@
 
 **状态历史**:
 - 2026-05-14 15:00 — 创建 Epic，状态 `planning`
-- （待更新）
+- 2026-05-14 17:00 — M1 完成，M2 tasks 拆解完成
+- 2026-05-14 17:30 — M2 状态设为 `ready`，4 个 tickets 创建
 
-**下一步**: Master 拆解 Milestone 1 的 3 个 tickets 并设为 `ready`
+**下一步**: Slaver 领取 TASK-X04（优先级最高，阻塞其他 M2 tasks）
