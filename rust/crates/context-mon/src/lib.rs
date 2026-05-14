@@ -1,3 +1,3 @@
 pub mod estimator;
 
-pub use estimator::{ContextEstimator, EstimateResult};
+pub use estimator::{ContextEstimator, EstimateMethod, EstimateResult};
