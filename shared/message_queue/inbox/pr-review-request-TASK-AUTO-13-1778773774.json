@@ -1,0 +1,10 @@
+{
+  "type": "pr_review_request",
+  "slaver_id": "slaver-022",
+  "ticket_id": "TASK-AUTO-13",
+  "branch": "feature/TASK-AUTO-13-supervisor",
+  "target_branch": "testing",
+  "pr_description_file": "outbox/review_requests/TASK-AUTO-13-pr-request.md",
+  "timestamp": "2026-05-14T23:55:00+08:00",
+  "priority": "P0"
+}
