@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Framework</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Framework</h1>
+</header>
+<h1 id="eket-framework">EKET Framework</h1>
+<p><strong>EKET (Elite Knowledge &amp; Engineering Team) — Human-AI
+Special Forces Team Coordination Protocol | Version 2.14.0-beta</strong>
+<strong>Last Update</strong>: 2026-04-26</p>
+<p><a href="README.md">English</a> | <a
+href="README_zh-CN.md">中文说明</a></p>
+<p><a href="https://opensource.org/licenses/MIT"><img
+src="https://img.shields.io/badge/License-MIT-yellow.svg"
+alt="License: MIT" /></a> <a href="https://www.rust-lang.org/"><img
+src="https://img.shields.io/badge/Rust-1.75+-orange.svg"
+alt="Rust" /></a> <a href="https://nodejs.org/"><img
+src="https://img.shields.io/badge/Node.js-%3E%3D18.0.0-blue.svg"
+alt="Node.js" /></a> <a href="https://www.gnu.org/software/bash/"><img
+src="https://img.shields.io/badge/Bash-4.0+-green.svg"
+alt="Bash" /></a></p>
+<blockquote>
+<p><strong>EKET (Elite Knowledge &amp; Engineering Team)</strong> is a
+<strong>Human-AI Special Forces Team Coordination Protocol</strong> —
+not a solo tool, not a large team platform.</p>
+<p>The target formation: <strong>1–5 humans</strong> setting direction,
+making decisions, and reviewing output — plus <strong>N AI
+Slavers</strong> handling execution at scale. A human Slaver and an AI
+Slaver follow the exact same protocol: claim a ticket, deliver, get
+reviewed. The protocol doesn’t care which kind you are.</p>
+<p>💡 <strong>Core Philosophy: Human judgment × AI execution
+density</strong>. EKET persists task states, message buses, and memory
+engines entirely within the local file system and Git — three physically
+separate repos (confluence / jira / code). Using a <strong>four-level
+progressive architecture</strong> (Shell → Rust → Node.js → Shell
+fallback), it automatically degrades based on available infrastructure,
+ensuring reliable multi-agent delivery even without cloud services.</p>
+</blockquote>
+<h2 id="vision-mission">🎯 Vision &amp; Mission</h2>
+<ul>
+<li><strong>Vision</strong>: A coordination protocol for human-AI
+special forces teams: 1–5 humans setting direction, N AI agents handling
+execution at scale. The same protocol works whether a Slaver is human or
+AI — both claim tickets, deliver, and get reviewed identically.</li>
+<li><strong>Mission</strong>: Make AI agents production-grade
+collaborators, not toys. Through strict role isolation (Master controls
+direction, Slavers own execution), file-system-native state persistence,
+and graceful degradation from Rust → Shell, EKET ensures reliable
+multi-agent software delivery even without cloud infrastructure.</li>
+</ul>
+<h2 id="core-concepts-features">🌟 Core Concepts &amp; Features</h2>
+<ul>
+<li>🤖 <strong>Special Forces Team Model</strong>: 1–5 humans provide
+direction and final judgment. N AI Slavers execute tickets in parallel.
+Human and AI Slavers are interchangeable — same ticket schema, same
+mailbox protocol, same PR review gate.</li>
+<li>🗂️ <strong>Three-Repo Physical Separation</strong>:
+<code>repo-confluence/</code> (knowledge base), <code>repo-jira/</code>
+(ticket lifecycle), and <code>repo-code/</code> (deliverables) are three
+independent Git repos. Communication happens via mailbox files, file
+queues, and SSE.</li>
+<li>⚙️ <strong>Industrial-Grade Constraints</strong>: Feature branch
+workflows, TDD, mandatory Analysis Reports, required PR reviews —
+prevent hallucination accumulation.</li>
+<li>🧠 <strong>Multi-Level Persistent Memory Engine</strong>: Layered
+memory management (session cache, project experience dictionary,
+Confluence global knowledge base).</li>
+<li>🛡️ <strong>Four-Level Elastic Runtime (Graceful
+Degradation)</strong>:
+<ul>
+<li><strong>Level 0 (Pure Shell)</strong>: Zero dependencies, instant
+startup. Runs on any machine.</li>
+<li><strong>Level 1 (Rust)</strong>: High-performance core (~21ms/cmd,
+~12MB memory). axum HTTP API for Dashboard.</li>
+<li><strong>Level 2 (Node.js)</strong>: Web Dashboard, OpenCLAW Gateway,
+Claude API integration.</li>
+<li><strong>Level 3 (Shell fallback)</strong>: Engaged when Node.js is
+unavailable.</li>
+</ul></li>
+</ul>
+<hr />
+<h2 id="quick-start">🚀 Quick Start</h2>
+<h3 id="one-click-installation-recommended">One-Click Installation
+(Recommended)</h3>
+<p>Download prebuilt binaries (no compilation required):</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsSL</span> https://github.com/godlockin/eket/releases/latest/download/install.sh <span class="kw">|</span> <span class="fu">bash</span></span></code></pre></div>
+<p>Verify installation:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">eket-rust</span> <span class="at">--version</span>  <span class="co"># Rust version (~10 MB)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">eket-node</span> <span class="at">--version</span>  <span class="co"># Node version (~50 MB)</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> doctor          <span class="co"># Environment check</span></span></code></pre></div>
+<h3 id="developer-local-build">Developer Local Build</h3>
+<p>For source code modification or debugging:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/godlockin/eket.git</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> eket</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/dev-install.sh</span></code></pre></div>
+<p><strong>详细安装指南</strong>: <a
+href="docs/installation.md">installation.md</a></p>
+<hr />
+<h2 id="four-level-architecture">🏗️ Four-Level Architecture</h2>
+<pre><code>┌─────────────────────────────────────────────────────┐
+│  Level 0: Shell   lib/adapters/hybrid-adapter.sh    │  zero deps, always available
+├─────────────────────────────────────────────────────┤
+│  Level 1: Rust    eket binary + axum :9877          │  high-performance core (NEW)
+│  ├── CLI (clap): claim / complete / task:create …   │
+│  ├── core/: SQLite, Redis, Election, Queue, Cache   │
+│  └── HTTP API (/api/v1/*) for Node.js Dashboard     │
+├─────────────────────────────────────────────────────┤
+│  Level 2: Node.js (Web / LLM layer)                 │  web UI + Claude API
+│  ├── web-server (Express) → Dashboard               │
+│  ├── openclaw-gateway → LLM proxy                   │
+│  └── claude-runner → Claude API calls               │
+├─────────────────────────────────────────────────────┤
+│  Level 3: Shell fallback (Node.js unavailable)      │
+└─────────────────────────────────────────────────────┘</code></pre>
+<p>Degradation order:
+<code>Rust → Node.js → Shell → graceful exit</code></p>
+<h3 id="http-api-authentication-optional">HTTP API Authentication
+(Optional)</h3>
+<p>The Rust HTTP server (<code>eket server</code>) supports optional
+Bearer token authentication:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Start with authentication disabled (default)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> server <span class="at">--port</span> 9877</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Enable authentication via environment variable</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_AUTH_TOKEN</span><span class="op">=</span><span class="st">&quot;your-secret-token-here&quot;</span> <span class="ex">eket</span> server</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Or via CLI flag</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> server <span class="at">--auth-token</span> <span class="st">&quot;your-secret-token-here&quot;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Access protected endpoints</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-H</span> <span class="st">&quot;Authorization: Bearer your-secret-token-here&quot;</span> <span class="dt">\</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>     http://localhost:9877/api/v1/tasks</span></code></pre></div>
+<p><strong>Whitelisted paths</strong> (no auth required):
+<code>/ready</code>, <code>/live</code>, <code>/health</code>,
+<code>/sse/events</code></p>
+<p><strong>Error response</strong> (401):
+<code>{"error": "invalid_token"}</code> or
+<code>{"error": "missing_token"}</code></p>
+<hr />
+<h2 id="performance-rust-vs-node.js">📊 Performance (Rust vs
+Node.js)</h2>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Rust</th>
+<th>Node.js</th>
+<th>Improvement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>task:claim</code></td>
+<td>~21ms</td>
+<td>~400ms</td>
+<td><strong>19×</strong></td>
+</tr>
+<tr>
+<td>Startup time</td>
+<td>~8ms</td>
+<td>~1,500ms</td>
+<td><strong>187×</strong></td>
+</tr>
+<tr>
+<td>Memory footprint</td>
+<td>~12MB</td>
+<td>~120MB</td>
+<td><strong>10×</strong></td>
+</tr>
+<tr>
+<td>Test suite</td>
+<td>253 unit tests</td>
+<td>1,519 unit tests</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="core-commands">📋 Core Commands</h2>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rust CLI</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> system:doctor</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> task:create <span class="st">&quot;ticket title&quot;</span> [--priority P1]</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> task:claim <span class="pp">[</span><span class="ss">TASK</span><span class="pp">-</span><span class="ss">NNN</span><span class="pp">]</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> task:complete TASK-NNN</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> master:heartbeat             <span class="co"># long-running Master loop</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> slaver:poll                  <span class="co"># long-polling mailbox</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Node.js (web layer)</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js web:dashboard <span class="at">--port</span> 3000</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js gateway:start <span class="at">--port</span> 8080</span></code></pre></div>
+<p>Full command reference: <a
+href=".claude/skills/eket/SKILL.md"><code>.claude/skills/eket/SKILL.md</code></a></p>
+<hr />
+<h2 id="documentation">📖 Documentation</h2>
+<table>
+<colgroup>
+<col style="width: 43%" />
+<col style="width: 56%" />
+</colgroup>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="docs/README.md"><code>docs/</code></a></td>
+<td>Architecture, guides, ADRs, ops runbooks</td>
+</tr>
+<tr>
+<td><a
+href="template/docs/MASTER-RULES.md"><code>template/docs/MASTER-RULES.md</code></a></td>
+<td>Master role rules</td>
+</tr>
+<tr>
+<td><a
+href="template/docs/SLAVER-RULES.md"><code>template/docs/SLAVER-RULES.md</code></a></td>
+<td>Slaver role rules</td>
+</tr>
+<tr>
+<td><a href="CLAUDE.md"><code>CLAUDE.md</code></a></td>
+<td>Claude Code session instructions</td>
+</tr>
+<tr>
+<td><a href="CHANGELOG.md"><code>CHANGELOG.md</code></a></td>
+<td>Full version history</td>
+</tr>
+<tr>
+<td><a
+href="confluence/memory/memory-index.md"><code>confluence/memory/</code></a></td>
+<td>Project knowledge base</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="development">🛠️ Development</h2>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rust</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> rust <span class="kw">&amp;&amp;</span> <span class="ex">cargo</span> build <span class="at">--release</span> <span class="kw">&amp;&amp;</span> <span class="ex">cargo</span> test <span class="at">--workspace</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Node.js</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> run build <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> test <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> run lint</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># End-to-end smoke test</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> tests/e2e_smoke.sh</span></code></pre></div>
+<hr />
+<h2 id="version-history">🎯 Version History</h2>
+<p>See <a href="CHANGELOG.md"><code>CHANGELOG.md</code></a> for full
+history.</p>
+<ul>
+<li><strong>v2.14.0-beta</strong> (2026-04-26) — Red team: 14 bugs fixed
+(1 P0 + 7 P1 + 6 P2); 253 Rust + 1519 Node tests</li>
+<li><strong>v2.13.0</strong> (2026-04-21) — Rust migration complete;
+axum API server; four-level degradation</li>
+<li><strong>v2.9.0-alpha</strong> (2026-04-16) — Master-Slaver Rust CLI
+bootstrap; three-level degradation</li>
+</ul>
+<hr />
+<h2 id="contributing">🤝 Contributing</h2>
+<p>Read <a href="CONTRIBUTING.md">CONTRIBUTING.md</a>. Branch strategy:
+<code>feature/*</code> → <code>testing</code> → <code>main</code> →
+<code>miao</code>.</p>
+<h2 id="license">📜 License</h2>
+<p><a href="LICENSE">MIT License</a></p>
+</body>
+</html>

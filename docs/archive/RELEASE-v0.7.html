@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Framework v0.7 发布说明</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Framework v0.7 发布说明</h1>
+</header>
+<h1 id="eket-framework-v0.7-发布说明">EKET Framework v0.7 发布说明</h1>
+<p><strong>发布日期</strong>: 2026-03-25 <strong>版本</strong>: 0.7.2
+(最终版)</p>
+<hr />
+<h2 id="概述">概述</h2>
+<p>EKET v0.7 是一个重大版本升级，引入了完整的 Node.js
+混合架构，实现了高级功能模块，并进行了全面的代码质量提升。</p>
+<hr />
+<h2 id="主要特性">主要特性</h2>
+<h3 id="node.js-混合架构">1. Node.js 混合架构</h3>
+<h4 id="核心模块">核心模块</h4>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>功能</th>
+<th>依赖</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>redis-client.ts</code></td>
+<td>Redis 客户端封装</td>
+<td>ioredis</td>
+</tr>
+<tr>
+<td><code>sqlite-client.ts</code></td>
+<td>SQLite 客户端封装</td>
+<td>better-sqlite3</td>
+</tr>
+<tr>
+<td><code>message-queue.ts</code></td>
+<td>混合消息队列</td>
+<td>ioredis / 文件队列</td>
+</tr>
+<tr>
+<td><code>heartbeat-monitor.ts</code></td>
+<td>Slaver 心跳监控</td>
+<td>ioredis</td>
+</tr>
+<tr>
+<td><code>file-queue-manager.ts</code></td>
+<td>文件队列持久化</td>
+<td>fs (Node.js 内置)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="三级降级策略">三级降级策略</h4>
+<pre><code>┌─────────────────────────────────────────────────────────┐
+│                   命令路由层                              │
+├─────────────────────────────────────────────────────────┤
+│  第一级：Node.js 高级功能                                 │
+│  - Redis Pub/Sub 消息队列                                │
+│  - Redis Hash 心跳存储                                   │
+│  - SQLite 数据持久化                                     │
+│                                                         │
+│  ↓ (Redis 不可用)                                        │
+│                                                         │
+│  第二级：文件队列降级                                    │
+│  - .eket/data/queue/*.json                              │
+│  - 去重机制 (processed.json)                            │
+│  - 过期清理 + 自动归档                                   │
+│                                                         │
+│  ↓ (Node.js 不可用)                                      │
+│                                                         │
+│  第三级：Shell 降级                                      │
+│  - 基础文件操作                                          │
+│  - Git 工作流                                            │
+└─────────────────────────────────────────────────────────┘</code></pre>
+<hr />
+<h3 id="phase-2-核心功能">2. Phase 2 核心功能</h3>
+<h4 id="项目初始化向导-init-wizard.ts">2.1 项目初始化向导
+(<code>init-wizard.ts</code>)</h4>
+<p><strong>功能</strong>: - 交互式配置三个 Git
+仓库（confluence/jira/code_repo） - 支持认证信息配置（用户名/Token） -
+Redis 配置（可选） - SQLite 配置（可选） - 自动生成
+<code>.eket/config.yml</code></p>
+<p><strong>使用方式</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> node/dist/index.js init</span></code></pre></div>
+<h4 id="消息队列-message-queue.ts">2.2 消息队列
+(<code>message-queue.ts</code>)</h4>
+<p><strong>功能</strong>: - Redis 消息队列实现 - 文件队列降级模式 -
+混合模式（自动降级） - 支持订阅/发布模式</p>
+<p><strong>使用方式</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> mq <span class="op">=</span> <span class="fu">createMessageQueue</span>({ mode<span class="op">:</span> <span class="st">&#39;auto&#39;</span> })<span class="op">;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> mq<span class="op">.</span><span class="fu">connect</span>()<span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> mq<span class="op">.</span><span class="fu">subscribe</span>(<span class="st">&#39;task_updates&#39;</span><span class="op">,</span> (message) <span class="kw">=&gt;</span> {</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;收到消息:&#39;</span><span class="op">,</span> message)<span class="op">;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> mq<span class="op">.</span><span class="fu">publish</span>(<span class="st">&#39;test&#39;</span><span class="op">,</span> <span class="fu">createMessage</span>(<span class="op">...</span>))<span class="op">;</span></span></code></pre></div>
+<h4 id="slaver-心跳监控-heartbeat-monitor.ts">2.3 Slaver 心跳监控
+(<code>heartbeat-monitor.ts</code>)</h4>
+<p><strong>功能</strong>: - <code>SlaverHeartbeatManager</code>: Slaver
+端心跳发送 - <code>ActiveSlaverMonitor</code>: 监控端活跃状态检查 -
+可配置心跳间隔和超时时间</p>
+<p><strong>使用方式</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 启动心跳</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> node/dist/index.js heartbeat:start slaver_001</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 查看状态</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> node/dist/index.js heartbeat:status</span></code></pre></div>
+<hr />
+<h3 id="phase-3-高级功能">3. Phase 3 高级功能</h3>
+<h4 id="pr-提交命令-submit-pr.ts">3.1 PR 提交命令
+(<code>submit-pr.ts</code>)</h4>
+<p><strong>功能</strong>: - 自动检测当前分支和目标分支 -
+推送分支到远程仓库 - 创建 PR/MR（支持 GitHub/GitLab/Gitee） - 添加
+Reviewers（仅 GitHub） - 启用自动合并（仅 GitHub） - 发送 PR
+通知到消息队列</p>
+<p><strong>平台支持</strong>: | 平台 | PR 创建 | Reviewers | 自动合并 |
+|——|——–|———–|———| | GitHub | ✓ | ✓ | ✓ | | GitLab | ✓ | ✗ | ✗ | | Gitee
+| ✓ | ✗ | ✗ |</p>
+<p><strong>使用方式</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 基础用法</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> node/dist/index.js submit-pr</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 指定 PR 标题和描述</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> node/dist/index.js submit-pr <span class="at">-t</span> <span class="st">&quot;feat: 用户登录&quot;</span> <span class="at">-d</span> <span class="st">&quot;实现 OAuth 2.0 登录功能&quot;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 添加 Reviewers</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> node/dist/index.js submit-pr <span class="at">-r</span> <span class="st">&quot;alice,bob&quot;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 创建 Draft PR</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> node/dist/index.js submit-pr <span class="at">--draft</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 启用自动合并</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> node/dist/index.js submit-pr <span class="at">--auto-merge</span></span></code></pre></div>
+<h4 id="三仓库自动克隆-init-three-repos.sh">3.2 三仓库自动克隆
+(<code>init-three-repos.sh</code>)</h4>
+<p><strong>增强功能</strong>: - 从 <code>.eket/config/config.yml</code>
+读取配置 - 自动解析 YAML 配置 - 支持多平台（GitHub/GitLab/Gitee） -
+自动配置 Git submodule</p>
+<p><strong>使用方式</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 在运行 init-wizard 后执行</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/init-three-repos.sh</span></span></code></pre></div>
+<h4 id="文件队列持久化-file-queue-manager.ts">3.3 文件队列持久化
+(<code>file-queue-manager.ts</code>)</h4>
+<p><strong>功能</strong>: - 消息去重（基于 <code>processed.json</code>）
+- 过期消息清理（默认 24 小时） - 自动归档（默认 1 小时后） -
+定期清理（默认每小时） - 历史导出</p>
+<p><strong>配置</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> queue <span class="op">=</span> <span class="fu">createFileQueueManager</span>({</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  queueDir<span class="op">:</span> <span class="st">&#39;./data/queue&#39;</span><span class="op">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  archiveDir<span class="op">:</span> <span class="st">&#39;./data/queue-archive&#39;</span><span class="op">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  maxAge<span class="op">:</span> <span class="dv">24</span> <span class="op">*</span> <span class="dv">60</span> <span class="op">*</span> <span class="dv">60</span> <span class="op">*</span> <span class="dv">1000</span><span class="op">,</span>      <span class="co">// 24 小时</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  archiveAfter<span class="op">:</span> <span class="dv">60</span> <span class="op">*</span> <span class="dv">60</span> <span class="op">*</span> <span class="dv">1000</span><span class="op">,</span>     <span class="co">// 1 小时</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="完整-cli-命令列表">完整 CLI 命令列表</h2>
+<h3 id="系统命令">系统命令</h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>check</code></td>
+<td>检查 Node.js 模块可用性</td>
+<td><code>node node/dist/index.js check</code></td>
+</tr>
+<tr>
+<td><code>doctor</code></td>
+<td>诊断系统状态</td>
+<td><code>node node/dist/index.js doctor</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="redis-命令">Redis 命令</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>redis:check</code></td>
+<td>检查 Redis 连接</td>
+<td><code>node node/dist/index.js redis:check</code></td>
+</tr>
+<tr>
+<td><code>redis:list-slavers</code></td>
+<td>列出活跃 Slaver</td>
+<td><code>node node/dist/index.js redis:list-slavers</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="sqlite-命令">SQLite 命令</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sqlite:check</code></td>
+<td>检查 SQLite 数据库</td>
+<td><code>node node/dist/index.js sqlite:check</code></td>
+</tr>
+<tr>
+<td><code>sqlite:list-retros</code></td>
+<td>列出 Retrospective</td>
+<td><code>node node/dist/index.js sqlite:list-retros</code></td>
+</tr>
+<tr>
+<td><code>sqlite:search &lt;kw&gt;</code></td>
+<td>搜索 Retrospective</td>
+<td><code>node node/dist/index.js sqlite:search "性能"</code></td>
+</tr>
+<tr>
+<td><code>sqlite:report</code></td>
+<td>生成统计报告</td>
+<td><code>node node/dist/index.js sqlite:report</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="任务管理命令">任务管理命令</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>init</code></td>
+<td>项目初始化向导</td>
+<td><code>node node/dist/index.js init</code></td>
+</tr>
+<tr>
+<td><code>claim [id]</code></td>
+<td>领取任务</td>
+<td><code>node node/dist/index.js claim FEAT-123</code></td>
+</tr>
+<tr>
+<td><code>claim --auto</code></td>
+<td>自动领取任务</td>
+<td><code>node node/dist/index.js claim --auto</code></td>
+</tr>
+<tr>
+<td><code>submit-pr</code></td>
+<td>提交 PR</td>
+<td><code>node node/dist/index.js submit-pr -t "feat: 登录"</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="心跳监控命令">心跳监控命令</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>heartbeat:start &lt;id&gt;</code></td>
+<td>启动心跳</td>
+<td><code>node node/dist/index.js heartbeat:start slaver_001</code></td>
+</tr>
+<tr>
+<td><code>heartbeat:status</code></td>
+<td>查看心跳状态</td>
+<td><code>node node/dist/index.js heartbeat:status</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="消息队列命令">消息队列命令</h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mq:test</code></td>
+<td>测试消息队列</td>
+<td><code>node node/dist/index.js mq:test</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="代码质量提升-v0.7.2">代码质量提升 (v0.7.2)</h2>
+<h3 id="类型安全">类型安全</h3>
+<ul>
+<li>修复 ioredis ESM 兼容性问题</li>
+<li>统一使用 <code>.js</code> 扩展名进行相对导入</li>
+<li>添加显式类型注解和类型守卫</li>
+</ul>
+<h3 id="错误处理">错误处理</h3>
+<ul>
+<li>使用 <code>EketError</code> 统一错误类型</li>
+<li>添加错误码便于日志关联</li>
+<li>改进错误上下文保留</li>
+</ul>
+<h3 id="dry-原则">DRY 原则</h3>
+<ul>
+<li>创建 <code>yaml-parser.ts</code> 共享工具</li>
+<li>消除重复的 <code>findProjectRoot()</code> 和
+<code>parseSimpleYAML()</code> 函数</li>
+<li>提取共用的类型定义</li>
+</ul>
+<h3 id="防御式编程">防御式编程</h3>
+<ul>
+<li>添加 null/undefined 检查</li>
+<li>配置对象防御性拷贝</li>
+<li>改进时间戳处理逻辑</li>
+</ul>
+<h3 id="不可变性">不可变性</h3>
+<ul>
+<li><code>EketError</code> 属性改为 <code>readonly</code></li>
+<li>使用 <code>const</code> 默认，仅在必要时使用 <code>let</code></li>
+<li>返回新对象而非修改参数</li>
+</ul>
+<hr />
+<h2 id="目录结构">目录结构</h2>
+<pre><code>eket/
+├── node/
+│   ├── src/
+│   │   ├── index.ts                      # CLI 入口
+│   │   ├── types/
+│   │   │   └── index.ts                  # 类型定义
+│   │   ├── core/
+│   │   │   ├── redis-client.ts           # Redis 客户端
+│   │   │   ├── sqlite-client.ts          # SQLite 客户端
+│   │   │   ├── message-queue.ts          # 消息队列
+│   │   │   ├── heartbeat-monitor.ts      # 心跳监控
+│   │   │   └── file-queue-manager.ts     # 文件队列
+│   │   ├── commands/
+│   │   │   ├── claim.ts                  # 任务领取
+│   │   │   ├── claim-helpers.ts          # claim 辅助
+│   │   │   ├── init-wizard.ts            # 初始化向导
+│   │   │   └── submit-pr.ts              # PR 提交
+│   │   └── utils/
+│   │       ├── execFileNoThrow.ts        # 安全执行
+│   │       ├── process-cleanup.ts        # 进程清理
+│   │       └── yaml-parser.ts            # YAML 解析
+│   ├── package.json
+│   └── tsconfig.json
+├── scripts/
+│   ├── init-project.sh                   # 项目初始化
+│   ├── init-three-repos.sh               # 三仓库初始化
+│   ├── enable-advanced.sh                # 启用高级功能
+│   └── ...
+├── lib/adapters/
+│   └── hybrid-adapter.sh                 # 混合适配器
+└── docs/
+    ├── IMPLEMENTATION-v0.7-phase2.md     # Phase 2 文档
+    ├── IMPLEMENTATION-v0.7-phase3.md     # Phase 3 文档
+    └── v0.7-upgrade-guide.md             # 升级指南</code></pre>
+<hr />
+<h2 id="安装和升级">安装和升级</h2>
+<h3 id="新项目安装">新项目安装</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 克隆模板</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/your-org/eket-template.git my-project</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> my-project</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 运行初始化向导</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> node/dist/index.js init</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 初始化三仓库</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/init-three-repos.sh</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 启用高级功能</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/enable-advanced.sh</span></span></code></pre></div>
+<h3 id="现有项目升级">现有项目升级</h3>
+<p>详见 <a
+href="docs/v0.7-upgrade-guide.md">docs/v0.7-upgrade-guide.md</a></p>
+<hr />
+<h2 id="环境变量">环境变量</h2>
+<table>
+<thead>
+<tr>
+<th>变量</th>
+<th>说明</th>
+<th>默认值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EKET_REDIS_HOST</code></td>
+<td>Redis 主机</td>
+<td><code>localhost</code></td>
+</tr>
+<tr>
+<td><code>EKET_REDIS_PORT</code></td>
+<td>Redis 端口</td>
+<td><code>6379</code></td>
+</tr>
+<tr>
+<td><code>EKET_REDIS_PASSWORD</code></td>
+<td>Redis 密码</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="技术栈">技术栈</h2>
+<h3 id="运行时">运行时</h3>
+<ul>
+<li><strong>Node.js</strong>: &gt;= 18.0.0</li>
+<li><strong>TypeScript</strong>: 5.x</li>
+<li><strong>Target</strong>: ES2022</li>
+</ul>
+<h3 id="依赖">依赖</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;ioredis&quot;</span><span class="fu">:</span> <span class="st">&quot;^5.x&quot;</span><span class="fu">,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;better-sqlite3&quot;</span><span class="fu">:</span> <span class="st">&quot;^9.x&quot;</span><span class="fu">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;commander&quot;</span><span class="fu">:</span> <span class="st">&quot;^12.x&quot;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="开发">开发</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@types/node&quot;</span><span class="fu">:</span> <span class="st">&quot;^20.x&quot;</span><span class="fu">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;typescript&quot;</span><span class="fu">:</span> <span class="st">&quot;^5.x&quot;</span><span class="fu">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;eslint&quot;</span><span class="fu">:</span> <span class="st">&quot;^8.x&quot;</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<hr />
+<h2 id="变更日志">变更日志</h2>
+<h3 id="v0.7.2-2026-03-25">v0.7.2 (2026-03-25)</h3>
+<p><strong>Refactor</strong>: - 类型安全修复和 ESM 兼容性改进 -
+错误处理统一使用 <code>EketError</code> - DRY 优化，创建
+<code>yaml-parser.ts</code> 共享工具 - 防御式编程和不可变性改进</p>
+<h3 id="v0.7.1-2026-03-25">v0.7.1 (2026-03-25)</h3>
+<p><strong>Feat</strong>: - PR 提交命令（支持 GitHub/GitLab/Gitee） -
+三仓库克隆增强（从 config.yml 读取） -
+文件队列持久化（去重、过期、归档）</p>
+<h3 id="v0.7.0-2026-03-24">v0.7.0 (2026-03-24)</h3>
+<p><strong>Feat</strong>: - Node.js 混合架构实现 - Redis 客户端和 SQLite
+客户端 - 消息队列和心跳监控 - 项目初始化向导 - 任务领取命令</p>
+<hr />
+<h2 id="贡献者">贡献者</h2>
+<ul>
+<li>EKET Framework Team</li>
+<li>Claude Opus 4.6 (代码质量改进)</li>
+</ul>
+<hr />
+<p><strong>许可证</strong>: MIT <strong>维护者</strong>: EKET Framework
+Team</p>
+</body>
+</html>

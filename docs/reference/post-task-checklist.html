@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>任务完成后标准检查清单 — EKET Post-Task Checklist</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">任务完成后标准检查清单 — EKET Post-Task Checklist</h1>
+</header>
+<h1
+id="任务完成后标准检查清单-eket-post-task-checklist">任务完成后标准检查清单
+— EKET Post-Task Checklist</h1>
+<h2 id="使用场景">使用场景</h2>
+<p><strong>触发时机</strong>: - 单个 Ticket 完成后 - 一批任务完成后 -
+EPIC/Sprint 完成后 - 用户问”做好了吗”时</p>
+<p><strong>目的</strong>: 确保无遗漏、无冗余、经验沉淀</p>
+<hr />
+<h2 id="项强制检查-1-项补充">✅ 4 项强制检查 + 1 项补充</h2>
+<h3 id="文档是否更新">1️⃣ 文档是否更新？</h3>
+<p><strong>检查清单</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1.1 检查未提交的文档</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> status <span class="at">--short</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="st">&quot;\.md$&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 1.2 检查 confluence/memory/ 是否有新文件</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-lt</span> confluence/memory/<span class="pp">*</span>.md <span class="kw">|</span> <span class="fu">head</span> <span class="at">-5</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 1.3 检查 memory-index.md 是否同步</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> diff confluence/memory/memory-index.md</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 1.4 检查 jira/tickets/ 状态是否更新</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-l</span> <span class="st">&quot;状态.*donmd</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="st">- ❌ Ticket 状态未同步（MD 显示 done 但未提交）</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="st">- ❌ 复盘节未填写（TODO 占位）</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="st">- ❌ EPIC 完成但 requirement-analysis.md 未归档</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="st">**修复**:</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="kw">```</span><span class="fu">bash</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co"># 更新索引</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="ex">vim</span> confluence/memory/memory-index.md  <span class="co"># 补充新文件</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co"># 验证一致性</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/check-requirement-analysis.sh <span class="op">&lt;</span>EPIC-ID<span class="op">&gt;</span>  <span class="co"># EPIC 专用</span></span></code></pre></div>
+<hr />
+<h3 id="要不要更新本地-skills">2️⃣ 要不要更新本地 skills？</h3>
+<p><strong>检查清单</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 2.1 skill 源文件是否变更</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> diff eket/.claude/skills/eket/SKILL.md</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2.2 检查本地 skill 与源文件差异</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">diff</span> eket/.claude/skills/eket/SKILL.md ~/.claude/skills/eket/SKILL.md</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 2.3 检查是否有 evolution.json 待同步</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> ~/.claude/pending-evolutions.jsonl <span class="dv">2</span><span class="op">&gt;</span>/dev/null</span></code></pre></div>
+<p><strong>决策树</strong>:</p>
+<pre><code>IF skill 源文件有变更:
+  → bash scripts/install-skill.sh --update
+  → 验证: diff 应无差异
+
+IF 有 pending-evolutions.jsonl:
+  → Stop hook 会自动 flush
+  → 手动检查: cat .claude/skills/eket/evolution.json
+  
+IF 都无变更:
+  → 跳过</code></pre>
+<p><strong>常见遗漏</strong>: - ❌ 改了源文件但未执行 install-skill.sh -
+❌ 本地 skill 过时，下次启动加载旧版本 - ❌ evolution.json 未同步到
+skill 目录</p>
+<p><strong>修复</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/install-skill.sh <span class="at">--update</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">diff</span> eket/.claude/skills/eket/SKILL.md ~/.claude/skills/eket/SKILL.md</span></code></pre></div>
+<hr />
+<h3 id="有没有经验教训">3️⃣ 有没有经验教训？</h3>
+<p><strong>检查清单</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 3.1 本批任务是否踩坑</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-r</span> <span class="st">&quot;TODO\|FIXME\|HACK\|问题\|坑&quot;</span> jira/tickets/TASK-<span class="pp">*</span>.md <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-v</span> archive</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 3.2 是否发现通用模式</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-r</span> <span class="st">&quot;模式\|pattern\|解法&quot;</span> jira/tickets/TASK-<span class="pp">*</span>.md <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-v</span> archive</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3.3 复盘节是否填写</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-L</span> <span class="st">&quot;## 复盘&quot;</span> jira/tickets/TASK-<span class="pp">*</span>.md <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-v</span> archive <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 3.4 是否创建了 lessons-learned 文件</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-lt</span> confluence/memory/lessons/<span class="pp">*</span>.md <span class="kw">|</span> <span class="fu">head</span> <span class="at">-3</span></span></code></pre></div>
+<p><strong>决策树</strong>:</p>
+<pre><code>遇到坑（非显然问题）:
+  → confluence/memory/pitfalls/{症状描述}.md
+
+发现通用解法:
+  → confluence/memory/patterns/{主题}.md
+
+单次任务经验:
+  → confluence/memory/lessons/{主题}.md
+  → 或写入 ticket ## 复盘节
+
+批量任务总结:
+  → confluence/memory/lessons-learned-YYYY-MM-DD.md</code></pre>
+<p><strong>常见遗漏</strong>: - ❌ 遇到坑但只写在 ticket，未沉淀到
+pitfalls/ - ❌ 复盘节只有 TODO，未实际填写 - ❌
+本轮清理了大量文件，但未写经验教训 - ❌ 发现重要模式但未文档化</p>
+<p><strong>本次示例</strong>（已完成）: - ✅
+<code>confluence/memory/lessons/deep-cleanup-lessons-2026-05-07.md</code>（3个严重错误
++ 7条教训） - ✅
+<code>confluence/memory/lessons-learned-2026-05-06.md</code>（DB+MD
+双写修复） - ✅ 更新 memory-index.md 补充新文件</p>
+<hr />
+<h3 id="有没有提交推送">4️⃣ 有没有提交推送？</h3>
+<p><strong>检查清单</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 4.1 是否有未提交的变更</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> status <span class="at">--short</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 4.2 本地分支是否领先 remote</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> status <span class="kw">|</span> <span class="fu">grep</span> <span class="st">&quot;Your branch is ahead&quot;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 4.3 三分支是否同步</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log miao..testing <span class="at">--oneline</span>  <span class="co"># 应为空</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log testing..main <span class="at">--oneline</span>  <span class="co"># 应为空</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 4.4 验证 remote 最新</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> log <span class="at">--oneline</span> <span class="at">-3</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> ls-remote origin miao <span class="kw">|</span> <span class="fu">cut</span> <span class="at">-f1</span>  <span class="co"># 对比 commit hash</span></span></code></pre></div>
+<p><strong>标准推送流程</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push origin miao</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout testing <span class="kw">&amp;&amp;</span> <span class="fu">git</span> merge miao <span class="at">--no-edit</span> <span class="kw">&amp;&amp;</span> <span class="fu">git</span> push origin testing</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout main <span class="kw">&amp;&amp;</span> <span class="fu">git</span> merge testing <span class="at">--no-edit</span> <span class="kw">&amp;&amp;</span> <span class="fu">git</span> push origin main</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout miao</span></code></pre></div>
+<p><strong>常见遗漏</strong>: - ❌ 只提交到本地，未 push - ❌ 只 push 到
+miao，未同步 testing/main - ❌ merge 有冲突但未解决 - ❌
+分支顺序错误（直接 miao → main 跳过 testing）</p>
+<p><strong>本次示例</strong>（已完成）: - ✅ 16次提交全部推送 - ✅
+每次都执行三分支同步 - ✅ 验证 <code>git status</code> 显示 clean</p>
+<hr />
+<h2 id="自动化检查脚本建议创建">🤖 自动化检查脚本（建议创建）</h2>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># scripts/post-task-check.sh</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 1️⃣ 文档检查&quot;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> status <span class="at">--short</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="st">&quot;\.md$&quot;</span> <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">&quot;⚠️  有未提交文档&quot;</span> <span class="kw">||</span> <span class="bu">echo</span> <span class="st">&quot;✅ 无未提交文档&quot;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="at">-e</span> <span class="st">&quot;\n## 2️⃣ Skill 检查&quot;</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="fu">diff</span> eket/.claude/skills/eket/SKILL.md ~/.claude/skills/eket/SKILL.md <span class="op">&gt;</span>/dev/null <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="dt">\</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">&quot;✅ Skill 已同步&quot;</span> <span class="kw">||</span> <span class="bu">echo</span> <span class="st">&quot;⚠️  Skill 需更新&quot;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="at">-e</span> <span class="st">&quot;\n## 3️⃣ 经验教训检查&quot;</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="va">RECENT_LESSONS</span><span class="op">=</span><span class="va">$(</span><span class="fu">find</span> confluence/memory/<span class="dt">{lessons</span><span class="op">,</span><span class="dt">pitfalls</span><span class="op">,</span><span class="dt">patterns}</span>/ <span class="at">-name</span> <span class="st">&quot;*.md&quot;</span> <span class="at">-mtime</span> <span class="at">-1</span> <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span><span class="va">)</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> <span class="st">&quot;</span><span class="va">$RECENT_LESSONS</span><span class="st">&quot;</span> <span class="ot">-gt</span> 0 <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">&quot;✅ 有新增经验 (</span><span class="va">$RECENT_LESSONS</span><span class="st"> 个)&quot;</span> <span class="kw">||</span> <span class="bu">echo</span> <span class="st">&quot;⚠️  本轮无经验沉淀&quot;</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="at">-e</span> <span class="st">&quot;\n## 4️⃣ 提交推送检查&quot;</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> status <span class="at">--short</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-q</span> . <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">&quot;⚠️  有未提交变更&quot;</span> <span class="kw">||</span> <span class="bu">echo</span> <span class="st">&quot;✅ 无未提交变更&quot;</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> status <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;ahead&quot;</span> <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">&quot;⚠️  本地领先 remote&quot;</span> <span class="kw">||</span> <span class="bu">echo</span> <span class="st">&quot;✅ 已推送到 remote&quot;</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="at">-e</span> <span class="st">&quot;\n## 分支同步检查&quot;</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> <span class="va">$(</span><span class="fu">git</span> log miao..testing <span class="at">--oneline</span> <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span><span class="va">)</span> <span class="ot">-eq</span> 0 <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">&quot;✅ miao=testing&quot;</span> <span class="kw">||</span> <span class="bu">echo</span> <span class="st">&quot;❌ miao ≠ testing&quot;</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> <span class="va">$(</span><span class="fu">git</span> log testing..main <span class="at">--oneline</span> <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span><span class="va">)</span> <span class="ot">-eq</span> 0 <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">&quot;✅ testing=main&quot;</span> <span class="kw">||</span> <span class="bu">echo</span> <span class="st">&quot;❌ testing ≠ main&quot;</span></span></code></pre></div>
+<hr />
+<h2 id="本次会话自检示例">📊 本次会话自检（示例）</h2>
+<h3 id="文档">1️⃣ 文档 ✅</h3>
+<ul>
+<li>新增: deep-cleanup-lessons, root-directory-audit,
+duplicate-naming-audit 等</li>
+<li>更新: memory-index.md, ARCHIVE-INDEX.md, codebase-map.md</li>
+<li>归档: 12个历史文档</li>
+</ul>
+<h3 id="skill">2️⃣ Skill ✅</h3>
+<ul>
+<li>无 skill 源文件变更</li>
+<li>跳过更新</li>
+</ul>
+<h3 id="经验教训">3️⃣ 经验教训 ✅</h3>
+<ul>
+<li><code>confluence/memory/lessons/deep-cleanup-lessons-2026-05-07.md</code>（217行）</li>
+<li>3个严重错误 + 7条核心教训</li>
+</ul>
+<h3 id="提交推送">4️⃣ 提交推送 ✅</h3>
+<ul>
+<li>16次提交</li>
+<li>全部推送到 miao → testing → main</li>
+<li>分支完全同步</li>
+</ul>
+<hr />
+<h2 id="使用建议">🎓 使用建议</h2>
+<p><strong>场景1: 单个 Ticket 完成</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> task:complete TASK-NNN</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/post-task-check.sh  <span class="co"># 执行检查</span></span></code></pre></div>
+<p><strong>场景2: 批量任务完成</strong></p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 先问自己本轮4个问题</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/post-task-check.sh</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 根据输出逐项修复</span></span></code></pre></div>
+<p><strong>场景3: 用户问”做好了吗”</strong></p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 立刻执行检查清单，而非凭记忆回答</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/post-task-check.sh</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 展示检查结果给用户</span></span></code></pre></div>
+<hr />
+<p><strong>关键</strong>: 养成习惯，<strong>每批任务完成后自动执行 4
+项检查</strong>，而非等用户追问。</p>
+<hr />
+<h2 id="补充检查本次新增">🔥 补充检查（本次新增）</h2>
+<h3 id="编译产物是否被-git-追踪">5️⃣ 编译产物是否被 git 追踪？</h3>
+<p><strong>检查命令</strong>:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查是否有编译产物被追踪</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> ls-files <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-E</span> <span class="st">&quot;dist/|coverage/|target/|node_modules/|__pycache__/&quot;</span> <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 期望: 0</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查物理大小</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">du</span> <span class="at">-sh</span> rust/target node/dist node/coverage sdk/<span class="pp">*</span>/dist <span class="dv">2</span><span class="op">&gt;</span>/dev/null</span></code></pre></div>
+<p><strong>常见问题</strong>: - ❌ rust/target/ (13G, 36,801 文件) - ❌
+node/coverage/ (8M, 164 文件) - ❌ sdk/*/dist/ (22 文件)</p>
+<p><strong>修复</strong>:</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> rm <span class="at">-r</span> <span class="at">--cached</span> rust/target/ node/coverage/ sdk/<span class="pp">*</span>/dist/</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">&quot;fix: 清理编译产物&quot;</span></span></code></pre></div>
+<p><strong>本次发现</strong>（2026-05-07）: - rust/target/: 36,801
+文件（13G）被追踪 ❌ - node/coverage/: 164 文件被追踪 ❌ - SDK dist/: 22
+文件被追踪 ❌ - 累计清理: <strong>36,987 个编译产物</strong></p>
+<p><strong>教训</strong>: &gt; <strong>每批任务完成后，必须检查 git
+ls-files 是否有编译产物！</strong> &gt; <strong>即使 .gitignore
+有规则，历史 commit 可能已追踪。</strong></p>
+<hr />
+<h2 id="检查清单总结5项">📊 检查清单总结（5项）</h2>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># scripts/post-task-check.sh（完整版）</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 1️⃣ 文档&quot;</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> status <span class="at">--short</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="st">&quot;\.md$&quot;</span> <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 2️⃣ Skill&quot;</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="fu">diff</span> .claude/skills/eket/SKILL.md ~/.claude/skills/eket/SKILL.md <span class="op">&gt;</span>/dev/null <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">&quot;✅&quot;</span> <span class="kw">||</span> <span class="bu">echo</span> <span class="st">&quot;⚠️&quot;</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 3️⃣ 经验教训&quot;</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="fu">find</span> confluence/memory/<span class="dt">{lessons</span><span class="op">,</span><span class="dt">pitfalls</span><span class="op">,</span><span class="dt">patterns}</span>/ <span class="at">-name</span> <span class="st">&quot;*.md&quot;</span> <span class="at">-mtime</span> <span class="at">-1</span> <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 4️⃣ 提交推送&quot;</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> status <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;nothing to commit&quot;</span> <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">&quot;✅&quot;</span> <span class="kw">||</span> <span class="bu">echo</span> <span class="st">&quot;⚠️&quot;</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 5️⃣ 编译产物&quot;</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> ls-files <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-E</span> <span class="st">&quot;dist/|coverage/|target/&quot;</span> <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span>  <span class="co"># 期望: 0</span></span></code></pre></div>
+<hr />
+</body>
+</html>

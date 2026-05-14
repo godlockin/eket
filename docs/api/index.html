@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET API Documentation</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET API Documentation</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#eket-api-documentation-index"
+id="toc-eket-api-documentation-index">EKET API Documentation Index</a>
+<ul>
+<li><a href="#documentation-structure"
+id="toc-documentation-structure">📚 Documentation Structure</a>
+<ul>
+<li><a href="#auto-generated-documentation"
+id="toc-auto-generated-documentation">Auto-Generated
+Documentation</a></li>
+<li><a href="#manually-curated-guides"
+id="toc-manually-curated-guides">Manually Curated Guides</a></li>
+</ul></li>
+<li><a href="#quick-start" id="toc-quick-start">🚀 Quick Start</a>
+<ul>
+<li><a href="#installation" id="toc-installation">Installation</a></li>
+<li><a href="#basic-usage" id="toc-basic-usage">Basic Usage</a></li>
+</ul></li>
+<li><a href="#core-modules-overview" id="toc-core-modules-overview">📦
+Core Modules Overview</a>
+<ul>
+<li><a href="#core-module" id="toc-core-module">Core Module</a></li>
+<li><a href="#commands-module" id="toc-commands-module">Commands
+Module</a></li>
+<li><a href="#utils-module" id="toc-utils-module">Utils Module</a></li>
+</ul></li>
+<li><a href="#architecture-overview" id="toc-architecture-overview">🏗️
+Architecture Overview</a></li>
+<li><a href="#common-use-cases" id="toc-common-use-cases">🎯 Common Use
+Cases</a>
+<ul>
+<li><a href="#use-case-1-claim-and-complete-a-task"
+id="toc-use-case-1-claim-and-complete-a-task">Use Case 1: Claim and
+Complete a Task</a></li>
+<li><a href="#use-case-2-search-knowledge-base-before-development"
+id="toc-use-case-2-search-knowledge-base-before-development">Use Case 2:
+Search Knowledge Base Before Development</a></li>
+<li><a href="#use-case-3-deploy-to-production"
+id="toc-use-case-3-deploy-to-production">Use Case 3: Deploy to
+Production</a></li>
+<li><a href="#use-case-4-monitor-agent-health"
+id="toc-use-case-4-monitor-agent-health">Use Case 4: Monitor Agent
+Health</a></li>
+</ul></li>
+<li><a href="#typescript-api-examples"
+id="toc-typescript-api-examples">📖 TypeScript API Examples</a>
+<ul>
+<li><a href="#example-1-task-assignment"
+id="toc-example-1-task-assignment">Example 1: Task Assignment</a></li>
+<li><a href="#example-2-message-passing"
+id="toc-example-2-message-passing">Example 2: Message Passing</a></li>
+<li><a href="#example-3-error-handling"
+id="toc-example-3-error-handling">Example 3: Error Handling</a></li>
+</ul></li>
+<li><a href="#testing" id="toc-testing">🧪 Testing</a>
+<ul>
+<li><a href="#run-all-tests" id="toc-run-all-tests">Run All
+Tests</a></li>
+<li><a href="#run-specific-module-tests"
+id="toc-run-specific-module-tests">Run Specific Module Tests</a></li>
+<li><a href="#coverage-report" id="toc-coverage-report">Coverage
+Report</a></li>
+</ul></li>
+<li><a href="#configuration" id="toc-configuration">🔧 Configuration</a>
+<ul>
+<li><a href="#minimal-config.yml" id="toc-minimal-config.yml">Minimal
+config.yml</a></li>
+<li><a href="#environment-variables"
+id="toc-environment-variables">Environment Variables</a></li>
+</ul></li>
+<li><a href="#troubleshooting" id="toc-troubleshooting">🐛
+Troubleshooting</a>
+<ul>
+<li><a href="#common-errors" id="toc-common-errors">Common
+Errors</a></li>
+<li><a href="#debug-mode" id="toc-debug-mode">Debug Mode</a></li>
+</ul></li>
+<li><a href="#additional-resources" id="toc-additional-resources">📚
+Additional Resources</a></li>
+<li><a href="#contributing" id="toc-contributing">📝 Contributing</a>
+<ul>
+<li><a href="#adding-new-documentation"
+id="toc-adding-new-documentation">Adding New Documentation</a></li>
+</ul></li>
+<li><a href="#license" id="toc-license">📜 License</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="eket-api-documentation-index">EKET API Documentation Index</h1>
+<p><strong>Version</strong>: 2.9.0-alpha<br />
+<strong>Last Updated</strong>: 2026-05-10<br />
+<strong>Generated By</strong>: TypeDoc + Manual Curation</p>
+<hr />
+<h2 id="documentation-structure">📚 Documentation Structure</h2>
+<p>This documentation combines auto-generated TypeDoc output with
+manually curated module guides.</p>
+<h3 id="auto-generated-documentation">Auto-Generated Documentation</h3>
+<p>➡️ <strong><a href="./index.html">Full API Reference
+(TypeDoc)</a></strong> - Complete API documentation with all classes,
+interfaces, and functions</p>
+<h3 id="manually-curated-guides">Manually Curated Guides</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 48%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr>
+<th>Module</th>
+<th>Description</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Core</strong></td>
+<td>Agent management, task assignment, messaging, state management</td>
+<td><a href="./core.md">core.md</a></td>
+</tr>
+<tr>
+<td><strong>Commands</strong></td>
+<td>CLI commands for task lifecycle, knowledge base, deployment</td>
+<td><a href="./commands.md">commands.md</a></td>
+</tr>
+<tr>
+<td><strong>Utils</strong></td>
+<td>Error handling, configuration, encryption, process management</td>
+<td><a href="./utils.md">utils.md</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="quick-start">🚀 Quick Start</h2>
+<h3 id="installation">Installation</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run build</span></code></pre></div>
+<h3 id="basic-usage">Basic Usage</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createTaskAssigner } <span class="im">from</span> <span class="st">&#39;eket-cli/core&#39;</span><span class="op">;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { claimTask } <span class="im">from</span> <span class="st">&#39;eket-cli/commands&#39;</span><span class="op">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Assign task</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> assigner <span class="op">=</span> <span class="cf">await</span> <span class="fu">createTaskAssigner</span>(config)<span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> assigner<span class="op">.</span><span class="fu">assign</span>({</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  ticketId<span class="op">:</span> <span class="st">&#39;TASK-001&#39;</span><span class="op">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  requiredRole<span class="op">:</span> <span class="st">&#39;backend_dev&#39;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">// Claim task (CLI)</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> <span class="fu">claimTask</span>(<span class="st">&#39;TASK-001&#39;</span><span class="op">,</span> { role<span class="op">:</span> <span class="st">&#39;backend_dev&#39;</span> })<span class="op">;</span></span></code></pre></div>
+<hr />
+<h2 id="core-modules-overview">📦 Core Modules Overview</h2>
+<h3 id="core-module">Core Module</h3>
+<p><strong>Agent &amp; Task Management</strong></p>
+<ul>
+<li><code>AgentPool</code> - Agent instance pool with health checks and
+load balancing</li>
+<li><code>TaskAssigner</code> - Intelligent task assignment with role
+matching</li>
+<li><code>InstanceRegistry</code> - Agent registration and status
+tracking</li>
+<li><code>EnvelopeManager</code> - Message passing infrastructure</li>
+<li><code>WorktreeManager</code> - Git worktree isolation for parallel
+development</li>
+<li><code>SagaExecutor</code> - Distributed transaction management with
+automatic rollback</li>
+</ul>
+<p><strong>Key Features</strong>: - ✅ Redis-backed distributed state -
+✅ SQLite persistence for metadata - ✅ Automatic health monitoring - ✅
+Load balancing (round-robin / least-tasks) - ✅ SSE event bus
+integration</p>
+<p>➡️ <a href="./core.md">Read Core Module Documentation</a></p>
+<hr />
+<h3 id="commands-module">Commands Module</h3>
+<p><strong>CLI Interface for EKET Operations</strong></p>
+<ul>
+<li><code>task:claim</code> - Claim Jira tasks with role matching</li>
+<li><code>task:complete</code> - Complete tasks and submit PR with
+validation</li>
+<li><code>task:status</code> - View agent status and available
+tasks</li>
+<li><code>knowledge:search</code> - Full-text search in knowledge
+base</li>
+<li><code>knowledge:index</code> - Rebuild search index with proof
+validation</li>
+<li><code>deploy:sync-branches</code> - Three-branch sync (feature →
+testing → main → miao)</li>
+<li><code>agent:poll</code> - Background polling for tasks/messages
+(Master/Slaver)</li>
+<li><code>alerts:list</code> - View and manage system alerts</li>
+</ul>
+<p><strong>Key Features</strong>: - ✅ Interactive CLI with ora spinners
+- ✅ Nyquist Rule enforcement (automated acceptance criteria) - ✅
+Execution Proof validation for knowledge base - ✅ Saga-based
+transaction management - ✅ SSE event notifications</p>
+<p>➡️ <a href="./commands.md">Read Commands Module Documentation</a></p>
+<hr />
+<h3 id="utils-module">Utils Module</h3>
+<p><strong>Infrastructure &amp; Helper Functions</strong></p>
+<ul>
+<li><code>error-handler</code> - Unified error reporting with
+solutions</li>
+<li><code>config-validator</code> - Configuration validation and
+defaults</li>
+<li><code>encryption</code> - AES-256-GCM encryption for sensitive
+data</li>
+<li><code>process-cleanup</code> - Graceful shutdown and resource
+cleanup</li>
+<li><code>execFileNoThrow</code> - Safe command execution with
+timeout</li>
+<li><code>logger</code> - Structured logging (text/JSON formats)</li>
+</ul>
+<p><strong>Key Features</strong>: - ✅ Rich error context with quick
+fixes - ✅ Automatic encryption key management - ✅ Process lock
+prevention (duplicate instance detection) - ✅ Retry with exponential
+backoff - ✅ Shell completion support</p>
+<p>➡️ <a href="./utils.md">Read Utils Module Documentation</a></p>
+<hr />
+<h2 id="architecture-overview">🏗️ Architecture Overview</h2>
+<pre><code>┌─────────────────────────────────────────────────────────┐
+│                    EKET Framework                        │
+├─────────────────────────────────────────────────────────┤
+│                                                           │
+│  ┌─────────────┐      ┌──────────────┐                  │
+│  │   CLI       │─────&gt;│  Commands    │                  │
+│  │ (Commander) │      │  Module      │                  │
+│  └─────────────┘      └──────┬───────┘                  │
+│                               │                           │
+│                               ▼                           │
+│                       ┌──────────────┐                   │
+│                       │   Core       │                   │
+│                       │   Module     │                   │
+│                       └──────┬───────┘                   │
+│                               │                           │
+│           ┌───────────────────┼───────────────────┐      │
+│           ▼                   ▼                   ▼      │
+│   ┌──────────────┐    ┌─────────────┐    ┌─────────┐   │
+│   │ AgentPool    │    │ TaskAssigner│    │ Envelope│   │
+│   │              │    │             │    │ Manager │   │
+│   └──────┬───────┘    └──────┬──────┘    └────┬────┘   │
+│          │                   │                 │         │
+│          ▼                   ▼                 ▼         │
+│   ┌──────────────────────────────────────────────────┐  │
+│   │            Infrastructure Layer                   │  │
+│   ├──────────────────────────────────────────────────┤  │
+│   │  Redis  │  SQLite  │  Git  │  SSE Bus  │  Fs    │  │
+│   └──────────────────────────────────────────────────┘  │
+│                               │                           │
+│                               ▼                           │
+│                       ┌──────────────┐                   │
+│                       │    Utils     │                   │
+│                       │    Module    │                   │
+│                       └──────────────┘                   │
+│                                                           │
+└─────────────────────────────────────────────────────────┘</code></pre>
+<hr />
+<h2 id="common-use-cases">🎯 Common Use Cases</h2>
+<h3 id="use-case-1-claim-and-complete-a-task">Use Case 1: Claim and
+Complete a Task</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Claim task</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> task:claim TASK-001 <span class="at">--role</span> backend_dev</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Develop in isolated worktree</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> .eket/worktrees/TASK-001</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ... coding ...</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Run acceptance tests</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>auth</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Complete task (auto PR creation)</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> task:complete TASK-001</span></code></pre></div>
+<h3 id="use-case-2-search-knowledge-base-before-development">Use Case 2:
+Search Knowledge Base Before Development</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Search for similar patterns</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> knowledge:search <span class="st">&quot;API documentation&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Check for pitfalls</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> knowledge:search <span class="at">--type</span> pitfall <span class="st">&quot;TypeDoc&quot;</span></span></code></pre></div>
+<h3 id="use-case-3-deploy-to-production">Use Case 3: Deploy to
+Production</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sync branches</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">eket</span> deploy:sync-branches feature/TASK-001</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Auto-merge to testing → main → miao</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Conflicts resolved automatically (configurable strategy)</span></span></code></pre></div>
+<h3 id="use-case-4-monitor-agent-health">Use Case 4: Monitor Agent
+Health</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createAgentPool } <span class="im">from</span> <span class="st">&#39;eket-cli/core&#39;</span><span class="op">;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> pool <span class="op">=</span> <span class="cf">await</span> <span class="fu">createAgentPool</span>(config)<span class="op">;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Run health check</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> unhealthy <span class="op">=</span> <span class="cf">await</span> pool<span class="op">.</span><span class="fu">healthCheck</span>()<span class="op">;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (unhealthy<span class="op">.</span><span class="at">length</span> <span class="op">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">warn</span>(<span class="st">&#39;Unhealthy agents:&#39;</span><span class="op">,</span> unhealthy)<span class="op">;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> pool<span class="op">.</span><span class="fu">removeAgents</span>(unhealthy)<span class="op">;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="typescript-api-examples">📖 TypeScript API Examples</h2>
+<h3 id="example-1-task-assignment">Example 1: Task Assignment</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { createTaskAssigner } <span class="im">from</span> <span class="st">&#39;eket-cli/core&#39;</span><span class="op">;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> assigner <span class="op">=</span> <span class="cf">await</span> <span class="fu">createTaskAssigner</span>({</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  projectRoot<span class="op">:</span> <span class="st">&#39;/path/to/project&#39;</span><span class="op">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  redis<span class="op">:</span> { enabled<span class="op">:</span> <span class="kw">true</span><span class="op">,</span> host<span class="op">:</span> <span class="st">&#39;localhost&#39;</span> }<span class="op">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  sqlite<span class="op">:</span> { path<span class="op">:</span> <span class="st">&#39;.eket/state/eket.db&#39;</span> }</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> result <span class="op">=</span> <span class="cf">await</span> assigner<span class="op">.</span><span class="fu">assign</span>({</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  ticketId<span class="op">:</span> <span class="st">&#39;TASK-001&#39;</span><span class="op">,</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  requiredRole<span class="op">:</span> <span class="st">&#39;backend_dev&#39;</span><span class="op">,</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  strategy<span class="op">:</span> <span class="st">&#39;round_robin&#39;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (result<span class="op">.</span><span class="at">success</span>) {</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="vs">`Task assigned to: </span><span class="sc">${</span>result<span class="op">.</span><span class="at">assignedTo</span><span class="sc">}</span><span class="vs">`</span>)<span class="op">;</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">error</span>(<span class="vs">`Assignment failed: </span><span class="sc">${</span>result<span class="op">.</span><span class="at">reason</span><span class="sc">}</span><span class="vs">`</span>)<span class="op">;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="example-2-message-passing">Example 2: Message Passing</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { EnvelopeManager } <span class="im">from</span> <span class="st">&#39;eket-cli/core&#39;</span><span class="op">;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> manager <span class="op">=</span> <span class="kw">new</span> <span class="fu">EnvelopeManager</span>(<span class="st">&#39;/project/root&#39;</span>)<span class="op">;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Send message</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> manager<span class="op">.</span><span class="fu">send</span>({</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  type<span class="op">:</span> <span class="st">&#39;task_claim&#39;</span><span class="op">,</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  from<span class="op">:</span> <span class="st">&#39;slaver-001&#39;</span><span class="op">,</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  to<span class="op">:</span> <span class="st">&#39;master&#39;</span><span class="op">,</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  payload<span class="op">:</span> { ticketId<span class="op">:</span> <span class="st">&#39;TASK-001&#39;</span> }<span class="op">,</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  priority<span class="op">:</span> <span class="st">&#39;high&#39;</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co">// Receive messages</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> messages <span class="op">=</span> <span class="cf">await</span> manager<span class="op">.</span><span class="fu">receive</span>(<span class="st">&#39;master&#39;</span><span class="op">,</span> { limit<span class="op">:</span> <span class="dv">10</span> })<span class="op">;</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (<span class="kw">const</span> msg <span class="kw">of</span> messages) {</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="vs">`[</span><span class="sc">${</span>msg<span class="op">.</span><span class="at">type</span><span class="sc">}</span><span class="vs">] from </span><span class="sc">${</span>msg<span class="op">.</span><span class="at">from</span><span class="sc">}</span><span class="vs">:`</span><span class="op">,</span> msg<span class="op">.</span><span class="at">payload</span>)<span class="op">;</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="example-3-error-handling">Example 3: Error Handling</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { printError<span class="op">,</span> logSuccess } <span class="im">from</span> <span class="st">&#39;eket-cli/utils&#39;</span><span class="op">;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span> {</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> <span class="fu">riskyOperation</span>()<span class="op">;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">logSuccess</span>(<span class="st">&#39;Operation completed successfully&#39;</span>)<span class="op">;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>} <span class="cf">catch</span> (error) {</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">printError</span>({</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    code<span class="op">:</span> <span class="st">&#39;OPERATION_FAILED&#39;</span><span class="op">,</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    message<span class="op">:</span> <span class="st">&#39;Failed to complete operation&#39;</span><span class="op">,</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    details<span class="op">:</span> { error<span class="op">:</span> error<span class="op">.</span><span class="at">message</span> }<span class="op">,</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    causes<span class="op">:</span> [<span class="st">&#39;Network timeout&#39;</span><span class="op">,</span> <span class="st">&#39;Invalid configuration&#39;</span>]<span class="op">,</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    solutions<span class="op">:</span> [</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>      <span class="st">&#39;Check network connection&#39;</span><span class="op">,</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>      <span class="st">&#39;Validate config.yml with: eket config:validate&#39;</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    ]<span class="op">,</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    quickFix<span class="op">:</span> <span class="st">&#39;eket config:validate&#39;</span><span class="op">,</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    docLink<span class="op">:</span> <span class="st">&#39;https://eket.dev/docs/troubleshooting&#39;</span><span class="op">,</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    severity<span class="op">:</span> <span class="st">&#39;error&#39;</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  })<span class="op">;</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  <span class="bu">process</span><span class="op">.</span><span class="fu">exit</span>(<span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="testing">🧪 Testing</h2>
+<h3 id="run-all-tests">Run All Tests</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test</span></code></pre></div>
+<h3 id="run-specific-module-tests">Run Specific Module Tests</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Core module tests</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>core</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Commands module tests</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>commands</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Utils module tests</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test <span class="at">--</span> <span class="at">--testPathPattern</span><span class="op">=</span>utils</span></code></pre></div>
+<h3 id="coverage-report">Coverage Report</h3>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run test:coverage</span></code></pre></div>
+<hr />
+<h2 id="configuration">🔧 Configuration</h2>
+<h3 id="minimal-config.yml">Minimal config.yml</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">projectRoot</span><span class="kw">:</span><span class="at"> /path/to/project</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">role</span><span class="kw">:</span><span class="at"> slaver</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="fu">redis</span><span class="kw">:</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">host</span><span class="kw">:</span><span class="at"> localhost</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">6379</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="fu">sqlite</span><span class="kw">:</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">path</span><span class="kw">:</span><span class="at"> .eket/state/eket.db</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="fu">agentPool</span><span class="kw">:</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">healthCheckInterval</span><span class="kw">:</span><span class="at"> </span><span class="dv">60000</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">maxCapacity</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="fu">worktree</span><span class="kw">:</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">basePath</span><span class="kw">:</span><span class="at"> .eket/worktrees</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">autoCleanup</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">cleanupAfterDays</span><span class="kw">:</span><span class="at"> </span><span class="dv">7</span></span></code></pre></div>
+<h3 id="environment-variables">Environment Variables</h3>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Redis authentication</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="va">REDIS_PASSWORD</span><span class="op">=</span>your-password</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Encryption key (auto-generated if missing)</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="va">EKET_ENCRYPTION_KEY</span><span class="op">=</span>your-32-byte-hex-key</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># OpenClaw API (for LLM integration)</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="va">OPENCLAW_API_KEY</span><span class="op">=</span>your-api-key</span></code></pre></div>
+<hr />
+<h2 id="troubleshooting">🐛 Troubleshooting</h2>
+<h3 id="common-errors">Common Errors</h3>
+<table>
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 29%" />
+<col style="width: 41%" />
+</colgroup>
+<thead>
+<tr>
+<th>Error</th>
+<th>Cause</th>
+<th>Solution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REDIS_UNAVAILABLE</code></td>
+<td>Redis not running</td>
+<td><code>redis-server &amp;</code></td>
+</tr>
+<tr>
+<td><code>SQLITE_LOCKED</code></td>
+<td>Database locked by another process</td>
+<td>Close other EKET instances</td>
+</tr>
+<tr>
+<td><code>NO_AVAILABLE_AGENT</code></td>
+<td>No agents with matching role</td>
+<td>Register more agents or adjust role filter</td>
+</tr>
+<tr>
+<td><code>WORKTREE_CONFLICT</code></td>
+<td>Branch name already exists</td>
+<td>Use <code>git worktree list</code> to check</td>
+</tr>
+</tbody>
+</table>
+<h3 id="debug-mode">Debug Mode</h3>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Enable verbose logging</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="va">DEBUG</span><span class="op">=</span>eket:<span class="pp">*</span> <span class="ex">eket</span> task:claim TASK-001</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># JSON-formatted logs</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="va">LOG_FORMAT</span><span class="op">=</span>json <span class="ex">eket</span> task:claim TASK-001</span></code></pre></div>
+<hr />
+<h2 id="additional-resources">📚 Additional Resources</h2>
+<ul>
+<li><strong>Project README</strong>: <a
+href="../README.md">../README.md</a></li>
+<li><strong>EKET Vision</strong>: <a
+href="../docs/EKET-VISION.md">../docs/EKET-VISION.md</a></li>
+<li><strong>Slaver Rules</strong>: <a
+href="../template/docs/SLAVER-RULES.md">../template/docs/SLAVER-RULES.md</a></li>
+<li><strong>Master Rules</strong>: <a
+href="../template/docs/MASTER-RULES.md">../template/docs/MASTER-RULES.md</a></li>
+<li><strong>Changelog</strong>: <a
+href="../CHANGELOG.md">../CHANGELOG.md</a></li>
+</ul>
+<hr />
+<h2 id="contributing">📝 Contributing</h2>
+<h3 id="adding-new-documentation">Adding New Documentation</h3>
+<ol type="1">
+<li><p><strong>Auto-generated</strong>: Add TSDoc comments to source
+files</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"> * Assigns a task to an available agent.</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">options</span><span class="co"> - Assignment options</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@returns</span><span class="co"> Assignment result</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@throws</span><span class="co"> </span><span class="cv">{EketError}</span><span class="co"> If no agents available</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span></code></pre></div></li>
+<li><p><strong>Manual guides</strong>: Create new <code>.md</code> files
+in <code>docs/api/</code></p></li>
+<li><p><strong>Update INDEX.md</strong>: Add links to new
+documentation</p></li>
+<li><p><strong>Rebuild</strong>:
+<code>npx typedoc --out docs/api node/src/index.ts</code></p></li>
+</ol>
+<hr />
+<h2 id="license">📜 License</h2>
+<p>EKET Framework - MIT License</p>
+<hr />
+<p><strong>Generated</strong>: 2026-05-10T12:00:00Z<br />
+<strong>Source</strong>: TASK-614 (API Documentation Enhancement)</p>
+</body>
+</html>

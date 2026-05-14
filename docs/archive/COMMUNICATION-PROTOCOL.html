@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>通信协议规范</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">通信协议规范</h1>
+</header>
+<h1 id="通信协议规范">通信协议规范</h1>
+<p><strong>版本</strong>: v2.9.0-alpha<br />
+<strong>创建日期</strong>: 2026-04-10<br />
+<strong>目的</strong>: 定义 EKET
+框架节点间通信方式的选择原则和降级策略</p>
+<hr />
+<h2 id="通信方式分级">1. 通信方式分级</h2>
+<p>EKET 支持四级降级通信方式：</p>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 31%" />
+<col style="width: 31%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr>
+<th>级别</th>
+<th>通信方式</th>
+<th>适用场景</th>
+<th>性能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Level 1</strong></td>
+<td>远程 Redis（Pub/Sub）</td>
+<td>分布式多实例、多机协作</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>Level 2</strong></td>
+<td>本地 Redis（Pub/Sub）</td>
+<td>单机多实例、多 Agent 协作</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>Level 3</strong></td>
+<td>SQLite（共享数据库）</td>
+<td>单机单实例、轻量协作</td>
+<td>⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>Level 4</strong></td>
+<td>文件系统（消息队列）</td>
+<td>降级模式、无依赖测试</td>
+<td>⭐⭐</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="通信选择原则">2. 通信选择原则</h2>
+<h3 id="高效通信优先">2.1 高效通信优先</h3>
+<blockquote>
+<p><strong>原则</strong>：如果有高效通信方式可用，优先使用高效方式；文件系统仅用于需要被记录和追溯的内容。</p>
+</blockquote>
+<p><strong>高效通信用途</strong>： - 实时心跳信号 - 任务分配通知 -
+状态更新同步 - 阻塞告警</p>
+<p><strong>文件通信用途</strong>： -
+需求文档（<code>inbox/human_input.md</code>） -
+分析报告（<code>jira/tickets/{ID}/analysis-report.md</code>） - PR
+审查记录（<code>outbox/review_requests/</code>） -
+人类反馈（<code>inbox/human_feedback/</code>） - Milestone 总结报告</p>
+<h3 id="降级策略">2.2 降级策略</h3>
+<pre><code>启动时检测
+    │
+    ▼
+检测远程 Redis
+    ├── 可用 → 使用远程 Redis（Level 1）
+    └── 不可用 → 检测本地 Redis
+            ├── 可用 → 使用本地 Redis（Level 2）
+            └── 不可用 → 检测 SQLite
+                    ├── 可用 → 使用 SQLite（Level 3）
+                    └── 不可用 → 使用文件系统（Level 4）</code></pre>
+<hr />
+<h2 id="消息格式规范">3. 消息格式规范</h2>
+<h3 id="实时消息redissqlite-传输">3.1 实时消息（Redis/SQLite 传输）</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;msg_{timestamp}_{sequence}&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timestamp&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-04-10T15:30:00+08:00&quot;</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;from&quot;</span><span class="fu">:</span> <span class="st">&quot;{agent_type}_{instance_id}&quot;</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;to&quot;</span><span class="fu">:</span> <span class="st">&quot;master&quot;</span> <span class="er">|</span> <span class="st">&quot;{slaver_id}&quot;</span> <span class="er">|</span> <span class="st">&quot;broadcast&quot;</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;task_assignment&quot;</span> <span class="er">|</span> <span class="st">&quot;status_update&quot;</span> <span class="er">|</span> <span class="st">&quot;blocker_report&quot;</span> <span class="er">|</span> <span class="st">&quot;heartbeat&quot;</span><span class="fu">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;priority&quot;</span><span class="fu">:</span> <span class="st">&quot;critical&quot;</span> <span class="er">|</span> <span class="st">&quot;high&quot;</span> <span class="er">|</span> <span class="st">&quot;normal&quot;</span> <span class="er">|</span> <span class="st">&quot;low&quot;</span><span class="fu">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payload&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="er">//</span> <span class="er">消息内容</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;ttl_seconds&quot;</span><span class="fu">:</span> <span class="dv">3600</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="文件消息文件系统传输">3.2 文件消息（文件系统传输）</h3>
+<p><strong>位置</strong>：<code>shared/message_queue/{inbox,outbox,broadcast,dead_letter}/</code></p>
+<p><strong>命名</strong>：<code>{type}_{timestamp}_{sender}.json</code></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;message&quot;</span><span class="fu">:</span> <span class="fu">{</span> <span class="er">/*</span> <span class="er">同上实时消息格式</span> <span class="er">*/</span> <span class="fu">},</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;file_status&quot;</span><span class="fu">:</span> <span class="st">&quot;pending&quot;</span> <span class="er">|</span> <span class="st">&quot;processed&quot;</span> <span class="er">|</span> <span class="st">&quot;failed&quot;</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;processed_at&quot;</span><span class="fu">:</span> <span class="kw">null</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;processed_by&quot;</span><span class="fu">:</span> <span class="kw">null</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<hr />
+<h2 id="通信频道定义">4. 通信频道定义</h2>
+<h3 id="redis-pubsub-频道">4.1 Redis Pub/Sub 频道</h3>
+<table>
+<thead>
+<tr>
+<th>频道名</th>
+<th>用途</th>
+<th>订阅者</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>eket:tasks:assign</code></td>
+<td>任务分配通知</td>
+<td>Slaver 实例</td>
+</tr>
+<tr>
+<td><code>eket:tasks:status</code></td>
+<td>任务状态更新</td>
+<td>Master 实例</td>
+</tr>
+<tr>
+<td><code>eket:agents:lifecycle</code></td>
+<td>Agent 生命周期事件（启动/停止）</td>
+<td>所有实例</td>
+</tr>
+<tr>
+<td><code>eket:agents:heartbeat</code></td>
+<td>心跳信号</td>
+<td>Master 实例</td>
+</tr>
+<tr>
+<td><code>eket:blockers:alert</code></td>
+<td>阻塞告警</td>
+<td>Master 实例</td>
+</tr>
+<tr>
+<td><code>eket:broadcast</code></td>
+<td>广播消息</td>
+<td>所有实例</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sqlite-表结构">4.2 SQLite 表结构</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- 消息队列表</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> <span class="cf">IF</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> message_queue (</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">id</span> TEXT <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">timestamp</span> TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    from_agent TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    to_agent TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">type</span> TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    priority TEXT <span class="kw">DEFAULT</span> <span class="st">&#39;normal&#39;</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    payload TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,  <span class="co">-- JSON 字符串</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    status TEXT <span class="kw">DEFAULT</span> <span class="st">&#39;pending&#39;</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    created_at TEXT <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    processed_at TEXT,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    processed_by TEXT</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co">-- 心跳表</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> <span class="cf">IF</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> agent_heartbeat (</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    agent_id TEXT <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    agent_type TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    last_heartbeat TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    status TEXT <span class="kw">DEFAULT</span> <span class="st">&#39;active&#39;</span>,</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    metadata TEXT  <span class="co">-- JSON 字符串</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co">-- 任务状态表</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> <span class="cf">IF</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> task_status (</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    task_id TEXT <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    status TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    assigned_to TEXT,</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    updated_at TEXT <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span>,</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    metadata TEXT  <span class="co">-- JSON 字符串</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>);</span></code></pre></div>
+<hr />
+<h2 id="节点初始化流程">5. 节点初始化流程</h2>
+<h3 id="master-节点初始化">5.1 Master 节点初始化</h3>
+<pre><code>1. 读取 .eket/config/connection.yml
+   │
+   ▼
+2. 连接管理器初始化（四级降级）
+   │
+   ▼
+3. 发布 lifecycle 事件：master_started
+   │
+   ▼
+4. 订阅频道：
+   - eket:tasks:status
+   - eket:blockers:alert
+   - eket:agents:lifecycle
+   │
+   ▼
+5. 启动心跳定时器（每 30 秒发布 heartbeat）
+   │
+   ▼
+6. 检查 inbox/human_input.md 是否有新需求</code></pre>
+<h3 id="slaver-节点初始化">5.2 Slaver 节点初始化</h3>
+<pre><code>1. 读取 .eket/config/connection.yml
+   │
+   ▼
+2. 连接管理器初始化（四级降级）
+   │
+   ▼
+3. 发布 lifecycle 事件：slaver_started_{agent_type}
+   │
+   ▼
+4. 订阅频道：
+   - eket:tasks:assign
+   - eket:broadcast
+   │
+   ▼
+5. 启动心跳定时器（每 15 秒发布 heartbeat）
+   │
+   ▼
+6. 检查 jira/tickets/是否有 ready 状态任务</code></pre>
+<hr />
+<h2 id="通信故障处理">6. 通信故障处理</h2>
+<h3 id="故障检测">6.1 故障检测</h3>
+<table>
+<thead>
+<tr>
+<th>故障类型</th>
+<th>检测方法</th>
+<th>判定标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>通信中断</td>
+<td>心跳超时</td>
+<td>连续 3 次无心跳</td>
+</tr>
+<tr>
+<td>消息丢失</td>
+<td>ACK 超时</td>
+<td>发送后 60 秒无确认</td>
+</tr>
+<tr>
+<td>连接断开</td>
+<td>连接错误</td>
+<td>Redis/SQLite 连接失败</td>
+</tr>
+</tbody>
+</table>
+<h3 id="故障恢复">6.2 故障恢复</h3>
+<pre><code>检测到故障
+    │
+    ▼
+尝试重连（最多 3 次）
+    ├── 成功 → 恢复正常通信
+    └── 失败 → 降级到下一级
+            │
+            ▼
+        检查下一级是否可用
+            ├── 可用 → 切换通信方式，发送故障通知
+            └── 不可用 → 继续降级</code></pre>
+<h3 id="消息补偿">6.3 消息补偿</h3>
+<p><strong>死信队列</strong>：<code>shared/message_queue/dead_letter/</code></p>
+<ul>
+<li>处理失败的消息移入死信队列</li>
+<li>Master 定期检查死信队列并重试</li>
+<li>重试 3 次仍失败 → 生成 blocker 报告通知人类</li>
+</ul>
+<hr />
+<h2 id="配置示例">7. 配置示例</h2>
+<h3 id="远程-redis-配置">7.1 远程 Redis 配置</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .eket/config/connection.yml</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fallback</span><span class="kw">:</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">remote_redis</span><span class="kw">:</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">host</span><span class="kw">:</span><span class="at"> ${EKET_REMOTE_REDIS_HOST}</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">6379</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">password</span><span class="kw">:</span><span class="at"> ${EKET_REDIS_PASSWORD:-&quot;&quot;}</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">db</span><span class="kw">:</span><span class="at"> </span><span class="dv">0</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">local_redis</span><span class="kw">:</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">sqlite</span><span class="kw">:</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">path</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;.eket/data/sqlite/eket.db&quot;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">filesystem</span><span class="kw">:</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">base_dir</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;.eket/data/fs&quot;</span></span></code></pre></div>
+<h3 id="本地-redis-配置">7.2 本地 Redis 配置</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .eket/config/connection.yml</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fallback</span><span class="kw">:</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">remote_redis</span><span class="kw">:</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">local_redis</span><span class="kw">:</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">host</span><span class="kw">:</span><span class="at"> localhost</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">6379</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">sqlite</span><span class="kw">:</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">path</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;.eket/data/sqlite/eket.db&quot;</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">filesystem</span><span class="kw">:</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">base_dir</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;.eket/data/fs&quot;</span></span></code></pre></div>
+<h3 id="sqlite-配置">7.3 SQLite 配置</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .eket/config/connection.yml</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fallback</span><span class="kw">:</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">remote_redis</span><span class="kw">:</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">local_redis</span><span class="kw">:</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">sqlite</span><span class="kw">:</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">path</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;.eket/data/sqlite/eket.db&quot;</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">filesystem</span><span class="kw">:</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">base_dir</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;.eket/data/fs&quot;</span></span></code></pre></div>
+<hr />
+<h2 id="性能对比">8. 性能对比</h2>
+<table>
+<thead>
+<tr>
+<th>通信方式</th>
+<th>延迟</th>
+<th>吞吐量</th>
+<th>并发实例</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>远程 Redis</td>
+<td>&lt; 5ms</td>
+<td>10K+/s</td>
+<td>无限制</td>
+<td>生产环境、多机协作</td>
+</tr>
+<tr>
+<td>本地 Redis</td>
+<td>&lt; 2ms</td>
+<td>10K+/s</td>
+<td>10+</td>
+<td>单机多实例开发</td>
+</tr>
+<tr>
+<td>SQLite</td>
+<td>&lt; 10ms</td>
+<td>1K+/s</td>
+<td>1-3</td>
+<td>轻量开发、测试</td>
+</tr>
+<tr>
+<td>文件系统</td>
+<td>&gt; 100ms</td>
+<td>100/s</td>
+<td>1-2</td>
+<td>降级模式、演示</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="相关文档">9. 相关文档</h2>
+<ul>
+<li><a
+href="./MASTER-HEARTBEAT-CHECKLIST.md"><code>MASTER-HEARTBEAT-CHECKLIST.md</code></a>
+— Master 心跳检查</li>
+<li><a
+href="./SLAVER-HEARTBEAT-CHECKLIST.md"><code>SLAVER-HEARTBEAT-CHECKLIST.md</code></a>
+— Slaver 心跳检查</li>
+<li><a
+href="../template/docs/MASTER-WORKFLOW.md"><code>MASTER-WORKFLOW.md</code></a>
+— Master 工作流程</li>
+<li><a
+href="../template/docs/SLAVER-AUTO-EXEC-GUIDE.md"><code>SLAVER-AUTO-EXEC-GUIDE.md</code></a>
+— Slaver 自动执行指南</li>
+</ul>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team<br />
+<strong>最后更新</strong>: 2026-04-10</p>
+</body>
+</html>

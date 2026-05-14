@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>&gt; ⚠️ **DEPRECATED** — 此文档已过时，当前版本请参考：[template/docs/MASTER-RULES.md](../../template/docs/MASTER-RULES.md)。</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">&gt; ⚠️ **DEPRECATED** —
+此文档已过时，当前版本请参考：[template/docs/MASTER-RULES.md](../../template/docs/MASTER-RULES.md)。</h1>
+</header>
+<blockquote>
+<p>⚠️ <strong>DEPRECATED</strong> — 此文档已过时，当前版本请参考：<a
+href="../../template/docs/MASTER-RULES.md">template/docs/MASTER-RULES.md</a>。</p>
+</blockquote>
+<hr />
+<h1 id="master-战略规划v2.3.2-迭代">Master 战略规划：v2.3.2 迭代</h1>
+<p><strong>规划日期</strong>: 2026-04-08 <strong>规划人</strong>: Master
+<strong>当前版本</strong>: v2.3.1 (文档完成) <strong>目标版本</strong>:
+v2.3.2 (技术债清理 + 质量提升)</p>
+<hr />
+<h2 id="当前状态分析">📊 当前状态分析</h2>
+<h3 id="已完成的工作-v2.3.0-v2.3.1">✅ 已完成的工作 (v2.3.0 →
+v2.3.1)</h3>
+<p><strong>文档完成度</strong>: 100% ⭐⭐⭐⭐⭐ - ✅ Level 1 Shell
+模式指南 (661行) - ✅ Level 2 Node.js 模式指南 (772行，蓝队审查通过) -
+✅ Level 3 满血版指南 (848行，蓝队审查通过) - ✅ 三级架构设计 (850行) -
+✅ 降级策略详解 (591行) - ✅ <strong>总计: 3,722+
+行高质量文档</strong></p>
+<p><strong>代码质量</strong>: 部分完成 - ✅ SQLite Manager 迁移 Phase 1:
+4/11 文件 (36%) - ✅ 测试通过率: 88.6% (943/1064) - ✅
+蓝队审查系统成功运作</p>
+<p><strong>蓝队验证系统</strong>: 成功建立 ⭐⭐⭐⭐⭐ - ✅ 发现并修复 6
+个 P0 问题 - ✅ 生成 3 份详细审查报告 (1,950+ 行) - ✅ 100% 拦截率</p>
+<h3 id="技术债和问题">⚠️ 技术债和问题</h3>
+<p><strong>高优先级 (P0)</strong>: 1. <strong>SQLite Manager
+迁移未完成</strong>: 7/11 文件待迁移 - 影响: 代码重复、架构不一致 -
+复杂度: 7 个文件使用 <code>getDB()</code> 直接访问 - 预计工时: 9-11
+小时</p>
+<ol start="2" type="1">
+<li><strong>测试通过率未达标</strong>: 88.6% vs 目标 90%+
+<ul>
+<li>失败测试: 121 个 (20 个测试套件)</li>
+<li>主要问题: cache-layer timeout, 集成测试环境</li>
+<li>预计工时: 4-6 小时</li>
+</ul></li>
+</ol>
+<p><strong>中优先级 (P1)</strong>: 3. <strong>性能优化遗留</strong>:
+部分 P95 延迟偏高 - 文件队列: P95 1.3ms (目标 &lt;1ms) - 需要:
+批量处理优化</p>
+<ol start="4" type="1">
+<li><strong>文档健康度</strong>: 85/100 vs 目标 90/100
+<ul>
+<li>缺失: API 文档、开发者贡献指南</li>
+<li>预计工时: 2-3 小时</li>
+</ul></li>
+</ol>
+<p><strong>低优先级 (P2)</strong>: 5. <strong>Docker 环境优化</strong>:
+镜像体积、启动时间 6. <strong>CI/CD 流水线</strong>:
+自动化测试和部署</p>
+<hr />
+<h2 id="v2.3.2-战略目标">🎯 v2.3.2 战略目标</h2>
+<h3 id="核心目标">核心目标</h3>
+<p><strong>主题</strong>: <strong>技术债清理 + 质量提升</strong></p>
+<p><strong>成功标准</strong>: 1. ✅ SQLite Manager 迁移 100% 完成 (11/11
+文件) 2. ✅ 测试通过率 ≥ 90% (目标 95%+) 3. ✅ 蓝队审查 100% 通过 4. ✅
+文档健康度 ≥ 90/100</p>
+<p><strong>时间目标</strong>: 3-5 天</p>
+<hr />
+<h2 id="任务拆解和优先级">📋 任务拆解和优先级</h2>
+<h3 id="phase-1-核心技术债-p0-2-3天">Phase 1: 核心技术债 (P0,
+2-3天)</h3>
+<h4 id="task-18-sqlite-manager-迁移-phase-2-剩余-7-文件">TASK-18: SQLite
+Manager 迁移 Phase 2 (剩余 7 文件)</h4>
+<p><strong>负责人</strong>: Slaver A (Backend Architecture Expert)
+<strong>优先级</strong>: P0 <strong>预计工时</strong>: 9-11 小时
+<strong>前置</strong>: Master 决策 getDB() 处理方式</p>
+<p><strong>子任务</strong>: 1. 迁移 <code>knowledge-base.ts</code>
+(2-3h, ⭐⭐⭐⭐⭐) 2. 迁移 <code>audit-logger.ts</code> (2h, ⭐⭐⭐⭐)
+3. 迁移 <code>context-snapshot.ts</code> (1.5h, ⭐⭐⭐⭐) 4. 迁移
+<code>history-tracker.ts</code> (1.5h, ⭐⭐⭐⭐) 5. 迁移
+<code>data-deletion.ts</code> (1h, ⭐⭐⭐) 6. 迁移
+<code>master-election.ts</code> (1h, ⭐⭐⭐) 7. 迁移
+<code>data-access.ts</code> (1.5h, ⭐⭐⭐)</p>
+<p><strong>交付物</strong>: - 7 个文件迁移完成 - 测试通过率维持或提升 -
+蓝队代码审查报告</p>
+<h4 id="task-19-测试修复和覆盖率提升">TASK-19: 测试修复和覆盖率提升</h4>
+<p><strong>负责人</strong>: Slaver B (QA Engineer)
+<strong>优先级</strong>: P0 <strong>预计工时</strong>: 4-6 小时</p>
+<p><strong>子任务</strong>: 1. 修复 cache-layer timeout 测试 (20 个失败)
+2. 修复集成测试环境问题 3. 提升测试覆盖率到 90%+ 4. 运行完整回归测试</p>
+<p><strong>交付物</strong>: - 测试通过率 ≥ 90% - 测试覆盖率报告 -
+失败测试根因分析</p>
+<h3 id="phase-2-质量提升-p1-1-2天">Phase 2: 质量提升 (P1, 1-2天)</h3>
+<h4 id="task-20-文档健康度提升">TASK-20: 文档健康度提升</h4>
+<p><strong>负责人</strong>: Slaver C (Documentation Expert)
+<strong>优先级</strong>: P1 <strong>预计工时</strong>: 2-3 小时</p>
+<p><strong>子任务</strong>: 1. 补充 API 文档 (JSDoc) 2.
+创建开发者贡献指南 3. 更新 CHANGELOG.md 4. 修复文档 P1 问题
+(蓝队建议)</p>
+<p><strong>交付物</strong>: - 文档健康度 ≥ 90/100 - API 文档覆盖率 80%+
+- CONTRIBUTING.md</p>
+<h4 id="task-21-性能优化收尾">TASK-21: 性能优化收尾</h4>
+<p><strong>负责人</strong>: Slaver D (Performance Expert)
+<strong>优先级</strong>: P1 <strong>预计工时</strong>: 2-3 小时</p>
+<p><strong>子任务</strong>: 1. 文件队列批量处理优化 2. 运行性能基准测试
+3. 生成性能对比报告</p>
+<p><strong>交付物</strong>: - 文件队列 P95 &lt; 1ms - 性能提升报告</p>
+<h3 id="phase-3-发布准备-p1-0.5天">Phase 3: 发布准备 (P1, 0.5天)</h3>
+<h4 id="task-22-v2.3.2-发布准备">TASK-22: v2.3.2 发布准备</h4>
+<p><strong>负责人</strong>: Master <strong>优先级</strong>: P1
+<strong>预计工时</strong>: 2-3 小时</p>
+<p><strong>子任务</strong>: 1. 合并所有分支到 testing 2.
+运行完整测试套件 3. 更新版本号和 CHANGELOG 4. 生成发布说明 5. 合并到
+main 分支</p>
+<p><strong>交付物</strong>: - v2.3.2 Release Notes - Git tag: v2.3.2 -
+发布公告</p>
+<hr />
+<h2 id="团队配置">👥 团队配置</h2>
+<h3 id="slaver-角色分配">Slaver 角色分配</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 18%" />
+<col style="width: 28%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr>
+<th>Slaver</th>
+<th>角色</th>
+<th>主要任务</th>
+<th>技能要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Slaver A</strong></td>
+<td>Backend Architecture Expert</td>
+<td>TASK-18 (SQLite 迁移)</td>
+<td>TypeScript, SQLite, async/await</td>
+</tr>
+<tr>
+<td><strong>Slaver B</strong></td>
+<td>QA Engineer</td>
+<td>TASK-19 (测试修复)</td>
+<td>Jest, 调试, 测试策略</td>
+</tr>
+<tr>
+<td><strong>Slaver C</strong></td>
+<td>Documentation Expert</td>
+<td>TASK-20 (文档提升)</td>
+<td>Markdown, JSDoc, 技术写作</td>
+</tr>
+<tr>
+<td><strong>Slaver D</strong></td>
+<td>Performance Expert</td>
+<td>TASK-21 (性能优化)</td>
+<td>性能分析, 基准测试</td>
+</tr>
+<tr>
+<td><strong>蓝队</strong></td>
+<td>Quality Gatekeeper</td>
+<td>所有任务审查</td>
+<td>Code Review, 质疑能力</td>
+</tr>
+</tbody>
+</table>
+<h3 id="协作流程">协作流程</h3>
+<pre><code>1. Slaver 领取任务 → 创建 feature 分支
+2. Slaver 完成开发 → 提交代码
+3. 蓝队审查代码 → 生成审查报告
+4. Slaver 修复问题 → 重新提交
+5. 蓝队通过 → Master 合并</code></pre>
+<p><strong>关键原则</strong>: - <strong>蓝队先行</strong>:
+所有代码必须经过蓝队审查 - <strong>原子提交</strong>: 每个子任务一个提交
+- <strong>测试驱动</strong>: 代码变更必须包含测试</p>
+<hr />
+<h2 id="蓝队配置升级">🔵 蓝队配置升级</h2>
+<h3 id="蓝队职责矩阵">蓝队职责矩阵</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>任务类型</th>
+<th>审查内容</th>
+<th>通过标准</th>
+<th>报告模板</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>代码迁移</strong></td>
+<td>Pattern 正确性、错误处理、测试覆盖</td>
+<td>质量评分 ≥ 24/30</td>
+<td>TASK-XXX-code-review.md</td>
+</tr>
+<tr>
+<td><strong>测试修复</strong></td>
+<td>根因分析、修复方案、回归验证</td>
+<td>通过率 ≥ 90%</td>
+<td>TASK-XXX-test-review.md</td>
+</tr>
+<tr>
+<td><strong>文档更新</strong></td>
+<td>准确性、可运行性、完整性</td>
+<td>质量评分 ≥ 24/30</td>
+<td>TASK-XXX-doc-review.md</td>
+</tr>
+<tr>
+<td><strong>性能优化</strong></td>
+<td>基准数据真实性、优化有效性</td>
+<td>P95 达标</td>
+<td>TASK-XXX-perf-review.md</td>
+</tr>
+</tbody>
+</table>
+<h3 id="蓝队工作流">蓝队工作流</h3>
+<pre class="mermaid"><code>graph LR
+    A[Slaver 提交代码] --&gt; B[蓝队接收通知]
+    B --&gt; C[运行自动检查]
+    C --&gt; D{问题数量}
+    D --&gt;|0 P0| E[快速审查]
+    D --&gt;|1-3 P0| F[详细审查]
+    D --&gt;|&gt;3 P0| G[拒绝并要求重构]
+    E --&gt; H[生成审查报告]
+    F --&gt; H
+    G --&gt; I[Slaver 修复]
+    I --&gt; A
+    H --&gt; J{通过?}
+    J --&gt;|Yes| K[批准合并]
+    J --&gt;|No| I</code></pre>
+<h3 id="蓝队评分标准">蓝队评分标准</h3>
+<p><strong>代码质量</strong> (30分): - 正确性: 10分
+(功能正确、无逻辑错误) - 完整性: 10分 (测试覆盖、错误处理、边界情况) -
+可维护性: 10分 (代码风格、注释、可读性)</p>
+<p><strong>通过标准</strong>: ≥ 24/30 (80%)</p>
+<hr />
+<h2 id="时间线规划">📅 时间线规划</h2>
+<h3 id="week-1-3-5天">Week 1 (3-5天)</h3>
+<table>
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 23%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr>
+<th>日期</th>
+<th>阶段</th>
+<th>任务</th>
+<th>负责人</th>
+<th>交付物</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Day 1 AM</td>
+<td>Phase 1</td>
+<td>TASK-18 启动 (SQLite 迁移)</td>
+<td>Slaver A</td>
+<td>迁移 3 个简单文件</td>
+</tr>
+<tr>
+<td>Day 1 PM</td>
+<td>Phase 1</td>
+<td>TASK-19 启动 (测试修复)</td>
+<td>Slaver B</td>
+<td>修复 10 个测试</td>
+</tr>
+<tr>
+<td>Day 2 AM</td>
+<td>Phase 1</td>
+<td>TASK-18 继续</td>
+<td>Slaver A</td>
+<td>迁移 2 个中等文件</td>
+</tr>
+<tr>
+<td>Day 2 PM</td>
+<td>Phase 1</td>
+<td>TASK-19 继续</td>
+<td>Slaver B</td>
+<td>通过率达 92%</td>
+</tr>
+<tr>
+<td>Day 3 AM</td>
+<td>Phase 1</td>
+<td>TASK-18 完成</td>
+<td>Slaver A</td>
+<td>迁移剩余 2 个复杂文件</td>
+</tr>
+<tr>
+<td>Day 3 PM</td>
+<td>Phase 2</td>
+<td>TASK-20/21 启动</td>
+<td>Slaver C/D</td>
+<td>文档+性能优化</td>
+</tr>
+<tr>
+<td>Day 4 AM</td>
+<td>Phase 2</td>
+<td>蓝队完整审查</td>
+<td>蓝队</td>
+<td>4 份审查报告</td>
+</tr>
+<tr>
+<td>Day 4 PM</td>
+<td>Phase 2</td>
+<td>问题修复</td>
+<td>所有 Slaver</td>
+<td>P0/P1 修复</td>
+</tr>
+<tr>
+<td>Day 5 AM</td>
+<td>Phase 3</td>
+<td>发布准备</td>
+<td>Master</td>
+<td>合并+测试</td>
+</tr>
+<tr>
+<td>Day 5 PM</td>
+<td>Phase 3</td>
+<td>v2.3.2 发布</td>
+<td>Master</td>
+<td>Release Notes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="风险缓冲">风险缓冲</h3>
+<ul>
+<li><strong>时间缓冲</strong>: +1-2 天 (应对意外问题)</li>
+<li><strong>质量缓冲</strong>: 蓝队严格把关</li>
+<li><strong>范围缓冲</strong>: P2 任务可延后到 v2.3.3</li>
+</ul>
+<hr />
+<h2 id="master-决策点">🎯 Master 决策点</h2>
+<h3 id="决策-1-getdb-处理方式-紧急">决策 1: getDB() 处理方式 (紧急)</h3>
+<p><strong>背景</strong>: 7 个文件使用 <code>getDB()</code> 直接访问
+better-sqlite3 Database</p>
+<p><strong>选项</strong>: - <strong>A. 保留 getDB() + 同步模式</strong>
+(推荐) - 优点: 迁移快速，保持现有逻辑 - 缺点: 架构不完全统一 - 工时:
+7-9h</p>
+<ul>
+<li><strong>B. 重构为 SQLiteManager API</strong>
+<ul>
+<li>优点: 架构完全统一</li>
+<li>缺点: 需要重新设计 API，工时翻倍</li>
+<li>工时: 15-20h</li>
+</ul></li>
+<li><strong>C. 混合模式</strong> (getDB() + async wrapper)
+<ul>
+<li>优点: 灵活性高</li>
+<li>缺点: 复杂度增加</li>
+<li>工时: 10-12h</li>
+</ul></li>
+</ul>
+<p><strong>Master 决定</strong>: <strong>选项 A</strong> (保留 getDB() +
+同步模式)</p>
+<p><strong>理由</strong>: 1. 时间效率: 工时减半 2. 风险控制:
+保持现有逻辑，减少 bug 3. 渐进改进: 可在 v2.4.0 进一步重构</p>
+<h3 id="决策-2-测试通过率目标">决策 2: 测试通过率目标</h3>
+<p><strong>当前</strong>: 88.6% (943/1064) <strong>选项</strong>: - A.
+目标 90% (修复 20 个测试) - B. 目标 95% (修复 50+ 个测试)</p>
+<p><strong>Master 决定</strong>: <strong>选项 A</strong> (目标 90%)</p>
+<p><strong>理由</strong>: 1. 符合 Roadmap 原定目标 2. 避免范围蔓延 3.
+剩余测试可在 v2.4.0 处理</p>
+<h3 id="决策-3-并行度">决策 3: 并行度</h3>
+<p><strong>选项</strong>: - A. 2 个 Slaver 串行 (安全) - B. 4 个 Slaver
+并行 (高效)</p>
+<p><strong>Master 决定</strong>: <strong>选项 B</strong> (4 个 Slaver
+并行)</p>
+<p><strong>理由</strong>: 1. 任务独立性高（SQLite、测试、文档、性能） 2.
+蓝队保障质量 3. 时间压力下需要并行</p>
+<hr />
+<h2 id="成功指标-definition-of-done">📊 成功指标 (Definition of
+Done)</h2>
+<h3 id="v2.3.2-发布标准">v2.3.2 发布标准</h3>
+<p><strong>代码质量</strong>: - [x] SQLite Manager 迁移: 11/11 文件
+(100%) - [x] 测试通过率: ≥ 90% - [x] 蓝队审查: 所有任务通过 (≥24/30) -
+[x] 代码覆盖率: ≥ 85%</p>
+<p><strong>文档质量</strong>: - [x] 文档健康度: ≥ 90/100 - [x] API
+文档覆盖率: ≥ 80% - [x] CHANGELOG.md 更新完整 - [x] 发布说明清晰</p>
+<p><strong>性能指标</strong>: - [x] 文件队列 P95: &lt; 1ms - [x] Redis
+P95: &lt; 5ms - [x] SQLite P95: &lt; 10ms</p>
+<p><strong>流程质量</strong>: - [x] 蓝队审查报告: 4 份 - [x] 所有 P0
+问题修复 - [x] Git 提交规范 (Conventional Commits)</p>
+<hr />
+<h2 id="启动命令">🚀 启动命令</h2>
+<h3 id="master-启动并行团队">Master 启动并行团队</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 创建任务</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-analyze</span>  <span class="co"># 分析任务并创建 Jira tickets</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 启动 Slaver 团队 (4 个并行)</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Slaver A: SQLite 迁移</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Slaver B: 测试修复</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Slaver C: 文档提升</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Slaver D: 性能优化</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 启动蓝队</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 蓝队: 质量把关</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Master 监控</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-check-progress</span>  <span class="co"># 定期检查进度</span></span></code></pre></div>
+<h3 id="下一步行动">下一步行动</h3>
+<ol type="1">
+<li><strong>立即</strong>: 向 Slaver 团队分配任务</li>
+<li><strong>1 小时内</strong>: 所有 Slaver 开始工作</li>
+<li><strong>每日</strong>: 同步进度，蓝队审查</li>
+<li><strong>5 天后</strong>: v2.3.2 发布</li>
+</ol>
+<hr />
+<p><strong>战略规划完成，等待 Master 批准启动！</strong> 🚀</p>
+</body>
+</html>

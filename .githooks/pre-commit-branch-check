@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# EKET Master-Slaver 分支防护 Hook
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#
+# 用途: 拦截对受保护分支 (main/testing/miao) 的直接提交
+# 触发: git commit 时自动运行
+# 绕过: git commit --no-verify (会被审计日志记录)
+#
+# 相关文档:
+#   - confluence/memory/branch-strategy-guide.md
+#   - confluence/memory/solutions/master-failure-defense-system.md (Layer 2)
+#
+# 版本: 1.0.0
+# 创建: TASK-623
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+set -euo pipefail
+
+CURRENT_BRANCH=$(git branch --show-current)
+PROTECTED_BRANCHES="main|testing|miao"
+
+if [[ "$CURRENT_BRANCH" =~ ^($PROTECTED_BRANCHES)$ ]]; then
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "🔴 禁止直接提交到 $C━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "正确流程："
+  echo "  1. 创建 feature 分支：git checkout -b feature/TASK-XXX"
+  echo "  2. 提交到 feature 分支"
+  echo "  3. 推送：git push origin feature/TASK-XXX"
+  echo "  4. 创建 PR 等待 review"
+  echo ""
+  echo "如果你是 Master 在 miao 做紧急修复："
+  echo "  git commit --no-verify  # 显式绕过（会被记录）"
+  echo ""
+  exit 1
+fi
+
+exit 0

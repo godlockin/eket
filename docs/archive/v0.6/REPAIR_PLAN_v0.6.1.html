@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET Framework v0.6.1 修复计划</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET Framework v0.6.1 修复计划</h1>
+</header>
+<h1 id="eket-framework-v0.6.1-修复计划">EKET Framework v0.6.1
+修复计划</h1>
+<p><strong>制定日期</strong>: 2026-03-24 <strong>审查版本</strong>:
+v0.6.1 <strong>审查依据</strong>: 项目经理/Scrum Master/Online
+运营三视角评审报告</p>
+<hr />
+<h2 id="一executive-summary">一、Executive Summary</h2>
+<h3 id="风险状态总览">1.1 风险状态总览</h3>
+<table>
+<thead>
+<tr>
+<th>风险等级</th>
+<th>原数量</th>
+<th>已修复</th>
+<th>剩余</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🔴 Critical</td>
+<td>5</td>
+<td>3 ✅</td>
+<td>2</td>
+<td>部分修复</td>
+</tr>
+<tr>
+<td>🟡 High</td>
+<td>8</td>
+<td>0</td>
+<td>8</td>
+<td>待修复</td>
+</tr>
+<tr>
+<td>🟢 Medium</td>
+<td>6</td>
+<td>0</td>
+<td>6</td>
+<td>待修复</td>
+</tr>
+<tr>
+<td>⚪ Low</td>
+<td>4</td>
+<td>0</td>
+<td>4</td>
+<td>待优化</td>
+</tr>
+</tbody>
+</table>
+<h3 id="评审发现">1.2 评审发现</h3>
+<p><strong>好消息</strong> 🎉: - C-01 (YAML 语法错误): 已修复 - key
+已使用英文 - C-02 (配置验证): 已集成到 <code>eket-start.sh</code> - C-04
+(Merge 绕过门禁): 已集成 test-gate-system.sh 和 merge-strategy.sh</p>
+<p><strong>待修复</strong> ⚠️: - C-03:
+脚本路径硬编码问题在模板中已修复，但需确认所有脚本一致 - C-05: 守护进程
+PID 管理未实现</p>
+<hr />
+<h2 id="二修复路线图">二、修复路线图</h2>
+<h3 id="sprint-0-24-小时内---p0-critical">Sprint 0 (24 小时内) - P0
+Critical</h3>
+<table>
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 17%" />
+<col style="width: 29%" />
+<col style="width: 23%" />
+<col style="width: 17%" />
+</colgroup>
+<thead>
+<tr>
+<th>ID</th>
+<th>任务</th>
+<th>涉及文件</th>
+<th>工作量</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S0-1</td>
+<td>守护进程 PID 管理</td>
+<td><code>template/.claude/commands/eket-start.sh</code></td>
+<td>1 小时</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td>S0-2</td>
+<td>脚本路径一致性检查</td>
+<td>所有 <code>.claude/commands/*.sh</code></td>
+<td>1 小时</td>
+<td>🔴</td>
+</tr>
+</tbody>
+</table>
+<p><strong>验收标准</strong>: - [ ] 心跳监控和 Memory Review Agent 使用
+PID 文件管理 - [ ] 所有脚本使用动态路径 <code>$SCRIPT_DIR</code> 和
+<code>$PROJECT_ROOT</code></p>
+<hr />
+<h3 id="sprint-1-本周内---p0p1-high">Sprint 1 (本周内) - P0/P1 High</h3>
+<table>
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 17%" />
+<col style="width: 29%" />
+<col style="width: 23%" />
+<col style="width: 17%" />
+</colgroup>
+<thead>
+<tr>
+<th>ID</th>
+<th>任务</th>
+<th>涉及文件</th>
+<th>工作量</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1-1</td>
+<td>权限检查集成</td>
+<td><code>template/.claude/commands/eket-claim.sh</code></td>
+<td>2 小时</td>
+<td>🔴</td>
+</tr>
+<tr>
+<td>S1-2</td>
+<td>并发控制集成</td>
+<td><code>template/.claude/commands/eket-claim.sh</code></td>
+<td>1 小时</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>S1-3</td>
+<td>统一错误处理规范</td>
+<td>所有脚本</td>
+<td>3 小时</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>S1-4</td>
+<td>动态覆盖率阈值</td>
+<td><code>scripts/test-gate-system.sh</code></td>
+<td>2 小时</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>S1-5</td>
+<td>健康检查端点</td>
+<td><code>scripts/health-check.sh</code> (新建)</td>
+<td>2 小时</td>
+<td>🟡</td>
+</tr>
+</tbody>
+</table>
+<p><strong>验收标准</strong>: - [ ] 所有 Git 操作和 Jira
+更新前调用权限检查 - [ ] 任务领取时检查并发限制 - [ ]
+所有脚本使用统一退出码和日志格式 - [ ] 覆盖率阈值支持按模块配置 - [ ]
+健康检查脚本可检测三仓库、心跳、进程状态</p>
+<hr />
+<h3 id="sprint-2-下周---p1-high-增强">Sprint 2 (下周) - P1 High
+增强</h3>
+<table>
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 17%" />
+<col style="width: 29%" />
+<col style="width: 23%" />
+<col style="width: 17%" />
+</colgroup>
+<thead>
+<tr>
+<th>ID</th>
+<th>任务</th>
+<th>涉及文件</th>
+<th>工作量</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S2-1</td>
+<td>告警通知集成</td>
+<td><code>scripts/notify.sh</code> (新建)</td>
+<td>4 小时</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>S2-2</td>
+<td>集成测试框架</td>
+<td><code>tests/integration/</code> (新建)</td>
+<td>8 小时</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>S2-3</td>
+<td>Worktree 清理调度</td>
+<td><code>scripts/worktree-cleaner.sh</code></td>
+<td>2 小时</td>
+<td>🟢</td>
+</tr>
+<tr>
+<td>S2-4</td>
+<td>文档同步机制</td>
+<td><code>scripts/sync-docs.sh</code> (新建)</td>
+<td>4 小时</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td>S2-5</td>
+<td>配置热重载</td>
+<td><code>scripts/reload-config.sh</code> (新建)</td>
+<td>4 小时</td>
+<td>🟡</td>
+</tr>
+</tbody>
+</table>
+<p><strong>验收标准</strong>: - [ ] 支持 Webhook
+通知（Slack/钉钉/企业微信） - [ ] 集成测试覆盖核心流程 - [ ] Worktree
+清理支持定时调度 - [ ] 文档自动同步到 Confluence - [ ]
+配置修改后无需重启实例</p>
+<hr />
+<h2 id="三详细修复方案">三、详细修复方案</h2>
+<h3 id="s0-1-守护进程-pid-管理">S0-1: 守护进程 PID 管理</h3>
+<p><strong>问题描述</strong>: <code>heartbeatmonitor.sh</code> 和
+<code>memory-review-agent.sh</code> 使用简单 <code>&amp;</code>
+后台运行，无进程管理。</p>
+<p><strong>修复方案</strong>:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 在 eket-start.sh 中添加</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">start_daemon()</span> <span class="kw">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">script</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$1</span><span class="st">&quot;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">name</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$2</span><span class="st">&quot;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">pid_file</span><span class="op">=</span><span class="st">&quot;.eket/state/</span><span class="va">${name}</span><span class="st">.pid&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="ot">-f</span> <span class="st">&quot;</span><span class="va">$pid_file</span><span class="st">&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">local</span> <span class="va">pid</span><span class="op">=</span><span class="va">$(</span><span class="fu">cat</span> <span class="st">&quot;</span><span class="va">$pid_file</span><span class="st">&quot;</span><span class="va">)</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">kill</span> <span class="at">-0</span> <span class="st">&quot;</span><span class="va">$pid</span><span class="st">&quot;</span> <span class="dv">2</span><span class="op">&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>            <span class="bu">echo</span> <span class="st">&quot;✓ </span><span class="va">$name</span><span class="st"> 已在运行 (PID: </span><span class="va">$pid</span><span class="st">)&quot;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="dv">0</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">fi</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rm</span> <span class="at">-f</span> <span class="st">&quot;</span><span class="va">$pid_file</span><span class="st">&quot;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 启动并保存 PID</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nohup</span> <span class="st">&quot;</span><span class="va">$script</span><span class="st">&quot;</span> <span class="at">--daemon</span> <span class="op">&gt;</span> <span class="st">&quot;logs/</span><span class="va">${name}</span><span class="st">.log&quot;</span> <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">&amp;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="va">$!</span> <span class="op">&gt;</span> <span class="st">&quot;</span><span class="va">$pid_file</span><span class="st">&quot;</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;✓ </span><span class="va">$name</span><span class="st"> 已启动 (PID: </span><span class="va">$!</span><span class="st">)&quot;</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co"># 替换原有的后台启动</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="ex">start_daemon</span> <span class="st">&quot;</span><span class="va">$SCRIPTS_DIR</span><span class="st">/heartbeatmonitor.sh&quot;</span> <span class="st">&quot;heartbeat-monitor&quot;</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="ex">start_daemon</span> <span class="st">&quot;</span><span class="va">$SCRIPTS_DIR</span><span class="st">/memory-review-agent.sh&quot;</span> <span class="st">&quot;memory-review-agent&quot;</span></span></code></pre></div>
+<p><strong>验证方法</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 PID 文件</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-la</span> .eket/state/<span class="pp">*</span>.pid</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查进程是否在运行</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ps</span> aux <span class="kw">|</span> <span class="fu">grep</span> heartbeat-monitor</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ps</span> aux <span class="kw">|</span> <span class="fu">grep</span> memory-review-agent</span></code></pre></div>
+<hr />
+<h3 id="s0-2-脚本路径一致性检查">S0-2: 脚本路径一致性检查</h3>
+<p><strong>问题描述</strong>: 部分脚本可能仍使用相对路径
+<code>../../scripts/</code>。</p>
+<p><strong>修复方案</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 所有脚本文件开头必须添加</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="va">SCRIPT_DIR</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">dirname</span> <span class="st">&quot;</span><span class="va">${BASH_SOURCE</span><span class="op">[</span><span class="dv">0</span><span class="op">]</span><span class="va">}</span><span class="st">&quot;</span><span class="va">)</span><span class="st">&quot;</span> <span class="kw">&amp;&amp;</span> <span class="bu">pwd</span><span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="va">PROJECT_ROOT</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$SCRIPT_DIR</span><span class="st">/../..&quot;</span> <span class="kw">&amp;&amp;</span> <span class="bu">pwd</span><span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="va">SCRIPTS_DIR</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$PROJECT_ROOT</span><span class="st">/scripts&quot;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 使用动态路径</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;</span><span class="va">$SCRIPTS_DIR</span><span class="st">/xxx.sh&quot;</span>  <span class="co"># 代替 ../../scripts/xxx.sh</span></span></code></pre></div>
+<p><strong>检查命令</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 查找使用相对路径的脚本</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-r</span> <span class="st">&quot; ../../scripts/&quot;</span> template/.claude/commands/</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 验证所有脚本使用动态路径</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> f <span class="kw">in</span> template/.claude/commands/<span class="pp">*</span>.sh<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="ot">! </span><span class="fu">grep</span> <span class="at">-q</span> <span class="st">&#39;SCRIPT_DIR=&#39;</span> <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">&quot;⚠ </span><span class="va">$f</span><span class="st"> 未使用动态路径&quot;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code></pre></div>
+<hr />
+<h3 id="s1-1-权限检查集成">S1-1: 权限检查集成</h3>
+<p><strong>问题描述</strong>: 配置了
+<code>check.before_each_operation: true</code>，但无实际检查逻辑。</p>
+<p><strong>修复方案</strong>:</p>
+<p>在以下脚本中添加权限检查： - <code>eket-claim.sh</code> - 任务领取前
+- <code>eket-submit-pr.sh</code> - 提交 PR 前 -
+<code>eket-review-merge.sh</code> - 合并前</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 在 Git 操作和 Jira 更新前添加</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">check_permission()</span> <span class="kw">{</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">operation</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$1</span><span class="st">&quot;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">resource</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$2</span><span class="st">&quot;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="ot">-x</span> <span class="st">&quot;</span><span class="va">$SCRIPTS_DIR</span><span class="st">/slaver-permissions.sh&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="ot">! </span><span class="st">&quot;</span><span class="va">$SCRIPTS_DIR</span><span class="st">/slaver-permissions.sh&quot;</span> check <span class="st">&quot;</span><span class="va">$operation</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$resource</span><span class="st">&quot;</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>            <span class="bu">echo</span> <span class="st">&quot;❌ 权限检查失败：不允许执行 </span><span class="va">$operation</span><span class="st"> 操作&quot;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="dv">1</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">fi</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 使用示例</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="ex">check_permission</span> <span class="st">&quot;git_checkout&quot;</span> <span class="st">&quot;</span><span class="va">$BRANCH</span><span class="st">&quot;</span> <span class="kw">||</span> <span class="bu">exit</span> 1</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="ex">check_permission</span> <span class="st">&quot;jira_update&quot;</span> <span class="st">&quot;</span><span class="va">$TASK_ID</span><span class="st">&quot;</span> <span class="kw">||</span> <span class="bu">exit</span> 1</span></code></pre></div>
+<hr />
+<h3 id="s1-3-统一错误处理规范">S1-3: 统一错误处理规范</h3>
+<p><strong>问题描述</strong>: 各脚本退出码不一致，日志格式不统一。</p>
+<p><strong>修复方案</strong>:</p>
+<p>创建 <code>scripts/error-handler.sh</code>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 统一错误处理规范</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 错误码定义</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">EXIT_SUCCESS</span><span class="op">=</span>0</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">EXIT_GENERAL_ERROR</span><span class="op">=</span>1</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">EXIT_CONFIG_ERROR</span><span class="op">=</span>2</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">EXIT_PERMISSION_ERROR</span><span class="op">=</span>3</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">EXIT_TIMEOUT_ERROR</span><span class="op">=</span>4</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">EXIT_VALIDATION_ERROR</span><span class="op">=</span>5</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 日志格式</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fu">log_error()</span> <span class="kw">{</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">timestamp</span><span class="op">=</span><span class="va">$(</span><span class="fu">date</span> <span class="st">&#39;+%Y-%m-%d %H:%M:%S&#39;</span><span class="va">)</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;[</span><span class="va">$timestamp</span><span class="st">] [ERROR] </span><span class="va">$1</span><span class="st">&quot;</span> <span class="op">&gt;&amp;</span><span class="dv">2</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="fu">log_warn()</span> <span class="kw">{</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">timestamp</span><span class="op">=</span><span class="va">$(</span><span class="fu">date</span> <span class="st">&#39;+%Y-%m-%d %H:%M:%S&#39;</span><span class="va">)</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;[</span><span class="va">$timestamp</span><span class="st">] [WARN] </span><span class="va">$1</span><span class="st">&quot;</span> <span class="op">&gt;&amp;</span><span class="dv">2</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="fu">log_info()</span> <span class="kw">{</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">timestamp</span><span class="op">=</span><span class="va">$(</span><span class="fu">date</span> <span class="st">&#39;+%Y-%m-%d %H:%M:%S&#39;</span><span class="va">)</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;[</span><span class="va">$timestamp</span><span class="st">] [INFO] </span><span class="va">$1</span><span class="st">&quot;</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="co"># 退出函数</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="fu">exit_with_error()</span> <span class="kw">{</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">error_code</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$1</span><span class="st">&quot;</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">message</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$2</span><span class="st">&quot;</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    <span class="ex">log_error</span> <span class="st">&quot;</span><span class="va">$message</span><span class="st">&quot;</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> <span class="st">&quot;</span><span class="va">$error_code</span><span class="st">&quot;</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<p>所有脚本引用：</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> <span class="st">&quot;</span><span class="va">$SCRIPTS_DIR</span><span class="st">/error-handler.sh&quot;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 使用</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="ex">exit_with_error</span> <span class="st">&quot;</span><span class="va">$EXIT_PERMISSION_ERROR</span><span class="st">&quot;</span> <span class="st">&quot;权限检查失败&quot;</span></span></code></pre></div>
+<hr />
+<h3 id="s1-5-健康检查端点">S1-5: 健康检查端点</h3>
+<p><strong>问题描述</strong>: 无法快速判断实例健康状态。</p>
+<p><strong>修复方案</strong>:</p>
+<p>创建 <code>scripts/health-check.sh</code>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># EKET 健康检查脚本</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-e</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="va">PROJECT_ROOT</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">dirname</span> <span class="st">&quot;</span><span class="va">${BASH_SOURCE</span><span class="op">[</span><span class="dv">0</span><span class="op">]</span><span class="va">}</span><span class="st">&quot;</span><span class="va">)</span><span class="st">/../..&quot;</span> <span class="kw">&amp;&amp;</span> <span class="bu">pwd</span><span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="va">SCRIPTS_DIR</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$PROJECT_ROOT</span><span class="st">/scripts&quot;</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;========================================&quot;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;EKET 健康检查&quot;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;========================================&quot;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="va">HEALTH_STATUS</span><span class="op">=</span>0</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 检查三仓库</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 检查三仓库状态&quot;</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> repo <span class="kw">in</span> confluence jira code_repo<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="ot">-d</span> <span class="st">&quot;</span><span class="va">$PROJECT_ROOT</span><span class="st">/</span><span class="va">$repo</span><span class="st">&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">&quot;  ✓ </span><span class="va">$repo</span><span class="st"> 存在&quot;</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">&quot;  ✗ </span><span class="va">$repo</span><span class="st"> 不存在&quot;</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>        <span class="va">HEALTH_STATUS</span><span class="op">=</span>1</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 检查心跳</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 检查心跳状态&quot;</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">-f</span> <span class="st">&quot;</span><span class="va">$PROJECT_ROOT</span><span class="st">/.eket/state/heartbeat.log&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    <span class="va">LAST_HEARTBEAT</span><span class="op">=</span><span class="va">$(</span><span class="fu">tail</span> <span class="at">-1</span> <span class="st">&quot;</span><span class="va">$PROJECT_ROOT</span><span class="st">/.eket/state/heartbeat.log&quot;</span> <span class="kw">|</span> <span class="fu">cut</span> <span class="at">-d</span><span class="st">&#39; &#39;</span> <span class="at">-f1</span><span class="va">)</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;  最后心跳：</span><span class="va">$LAST_HEARTBEAT</span><span class="st">&quot;</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;  ✗ 心跳日志不存在&quot;</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>    <span class="va">HEALTH_STATUS</span><span class="op">=</span>1</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 检查守护进程</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 检查守护进程&quot;</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> pid_file <span class="kw">in</span> <span class="st">&quot;</span><span class="va">$PROJECT_ROOT</span><span class="st">/.eket/state/&quot;</span><span class="pp">*</span>.pid<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="ot">-f</span> <span class="st">&quot;</span><span class="va">$pid_file</span><span class="st">&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>        <span class="va">pid</span><span class="op">=</span><span class="va">$(</span><span class="fu">cat</span> <span class="st">&quot;</span><span class="va">$pid_file</span><span class="st">&quot;</span><span class="va">)</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">kill</span> <span class="at">-0</span> <span class="st">&quot;</span><span class="va">$pid</span><span class="st">&quot;</span> <span class="dv">2</span><span class="op">&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>            <span class="bu">echo</span> <span class="st">&quot;  ✓ </span><span class="va">$(</span><span class="fu">basename</span> <span class="st">&quot;</span><span class="va">$pid_file</span><span class="st">&quot;</span> .pid<span class="va">)</span><span class="st"> 运行中 (PID: </span><span class="va">$pid</span><span class="st">)&quot;</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>            <span class="bu">echo</span> <span class="st">&quot;  ✗ </span><span class="va">$(</span><span class="fu">basename</span> <span class="st">&quot;</span><span class="va">$pid_file</span><span class="st">&quot;</span> .pid<span class="va">)</span><span class="st"> 未运行&quot;</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>            <span class="va">HEALTH_STATUS</span><span class="op">=</span>1</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>        <span class="cf">fi</span></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 检查配置</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;## 检查配置有效性&quot;</span></span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">-x</span> <span class="st">&quot;</span><span class="va">$SCRIPTS_DIR</span><span class="st">/validate-config.sh&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">&quot;</span><span class="va">$SCRIPTS_DIR</span><span class="st">/validate-config.sh&quot;</span> <span class="dv">2</span><span class="op">&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">&quot;  ✓ 配置验证通过&quot;</span></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">&quot;  ✗ 配置验证失败&quot;</span></span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a>        <span class="va">HEALTH_STATUS</span><span class="op">=</span>1</span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a><span class="co"># 总结</span></span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;========================================&quot;</span></span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$HEALTH_STATUS</span><span class="st">&quot;</span> <span class="ot">-eq</span> 0 <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;健康状态：✓ 正常&quot;</span></span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;健康状态：✗ 异常&quot;</span></span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;========================================&quot;</span></span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a><span class="bu">exit</span> <span class="st">&quot;</span><span class="va">$HEALTH_STATUS</span><span class="st">&quot;</span></span></code></pre></div>
+<hr />
+<h2 id="四测试计划">四、测试计划</h2>
+<h3 id="单元测试">单元测试</h3>
+<table>
+<thead>
+<tr>
+<th>脚本</th>
+<th>测试场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>health-check.sh</code></td>
+<td>三仓库缺失、心跳超时、进程挂掉、配置错误</td>
+</tr>
+<tr>
+<td><code>error-handler.sh</code></td>
+<td>各错误码正确退出、日志格式正确</td>
+</tr>
+<tr>
+<td><code>slaver-permissions.sh</code></td>
+<td>权限允许/拒绝/询问三种场景</td>
+</tr>
+</tbody>
+</table>
+<h3 id="集成测试">集成测试</h3>
+<table>
+<thead>
+<tr>
+<th>流程</th>
+<th>测试场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Master 启动</td>
+<td>守护进程正确启动、PID 文件创建</td>
+</tr>
+<tr>
+<td>Slaver 领取任务</td>
+<td>权限检查调用、并发限制生效</td>
+</tr>
+<tr>
+<td>Merge 流程</td>
+<td>门禁验证、策略检查、Checkpoint 验证</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="五验收标准">五、验收标准</h2>
+<h3 id="sprint-0-验收">Sprint 0 验收</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />守护进程 PID 管理实现</label></li>
+<li><label><input type="checkbox" />所有脚本路径动态化</label></li>
+<li><label><input type="checkbox" />无硬编码相对路径</label></li>
+</ul>
+<h3 id="sprint-1-验收">Sprint 1 验收</h3>
+<ul class="task-list">
+<li><label><input
+type="checkbox" />权限检查在所有操作前调用</label></li>
+<li><label><input type="checkbox" />并发控制生效</label></li>
+<li><label><input type="checkbox" />错误处理规范统一</label></li>
+<li><label><input type="checkbox" />健康检查可运行</label></li>
+<li><label><input type="checkbox" />覆盖率阈值支持模块配置</label></li>
+</ul>
+<h3 id="sprint-2-验收">Sprint 2 验收</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />告警通知支持 Webhook</label></li>
+<li><label><input type="checkbox" />集成测试覆盖率 &gt;80%</label></li>
+<li><label><input type="checkbox" />Worktree 清理定时执行</label></li>
+<li><label><input type="checkbox" />文档自动同步</label></li>
+<li><label><input type="checkbox" />配置热重载生效</label></li>
+</ul>
+<hr />
+<h2 id="六责任矩阵">六、责任矩阵</h2>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>负责人</th>
+<th>审查人</th>
+<th>预计完成</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sprint 0</td>
+<td>AI Agent</td>
+<td>人类</td>
+<td>2026-03-25</td>
+</tr>
+<tr>
+<td>Sprint 1</td>
+<td>AI Agent</td>
+<td>人类</td>
+<td>2026-03-31</td>
+</tr>
+<tr>
+<td>Sprint 2</td>
+<td>AI Agent</td>
+<td>人类</td>
+<td>2026-04-07</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="七风险评估">七、风险评估</h2>
+<table>
+<thead>
+<tr>
+<th>风险</th>
+<th>概率</th>
+<th>影响</th>
+<th>缓解措施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>脚本改造引入新 bug</td>
+<td>中</td>
+<td>中</td>
+<td>集成测试覆盖</td>
+</tr>
+<tr>
+<td>权限检查影响性能</td>
+<td>低</td>
+<td>低</td>
+<td>缓存检查结果</td>
+</tr>
+<tr>
+<td>配置热重载复杂度高</td>
+<td>中</td>
+<td>中</td>
+<td>分阶段实现</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="八后续行动">八、后续行动</h2>
+<ol type="1">
+<li><strong>立即行动</strong> (Sprint 0):
+<ul>
+<li>创建 <code>start_daemon</code> 函数</li>
+<li>扫描并修复所有脚本路径</li>
+</ul></li>
+<li><strong>本周行动</strong> (Sprint 1):
+<ul>
+<li>集成权限检查</li>
+<li>创建错误处理规范</li>
+<li>实现健康检查</li>
+</ul></li>
+<li><strong>下周行动</strong> (Sprint 2):
+<ul>
+<li>告警通知集成</li>
+<li>集成测试框架</li>
+<li>配置热重载</li>
+</ul></li>
+</ol>
+<hr />
+<p><strong>制定人</strong>: Master Node + AI Agent
+<strong>批准人</strong>: Human User <strong>下次审查</strong>: Sprint 0
+完成后</p>
+</body>
+</html>

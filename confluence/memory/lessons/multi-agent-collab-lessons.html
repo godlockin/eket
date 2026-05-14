@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>多智能体协作 — 实战经验教训</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">多智能体协作 — 实战经验教训</h1>
+</header>
+<h1 id="多智能体协作-实战经验教训">多智能体协作 — 实战经验教训</h1>
+<p><strong>创建时间</strong>: 2026-04-15 <strong>来源</strong>: EKET
+Round 2 (2026-04-07)、Round 3 (2026-04-08)、Subagent Group (2026-04-02)
+<strong>适用范围</strong>: Master-Slaver 架构的多智能体协作项目</p>
+<hr />
+<h2 id="新增条目格式">新增条目格式</h2>
+<p>新增经验时，统一使用以下结构：</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">### X.Y 标题</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>**问题**：什么情况下会遇到这个问题？</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>**规则**：应该怎么做（一句话结论优先）。</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>**反例**：<span class="co">&lt;!-- 可选 --&gt;</span>常见的错误模式。</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>**数据支撑**：<span class="co">&lt;!-- 可选 --&gt;</span>量化数据、执行记录出处。</span></code></pre></div>
+<hr />
+<h2 id="目录">目录</h2>
+<ol type="1">
+<li><a href="#task-allocation">任务分配原则</a></li>
+<li><a href="#parallel-execution">并行执行的效率与风险</a></li>
+<li><a href="#env-dependency">环境依赖问题的处理策略</a></li>
+<li><a href="#master-coordination">Master 的协调职责</a></li>
+<li><a href="#slaver-quality">Slaver 执行质量差异管理</a></li>
+<li><a href="#time-estimation">预估工时偏差规律</a></li>
+<li><a href="#large-scale">大规模 Subagent 组织经验</a></li>
+<li><a href="#failure-patterns">失败模式与应对策略</a></li>
+</ol>
+<hr />
+<h2 id="task-allocation">1. 任务分配原则</h2>
+<h3 id="成功模式">成功模式</h3>
+<p><strong>专注单一领域</strong>：每个 Slaver
+专注一个领域（测试修复、性能验证、SQLite
+迁移、文档维护），产出质量远高于杂而多的分配方式。</p>
+<p><strong>任务规模适中</strong>：Round 2 经验显示，2~4
+小时内可完成的任务是最优规模。太小（&lt;30分钟）失去并行价值，太大（&gt;8小时）需要拆分。</p>
+<p><strong>设立独立文档 Agent</strong>：Round 2 创新点——专门分配一个
+Slaver 负责文档，产出质量和连贯性显著高于让各个 Slaver 各自写文档。</p>
+<h3 id="任务分配-checklist分配前确认">任务分配
+checklist（分配前确认）</h3>
+<ul class="task-list">
+<li><label><input
+type="checkbox" />任务边界是否清晰？（没有歧义地带）</label></li>
+<li><label><input
+type="checkbox" />任务间的依赖是否排清？（并行任务不得有隐式依赖）</label></li>
+<li><label><input type="checkbox" />每个 Slaver
+需要的环境/权限是否已准备好？</label></li>
+<li><label><input type="checkbox" />预估时长是否合理？（参考 §6
+偏差规律）</label></li>
+</ul>
+<hr />
+<h2 id="parallel-execution">2. 并行执行的效率与风险</h2>
+<h3 id="效率上限">效率上限</h3>
+<table>
+<thead>
+<tr>
+<th>规模</th>
+<th>实测效率</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5 Slavers 并行</td>
+<td>20 分钟完成预估 2~3 小时的工作</td>
+<td>Round 2</td>
+</tr>
+<tr>
+<td>4 Slavers 并行</td>
+<td>约 2~3 小时（其中一个受环境限制）</td>
+<td>Round 3</td>
+</tr>
+<tr>
+<td>16 Subagents 并行</td>
+<td>修复 450+ 问题，含 35 项 P0</td>
+<td>Subagent Group</td>
+</tr>
+</tbody>
+</table>
+<p><strong>并行的核心价值</strong>：专业化分工 × 并行时间 =
+指数级效率提升。</p>
+<h3 id="并行的风险点">并行的风险点</h3>
+<ol type="1">
+<li><strong>隐式依赖冲突</strong>：两个 Slaver 都修改了同一文件 →
+合并冲突</li>
+<li><strong>环境竞争</strong>：多个 Slaver 同时操作 Redis/SQLite →
+数据不一致</li>
+<li><strong>任务聚焦漂移</strong>：Slaver
+互相协助对方任务，各自核心任务进度延迟（Round 3 实际发生）</li>
+<li><strong>Linter 自动还原</strong>：一个 Slaver
+的格式化操作还原了另一个 Slaver 的手动修改</li>
+</ol>
+<h3 id="缓解策略">缓解策略</h3>
+<pre><code>- 严格隔离：每个 Slaver 操作独立的文件集合，通过 Worktree 进行隔离
+- 环境准备：开始前确认所有依赖服务运行（Redis/数据库）
+- 禁止互相协助：只有 Master 可以调整 Slaver 间的协作，避免隐式依赖冲突</code></pre>
+<hr />
+<h2 id="env-dependency">3. 环境依赖问题的处理策略</h2>
+<p><strong>Round 3 典型案例</strong>：Slaver C 负责性能验证，但 Redis
+服务未运行，无法执行实际基准测试。</p>
+<h3 id="处理决策树">处理决策树</h3>
+<pre><code>检测到环境依赖缺失
+    ↓
+能否 30 分钟内解决？
+  ├── 能 → 先解决环境，再执行任务
+  └── 不能 → 上报 Master
+           ↓
+           Master 决策：
+             ├── 切换到降级模式（如理论分析替代实测）
+             ├── 推迟该任务到下一 Round
+             └── 让其他 Slaver 帮忙准备环境</code></pre>
+<p><strong>降级执行原则</strong>：实测 &gt; 基于日志的分析 &gt;
+代码静态分析 &gt; 理论推演 -
+降级执行时必须明确标注”降级模式”，产出物注明”待实测验证” -
+降级产出不能视为完整验收，必须在后续补全</p>
+<h3 id="常见环境依赖清单启动前确认">常见环境依赖清单（启动前确认）</h3>
+<table>
+<thead>
+<tr>
+<th>服务</th>
+<th>检查命令</th>
+<th>常见缺失场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Redis</td>
+<td><code>redis-cli ping</code></td>
+<td>性能测试、消息队列测试</td>
+</tr>
+<tr>
+<td>Node.js 版本</td>
+<td><code>node --version</code></td>
+<td>ESM 模块路径问题</td>
+</tr>
+<tr>
+<td>npm 依赖</td>
+<td><code>npm ci</code> / <code>npm install</code></td>
+<td>构建失败</td>
+</tr>
+<tr>
+<td>环境变量</td>
+<td><code>cat .env</code></td>
+<td>API 调用失败</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="master-coordination">4. Master 的协调职责</h2>
+<h3 id="master-的核心价值">Master 的核心价值</h3>
+<p>Master 不是”分任务的人”，而是<strong>消除阻塞的人</strong>。</p>
+<p><strong>Round 3 Master 正确行为示例</strong>： - Slaver C 被 Redis
+阻塞 → Master 立即决策切换降级模式 - Slaver A
+协助测试修复（偏离主任务）→ Master 识别并在下一 Round 重新聚焦</p>
+<h3 id="master-心跳检查等待期间的主动工作">Master
+心跳检查（等待期间的主动工作）</h3>
+<p>Master 不是被动等待 PR，而是主动执行： 1. <strong>同步/修正
+roadmap</strong> — 对齐当前进度，识别风险项 2.
+<strong>规划下阶段任务</strong> — 创建下一 Sprint 规划草案 3.
+<strong>拆解新需求</strong> — 将宏观需求拆解为 Ticket 级别 4.
+<strong>标记 Ticket 优先级和依赖</strong> — 识别关键路径 5.
+<strong>预初始化 Slaver 团队</strong> — 确保充足的可领取任务</p>
+<p><strong>Master
+红线</strong>：禁止亲手写任何代码（业务/配置/测试都不行），禁止审查自己实质参与的任务。</p>
+<hr />
+<h2 id="slaver-quality">5. Slaver 执行质量差异管理</h2>
+<h3 id="质量评分基准">质量评分基准</h3>
+<p>Round 3 Master 评分示例（供参考）：</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 23%" />
+<col style="width: 23%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr>
+<th>Slaver</th>
+<th>结果</th>
+<th>评分</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Slaver B（测试修复）</td>
+<td>⭐ 优秀</td>
+<td>9/10</td>
+<td>显著提升测试质量，核心目标完成</td>
+</tr>
+<tr>
+<td>Slaver A（SQLite 迁移）</td>
+<td>🟡 计划完成</td>
+<td>7/10</td>
+<td>遇到 Linter 阻塞，完成部分</td>
+</tr>
+<tr>
+<td>Slaver C（性能验证）</td>
+<td>⚠️ 受限完成</td>
+<td>6/10</td>
+<td>环境限制，降级到理论分析</td>
+</tr>
+<tr>
+<td>Slaver E（文档归档）</td>
+<td>🟡 部分完成</td>
+<td>7/10</td>
+<td>跨分支问题，文档未全部归档</td>
+</tr>
+</tbody>
+</table>
+<h3 id="质量差异的处理原则">质量差异的处理原则</h3>
+<ol type="1">
+<li><strong>不因环境原因惩罚 Slaver</strong>：Redis 不可用是 Master
+的准备失误，不是 Slaver 的执行失误</li>
+<li><strong>区分”完成度”和”质量”</strong>：核心功能完成度 vs 代码质量 vs
+测试覆盖度 → 分开评估</li>
+<li><strong>未完成任务的归属</strong>：剩余工作记录到下一
+Round，不堆积在当前 Ticket</li>
+</ol>
+<hr />
+<h2 id="time-estimation">6. 预估工时偏差规律</h2>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>预估</th>
+<th>实际</th>
+<th>偏差比</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Round 2（5 Slavers 并行）</td>
+<td>2~3 小时</td>
+<td>20 分钟</td>
+<td>6~9 倍高估</td>
+</tr>
+<tr>
+<td>Round 3（4 Slavers 并行）</td>
+<td>~2 小时</td>
+<td><sub>2</sub>3 小时</td>
+<td>基本准确（含阻塞）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>规律总结</strong>： - AI
+并行执行<strong>大幅压缩时间</strong>，但有环境依赖时可能出现长阻塞 -
+预估工时应基于<strong>串行时间 ÷ 并行因子</strong>（并行因子通常
+2~5，受依赖约束） - 包含”环境准备”时间的任务，实际时间是预估的 1.5~2
+倍</p>
+<hr />
+<h2 id="large-scale">7. 大规模 Subagent 组织经验</h2>
+<p><em>来源：Subagent Group 修复行动（16 个 Subagent 并行，修复 450+
+问题）</em></p>
+<h3 id="组织结构">组织结构</h3>
+<pre><code>Master（协调）
+├── Expert Review Group（27 个领域专家，纯评审）
+└── Fix Group（16 个专项修复 Subagent，纯执行）
+    ├── 安全类（3 个）
+    ├── 架构类（2 个）
+    ├── 代码质量类（3 个）
+    ├── 文档类（1 个）
+    └── 基础设施类（7 个）</code></pre>
+<h3 id="大规模并行的特殊规则">大规模并行的特殊规则</h3>
+<ol type="1">
+<li><strong>评审与执行分离</strong>：评审阶段和修复阶段完全分开，不得同步进行</li>
+<li><strong>修复领域不重叠</strong>：每个 Subagent
+有明确的文件/模块范围，禁止越界</li>
+<li><strong>进度可见性</strong>：每个 Subagent
+产出独立的完成报告，Master 通过报告汇总进度</li>
+<li><strong>合并顺序</strong>：依赖关系确定合并顺序（基础设施 → 核心模块
+→ 测试 → 文档）</li>
+</ol>
+<hr />
+<h2 id="failure-patterns">8. 失败模式与应对策略</h2>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 30%" />
+<col style="width: 40%" />
+</colgroup>
+<thead>
+<tr>
+<th>失败模式</th>
+<th>触发条件</th>
+<th>预防 / 恢复</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务聚焦漂移</td>
+<td>Slaver A 协助 Slaver B，自身任务延迟</td>
+<td>Master 明确禁止横向协助；检测到时立即发出纠正消息</td>
+</tr>
+<tr>
+<td>Linter 自动还原</td>
+<td>格式化工具在 commit hook 还原手动修改</td>
+<td>提前配置 <code>.eslintignore</code> /
+<code>prettier ignore</code>；手动修改后立即提交</td>
+</tr>
+<tr>
+<td>环境依赖阻塞</td>
+<td>Redis/DB 未就绪，Slaver 无法执行</td>
+<td>启动前 <code>system:doctor</code> 检查；准备降级执行方案</td>
+</tr>
+<tr>
+<td>分析瘫痪</td>
+<td>Slaver 连续读取 5+ 文件没有任何产出</td>
+<td>Slaver 心跳检查：连续 5 次读文件无写入 → 立即开始写或报告
+BLOCKED</td>
+</tr>
+<tr>
+<td>合并冲突</td>
+<td>多个 Slaver 修改同一文件</td>
+<td>任务分配时划定文件范围；Master Review 阶段合并顺序控制</td>
+</tr>
+<tr>
+<td>PR 幻觉</td>
+<td>Slaver 声称完成但产物为空/占位符</td>
+<td>4-Level Artifact Verification (L1~L4) 强制执行</td>
+</tr>
+<tr>
+<td>.git/index.lock 死锁</td>
+<td>多 Agent 并行在同一 Git 目录操作</td>
+<td><strong>串行执行</strong>或独立 worktree；重派前先 TaskStop 旧 Agent
++ rm lock</td>
+</tr>
+<tr>
+<td>僵尸 Agent 叠加</td>
+<td>旧 Agent 未停止就派新 Agent</td>
+<td>重派前必须 TaskStop 全部旧 Agent → rm lock → git status 确认</td>
+</tr>
+<tr>
+<td>Cherry-pick 历史分叉</td>
+<td>Cherry-pick 后 merge 回源分支</td>
+<td>大批量回灌优先用 merge 而非 cherry-pick；回灌后按流向逆序 merge
+对齐</td>
+</tr>
+<tr>
+<td>Worktree CWD 不切换</td>
+<td><code>isolation: "worktree"</code> agent 操作主目录而非
+worktree</td>
+<td>不依赖自动 worktree 隔离；手动 <code>git worktree add</code> +
+绝对路径</td>
+</tr>
+</tbody>
+</table>
+<p>→ Worktree 详见 <a
+href="../worktree-agent-guide.md">../worktree-agent-guide.md</a><br />
+→ 防卡死详见 <a
+href="../agent-prompt-template.md">../agent-prompt-template.md</a> |
+Agent 卡死/静默退出 | API 429、上下文溢出、HTTPS push 挂起 | Prompt
+含防卡死规则 + Master 15 分钟心跳检查 | | 同文件并行修改 | 多 agent
+同时改同一文件 | Master 检查文件范围重叠，有重叠就串行 | | –theirs
+覆盖独有内容 | merge 解冲突无脑取一方 |
+双方有独有贡献时必须手动合并，不可二选一 |</p>
+<hr />
+<h2 id="rule-retention">9. Rule Retention &amp; Context Persistence</h2>
+<p><em>来源：EKET Round 21（TASK-031~034）+ Round 22
+规划（TASK-035~041）</em></p>
+<h3 id="agent-规则遗忘是系统性问题">9.1 Agent 规则遗忘是系统性问题</h3>
+<p>长时间运行的 Agent session（超过 ~100 轮对话）会逐渐忘记 CLAUDE.md
+中的约束规则：越权操作、格式规范退化、心跳检查停止。根因：上下文窗口有限，规则文件的”相对权重”随对话增长下降。</p>
+<h3 id="三层防御纵深">9.2 三层防御纵深</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>层级</th>
+<th>方案</th>
+<th>原理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Layer 1</td>
+<td>CLAUDE.md 拆分瘦身</td>
+<td>减少初始 token 消耗，延缓遗忘</td>
+</tr>
+<tr>
+<td>Layer 2</td>
+<td>进度上报内嵌 mini-rules</td>
+<td>周期性重新注入规则</td>
+</tr>
+<tr>
+<td>Layer 3b</td>
+<td>Hook 脚本（机器执行）</td>
+<td>不依赖 Agent 记忆，系统级强制（唯一 100% 可靠）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="引用是惰性加载">9.3 <span class="citation"
+data-cites="引用是惰性加载">@引用是惰性加载</span></h3>
+<p>Claude Code 中 <code>@file</code>
+链接不会自动展开。正确做法：写<strong>强制读取指令</strong>（“必须先读
+XXX”），而非”详细规则见 XXX”。</p>
+<h3 id="esm-ts-jest-mock-陷阱">9.4 ESM + ts-jest mock 陷阱</h3>
+<p><code>jest.spyOn(module, 'fn')</code> 对 ESM named export 无效（只读
+binding）。解决：验证副作用（console spy）或 DI 注入。</p>
+<h3 id="hook-上线必须-dry-run">9.5 Hook 上线必须 dry-run</h3>
+<p><code>EKET_HOOK_DRYRUN=true</code>
+先收集误拦截数据，再切到真实阻断。</p>
+<h3 id="dynamic-import-永不同步抛出">9.6 dynamic import()
+永不同步抛出</h3>
+<p>需要同步判断模块是否存在 → 必须用
+<code>createRequire</code>。<code>import()</code> 只适合异步加载且必须
+<code>await</code>。</p>
+<h3 id="redis-keyprefix-双重叠加">9.7 Redis keyPrefix 双重叠加</h3>
+<p>使用 ioredis <code>keyPrefix</code> 时，所有 key
+常量必须<strong>不含</strong> keyPrefix 值，否则实际 key
+会双重叠加。</p>
+<hr />
+<p><strong>参见</strong>： - <a
+href="../codebase-maintenance.md">../codebase-maintenance.md</a> —
+文档债清理方法论 - <a
+href="eket-project-hygiene.md">eket-project-hygiene.md</a> — EKET
+特有卫生规则 - <a
+href="../research/borrowed-wisdom.md">../research/borrowed-wisdom.md</a>
+— 完整知识库索引 -
+<code>docs/reports/ROUND3-MASTER-FINAL-REPORT.md</code> — Round 3
+详细报告 -
+<code>docs/plans/completed/ROUND2-MASTER-FINAL-REPORT.md</code> — Round
+2 详细报告</p>
+</body>
+</html>
