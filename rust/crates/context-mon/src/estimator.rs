@@ -40,7 +40,7 @@ impl ContextEstimator {
         let mut total_size: u64 = 0;
         const MAX_FILES_PER_DIR: usize = 20; // Match Node baseline
 
-        // Process directories with walkdir (faster than glob)
+        // Process directories with walkdir
         for (base, ext) in &self.dirs {
             if !Path::new(base).exists() {
                 continue;
