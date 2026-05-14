@@ -71,17 +71,24 @@ EPIC-006 构建了基础 context 防御（pre-task check、branch hook、time-bo
 - TASK-634: Master Alert - 风险上报（2h, fullstack）
 - TASK-635: Integration Tests - E2E 验证（3h, qa）
 
+**P2 - Rust 性能优化**（9h）:
+- TASK-636: Rust Context Monitor - 高性能二进制（6h, backend）
+- TASK-637: Rust CI Pipeline - 跨平台编译（3h, devops）
+
 **依赖关系**:
 ```
 TASK-631 (Shell Hook)
   └─> TASK-632 (Node Estimator)
         ├─> TASK-633 (Snapshot)
         ├─> TASK-634 (Alert)
-        └─> TASK-635 (Tests) [blocked by all]
+        ├─> TASK-635 (Tests) [blocked by all]
+        └─> TASK-636 (Rust) [需 Node 基准]
+              └─> TASK-637 (Rust CI)
 ```
 
-**总预估**: 14h  
-**关键路径**: TASK-631 → TASK-632 → TASK-635
+**总预估**: 23h（P0+P1: 14h, P2: 9h）  
+**关键路径**: TASK-631 → TASK-632 → TASK-636 → TASK-637（15h）  
+**最小可用**: P0+P1（14h）完成即可上线
 
 ---
 
