@@ -6,7 +6,7 @@
 **预估**: 4h  
 **依赖**: None (独立功能，可并行 X05/X06)  
 **Agent Type**: devops  
-**状态**: analysis_review
+**状态**: review
 
 ---
 
