@@ -2,12 +2,10 @@
 
 **Epic**: EPIC-007  
 **Priority**: P0  
-**Status**: ✅ Done  
+**Status**: 📋 Backlog  
 **Estimate**: 4h  
-**Actual**: 3.5h  
 **Agent Type**: backend  
 **Category**: 🔧 Core Logic  
-**PR**: #192  
 
 ---
 
@@ -125,35 +123,3 @@ export class ContextEstimator {
 **Blocked By**: TASK-631  
 **Blocks**: TASK-633  
 **Created**: 2026-05-14
-
----
-
-## Implementation Notes
-
-**Delivered**:
-- Core estimator with dual-mode strategy (rough/precise/smart)
-- CLI monitor with JSON output + exit codes (0/1/2/3)
-- JSONL logging (logs/context-monitor.jsonl)
-- Threshold alerts (safe/warn/danger at 70K/85K)
-- Programmatic API via ContextEstimator class export
-
-**Key Decisions**:
-1. 20-file cap per pattern → prevents OOM on 200+ ticket repos
-2. glob v7 promisify wrapper → compatibility with existing deps
-3. `enc.free()` explicit → prevents tiktoken memory leak
-4. Same patterns for rough/precise → consistency (±30%/±10% errors)
-
-**Performance**:
-- Rough: 1-2ms (file stat only)
-- Precise: 2.5s for 40 files (tiktoken encoding)
-- Smart switching at 40K tokens threshold
-
-**Testing**:
-- All ACs validated ✓
-- Build passes (tsc) ✓
-- Lint passes ✓
-- 1 pre-existing test failure (ticket-index-sync.test.ts, unrelated)
-
-**PR**: #192  
-**Completed**: 2026-05-13  
-**Actual Time**: 3.5h (under 4h estimate)
