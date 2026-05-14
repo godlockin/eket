@@ -27,7 +27,7 @@
  */
 
 import { ProgressTracker } from './progress-tracker.js';
-import { CheckpointMetadata, TaskPhase } from '../types/progress-tracker.js';
+import { CheckpointMetadata, TaskPhase, type ResumeContext } from '../types/progress-tracker.js';
 
 /**
  * Global singleton ProgressTracker instance
@@ -46,8 +46,15 @@ const ENABLE_TRACKING = process.env.ENABLE_PROGRESS_TRACKING !== 'false';
  *
  * @param taskId - Ticket ID (e.g., "TASK-X02")
  * @param slaverId - Slaver instance ID (e.g., "slaver_1234567890_abc123")
+ * @param options - Optional initialization options (TASK-X06: resume support)
  */
-export async function initializeProgressTracker(taskId: string, slaverId: string): Promise<void> {
+export async function initializeProgressTracker(
+  taskId: string,
+  slaverId: string,
+  options?: {
+    resumeFrom?: ResumeContext;
+  }
+): Promise<void> {
   if (!ENABLE_TRACKING) {
     console.log('[ProgressTracker] Disabled via ENABLE_PROGRESS_TRACKING=false');
     return;
@@ -66,12 +73,15 @@ export async function initializeProgressTracker(taskId: string, slaverId: string
       flushIntervalMs: 30000, // 30s async flush
       outputDir: `jira/tickets/${taskId}`,
       progressFileName: 'progress.md',
+      resumeFrom: options?.resumeFrom, // TASK-X06: Pass resume context
     });
 
-    // Record task_claimed checkpoint
-    await safeCheckpoint('task_claimed', {
-      notes: `Task ${taskId} claimed by ${slaverId}`,
-    });
+    // Record task_claimed checkpoint (only if not resuming)
+    if (!options?.resumeFrom) {
+      await safeCheckpoint('task_claimed', {
+        notes: `Task ${taskId} claimed by ${slaverId}`,
+      });
+    }
 
     console.log(`[ProgressTracker] Initialized for ${taskId} (slaver: ${slaverId})`);
   } catch (error) {
