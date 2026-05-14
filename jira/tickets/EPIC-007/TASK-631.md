@@ -2,16 +2,8 @@
 
 **Epic**: EPIC-007  
 **Priority**: P0  
-**Status**: ✅ Done  
-**Assignee**: slaver-001  
-**Claimed**: 2026-05-13 01:17  
-**Approved**: 2026-05-14 01:30  
-**Implemented**: 2026-05-14 02:00  
-**Reviewed**: 2026-05-14 02:10  
-**Fixed**: 2026-05-14 03:00  
-**Merged**: 2026-05-14 03:10  
+**Status**: 📋 Backlog  
 **Estimate**: 2h  
-**Actual**: 2h  
 **Agent Type**: devops  
 **Category**: 🔧 Infrastructure  
 
@@ -72,41 +64,6 @@ if [ $approx_tokens -ge 80000 ]; then
   nohup node node/dist/context-monitor.js --check &>/dev/null &
 fi
 ```
-
----
-
-## Implementation Details
-
-**Branch**: `feature/TASK-631-shell-hook`  
-**Commit**: `6e5590a` - feat(hooks): implement UserPromptSubmit hook (TASK-631)  
-**PR**: `jira/tickets/EPIC-007/TASK-631/PR.md`
-
-**Files Modified**:
-- `.claude/hooks/UserPromptSubmit.sh` (created)
-
-**AC Status**:
-- ✅ AC-1: Turn counter (.eket/state/context-turn-count)
-- ✅ AC-2: Token estimation (0.3 tokens/char from analysis)
-- ✅ AC-3: Warning at turn ≥10 OR 50K tokens (boolean OR)
-- ⏳ AC-4: Deferred to TASK-632 (TODO comment added)
-
-**Review Iteration 2 - Changes Applied**:
-- 🔴 CRITICAL: Threshold 8→10 turns (line 13)
-- 🟡 MEDIUM: Token coefficient 0.4→0.3 (line 49)
-- 🟢 MINOR: 50K token threshold check added (line 54-56)
-
-**New Commit**: `cb26aec` - fix(hooks): address review comments (TASK-631)
-
-**Master Approval Changes Applied**:
-- High Priority: .gitignore exclusions (node_modules, .git, dist)
-- High Priority: Error tolerance (set +e, exit 0)
-- Medium Priority: Large JSON exclusion pattern ready
-
-**Test Results**:
-- Counter: ✅ 10 increments verified
-- Warning: ✅ Triggers at turn 11 (threshold=10)
-- Token threshold: ✅ OR clause with 50K check
-- Shellcheck: ✅ No issues
 
 ---
 
