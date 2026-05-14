@@ -7,6 +7,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
+import { spawnSync } from 'child_process';
 
 import { Command } from 'commander';
 
@@ -82,6 +83,41 @@ export function getNextTicketNumber(ticketsDir: string): number {
     }
   }
   return max + 1;
+}
+
+// ─── Pre-task check ───────────────────────────────────────────────────────────
+
+export interface PreCheckResult {
+  passed: boolean;
+  exitCode: number;
+  output: string;
+}
+
+export async function runPreTaskCheck(taskId: string, projectRoot: string): Promise<PreCheckResult> {
+  const scriptPath = path.join(projectRoot, 'scripts', 'master-pre-task-check.sh');
+
+  // Check if script exists
+  if (!fs.existsSync(scriptPath)) {
+    console.log(`⚠️  Pre-check script not found: ${scriptPath}`);
+    return { passed: true, exitCode: 0, output: 'Script not found, skipping check' };
+  }
+
+  // Use spawnSync for accurate exit code capture
+  const result = spawnSync('bash', [scriptPath, taskId], {
+    cwd: projectRoot,
+    encoding: 'utf-8',
+    timeout: 120000, // 2min timeout
+  });
+
+  // Exit code 0 = passed, 2 = warnings (still pass), 1+ (except 2) = fatal
+  const exitCode = result.status ?? 1;
+  const passed = exitCode === 0 || exitCode === 2;
+
+  return {
+    passed,
+    exitCode,
+    output: (result.stdout ?? '') + (result.stderr ?? ''),
+  };
 }
 
 // ─── Ticket writer ────────────────────────────────────────────────────────────
@@ -174,7 +210,12 @@ export function question(rl: readline.Interface, prompt: string): Promise<string
 
 // ─── Main interactive flow ────────────────────────────────────────────────────
 
-export async function runTaskCreate(description: string, rl: readline.Interface, ticketsDir: string): Promise<string> {
+export async function runTaskCreate(
+  description: string,
+  rl: readline.Interface,
+  ticketsDir: string,
+  projectRoot: string,
+): Promise<string> {
   const type = inferType(description);
   const priority = inferPriority(description);
 
@@ -284,6 +325,22 @@ export async function runTaskCreate(description: string, rl: readline.Interface,
   console.log(`\n[生成 ${taskId}]`);
   console.log(`✅ ${filePath} 已创建`);
 
+  // ─── Run pre-task check ───────────────────────────────────────────────────────
+  console.log('\n[运行 Pre-Task 检查...]');
+  const checkResult = await runPreTaskCheck(taskId, projectRoot);
+
+  console.log(checkResult.output);
+
+  if (!checkResult.passed) {
+    console.error(`\n❌ Pre-task check failed (exit code ${checkResult.exitCode})`);
+    console.error('任务已创建，但发现问题。请修正后再分配。');
+    process.exit(checkResult.exitCode);
+  }
+
+  if (checkResult.exitCode === 2) {
+    console.log('\n⚠️  检查通过但有警告，请注意。');
+  }
+
   return filePath;
 }
 
@@ -299,7 +356,7 @@ export function registerTaskCreate(program: Command): void {
       const rl = createRlInterface();
 
       try {
-        await runTaskCreate(description, rl, ticketsDir);
+        await runTaskCreate(description, rl, ticketsDir, projectRoot);
       } finally {
         rl.close();
       }

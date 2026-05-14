@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 框架变更总结</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 框架变更总结</h1>
+</header>
+<h1 id="eket-框架变更总结">EKET 框架变更总结</h1>
+<p><strong>版本</strong>: 0.2.0 <strong>日期</strong>: 2026-03-20
+<strong>类型</strong>: 架构变更文档</p>
+<hr />
+<h2 id="变更背景">变更背景</h2>
+<p>根据用户设想的实际使用流程，对 EKET
+框架进行了全面重构，主要变更包括：</p>
+<ol type="1">
+<li><strong>三 Git 仓库架构</strong> - confluence/code_repo/jira
+独立仓库 + submodule 集成</li>
+<li><strong>Agent 配置文件系统</strong> - YAML 定义的智能体配置</li>
+<li><strong>Skills 体系</strong> - 可复用、可组合的能力单元</li>
+<li><strong>分支策略</strong> - main/testing/feature 三分支模型</li>
+<li><strong>任务模式</strong> - 任务设定模式 / 任务承接模式</li>
+</ol>
+<hr />
+<h2 id="变更前对比">变更前对比</h2>
+<h3 id="任务初始化流程">任务初始化流程</h3>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>变更前</th>
+<th>变更后</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>运行 <code>init-project.sh</code></td>
+<td>运行 <code>init-project.sh</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>运行 <code>/eket-init</code></td>
+<td>运行 <code>/eket-init</code> (增强版)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>检查本地项目结构</td>
+<td>检查三仓库配置</td>
+</tr>
+<tr>
+<td>4</td>
+<td>显示快速开始指南</td>
+<td>选择任务模式 (setup/execution)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>❌ 无三仓库初始化</td>
+<td>✅ 运行 <code>init-three-repos.sh</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td>❌ 无远程同步</td>
+<td>✅ 配置 remote + submodule</td>
+</tr>
+</tbody>
+</table>
+<h3 id="任务承接和处理流程">任务承接和处理流程</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 35%" />
+<col style="width: 35%" />
+</colgroup>
+<thead>
+<tr>
+<th>步骤</th>
+<th>变更前</th>
+<th>变更后</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>检查 <code>inbox/human_input.md</code></td>
+<td>检查任务模式</td>
+</tr>
+<tr>
+<td>2</td>
+<td>需求分析师创建任务到 <code>tasks/</code></td>
+<td><strong>设定模式</strong>: 协调智能体创建 Epic/Tasks 到
+<code>jira/</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>执行智能体领取任务</td>
+<td><strong>承接模式</strong>: 执行智能体从 <code>jira/tickets/</code>
+领取任务</td>
+</tr>
+<tr>
+<td>4</td>
+<td>创建分支开发</td>
+<td>创建分支开发 (feature/* → testing → main)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>创建 PR</td>
+<td>创建 PR + 更新 Jira 状态</td>
+</tr>
+<tr>
+<td>6</td>
+<td>❌ 无后续任务创建</td>
+<td>✅ 在 <code>jira/</code> 中创建后续任务</td>
+</tr>
+</tbody>
+</table>
+<h3 id="任务管理">任务管理</h3>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>变更前</th>
+<th>变更后</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务状态追踪</td>
+<td>本地 <code>tasks/*.md</code></td>
+<td><code>jira/tickets/</code> + <code>jira/state/</code></td>
+</tr>
+<tr>
+<td>依赖关系</td>
+<td>❌ 无</td>
+<td>✅ <code>jira/state/dependencies.json</code></td>
+</tr>
+<tr>
+<td>文档管理</td>
+<td>❌ 无</td>
+<td>✅ <code>confluence/projects/</code></td>
+</tr>
+<tr>
+<td>背景知识</td>
+<td>❌ 无</td>
+<td>✅ <code>confluence/memory/</code></td>
+</tr>
+<tr>
+<td>Agent 动态加载</td>
+<td>❌ 无</td>
+<td>✅ 根据任务类型加载对应 Agent</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="新增文件">新增文件</h2>
+<h3 id="文档类">文档类</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/THREE_REPO_ARCHITECTURE.md</code></td>
+<td>三 Git 仓库架构说明</td>
+</tr>
+<tr>
+<td><code>docs/SKILLS_SYSTEM.md</code></td>
+<td>Skills 体系说明</td>
+</tr>
+<tr>
+<td><code>docs/AGENTS_CONFIG.md</code></td>
+<td>Agent 配置文件说明</td>
+</tr>
+<tr>
+<td><code>docs/BRANCH_STRATEGY.md</code></td>
+<td>分支策略和任务模式</td>
+</tr>
+<tr>
+<td><code>docs/CHANGELOG_v0.2.md</code></td>
+<td>本变更文档</td>
+</tr>
+</tbody>
+</table>
+<h3 id="脚本类">脚本类</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scripts/init-three-repos.sh</code></td>
+<td>三仓库初始化脚本</td>
+</tr>
+<tr>
+<td><code>template/.claude/commands/eket-init.sh</code></td>
+<td>增强的初始化向导</td>
+</tr>
+<tr>
+<td><code>template/.claude/commands/eket-mode.sh</code></td>
+<td>模式切换命令</td>
+</tr>
+</tbody>
+</table>
+<h3 id="配置类">配置类</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>template/.gitmodules</code></td>
+<td>Submodule 配置模板</td>
+</tr>
+<tr>
+<td><code>agents/coordinators/*.yml</code></td>
+<td>协调智能体配置</td>
+</tr>
+<tr>
+<td><code>agents/executors/*.yml</code></td>
+<td>执行智能体配置</td>
+</tr>
+<tr>
+<td><code>agents/executors/executor_registry.yml</code></td>
+<td>执行者注册表</td>
+</tr>
+<tr>
+<td><code>skills/**.yml</code></td>
+<td>技能定义</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="核心概念变更">核心概念变更</h2>
+<h3 id="仓库架构">1. 仓库架构</h3>
+<p><strong>变更前</strong>:</p>
+<pre><code>project/
+├── tasks/
+├── inbox/
+├── outbox/
+└── .eket/</code></pre>
+<p><strong>变更后</strong>:</p>
+<pre><code>code_repo/ (主仓库)
+├── .gitmodules
+├── confluence/ → confluence 仓库 (submodule)
+├── jira/ → jira 仓库 (submodule)
+├── src/
+└── tests/
+
+confluence/ (独立仓库)
+├── projects/{project}/
+│   ├── requirements/
+│   ├── architecture/
+│   └── design/
+└── memory/
+
+jira/ (独立仓库)
+├── epics/
+├── tickets/
+│   ├── feature/
+│   ├── bugfix/
+│   └── task/
+├── index/
+└── state/</code></pre>
+<h3 id="任务模式">2. 任务模式</h3>
+<p><strong>新增概念</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>职责</th>
+<th>负责智能体</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>任务设定模式</strong></td>
+<td>需求分析、任务拆解、架构设计</td>
+<td>协调智能体</td>
+</tr>
+<tr>
+<td><strong>任务承接模式</strong></td>
+<td>任务领取、代码开发、PR 提交</td>
+<td>执行智能体</td>
+</tr>
+</tbody>
+</table>
+<p><strong>模式切换</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-mode</span> setup      <span class="co"># 切换到设定模式</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-mode</span> execution  <span class="co"># 切换到承接模式</span></span></code></pre></div>
+<h3 id="分支策略">3. 分支策略</h3>
+<p><strong>变更前</strong>:</p>
+<pre><code>main ← feature/*</code></pre>
+<p><strong>变更后</strong>:</p>
+<pre><code>main ← testing ← feature/*</code></pre>
+<p><strong>分支流转</strong>:</p>
+<pre><code>1. 创建分支：git checkout -b feature/FEAT-001-login
+2. 开发完成：git push -u origin feature/FEAT-001-login
+3. 创建 PR: feature → testing
+4. 测试通过：合并到 testing
+5. 创建 PR: testing → main
+6. 合并到 main，更新 Jira 状态</code></pre>
+<h3 id="agent-配置">4. Agent 配置</h3>
+<p><strong>新增</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># agents/coordinators/requirement_analyst.yml</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> requirement_analyst</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">type</span><span class="kw">:</span><span class="at"> coordinator</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">responsibilities</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">...</span><span class="kw">]</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">skills</span><span class="kw">:</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> requirements/user_interview</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> requirements/requirement_decomposition</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">decision_policy</span><span class="kw">:</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">auto_decide</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">escalation_rules</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">...</span><span class="kw">]</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">lifecycle</span><span class="kw">:</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">mode</span><span class="kw">:</span><span class="at"> persistent</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">wakeup_triggers</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">...</span><span class="kw">]</span></span></code></pre></div>
+<h3 id="skills-体系">5. Skills 体系</h3>
+<p><strong>新增技能分类</strong>: - <code>requirements/</code> -
+需求分析类 - <code>design/</code> - 技术设计类 -
+<code>development/</code> - 开发实现类 - <code>testing/</code> -
+测试验证类 - <code>devops/</code> - 运维部署类 -
+<code>documentation/</code> - 文档类</p>
+<p><strong>技能示例</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># skills/requirements/requirement_decomposition.yml</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> requirement_decomposition</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">inputs</span><span class="kw">:</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">raw_requirement</span><span class="kw">:</span><span class="at"> string</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">outputs</span><span class="kw">:</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">feature_list</span><span class="kw">:</span><span class="at"> array</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> analyze_requirement</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> identify_features</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> define_dependencies</span></span></code></pre></div>
+<hr />
+<h2 id="使用流程变更">使用流程变更</h2>
+<h3 id="首次启动流程">首次启动流程</h3>
+<p><strong>变更前</strong>:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">1.</span> init-project.sh my-project /path/to/project</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">2.</span> cd /path/to/project</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">3.</span> claude</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ex">4.</span> /eket-init</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ex">5.</span> 编辑 inbox/human_input.md</span></code></pre></div>
+<p><strong>变更后</strong>:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">1.</span> init-project.sh my-project /path/to/project</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">2.</span> cd /path/to/project</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">3.</span> claude</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="ex">4.</span> /eket-init</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ex">5.</span> 运行 init-three-repos.sh <span class="er">(</span><span class="ex">可选：配置三仓库</span><span class="kw">)</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="ex">6.</span> 编辑 inbox/human_input.md</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="ex">7.</span> 选择任务模式 <span class="er">(</span><span class="ex">setup/execution</span><span class="kw">)</span></span></code></pre></div>
+<h3 id="需求分析流程">需求分析流程</h3>
+<p><strong>变更前</strong>:</p>
+<pre><code>1. 人类编辑 inbox/human_input.md
+2. 需求分析师创建 tasks/task-XXX.md
+3. 创建状态报告等待确认</code></pre>
+<p><strong>变更后</strong>:</p>
+<pre><code>1. 人类编辑 inbox/human_input.md
+2. 需求分析师 (设定模式):
+   - 创建 jira/epics/EPIC-XXX/
+   - 创建 jira/tickets/feature/FEAT-XXX.md
+   - 创建 confluence/projects/requirements/
+3. 技术经理:
+   - 创建 confluence/projects/architecture/
+4. 创建状态报告等待确认
+5. 人类确认后，切换到承接模式</code></pre>
+<h3 id="任务执行流程">任务执行流程</h3>
+<p><strong>变更前</strong>:</p>
+<pre><code>1. 执行智能体领取 tasks/task-XXX.md
+2. 创建分支 feature/task-XXX
+3. 开发、提交
+4. 创建 PR</code></pre>
+<p><strong>变更后</strong>:</p>
+<pre><code>1. 执行智能体轮询 jira/tickets/feature/FEAT-XXX.md
+2. 分析任务、依赖、Confluence 背景知识
+3. 领取任务 (更新 Jira 状态)
+4. 创建分支 feature/FEAT-XXX-desc
+5. 开发、提交
+6. 创建 PR → testing
+7. 测试通过后 PR → main
+8. 合并到 main，更新 Jira 状态为 done</code></pre>
+<hr />
+<h2 id="命令参考变更">命令参考变更</h2>
+<h3 id="新增命令">新增命令</h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/eket-mode [setup\|execution]</code></td>
+<td>切换任务模式</td>
+</tr>
+<tr>
+<td><code>/path/to/scripts/init-three-repos.sh</code></td>
+<td>初始化三仓库</td>
+</tr>
+</tbody>
+</table>
+<h3 id="增强命令">增强命令</h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>变更内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/eket-init</code></td>
+<td>增加三仓库检查、模式选择、模式状态保存</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="配置变更">配置变更</h2>
+<h3 id="gitmodules-新增">.gitmodules (新增)</h3>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[submodule &quot;confluence&quot;]</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="dt">    path </span><span class="ot">=</span><span class="st"> confluence</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="dt">    url </span><span class="ot">=</span><span class="st"> https://github.com/{org}/{project}-confluence.git</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="dt">    branch </span><span class="ot">=</span><span class="st"> main</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="kw">[submodule &quot;jira&quot;]</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="dt">    path </span><span class="ot">=</span><span class="st"> jira</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="dt">    url </span><span class="ot">=</span><span class="st"> https://github.com/{org}/{project}-jira.git</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="dt">    branch </span><span class="ot">=</span><span class="st"> main</span></span></code></pre></div>
+<h3 id="eketconfig.yml-更新">.eket/config.yml (更新)</h3>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 新增</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">project</span><span class="kw">:</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;{{PROJECT_NAME}}&quot;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">root</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;{{PROJECT_ROOT}}&quot;</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 新增</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span><span class="kw">:</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">main_branch</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;main&quot;</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">testing_branch</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;testing&quot;</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">branch_prefix</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;feature/&quot;</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 新增</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="fu">mode</span><span class="kw">:</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">default</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;setup&quot;</span><span class="co">  # setup 或 execution</span></span></code></pre></div>
+<hr />
+<h2 id="迁移指南">迁移指南</h2>
+<h3 id="从-v0.1-迁移到-v0.2">从 v0.1 迁移到 v0.2</h3>
+<ol type="1">
+<li><p><strong>备份现有数据</strong>:</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="at">-r</span> tasks/ tasks.backup/</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="at">-r</span> inbox/ inbox.backup/</span></code></pre></div></li>
+<li><p><strong>更新文档结构</strong>:</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 复制新文档</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> eket/docs/<span class="pp">*</span>.md docs/</span></code></pre></div></li>
+<li><p><strong>初始化三仓库</strong> (可选):</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/init-three-repos.sh</span> my-project my-org github</span></code></pre></div></li>
+<li><p><strong>更新 CLAUDE.md</strong>:</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> eket/template/CLAUDE.md CLAUDE.md</span></code></pre></div></li>
+<li><p><strong>运行新的初始化</strong>:</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-init</span></span></code></pre></div></li>
+</ol>
+<hr />
+<h2 id="后续计划">后续计划</h2>
+<h3 id="p0---核心功能">P0 - 核心功能</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />实现 Agent 动态加载器</label></li>
+<li><label><input type="checkbox" />实现 Skills 调用机制</label></li>
+<li><label><input type="checkbox" />实现 Jira 状态机</label></li>
+</ul>
+<h3 id="p1---增强功能">P1 - 增强功能</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />远程同步脚本
+(<code>scripts/sync-remote.sh</code>)</label></li>
+<li><label><input type="checkbox" />任务依赖可视化工具</label></li>
+<li><label><input type="checkbox" />Confluence 文档模板生成</label></li>
+</ul>
+<h3 id="p2---优化功能">P2 - 优化功能</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />模式自动切换逻辑</label></li>
+<li><label><input type="checkbox" />Agent 能力匹配优化</label></li>
+<li><label><input type="checkbox" />Skills 性能优化</label></li>
+</ul>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>

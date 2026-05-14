@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EXPERT-PANEL-PLAYBOOK.md — 需求分析 / 任务规划 / 任务拆解 专家组手册</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EXPERT-PANEL-PLAYBOOK.md — 需求分析 / 任务规划 /
+任务拆解 专家组手册</h1>
+</header>
+<h1
+id="expert-panel-playbook.md-需求分析-任务规划-任务拆解-专家组手册">EXPERT-PANEL-PLAYBOOK.md
+— 需求分析 / 任务规划 / 任务拆解 专家组手册</h1>
+<blockquote>
+<p><strong>适用对象</strong>：Master（项目经理角色）。
+<strong>触发时机</strong>：收到新需求、重大变更、跨 Sprint
+规划、受阻需要重新拆解。 <strong>与 <a
+href="MASTER-RULES.md">MASTER-RULES.md</a> 关系</strong>：RULES
+管红线与硬性
+Checklist；本文件管<strong>方法论</strong>——如何把模糊需求转成可执行
+ticket。</p>
+</blockquote>
+<hr />
+<h2 id="何时召唤专家组">0. 何时召唤专家组</h2>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 42%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr>
+<th>场景</th>
+<th>最少专家数</th>
+<th>必要角色</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>新需求 → PRD</td>
+<td>3</td>
+<td>产品 / 架构 / QA</td>
+</tr>
+<tr>
+<td>架构变更</td>
+<td>4</td>
+<td>架构 / 安全 / 性能 / DevOps</td>
+</tr>
+<tr>
+<td>重构/迁移</td>
+<td>4</td>
+<td>架构 / 并发 / 回滚策略 / QA</td>
+</tr>
+<tr>
+<td>生产事故根因分析</td>
+<td>5</td>
+<td>SRE / 安全 / 性能 / 架构 / 数据</td>
+</tr>
+<tr>
+<td>日常 ticket 拆解</td>
+<td>可跳过</td>
+<td>——</td>
+</tr>
+<tr>
+<td>Spike 技术调研</td>
+<td>2-3</td>
+<td>架构师 + 领域专家（backend/ai/devops 视 spike 方向）</td>
+</tr>
+<tr>
+<td>Roadmap 季度规划</td>
+<td>3</td>
+<td>架构师 + 产品经理 + DevOps（或全栈）</td>
+</tr>
+<tr>
+<td>设计/ADR 评审</td>
+<td>3</td>
+<td>架构师 + 后端 + 相关领域专家</td>
+</tr>
+</tbody>
+</table>
+<p><strong>不召唤</strong>：单一已知模式的实现任务（CRUD / 文案修改 /
+配置项）。召唤专家组 = 承认存在<strong>不确定性</strong>。</p>
+<hr />
+<h2 id="需求分析requirement-analysis">1. 需求分析（Requirement
+Analysis）</h2>
+<h3 id="输入闸门-不合格直接打回">1.1 输入闸门 —— 不合格直接打回</h3>
+<p>拿到需求原文（<code>inbox/human_input.md</code>）后，先过
+<strong>5-Why + 4-W 闸门</strong>：</p>
+<table>
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 44%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr>
+<th>检查项</th>
+<th>不合格表现</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Who</strong> 受益人是谁？</td>
+<td>仅”用户”二字</td>
+<td>写 <code>inbox/human_feedback/[BLOCK]</code>，问具体角色</td>
+</tr>
+<tr>
+<td><strong>What</strong> 要交付什么 artifact？</td>
+<td>仅动词（“优化”/“改善”）</td>
+<td>追问可见产物</td>
+</tr>
+<tr>
+<td><strong>Why</strong> 当前状态问题是什么？</td>
+<td>跳过直接写方案</td>
+<td>回退追问痛点证据</td>
+</tr>
+<tr>
+<td><strong>When</strong> 成功的判据？</td>
+<td>无法被证伪</td>
+<td>追问可测量的验收标准</td>
+</tr>
+<tr>
+<td><strong>Why-5</strong> 连问 5 次根因</td>
+<td>回答循环</td>
+<td>需求本身可能是伪命题</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>红线</strong>：Master 不得在任何 Why
+未澄清的情况下直接开始拆任务。<strong>先澄清，后拆解。</strong></p>
+</blockquote>
+<h3 id="结构化输出强制模板">1.2 结构化输出（强制模板）</h3>
+<p>每次需求分析完成后，产出
+<code>jira/tickets/&lt;EPIC-ID&gt;/requirement-analysis.md</code>：</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Requirement Analysis: &lt;EPIC-ID&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">## 1. 原始诉求（原文引用）</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; &lt;一字不差引用 human_input&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2. 受益人 × 场景矩阵</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Persona <span class="pp">|</span> 触发场景 <span class="pp">|</span> 当前痛点（证据） <span class="pp">|</span> 期望结果 <span class="pp">|</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="pp">|---------|---------|-----------------|---------|</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ... <span class="pp">|</span> ... <span class="pp">|</span> ... (日志/数据/用户反馈) <span class="pp">|</span> ... <span class="pp">|</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3. 验收标准（Given-When-Then）</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**AC-1**: Given <span class="dt">&lt;</span><span class="kw">context</span><span class="dt">&gt;</span>, When <span class="dt">&lt;</span><span class="kw">action</span><span class="dt">&gt;</span>, Then <span class="dt">&lt;</span><span class="kw">observable</span><span class="ot"> outcome</span><span class="dt">&gt;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**AC-2**: ...</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>（每条必须可以用一条命令或一次点击验证）</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## 4. 非目标（Out of Scope）</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>明确列出**本轮不做**的相关项，防止范围蔓延</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">## 5. 未知与假设</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ID <span class="pp">|</span> 类型 <span class="pp">|</span> 内容 <span class="pp">|</span> 阻塞级别 <span class="pp">|</span> 解除方式 <span class="pp">|</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="pp">|----|------|------|---------|---------|</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> U-1 <span class="pp">|</span> 未知 <span class="pp">|</span> <span class="dt">&lt;</span><span class="kw">X</span><span class="ot"> </span><span class="er">服务</span><span class="ot"> QPS </span><span class="er">上限不明</span><span class="dt">&gt;</span> <span class="pp">|</span> P0 <span class="pp">|</span> 压测 <span class="pp">|</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> A-1 <span class="pp">|</span> 假设 <span class="pp">|</span> &lt;用户量 &lt; 1 万&gt; <span class="pp">|</span> P1 <span class="pp">|</span> 数据对账 <span class="pp">|</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## 6. 风险与缓解</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 风险 <span class="pp">|</span> 可能性 H/M/L <span class="pp">|</span> 影响 H/M/L <span class="pp">|</span> 缓解策略 <span class="pp">|</span></span></code></pre></div>
+<blockquote>
+<p><strong>Master 只有在本文档每一节都非空后，才能进入 §2
+规划阶段。</strong></p>
+</blockquote>
+<h3 id="专家组角色需求阶段">1.3 专家组角色（需求阶段）</h3>
+<table>
+<thead>
+<tr>
+<th>专家</th>
+<th>关注点</th>
+<th>典型发问</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>产品经理</strong></td>
+<td>受益人 / 业务价值</td>
+<td>“如果这个不做会死吗？”</td>
+</tr>
+<tr>
+<td><strong>架构师</strong></td>
+<td>技术可行性 / 耦合度</td>
+<td>“现有哪些模块必须动？”</td>
+</tr>
+<tr>
+<td><strong>QA</strong></td>
+<td>验收可测性</td>
+<td>“你怎么证明它对？”</td>
+</tr>
+<tr>
+<td><strong>安全/合规</strong></td>
+<td>数据边界 / 权限</td>
+<td>“谁能读/写哪些字段？”</td>
+</tr>
+<tr>
+<td><strong>运维/SRE</strong></td>
+<td>上线可观测性</td>
+<td>“坏了怎么发现？怎么回滚？”</td>
+</tr>
+</tbody>
+</table>
+<p>每位专家必须<strong>提至少一个关键问题</strong>。全员无异议 =
+可能所有人都没认真看，Master 应主动挑战。</p>
+<hr />
+<h2 id="任务规划task-planning">2. 任务规划（Task Planning）</h2>
+<h3 id="垂直切片优先vertical-slicing">2.1 垂直切片优先（Vertical
+Slicing）</h3>
+<p>拆任务时，<strong>每个 ticket
+必须能独立交付一小片完整用户价值</strong>。禁止按技术层切（“先写所有
+API”/“再写所有 UI”）。</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>反模式</th>
+<th>正模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FEAT-1 设计 DB / FEAT-2 写 API / FEAT-3 写 UI</td>
+<td>FEAT-1 登录最小闭环（DB+API+UI 全栈）<br>FEAT-2
+登录加验证码（在同一栈再加一层）</td>
+</tr>
+</tbody>
+</table>
+<p>判据：<strong>任一 ticket
+合并后都能部署上线展示给用户</strong>，哪怕功能极简。</p>
+<h3 id="invest-自检每个-ticket">2.2 INVEST 自检（每个 ticket）</h3>
+<ul>
+<li><strong>I</strong>ndependent 可独立开发与合并</li>
+<li><strong>N</strong>egotiable 粒度可在 analysis 阶段调整</li>
+<li><strong>V</strong>aluable 单独具备用户/运维价值</li>
+<li><strong>E</strong>stimable 可给出 hours 估算</li>
+<li><strong>S</strong>mall ≤ 2 工作日；超标必须继续拆</li>
+<li><strong>T</strong>estable 有明确 AC</li>
+</ul>
+<p><strong>任一项不满足 → 强制重拆</strong>。</p>
+<h3 id="依赖图与关键路径">2.3 依赖图与关键路径</h3>
+<p>在 <code>confluence/architecture/&lt;EPIC&gt;-plan.md</code>
+产出：</p>
+<pre class="mermaid"><code>graph LR
+  FEAT-001[登录闭环] --&gt; FEAT-003[权限校验]
+  FEAT-002[注册] --&gt; FEAT-003
+  FEAT-003 --&gt; FEAT-005[审计日志]
+  FEAT-004[忘记密码] --&gt; FEAT-003</code></pre>
+<ul>
+<li><strong>关键路径</strong>：最长依赖链 → Master 优先派发这条链上的
+ticket</li>
+<li><strong>可并行块</strong>：无互相依赖的 ticket → Master
+必须同时初始化多个 Slaver</li>
+</ul>
+<h3 id="milestone-拆分">2.4 Milestone 拆分</h3>
+<p>每 5-7 个 ticket 设一个 Milestone，交付物必须对应<strong>一个可演示的
+Demo</strong>。Demo 不通过 = Milestone 不 done，Master 禁止开下一个
+Milestone。</p>
+<hr />
+<h2 id="任务拆解task-decomposition">3. 任务拆解（Task
+Decomposition）</h2>
+<h3 id="拆解启发式按优先级">3.1 拆解启发式（按优先级）</h3>
+<ol type="1">
+<li><strong>风险优先</strong>：最大未知/最大回滚代价的部分 → 拆出来独立
+ticket，优先做（fail fast）</li>
+<li><strong>边界优先</strong>：进程/网络/权限边界 → 单独
+ticket，因为这里最容易出 bug</li>
+<li><strong>数据写入优先</strong>：写操作 ticket 永远排在读操作 ticket
+之前（保证数据结构先落地）</li>
+<li><strong>可观测性内嵌</strong>：每个 ticket 的 AC
+必须包含”如何观察它在跑”（日志/指标/追踪），不得事后补</li>
+</ol>
+<h3 id="ticket-最小字段集">3.2 Ticket 最小字段集</h3>
+<p>Master 创建 ticket 时，以下字段<strong>缺一不能 ready</strong>：</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">id</span><span class="kw">:</span><span class="at"> FEAT-NNN</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">title</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;&lt;动词开头，动作+对象&gt;&quot;</span><span class="co">          # ❌ &quot;优化系统&quot; ✅ &quot;增加登录失败重试锁定&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">parent_epic</span><span class="kw">:</span><span class="at"> EPIC-NNN</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">agent_type</span><span class="kw">:</span><span class="at"> frontend_dev | backend_dev | fullstack | qa | devops</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">priority</span><span class="kw">:</span><span class="at"> P0 | P1 | P2 | P3</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">estimate_hours</span><span class="kw">:</span><span class="at"> &lt;number&gt;</span><span class="co">                # ≤ 16；超标重拆</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">blocked_by</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">TICKET-ID</span><span class="kw">,</span><span class="at"> ...</span><span class="kw">]</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">acceptance_criteria</span><span class="kw">:</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">AC-1</span><span class="kw">:</span><span class="at"> Given/When/Then</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">observability</span><span class="kw">:</span><span class="co">                          # 必填</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">logs</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">&quot;event_name&quot;</span><span class="kw">]</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">metrics</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">&quot;metric_name&quot;</span><span class="kw">]</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fu">rollback_plan</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;&lt;一句话，如何关闭这个改动&gt;&quot;</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">test_strategy</span><span class="kw">:</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">unit</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;&lt;覆盖哪些函数&gt;&quot;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">integration</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;&lt;哪条端到端流&gt;&quot;</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">regression</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;&lt;dual-engine 场景号 or manual step&gt;&quot;</span></span></code></pre></div>
+<h3 id="不可继续拆解的判据">3.3 不可继续拆解的判据</h3>
+<p>当 Master 觉得某 ticket “再拆会拆碎”时，回答 3 问：</p>
+<ol type="1">
+<li><strong>Slaver 能否 1 小时内读完全文并开始写代码？</strong> 不能 →
+继续拆</li>
+<li><strong>AC 能否一句话描述？</strong> 不能 → 拆成多个 ticket 每个单
+AC</li>
+<li><strong>是否触碰 3+ 模块？</strong> 是 → 按模块拆</li>
+</ol>
+<p>全 “是” 才停。</p>
+<hr />
+<h2 id="专家组运行协议">4. 专家组运行协议</h2>
+<h3 id="召唤模板">4.1 召唤模板</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 专家组召唤：&lt;主题&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>**背景**：&lt;3 句话&gt;</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>**目标**：&lt;期望专家组产出什么决策&gt;</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>**参与角色**：产品 / 架构 / QA / SRE / 安全（勾选）</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">### 发言规则</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>每位专家**先独立给出分析**，禁止先看他人意见（防群体偏见）</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>发言结构固定：**观察 → 担忧 → 建议**</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>分歧必须留在文档里，不得私下协商消除</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Master 汇总 + 给出最终决策，并**写明为何采纳/驳回每条建议**</span></code></pre></div>
+<h3 id="防伪造">4.2 防伪造</h3>
+<p>专家组输出必须落文件：<code>docs/reviews/&lt;YYYY-MM-DD&gt;-&lt;topic&gt;.md</code>。<strong>严禁</strong>仅口头/对话中讨论后直接行动——留痕是审计前提。</p>
+<h3 id="分歧解决">4.3 分歧解决</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>分歧类型</th>
+<th>解决方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>事实分歧（A 说有 bug，B 说没有）</td>
+<td>写最小复现脚本，用脚本结果裁决</td>
+</tr>
+<tr>
+<td>价值分歧（A 说该做，B 说不该做）</td>
+<td>回到 §1.1 的 Why-5，看根因</td>
+</tr>
+<tr>
+<td>方案分歧（两条路都可行）</td>
+<td>列决策矩阵，按”风险/成本/可回滚性/延展性”4 维打分</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="交付物-checklistmaster-完成需求分析阶段的硬性标准">5. 交付物
+Checklist（Master 完成需求分析阶段的硬性标准）</h2>
+<ul class="task-list">
+<li><label><input
+type="checkbox" /><code>jira/tickets/&lt;EPIC&gt;/requirement-analysis.md</code>
+六节全填</label></li>
+<li><label><input
+type="checkbox" /><code>confluence/architecture/&lt;EPIC&gt;-plan.md</code>
+含依赖图 + 关键路径标注</label></li>
+<li><label><input type="checkbox" />所有 ticket 通过 INVEST
+自检</label></li>
+<li><label><input type="checkbox" />至少一个 ticket 已在 ready 状态且
+agent_type 明确</label></li>
+<li><label><input
+type="checkbox" />风险表每一项有缓解策略（不得留空）</label></li>
+<li><label><input type="checkbox" />专家组记录文件存在于
+<code>docs/reviews/</code></label></li>
+<li><label><input type="checkbox" />下发消息到
+<code>shared/message_queue/inbox/</code>，唤醒对应 Slaver</label></li>
+</ul>
+<p><strong>任一项缺失 = Master
+未完成需求分析阶段，禁止宣布”已拆好”。</strong></p>
+<hr />
+<h2 id="附录-a常见反模式速查">附录 A：常见反模式速查</h2>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 34%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr>
+<th>反模式</th>
+<th>识别特征</th>
+<th>修正方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>范围蔓延</td>
+<td>ticket 描述里出现”顺便”/“同时”/“另外”</td>
+<td>拆出独立 ticket</td>
+</tr>
+<tr>
+<td>伪拆解</td>
+<td>子 ticket 必须全部完成才能验证任何一个</td>
+<td>重拆为垂直切片</td>
+</tr>
+<tr>
+<td>技术层切片</td>
+<td>ticket 标题只含层名：“API 层”/“DB 层”</td>
+<td>按用户场景重命名</td>
+</tr>
+<tr>
+<td>AC 伪可测</td>
+<td>AC 含”应当流畅”/“友好”</td>
+<td>替换为可断言句式</td>
+</tr>
+<tr>
+<td>无回滚方案</td>
+<td><code>rollback_plan</code> 写”重新部署”</td>
+<td>改成具体开关/feature flag</td>
+</tr>
+<tr>
+<td>无观测</td>
+<td><code>observability</code> 留空</td>
+<td>强制补 log + metric</td>
+</tr>
+</tbody>
+</table>
+<h2 id="附录-b与-eket-红线的对齐">附录 B：与 EKET 红线的对齐</h2>
+<ul>
+<li>本 Playbook §1.2 的未知/假设表 → 对应 RULES §4
+“禁止混淆计划与事实”</li>
+<li>本 Playbook §3.2 的 <code>test_strategy</code> → 对应 RULES §3 “PR
+必须附真实 npm test stdout”</li>
+<li>本 Playbook §4.2 留痕要求 → 对应 RULES §2 “禁止伪造测试结果”</li>
+<li>本 Playbook §4.3 分歧解决不得私下消除 → 对应 RULES §2
+“禁止自我闭环审查”</li>
+</ul>
+<hr />
+<h2 id="spike-技术调研流程">§6 Spike 技术调研流程</h2>
+<h3 id="何时开-spike">6.1 何时开 Spike</h3>
+<p>满足以下任一条件时，<strong>必须</strong>先开 Spike，禁止直接拆
+ticket： - 技术方案存在 ≥2 个可行路径，无法直接决策 -
+引入新技术/框架，团队没有实际使用经验 -
+性能/安全边界不明确，需要实验数据支撑</p>
+<h3 id="spike-流程">6.2 Spike 流程</h3>
+<pre><code>1. Master 执行 `eket spike:create SPIKE-NNN &quot;调研主题&quot; [--epic EPIC-ID]`
+   → 自动创建 confluence/spikes/SPIKE-NNN/plan.md + jira ticket
+2. 填写 plan.md：问题陈述 / 调研范围 / 成功标准
+3. 分配给对应专家角色的 Slaver（时间盒 ≤3天）
+4. Slaver 完成后执行 `eket spike:complete SPIKE-NNN --outcome adopt|reject|defer`
+   → 自动创建 findings.md
+5. Master 读 findings.md，决策后：
+   - adopt → 基于结论创建实现 tickets
+   - reject → 记录到 confluence/memory/pitfalls/
+   - defer → 加入 backlog</code></pre>
+<h3 id="spike-专家组搭配">6.3 Spike 专家组搭配</h3>
+<table>
+<thead>
+<tr>
+<th>Spike 方向</th>
+<th>必选专家</th>
+<th>可选专家（按需）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>后端技术选型</td>
+<td>架构师</td>
+<td>后端工程师、DevOps</td>
+</tr>
+<tr>
+<td>前端框架调研</td>
+<td>架构师</td>
+<td>前端工程师、全栈</td>
+</tr>
+<tr>
+<td>AI/ML 可行性</td>
+<td>架构师</td>
+<td>AI/ML（扩展包）</td>
+</tr>
+<tr>
+<td>安全方案</td>
+<td>架构师</td>
+<td>安全工程师（扩展包）</td>
+</tr>
+<tr>
+<td>性能优化</td>
+<td>架构师</td>
+<td>后端工程师</td>
+</tr>
+</tbody>
+</table>
+<h3 id="时间盒规则">6.4 时间盒规则</h3>
+<ul>
+<li><strong>硬限制</strong>：≤72小时（3个工作日）</li>
+<li>超时未产出 findings → 自动升级为 BLOCKED，Master 介入</li>
+<li>findings 结论必须是 adopt / reject / defer 三选一，禁止模糊结论</li>
+</ul>
+<hr />
+<h2 id="roadmap-季度规划流程">§7 Roadmap 季度规划流程</h2>
+<h3 id="触发时机">7.1 触发时机</h3>
+<ul>
+<li>每季度初（Q1/Q2/Q3/Q4 第一周）</li>
+<li>重大架构变更后</li>
+<li>新业务方向确定后</li>
+</ul>
+<h3 id="流程">7.2 流程</h3>
+<pre><code>1. Master 执行 `eket roadmap:update &lt;PROJECT_ID&gt; --quarter Q2-2026`
+   → 创建/更新 confluence/roadmap/&lt;PROJECT_ID&gt;.md
+2. 召唤专家组（架构师 + 产品经理 + DevOps/全栈）
+3. 专家组填写：
+   - 季度目标（OKR 对齐）
+   - Epic 优先级列表
+   - 里程碑时间线
+   - 风险与依赖
+4. Master 审核后更新 jira/epics/ 状态</code></pre>
+<h3 id="roadmap-文档位置">7.3 Roadmap 文档位置</h3>
+<p><code>confluence/roadmap/&lt;PROJECT_ID&gt;.md</code>（按季度追加
+section，不覆盖历史）</p>
+</body>
+</html>

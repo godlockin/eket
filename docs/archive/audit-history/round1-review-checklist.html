@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 文档 Review 清单</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 文档 Review 清单</h1>
+</header>
+<h1 id="eket-文档-review-清单">EKET 文档 Review 清单</h1>
+<p><strong>生成日期</strong>: 2026-04-07 <strong>总文件数</strong>: 91
+个 Markdown 文件 <strong>Review 目标</strong>:
+识别过时、冗余、需更新的文档</p>
+<hr />
+<h2 id="review-检查项">🎯 Review 检查项</h2>
+<p>对每个文档评估以下方面：</p>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>版本一致性</strong> -
+版本号是否与当前版本 (v2.0.0/v2.1.0) 一致？</label></li>
+<li><label><input type="checkbox" /><strong>内容准确性</strong> -
+描述是否准确反映当前实现？</label></li>
+<li><label><input type="checkbox" /><strong>链接有效性</strong> -
+内部链接是否正确？</label></li>
+<li><label><input type="checkbox" /><strong>代码示例</strong> -
+示例代码是否能运行？</label></li>
+<li><label><input type="checkbox" /><strong>时效性</strong> -
+是否包含过期的信息？</label></li>
+<li><label><input type="checkbox" /><strong>重复性</strong> -
+是否与其他文档重复？</label></li>
+<li><label><input type="checkbox" /><strong>完整性</strong> -
+是否遗漏关键信息？</label></li>
+</ul>
+<hr />
+<h2 id="文档分类与状态">📁 文档分类与状态</h2>
+<h3 id="协议文档-protocol---最新">1. 协议文档 (Protocol) - 最新 ✅</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>protocol/EKET_PROTOCOL_V1.md</code></td>
+<td>✅ 最新</td>
+<td>v1.0.0</td>
+<td>Phase A 新增，完整协议规范</td>
+</tr>
+<tr>
+<td><code>protocol/openapi.yaml</code></td>
+<td>✅ 最新</td>
+<td>v1.0.0</td>
+<td>OpenAPI 3.0 规范，753 行</td>
+</tr>
+<tr>
+<td><code>protocol/schemas/*.json</code></td>
+<td>✅ 最新</td>
+<td>v1.0.0</td>
+<td>Agent/Message/Task JSON Schema</td>
+</tr>
+<tr>
+<td><code>protocol/QUICKSTART.md</code></td>
+<td>✅ 最新</td>
+<td>v1.0.0</td>
+<td>快速入门指南</td>
+</tr>
+<tr>
+<td><code>protocol/README.md</code></td>
+<td>✅ 最新</td>
+<td>v1.0.0</td>
+<td>协议文档索引</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>: 无需修改，保持最新状态</p>
+<hr />
+<h3 id="实施计划-plans---需整理">2. 实施计划 (Plans) - 需整理 ⚠️</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plans/2026-04-07-phase-b-completed.md</code></td>
+<td>✅ 最新</td>
+<td>v2.1.0</td>
+<td>Phase B 完成总结</td>
+</tr>
+<tr>
+<td><code>plans/2026-04-07-phase-b-http-server.md</code></td>
+<td>✅ 最新</td>
+<td>v2.1.0</td>
+<td>Phase B 实施计划</td>
+</tr>
+<tr>
+<td><code>plans/2026-04-06-optimization-loop-design.md</code></td>
+<td>✅ 最新</td>
+<td>v2.1.0</td>
+<td>优化循环设计</td>
+</tr>
+<tr>
+<td><code>plans/2026-03-31-multi-agent-patterns-design.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>多Agent模式设计</td>
+</tr>
+<tr>
+<td><code>plans/2026-03-26-file-structure-and-excellence-gap.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>文件结构分析</td>
+</tr>
+<tr>
+<td><code>plans/v0.9.1-improvement-plan.md</code></td>
+<td>❌ 过时</td>
+<td>v0.9.1</td>
+<td>旧版本计划，建议归档</td>
+</tr>
+<tr>
+<td><code>plans/containerization-deployment-audit-report.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>容器化部署审计</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>: - 归档 v0.x 计划文档到
+<code>docs/archive/plans/</code> - 确认 2026-03 文档是否仍然有效</p>
+<hr />
+<h3 id="架构文档-architecture---需更新">3. 架构文档 (Architecture) -
+需更新 ⚠️</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>02-architecture/FRAMEWORK.md</code></td>
+<td>⚠️ 需更新</td>
+<td>?</td>
+<td>需添加 HTTP Server 架构</td>
+</tr>
+<tr>
+<td><code>02-architecture/THREE_REPO_ARCHITECTURE.md</code></td>
+<td>✅ 有效</td>
+<td>v2.0.0</td>
+<td>三仓库架构</td>
+</tr>
+<tr>
+<td><code>02-architecture/AGENTS_CONFIG.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>Agent 配置说明</td>
+</tr>
+<tr>
+<td><code>02-architecture/SKILLS_SYSTEM.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>Skills 系统文档</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>: - <code>FRAMEWORK.md</code> 需添加 Phase B
+HTTP Server 内容 - 检查配置示例是否与当前代码一致</p>
+<hr />
+<h3 id="实现文档-implementation---混杂">4. 实现文档 (Implementation) -
+混杂 ⚠️</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>03-implementation/README.md</code></td>
+<td>⚠️ 需更新</td>
+<td>?</td>
+<td>总览文档</td>
+</tr>
+<tr>
+<td><code>03-implementation/INSTANCE_INITIALIZATION.md</code></td>
+<td>✅ 有效</td>
+<td>v2.0.1</td>
+<td>实例初始化（多实例支持）</td>
+</tr>
+<tr>
+<td><code>03-implementation/AGENT_BEHAVIOR.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>Agent 行为定义</td>
+</tr>
+<tr>
+<td><code>03-implementation/BRANCH_STRATEGY.md</code></td>
+<td>✅ 有效</td>
+<td>v2.0.0</td>
+<td>Git 分支策略</td>
+</tr>
+<tr>
+<td><code>03-implementation/STATE_MACHINE.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>状态机设计</td>
+</tr>
+<tr>
+<td><code>03-implementation/MASTER_MARKER.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>Master 标记机制</td>
+</tr>
+<tr>
+<td><code>03-implementation/FRAMEWORK_COMPLETION_REPORT.md</code></td>
+<td>❌ 过时</td>
+<td>v0.x</td>
+<td>旧版完成报告，归档</td>
+</tr>
+<tr>
+<td><code>03-implementation/IMPLEMENTATION_STATUS.md</code></td>
+<td>⚠️ 需更新</td>
+<td>?</td>
+<td>实施状态，需更新到 v2.1.0</td>
+</tr>
+<tr>
+<td><code>03-implementation/dependency-clarification.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>依赖澄清机制</td>
+</tr>
+<tr>
+<td><code>03-implementation/v0.5.1-implementation-summary.md</code></td>
+<td>❌ 过时</td>
+<td>v0.5.1</td>
+<td>归档</td>
+</tr>
+<tr>
+<td><code>03-implementation/MASTER-REVIEW-SUBAGENTS.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>Master Review Subagents</td>
+</tr>
+<tr>
+<td><code>03-implementation/TICKET-BOARD-STATS.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>Ticket 统计</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>: - 归档所有 v0.x 实现文档 - 更新
+<code>IMPLEMENTATION_STATUS.md</code> 到 v2.1.0 - 检查
+<code>STATE_MACHINE.md</code> 是否与当前实现一致</p>
+<hr />
+<h3 id="测试文档-testing---待完善">5. 测试文档 (Testing) - 待完善
+⚠️</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>04-testing/README.md</code></td>
+<td>⚠️ 需更新</td>
+<td>?</td>
+<td>测试总览</td>
+</tr>
+<tr>
+<td><code>04-testing/TEST_FRAMEWORK.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>测试框架</td>
+</tr>
+<tr>
+<td><code>04-testing/VALIDATION_REPORT.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>验证报告</td>
+</tr>
+<tr>
+<td><code>04-testing/AUDIT_REPORT.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>审计报告</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>: - 添加 Phase B HTTP Server 测试文档 - 补充 SDK
+测试指南</p>
+<hr />
+<h3 id="参考文档-reference---需大量清理">6. 参考文档 (Reference) -
+需大量清理 ❌</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>05-reference/README.md</code></td>
+<td>⚠️ 需更新</td>
+<td>?</td>
+<td>参考文档索引</td>
+</tr>
+<tr>
+<td><code>05-reference/CHANGELOG_v0.2.md</code></td>
+<td>❌ 过时</td>
+<td>v0.2</td>
+<td>归档</td>
+</tr>
+<tr>
+<td><code>05-reference/WORKFLOW_DIAGRAM.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>工作流图</td>
+</tr>
+<tr>
+<td><code>05-reference/CODE_REVIEW_CHECKLIST.md</code></td>
+<td>✅ 有效</td>
+<td>通用</td>
+<td>Code Review 清单</td>
+</tr>
+<tr>
+<td><code>05-reference/v0.5-implementation-review.md</code></td>
+<td>❌ 过时</td>
+<td>v0.5</td>
+<td>归档</td>
+</tr>
+<tr>
+<td><code>05-reference/v0.5.1-framework-risk-review.md</code></td>
+<td>❌ 过时</td>
+<td>v0.5.1</td>
+<td>归档</td>
+</tr>
+<tr>
+<td><code>05-reference/v0.5-framework-risk-review.md</code></td>
+<td>❌ 过时</td>
+<td>v0.5</td>
+<td>归档</td>
+</tr>
+<tr>
+<td><code>05-reference/red-line-security.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>安全红线</td>
+</tr>
+<tr>
+<td><code>05-reference/expert-review.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>专家评审</td>
+</tr>
+<tr>
+<td><code>05-reference/CLEANUP_REPORT.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>清理报告</td>
+</tr>
+<tr>
+<td><code>05-reference/DOCUMENT_ORGANIZATION.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>文档组织</td>
+</tr>
+<tr>
+<td><code>05-reference/REPAIR_PLAN_v0.6.1.md</code></td>
+<td>❌ 过时</td>
+<td>v0.6.1</td>
+<td>归档</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>: - <strong>优先级 P0</strong>: 归档所有 v0.x
+参考文档到 <code>docs/archive/</code> - 保留通用的
+CODE_REVIEW_CHECKLIST.md - 检查 red-line-security.md 是否仍然适用</p>
+<hr />
+<h3 id="sop-文档-standard-operating-procedures---待确认">7. SOP 文档
+(Standard Operating Procedures) - 待确认 ⚠️</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>06-sop/README.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>SOP 总览</td>
+</tr>
+<tr>
+<td><code>06-sop/WORKFLOW-REDESIGN.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>工作流重设计</td>
+</tr>
+<tr>
+<td><code>06-sop/IMPLEMENTATION-CHECKLIST.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>实施检查清单</td>
+</tr>
+<tr>
+<td><code>06-sop/HUMAN-INVOLVEMENT-MODEL.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>人类介入模型</td>
+</tr>
+<tr>
+<td><code>06-sop/HUMAN-INVOLVEMENT-SUMMARY.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>人类介入总结</td>
+</tr>
+<tr>
+<td><code>06-sop/phase-1-initiation/*.md</code> (4个)</td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>Phase 1 步骤</td>
+</tr>
+<tr>
+<td><code>06-sop/phase-2-development/*.md</code> (1个)</td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>Phase 2 步骤</td>
+</tr>
+<tr>
+<td><code>06-sop/phase-3-review-merge/README.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>Phase 3 步骤</td>
+</tr>
+<tr>
+<td><code>06-sop/task-types/*.md</code> (2个)</td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>任务类型</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>: - 全面检查 SOP 文档是否与当前工作流一致 - 补充
+HTTP Server 开发和 SDK 开发的 SOP</p>
+<hr />
+<h3 id="入门文档-getting-started---需更新">8. 入门文档 (Getting Started)
+- 需更新 ⚠️</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>01-getting-started/QUICKSTART.md</code></td>
+<td>⚠️ 需更新</td>
+<td>?</td>
+<td>快速开始，需添加 HTTP Server</td>
+</tr>
+<tr>
+<td><code>01-getting-started/USAGE.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>使用指南</td>
+</tr>
+<tr>
+<td><code>01-getting-started/DESIGN_PHILOSOPHY.md</code></td>
+<td>✅ 有效</td>
+<td>通用</td>
+<td>设计理念</td>
+</tr>
+<tr>
+<td><code>01-getting-started/COMPLETE_FRAMEWORK_v0.2.md</code></td>
+<td>❌ 过时</td>
+<td>v0.2</td>
+<td>归档</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>: - 更新 QUICKSTART.md 包含 HTTP Server 使用 -
+归档 COMPLETE_FRAMEWORK_v0.2.md</p>
+<hr />
+<h3 id="根目录文档---关键文档">9. 根目录文档 - 关键文档 ⚠️</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>README.md</code></td>
+<td>⚠️ 需更新</td>
+<td>?</td>
+<td>项目总览，需更新到 v2.1.0</td>
+</tr>
+<tr>
+<td><code>IDENTITY.md</code></td>
+<td>✅ 有效</td>
+<td>v2.0.0</td>
+<td>Master/Slaver 身份说明</td>
+</tr>
+<tr>
+<td><code>MASTER-WORKFLOW.md</code></td>
+<td>✅ 有效</td>
+<td>v2.0.0</td>
+<td>Master 工作流</td>
+</tr>
+<tr>
+<td><code>MASTER-PR-REVIEW-FLOW.md</code></td>
+<td>✅ 有效</td>
+<td>v2.0.0</td>
+<td>Master PR Review 流程</td>
+</tr>
+<tr>
+<td><code>SLAVER-AUTO-EXEC-GUIDE.md</code></td>
+<td>✅ 有效</td>
+<td>v2.0.0</td>
+<td>Slaver 自动执行指南</td>
+</tr>
+<tr>
+<td><code>INITIALIZATION-GUIDE.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>初始化指南</td>
+</tr>
+<tr>
+<td><code>OPENCLAW-INTEGRATION-DESIGN.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>OpenCLAW 集成设计</td>
+</tr>
+<tr>
+<td><code>OPENCLAW-DATAFLOW-DESIGN.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>OpenCLAW 数据流设计</td>
+</tr>
+<tr>
+<td><code>STATUS_REPORT.md</code></td>
+<td>✅ 最新</td>
+<td>v2.1.0</td>
+<td>Phase B 完成状态报告</td>
+</tr>
+<tr>
+<td><code>MULTI_INSTANCE_DESIGN.md</code></td>
+<td>✅ 最新</td>
+<td>v2.0.1</td>
+<td>多实例设计文档</td>
+</tr>
+<tr>
+<td><code>DOCUMENTATION_AUDIT_REPORT.md</code></td>
+<td>⚠️ 过时</td>
+<td>v1</td>
+<td>被 V2 取代</td>
+</tr>
+<tr>
+<td><code>DOCUMENTATION_AUDIT_REPORT_V2.md</code></td>
+<td>✅ 有效</td>
+<td>v2</td>
+<td>文档审计报告 V2</td>
+</tr>
+<tr>
+<td><code>PROJECT_REVIEW_REPORT.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>项目Review报告</td>
+</tr>
+<tr>
+<td><code>LARGE_FILES_REVIEW.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>大文件Review</td>
+</tr>
+<tr>
+<td><code>IMPLEMENTATION-v0.6.2.md</code></td>
+<td>❌ 过时</td>
+<td>v0.6.2</td>
+<td>归档</td>
+</tr>
+<tr>
+<td><code>v0.6-docker-heartbeat.md</code></td>
+<td>❌ 过时</td>
+<td>v0.6</td>
+<td>归档</td>
+</tr>
+<tr>
+<td><code>web-dashboard.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>Web Dashboard 文档</td>
+</tr>
+<tr>
+<td><code>backup-restore-policy.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>备份恢复策略</td>
+</tr>
+<tr>
+<td><code>backup-restore-procedures.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>备份恢复流程</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>: - <strong>优先级 P0</strong>: 更新
+<code>README.md</code> 到 v2.1.0 - 归档
+<code>DOCUMENTATION_AUDIT_REPORT.md</code>（被V2取代） - 归档所有 v0.x
+文档 - 检查 OpenCLAW 集成文档是否与当前实现一致</p>
+<hr />
+<h3 id="adr-architecture-decision-records---有效">10. ADR (Architecture
+Decision Records) - 有效 ✅</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>adr/ADR-001-four-level-degradation.md</code></td>
+<td>✅ 有效</td>
+<td>架构决策</td>
+<td>四级降级设计</td>
+</tr>
+<tr>
+<td><code>adr/ADR-002-master-slaver-mode.md</code></td>
+<td>✅ 有效</td>
+<td>架构决策</td>
+<td>Master-Slaver 模式</td>
+</tr>
+<tr>
+<td><code>adr/ADR-003-file-queue-fallback.md</code></td>
+<td>✅ 有效</td>
+<td>架构决策</td>
+<td>文件队列降级</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>: 保持不变，架构决策记录应该是不可变的</p>
+<hr />
+<h3 id="api-文档---空目录">11. API 文档 - 空目录 ⚠️</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>api/README.md</code></td>
+<td>⚠️ 空</td>
+<td>?</td>
+<td>需添加 HTTP API 文档</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>: - 补充 HTTP API 使用文档 - 链接到
+<code>protocol/openapi.yaml</code></p>
+<hr />
+<h3 id="其他文档">12. 其他文档</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>版本</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>developer/getting-started.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>开发者入门</td>
+</tr>
+<tr>
+<td><code>ops/runbook.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>运维手册</td>
+</tr>
+<tr>
+<td><code>reference/error-codes.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>错误码</td>
+</tr>
+<tr>
+<td><code>troubleshooting/common-issues.md</code></td>
+<td>⚠️ 需检查</td>
+<td>?</td>
+<td>常见问题</td>
+</tr>
+<tr>
+<td><code>ref/multi-agent-research/README.md</code></td>
+<td>⚠️ 待确认</td>
+<td>?</td>
+<td>多Agent研究</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>: - 检查开发者文档是否包含 HTTP Server 和 SDK
+开发指南 - 更新 error-codes.md 包含 HTTP API 错误码 - 补充 HTTP Server
+常见问题到 troubleshooting</p>
+<hr />
+<h2 id="review-行动清单">📋 Review 行动清单</h2>
+<h3 id="优先级-p0-立即执行">🔥 优先级 P0 (立即执行)</h3>
+<ol type="1">
+<li><p><strong>归档过时文档</strong> (预计 15 分钟)</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> docs/archive/<span class="dt">{v0.x</span><span class="op">,</span><span class="dt">plans</span><span class="op">,</span><span class="dt">reference}</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 移动 v0.x 文档</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> docs/IMPLEMENTATION-v0.6.2.md docs/archive/v0.x/</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> docs/v0.6-docker-heartbeat.md docs/archive/v0.x/</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> docs/01-getting-started/COMPLETE_FRAMEWORK_v0.2.md docs/archive/v0.x/</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> docs/03-implementation/FRAMEWORK_COMPLETION_REPORT.md docs/archive/v0.x/</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> docs/03-implementation/v0.5.1-implementation-summary.md docs/archive/v0.x/</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> docs/05-reference/CHANGELOG_v0.2.md docs/archive/v0.x/</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> docs/05-reference/v0.5<span class="pp">*</span>.md docs/archive/v0.x/</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> docs/05-reference/REPAIR_PLAN_v0.6.1.md docs/archive/v0.x/</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> docs/plans/v0.9.1-improvement-plan.md docs/archive/plans/</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 归档被取代的文档</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> docs/DOCUMENTATION_AUDIT_REPORT.md docs/archive/</span></code></pre></div></li>
+<li><p><strong>更新核心文档</strong> (预计 30 分钟)</p>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>README.md</code> - 更新到
+v2.1.0，添加 HTTP Server 说明</label></li>
+<li><label><input type="checkbox" /><code>docs/README.md</code> -
+更新文档结构，反映最新组织</label></li>
+<li><label><input
+type="checkbox" /><code>01-getting-started/QUICKSTART.md</code> - 添加
+HTTP Server 快速开始</label></li>
+</ul></li>
+<li><p><strong>补充缺失文档</strong> (预计 1 小时)</p>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>docs/api/README.md</code> -
+HTTP API 使用文档</label></li>
+<li><label><input
+type="checkbox" /><code>docs/guides/http-server-setup.md</code> - HTTP
+Server 部署指南</label></li>
+<li><label><input
+type="checkbox" /><code>docs/guides/sdk-development.md</code> - SDK
+开发指南</label></li>
+</ul></li>
+</ol>
+<h3 id="优先级-p1-本周完成">⚠️ 优先级 P1 (本周完成)</h3>
+<ol start="4" type="1">
+<li><strong>检查架构文档一致性</strong> (预计 2 小时)
+<ul class="task-list">
+<li><label><input
+type="checkbox" /><code>02-architecture/FRAMEWORK.md</code> - 添加 HTTP
+Server 架构</label></li>
+<li><label><input
+type="checkbox" /><code>02-architecture/AGENTS_CONFIG.md</code> -
+验证配置示例</label></li>
+<li><label><input
+type="checkbox" /><code>02-architecture/SKILLS_SYSTEM.md</code> - 验证
+Skills 描述</label></li>
+</ul></li>
+<li><strong>更新实施状态</strong> (预计 1 小时)
+<ul class="task-list">
+<li><label><input
+type="checkbox" /><code>03-implementation/IMPLEMENTATION_STATUS.md</code>
+- 更新到 v2.1.0</label></li>
+<li><label><input
+type="checkbox" /><code>03-implementation/README.md</code> -
+更新总览</label></li>
+</ul></li>
+<li><strong>检查 SOP 有效性</strong> (预计 2 小时)
+<ul class="task-list">
+<li><label><input type="checkbox" />全面检查 <code>06-sop/</code>
+下所有文档</label></li>
+<li><label><input type="checkbox" />添加 HTTP Server 和 SDK 开发
+SOP</label></li>
+</ul></li>
+</ol>
+<h3 id="优先级-p2-下月完成">📌 优先级 P2 (下月完成)</h3>
+<ol start="7" type="1">
+<li><strong>完善测试文档</strong> (预计 1 小时)
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>04-testing/README.md</code> -
+更新测试总览</label></li>
+<li><label><input type="checkbox" />添加 HTTP Server
+测试文档</label></li>
+<li><label><input type="checkbox" />添加 SDK 测试指南</label></li>
+</ul></li>
+<li><strong>清理参考文档</strong> (预计 1 小时)
+<ul class="task-list">
+<li><label><input type="checkbox" />检查并归档
+<code>05-reference/</code> 下过时文档</label></li>
+<li><label><input type="checkbox" />更新
+<code>05-reference/README.md</code></label></li>
+</ul></li>
+<li><strong>验证其他文档</strong> (预计 2 小时)
+<ul class="task-list">
+<li><label><input
+type="checkbox" /><code>developer/getting-started.md</code></label></li>
+<li><label><input
+type="checkbox" /><code>ops/runbook.md</code></label></li>
+<li><label><input
+type="checkbox" /><code>reference/error-codes.md</code></label></li>
+<li><label><input
+type="checkbox" /><code>troubleshooting/common-issues.md</code></label></li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="统计总结">📊 统计总结</h2>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>数量</th>
+<th>百分比</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✅ 最新/有效</td>
+<td>23</td>
+<td>25%</td>
+</tr>
+<tr>
+<td>⚠️ 需检查/待确认</td>
+<td>42</td>
+<td>46%</td>
+</tr>
+<tr>
+<td>❌ 过时/归档</td>
+<td>12</td>
+<td>13%</td>
+</tr>
+<tr>
+<td>📁 目录/索引</td>
+<td>14</td>
+<td>15%</td>
+</tr>
+<tr>
+<td><strong>总计</strong></td>
+<td><strong>91</strong></td>
+<td><strong>100%</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>关键发现</strong>: - <strong>过时文档较多</strong>: 12 个
+v0.x 文档需要归档 - <strong>待确认文档</strong>: 42
+个文档需要逐一检查有效性 - <strong>新增文档完善</strong>: Phase A/B
+新增的协议和计划文档质量高</p>
+<p><strong>估算工作量</strong>: - P0 任务: ~2 小时 - P1 任务: ~5 小时 -
+P2 任务: ~4 小时 - <strong>总计</strong>: ~11 小时</p>
+<hr />
+<h2 id="下一步行动">🎯 下一步行动</h2>
+<ol type="1">
+<li><strong>立即执行 P0 任务</strong> -
+归档过时文档，更新核心README</li>
+<li><strong>等待 Phase D/C 完成</strong> - SDK
+和示例完成后再补充相关文档</li>
+<li><strong>最终文档 Review</strong> - 所有功能完成后进行全面
+Review</li>
+</ol>
+<hr />
+<p><strong>生成工具</strong>: Agent 1 (Test EKET HTTP Server)
+<strong>最后更新</strong>: 2026-04-07</p>
+</body>
+</html>

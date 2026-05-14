@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 框架探索总结</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 框架探索总结</h1>
+</header>
+<h1 id="eket-框架探索总结">EKET 框架探索总结</h1>
+<h2 id="专家-persona-文件结构">1. 专家 Persona 文件结构</h2>
+<h3 id="位置">位置</h3>
+<ul>
+<li><strong>默认专家（7
+位）</strong>：<code>~/.claude/skills/eket/experts/default/</code>
+<ul>
+<li><code>architect.md</code> — 系统架构师</li>
+<li><code>backend.md</code> — 后端工程师</li>
+<li><code>frontend.md</code> — 前端工程师（读未提供）</li>
+<li><code>fullstack.md</code> — 全栈工程师（读未提供）</li>
+<li><code>product.md</code> — 产品经理</li>
+<li><code>ux.md</code> — UI/UX 设计师</li>
+<li><code>tester.md</code> — 测试工程师（读未提供）</li>
+</ul></li>
+<li><strong>可选专家（53
+位）</strong>：<code>~/.claude/skills/eket/experts/optional/</code>
+<ul>
+<li><code>tech/</code>（8 位）：security, devops, qa, dba, sre, mobile,
+performance, platform</li>
+<li><code>ai/</code>（8 位）：aiml, ml, nlp, cv, mlops, bigdata,
+data-analyst, data</li>
+<li><code>design/</code>（5 位）：ux-research, visual, brand, motion,
+industrial</li>
+<li><code>marketing/</code>（5 位）：growth, content, seo, ads,
+product-marketing</li>
+<li><code>pr/</code>（4 位）：pr-manager, crisis, media, kol</li>
+<li><code>business/</code>（5 位）：business, strategy, finance,
+legal</li>
+<li>其他 18 位</li>
+</ul></li>
+</ul>
+<h3 id="专家文件字段yaml-格式">专家文件字段（YAML 格式）</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">id</span><span class="kw">:</span><span class="at"> eket.{domain}.001</span><span class="co">              # 专家 ID</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">English Name</span><span class="kw">}</span><span class="co">                # 英文名</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">name_cn</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">中文名</span><span class="kw">}</span><span class="co">                   # 中文名</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">role</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">Title</span><span class="kw">}</span><span class="co">                       # 角色标题</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">emoji</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">Emoji</span><span class="kw">}</span><span class="co">                      # 表情符号</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">domain</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">domain</span><span class="kw">}</span><span class="co">                    # 领域标识</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">tier</span><span class="kw">:</span><span class="at"> default|optional</span><span class="co">              # 层级</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">personality</span><span class="kw">:</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">type</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">MBTI</span><span class="kw">}</span><span class="co">                      # MBTI 人格类型</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">traits</span><span class="kw">:</span><span class="co">                           # 核心特质列表</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at">trait</span><span class="kw">}</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">communication_style</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">描述</span><span class="kw">}</span><span class="co">       # 沟通风格</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">strengths</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">文本</span><span class="kw">}</span><span class="co">                 # 优势领域</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">weaknesses</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">文本</span><span class="kw">}</span><span class="co">                # 劣势领域</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">background</span><span class="kw">:</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">experience</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">年数和主题</span><span class="kw">}</span><span class="co">          # 工作经验</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">domain_expertise</span><span class="kw">:</span><span class="co">                 # 专业领域列表</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at">领域</span><span class="kw">}</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">notable_skills</span><span class="kw">:</span><span class="co">                   # 核心技能列表</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at">技能</span><span class="kw">}</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="fu">thinking_framework</span><span class="kw">:</span><span class="co">                 # 思维框架（列表）</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at">框架 1</span><span class="kw">}</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at">框架 2</span><span class="kw">}</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at">框架 3</span><span class="kw">}</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="fu">analysis_focus</span><span class="kw">:</span><span class="co">                     # 分析焦点（列表）</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at">焦点 1</span><span class="kw">}</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">{</span><span class="at">焦点 2</span><span class="kw">}</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> ...</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="fu">output_format</span><span class="kw">: </span><span class="ch">|</span><span class="co">                    # 输出模板</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  ## {标题}</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  ### {小节}</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="fu">phase</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">1|2</span><span class="kw">}</span><span class="co">                        # 执行阶段</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="co">  # phase 1: 先行分析</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="co">  # phase 2: 基于 phase 1 深入分析</span></span></code></pre></div>
+<h3 id="示例数据architect">示例数据（Architect）</h3>
+<ul>
+<li><strong>personality.type</strong>: INTJ</li>
+<li><strong>personality.traits</strong>:
+冷静理性、全局思维、追求简洁、直言不讳</li>
+<li><strong>background.experience</strong>: 15年大规模系统设计</li>
+<li><strong>thinking_framework</strong>:
+第一性原理、分层视角、依赖倒置、变化点识别</li>
+<li><strong>analysis_focus</strong>:
+模块划分、核心依赖链、技术选型、系统边界、架构债务</li>
+<li><strong>phase</strong>: 1 ——
+先行分析，产出全局视图供其他专家参考</li>
+</ul>
+<hr />
+<h2 id="skills-系统现状">2. Skills 系统现状</h2>
+<h3 id="现有状态有完整实现">现有状态：<strong>有完整实现</strong></h3>
+<h4 id="node.js-端-skills-系统">Node.js 端 Skills 系统</h4>
+<ul>
+<li><strong>位置</strong>：<code>node/src/skills/</code> 和
+<code>node/src/core/skill-*.ts</code></li>
+<li><strong>核心模块</strong>：
+<ul>
+<li><code>skill-executor.ts</code> — Skill 加载和执行引擎</li>
+<li><code>skill-generator.ts</code> — 从 ticket 复盘自动生成 Skill</li>
+<li><code>skill-stacker.ts</code> — Skill 堆栈管理</li>
+<li><code>index-loader.ts</code> — Skill 索引加载</li>
+<li><code>registry.ts</code> — Skill 注册表</li>
+<li><code>auto-registry.ts</code> — 自动注册机制</li>
+<li><code>types.ts</code> — Skill 类型定义</li>
+<li><code>unified-interface.ts</code> — 统一接口</li>
+</ul></li>
+</ul>
+<h4 id="cli-命令">CLI 命令</h4>
+<ul>
+<li><strong>Node.js</strong>：<code>node dist/index.js skill:extract --ticket &lt;id&gt; --summary &lt;text&gt;</code></li>
+<li><strong>Rust</strong>：<code>./eket skill:extract</code> 子命令</li>
+</ul>
+<h4 id="skill-信息提取">Skill 信息提取</h4>
+<ul>
+<li><p><strong>命令</strong>：<code>skill:extract</code></p></li>
+<li><p><strong>功能</strong>：从 <code>.eket/ACTIVE_CONTEXT.md</code>
+读取 domain，然后从 <code>node/src/skills/&lt;domain&gt;.json</code>
+加载 trigger 列表</p></li>
+<li><p><strong>输出</strong>：</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;skills&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;trigger1&quot;</span><span class="ot">,</span> <span class="st">&quot;trigger2&quot;</span><span class="ot">,</span> <span class="er">...</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;domain&quot;</span><span class="fu">:</span> <span class="st">&quot;backend&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div></li>
+</ul>
+<hr />
+<h2 id="skill_extract.rs-详解">3. skill_extract.rs 详解</h2>
+<h3 id="位置-1">位置</h3>
+<p><code>rust/crates/eket-cli/src/commands/skill_extract.rs</code></p>
+<h3 id="功能流程">功能流程</h3>
+<ol type="1">
+<li><p><strong>查找项目根目录</strong>：向上搜索包含
+<code>jira/tickets</code> 和 <code>.eket</code> 的目录</p></li>
+<li><p><strong>解析 domain</strong>：从
+<code>.eket/ACTIVE_CONTEXT.md</code> 的 <code>## Active Ticket</code>
+小节查找 <code>domain:</code> 字段</p></li>
+<li><p><strong>加载 Skill 触发器</strong>：读取
+<code>node/src/skills/&lt;domain&gt;.json</code>，提取
+<code>triggers</code> 数组</p></li>
+<li><p><strong>输出 JSON</strong>：</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;skills&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;skill1&quot;</span><span class="ot">,</span> <span class="st">&quot;skill2&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;domain&quot;</span><span class="fu">:</span> <span class="st">&quot;backend&quot;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div></li>
+</ol>
+<h3 id="核心函数">核心函数</h3>
+<ul>
+<li><code>find_project_root()</code> — 递归查找项目根（检查
+<code>jira/tickets</code> + <code>.eket</code> 同时存在）</li>
+<li><code>parse_domain(&amp;str)</code> — 从 Markdown 解析 domain（支持
+<code>:</code> 和 <code>：</code>）</li>
+<li><code>load_skills_from_domain()</code> — 从 JSON 加载 trigger
+列表</li>
+</ul>
+<h3 id="关键特性">关键特性</h3>
+<ul>
+<li>支持中英文冒号分隔符（<code>:</code> 和 <code>：</code>）</li>
+<li>单元测试完整（3 个 test cases）</li>
+<li>容错设计：找不到文件 → 返回空数组</li>
+</ul>
+<hr />
+<h2 id="slaver-rules.md-中关于-skills-使用的描述">4. SLAVER-RULES.md
+中关于 Skills 使用的描述</h2>
+<h3 id="主要章节">主要章节</h3>
+<h4 id="第-2-节启动流程---加载活跃上下文task-079">第 2 节：启动流程 -
+加载活跃上下文（TASK-079）</h4>
+<pre><code>IF .eket/ACTIVE_CONTEXT.md 存在:
+  → 读取并展示文件内容
+  → 确认当前 ticket ID、角色、领取时间
+  → 继续上次中断的工作（无需重新 claim）
+ELSE:
+  → 执行正常领取流程（/eket-claim）</code></pre>
+<ul>
+<li><strong>文件位置</strong>：<code>.eket/ACTIVE_CONTEXT.md</code></li>
+<li><strong>自动生成时机</strong>：每次成功 claim 后由
+<code>injectActiveContext()</code> 刷新</li>
+<li><strong>防止遗忘</strong>：防止 Slaver
+重启后遗忘当前任务、重复领取或错误判断状态</li>
+</ul>
+<h4 id="第-7-节知识沉淀强制要求task-095">第 7
+节：知识沉淀强制要求（TASK-095）</h4>
+<ul>
+<li>复盘内容具有<strong>通用价值</strong>时<strong>必须</strong>写入
+<code>confluence/memory/</code></li>
+<li>写入位置：
+<ul>
+<li><code>confluence/memory/patterns/</code> — 可复用架构/解法模式</li>
+<li><code>confluence/memory/pitfalls/</code> — 踩坑记录与解法</li>
+<li><code>confluence/memory/glossary/terms.md</code> — 新术语</li>
+<li><code>confluence/memory/BORROWED-WISDOM.md</code> — 外部借鉴</li>
+</ul></li>
+</ul>
+<h4 id="第-12-节知识沉淀红线---execution-proof-强制要求">第 12
+节：知识沉淀红线 - Execution Proof 强制要求</h4>
+<ul>
+<li><p><strong>禁止</strong>在无 proof 情况下向
+<code>confluence/memory/</code> 写入新文件</p></li>
+<li><p><strong>Proof 元数据必须包含</strong>：</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">proof</span><span class="kw">:</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">task_id</span><span class="kw">:</span><span class="at"> TASK-XXX</span><span class="co">          # 来源 ticket（必填）</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">exit_code</span><span class="kw">:</span><span class="at"> </span><span class="dv">0</span><span class="co">               # 只允许 0（必填）</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">timestamp</span><span class="kw">:</span><span class="at"> 2026-04-26T...</span><span class="co">  # ISO 8601（必填）</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">tool_name</span><span class="kw">:</span><span class="at"> npm test</span><span class="co">        # 工具/命令（可选）</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">ci_url</span><span class="kw">:</span><span class="at"> https://...</span><span class="co">        # CI 链接（可选）</span></span></code></pre></div></li>
+<li><p><strong>验证流程</strong>：运行 <code>knowledge:index</code>
+自动校验 proof 完整性</p></li>
+</ul>
+<h3 id="没有明确的-skill-命令定义">没有明确的 “skill” 命令定义</h3>
+<ul>
+<li>SLAVER-RULES.md 主要关注<strong>行为规范</strong>，而非具体命令</li>
+<li>Skills
+在此文档中是<strong>知识沉淀机制</strong>的一部分，而非独立的任务执行单元</li>
+</ul>
+<hr />
+<h2 id="active_context.md-模板格式">5. ACTIVE_CONTEXT.md 模板格式</h2>
+<h3 id="自动生成位置">自动生成位置</h3>
+<p><code>.eket/ACTIVE_CONTEXT.md</code></p>
+<h3
+id="模板结构来自-claim.ts-的-buildactivecontextmd-函数">模板结构（来自
+<code>claim.ts</code> 的 <code>buildActiveContextMd()</code> 函数）</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># EKET Active Context</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; 此文件由 task:claim 自动生成，ticket 完成后删除。请勿手动编辑。</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; 生成时间: {ISO8601}</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">## Active Ticket</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**ID**: {ticket.id}</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Title**: {ticket.title}</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">## Identity</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Slaver ID**: {slaverId}</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Role**: {role}</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Started At**: {ISO8601}</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="fu">## Available Commands</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`task:claim`</span> — 领取下一个任务</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`task:resume`</span> — 断点恢复</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`system:doctor`</span> — 系统诊断</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="fu">## Available Skills</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>{skillList}</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  （示例）</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>skill:extract</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>knowledge:search</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>(none)</span></code></pre></div>
+<h3 id="关键字段解析">关键字段解析</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>字段</th>
+<th>来源</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ticket.ID</strong></td>
+<td>从 Jira ticket 读取</td>
+<td>标识当前任务</td>
+</tr>
+<tr>
+<td><strong>Ticket.Title</strong></td>
+<td>从 Jira ticket 读取</td>
+<td>任务描述</td>
+</tr>
+<tr>
+<td><strong>Slaver ID</strong></td>
+<td>claim 时注入</td>
+<td>标识执行者</td>
+</tr>
+<tr>
+<td><strong>Role</strong></td>
+<td>从 ticket <code>assigned_experts</code> 推断</td>
+<td>标识角色和加载专家</td>
+</tr>
+<tr>
+<td><strong>Started At</strong></td>
+<td>生成时记录</td>
+<td>任务启动时间戳</td>
+</tr>
+<tr>
+<td><strong>Available Skills</strong></td>
+<td>从 <code>node/src/skills/{domain}.json</code> 加载</td>
+<td>当前可用的 Skill 列表</td>
+</tr>
+</tbody>
+</table>
+<h3 id="生命周期">生命周期</h3>
+<ol type="1">
+<li><strong>创建时机</strong>：<code>task:claim</code> 成功后调用
+<code>injectActiveContext()</code></li>
+<li><strong>更新时机</strong>：
+<ul>
+<li>模型变更时调用 <code>injectModelToActiveContext()</code></li>
+<li>Skill 列表变更时自动刷新</li>
+</ul></li>
+<li><strong>删除时机</strong>：ticket 完成（状态变为 done）</li>
+</ol>
+<hr />
+<h2 id="现有-skills-系统实现情况">6. 现有 Skills 系统实现情况</h2>
+<h3 id="node.js-skills-架构完整">Node.js Skills 架构（完整）</h3>
+<h4 id="核心特性">核心特性</h4>
+<ul>
+<li><strong>YAML 定义</strong>：Skills 以 YAML 格式定义（支持
+trigger、steps、metadata）</li>
+<li><strong>自动生成</strong>：从 ticket 复盘自动生成可复用 Skill</li>
+<li><strong>触发机制</strong>：基于关键词自动触发对应 Skill</li>
+<li><strong>堆栈管理</strong>：支持 Skill 依赖、嵌套执行</li>
+<li><strong>FTS 搜索</strong>：支持全文搜索查找 Skill</li>
+</ul>
+<h4 id="skill-定义格式">Skill 定义格式</h4>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">id</span><span class="kw">:</span><span class="at"> &lt;skill_id&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> &lt;skill_name&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">category</span><span class="kw">:</span><span class="at"> &lt;category&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">domain</span><span class="kw">:</span><span class="at"> &lt;domain&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">trigger</span><span class="kw">:</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> &lt;keyword1&gt;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> &lt;keyword2&gt;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> &lt;step1&gt;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> &lt;step2&gt;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">metadata</span><span class="kw">:</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">created_at</span><span class="kw">:</span><span class="at"> &lt;timestamp&gt;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">source_ticket</span><span class="kw">:</span><span class="at"> &lt;TASK-ID&gt;</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">proof</span><span class="kw">:</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">exit_code</span><span class="kw">:</span><span class="at"> </span><span class="dv">0</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">timestamp</span><span class="kw">:</span><span class="at"> &lt;ISO8601&gt;</span></span></code></pre></div>
+<h4 id="加载机制">加载机制</h4>
+<ol type="1">
+<li><strong>Index Loader</strong>
+(<code>index-loader.ts</code>)：预加载所有 Skill 索引</li>
+<li><strong>Registry</strong> (<code>registry.ts</code>)：维护 Skill
+注册表</li>
+<li><strong>Executor</strong> (<code>skill-executor.ts</code>)：执行
+Skill（支持变量替换、日志记录、超时控制）</li>
+<li><strong>Auto Registry</strong>
+(<code>auto-registry.ts</code>)：自动注册新生成的 Skill</li>
+</ol>
+<h4 id="cli-命令集">CLI 命令集</h4>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 生成 Skill</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">skill:extract</span> <span class="at">--ticket</span> TASK-001 <span class="at">--summary</span> <span class="st">&quot;解法描述&quot;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 列出已注册 Skill</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ex">skill:list</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 加载和执行</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js <span class="op">&lt;</span>command<span class="op">&gt;</span></span></code></pre></div>
+<h3 id="rust-端-skills轻量级">Rust 端 Skills（轻量级）</h3>
+<ul>
+<li><code>rust/crates/eket-cli/src/commands/skill_extract.rs</code> — 从
+ACTIVE_CONTEXT 提取 Skills</li>
+<li><code>rust/crates/eket-core/src/skill_index.rs</code> — Skill
+索引存储</li>
+</ul>
+<hr />
+<h2 id="专家组协作流程">7. 专家组协作流程</h2>
+<h3 id="阶段划分">阶段划分</h3>
+<ul>
+<li><strong>Phase 1（先行）</strong>：Architect
+首先进行全局分析，产出系统地图供参考</li>
+<li><strong>Phase 2（深度）</strong>：Backend, Frontend, Product, UX
+等基于 Architect 的结论进行详细分析</li>
+</ul>
+<h3 id="active_context-中的专家加载">ACTIVE_CONTEXT 中的专家加载</h3>
+<p>从 ticket 的 <code>assigned_experts</code>
+字段读取专家列表（逗号分隔），默认为：</p>
+<pre><code>architect, backend, frontend, fullstack, tester, ux, product</code></pre>
+<h3 id="专家信息注入">专家信息注入</h3>
+<p>通过 <code>expert-loader.ts</code> 将专家 profile 加载到
+ACTIVE_CONTEXT，包括： - 专家 ID、名字、MBTI 类型 - 通信风格、优势/劣势
+- 思维框架、分析焦点 - 输出格式模板 - 执行阶段标记</p>
+<hr />
+<h2 id="总结表">总结表</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>项目</th>
+<th>状态</th>
+<th>位置</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>专家 Persona</strong></td>
+<td>✅ 有 7+53 位专家</td>
+<td><code>~/.claude/skills/eket/experts/</code></td>
+<td>YAML 格式，包含 personality/thinking_framework/analysis_focus
+等字段</td>
+</tr>
+<tr>
+<td><strong>Skills 系统</strong></td>
+<td>✅ 完整实现</td>
+<td><code>node/src/skills/</code> +
+<code>node/src/core/skill-*.ts</code></td>
+<td>支持 YAML 定义、自动生成、FTS 搜索、执行引擎</td>
+</tr>
+<tr>
+<td><strong>skill:extract</strong></td>
+<td>✅ 已实现</td>
+<td><code>rust/crates/eket-cli/src/commands/skill_extract.rs</code></td>
+<td>从 ACTIVE_CONTEXT 读取 domain，加载对应 Skills 列表</td>
+</tr>
+<tr>
+<td><strong>SLAVER-RULES</strong></td>
+<td>✅ 完整</td>
+<td><code>template/docs/SLAVER-RULES.md</code></td>
+<td>12 个主要章节，重点是分析瘫痪检测、偏差处理、知识沉淀、Execution
+Proof</td>
+</tr>
+<tr>
+<td><strong>ACTIVE_CONTEXT</strong></td>
+<td>✅ 自动生成</td>
+<td><code>.eket/ACTIVE_CONTEXT.md</code></td>
+<td>包含 Ticket/Slaver/Role/Skills，由 task:claim 自动生成</td>
+</tr>
+<tr>
+<td><strong>expert-loader</strong></td>
+<td>✅ 完整</td>
+<td><code>node/src/core/expert-loader.ts</code></td>
+<td>60+ 专家映射表，支持批量加载和格式化输出</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Level 1: Shell 模式使用指南</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Level 1: Shell 模式使用指南</h1>
+</header>
+<h1 id="level-1-shell-模式使用指南">Level 1: Shell 模式使用指南</h1>
+<p><strong>目标</strong>: 纯 Bash 环境下的 EKET 完整功能
+<strong>优先级</strong>: ⭐⭐⭐⭐⭐ (最高 - 必须 100% 可用)
+<strong>版本</strong>: v2.3.0 <strong>最后更新</strong>: 2026-04-08</p>
+<hr />
+<h2 id="level-1-设计理念">🎯 Level 1 设计理念</h2>
+<p><strong>Level 1 是 EKET
+的基础层，确保即使在最小化环境下也能完整运行。</strong></p>
+<p>核心原则： - ✅ <strong>零依赖</strong>: 仅需 Bash 4.0+ 和 Git 2.30+
+- ✅ <strong>快速启动</strong>: 30 秒内完成部署 - ✅
+<strong>完整功能</strong>: 所有核心 Master-Slaver 协作功能可用 - ✅
+<strong>优雅降级</strong>: 作为 Level 2/3 的最终降级目标</p>
+<hr />
+<h2 id="前置要求">📋 前置要求</h2>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 Bash 版本 (需要 &gt;= 4.0)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> <span class="at">--version</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># GNU bash, version 4.0 or higher</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 Git 版本 (需要 &gt;= 2.30)</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> <span class="at">--version</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># git version 2.30 or higher</span></span></code></pre></div>
+<p><strong>不需要</strong>： - ❌ Node.js - ❌ npm - ❌ Redis - ❌
+SQLite - ❌ Docker - ❌ 任何编程语言运行时</p>
+<hr />
+<h2 id="秒快速启动">🚀 30 秒快速启动</h2>
+<h3 id="克隆仓库">1. 克隆仓库</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/godlockin/eket.git</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> eket</span></code></pre></div>
+<h3 id="启动-master">2. 启动 Master</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/eket-start.sh</span> <span class="at">--role</span> master</span></code></pre></div>
+<p><strong>输出示例</strong>：</p>
+<pre><code>========================================
+EKET 实例启动 v0.9.3
+========================================
+
+[INFO] 检测到角色: master
+[INFO] 初始化 Master 模式...
+[INFO] 创建运行时目录: .eket/
+[INFO] 启动心跳服务...
+[INFO] Master 已就绪
+[INFO] 实例 ID: master-20260408-001</code></pre>
+<h3 id="启动-slaver-新终端">3. 启动 Slaver (新终端)</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/eket-start.sh</span> <span class="at">--role</span> slaver <span class="at">--profile</span> backend_dev</span></code></pre></div>
+<p><strong>输出示例</strong>：</p>
+<pre><code>========================================
+EKET 实例启动 v0.9.3
+========================================
+
+[INFO] 检测到角色: slaver
+[INFO] 配置文件: backend_dev
+[INFO] 初始化 Slaver 模式...
+[INFO] 连接到 Master...
+[INFO] Slaver 已就绪，等待任务...
+[INFO] 实例 ID: slaver-20260408-001</code></pre>
+<hr />
+<h2 id="运行时目录结构">📁 运行时目录结构</h2>
+<p>Level 1 使用文件系统作为状态存储：</p>
+<pre><code>.eket/
+├── data/
+│   └── queue/
+│       ├── pending/        # 待处理消息
+│       ├── processing/     # 处理中消息
+│       ├── processed.json  # 已处理消息记录
+│       └── failed/         # 失败消息
+├── inboxes/
+│   ├── master/            # Master 收件箱
+│   │   └── *.json         # 消息文件
+│   └── slaver-{id}/       # Slaver 收件箱
+│       └── *.json         # 任务消息
+├── heartbeats/
+│   ├── master.json        # Master 心跳
+│   └── slaver-{id}.json   # Slaver 心跳
+└── state/
+    ├── tasks.json         # 任务状态
+    └── instances.json     # 实例注册表</code></pre>
+<hr />
+<h2 id="核心-shell-脚本">🔧 核心 Shell 脚本</h2>
+<h3 id="主要脚本">主要脚本</h3>
+<table>
+<thead>
+<tr>
+<th>脚本</th>
+<th>功能</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scripts/eket-start.sh</code></td>
+<td>启动 Master/Slaver</td>
+<td>P0 ⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><code>scripts/heartbeat-monitor.sh</code></td>
+<td>心跳监控</td>
+<td>P0 ⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><code>scripts/generate-stats.sh</code></td>
+<td>统计报告</td>
+<td>P0 ⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><code>lib/adapters/hybrid-adapter.sh</code></td>
+<td>命令路由</td>
+<td>P0 ⭐⭐⭐⭐⭐</td>
+</tr>
+</tbody>
+</table>
+<h3 id="辅助脚本">辅助脚本</h3>
+<table>
+<thead>
+<tr>
+<th>脚本</th>
+<th>功能</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scripts/cleanup-idle-agents.sh</code></td>
+<td>清理空闲 Agent</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><code>scripts/broadcast-task-reset.sh</code></td>
+<td>广播任务重置</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><code>scripts/docker-redis.sh</code></td>
+<td>Docker Redis 管理</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><code>scripts/checkpoint-validator.sh</code></td>
+<td>检查点验证</td>
+<td>P1</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="文件队列消息机制">📨 文件队列消息机制</h2>
+<h3 id="消息格式">消息格式</h3>
+<p>所有消息使用 JSON 格式，存储为独立文件：</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;msg_20260408_001&quot;</span><span class="fu">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;from&quot;</span><span class="fu">:</span> <span class="st">&quot;master&quot;</span><span class="fu">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;to&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver-001&quot;</span><span class="fu">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;task_assign&quot;</span><span class="fu">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timestamp&quot;</span><span class="fu">:</span> <span class="dv">1712566800</span><span class="fu">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;payload&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;task_id&quot;</span><span class="fu">:</span> <span class="st">&quot;TASK-001&quot;</span><span class="fu">,</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;实现用户登录功能&quot;</span><span class="fu">,</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;priority&quot;</span><span class="fu">:</span> <span class="st">&quot;high&quot;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="消息类型">消息类型</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>方向</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>task_assign</code></td>
+<td>Master → Slaver</td>
+<td>任务分配</td>
+</tr>
+<tr>
+<td><code>task_claim</code></td>
+<td>Slaver → Master</td>
+<td>认领任务</td>
+</tr>
+<tr>
+<td><code>task_update</code></td>
+<td>Slaver → Master</td>
+<td>任务进度更新</td>
+</tr>
+<tr>
+<td><code>task_complete</code></td>
+<td>Slaver → Master</td>
+<td>任务完成</td>
+</tr>
+<tr>
+<td><code>heartbeat</code></td>
+<td>Both → Both</td>
+<td>心跳信号</td>
+</tr>
+</tbody>
+</table>
+<h3 id="发送消息">发送消息</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 创建消息文件</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&gt;</span> .eket/inboxes/slaver-001/msg_001.json <span class="op">&lt;&lt;EOF</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">{</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;id&quot;: &quot;msg_001&quot;,</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;from&quot;: &quot;master&quot;,</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;to&quot;: &quot;slaver-001&quot;,</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;type&quot;: &quot;task_assign&quot;,</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;timestamp&quot;: </span><span class="va">$(</span><span class="fu">date</span> +%s<span class="va">)</span><span class="st">,</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;payload&quot;: {</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;task_id&quot;: &quot;TASK-001&quot;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span></code></pre></div>
+<h3 id="读取消息">读取消息</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查收件箱</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> .eket/inboxes/master/<span class="pp">*</span>.json</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 读取消息内容</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> .eket/inboxes/master/msg_002.json</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 处理完成后移动到 processed</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> .eket/inboxes/master/msg_002.json .eket/data/queue/processed/</span></code></pre></div>
+<hr />
+<h2 id="工作流程示例">🔄 工作流程示例</h2>
+<h3 id="完整的任务分配流程">完整的任务分配流程</h3>
+<h4 id="master-分配任务">1. Master 分配任务</h4>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Master 创建任务消息</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&gt;</span> .eket/inboxes/slaver-001/task_001.json <span class="op">&lt;&lt;EOF</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="st">{</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;id&quot;: &quot;task_001&quot;,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;from&quot;: &quot;master&quot;,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;to&quot;: &quot;slaver-001&quot;,</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;type&quot;: &quot;task_assign&quot;,</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;timestamp&quot;: </span><span class="va">$(</span><span class="fu">date</span> +%s<span class="va">)</span><span class="st">,</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;payload&quot;: {</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;task_id&quot;: &quot;TASK-001&quot;,</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;description&quot;: &quot;Fix login bug&quot;,</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;files&quot;: [&quot;src/auth/login.js&quot;],</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;priority&quot;: &quot;high&quot;</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;[Master] 任务已分配给 slaver-001&quot;</span></span></code></pre></div>
+<h4 id="slaver-认领任务">2. Slaver 认领任务</h4>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Slaver 读取收件箱</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="va">TASK_FILE</span><span class="op">=</span><span class="va">$(</span><span class="fu">ls</span> .eket/inboxes/slaver-001/<span class="pp">*</span>.json <span class="kw">|</span> <span class="fu">head</span> <span class="at">-1</span><span class="va">)</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="va">TASK_DATA</span><span class="op">=</span><span class="va">$(</span><span class="fu">cat</span> <span class="st">&quot;</span><span class="va">$TASK_FILE</span><span class="st">&quot;</span><span class="va">)</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;[Slaver] 收到任务: </span><span class="va">$TASK_DATA</span><span class="st">&quot;</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Slaver 发送认领确认</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&gt;</span> .eket/inboxes/master/claim_001.json <span class="op">&lt;&lt;EOF</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="st">{</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;id&quot;: &quot;claim_001&quot;,</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;from&quot;: &quot;slaver-001&quot;,</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;to&quot;: &quot;master&quot;,</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;type&quot;: &quot;task_claim&quot;,</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;timestamp&quot;: </span><span class="va">$(</span><span class="fu">date</span> +%s<span class="va">)</span><span class="st">,</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;payload&quot;: {</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;task_id&quot;: &quot;TASK-001&quot;,</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;status&quot;: &quot;in_progress&quot;</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="co"># 移动任务到处理中</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> <span class="st">&quot;</span><span class="va">$TASK_FILE</span><span class="st">&quot;</span> .eket/data/queue/processing/</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;[Slaver] 任务认领完成，开始执行&quot;</span></span></code></pre></div>
+<h4 id="slaver-完成任务">3. Slaver 完成任务</h4>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Slaver 完成任务后发送消息</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&gt;</span> .eket/inboxes/master/complete_001.json <span class="op">&lt;&lt;EOF</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="st">{</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;id&quot;: &quot;complete_001&quot;,</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;from&quot;: &quot;slaver-001&quot;,</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;to&quot;: &quot;master&quot;,</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;type&quot;: &quot;task_complete&quot;,</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;timestamp&quot;: </span><span class="va">$(</span><span class="fu">date</span> +%s<span class="va">)</span><span class="st">,</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;payload&quot;: {</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;task_id&quot;: &quot;TASK-001&quot;,</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;status&quot;: &quot;done&quot;,</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;result&quot;: {</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="st">      &quot;commit&quot;: &quot;abc123&quot;,</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="st">      &quot;files_changed&quot;: 3,</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="st">      &quot;tests_passed&quot;: true</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="st">    }</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="co"># 归档任务</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> .eket/data/queue/processing/task_001.json .eket/data/queue/processed/</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;[Slaver] 任务完成，结果已发送&quot;</span></span></code></pre></div>
+<h4 id="master-确认完成">4. Master 确认完成</h4>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Master 读取完成消息</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="va">COMPLETE_FILE</span><span class="op">=</span><span class="va">$(</span><span class="fu">ls</span> .eket/inboxes/master/complete_<span class="pp">*</span>.json <span class="kw">|</span> <span class="fu">head</span> <span class="at">-1</span><span class="va">)</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="va">COMPLETE_DATA</span><span class="op">=</span><span class="va">$(</span><span class="fu">cat</span> <span class="st">&quot;</span><span class="va">$COMPLETE_FILE</span><span class="st">&quot;</span><span class="va">)</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;[Master] 任务完成确认: </span><span class="va">$COMPLETE_DATA</span><span class="st">&quot;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 更新任务状态</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co"># (更新 .eket/state/tasks.json)</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 归档消息</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> <span class="st">&quot;</span><span class="va">$COMPLETE_FILE</span><span class="st">&quot;</span> .eket/data/queue/processed/</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;[Master] 任务流程完成&quot;</span></span></code></pre></div>
+<hr />
+<h2 id="心跳监控">💓 心跳监控</h2>
+<h3 id="启动心跳监控">启动心跳监控</h3>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 后台启动心跳监控</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/heartbeat-monitor.sh</span> <span class="kw">&amp;</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 或前台运行</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/heartbeat-monitor.sh</span></span></code></pre></div>
+<h3 id="心跳文件格式">心跳文件格式</h3>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;instance_id&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver-001&quot;</span><span class="fu">,</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;role&quot;</span><span class="fu">:</span> <span class="st">&quot;slaver&quot;</span><span class="fu">,</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;profile&quot;</span><span class="fu">:</span> <span class="st">&quot;backend_dev&quot;</span><span class="fu">,</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;last_heartbeat&quot;</span><span class="fu">:</span> <span class="dv">1712566800</span><span class="fu">,</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;status&quot;</span><span class="fu">:</span> <span class="st">&quot;active&quot;</span><span class="fu">,</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;current_task&quot;</span><span class="fu">:</span> <span class="st">&quot;TASK-001&quot;</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="检查心跳状态">检查心跳状态</h3>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 查看所有心跳</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-lh</span> .eket/heartbeats/</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 读取心跳内容</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> .eket/heartbeats/slaver-001.json</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查过期心跳 (&gt;60秒)</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="fu">find</span> .eket/heartbeats <span class="at">-name</span> <span class="st">&#39;*.json&#39;</span> <span class="at">-mmin</span> +1</span></code></pre></div>
+<hr />
+<h2 id="生成统计报告">📊 生成统计报告</h2>
+<h3 id="运行统计脚本">运行统计脚本</h3>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/generate-stats.sh</span></span></code></pre></div>
+<p><strong>输出示例</strong>：</p>
+<pre><code>========================================
+EKET 统计报告
+生成时间: 2026-04-08 14:30:00
+========================================
+
+实例状态:
+- Master: 1 个 (active)
+- Slaver: 3 个 (2 active, 1 idle)
+
+任务统计:
+- 总任务数: 25
+- 进行中: 5
+- 已完成: 18
+- 失败: 2
+
+消息队列:
+- 待处理: 3
+- 处理中: 5
+- 已处理: 120
+
+心跳状态:
+- 正常: 3
+- 过期: 1 (slaver-003)</code></pre>
+<hr />
+<h2 id="常见操作">🛠️ 常见操作</h2>
+<h3 id="清理空闲-agent">清理空闲 Agent</h3>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/cleanup-idle-agents.sh</span></span></code></pre></div>
+<h3 id="广播任务重置">广播任务重置</h3>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/broadcast-task-reset.sh</span> TASK-001</span></code></pre></div>
+<h3 id="查看运行时数据大小">查看运行时数据大小</h3>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">du</span> <span class="at">-sh</span> .eket/</span></code></pre></div>
+<h3 id="清理所有运行时数据">清理所有运行时数据</h3>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> .eket/</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 警告: 会删除所有状态数据</span></span></code></pre></div>
+<h3 id="备份运行时状态">备份运行时状态</h3>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tar</span> <span class="at">-czf</span> eket-backup-<span class="va">$(</span><span class="fu">date</span> +%Y%m%d<span class="va">)</span>.tar.gz .eket/</span></code></pre></div>
+<hr />
+<h2 id="hybrid-adapter-命令路由">🔧 Hybrid Adapter 命令路由</h2>
+<p><code>hybrid-adapter.sh</code> 是 Level 1 的核心路由器，自动选择
+Shell 或 Node.js 实现：</p>
+<h3 id="使用示例">使用示例</h3>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 系统检查 (优先 Node.js，降级到 Shell)</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./lib/adapters/hybrid-adapter.sh</span> check</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 启动实例 (Shell 实现)</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./lib/adapters/hybrid-adapter.sh</span> start <span class="at">--role</span> master</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Docker Redis 管理 (Shell 脚本)</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="ex">./lib/adapters/hybrid-adapter.sh</span> docker-redis</span></code></pre></div>
+<h3 id="降级逻辑">降级逻辑</h3>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Adapter 自动判断:</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">[[</span> Node.js 可用 <span class="kw">&amp;&amp;</span> dist/index.js 存在 <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># 使用 Node.js 实现 (Level 2/3)</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">node</span> dist/index.js <span class="va">$command</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># 降级到 Shell 实现 (Level 1)</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bash</span> scripts/<span class="va">$command</span>.sh</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span></code></pre></div>
+<hr />
+<h2 id="性能特性">📊 性能特性</h2>
+<h3 id="level-1-性能数据">Level 1 性能数据</h3>
+<p><strong>文件队列操作</strong>： - Enqueue (写入): ~0.5ms (P50) -
+Dequeue (读取): ~0.4ms (P50) - 峰值吞吐: ~2000 msg/s (单进程)</p>
+<p><strong>文件系统占用</strong>： - 每个消息: ~500 bytes (JSON) - 100
+个任务: ~50KB - 1000 条消息: ~500KB</p>
+<p><strong>启动时间</strong>： - Master 启动: &lt;1 秒 - Slaver 启动:
+&lt;1 秒 - 心跳监控: &lt;0.5 秒</p>
+<hr />
+<h2 id="限制和注意事项">⚠️ 限制和注意事项</h2>
+<h3 id="已知限制">已知限制</h3>
+<ol type="1">
+<li><strong>单机部署</strong>: Level 1
+不支持分布式，仅适用于单机或本地开发</li>
+<li><strong>文件锁限制</strong>: 并发性能受文件系统限制</li>
+<li><strong>无实时通知</strong>: 需要轮询收件箱，不支持实时 Pub/Sub</li>
+<li><strong>无事务支持</strong>: 文件操作非原子性，可能出现竞争</li>
+</ol>
+<h3 id="最佳实践">最佳实践</h3>
+<ol type="1">
+<li><strong>定期清理</strong>: 定期清理
+<code>.eket/data/queue/processed/</code> 避免磁盘占满</li>
+<li><strong>心跳监控</strong>: 始终运行心跳监控检测故障</li>
+<li><strong>消息去重</strong>: 手动检查重复消息（Level 2/3
+自动去重）</li>
+<li><strong>备份状态</strong>: 重要状态定期备份</li>
+</ol>
+<hr />
+<h2 id="进阶使用">🎓 进阶使用</h2>
+<h3 id="自定义消息处理">自定义消息处理</h3>
+<p>创建自己的消息处理脚本：</p>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># custom-message-handler.sh</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="va">INBOX_DIR</span><span class="op">=</span><span class="st">&quot;.eket/inboxes/master&quot;</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="fu">true</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># 检查新消息</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> msg_file <span class="kw">in</span> <span class="st">&quot;</span><span class="va">$INBOX_DIR</span><span class="st">&quot;</span>/<span class="pp">*</span>.json<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="ot">-f</span> <span class="st">&quot;</span><span class="va">$msg_file</span><span class="st">&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>      <span class="co"># 读取消息</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>      <span class="va">msg_data</span><span class="op">=</span><span class="va">$(</span><span class="fu">cat</span> <span class="st">&quot;</span><span class="va">$msg_file</span><span class="st">&quot;</span><span class="va">)</span></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>      <span class="va">msg_type</span><span class="op">=</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">&quot;</span><span class="va">$msg_data</span><span class="st">&quot;</span> <span class="kw">|</span> <span class="ex">jq</span> <span class="at">-r</span> <span class="st">&#39;.type&#39;</span><span class="va">)</span></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>      <span class="co"># 处理消息</span></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>      <span class="cf">case</span> <span class="st">&quot;</span><span class="va">$msg_type</span><span class="st">&quot;</span> <span class="kw">in</span></span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;custom_event&quot;</span><span class="kw">)</span></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>          <span class="bu">echo</span> <span class="st">&quot;[自定义处理] 收到 custom_event&quot;</span></span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>          <span class="co"># 你的处理逻辑</span></span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>          <span class="cf">;;</span></span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>        <span class="pp">*</span><span class="kw">)</span></span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>          <span class="bu">echo</span> <span class="st">&quot;[跳过] 未知消息类型: </span><span class="va">$msg_type</span><span class="st">&quot;</span></span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>          <span class="cf">;;</span></span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>      <span class="cf">esac</span></span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>      <span class="co"># 归档消息</span></span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mv</span> <span class="st">&quot;</span><span class="va">$msg_file</span><span class="st">&quot;</span> .eket/data/queue/processed/</span>
+<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a>  <span class="cf">done</span></span>
+<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sleep</span> 1</span>
+<span id="cb27-31"><a href="#cb27-31" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code></pre></div>
+<h3 id="集成到-cicd">集成到 CI/CD</h3>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># .github/workflows/eket.yml</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="ex">name:</span> EKET CI</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="ex">on:</span> <span class="pp">[</span><span class="ss">push</span><span class="pp">]</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="ex">jobs:</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">test:</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    <span class="ex">runs-on:</span> ubuntu-latest</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>    <span class="ex">steps:</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>      <span class="ex">-</span> uses: actions/checkout@v2</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>      <span class="ex">-</span> name: Start EKET Master</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>        <span class="ex">run:</span> <span class="kw">|</span></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>          <span class="ex">./scripts/eket-start.sh</span> <span class="at">--role</span> master <span class="kw">&amp;</span></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>          <span class="fu">sleep</span> 2</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>      <span class="ex">-</span> name: Run Tests</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>        <span class="ex">run:</span> ./scripts/run-tests.sh</span></code></pre></div>
+<hr />
+<h2 id="升级到-level-23">🔗 升级到 Level 2/3</h2>
+<p>当你需要更强大的功能时，可以无缝升级：</p>
+<h3 id="升级到-level-2-node.js">升级到 Level 2 (Node.js)</h3>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 安装 Node.js</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="co"># (下载 Node.js 18+ from nodejs.org)</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 安装依赖</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> node <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> install <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> run build</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 运行 (Hybrid Adapter 自动检测)</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="ex">./lib/adapters/hybrid-adapter.sh</span> check</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 输出: [INFO] 当前运行级别: Level 2 (Node.js + 文件队列)</span></span></code></pre></div>
+<h3 id="升级到-level-3-满血版">升级到 Level 3 (满血版)</h3>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 启动 Redis</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">--name</span> eket-redis <span class="at">-p</span> 6379:6379 redis:7-alpine</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 运行 (自动检测 Redis)</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> dist/index.js system:check</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 输出: [INFO] 当前运行级别: Level 3 (满血版)</span></span></code></pre></div>
+<p><strong>数据迁移</strong>: 所有 <code>.eket/</code>
+文件系统数据在升级后仍然有效，系统会自动迁移到 Redis/SQLite。</p>
+<hr />
+<h2 id="相关文档">📚 相关文档</h2>
+<ul>
+<li><strong><a
+href="../architecture/THREE-LEVEL-ARCHITECTURE.md">三级架构详解</a></strong>
+- 完整架构设计</li>
+<li><strong><a
+href="../architecture/DEGRADATION-STRATEGY.md">降级策略</a></strong> -
+自动降级机制</li>
+<li><strong><a
+href="../architecture/FILE-QUEUE.md">文件队列详解</a></strong> -
+队列实现细节</li>
+<li><strong><a href="./NODEJS-MODE.md">Level 2 指南</a></strong> -
+Node.js 模式升级</li>
+<li><strong><a href="./FULL-STACK-MODE.md">Level 3 指南</a></strong> -
+满血版部署</li>
+</ul>
+<hr />
+<h2 id="故障排查">❓ 故障排查</h2>
+<h3 id="问题-1-实例无法启动">问题 1: 实例无法启动</h3>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 Bash 版本</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> <span class="at">--version</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查脚本权限</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> +x scripts/<span class="pp">*</span>.sh</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 查看日志</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> .eket/logs/eket-start.log</span></code></pre></div>
+<h3 id="问题-2-消息未送达">问题 2: 消息未送达</h3>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查收件箱目录</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-la</span> .eket/inboxes/</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查文件权限</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> <span class="at">-R</span> 755 .eket/</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 手动发送测试消息</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;{&quot;id&quot;:&quot;test&quot;,&quot;from&quot;:&quot;test&quot;,&quot;to&quot;:&quot;master&quot;,&quot;type&quot;:&quot;ping&quot;}&#39;</span> <span class="dt">\</span></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>  <span class="op">&gt;</span> .eket/inboxes/master/test.json</span></code></pre></div>
+<h3 id="问题-3-心跳过期">问题 3: 心跳过期</h3>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 重启心跳监控</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pkill</span> <span class="at">-f</span> heartbeat-monitor</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/heartbeat-monitor.sh</span> <span class="kw">&amp;</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 手动更新心跳</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&gt;</span> .eket/heartbeats/slaver-001.json <span class="op">&lt;&lt;EOF</span></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="st">{</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;instance_id&quot;: &quot;slaver-001&quot;,</span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;last_heartbeat&quot;: </span><span class="va">$(</span><span class="fu">date</span> +%s<span class="va">)</span><span class="st">,</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;status&quot;: &quot;active&quot;</span></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span></code></pre></div>
+<hr />
+<p><strong>Level 1 Shell 模式 - 简单、稳定、可靠！</strong></p>
+<p>开始使用：</p>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/godlockin/eket.git <span class="kw">&amp;&amp;</span> <span class="bu">cd</span> eket</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/eket-start.sh</span> <span class="at">--role</span> master</span></code></pre></div>
+<hr />
+<p><strong>版本</strong>: v2.3.0 <strong>最后更新</strong>: 2026-04-08
+<strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>

@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 备份恢复操作手册</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 备份恢复操作手册</h1>
+</header>
+<h1 id="eket-备份恢复操作手册">EKET 备份恢复操作手册</h1>
+<p><strong>版本</strong>: 2.0.0 <strong>最后更新</strong>: 2026-04-02
+<strong>文档类型</strong>: 操作手册 / Runbook</p>
+<hr />
+<h2 id="快速参考">1. 快速参考</h2>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>命令</th>
+<th>预计时间</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SQLite 备份</td>
+<td><code>./scripts/backup-sqlite.sh</code></td>
+<td>&lt; 1 分钟</td>
+</tr>
+<tr>
+<td>SQLite 恢复</td>
+<td><code>./scripts/backup-sqlite.sh restore</code></td>
+<td>&lt; 5 分钟</td>
+</tr>
+<tr>
+<td>Redis 备份</td>
+<td>自动（RDB + AOF）</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Redis 恢复</td>
+<td>见第 3 节</td>
+<td>&lt; 5 分钟</td>
+</tr>
+<tr>
+<td>processed.json 恢复</td>
+<td>自动恢复</td>
+<td>&lt; 1 分钟</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="sqlite-数据库恢复">2. SQLite 数据库恢复</h2>
+<h3 id="查看备份列表">2.1 查看备份列表</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /path/to/eket</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 列出所有备份</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/backup-sqlite.sh</span> list</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 输出示例：</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># ========================================</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># EKET SQLite 备份列表</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># ========================================</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">#   eket_backup_20260402_120000.db.gz</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     大小：1.2M  日期：2026-04-02 12:00:00  ✓ 已验证</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">#   eket_backup_20260402_110000.db.gz</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">#     大小：1.1M  日期：2026-04-02 11:00:00  ✓ 已验证</span></span></code></pre></div>
+<h3 id="从最新备份恢复">2.2 从最新备份恢复</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 从最新备份恢复（默认行为）</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/backup-sqlite.sh</span> restore</span></code></pre></div>
+<h3 id="从指定备份恢复">2.3 从指定备份恢复</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 从特定备份文件恢复</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/backup-sqlite.sh</span> restore eket_backup_20260402_100000.db.gz</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 或使用完整路径</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/backup-sqlite.sh</span> restore /path/to/eket_backup_20260402_100000.db.gz</span></code></pre></div>
+<h3 id="验证恢复结果">2.4 验证恢复结果</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 SQLite 数据库</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">sqlite3</span> .eket/data/sqlite/eket.db <span class="st">&quot;.tables&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 应该看到：</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># confluence_files    jira_tickets    retrospectives    slaver_processes</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 查询数据</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">sqlite3</span> .eket/data/sqlite/eket.db <span class="st">&quot;SELECT COUNT(*) FROM jira_tickets;&quot;</span></span></code></pre></div>
+<h3 id="手动恢复步骤">2.5 手动恢复步骤</h3>
+<p>如果自动恢复脚本失败，执行手动恢复：</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 停止相关服务</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pkill</span> <span class="at">-f</span> eket  <span class="co"># 如果有运行的实例</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 备份当前数据库（如果存在）</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> .eket/data/sqlite/eket.db .eket/data/sqlite/eket.db.corrupted</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 解压备份文件</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">gunzip</span> <span class="at">-c</span> .eket/data/backups/sqlite/eket_backup_20260402_120000.db.gz <span class="dt">\</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="op">&gt;</span> .eket/data/sqlite/eket.db</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 验证数据库</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="ex">sqlite3</span> .eket/data/sqlite/eket.db <span class="st">&quot;PRAGMA integrity_check;&quot;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. 重启服务</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/eket-start.sh</span></span></code></pre></div>
+<hr />
+<h2 id="redis-数据恢复">3. Redis 数据恢复</h2>
+<h3 id="redis-持久化文件位置">3.1 Redis 持久化文件位置</h3>
+<pre><code>.eket/data/redis/
+├── dump.rdb          # RDB 快照文件
+├── appendonly.aof    # AOF 日志文件
+└── redis.conf        # Redis 配置文件</code></pre>
+<h3 id="从-rdb-快照恢复">3.2 从 RDB 快照恢复</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 停止 Redis 容器</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/docker-redis.sh</span> stop</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 复制备份的 RDB 文件</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> /backup/dump.rdb .eket/data/redis/dump.rdb</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. （可选）删除 AOF 文件，仅使用 RDB 恢复</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> .eket/data/redis/appendonly.aof</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 重启 Redis 容器</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/docker-redis.sh</span> start</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. 验证数据</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="ex">redis-cli</span> <span class="at">-p</span> 6380 <span class="at">-a</span> eket_redis_2026 KEYS <span class="st">&quot;*&quot;</span></span></code></pre></div>
+<h3 id="从-aof-日志恢复">3.3 从 AOF 日志恢复</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 停止 Redis 容器</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/docker-redis.sh</span> stop</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 复制备份的 AOF 文件</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> /backup/appendonly.aof .eket/data/redis/appendonly.aof</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 重启 Redis 容器（会自动重放 AOF）</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/docker-redis.sh</span> start</span></code></pre></div>
+<h3 id="使用-redis-tools-恢复">3.4 使用 Redis Tools 恢复</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查 RDB 文件完整性</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">rdb-cli</span> check .eket/data/redis/dump.rdb</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 使用 redis-check-rdb</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ex">redis-check-rdb</span> .eket/data/redis/dump.rdb</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 使用 redis-check-aof</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="ex">redis-check-aof</span> <span class="at">--fix</span> .eket/data/redis/appendonly.aof</span></code></pre></div>
+<hr />
+<h2 id="processed.json-恢复">4. processed.json 恢复</h2>
+<h3 id="自动恢复机制">4.1 自动恢复机制</h3>
+<p><code>processed.json</code>
+的双备份机制会在文件损坏时自动触发恢复：</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">// FileQueueManager 自动执行：</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">// 1. 尝试加载 processed.json</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">// 2. 如果损坏，从 processed.json.bak 恢复</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">// 3. 如果备份也损坏，重置为空集合</span></span></code></pre></div>
+<h3 id="手动恢复-processed.json">4.2 手动恢复 processed.json</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> .eket/data/queue/</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 检查文件状态</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-la</span> processed.json<span class="pp">*</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 从备份恢复</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> processed.json.bak processed.json</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 验证 JSON 格式</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> processed.json <span class="kw">|</span> <span class="ex">jq</span> .</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 如果备份也损坏，创建空文件</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&#39;{&quot;ids&quot;: [], &quot;updated&quot;: &quot;&#39;</span><span class="va">$(</span><span class="fu">date</span> <span class="at">-Iseconds</span><span class="va">)</span><span class="st">&#39;&quot;}&#39;</span> <span class="op">&gt;</span> processed.json</span></code></pre></div>
+<h3 id="从归档恢复历史数据">4.3 从归档恢复历史数据</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 查看归档目录</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-la</span> .eket/data/queue-archive/</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 恢复特定消息文件</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> .eket/data/queue-archive/<span class="op">&lt;</span>message-file<span class="op">&gt;</span> .eket/data/queue/</span></code></pre></div>
+<hr />
+<h2 id="完整灾难恢复流程">5. 完整灾难恢复流程</h2>
+<h3 id="场景系统完全崩溃">5.1 场景：系统完全崩溃</h3>
+<p><strong>恢复步骤</strong>:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 步骤 1: 评估损坏情况</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;=== 检查 SQLite ===&quot;</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-la</span> .eket/data/sqlite/</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;=== 检查 Redis ===&quot;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/docker-redis.sh</span> status</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;=== 检查消息队列 ===&quot;</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-la</span> .eket/data/queue/</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;=== 检查备份 ===&quot;</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/backup-sqlite.sh</span> list</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 步骤 2: 恢复 SQLite 数据库</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/backup-sqlite.sh</span> restore</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 步骤 3: 恢复 Redis 数据</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/docker-redis.sh</span> stop</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 复制 RDB/AOF 备份</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/docker-redis.sh</span> start</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 步骤 4: 恢复 processed.json</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> .eket/data/queue/</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> processed.json.bak processed.json</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 步骤 5: 验证恢复</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/backup-sqlite.sh</span> stats</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/docker-redis.sh</span> status</span></code></pre></div>
+<h3 id="场景备份服务器恢复">5.2 场景：备份服务器恢复</h3>
+<p>当主服务器完全丢失，需要从备份服务器恢复：</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 从备份服务器下载备份</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">scp</span> backup-server:/backups/eket/latest.db.gz .eket/data/backups/sqlite/</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. 恢复 SQLite</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/backup-sqlite.sh</span> restore latest.db.gz</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. 恢复 Redis</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="fu">scp</span> backup-server:/backups/eket/dump.rdb .eket/data/redis/</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/docker-redis.sh</span> restart</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. 验证</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/backup-sqlite.sh</span> verify latest.db.gz</span></code></pre></div>
+<hr />
+<h2 id="定期恢复测试">6. 定期恢复测试</h2>
+<h3 id="每月恢复测试检查清单">6.1 每月恢复测试检查清单</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />SQLite 备份恢复测试</label></li>
+<li><label><input type="checkbox" />Redis RDB 恢复测试</label></li>
+<li><label><input type="checkbox" />processed.json 恢复测试</label></li>
+<li><label><input type="checkbox" />验证恢复后数据完整性</label></li>
+<li><label><input type="checkbox" />记录恢复时间（验证 RTO &lt; 15
+分钟）</label></li>
+<li><label><input type="checkbox" />更新恢复文档</label></li>
+</ul>
+<h3 id="恢复测试脚本">6.2 恢复测试脚本</h3>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># tests/disaster-recovery/dr-test.sh</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-e</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;=== EKET 灾难恢复测试 ===&quot;</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 创建测试数据</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="ex">sqlite3</span> .eket/data/sqlite/eket.db <span class="st">&quot;INSERT INTO jira_tickets (ticket_id, title, status) VALUES (&#39;DR-TEST-001&#39;, &#39;Disaster Recovery Test&#39;, &#39;test&#39;);&quot;</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 执行备份</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/backup-sqlite.sh</span> backup</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 删除数据</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="ex">sqlite3</span> .eket/data/sqlite/eket.db <span class="st">&quot;DELETE FROM jira_tickets WHERE ticket_id = &#39;DR-TEST-001&#39;;&quot;</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 恢复数据</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/backup-sqlite.sh</span> restore</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="co"># 验证</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="va">result</span><span class="op">=</span><span class="va">$(</span><span class="ex">sqlite3</span> .eket/data/sqlite/eket.db <span class="st">&quot;SELECT COUNT(*) FROM jira_tickets WHERE ticket_id = &#39;DR-TEST-001&#39;;&quot;</span><span class="va">)</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$result</span><span class="st">&quot;</span> <span class="ot">=</span> <span class="st">&quot;1&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;✓ 恢复测试通过&quot;</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>  <span class="bu">exit</span> 0</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;✗ 恢复测试失败&quot;</span></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>  <span class="bu">exit</span> 1</span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span></code></pre></div>
+<hr />
+<h2 id="故障排查">7. 故障排查</h2>
+<h3 id="sqlite-恢复失败">7.1 SQLite 恢复失败</h3>
+<table>
+<thead>
+<tr>
+<th>错误</th>
+<th>原因</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“数据库已锁定”</td>
+<td>有进程正在访问</td>
+<td>停止所有 eket 实例后重试</td>
+</tr>
+<tr>
+<td>“校验和不匹配”</td>
+<td>备份文件损坏</td>
+<td>尝试上一个备份</td>
+</tr>
+<tr>
+<td>“磁盘空间不足”</td>
+<td>备份目录已满</td>
+<td>清理过期备份或扩容</td>
+</tr>
+</tbody>
+</table>
+<h3 id="redis-恢复失败">7.2 Redis 恢复失败</h3>
+<table>
+<thead>
+<tr>
+<th>错误</th>
+<th>原因</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“MISCONF RDB 错误”</td>
+<td>RDB 文件损坏</td>
+<td>使用 AOF 恢复或上一个 RDB</td>
+</tr>
+<tr>
+<td>“容器启动失败”</td>
+<td>配置错误</td>
+<td>检查 redis.conf 和日志</td>
+</tr>
+<tr>
+<td>“数据丢失”</td>
+<td>持久化未生效</td>
+<td>检查 save 和 appendonly 配置</td>
+</tr>
+</tbody>
+</table>
+<h3 id="processed.json-恢复失败">7.3 processed.json 恢复失败</h3>
+<table>
+<thead>
+<tr>
+<th>错误</th>
+<th>原因</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“JSON 解析失败”</td>
+<td>文件损坏</td>
+<td>从.bak 备份恢复</td>
+</tr>
+<tr>
+<td>“权限拒绝”</td>
+<td>文件权限错误</td>
+<td><code>chmod 644 processed.json</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="备份监控">8. 备份监控</h2>
+<h3 id="备份健康检查脚本">8.1 备份健康检查脚本</h3>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># scripts/check-backup-health.sh</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="va">BACKUP_DIR</span><span class="op">=</span><span class="st">&quot;.eket/data/backups/sqlite&quot;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="va">MAX_AGE_HOURS</span><span class="op">=</span>2</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查最新备份时间</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="va">latest</span><span class="op">=</span><span class="va">$(</span><span class="fu">ls</span> <span class="at">-1t</span> <span class="st">&quot;</span><span class="va">$BACKUP_DIR</span><span class="st">&quot;</span>/eket_backup_<span class="pp">*</span>.db.gz <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">|</span> <span class="fu">head</span> <span class="at">-1</span><span class="va">)</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">-z</span> <span class="st">&quot;</span><span class="va">$latest</span><span class="st">&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;CRITICAL: 无备份存在&quot;</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  <span class="bu">exit</span> 2</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查备份年龄</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="va">age_hours</span><span class="op">=</span><span class="va">$((</span> (<span class="va">$(</span><span class="fu">date</span> +%s<span class="va">)</span> <span class="op">-</span> <span class="va">$(</span><span class="fu">stat</span> <span class="at">-f</span> %m <span class="st">&quot;</span><span class="va">$latest</span><span class="st">&quot;</span> <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">stat</span> <span class="at">-c</span> %Y <span class="st">&quot;</span><span class="va">$latest</span><span class="st">&quot;</span><span class="va">)</span>) <span class="op">/</span> <span class="dv">3600</span> <span class="va">))</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$age_hours</span><span class="st">&quot;</span> <span class="ot">-gt</span> <span class="st">&quot;</span><span class="va">$MAX_AGE_HOURS</span><span class="st">&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;WARNING: 最新备份 </span><span class="va">$age_hours</span><span class="st"> 小时前&quot;</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  <span class="bu">exit</span> 1</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;OK: 最新备份 </span><span class="va">$age_hours</span><span class="st"> 小时前&quot;</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a><span class="bu">exit</span> 0</span></code></pre></div>
+<h3 id="集成监控系统">8.2 集成监控系统</h3>
+<p>将备份检查集成到现有监控系统：</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 添加到心跳监控</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/heartbeat-monitor.sh</span> <span class="at">--include-backup-check</span></span></code></pre></div>
+<hr />
+<h2 id="附录">9. 附录</h2>
+<h3 id="备份文件结构">9.1 备份文件结构</h3>
+<pre><code>.eket/
+├── data/
+│   ├── backups/
+│   │   └── sqlite/
+│   │       ├── eket_backup_YYYYMMDD_HHMMSS.db.gz
+│   │       └── eket_backup_YYYYMMDD_HHMMSS.db.gz.sha256
+│   ├── redis/
+│   │   ├── dump.rdb
+│   │   └── appendonly.aof
+│   ├── queue/
+│   │   ├── processed.json
+│   │   └── processed.json.bak
+│   └── queue-archive/</code></pre>
+<h3 id="相关文档">9.2 相关文档</h3>
+<ul>
+<li><code>docs/backup-restore-policy.md</code> - 备份策略文档</li>
+<li><code>scripts/backup-sqlite.sh</code> - SQLite 备份脚本</li>
+<li><code>scripts/docker-redis.sh</code> - Redis 容器管理</li>
+</ul>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team
+<strong>审核状态</strong>: 已审核 <strong>下次演练日期</strong>:
+2026-05-02</p>
+</body>
+</html>

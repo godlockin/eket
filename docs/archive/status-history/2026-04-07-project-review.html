@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 项目文件审查报告</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 项目文件审查报告</h1>
+</header>
+<h1 id="eket-项目文件审查报告">EKET 项目文件审查报告</h1>
+<p><strong>审查日期</strong>: 2026-03-24 <strong>审查版本</strong>:
+v0.6.1 → v0.6.2 <strong>审查范围</strong>: 全部代码、文档、配置文件</p>
+<hr />
+<h2 id="一项目概况">一、项目概况</h2>
+<h3 id="文件统计">1.1 文件统计</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>数量</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Shell 脚本</td>
+<td>70 个</td>
+<td>核心功能脚本</td>
+</tr>
+<tr>
+<td>Markdown 文档</td>
+<td>61 个</td>
+<td>文档文件</td>
+</tr>
+<tr>
+<td>YAML 配置</td>
+<td>40 个</td>
+<td>配置文件</td>
+</tr>
+<tr>
+<td>Git 分支</td>
+<td>1 个</td>
+<td>当前分支：miao</td>
+</tr>
+</tbody>
+</table>
+<h3 id="git-状态">1.2 Git 状态</h3>
+<pre><code>当前分支：miao
+领先远程：2 commits
+修改文件：2 (eket-merge.sh, eket-review-pr.sh)
+新增文件：4 (expert-review.sh, roadmap-alignment-check.sh, roadmap.md, IMPLEMENTATION-v0.6.2.md)</code></pre>
+<hr />
+<h2 id="二文件分类与状态">二、文件分类与状态</h2>
+<h3 id="可提交文件无问题">2.1 ✅ 可提交文件（无问题）</h3>
+<h4 id="新增功能文件-v0.6.2">新增功能文件 (v0.6.2)</h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scripts/expert-review.sh</code></td>
+<td>✅ 语法通过</td>
+<td>专家评审脚本 (24KB)</td>
+</tr>
+<tr>
+<td><code>scripts/roadmap-alignment-check.sh</code></td>
+<td>✅ 语法通过</td>
+<td>Roadmap 对齐检查 (14KB)</td>
+</tr>
+<tr>
+<td><code>template/confluence/projects/PROJECT_NAME/roadmap.md</code></td>
+<td>✅ 模板</td>
+<td>Roadmap 模板</td>
+</tr>
+<tr>
+<td><code>docs/IMPLEMENTATION-v0.6.2.md</code></td>
+<td>✅ 文档</td>
+<td>v0.6.2 实施总结</td>
+</tr>
+</tbody>
+</table>
+<h4 id="修改文件-v0.6.2">修改文件 (v0.6.2)</h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>变更</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>template/.claude/commands/eket-review-pr.sh</code></td>
+<td>✅ 语法通过</td>
+<td>集成完整审查流程</td>
+</tr>
+<tr>
+<td><code>template/.claude/commands/eket-merge.sh</code></td>
+<td>✅ 语法通过</td>
+<td>添加审查报告验证</td>
+</tr>
+</tbody>
+</table>
+<h4 id="核心脚本-已验证">核心脚本 (已验证)</h4>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>大小</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scripts/test-gate-system.sh</code></td>
+<td>✅</td>
+<td>13KB</td>
+</tr>
+<tr>
+<td><code>scripts/merge-validator.sh</code></td>
+<td>✅</td>
+<td>10KB</td>
+</tr>
+<tr>
+<td><code>scripts/checkpoint-validator.sh</code></td>
+<td>✅</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>scripts/heartbeat-monitor.sh</code></td>
+<td>✅</td>
+<td>10KB</td>
+</tr>
+<tr>
+<td><code>scripts/slaver-heartbeat.sh</code></td>
+<td>✅</td>
+<td>13KB</td>
+</tr>
+</tbody>
+</table>
+<h4 id="核心文档">核心文档</h4>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CLAUDE.md</code></td>
+<td>✅</td>
+<td>项目主文档</td>
+</tr>
+<tr>
+<td><code>README.md</code></td>
+<td>✅</td>
+<td>快速开始指南</td>
+</tr>
+<tr>
+<td><code>template/SYSTEM-SETTINGS.md</code></td>
+<td>✅</td>
+<td>系统设定模板 (26KB)</td>
+</tr>
+<tr>
+<td><code>docs/README.md</code></td>
+<td>✅</td>
+<td>文档索引</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="需要注意的文件">2.2 ⚠️ 需要注意的文件</h3>
+<h4 id="模板目录中的占位符文件">模板目录中的占位符文件</h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>问题</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>template/.eket/version.yml</code></td>
+<td>含占位符 <code>{{TIMESTAMP}}</code></td>
+<td>保持原样，项目初始化时替换</td>
+</tr>
+<tr>
+<td><code>template/.eket/config.yml</code></td>
+<td>示例配置</td>
+<td>保持原样，供新项目参考</td>
+</tr>
+</tbody>
+</table>
+<h4 id="带-todofixme-的文件">带 TODO/FIXME 的文件</h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>位置</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>template/.eket/config/advanced.yml</code></td>
+<td>L68-73</td>
+<td>TODO 注释检测配置</td>
+</tr>
+<tr>
+<td><code>scripts/mock-detector.sh</code></td>
+<td>多处</td>
+<td>正常功能代码，用于检测 TODO</td>
+</tr>
+<tr>
+<td><code>scripts/expert-review.sh</code></td>
+<td>L574</td>
+<td>正常功能代码，用于检测技术债务</td>
+</tr>
+<tr>
+<td><code>template/agents/reviewer/phase_reviewer/agent.yml</code></td>
+<td>标题</td>
+<td>占位符格式 <code>PHASE-X-XXX</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>评估</strong>:
+这些不是真正的待办事项，而是功能代码或占位符，无需处理。</p>
+<hr />
+<h3 id="归档目录-docsarchive">2.3 📁 归档目录 (docs/archive/)</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>行数</th>
+<th>状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MASTER_SLAYER_ROLES.md</code></td>
+<td>428</td>
+<td>⚠️ 已弃用</td>
+<td>术语已改为 Coordinator/Executor</td>
+</tr>
+<tr>
+<td><code>framework-risk-review.md</code></td>
+<td>595</td>
+<td>⚠️ 历史</td>
+<td>v0.4 风险评估</td>
+</tr>
+<tr>
+<td><code>目标设定.md</code></td>
+<td>160</td>
+<td>⚠️ 历史</td>
+<td>原始需求文档</td>
+</tr>
+<tr>
+<td><code>目标设定_v1.md</code></td>
+<td>193</td>
+<td>⚠️ 历史</td>
+<td>需求文档 v1</td>
+</tr>
+<tr>
+<td><code>README.md</code></td>
+<td>61</td>
+<td>✅</td>
+<td>归档说明</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>:
+归档目录已正确标记，用户可以跳过。保持现状。</p>
+<hr />
+<h3 id="文档版本对应">2.4 📚 文档版本对应</h3>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>文档</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v0.2</td>
+<td><code>CHANGELOG_v0.2.md</code></td>
+<td>✅ 历史记录</td>
+</tr>
+<tr>
+<td>v0.5</td>
+<td><code>v0.5-framework-risk-review.md</code></td>
+<td>✅ 历史评审</td>
+</tr>
+<tr>
+<td>v0.5</td>
+<td><code>v0.5-implementation-review.md</code></td>
+<td>✅ 历史评审</td>
+</tr>
+<tr>
+<td>v0.5.1</td>
+<td><code>v0.5.1-framework-risk-review.md</code></td>
+<td>✅ 历史评审</td>
+</tr>
+<tr>
+<td>v0.5.1</td>
+<td><code>v0.5.1-implementation-summary.md</code></td>
+<td>✅ 实施总结</td>
+</tr>
+<tr>
+<td>v0.6</td>
+<td><code>v0.6-docker-heartbeat.md</code></td>
+<td>✅ v0.6 特性文档</td>
+</tr>
+<tr>
+<td>v0.6.1</td>
+<td><code>REPAIR_PLAN_v0.6.1.md</code></td>
+<td>✅ 修复计划</td>
+</tr>
+<tr>
+<td>v0.6.2</td>
+<td><code>IMPLEMENTATION-v0.6.2.md</code></td>
+<td>✅ 新增</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="三问题点与风险点">三、问题点与风险点</h2>
+<h3 id="高优先级问题">3.1 🔴 高优先级问题</h3>
+<h4 id="问题-1-version.yml-版本信息未更新">问题 1: version.yml
+版本信息未更新</h4>
+<p><strong>文件</strong>: <code>template/.eket/version.yml</code></p>
+<p><strong>现状</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.1.0</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">template_version</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.1.0</span></span></code></pre></div>
+<p><strong>风险</strong>: 新项目初始化时可能使用错误版本</p>
+<p><strong>建议</strong>: 更新为当前版本</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.6.2</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">template_version</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.6.2</span></span></code></pre></div>
+<hr />
+<h4 id="问题-2-部分-.gitkeep-文件可能缺失">问题 2: 部分 .gitkeep
+文件可能缺失</h4>
+<p><strong>位置</strong>: -
+<code>template/jira/tickets/feature/.gitkeep</code> -
+<code>template/jira/tickets/bugfix/.gitkeep</code> -
+<code>template/shared/.gitkeep</code></p>
+<p><strong>风险</strong>: 新项目中这些目录可能不会被 Git 追踪</p>
+<p><strong>建议</strong>: 检查并补充缺失的 <code>.gitkeep</code>
+文件</p>
+<hr />
+<h3 id="中优先级问题">3.2 🟡 中优先级问题</h3>
+<h4 id="问题-3-文档版本混乱">问题 3: 文档版本混乱</h4>
+<p><strong>现象</strong>: 同时存在 v0.2, v0.5, v0.5.1, v0.6
+多个版本的文档</p>
+<p><strong>影响</strong>: 用户可能困惑应该阅读哪个版本</p>
+<p><strong>建议</strong>: 1. 在 <code>docs/README.md</code>
+中明确标注推荐文档 2. 考虑将旧版本文档移入 <code>archive/</code></p>
+<hr />
+<h4 id="问题-4-大文件过多">问题 4: 大文件过多</h4>
+<p><strong>大于 10KB 的文档</strong>: -
+<code>docs/05-reference/WORKFLOW_DIAGRAM.md</code> (22KB) -
+<code>docs/05-reference/v0.5-framework-risk-review.md</code> (20KB) -
+<code>docs/archive/MASTER_SLAYER_ROLES.md</code> (14KB) -
+<code>template/.claude/commands/eket-start.sh</code> (32KB)</p>
+<p><strong>建议</strong>: 考虑拆分大型文档，或添加目录导航</p>
+<hr />
+<h3 id="低优先级问题">3.3 🟢 低优先级问题</h3>
+<h4 id="问题-5-.gitignore-可能不完整">问题 5: .gitignore 可能不完整</h4>
+<p><strong>现状</strong>: 未忽略以下目录 - <code>.pytest_cache/</code> -
+<code>__pycache__/</code> - <code>*.pyc</code></p>
+<p><strong>建议</strong>: 根据项目需要补充</p>
+<hr />
+<h2 id="四提交建议">四、提交建议</h2>
+<h3 id="立即可提交的文件">4.1 立即可提交的文件</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 新增 v0.6.2 功能文件</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add scripts/expert-review.sh</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add scripts/roadmap-alignment-check.sh</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add template/confluence/projects/PROJECT_NAME/roadmap.md</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add docs/IMPLEMENTATION-v0.6.2.md</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 修改的核心文件</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add template/.claude/commands/eket-review-pr.sh</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add template/.claude/commands/eket-merge.sh</span></code></pre></div>
+<p><strong>提交信息建议</strong>:</p>
+<pre><code>feat(v0.6.2): 增强 Master 节点 PR 审查机制
+
+新增:
+- expert-review.sh: 领域专家评审 (架构/安全/性能/代码质量)
+- roadmap-alignment-check.sh: Roadmap 对齐检查
+- template/confluence/projects/PROJECT_NAME/roadmap.md: Roadmap 模板
+
+修改:
+- eket-review-pr.sh: 集成完整审查流程
+- eket-merge.sh: 添加审查报告验证
+
+文档:
+- docs/IMPLEMENTATION-v0.6.2.md: 实施总结</code></pre>
+<hr />
+<h3 id="需要修复后提交的文件">4.2 需要修复后提交的文件</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>修复内容</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>template/.eket/version.yml</code></td>
+<td>更新版本号到 0.6.2</td>
+<td>高</td>
+</tr>
+<tr>
+<td><code>template/jira/tickets/**/.gitkeep</code></td>
+<td>补充缺失的 .gitkeep</td>
+<td>中</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="不建议提交的文件">4.3 不建议提交的文件</h3>
+<table>
+<thead>
+<tr>
+<th>文件/目录</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/archive/*</code></td>
+<td>已归档历史文档</td>
+</tr>
+<tr>
+<td><code>.eket/state/*</code></td>
+<td>运行状态文件 (已在 .gitignore)</td>
+</tr>
+<tr>
+<td><code>.eket/logs/*</code></td>
+<td>日志文件 (已在 .gitignore)</td>
+</tr>
+<tr>
+<td><code>outbox/*</code></td>
+<td>运行时输出 (已在 .gitignore)</td>
+</tr>
+<tr>
+<td><code>inbox/human_feedback/*</code></td>
+<td>运行时反馈 (已在 .gitignore)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="五目录结构建议">五、目录结构建议</h2>
+<h3 id="当前结构">5.1 当前结构</h3>
+<pre><code>eket/
+├── CLAUDE.md              ✅
+├── README.md              ✅
+├── QUICKSTART.md          ✅
+├── docs/                  ✅ 完整
+│   ├── 01-getting-started/
+│   ├── 02-architecture/
+│   ├── 03-implementation/
+│   ├── 04-testing/
+│   ├── 05-reference/
+│   ├── 06-sop/
+│   └── archive/
+├── scripts/               ✅ 完整
+├── template/              ✅ 完整
+└── tests/                 ✅ 完整</code></pre>
+<h3 id="建议补充">5.2 建议补充</h3>
+<pre><code>template/
+├── jira/tickets/
+│   ├── feature/.gitkeep   ⚠️ 需检查
+│   ├── bugfix/.gitkeep    ⚠️ 需检查
+│   └── fix/.gitkeep       ⚠️ 需检查
+└── shared/
+    └── .gitkeep           ⚠️ 需检查</code></pre>
+<hr />
+<h2 id="六审查总结">六、审查总结</h2>
+<h3 id="整体评价">6.1 整体评价</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>评分</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>代码质量</td>
+<td>⭐⭐⭐⭐☆</td>
+<td>所有脚本语法检查通过</td>
+</tr>
+<tr>
+<td>文档完整性</td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>文档体系完整，分类清晰</td>
+</tr>
+<tr>
+<td>版本管理</td>
+<td>⭐⭐⭐⭐☆</td>
+<td>版本号基本一致，个别需更新</td>
+</tr>
+<tr>
+<td>文件组织</td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>目录结构清晰，归档合理</td>
+</tr>
+</tbody>
+</table>
+<h3 id="关键发现">6.2 关键发现</h3>
+<ol type="1">
+<li><strong>无语法错误</strong>: 所有 70 个 Shell 脚本语法检查通过</li>
+<li><strong>无临时文件</strong>: 未发现 .bak, .tmp, .orig
+等临时文件</li>
+<li><strong>归档合理</strong>: archive/ 目录正确标记历史文档</li>
+<li><strong>新增功能完整</strong>: v0.6.2 新增文件已就绪，可提交</li>
+</ol>
+<h3 id="下一步行动">6.3 下一步行动</h3>
+<ol type="1">
+<li><strong>修复 version.yml</strong> (5 分钟)</li>
+<li><strong>补充 .gitkeep 文件</strong> (10 分钟)</li>
+<li><strong>提交并推送</strong> (5 分钟)</li>
+<li><strong>更新 docs/README.md 标注推荐文档</strong> (可选)</li>
+</ol>
+<hr />
+<p><strong>审查者</strong>: AI Agent <strong>审查时间</strong>:
+2026-03-24 <strong>状态</strong>: 审查完成，等待修复和提交</p>
+</body>
+</html>

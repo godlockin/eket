@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Slaver 专项规则 — Algorithm Role</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Slaver 专项规则 — Algorithm Role</h1>
+</header>
+<h1 id="slaver-专项规则-algorithm-role">Slaver 专项规则 — Algorithm
+Role</h1>
+<blockquote>
+<p>补充 SLAVER-RULES.md，Algorithm
+Slaver（AI/ML算法/模型工程）必须遵守。</p>
+</blockquote>
+<h2 id="核心原则">核心原则</h2>
+<ul>
+<li>实验可复现：随机种子固定，数据集版本锁定（DVC/哈希），结果可重现</li>
+<li>Baseline 先行：新方案必须与 baseline 对比，无对比数据的结论无效</li>
+<li>数据泄露防范：验证集/测试集绝不参与特征工程或参数选择</li>
+<li>内外任务并行：离线训练（内任务）和线上监控（外任务）必须同时运行</li>
+</ul>
+<h2 id="完整-ml-工程周期">完整 ML 工程周期</h2>
+<h3 id="数据阶段">数据阶段</h3>
+<ul>
+<li>数据采集：来源记录、版本控制、数据协议确认</li>
+<li>数据打标：标注规范文档、标注一致性校验（inter-annotator agreement ≥
+0.8）</li>
+<li>数据清洗：空值/异常值/重复处理，清洗规则版本控制</li>
+</ul>
+<h3 id="建模阶段">建模阶段</h3>
+<ul>
+<li>特征工程：特征重要性分析，防止 target leakage</li>
+<li>训练代码：模块化（data_loader / trainer / evaluator
+分离），可复现</li>
+<li>实验管理：MLflow/W&amp;B 记录超参、指标、artifact</li>
+</ul>
+<h3 id="上线阶段">上线阶段</h3>
+<ul>
+<li>模型评估：离线指标 + 在线 AB 测试双重验证</li>
+<li>部署：蓝绿部署或金丝雀发布，回滚方案就绪</li>
+</ul>
+<h3 id="持续优化autoresearch-闭环">持续优化（AutoResearch 闭环）</h3>
+<ul>
+<li>外任务 Monitor：线上 P/R/F1/AUC 实时监控，漂移检测</li>
+<li>内任务优化：自动超参搜索（Optuna/Ray Tune），增量训练，数据飞轮</li>
+<li>闭环触发：线上指标下降 &gt; 阈值 → 自动触发重训练 pipeline</li>
+</ul>
+<h2 id="禁止行为">禁止行为</h2>
+<ul>
+<li>不在测试集上调参（数据泄露）</li>
+<li>不省略负面实验结果</li>
+<li>不部署无 AB 测试验证的模型到全量流量</li>
+<li>不在无 monitor 的情况下让自动优化任务修改生产模型</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 轮询脚本使用指南</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 轮询脚本使用指南</h1>
+</header>
+<h1 id="eket-轮询脚本使用指南">EKET 轮询脚本使用指南</h1>
+<p><strong>版本</strong>: v2.1.4<br />
+<strong>创建日期</strong>: 2026-04-11<br />
+<strong>目的</strong>: 详细说明 Master 和 Slaver
+轮询脚本的使用方法和配置选项</p>
+<hr />
+<h2 id="概述">概述</h2>
+<p>EKET 框架为 Master 和 Slaver
+实例提供了自动轮询脚本，用于定期检查系统状态、消息队列和任务进度。</p>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 27%" />
+<col style="width: 45%" />
+</colgroup>
+<thead>
+<tr>
+<th>脚本</th>
+<th>用途</th>
+<th>检查频率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>eket-master-poll.sh</code></td>
+<td>Master 实例轮询</td>
+<td>空闲 10 分钟 / 工作 5 分钟 / 等待人类 10 秒</td>
+</tr>
+<tr>
+<td><code>eket-slaver-poll.sh</code></td>
+<td>Slaver 实例轮询</td>
+<td>空闲 10 秒 / 工作 5 分钟</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="master-轮询脚本">Master 轮询脚本</h2>
+<h3 id="用途">用途</h3>
+<p>Master 轮询脚本定期检查： 1. <strong>PR 队列</strong> - 待审核的 PR
+请求 2. <strong>仲裁请求</strong> - Slaver 提交的 blocker 报告 3.
+<strong>人类反馈</strong> - 人类的决策和回复 4. <strong>Slaver
+状态</strong> - 检查工作负载和心跳</p>
+<h3 id="使用方法">使用方法</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 启动持续轮询</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-master-poll</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 指定轮询间隔（30 秒）</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-master-poll</span> <span class="at">-i</span> 30</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 只执行一次（不循环）</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-master-poll</span> <span class="at">-o</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 查看帮助</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-master-poll</span> <span class="at">-h</span></span></code></pre></div>
+<h3 id="命令行选项">命令行选项</h3>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>说明</th>
+<th>默认值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-i, --interval &lt;秒&gt;</code></td>
+<td>基础轮询间隔</td>
+<td>10 秒</td>
+</tr>
+<tr>
+<td><code>-o, --once</code></td>
+<td>只执行一次</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>-h, --help</code></td>
+<td>显示帮助</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="环境变量">环境变量</h3>
+<table>
+<thead>
+<tr>
+<th>变量</th>
+<th>说明</th>
+<th>默认值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EKET_MASTER_POLL_INTERVAL</code></td>
+<td>基础轮询间隔</td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>EKET_MASTER_IDLE_POLL_INTERVAL</code></td>
+<td>空闲时轮询间隔</td>
+<td>600 (10 分钟)</td>
+</tr>
+<tr>
+<td><code>EKET_MASTER_WORK_POLL_INTERVAL</code></td>
+<td>工作中轮询间隔</td>
+<td>300 (5 分钟)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="动态频率调整">动态频率调整</h3>
+<p>Master 轮询脚本根据状态自动调整检查频率：</p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>轮询间隔</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>idle</code></td>
+<td>10 分钟</td>
+<td>无待处理事项</td>
+</tr>
+<tr>
+<td><code>working</code></td>
+<td>5 分钟</td>
+<td>有进行中的 Review 或仲裁</td>
+</tr>
+<tr>
+<td><code>waiting_human</code></td>
+<td>10 秒</td>
+<td>等待人类决策</td>
+</tr>
+</tbody>
+</table>
+<h3 id="输出示例">输出示例</h3>
+<pre><code>[INFO] 2026-04-11 10:00:00 - Master 轮询脚本已就绪
+[INFO] 2026-04-11 10:00:00 - Master 轮询启动
+[INFO] 2026-04-11 10:00:00 - 轮询间隔：10 秒
+
+════════════════════════════════════════════════════════════════
+[INFO] 2026-04-11 10:00:00 - 轮询 #1 开始
+════════════════════════════════════════════════════════════════
+
+[CHECK] 2026-04-11 10:00:00 - 检查 PR 队列...
+[INFO] 2026-04-11 10:00:00 - 发现 2 个待审核 PR
+
+┌──────────────────────────────────────────────────────────────┐
+│  待审核 PR 列表                                                 │
+├──────────────────────────────────────────────────────────────┤
+│  pr_FEAT-001_20260411.md                                     │
+│    Ticket: FEAT-001                                          │
+│  pr_FEAT-002_20260411.md                                     │
+│    Ticket: FEAT-002                                          │
+└──────────────────────────────────────────────────────────────┘
+
+[CHECK] 2026-04-11 10:00:00 - 检查仲裁请求...
+[INFO] 2026-04-11 10:00:00 - 无阻塞报告
+
+[CHECK] 2026-04-11 10:00:00 - 检查人类反馈...
+[INFO] 2026-04-11 10:00:00 - 无待处理的人类反馈
+
+┌──────────────────────────────────────────────────────────────┐
+│  Master 轮询摘要                                              │
+├──────────────────────────────────────────────────────────────┤
+│  状态：working                                               │
+│  PR 待审核：2 个                                               │
+│  仲裁请求：0 个                                                │
+│  人类反馈：0 个                                                │
+│  轮询间隔：10 秒                                               │
+└──────────────────────────────────────────────────────────────┘</code></pre>
+<h3 id="心跳文件">心跳文件</h3>
+<p>轮询脚本会定期更新心跳文件：<code>.eket/state/master_heartbeat.yml</code></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Master 心跳</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">last_check</span><span class="kw">:</span><span class="at"> 2026-04-11T10:00:00+08:00</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">status</span><span class="kw">:</span><span class="at"> working</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">pending_prs</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">pending_arbitrations</span><span class="kw">:</span><span class="at"> </span><span class="dv">0</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">pending_human_decisions</span><span class="kw">:</span><span class="at"> </span><span class="dv">0</span></span></code></pre></div>
+<hr />
+<h2 id="slaver-轮询脚本">Slaver 轮询脚本</h2>
+<h3 id="用途-1">用途</h3>
+<p>Slaver 轮询脚本定期检查： 1. <strong>当前任务状态</strong> -
+进行中的任务详情 2. <strong>PR 反馈</strong> - Master 的 Review 结果 3.
+<strong>消息队列</strong> - 新消息通知 4. <strong>可领取任务</strong> -
+ready 状态的任务 5. <strong>人类反馈</strong> - 人类的决策和回复</p>
+<h3 id="使用方法-1">使用方法</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 启动持续轮询</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-slaver-poll</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 指定空闲时轮询间隔（30 秒）</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-slaver-poll</span> <span class="at">-i</span> 30</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 指定工作时轮询间隔（10 分钟）</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-slaver-poll</span> <span class="at">-w</span> 600</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 只执行一次（不循环）</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-slaver-poll</span> <span class="at">-o</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 查看帮助</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-slaver-poll</span> <span class="at">-h</span></span></code></pre></div>
+<h3 id="命令行选项-1">命令行选项</h3>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>说明</th>
+<th>默认值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-i, --interval &lt;秒&gt;</code></td>
+<td>空闲时轮询间隔</td>
+<td>10 秒</td>
+</tr>
+<tr>
+<td><code>-w, --work-interval &lt;秒&gt;</code></td>
+<td>工作时轮询间隔</td>
+<td>300 (5 分钟)</td>
+</tr>
+<tr>
+<td><code>-o, --once</code></td>
+<td>只执行一次</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>-h, --help</code></td>
+<td>显示帮助</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="环境变量-1">环境变量</h3>
+<table>
+<thead>
+<tr>
+<th>变量</th>
+<th>说明</th>
+<th>默认值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EKET_SLAVER_IDLE_POLL_INTERVAL</code></td>
+<td>空闲时轮询间隔</td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>EKET_SLAVER_WORK_POLL_INTERVAL</code></td>
+<td>工作时轮询间隔</td>
+<td>300</td>
+</tr>
+</tbody>
+</table>
+<h3 id="动态频率调整-1">动态频率调整</h3>
+<p>Slaver 轮询脚本根据状态自动调整检查频率：</p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>轮询间隔</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>idle</code></td>
+<td>10 秒</td>
+<td>无进行中的任务，快速响应新任务</td>
+</tr>
+<tr>
+<td><code>working</code></td>
+<td>5 分钟</td>
+<td>有进行中的任务，专注开发</td>
+</tr>
+<tr>
+<td><code>waiting_review</code></td>
+<td>10 秒</td>
+<td>等待 PR 反馈，快速响应修改要求</td>
+</tr>
+</tbody>
+</table>
+<h3 id="输出示例-1">输出示例</h3>
+<pre><code>[INFO] 2026-04-11 10:00:00 - Slaver 轮询脚本已就绪
+[INFO] 2026-04-11 10:00:00 - Slaver 轮询启动
+[INFO] 2026-04-11 10:00:00 - 角色配置：frontend_dev
+
+════════════════════════════════════════════════════════════════
+[INFO] 2026-04-11 10:00:00 - 轮询 #1 开始
+════════════════════════════════════════════════════════════════
+
+[CHECK] 2026-04-11 10:00:00 - 检查当前任务状态...
+[INFO] 2026-04-11 10:00:00 - 当前任务：FEAT-001
+
+┌──────────────────────────────────────────────────────────────┐
+│  任务详情：FEAT-001
+├──────────────────────────────────────────────────────────────┤
+│  状态：in_progress                                           │
+│  优先级：P1                                                  │
+│  负责人：slaver_frontend_20260411                            │
+└──────────────────────────────────────────────────────────────┘
+
+[CHECK] 2026-04-11 10:00:00 - 检查 PR 反馈...
+[INFO] 2026-04-11 10:00:00 - 无待处理的 PR 反馈
+
+[CHECK] 2026-04-11 10:00:00 - 检查消息队列...
+[INFO] 2026-04-11 10:00:00 - 发现 1 条新消息
+
+┌──────────────────────────────────────────────────────────────┐
+│  新消息列表                                                   │
+├──────────────────────────────────────────────────────────────┤
+│  msg_20260411100000.json                                     │
+│    类型：task_assigned | 来自：master | 时间：2026-04-11T10:00:00+08:00 │
+└──────────────────────────────────────────────────────────────┘
+
+[CHECK] 2026-04-11 10:00:00 - 检查可领取的任务...
+  ✓ FEAT-005 - 优先级：P1, 角色：frontend_dev
+  ✓ FEAT-007 - 优先级：P2, 角色：fullstack
+
+[INFO] 2026-04-11 10:00:00 - 共 2 个 ready 任务
+建议：运行 /eket-claim &lt;ticket-id&gt; 领取任务
+
+┌──────────────────────────────────────────────────────────────┐
+│  Slaver 轮询摘要                                              │
+├──────────────────────────────────────────────────────────────┤
+│  状态：working                                               │
+│  当前任务：FEAT-001                                          │
+│  PR 反馈：0 个                                                 │
+│  新消息：1 条                                                  │
+│  Ready 任务：2 个                                               │
+│  轮询间隔：10 秒 (空闲) / 300 秒 (工作中)                      │
+└──────────────────────────────────────────────────────────────┘</code></pre>
+<h3 id="心跳文件-1">心跳文件</h3>
+<p>轮询脚本会定期更新心跳文件：<code>.eket/state/slaver_heartbeat.yml</code></p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Slaver 心跳</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">last_check</span><span class="kw">:</span><span class="at"> 2026-04-11T10:00:00+08:00</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">status</span><span class="kw">:</span><span class="at"> working</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">current_ticket</span><span class="kw">:</span><span class="at"> FEAT-001</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">pending_pr_feedback</span><span class="kw">:</span><span class="at"> </span><span class="dv">0</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">new_messages</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ready_tasks</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span></code></pre></div>
+<hr />
+<h2 id="使用场景">使用场景</h2>
+<h3 id="master-轮询场景">Master 轮询场景</h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>开发期间持续监控</td>
+<td><code>/eket-master-poll</code> (默认)</td>
+</tr>
+<tr>
+<td>等待人类决策</td>
+<td><code>/eket-master-poll</code> (自动 10 秒间隔)</td>
+</tr>
+<tr>
+<td>低优先级后台运行</td>
+<td><code>/eket-master-poll -i 60</code></td>
+</tr>
+<tr>
+<td>一次性状态检查</td>
+<td><code>/eket-master-poll -o</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="slaver-轮询场景">Slaver 轮询场景</h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>等待任务领取</td>
+<td><code>/eket-slaver-poll</code> (10 秒空闲间隔)</td>
+</tr>
+<tr>
+<td>专注开发中</td>
+<td><code>/eket-slaver-poll</code> (自动 5 分钟间隔)</td>
+</tr>
+<tr>
+<td>等待 PR 反馈</td>
+<td><code>/eket-slaver-poll</code> (10 秒快速响应)</td>
+</tr>
+<tr>
+<td>一次性状态检查</td>
+<td><code>/eket-slaver-poll -o</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="后台运行">后台运行</h2>
+<h3 id="tmux-后台运行">tmux 后台运行</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Master 轮询后台运行</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">tmux</span> new <span class="at">-d</span> <span class="at">-s</span> master-poll <span class="st">&quot;/eket-master-poll&quot;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Slaver 轮询后台运行</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ex">tmux</span> new <span class="at">-d</span> <span class="at">-s</span> slaver-poll <span class="st">&quot;/eket-slaver-poll&quot;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 查看日志</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ex">tmux</span> attach <span class="at">-t</span> master-poll</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="ex">tmux</span> attach <span class="at">-t</span> slaver-poll</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 停止轮询</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="ex">tmux</span> kill-window <span class="at">-t</span> master-poll</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="ex">tmux</span> kill-window <span class="at">-t</span> slaver-poll</span></code></pre></div>
+<h3 id="nohup-后台运行">nohup 后台运行</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Master 轮询</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">nohup</span> /eket-master-poll <span class="op">&gt;</span> master-poll.log <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">&amp;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Slaver 轮询</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">nohup</span> /eket-slaver-poll <span class="op">&gt;</span> slaver-poll.log <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">&amp;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 查看日志</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span> <span class="at">-f</span> master-poll.log</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span> <span class="at">-f</span> slaver-poll.log</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 停止轮询</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="ex">pkill</span> <span class="at">-f</span> <span class="st">&quot;eket-master-poll&quot;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="ex">pkill</span> <span class="at">-f</span> <span class="st">&quot;eket-slaver-poll&quot;</span></span></code></pre></div>
+<hr />
+<h2 id="与其他命令的集成">与其他命令的集成</h2>
+<h3 id="master-轮询-主动工作">Master 轮询 + 主动工作</h3>
+<p>Master 轮询期间会自动执行主动工作（v2.1.4 新增）： - 同步 roadmap -
+规划下阶段任务 - 拆解新需求 - 标记 Ticket 优先级</p>
+<h3 id="slaver-轮询-自动领取">Slaver 轮询 + 自动领取</h3>
+<p>Slaver 轮询检测到 ready 任务时，会提示运行：</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-claim</span> <span class="op">&lt;</span>ticket-id<span class="op">&gt;</span></span></code></pre></div>
+<hr />
+<h2 id="故障排除">故障排除</h2>
+<h3 id="轮询不启动">轮询不启动</h3>
+<p><strong>问题</strong>: 脚本报错 “实例配置文件不存在”</p>
+<p><strong>解决</strong>:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查实例配置</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> .eket/state/instance_config.yml</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 如未初始化，运行</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-start</span></span></code></pre></div>
+<h3 id="轮询频率过高">轮询频率过高</h3>
+<p><strong>问题</strong>: 轮询过于频繁，影响开发</p>
+<p><strong>解决</strong>:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 增加轮询间隔</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-master-poll</span> <span class="at">-i</span> 60  <span class="co"># 60 秒</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-slaver-poll</span> <span class="at">-w</span> 600  <span class="co"># 工作时 10 分钟</span></span></code></pre></div>
+<h3 id="心跳文件不更新">心跳文件不更新</h3>
+<p><strong>问题</strong>: 心跳文件时间戳未更新</p>
+<p><strong>解决</strong>:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 检查轮询脚本是否运行</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ps</span> aux <span class="kw">|</span> <span class="fu">grep</span> eket-poll</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 重启轮询</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="ex">pkill</span> <span class="at">-f</span> <span class="st">&quot;eket-master-poll&quot;</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="ex">/eket-master-poll</span> <span class="kw">&amp;</span></span></code></pre></div>
+<hr />
+<h2 id="相关文档">相关文档</h2>
+<ul>
+<li><a
+href="./MASTER-HEARTBEAT-CHECKLIST.md"><code>MASTER-HEARTBEAT-CHECKLIST.md</code></a>
+— Master 心跳检查清单</li>
+<li><a
+href="./SLAVER-HEARTBEAT-CHECKLIST.md"><code>SLAVER-HEARTBEAT-CHECKLIST.md</code></a>
+— Slaver 心跳检查清单</li>
+<li><a
+href="./MASTER-PR-WAIT-WORK.md"><code>MASTER-PR-WAIT-WORK.md</code></a>
+— Master 等待 PR 期间的主动工作</li>
+<li><a
+href="./COMMUNICATION-PROTOCOL.md"><code>COMMUNICATION-PROTOCOL.md</code></a>
+— 消息队列通信协议</li>
+</ul>
+<hr />
+<p><strong>维护者</strong>: EKET Framework Team<br />
+<strong>版本</strong>: v2.1.4<br />
+<strong>最后更新</strong>: 2026-04-11</p>
+</body>
+</html>

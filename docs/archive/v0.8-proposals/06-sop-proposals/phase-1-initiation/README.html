@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Phase 1 SOP - 项目初始化阶段</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Phase 1 SOP - 项目初始化阶段</h1>
+</header>
+<h1 id="phase-1-sop---项目初始化阶段">Phase 1 SOP - 项目初始化阶段</h1>
+<p><strong>版本</strong>: 1.1.0 <strong>最后更新</strong>: 2026-03-25
+<strong>负责智能体</strong>: 需求分析师、技术经理、项目经理</p>
+<hr />
+<h2 id="概述">概述</h2>
+<p>Phase 1
+是项目的初始化阶段，目标是完成从需求收集到任务规划的全流程。此阶段由<strong>协调智能体小组</strong>负责执行。</p>
+<h3 id="文档优先审查模式-v1.1.0">文档优先审查模式 (v1.1.0)</h3>
+<p>Phase 1
+采用<strong>分阶段审查</strong>模式，每个关键产出都需要人类审查批准：</p>
+<table>
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 14%" />
+<col style="width: 23%" />
+<col style="width: 23%" />
+<col style="width: 19%" />
+</colgroup>
+<thead>
+<tr>
+<th>审查点</th>
+<th>阶段</th>
+<th>审查对象</th>
+<th>审查重点</th>
+<th>审查者</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A1</strong></td>
+<td>Step 1 后</td>
+<td>需求分析文档</td>
+<td>需求理解是否正确、完整</td>
+<td>产品负责人</td>
+</tr>
+<tr>
+<td><strong>A2</strong></td>
+<td>Step 2 后</td>
+<td>架构设计文档</td>
+<td>技术选型、架构合理性</td>
+<td>技术负责人</td>
+</tr>
+<tr>
+<td><strong>A3</strong></td>
+<td>Step 3 后</td>
+<td>任务规划文档</td>
+<td>优先级、依赖关系</td>
+<td>项目经理</td>
+</tr>
+<tr>
+<td><strong>A4</strong></td>
+<td>Step 4 后</td>
+<td>综合审查</td>
+<td>整体一致性、可行性</td>
+<td>全体 + 人类</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>重要</strong>: 每个审查点通过后，才能进入下一个阶段。</p>
+</blockquote>
+<h3 id="phase-1-的子阶段">Phase 1 的子阶段</h3>
+<p>Phase 1 包含 6
+个子阶段，每个子阶段都经历类似的分析→设计→验证流程，只是交付粒度和详细程度不同：</p>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 29%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>子阶段</th>
+<th>输入</th>
+<th>输出</th>
+<th>负责智能体</th>
+<th>粒度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. 需求收集</strong></td>
+<td>人类原始需求</td>
+<td>需求清单</td>
+<td>需求分析师</td>
+<td>粗（业务语言）</td>
+</tr>
+<tr>
+<td><strong>2. 功能整理</strong></td>
+<td>需求清单</td>
+<td>功能列表</td>
+<td>需求分析师</td>
+<td>中（功能模块）</td>
+</tr>
+<tr>
+<td><strong>3. 系统设计</strong></td>
+<td>功能列表</td>
+<td>系统架构图</td>
+<td>技术经理</td>
+<td>粗（组件级）</td>
+</tr>
+<tr>
+<td><strong>4. 技术设计</strong></td>
+<td>系统架构</td>
+<td>技术栈/API/DB</td>
+<td>技术经理</td>
+<td>细（技术细节）</td>
+</tr>
+<tr>
+<td><strong>5. 任务规划</strong></td>
+<td>技术设计</td>
+<td>Epics/Tickets</td>
+<td>项目经理</td>
+<td>细（可执行任务）</td>
+</tr>
+<tr>
+<td><strong>6. 审查通过</strong></td>
+<td>所有产出</td>
+<td>审查报告</td>
+<td>文档监控员</td>
+<td>N/A</td>
+</tr>
+</tbody>
+</table>
+<h3 id="阶段目标">阶段目标</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />完成需求分析和文档化</label></li>
+<li><label><input type="checkbox" />完成系统架构设计</label></li>
+<li><label><input type="checkbox" />完成技术栈和 API 设计</label></li>
+<li><label><input type="checkbox" />拆解为可执行的 Jira
+tickets</label></li>
+<li><label><input
+type="checkbox" />设定任务优先级和依赖关系</label></li>
+<li><label><input type="checkbox" />通过审查（无 P0/P1
+问题）</label></li>
+</ul>
+<h3 id="参与智能体">参与智能体</h3>
+<table>
+<thead>
+<tr>
+<th>智能体</th>
+<th>职责</th>
+<th>产出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>需求分析师</strong></td>
+<td>需求分析、用户故事拆解</td>
+<td>需求文档、用户故事地图</td>
+</tr>
+<tr>
+<td><strong>技术经理</strong></td>
+<td>架构设计、技术选型</td>
+<td>架构文档、API 设计</td>
+</tr>
+<tr>
+<td><strong>项目经理</strong></td>
+<td>任务拆解、优先级设定</td>
+<td>Jira tickets、里程碑</td>
+</tr>
+<tr>
+<td><strong>文档监控员</strong></td>
+<td>文档质量检查</td>
+<td>文档审查报告</td>
+</tr>
+</tbody>
+</table>
+<h3 id="预计时长">预计时长</h3>
+<ul>
+<li>小型项目（1-2 个核心功能）：1-2 小时</li>
+<li>中型项目（3-5 个核心功能）：2-4 小时</li>
+<li>大型项目（5+ 核心功能）：4-8 小时</li>
+</ul>
+<hr />
+<h2 id="phase-1-流程图含人类审查点">Phase 1 流程图（含人类审查点）</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                     Phase 1: 项目初始化                          │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 1: 需求分析 (需求分析师)                                   │
+│  - 读取人类输入需求                                              │
+│  - 用户访谈和需求澄清                                            │
+│  - 创建需求文档                                                  │
+│  - 输出：confluence/projects/{project}/requirements/            │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                    ┌─────────────────┐
+                    │ ← 审查点 A1      │  人类审查
+                    │ 需求理解正确？   │  产品负责人
+                    └─────────────────┘
+                              │
+                         批准后
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 2: 架构设计 (技术经理)                                     │
+│  - 系统架构设计                                                  │
+│  - 技术栈选型                                                    │
+│  - API 设计                                                       │
+│  - 数据库设计                                                    │
+│  - 输出：confluence/projects/{project}/architecture/            │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                    ┌─────────────────┐
+                    │ ← 审查点 A2      │  人类审查
+                    │ 技术选型合理？   │  技术负责人
+                    └─────────────────┘
+                              │
+                         批准后
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 3: 任务拆解 (项目经理)                                     │
+│  - 创建 Epic                                                     │
+│  - 拆解为 Feature/Bugfix tickets                                │
+│  - 设定优先级和依赖                                              │
+│  - 输出：jira/epics/, jira/tickets/                             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                    ┌─────────────────┐
+                    │ ← 审查点 A3      │  人类审查
+                    │ 任务优先级合理？ │  项目经理
+                    └─────────────────┘
+                              │
+                         批准后
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 4: 文档审查 (文档监控员)                                   │
+│  - 检查需求文档完整性                                            │
+│  - 检查架构文档一致性                                            │
+│  - 检查任务拆解合理性                                            │
+│  - 输出：审查报告                                                │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                    ┌─────────────────┐
+                    │ ← 审查点 A4      │  人类审查
+                    │ 综合审查通过？   │  全体 + 人类
+                    └─────────────────┘
+                              │
+                         批准后
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  ✓ Phase 1 完成 → 进入 Phase 2: 开发阶段                          │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<hr />
+<h2 id="详细步骤">详细步骤</h2>
+<h3 id="step-1-需求分析">Step 1: 需求分析</h3>
+<p><strong>负责智能体</strong>: 需求分析师</p>
+<p><strong>输入</strong>: <code>inbox/human_input.md</code></p>
+<p><strong>输出</strong>:
+<code>confluence/projects/{project}/requirements/</code></p>
+<p><strong>使用 Skills</strong>: - <code>user_interview</code> -
+<code>requirement_decomposition</code> -
+<code>acceptance_criteria_definition</code></p>
+<p><strong>详细流程</strong>: 见 <a
+href="step-1-requirements.md">step-1-requirements.md</a></p>
+<hr />
+<h3 id="step-2-架构设计">Step 2: 架构设计</h3>
+<p><strong>负责智能体</strong>: 技术经理</p>
+<p><strong>输入</strong>: 需求文档</p>
+<p><strong>输出</strong>:
+<code>confluence/projects/{project}/architecture/</code></p>
+<p><strong>使用 Skills</strong>: - <code>architecture_design</code> -
+<code>api_design</code> - <code>database_design</code></p>
+<p><strong>详细流程</strong>: 见 <a
+href="step-2-architecture.md">step-2-architecture.md</a></p>
+<hr />
+<h3 id="step-3-任务拆解">Step 3: 任务拆解</h3>
+<p><strong>负责智能体</strong>: 项目经理</p>
+<p><strong>输入</strong>: 需求文档、架构文档</p>
+<p><strong>输出</strong>: <code>jira/epics/</code>,
+<code>jira/tickets/</code></p>
+<p><strong>使用 Skills</strong>: - <code>task_decomposition</code> -
+<code>priority_setting</code></p>
+<p><strong>详细流程</strong>: 见 <a
+href="step-3-task-breakdown.md">step-3-task-breakdown.md</a></p>
+<hr />
+<h3 id="step-4-综合审查人类-文档监控员">Step 4: 综合审查（人类 +
+文档监控员）</h3>
+<p><strong>负责智能体</strong>: 文档监控员 + 人类审查者</p>
+<p><strong>输入</strong>: 所有 Phase 1 产出文档</p>
+<p><strong>输出</strong>:
+<code>confluence/memory/reviews/phase1-review.md</code> +
+人类审查批准</p>
+<p><strong>审查流程</strong>: 1. 文档监控员创建审查报告 2.
+人类审查者审查并批准（审查点 A4） 3. 批准后 Phase 1 完成</p>
+<p><strong>检查清单</strong>: - [ ] 需求文档覆盖所有用户痛点 - [ ]
+架构设计与需求一致 - [ ] 任务拆解完整且可执行 - [ ] 优先级设定合理 - [ ]
+依赖关系明确 - [ ] 人类审查者批准（审查点 A1-A3 已通过）</p>
+<p><strong>详细流程</strong>: 见 <a
+href="step-4-document-review.md">step-4-document-review.md</a></p>
+<hr />
+<h2 id="checkpoint-定义">Checkpoint 定义</h2>
+<p>在 Phase 1 执行过程中，需要在以下节点创建 Checkpoint：</p>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 23%" />
+<col style="width: 28%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Checkpoint</th>
+<th>触发条件</th>
+<th>负责智能体</th>
+<th>检查项</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>phase1_requirements_complete</code></td>
+<td>需求文档完成</td>
+<td>需求分析师</td>
+<td>需求完整性、验收标准</td>
+</tr>
+<tr>
+<td><code>phase1_architecture_complete</code></td>
+<td>架构文档完成</td>
+<td>技术经理</td>
+<td>架构一致性、技术选型</td>
+</tr>
+<tr>
+<td><code>phase1_tasks_created</code></td>
+<td>任务拆解完成</td>
+<td>项目经理</td>
+<td>任务完整性、优先级</td>
+</tr>
+<tr>
+<td><code>phase1_review_passed</code></td>
+<td>文档审查通过</td>
+<td>文档监控员</td>
+<td>审查报告、问题修复</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="质量检查清单">质量检查清单</h2>
+<h3 id="需求文档质量">需求文档质量</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />目标用户定义清晰</label></li>
+<li><label><input type="checkbox" />用户痛点描述具体</label></li>
+<li><label><input type="checkbox" />核心功能列表完整</label></li>
+<li><label><input type="checkbox" />每个功能有验收标准</label></li>
+<li><label><input
+type="checkbox" />非功能性需求明确（性能、安全等）</label></li>
+</ul>
+<h3 id="架构文档质量">架构文档质量</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />系统架构图清晰</label></li>
+<li><label><input type="checkbox" />技术选型有理有据</label></li>
+<li><label><input type="checkbox" />API 设计规范一致</label></li>
+<li><label><input type="checkbox" />数据库 Schema 完整</label></li>
+<li><label><input type="checkbox" />安全考虑充分</label></li>
+</ul>
+<h3 id="任务拆解质量">任务拆解质量</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Epic 覆盖所有功能</label></li>
+<li><label><input type="checkbox" />任务粒度适中（2-8
+小时/任务）</label></li>
+<li><label><input type="checkbox" />依赖关系明确</label></li>
+<li><label><input type="checkbox" />优先级合理</label></li>
+<li><label><input type="checkbox" />验收标准可测试</label></li>
+</ul>
+<hr />
+<h2 id="退出标准">退出标准</h2>
+<p>Phase 1 完成的标准（Definition of Done）：</p>
+<ol type="1">
+<li>✅ 需求文档已创建并审查通过</li>
+<li>✅ 架构文档已创建并审查通过</li>
+<li>✅ 至少 1 个 Epic 已创建</li>
+<li>✅ 至少 5 个 Feature tickets 已创建（状态：ready）</li>
+<li>✅ 文档审查报告已创建，无 P0/P1 问题</li>
+</ol>
+<hr />
+<h2 id="常见问题">常见问题</h2>
+<h3 id="q1-需求不明确怎么办">Q1: 需求不明确怎么办？</h3>
+<p><strong>A</strong>: 使用 <code>user_interview</code> Skill
+创建依赖追问任务，要求人类澄清。</p>
+<h3 id="q2-技术选型有争议怎么办">Q2: 技术选型有争议怎么办？</h3>
+<p><strong>A</strong>:
+创建技术调研任务（research-spike），对比不同方案的优缺点，由技术经理决策。</p>
+<h3 id="q3-任务粒度过大怎么办">Q3: 任务粒度过大怎么办？</h3>
+<p><strong>A</strong>: 继续拆解，确保每个任务可以在 2-8 小时内完成。</p>
+<hr />
+<h2 id="相关文件">相关文件</h2>
+<ul>
+<li><a href="step-1-requirements.md">Step 1: 需求分析</a></li>
+<li><a href="step-2-architecture.md">Step 2: 架构设计</a></li>
+<li><a href="step-3-task-breakdown.md">Step 3: 任务拆解</a></li>
+<li><a href="step-4-document-review.md">Step 4: 文档审查</a></li>
+<li><a href="../../02-architecture/FRAMEWORK.md">EKET
+框架白皮书</a></li>
+</ul>
+<hr />
+<p><strong>SOP 版本</strong>: 1.0.0 <strong>创建日期</strong>:
+2026-03-23 <strong>维护者</strong>: EKET Framework Team</p>
+</body>
+</html>

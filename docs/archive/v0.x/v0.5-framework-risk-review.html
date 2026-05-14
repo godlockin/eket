@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>EKET 框架 v0.5 风险审查报告</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">EKET 框架 v0.5 风险审查报告</h1>
+</header>
+<h1 id="eket-框架-v0.5-风险审查报告">EKET 框架 v0.5 风险审查报告</h1>
+<p><strong>审查时间</strong>: 2026-03-23 <strong>审查依据</strong>: v0.5
+升级内容 + 软件工程原则 + 团队协作最佳实践 <strong>审查范围</strong>: 11
+项新策略 + SOP 流程 + 配置机制</p>
+<hr />
+<h2 id="一executive-summary">一、Executive Summary</h2>
+<h3 id="风险等级总览">1.1 风险等级总览</h3>
+<table>
+<thead>
+<tr>
+<th>风险等级</th>
+<th>数量</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🔴 Critical</td>
+<td>7</td>
+<td>需要立即修复</td>
+</tr>
+<tr>
+<td>🟡 High</td>
+<td>9</td>
+<td>需要本周修复</td>
+</tr>
+<tr>
+<td>🟢 Medium</td>
+<td>8</td>
+<td>需要规划修复</td>
+</tr>
+<tr>
+<td>⚪ Low</td>
+<td>5</td>
+<td>可选优化</td>
+</tr>
+</tbody>
+</table>
+<h3 id="v0.5-核心改进">1.2 v0.5 核心改进</h3>
+<p>v0.5 引入了 11 项策略来修复 v0.4 的关键缺陷：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>目标</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>时间追踪</td>
+<td>修复 C-04 (超时配置无效)</td>
+<td>✅ 部分修复</td>
+</tr>
+<tr>
+<td>Mock 检测</td>
+<td>修复 C-02 (Mock 实现检测缺失)</td>
+<td>✅ 部分修复</td>
+</tr>
+<tr>
+<td>权限控制</td>
+<td>修复 C-03 (权限边界模糊)</td>
+<td>✅ 部分修复</td>
+</tr>
+<tr>
+<td>时间强制限制</td>
+<td>修复 C-04 (超时配置无效)</td>
+<td>✅ 已修复</td>
+</tr>
+<tr>
+<td>同步检查</td>
+<td>修复 C-05 (状态同步脆弱)</td>
+<td>✅ 部分修复</td>
+</tr>
+<tr>
+<td>用户介入</td>
+<td>修复 H-01 (依赖追问被动)</td>
+<td>✅ 已修复</td>
+</tr>
+<tr>
+<td>Slaver 分支命名</td>
+<td>修复 H-03 (Git 历史污染)</td>
+<td>✅ 已修复</td>
+</tr>
+<tr>
+<td>Memory Review Agent</td>
+<td>修复 H-05 (记忆无清理)</td>
+<td>✅ 部分修复</td>
+</tr>
+<tr>
+<td>日志轮转</td>
+<td>修复 H-06 (日志无轮转)</td>
+<td>✅ 已修复</td>
+</tr>
+<tr>
+<td>任务完成验收</td>
+<td>修复 H-02 (验收无检查)</td>
+<td>✅ 部分修复</td>
+</tr>
+<tr>
+<td>Checkpoint/Sprint/Retrospective</td>
+<td>修复 M-01~M-03</td>
+<td>✅ 已修复</td>
+</tr>
+</tbody>
+</table>
+<h3 id="v0.5-引入的新风险">1.3 v0.5 引入的新风险</h3>
+<p><strong>最严重的新问题</strong>: 1. 策略集成缺口 -
+多个新脚本未集成到主流程 2. 配置复杂度激增 - 11 项策略引入 50+
+新配置参数 3. 监控代理自举问题 - Memory Review Agent 自身无健康检查 4.
+权限配置维护负担 - allow/question/reject 列表需手动维护 5. Sprint
+机制与任务超时冲突 - 7 天 Sprint vs 3 小时任务超时</p>
+<hr />
+<h2 id="二critical-风险">二、Critical 风险 (🔴)</h2>
+<h3 id="c-01-策略集成缺口">C-01: 策略集成缺口</h3>
+<p><strong>风险描述</strong>: v0.5 引入的 11 项策略中，有 3
+项未集成到主流程，导致”配置了但无实际作用”。</p>
+<p><strong>影响</strong>: - Master 监控循环未自动启动 - Memory Review
+Agent 未自动启动 - Merge Validator 未集成到 merge 流程</p>
+<p><strong>复现路径</strong>:</p>
+<pre><code>1. 运行 /eket-start 启动实例
+2. 检查 Master 监控进程 → 未运行
+3. 检查 Memory Review Agent → 未运行
+4. 执行 merge 操作 → 无验证步骤</code></pre>
+<p><strong>当前代码问题</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># eket-start.sh - 无 Master 监控启动</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># scripts/memory-review-agent.sh - 独立脚本，无自动启动</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># merge-validator.sh - 需要手动调用</span></span></code></pre></div>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># eket-start.sh 添加自动启动</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">start_master_monitoring()</span> <span class="kw">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$AUTO_MODE</span><span class="st">&quot;</span> <span class="ot">=</span> true <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">nohup</span> ./scripts/master-monitor.sh <span class="op">&gt;</span> logs/master-monitor.log <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">&amp;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">&quot;✓ Master 监控已启动&quot;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">start_memory_review_agent()</span> <span class="kw">{</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nohup</span> ./scripts/memory-review-agent.sh <span class="op">&gt;</span> logs/memory-review.log <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">&amp;</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;✓ Memory Review Agent 已启动&quot;</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co"># merge workflow 集成验证</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="fu">before_merge()</span> <span class="kw">{</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="ex">./scripts/merge-validator.sh</span> validate <span class="st">&quot;</span><span class="va">$TICKET_ID</span><span class="st">&quot;</span> <span class="kw">||</span> <span class="kw">{</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">&quot;❌ 合并验证失败&quot;</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="dv">1</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">}</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<hr />
+<h3 id="c-02-配置复杂度激增">C-02: 配置复杂度激增</h3>
+<p><strong>风险描述</strong>: v0.5 引入 11 项策略，config.yml 从 80
+行增至 375 行，50+ 配置参数。</p>
+<p><strong>影响</strong>: - 配置错误风险增加 - 新成员学习成本高 -
+调试困难</p>
+<p><strong>当前配置复杂度</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># config.yml v0.5.0 - 375 行</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;0.5.0&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tasks</span><span class="kw">:</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">time</span><span class="kw">:</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">default_estimated_minutes</span><span class="kw">:</span><span class="at"> </span><span class="dv">120</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">timeout_minutes</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">no_response_timeout_minutes</span><span class="kw">:</span><span class="at"> </span><span class="dv">30</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">human_timeout_hours</span><span class="kw">:</span><span class="at"> </span><span class="dv">48</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">  # ... 20+ 参数</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="fu">monitoring</span><span class="kw">:</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">master</span><span class="kw">:</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">check_interval_seconds</span><span class="kw">:</span><span class="at"> </span><span class="dv">60</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">slaver</span><span class="kw">:</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">heartbeat_interval_seconds</span><span class="kw">:</span><span class="at"> </span><span class="dv">30</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">timeout_seconds</span><span class="kw">:</span><span class="at"> </span><span class="dv">300</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co">  # ... 15+ 参数</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="fu">process</span><span class="kw">:</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">sprint</span><span class="kw">:</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">duration_days</span><span class="kw">:</span><span class="at"> </span><span class="dv">7</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">review_after_sprints</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co">  # ... 10+ 参数</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="fu">permissions</span><span class="kw">:</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">jira</span><span class="kw">:</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">allow</span><span class="kw">:</span><span class="at"> </span><span class="kw">[]</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">question</span><span class="kw">:</span><span class="at"> </span><span class="kw">[]</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">reject</span><span class="kw">:</span><span class="at"> </span><span class="kw">[]</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="co">  # ... 30+ 参数</span></span></code></pre></div>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 简化配置 - 使用预设模板</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;0.5.1&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 预设配置</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">profile</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;standard&quot;</span><span class="co">  # lightweight | standard | enterprise</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 仅暴露关键配置</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tasks</span><span class="kw">:</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">default_timeout_minutes</span><span class="kw">:</span><span class="at"> </span><span class="dv">180</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">heartbeat_interval_minutes</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="fu">monitoring</span><span class="kw">:</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="fu">sprint</span><span class="kw">:</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">duration_days</span><span class="kw">:</span><span class="at"> </span><span class="dv">7</span></span></code></pre></div>
+<hr />
+<h3 id="c-03-memory-review-agent-自举问题">C-03: Memory Review Agent
+自举问题</h3>
+<p><strong>风险描述</strong>: Memory Review Agent 负责监控 memory
+健康，但自身无健康检查机制。</p>
+<p><strong>影响</strong>: - Agent 挂掉后无人知晓 - Memory 问题无法检测 -
+配置漂移无法发现</p>
+<p><strong>当前代码问题</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># memory-review-agent.sh</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="fu">true</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">monitor_memory</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sleep</span> 3600</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ❌ 无心跳</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># ❌ 无健康检查</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ❌ 无故障转移</span></span></code></pre></div>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 添加健康检查</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="va">HEALTH_FILE</span><span class="op">=</span><span class="st">&quot;.eket/state/memory-agent-health&quot;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">report_health()</span> <span class="kw">{</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span> <span class="op">&gt;</span> <span class="st">&quot;</span><span class="va">$HEALTH_FILE</span><span class="st">&quot;</span> <span class="op">&lt;&lt; EOF</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="st">status: healthy</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="st">last_check: </span><span class="va">$(</span><span class="fu">date</span> <span class="at">-Iseconds</span><span class="va">)</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="st">last_action: </span><span class="va">$LAST_ACTION</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="st">memory_checked: </span><span class="va">$MEMORY_COUNT</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Master 监控检查 Agent 健康</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="fu">check_agent_health()</span> <span class="kw">{</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">last_check</span><span class="op">=</span><span class="va">$(</span><span class="fu">grep</span> <span class="st">&quot;last_check:&quot;</span> <span class="st">&quot;</span><span class="va">$HEALTH_FILE</span><span class="st">&quot;</span> <span class="kw">|</span> <span class="fu">cut</span> <span class="at">-d</span><span class="st">&#39; &#39;</span> <span class="at">-f2</span><span class="va">)</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">elapsed</span><span class="op">=</span><span class="va">$(($(</span><span class="fu">date</span> +%s<span class="va">)</span> <span class="op">-</span> <span class="va">$(</span><span class="fu">date</span> <span class="at">-d</span> <span class="st">&quot;</span><span class="va">$last_check</span><span class="st">&quot;</span> +%s<span class="va">)))</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$elapsed</span><span class="st">&quot;</span> <span class="ot">-gt</span> 3600 <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        <span class="ex">alert</span> <span class="st">&quot;Memory Review Agent 可能已挂掉&quot;</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<hr />
+<h3 id="c-04-权限配置维护负担">C-04: 权限配置维护负担</h3>
+<p><strong>风险描述</strong>: allow/question/reject
+列表需手动维护，容易过时或配置错误。</p>
+<p><strong>影响</strong>: - 配置过慢导致 Slaver 频繁询问 -
+配置过快导致安全风险 - 新操作需手动更新配置</p>
+<p><strong>当前配置</strong>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">permissions</span><span class="kw">:</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">jira</span><span class="kw">:</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">allow</span><span class="kw">:</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;read_ticket&quot;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;update_status&quot;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;add_comment&quot;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">question</span><span class="kw">:</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;change_priority&quot;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;assign_agent&quot;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">reject</span><span class="kw">:</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;delete_ticket&quot;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;change_type&quot;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co">  # ... 类似配置 30+ 项</span></span></code></pre></div>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 基于风险的动态权限</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">permissions</span><span class="kw">:</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">model</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;risk_based&quot;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">auto_allow_patterns</span><span class="kw">:</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;read_*&quot;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;list_*&quot;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;get_*&quot;</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">auto_question_patterns</span><span class="kw">:</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;update_*&quot;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;change_*&quot;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;create_*&quot;</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">auto_reject_patterns</span><span class="kw">:</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;delete_*&quot;</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;drop_*&quot;</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;purge_*&quot;</span></span></code></pre></div>
+<hr />
+<h3 id="c-05-sprint-机制与任务超时冲突">C-05: Sprint
+机制与任务超时冲突</h3>
+<p><strong>风险描述</strong>: Sprint 周期 7 天，但任务超时 3
+小时，存在时间尺度冲突。</p>
+<p><strong>影响</strong>: - 长周期任务被强制重置 - Sprint 目标无法完成 -
+Slaver 士气受挫</p>
+<p><strong>复现场景</strong>:</p>
+<pre><code>1. Slaver 领取复杂任务 (预估 8 小时)
+2. 配置 timeout_minutes: 180 (3 小时)
+3. Slaver 遇到问题，人类 4 小时未响应
+4. 任务被强制重置为 ready
+5. Sprint 目标缺少关键功能</code></pre>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tasks</span><span class="kw">:</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">time</span><span class="kw">:</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">default_estimated_minutes</span><span class="kw">:</span><span class="at"> </span><span class="dv">120</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">max_estimated_minutes</span><span class="kw">:</span><span class="at"> </span><span class="dv">480</span><span class="co">  # 8 小时上限</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">timeout_multiplier</span><span class="kw">:</span><span class="at"> </span><span class="fl">1.5</span><span class="co">     # 超时 = 预估 * 1.5</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">human_timeout_hours</span><span class="kw">:</span><span class="at"> </span><span class="dv">24</span><span class="co">     # 人类响应 24 小时</span></span></code></pre></div>
+<hr />
+<h3 id="c-06-心跳机制实现不完整">C-06: 心跳机制实现不完整</h3>
+<p><strong>风险描述</strong>: 心跳机制已定义但无实际监控和告警实现。</p>
+<p><strong>影响</strong>: - Slaver 停滞无法检测 - 超时后无自动处理 -
+配置了但无作用</p>
+<p><strong>当前代码问题</strong>:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># task-time-tracker.sh - 仅有更新心跳函数</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">update_heartbeat()</span> <span class="kw">{</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;last_heartbeat: </span><span class="va">$(</span><span class="fu">date</span> <span class="at">-Iseconds</span><span class="va">)</span><span class="st">&quot;</span> <span class="op">&gt;&gt;</span> <span class="st">&quot;</span><span class="va">$STATE_FILE</span><span class="st">&quot;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ❌ 无监控函数</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># ❌ 无告警函数</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ❌ 无自动恢复函数</span></span></code></pre></div>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># heartbeat-monitor.sh (新增)</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">check_heartbeats()</span> <span class="kw">{</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> state_file <span class="kw">in</span> .eket/state/slaver-<span class="pp">*</span>.yml<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        <span class="bu">local</span> <span class="va">last</span><span class="op">=</span><span class="va">$(</span><span class="fu">grep</span> <span class="st">&quot;last_heartbeat:&quot;</span> <span class="st">&quot;</span><span class="va">$state_file</span><span class="st">&quot;</span> <span class="kw">|</span> <span class="fu">cut</span> <span class="at">-d</span><span class="st">&#39; &#39;</span> <span class="at">-f2</span><span class="va">)</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">local</span> <span class="va">elapsed</span><span class="op">=</span><span class="va">$(($(</span><span class="fu">date</span> +%s<span class="va">)</span> <span class="op">-</span> <span class="va">$(</span><span class="fu">date</span> <span class="at">-d</span> <span class="st">&quot;</span><span class="va">$last</span><span class="st">&quot;</span> +%s<span class="va">)))</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">local</span> <span class="va">timeout</span><span class="op">=</span><span class="va">$(</span><span class="fu">grep</span> <span class="st">&quot;timeout_seconds:&quot;</span> <span class="st">&quot;</span><span class="va">$state_file</span><span class="st">&quot;</span> <span class="kw">|</span> <span class="fu">cut</span> <span class="at">-d</span><span class="st">&#39;:&#39;</span> <span class="at">-f2</span> <span class="kw">|</span> <span class="fu">tr</span> <span class="at">-d</span> <span class="st">&#39; &#39;</span><span class="va">)</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$elapsed</span><span class="st">&quot;</span> <span class="ot">-gt</span> <span class="st">&quot;</span><span class="va">$timeout</span><span class="st">&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>            <span class="bu">echo</span> <span class="st">&quot;⚠️ Slaver </span><span class="va">$(</span><span class="fu">basename</span> <span class="va">$state_file)</span><span class="st"> 心跳超时 (</span><span class="va">$elapsed</span><span class="st"> &gt; </span><span class="va">$timeout</span><span class="st">)&quot;</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>            <span class="ex">alert_slaver_timeout</span> <span class="st">&quot;</span><span class="va">$state_file</span><span class="st">&quot;</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>            <span class="ex">reset_task_if_needed</span> <span class="st">&quot;</span><span class="va">$state_file</span><span class="st">&quot;</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">fi</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">done</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 每分钟检查</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="fu">true</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="ex">check_heartbeats</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sleep</span> 60</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code></pre></div>
+<hr />
+<h3 id="c-07-mock-检测覆盖不全">C-07: Mock 检测覆盖不全</h3>
+<p><strong>风险描述</strong>: mock-detector.sh
+仅检测固定模式，无法覆盖所有 Mock 场景。</p>
+<p><strong>影响</strong>: - 高级 Mock 实现可绕过检测 -
+部分假代码仍能通过检查</p>
+<p><strong>当前检测模式</strong>:</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># mock-detector.sh</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">detect_mock_patterns()</span> <span class="kw">{</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">grep</span> <span class="at">-r</span> <span class="st">&quot;return \[\]&quot;</span> src/</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">grep</span> <span class="at">-r</span> <span class="st">&quot;return {}&quot;</span> src/</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">grep</span> <span class="at">-r</span> <span class="st">&quot;// TODO&quot;</span> src/</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">grep</span> <span class="at">-r</span> <span class="st">&quot;NotImplementedError&quot;</span> src/</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ❌ 无法检测以下模式:</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># - return mock_data (外部文件)</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># - return fake_response() (函数调用)</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># - async def search() -&gt; List: ... (空异步函数)</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">detect_mock_implementations()</span> <span class="kw">{</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 检测空函数体</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> file <span class="kw">in</span> <span class="va">$(</span><span class="fu">find</span> src <span class="at">-name</span> <span class="st">&quot;*.ts&quot;</span> <span class="at">-o</span> <span class="at">-name</span> <span class="st">&quot;*.py&quot;</span><span class="va">)</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="ex">is_function_empty</span> <span class="st">&quot;</span><span class="va">$file</span><span class="st">&quot;</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>            <span class="bu">echo</span> <span class="st">&quot;⚠️ 发现空函数体：</span><span class="va">$file</span><span class="st">&quot;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>            <span class="va">ALERT_FILES</span><span class="op">+=</span><span class="va">(</span><span class="st">&quot;</span><span class="va">$file</span><span class="st">&quot;</span><span class="va">)</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">fi</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">done</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 检测硬编码返回</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">grep</span> <span class="at">-rE</span> <span class="st">&quot;return [&#39;</span><span class="dt">\&quot;</span><span class="st">]mock|fake|dummy&quot;</span> src/</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">grep</span> <span class="at">-rE</span> <span class="st">&quot;return \{.*mock.*\}&quot;</span> src/</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 检测外部 Mock 文件</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">find</span> src <span class="at">-name</span> <span class="st">&quot;*mock*&quot;</span> <span class="at">-o</span> <span class="at">-name</span> <span class="st">&quot;*fake*&quot;</span> <span class="at">-o</span> <span class="at">-name</span> <span class="st">&quot;*stub*&quot;</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<hr />
+<h2 id="三high-风险">三、High 风险 (🟡)</h2>
+<h3 id="h-01-无响应超时配置过短">H-01: 无响应超时配置过短</h3>
+<p><strong>风险描述</strong>:
+<code>no_response_timeout_minutes: 30</code> 对人类来说过短。</p>
+<p><strong>影响</strong>: - 人类短暂离开导致任务重置 - Slaver
+工作成果丢失 - 重复工作增加</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tasks</span><span class="kw">:</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">time</span><span class="kw">:</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">no_response_timeout_minutes</span><span class="kw">:</span><span class="at"> </span><span class="dv">120</span><span class="co">  # 2 小时更合理</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">grace_period_minutes</span><span class="kw">:</span><span class="at"> </span><span class="dv">30</span><span class="co">          # 重置前宽限期</span></span></code></pre></div>
+<hr />
+<h3 id="h-02-任务重置后无通知">H-02: 任务重置后无通知</h3>
+<p><strong>风险描述</strong>: 任务超时重置后，无通知机制告知
+Slaver。</p>
+<p><strong>影响</strong>: - Slaver 继续无效工作 - 状态不一致 -
+信任受损</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">reset_ticket_status()</span> <span class="kw">{</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ... 重置状态后 ...</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 发送通知</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="ex">notify_slaver</span> <span class="st">&quot;</span><span class="va">$SLAVER_ID</span><span class="st">&quot;</span> <span class="st">&quot;任务 </span><span class="va">$TICKET_ID</span><span class="st"> 已重置&quot;</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="ex">create_message</span> <span class="st">&quot;inbox/human_feedback/task-reset-</span><span class="va">$TICKET_ID</span><span class="st">.md&quot;</span> <span class="op">&lt;&lt; EOF</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="st"># 任务重置通知</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="st">**任务**: </span><span class="va">$TICKET_ID</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="st">**原因**: 超时 </span><span class="va">$ELAPSED</span><span class="st"> 分钟无响应</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="st">**操作**: 状态已重置为 ready</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<hr />
+<h3 id="h-03-合并策略过于严格">H-03: 合并策略过于严格</h3>
+<p><strong>风险描述</strong>: <code>all_features_complete</code>
+策略要求所有功能完成才能合并。</p>
+<p><strong>影响</strong>: - 大功能阻塞小功能 - 合并冲突风险增加 -
+无法增量交付</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">merge</span><span class="kw">:</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">strategy</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;feature_flagged&quot;</span><span class="co">  # 支持部分合并</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">allow_partial</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">min_completion_percent</span><span class="kw">:</span><span class="at"> </span><span class="dv">80</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">require_feature_flags</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code></pre></div>
+<hr />
+<h3 id="h-04-checkpoint-无实际验证">H-04: Checkpoint 无实际验证</h3>
+<p><strong>风险描述</strong>: Checkpoint
+机制已定义但无实际验证逻辑。</p>
+<p><strong>影响</strong>: - Checkpoint 可跳过 - 质量门禁失效 -
+问题流入下一阶段</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">create_checkpoint()</span> <span class="kw">{</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">checkpoint</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$1</span><span class="st">&quot;</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> <span class="st">&quot;</span><span class="va">$checkpoint</span><span class="st">&quot;</span> <span class="kw">in</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>        <span class="ss">task_start</span><span class="kw">)</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>            <span class="ex">verify_dependencies_defined</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>            <span class="ex">verify_branch_created</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>            <span class="ex">verify_timer_started</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">;;</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>        <span class="ss">task_dev_complete</span><span class="kw">)</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>            <span class="ex">verify_unit_tests_pass</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>            <span class="ex">verify_lint_pass</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>            <span class="ex">verify_coverage_threshold</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>            <span class="cf">;;</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>        <span class="ss">task_test_complete</span><span class="kw">)</span></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>            <span class="ex">verify_e2e_tests_pass</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>            <span class="ex">verify_pr_created</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>            <span class="cf">;;</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>        <span class="ss">task_complete</span><span class="kw">)</span></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>            <span class="ex">verify_master_review_pass</span></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>            <span class="ex">verify_all_features_done</span></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>            <span class="cf">;;</span></span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">esac</span></span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<hr />
+<h3 id="h-05-sprint-review-无自动化报告">H-05: Sprint Review
+无自动化报告</h3>
+<p><strong>风险描述</strong>: Sprint Review 需要手动创建报告。</p>
+<p><strong>影响</strong>: - 报告质量不一致 - 容易被跳过 - 信息遗漏</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># scripts/generate-sprint-report.sh</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_sprint_report()</span> <span class="kw">{</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">sprint_num</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$1</span><span class="st">&quot;</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span> <span class="op">&gt;</span> <span class="st">&quot;outbox/sprint-reports/sprint-</span><span class="va">$sprint_num</span><span class="st">.md&quot;</span> <span class="op">&lt;&lt; EOF</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="st"># Sprint </span><span class="va">$sprint_num</span><span class="st"> Review</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="st">## 完成的任务</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="va">$(</span><span class="ex">list_completed_tasks</span> <span class="st">&quot;</span><span class="va">$sprint_num</span><span class="st">&quot;</span><span class="va">)</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="st">## 未完成的任务</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="va">$(</span><span class="ex">list_incomplete_tasks</span> <span class="st">&quot;</span><span class="va">$sprint_num</span><span class="st">&quot;</span><span class="va">)</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="st">## 代码质量指标</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="va">$(</span><span class="ex">generate_code_metrics</span> <span class="st">&quot;</span><span class="va">$sprint_num</span><span class="st">&quot;</span><span class="va">)</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a><span class="st">## 问题与改进</span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a><span class="va">$(</span><span class="ex">list_issues_and_improvements</span><span class="va">)</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<hr />
+<h3 id="h-06-retrospective-无行动计划追踪">H-06: Retrospective
+无行动计划追踪</h3>
+<p><strong>风险描述</strong>: Retrospective 产生的改进项无追踪机制。</p>
+<p><strong>影响</strong>: - 改进项被遗忘 - 同样问题重复出现 -
+Retrospective 流于形式</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">process</span><span class="kw">:</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">retrospective</span><span class="kw">:</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">create_improvement_tasks</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">track_improvement_completion</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">review_previous_improvements</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code></pre></div>
+<hr />
+<h3 id="h-07-日志轮转配置无实际作用">H-07: 日志轮转配置无实际作用</h3>
+<p><strong>风险描述</strong>: <code>logging.max_files: 10</code>
+配置但无实际轮转实现。</p>
+<p><strong>影响</strong>: - 日志无限增长 - 磁盘空间耗尽 -
+旧日志难以查找</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># scripts/log-rotate.sh (新增)</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rotate_logs()</span> <span class="kw">{</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> log_dir <span class="kw">in</span> logs/<span class="pp">*</span>/<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 保留最新 10 个日志</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ls</span> <span class="at">-t</span> <span class="st">&quot;</span><span class="va">$log_dir</span><span class="st">&quot;</span><span class="pp">*</span>.log <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-n</span> +11 <span class="kw">|</span> <span class="fu">xargs</span> <span class="at">-r</span> rm</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 压缩 3 天前的日志</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">find</span> <span class="st">&quot;</span><span class="va">$log_dir</span><span class="st">&quot;</span> <span class="at">-name</span> <span class="st">&quot;*.log&quot;</span> <span class="at">-mtime</span> +3 <span class="at">-exec</span> gzip {} <span class="dt">\;</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 删除 30 天前的压缩日志</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">find</span> <span class="st">&quot;</span><span class="va">$log_dir</span><span class="st">&quot;</span> <span class="at">-name</span> <span class="st">&quot;*.log.gz&quot;</span> <span class="at">-mtime</span> +30 <span class="at">-delete</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">done</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 每天执行</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="ex">0</span> 2 <span class="pp">*</span> <span class="pp">*</span> <span class="pp">*</span> ./scripts/log-rotate.sh</span></code></pre></div>
+<hr />
+<h3 id="h-08-并发控制无实现">H-08: 并发控制无实现</h3>
+<p><strong>风险描述</strong>: <code>max_concurrent_slavers: 3</code>
+配置但无实际限制。</p>
+<p><strong>影响</strong>: - 资源可能过载 - 多 Slaver 冲突 - 性能下降</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># scripts/concurrency-controller.sh</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">check_concurrency_limit()</span> <span class="kw">{</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">active</span><span class="op">=</span><span class="va">$(</span><span class="ex">count_active_slavers</span><span class="va">)</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">max</span><span class="op">=</span><span class="va">$(</span><span class="fu">grep</span> <span class="st">&quot;max_concurrent_slavers:&quot;</span> .eket/config.yml <span class="kw">|</span> <span class="fu">cut</span> <span class="at">-d</span><span class="st">&#39;:&#39;</span> <span class="at">-f2</span> <span class="kw">|</span> <span class="fu">tr</span> <span class="at">-d</span> <span class="st">&#39; &#39;</span><span class="va">)</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$active</span><span class="st">&quot;</span> <span class="ot">-ge</span> <span class="st">&quot;</span><span class="va">$max</span><span class="st">&quot;</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">&quot;❌ 已达最大并发 Slaver 数 (</span><span class="va">$active</span><span class="st">/</span><span class="va">$max</span><span class="st">)&quot;</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="dv">1</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="fu">before_claim_task()</span> <span class="kw">{</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    <span class="ex">check_concurrency_limit</span> <span class="kw">||</span> <span class="kw">{</span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">&quot;等待其他 Slaver 完成任务...&quot;</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>        <span class="ex">wait_for_slot</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">}</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<hr />
+<h3 id="h-09-worktree-清理策略缺失">H-09: Worktree 清理策略缺失</h3>
+<p><strong>风险描述</strong>: Worktree
+无自动清理机制，可能无限增长。</p>
+<p><strong>影响</strong>: - 磁盘空间耗尽 - 历史 worktree 混淆 -
+管理困难</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span><span class="kw">:</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">worktree</span><span class="kw">:</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">auto_prune</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">prune_after_days</span><span class="kw">:</span><span class="at"> </span><span class="dv">7</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">keep_last_n</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span></code></pre></div>
+<hr />
+<h2 id="四medium-风险">四、Medium 风险 (🟢)</h2>
+<h3 id="m-01-任务优先级算法简单">M-01: 任务优先级算法简单</h3>
+<p><strong>风险描述</strong>:
+优先级计算仅基于简单加分，未考虑复杂度、依赖等。</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tasks</span><span class="kw">:</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">priority</span><span class="kw">:</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">algorithm</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;weighted_scoring&quot;</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">factors</span><span class="kw">:</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">business_value</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.3</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">urgency</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.25</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">dependencies</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.2</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">effort</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.15</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">risk</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.1</span></span></code></pre></div>
+<hr />
+<h3 id="m-02-人类反馈解析简单">M-02: 人类反馈解析简单</h3>
+<p><strong>风险描述</strong>: 人类反馈仅通过 grep
+关键词解析，容易误解。</p>
+<p><strong>修复建议</strong>: - 使用结构化反馈表单 - 引入 NLP 解析 -
+支持多轮对话确认</p>
+<hr />
+<h3 id="m-03-文档生成质量不稳定">M-03: 文档生成质量不稳定</h3>
+<p><strong>风险描述</strong>: Confluence 文档质量依赖 AI
+水平，无一致性保证。</p>
+<p><strong>修复建议</strong>: - 引入文档模板 - 添加文档审查环节 -
+建立文档质量标准</p>
+<hr />
+<h3 id="m-04-测试覆盖率阈值过低">M-04: 测试覆盖率阈值过低</h3>
+<p><strong>风险描述</strong>: 默认覆盖率要求 80%，对核心功能不足。</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">testing</span><span class="kw">:</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">coverage</span><span class="kw">:</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">default_min</span><span class="kw">:</span><span class="at"> </span><span class="dv">80</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">critical_modules_min</span><span class="kw">:</span><span class="at"> </span><span class="dv">95</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">require_branch_coverage</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code></pre></div>
+<hr />
+<h3 id="m-05-api-文档同步滞后">M-05: API 文档同步滞后</h3>
+<p><strong>风险描述</strong>: API 文档不随代码自动更新。</p>
+<p><strong>修复建议</strong>: - 使用 OpenAPI/Swagger - 代码即文档 -
+变更时自动提醒更新</p>
+<hr />
+<h3 id="m-06-错误处理不一致">M-06: 错误处理不一致</h3>
+<p><strong>风险描述</strong>: 各脚本错误处理方式不一致。</p>
+<p><strong>修复建议</strong>: - 统一错误码规范 - 统一日志格式 -
+统一退出码</p>
+<hr />
+<h3 id="m-07-配置验证缺失">M-07: 配置验证缺失</h3>
+<p><strong>风险描述</strong>: config.yml
+无验证机制，错误配置可导致系统异常。</p>
+<p><strong>修复建议</strong>:</p>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># scripts/validate-config.sh</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">validate_config()</span> <span class="kw">{</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 检查必填字段</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 检查值范围</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 检查依赖配置</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;配置验证通过&quot;</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<hr />
+<h3 id="m-08-无性能基准测试">M-08: 无性能基准测试</h3>
+<p><strong>风险描述</strong>: 框架性能无基准测试，无法评估优化效果。</p>
+<p><strong>修复建议</strong>: - 建立性能基准 - 定期运行性能测试 -
+追踪性能趋势</p>
+<hr />
+<h2 id="五low-风险">五、Low 风险 (⚪)</h2>
+<h3 id="l-01-命令别名缺失">L-01: 命令别名缺失</h3>
+<p>无便捷命令别名，如 <code>/es</code> 代替
+<code>/eket-status</code>。</p>
+<hr />
+<h3 id="l-02-进度可视化简单">L-02: 进度可视化简单</h3>
+<p>仅支持文本状态，无图形化 Dashboard。</p>
+<hr />
+<h3 id="l-03-通知渠道单一">L-03: 通知渠道单一</h3>
+<p>仅支持文件通知，无 Slack/邮件/钉钉集成。</p>
+<hr />
+<h3 id="l-04-快捷键缺失">L-04: 快捷键缺失</h3>
+<p>无交互式快捷键支持。</p>
+<hr />
+<h3 id="l-05-配置热重载不支持">L-05: 配置热重载不支持</h3>
+<p>修改配置需重启实例。</p>
+<hr />
+<h2 id="六修复优先级矩阵">六、修复优先级矩阵</h2>
+<table>
+<thead>
+<tr>
+<th>风险 ID</th>
+<th>风险等级</th>
+<th>影响范围</th>
+<th>修复难度</th>
+<th>优先级</th>
+<th>建议 Sprint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-01</td>
+<td>Critical</td>
+<td>高</td>
+<td>低</td>
+<td>P0</td>
+<td>Sprint 1</td>
+</tr>
+<tr>
+<td>C-02</td>
+<td>Critical</td>
+<td>中</td>
+<td>中</td>
+<td>P0</td>
+<td>Sprint 1</td>
+</tr>
+<tr>
+<td>C-03</td>
+<td>Critical</td>
+<td>中</td>
+<td>低</td>
+<td>P0</td>
+<td>Sprint 1</td>
+</tr>
+<tr>
+<td>C-04</td>
+<td>Critical</td>
+<td>高</td>
+<td>低</td>
+<td>P0</td>
+<td>Sprint 1</td>
+</tr>
+<tr>
+<td>C-05</td>
+<td>Critical</td>
+<td>中</td>
+<td>低</td>
+<td>P0</td>
+<td>Sprint 1</td>
+</tr>
+<tr>
+<td>C-06</td>
+<td>Critical</td>
+<td>高</td>
+<td>中</td>
+<td>P0</td>
+<td>Sprint 1</td>
+</tr>
+<tr>
+<td>C-07</td>
+<td>Critical</td>
+<td>高</td>
+<td>中</td>
+<td>P0</td>
+<td>Sprint 1</td>
+</tr>
+<tr>
+<td>H-01</td>
+<td>High</td>
+<td>中</td>
+<td>低</td>
+<td>P1</td>
+<td>Sprint 2</td>
+</tr>
+<tr>
+<td>H-02</td>
+<td>High</td>
+<td>中</td>
+<td>低</td>
+<td>P1</td>
+<td>Sprint 2</td>
+</tr>
+<tr>
+<td>H-03</td>
+<td>High</td>
+<td>中</td>
+<td>中</td>
+<td>P1</td>
+<td>Sprint 2</td>
+</tr>
+<tr>
+<td>H-04</td>
+<td>High</td>
+<td>高</td>
+<td>中</td>
+<td>P1</td>
+<td>Sprint 2</td>
+</tr>
+<tr>
+<td>H-05</td>
+<td>High</td>
+<td>低</td>
+<td>低</td>
+<td>P1</td>
+<td>Sprint 2</td>
+</tr>
+<tr>
+<td>H-06</td>
+<td>High</td>
+<td>低</td>
+<td>中</td>
+<td>P1</td>
+<td>Sprint 2</td>
+</tr>
+<tr>
+<td>H-07</td>
+<td>High</td>
+<td>中</td>
+<td>低</td>
+<td>P1</td>
+<td>Sprint 2</td>
+</tr>
+<tr>
+<td>H-08</td>
+<td>High</td>
+<td>中</td>
+<td>中</td>
+<td>P1</td>
+<td>Sprint 2</td>
+</tr>
+<tr>
+<td>H-09</td>
+<td>High</td>
+<td>低</td>
+<td>低</td>
+<td>P1</td>
+<td>Sprint 2</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="七与-v0.4-风险对比">七、与 v0.4 风险对比</h2>
+<h3 id="已修复的-v0.4-风险">7.1 已修复的 v0.4 风险</h3>
+<table>
+<thead>
+<tr>
+<th>v0.4 风险</th>
+<th>v0.5 状态</th>
+<th>修复程度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-01 Slaver 追踪缺失</td>
+<td>✅ 部分修复</td>
+<td>心跳机制已实现，监控待集成</td>
+</tr>
+<tr>
+<td>C-02 Mock 检测缺失</td>
+<td>✅ 部分修复</td>
+<td>基础检测已实现，高级模式待补充</td>
+</tr>
+<tr>
+<td>C-03 权限边界模糊</td>
+<td>✅ 部分修复</td>
+<td>配置已定义，自动维护待实现</td>
+</tr>
+<tr>
+<td>C-04 任务超时配置无效</td>
+<td>✅ 已修复</td>
+<td>时间追踪脚本已实现</td>
+</tr>
+<tr>
+<td>C-05 状态同步脆弱</td>
+<td>✅ 部分修复</td>
+<td>同步检查已定义，错误处理待完善</td>
+</tr>
+</tbody>
+</table>
+<h3 id="v0.5-新增风险">7.2 v0.5 新增风险</h3>
+<table>
+<thead>
+<tr>
+<th>新增风险</th>
+<th>风险等级</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>策略集成缺口</td>
+<td>Critical</td>
+<td>3 项策略未集成到主流程</td>
+</tr>
+<tr>
+<td>配置复杂度激增</td>
+<td>Critical</td>
+<td>50+ 配置参数增加维护成本</td>
+</tr>
+<tr>
+<td>Agent 自举问题</td>
+<td>Critical</td>
+<td>Memory Review Agent 无健康检查</td>
+</tr>
+<tr>
+<td>Sprint/超时冲突</td>
+<td>Critical</td>
+<td>7 天 Sprint vs 3 小时任务超时</td>
+</tr>
+<tr>
+<td>权限配置负担</td>
+<td>Critical</td>
+<td>allow/question/reject 需手动维护</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="八总结与建议">八、总结与建议</h2>
+<h3 id="风险分布对比">8.1 风险分布对比</h3>
+<pre><code>v0.4:                    v0.5:
+Critical: ████████ 5     Critical: ████████████ 7 (+2)
+High:     ████████████ 8 High:     ████████████████ 9 (+1)
+Medium:   ██████████ 6   Medium:   ██████████████ 8 (+2)
+Low:      ██████ 4       Low:      ████████ 5 (+1)</code></pre>
+<h3 id="核心问题">8.2 核心问题</h3>
+<p><strong>v0.5 的主要问题是”集成债务”</strong>： - 11
+项策略独立开发，但未完全集成到主流程 - 配置复杂度激增，但无简化机制 -
+新增 Agent 无健康检查，形成”监控盲区”</p>
+<h3 id="修复建议优先级">8.3 修复建议优先级</h3>
+<p><strong>立即修复 (Sprint 1)</strong>: 1. 集成 Master 监控循环到
+/eket-start 2. 集成 Memory Review Agent 自启动 3. 集成 Merge Validator
+到 merge 流程 4. 实现心跳监控和告警 5. 简化配置 - 引入 preset 模板 6.
+完善 Mock 检测模式</p>
+<p><strong>本周修复 (Sprint 2)</strong>: 1. 调整无响应超时为 2 小时 2.
+添加任务重置通知 3. 实现 Checkpoint 验证逻辑 4. 实现日志轮转脚本 5.
+实现并发控制</p>
+<p><strong>规划修复 (Sprint 3+)</strong>: 1. 基于风险的动态权限 2.
+Sprint/超时冲突解决 3. 自动化 Sprint 报告 4. Retrospective 追踪</p>
+<h3 id="长期建议">8.4 长期建议</h3>
+<ol type="1">
+<li><strong>建立集成测试</strong> - 确保策略集成到主流程</li>
+<li><strong>配置即代码</strong> - 使用 schema 验证配置</li>
+<li><strong>健康检查体系</strong> - 所有 Agent 都有健康报告</li>
+<li><strong>文档生成自动化</strong> - 减少人工维护成本</li>
+<li><strong>可观测性建设</strong> - 日志、指标、追踪三位一体</li>
+</ol>
+<hr />
+<p><strong>审查人</strong>: Master Node + AI Agent
+<strong>审查日期</strong>: 2026-03-23 <strong>下次审查</strong>: Sprint
+1 完成后复查 Critical 风险</p>
+</body>
+</html>
