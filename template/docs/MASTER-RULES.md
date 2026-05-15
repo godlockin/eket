@@ -281,11 +281,50 @@ before_large_operation() {
 - ≥60% 时强制 compact
 - 大文件写入前预检
 
+#### 规则 5: 渐进式上下文预警（NEW）
+
+**问题**：接近上限（~90%+）时无提示，直接结束对话（silent failure）
+
+**解决方案**：三级预警机制
+
+```bash
+check_context() {
+  usage=$(current_context_percent)
+  
+  case $usage in
+    9[0-9]|100)  # ≥90%
+      echo "🚨 上下文 ${usage}%！立即 compact"
+      /compact
+      ;;
+    8[0-9])      # 80-89%
+      echo "⚠️ 上下文 ${usage}%，强烈建议 compact"
+      ;;
+    7[0-9])      # 70-79%
+      echo "ℹ️ 上下文 ${usage}%，注意控制输出"
+      ;;
+  esac
+}
+```
+
+**三级预警**：
+
+| 级别 | 阈值 | 行为 | 输出 |
+|------|-----|------|------|
+| **L1 提示** | 70-79% | 输出警告 | "ℹ️ 上下文 70%，注意控制输出" |
+| **L2 建议** | 80-89% | 强烈建议 | "⚠️ 上下文 80%，强烈建议 compact" |
+| **L3 强制** | ≥90% | **立即 compact** | "🚨 上下文 90%！立即 compact" |
+
+**触发时机**：
+- 每次大操作前（EPIC 完成、大文件读写、git log）
+- 每轮对话结束前
+- 发现输出变长时
+
 #### 验证 Checklist
 - [ ] Write 后无自动 Read
 - [ ] git log 使用 `-3 --no-decorate --format="%h %s"`
 - [ ] 完成输出 ≤200 chars
 - [ ] 大操作前检测上下文（≥60% compact）
+- [ ] 70% 开始警告，90% 强制 compact
 
 **参考**: `confluence/memory/lessons/context-overflow-prevention.md`
 
