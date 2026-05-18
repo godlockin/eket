@@ -17,7 +17,7 @@
 - 如需隔离，用 `git worktree add` 手动管理，agent prompt 中明确指定绝对路径
 - Agent 完成后，Master **先验证产物存在**再清理 worktree
 
-**参见**：`confluence/memory/worktree-agent-guide.md`
+**参见**：`confluence/memory/guides/worktree-agent.md`
 
 ---
 

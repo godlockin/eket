@@ -40,7 +40,6 @@
 |------|------|
 | [lessons/red-team-bug-patterns.md](lessons/red-team-bug-patterns.md) | 红队审查 Bug 模式 — tokio Mutex、AbortHandle、archive顺序、FTS5触发器、CAS、fast-fail |
 | [lessons/multi-agent-collab-lessons.md](lessons/multi-agent-collab-lessons.md) | 多智能体协作 — 任务分配、并行执行风险、规则遗忘防治、进度上报 |
-| [lessons/rule-retention-lessons.md](lessons/rule-retention-lessons.md) | 规则保持性 — Agent 遗忘三层防御、CLAUDE.md 瘦身、Hook Layer 3b |
 | [lessons/research-methodology.md](lessons/research-methodology.md) | 跨项目研究方法论 — 借鉴过滤标准、研究流程、各轮要点速查 |
 | [lessons/eket-project-hygiene.md](lessons/eket-project-hygiene.md) | EKET 项目卫生 — template/引用、僵尸ticket、三仓库归属、版本号同步、Skills注册 |
 | [lessons/spec4-feedback-intent-lessons.md](lessons/spec4-feedback-intent-lessons.md) | Spec 4 反馈+意图系统实战经验教训 — 线程隔离、import路径、slaver超时、None语义（外部项目 Python/FastAPI） |
@@ -54,7 +53,6 @@
 | 文件 | 摘要 |
 |------|------|
 | [research/borrowed-wisdom.md](research/borrowed-wisdom.md) | EKET 借鉴知识库总索引 — 所有外部借鉴点汇总（713行，主文档） |
-| [research/round-22-archon-research.md](research/round-22-archon-research.md) | Archon 借鉴研究报告 Round 22 — DAG、模型路由、SSE体系 |
 | [research/ruflo-research.md](research/ruflo-research.md) | ruflo 借鉴研究 — HNSW 向量检索、TrustScore 评分、拒绝点清单 |
 | [research/redis-architecture.md](research/redis-architecture.md) | Redis 架构分析与 TASK-142 wont-fix 决策依据 |
 

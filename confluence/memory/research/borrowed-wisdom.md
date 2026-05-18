@@ -698,10 +698,8 @@ Anthropic 内部数百个 Skill 归纳为 9 类，按类别设计触发条件：
 
 | 文档 | 主题 |
 |------|------|
-| [../lessons/doc-debt-cleanup.md](../lessons/doc-debt-cleanup.md) | 通用方法论：四种债务类型、清理顺序、断链检测、archive 结构、预防规则 |
 | [../lessons/eket-project-hygiene.md](../lessons/eket-project-hygiene.md) | EKET 特有规则：template/ 引用判断、ticket 状态一致性、outbox 清理、三仓库归属 |
 | [../lessons/multi-agent-collab-lessons.md](../lessons/multi-agent-collab-lessons.md) | 多智能体协作经验：任务分配、并行风险、环境依赖处理、失败模式（来自 Round 2/3） |
-| [../lessons/rule-retention-lessons.md](../lessons/rule-retention-lessons.md) | 规则保持性与遗忘防治：三层防御纵深、CLAUDE.md 拆分陷阱、ESM mock 陷阱、强制复盘价值 |
 
 ### 核心原则（快速参考）
 
