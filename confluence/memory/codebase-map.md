@@ -445,10 +445,10 @@
 | 文档 | 说明 |
 |------|------|
 | CLAUDE.md | |
-| confluence/memory/agent-prompt-template.md | |
+| confluence/memory/guides/agent-prompt-template.md | |
 | confluence/memory/branch-strategy-guide.md | |
 | confluence/memory/ci-troubleshooting-playbook.md | |
-| confluence/memory/codebase-maintenance.md | |
+| confluence/memory/guides/codebase-maintenance.md | |
 | confluence/memory/context-token-budget-guide.md | |
 | confluence/memory/EPIC-002-lessons.md | |
 | confluence/memory/EPIC-003-backport-lessons.md | |

@@ -10,7 +10,6 @@
 ## TODO (24h SLA)
 - [x] What worked
 - [x] What hurt + root cause
-- [x] Lessons → 沉淀到 confluence/memory/{lessons/rule-retention-lessons.md,research/borrowed-wisdom.md}
 - [x] 移动本文件到 confluence/memory/retrospectives/2026/
 
 ## Notes (early)
@@ -29,6 +28,4 @@
 - `git diff --quiet` 无法检测 untracked files，导致 broadcast 跳过 commit
 
 ## Lessons 已沉淀
-- dynamic import() 永不同步抛出 → 见 lessons/rule-retention-lessons.md §6
-- Redis keyPrefix 双重叠加 → 见 lessons/rule-retention-lessons.md §7
 - GITHUB_TOKEN 无法 approve 自身触发的 required checks → 见 sprint-001-retro.md P3
