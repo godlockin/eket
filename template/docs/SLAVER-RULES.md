@@ -296,7 +296,117 @@ bash confluence/scripts/generate-codebase-map.sh
 
 ---
 
-## 7. 可用命令集（ACI）约束
+## 8. 长文档分块写入规则（防任务熔断）
+
+**触发条件**：
+- 文档预计 >200 行
+- 写入时间预计 >5 分钟
+- 包含大量结构化内容（表格/代码块/多层嵌套）
+
+**强制策略**：禁止一次性生成，必须采用**分块写 + 合并 + Review**模式
+
+### 8.1 检测与上报
+
+**Slaver 接收到文档任务时**：
+1. 评估文档规模（行数/复杂度/耗时）
+2. 如预计 >200 行 且 ticket 无 `[CHUNKED-DOC]` 标签：
+   ```bash
+   # 上报 Master
+   echo "[CHUNKED-DOC-REQUEST] 文档预计 X 行，建议分块写入" >> shared/message_queue/inbox/...
+   ```
+3. 等待 Master 确认分块策略（章节/主题/页数）
+
+**如 ticket 已有 `[CHUNKED-DOC]` 标签**：
+- 直接按 Master 指定的分块策略执行
+- 无需上报，立即开始分块写入
+
+### 8.2 分块执行流程
+
+```bash
+# 1. 创建临时分块目录
+mkdir -p .eket/temp-docs/<ticket-id>/
+
+# 2. 顺序写入各块（每块 ≤100 行 或 ≤3 分钟）
+Write(.eket/temp-docs/<ticket-id>/part-1.md, "章节 1 内容")
+git add .eket/temp-docs/<ticket-id>/part-1.md
+git commit -m "docs(<ticket-id>): 章节 1 完成"
+上报进度: "[1/N] done: 章节 1"
+
+Write(.eket/temp-docs/<ticket-id>/part-2.md, "章节 2 内容")
+git add .eket/temp-docs/<ticket-id>/part-2.md
+git commit -m "docs(<ticket-id>): 章节 2 完成"
+上报进度: "[2/N] done: 章节 2"
+
+# 3. 合并完整文档
+cat .eket/temp-docs/<ticket-id>/part-*.md > <final-doc-path>
+git add <final-doc-path>
+git commit -m "docs(<ticket-id>): 合并完整文档"
+
+# 4. 清理临时文件
+git rm -rf .eket/temp-docs/<ticket-id>/
+git commit -m "docs(<ticket-id>): 清理临时分块"
+```
+
+### 8.3 进度上报格式
+
+**每完成一块后立即上报**：
+```yaml
+type: chunked_doc_progress
+slaver_id: <id>
+ticket_id: <id>
+part_index: 2
+total_parts: 5
+part_title: "章节 2：架构设计"
+completed_at: "2026-05-19T12:00:00+08:00"
+```
+
+### 8.4 超时自救
+
+**检测规则**：
+- 单个 Write 操作 >5 分钟 → 立即中断
+- 连续 10 分钟无 commit → 强制保存进度
+
+**自救流程**：
+```bash
+# 1. 保存当前已写入内容
+Write(.eket/temp-docs/<ticket-id>/part-current-interrupted.md, <当前内容>)
+git add .eket/temp-docs/<ticket-id>/part-current-interrupted.md
+git commit -m "docs(<ticket-id>): [INTERRUPTED] 保存进度"
+
+# 2. 上报 Master
+type: chunked_doc_timeout
+slaver_id: <id>
+ticket_id: <id>
+interrupted_at_part: 3
+reason: "单个 Write 超过 5 分钟"
+saved_progress: ".eket/temp-docs/<ticket-id>/part-current-interrupted.md"
+
+# 3. 等待 Master 决策（继续/暂停/取消）
+```
+
+### 8.5 禁止行为
+
+- ❌ 一次性生成 200+ 行文档
+- ❌ 在单个 Write 调用中写入大量内容（>100 行）
+- ❌ 长时间（>5 分钟）无进度上报
+- ❌ 忽略 `[CHUNKED-DOC]` 标签，强行一次性写入
+
+### 8.6 验证 Checklist
+
+分块完成后，Slaver 必须自检：
+- [ ] 所有分块已合并到最终文档
+- [ ] 章节顺序正确
+- [ ] 格式一致（标题层级、列表符号、代码块）
+- [ ] 内部引用有效（链接、锚点）
+- [ ] 临时分块文件已清理
+- [ ] Git history 清晰（每块一个 commit）
+
+### 来源
+防止类似 EPIC-009 M1 completion-report（169 行）一次性写入导致上下文溢出崩溃。
+
+---
+
+## 9. 可用命令集（ACI）约束
 
 Slaver 操作范围受以下命令白名单约束：
 
