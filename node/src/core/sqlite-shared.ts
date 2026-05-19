@@ -11,11 +11,12 @@ import Database from 'better-sqlite3';
 
 /**
  * 获取默认数据库路径
- * 默认：~/.eket/data/sqlite/eket.db
+ * 默认：<项目根目录>/.eket/data/sqlite/eket.db
+ *
+ * 项目级别数据库，每个项目都有独立的数据库实例
  */
 export function getDefaultDBPath(): string {
-  const homeDir = process.env.HOME || process.env.USERPROFILE || '.';
-  return path.join(homeDir, '.eket', 'data', 'sqlite', 'eket.db');
+  return path.join(process.cwd(), '.eket', 'data', 'sqlite', 'eket.db');
 }
 
 /**
