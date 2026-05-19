@@ -380,7 +380,7 @@ export class AsyncSQLiteClient implements ISQLiteClient {
   private ready = false;
 
   constructor(dbPath?: string) {
-    this.dbPath = dbPath || path.join(process.env.HOME || process.env.USERPROFILE || '.', '.eket', 'data', 'sqlite', 'eket.db');
+    this.dbPath = dbPath || path.join(process.cwd(), '.eket', 'data', 'sqlite', 'eket.db');
   }
 
   async connect(): Promise<Result<void>> {
