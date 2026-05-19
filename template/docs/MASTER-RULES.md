@@ -374,4 +374,83 @@ check_context() {
 
 ---
 
+## 11. 长文档分块写入规则（防任务熔断）
+
+**触发条件**：
+- 文档预计 >200 行
+- 写入时间预计 >5 分钟
+- 包含大量结构化内容（表格/代码块/多层嵌套）
+
+**强制策略**：禁止一次性生成，必须采用**分块写 + 合并 + Review**模式
+
+### 11.1 分块策略
+
+```bash
+# 1. 拆分章节（每块 ≤100 行 或 ≤3 分钟）
+章节 1 → doc-part-1.md
+章节 2 → doc-part-2.md
+...
+章节 N → doc-part-N.md
+
+# 2. 顺序写入（每块完成后立即提交）
+git add doc-part-1.md && git commit -m "docs: 章节 1"
+git add doc-part-2.md && git commit -m "docs: 章节 2"
+
+# 3. 合并文档
+cat doc-part-*.md > final-doc.md
+git add final-doc.md && git commit -m "docs: 合并完整文档"
+
+# 4. 清理分块文件
+git rm doc-part-*.md && git commit -m "docs: 清理临时分块"
+```
+
+### 11.2 执行规则
+
+**Master 分配长文档任务时**：
+- 必须在 ticket 中标注 `[CHUNKED-DOC]` 标签
+- 指定分块策略（按章节/按主题/按文件数量）
+- 设置每块时间上限（建议 3 分钟）
+
+**Slaver 执行长文档任务时**：
+- 检查 ticket 是否有 `[CHUNKED-DOC]` 标签
+- 如无标签但预计 >200 行 → 上报 Master 请求标注
+- 严格按块写入，每块完成后：
+  1. Write 文件
+  2. Git commit
+  3. 上报进度（`[N/M] done: 章节X`）
+  4. 继续下一块
+
+**禁止行为**：
+- ❌ 一次性生成 200+ 行文档
+- ❌ 在单个 Write 调用中写入大量内容
+- ❌ 长时间（>5 分钟）无进度上报
+
+### 11.3 超时熔断
+
+**检测规则**：
+- 单个 Write 操作 >5 分钟 → 触发熔断警告
+- 连续 10 分钟无 commit → 触发强制中断
+
+**熔断后处理**：
+1. 立即保存当前已写入内容到临时文件
+2. 上报 Master：`[TIMEOUT] doc-task-<id> 熔断，已保存进度到 temp-<timestamp>.md`
+3. Master 决策：
+   - 继续（调整分块策略）
+   - 暂停（等待人类介入）
+   - 取消（任务过大，需重新设计）
+
+### 11.4 Review Checklist
+
+分块文档合并后，Reviewer 必须检查：
+- [ ] 章节顺序正确
+- [ ] 无重复内容
+- [ ] 格式一致（标题层级、列表符号、代码块语言）
+- [ ] 内部引用有效（链接、锚点）
+- [ ] 删除临时分块文件
+
+### 来源
+防止类似 EPIC-009 M1 完成时的上下文溢出崩溃（169 行 report 一次性写入）。
+
+---
+
 > 📄 更多协作流程：[`template/docs/MASTER-HEARTBEAT-CHECKLIST.md`](MASTER-HEARTBEAT-CHECKLIST.md) | [`template/docs/MASTER-WORKFLOW.md`](MASTER-WORKFLOW.md)
