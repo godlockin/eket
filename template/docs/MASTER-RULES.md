@@ -374,6 +374,194 @@ check_context() {
 
 ---
 
+## 10.1 双轨测试初始化规则（Dual-Track Testing）
+
+**触发条件**（满足任一即启动双轨）：
+- ticket 标注 `[DUAL-TEST]` 标签
+- 功能复杂度评估：测试工时 >2 小时
+- 核心业务领域：支付/认证/数据完整性/安全敏感
+- 历史高风险模块：过去 3 个月内 bug 数 >5
+
+**初始化流程**：
+
+### 第 1 步：评估与标注
+
+```bash
+# Master 分析 ticket，决定是否需要双轨测试
+if [ $test_complexity -gt 2h ] || [ $domain == "payment|auth|security" ]; then
+  echo "[DUAL-TEST]" >> jira/tickets/<ticket-id>.md
+fi
+```
+
+### 第 2 步：并行派遣两组 Agent
+
+**正向测试组（Validation Team）**：
+```bash
+Agent({
+  description: "正向测试组 — <ticket-id>",
+  subagent_type: "general-purpose",
+  prompt: "
+任务：验证 <ticket-id> 功能正确性
+
+职责分工：
+- QA Engineer：设计测试用例（黄金路径 + 边界条件）
+- Test Automation：编写自动化测试（Jest/Mocha）
+- Integration Tester：验证与上下游集成
+
+产出要求：
+1. tests/<ticket-id>/test-cases.md — 测试用例清单
+2. tests/<ticket-id>/*.test.ts — 自动化测试代码
+3. tests/<ticket-id>/integration-report.md — 集成测试报告
+
+验收标准：
+- 所有测试用例通过（绿灯）
+- 代码覆盖率 ≥80%（核心逻辑 ≥95%）
+- 集成测试无阻塞问题
+
+工作目录：.eket/worktrees/<ticket-id>-validation/
+  ",
+  isolation: "worktree",
+  run_in_background: true
+})
+```
+
+**反向纠错组（Adversarial Team）**：
+```bash
+Agent({
+  description: "反向纠错组 — <ticket-id>",
+  subagent_type: "general-purpose",
+  prompt: "
+任务：挑战 <ticket-id> 实现健壮性，专门找茬
+
+职责分工：
+- Security Auditor：挖掘漏洞（注入/XSS/认证绕过/CSRF）
+- Chaos Engineer：破坏性测试（极端输入/资源耗尽/并发竞态/网络分区）
+- Code Critic：代码质量挑刺（反模式/技术债/可维护性问题）
+
+产出要求：
+1. tests/<ticket-id>/vulnerability-report.md — 安全漏洞清单
+2. tests/<ticket-id>/chaos-tests.md — 破坏性测试用例
+3. tests/<ticket-id>/code-review-issues.md — 代码质量问题
+
+挑战重点：
+- 边界条件：空输入/超长输入/特殊字符/Unicode
+- 并发问题：竞态条件/死锁/资源泄漏
+- 安全漏洞：SQL注入/XSS/CSRF/权限绕过
+- 性能退化：内存泄漏/CPU热点/慢查询
+- 错误处理：异常捕获/错误传播/降级逻辑
+
+态度：批判性思维，假设代码有问题，主动寻找破绽
+
+工作目录：.eket/worktrees/<ticket-id>-adversarial/
+  ",
+  isolation: "worktree",
+  run_in_background: true
+})
+```
+
+### 第 3 步：监控双轨进度
+
+```bash
+# Master 定期检查两组进度
+watch -n 300 "
+  echo '=== 正向组进度 ==='
+  tail -5 .eket/worktrees/<ticket-id>-validation/progress.log
+  echo '=== 反向组进度 ==='
+  tail -5 .eket/worktrees/<ticket-id>-adversarial/progress.log
+"
+```
+
+### 第 4 步：交叉验证与合并
+
+**正向组修复反向组发现的问题**：
+```bash
+# 反向组产出 → 正向组待修复列表
+cp tests/<ticket-id>/vulnerability-report.md \
+   .eket/worktrees/<ticket-id>-validation/fixme.md
+
+# 正向组修复 → 重新测试
+cd .eket/worktrees/<ticket-id>-validation/
+npm test -- --coverage
+```
+
+**反向组验证正向组的修复**：
+```bash
+# 正向组修复 patch → 反向组二次挑战
+git diff main > /tmp/<ticket-id>-fix.patch
+cd .eket/worktrees/<ticket-id>-adversarial/
+git apply /tmp/<ticket-id>-fix.patch
+# 反向组重新挑战
+bash tests/<ticket-id>/chaos-tests.sh
+```
+
+### 第 5 步：合并产出与验收
+
+**Master 合并双轨产出**：
+```bash
+# 合并测试用例
+cat tests/<ticket-id>/test-cases.md \
+    tests/<ticket-id>/chaos-tests.md > tests/<ticket-id>/unified-tests.md
+
+# 合并问题清单
+cat tests/<ticket-id>/code-review-issues.md \
+    tests/<ticket-id>/vulnerability-report.md > tests/<ticket-id>/all-issues.md
+
+# 验收 Checklist
+- [ ] 正向组：所有测试通过
+- [ ] 反向组：所有问题已修复或标记技术债
+- [ ] 交叉验证：双方确认无新问题
+- [ ] 覆盖率：≥80%（核心 ≥95%）
+- [ ] 性能：破坏性测试未触发退化（±10% 基线）
+```
+
+### 冲突仲裁
+
+**正向组 vs 反向组分歧**：
+- 反向组认为问题严重，正向组认为"设计如此" → Master 召集双方会议，明确决策
+- 反向组要求修复但超预算 → Master 决策（立即修复/标记技术债/降级处理）
+- 分歧记录在 `tests/<ticket-id>/arbitration.md`
+
+### 双轨测试报告模板
+
+```markdown
+# 双轨测试报告：<ticket-id>
+
+## 正向组验证结果
+- 测试用例：X 个（通过 Y，失败 Z）
+- 覆盖率：XX%（核心逻辑 YY%）
+- 集成测试：通过 / 阻塞
+
+## 反向组挑战结果
+- 安全漏洞：X 个（High/Medium/Low）
+- 破坏性测试：Y 个场景（通过 Z，失败 W）
+- 代码质量：X 个问题
+
+## 交叉验证
+- [x] 正向组确认反向组修复有效
+- [x] 反向组二次挑战无新问题
+
+## 最终结论
+- [x] 双轨测试通过，可提交 PR
+- [ ] 需进一步修复（见 all-issues.md）
+```
+
+### 效率优化
+
+**避免双轨过度**：
+- 简单 CRUD 功能 → 不启动双轨（浪费资源）
+- 边界明确的工具函数 → 仅正向测试
+- 核心业务 + 复杂逻辑 → 强制双轨
+
+**并行加速**：
+- 两组使用独立 worktree → 避免冲突
+- 两组同时启动（`run_in_background: true`）
+- Master 定期轮询进度，不主动等待
+
+### 来源
+复杂功能（支付/认证）单一测试视角易遗漏边界情况，双轨机制提升质量。
+
+---
+
 ## 11. 长文档分块写入规则（防任务熔断）
 
 **触发条件**：
