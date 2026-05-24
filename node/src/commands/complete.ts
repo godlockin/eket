@@ -10,12 +10,12 @@ import * as path from 'path';
 
 import { Command } from 'commander';
 
+import { alertManager } from '../core/alert-manager.js';
 import { CompletionValidator } from '../core/completion-validator.js';
 import { contextCompressor } from '../core/context-compressor.js';
 import { createSQLiteClient } from '../core/sqlite-client.js';
 import { sseBus } from '../core/sse-bus.js';
 import { WorktreeManager } from '../core/worktree-manager.js';
-import { alertManager } from '../core/alert-manager.js';
 import type { SkillFeedback, SlaveResult } from '../types/index.js';
 import { validateTicketOutput } from '../types/ticket-output.js';
 import { printError, logSuccess } from '../utils/error-handler.js';

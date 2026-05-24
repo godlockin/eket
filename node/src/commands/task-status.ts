@@ -15,14 +15,15 @@
  *   eket task:status TASK-640 --no-color  # For CI environments
  */
 
+import { execFile } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';
-import { Command } from 'commander';
-import { execFile } from 'child_process';
 import { promisify } from 'util';
 
-import { parseProgressMarkdown } from '../utils/progress-parser.js';
+import { Command } from 'commander';
+
 import { ProgressSnapshot } from '../types/progress-tracker.js';
+import { parseProgressMarkdown } from '../utils/progress-parser.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -226,7 +227,7 @@ async function getCheckpointStatus(taskId: string): Promise<CheckpointStatus> {
     // 2. Get last commit info (AC-2)
     const { stdout: logOutput } = await execFileAsync(
       'git',
-      ['log', actualBranch, '--format=%H|%s|%aI|%an', '-1'],
+      ['log', actualBranch, '--format=%H|%B|%aI|%an', '-1'],
       { cwd: process.cwd() }
     );
 
@@ -365,8 +366,8 @@ function printTaskStatus(status: TaskStatus, useColor: boolean): void {
 function formatTimeAgo(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
 
-  if (seconds < 60) return `${seconds}s ago`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 60) {return `${seconds}s ago`;}
+  if (seconds < 3600) {return `${Math.floor(seconds / 60)}m ago`;}
   if (seconds < 86400) {
     const hours = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);

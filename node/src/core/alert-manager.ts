@@ -38,7 +38,7 @@ export class AlertManager {
   private readonly systemAlertThreshold: number;
 
   private errorCounts: Map<string, ErrorRecord> = new Map();
-  private globalErrorCount: number = 0;
+  private globalErrorCount = 0;
   private alertedTasks: Set<string> = new Set(); // Prevent duplicate alerts
 
   constructor(options: AlertManagerOptions = {}) {

@@ -16,14 +16,15 @@ import * as path from 'path';
 
 import { Command } from 'commander';
 
-import { EketErrorClass, EketErrorCode, type Result } from '../types/index.js';
-import { printError } from '../utils/error-handler.js';
 import {
   DEFAULT_GUARDRAILS,
   runGuardrails,
   type GuardrailInput,
   type GuardrailResult,
 } from '../core/guardrail.js';
+import { EketErrorClass, EketErrorCode, type Result } from '../types/index.js';
+import { printError } from '../utils/error-handler.js';
+import { SemanticValidator } from '../utils/semantic-validator.js';
 
 // ============================================================================
 // Types
@@ -563,6 +564,61 @@ export async function gateReview(
 
   printReport(report);
 
+  // ── AI Semantic Gatekeeper Check (TASK-Y02) ─────────────────────────────
+  let reportPath = path.join(projectRoot, 'jira', 'tickets', ticket.id.toUpperCase(), 'analysis-report.md');
+  if (!fs.existsSync(reportPath)) {
+    reportPath = path.join(path.dirname(filePath), ticket.id.toUpperCase(), 'analysis-report.md');
+  }
+
+  if (fs.existsSync(reportPath)) {
+    console.log(`\n   🔍 发现分析报告: ${path.relative(projectRoot, reportPath)}，启动 AI 语义级质检门禁...`);
+    const reportContent = fs.readFileSync(reportPath, 'utf-8');
+    const acMatch = ticket.content.match(/##\s*(?:验收标准|acceptance.criteria)[^\n]*\n([\s\S]*?)(?=\n##|\n---|\n\*\*|$)/i);
+    const ticketAc = acMatch ? acMatch[1].trim() : '无验收标准';
+
+    const validator = new SemanticValidator({ projectRoot });
+    try {
+      const semResult = await validator.validate(ticketAc, reportContent);
+      console.log(`      AI 质检得分: ${semResult.score}/100, 是否通过: ${semResult.passed ? '✅' : '❌'}`);
+      console.log(`      AI 评估原因: ${semResult.reason}`);
+
+      // Add to dimensions
+      report.dimensions.push({
+        name: 'AI 语义级计划质检',
+        status: semResult.passed ? 'pass' : 'fail',
+        note: `得分: ${semResult.score} - ${semResult.reason}`,
+      });
+
+      if (!semResult.passed && !options.autoApprove) {
+        // If it failed, override decision to VETO
+        report.decision = 'VETO';
+        report.vetoCount = ticket.vetoCount + 1;
+        if (!report.vetoDetails) {
+          report.vetoDetails = {
+            defects: [],
+            resubmitConditions: [],
+          };
+        }
+        report.vetoDetails.defects.push(`AI 语义级计划质检不合格 (得分: ${semResult.score}): ${semResult.reason}`);
+        report.vetoDetails.resubmitConditions.push('重新完善 analysis-report.md，提供具体可行的技术路线与文件更改计划');
+      }
+    } catch (err: any) {
+      console.warn(`      ⚠️ AI 语义级质检异常: ${err.message}`);
+      report.dimensions.push({
+        name: 'AI 语义级计划质检',
+        status: 'warn',
+        note: `质检异常: ${err.message} (降级通过)`,
+      });
+    }
+  } else {
+    report.dimensions.push({
+      name: 'AI 语义级计划质检',
+      status: 'warn',
+      note: '未找到 analysis-report.md，跳过 AI 语义质检',
+    });
+  }
+
+
   // ── Parallel guardrail checks (TASK-203) ────────────────────────────────
   const guardrailInput: GuardrailInput = {
     ticketId: ticket.id,
@@ -572,7 +628,7 @@ export async function gateReview(
     ciStatus: 'unknown',
     knowledgeNotes: (() => {
       const m = ticket.content.match(/##\s*(?:知识沉淀|knowledge.notes?)[^\n]*\n([\s\S]*?)(?=\n##|\n---|\n\*\*|$)/i);
-      if (!m || !m[1]) {return [];}
+      if (!m?.[1]) {return [];}
       const lines = m[1].trim().split('\n').filter((l) => l.trim().length > 0);
       return lines;
     })(),
@@ -647,6 +703,11 @@ Audit:
       });
 
       if (!result.success) {
+        process.exit(1);
+      }
+      
+      const hasVeto = result.data?.some(r => r.decision === 'VETO');
+      if (hasVeto) {
         process.exit(1);
       }
     });

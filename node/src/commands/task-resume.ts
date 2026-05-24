@@ -15,9 +15,9 @@ import * as path from 'path';
 import { Command } from 'commander';
 
 import { resumeWithFallback as _resumeWithFallbackCore } from '../core/session-resume.js';
+import { SQLiteClient } from '../core/sqlite-client.js';
 import { createSQLiteManager } from '../core/sqlite-manager.js';
 import { createTaskCheckpointStore } from '../core/task-checkpoint.js';
-import { SQLiteClient } from '../core/sqlite-client.js';
 import { EketError } from '../types/index.js';
 import { printError } from '../utils/error-handler.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';

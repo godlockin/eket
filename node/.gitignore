@@ -11,3 +11,5 @@ logs/
 # Test artifacts
 coverage/
 .worktrees/
+.eket-test/
+.test-temp/

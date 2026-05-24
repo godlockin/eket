@@ -83,7 +83,9 @@ function runWorker() {
               }
               const dir = path.dirname(dbPath);
               fs.mkdirSync(dir, { recursive: true });
-              db = new Database(dbPath);
+              db = new Database(dbPath, { timeout: 10000 });
+              db.pragma('journal_mode = WAL');
+              db.pragma('synchronous = NORMAL');
               db.pragma('foreign_keys = ON');
               initializeTables(db);
               sendResponse(port, request.id, { success: true, data: undefined });
@@ -352,20 +354,176 @@ function runWorker() {
 
 function initializeTables(db: Database.Database): void {
   db.exec(`
-    CREATE TABLE IF NOT EXISTS retrospectives (id INTEGER PRIMARY KEY AUTOINCREMENT, sprint_id TEXT NOT NULL, file_name TEXT UNIQUE, title TEXT NOT NULL, date TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-    CREATE TABLE IF NOT EXISTS retro_content (id INTEGER PRIMARY KEY AUTOINCREMENT, retro_id INTEGER NOT NULL, category TEXT NOT NULL, content TEXT NOT NULL, vote_count INTEGER DEFAULT 0, created_by TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (retro_id) REFERENCES retrospectives(id));
-    CREATE TABLE IF NOT EXISTS retro_tags (id INTEGER PRIMARY KEY AUTOINCREMENT, retro_id INTEGER NOT NULL, tag TEXT NOT NULL, FOREIGN KEY (retro_id) REFERENCES retrospectives(id));
+    -- Retrospective 主表
+    CREATE TABLE IF NOT EXISTS retrospectives (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sprint_id TEXT NOT NULL,
+      file_name TEXT UNIQUE,
+      title TEXT NOT NULL,
+      date TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Retrospective 内容表
+    CREATE TABLE IF NOT EXISTS retro_content (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      retro_id INTEGER NOT NULL,
+      category TEXT NOT NULL,
+      content TEXT NOT NULL,
+      vote_count INTEGER DEFAULT 0,
+      created_by TEXT,
+      FOREIGN KEY (retro_id) REFERENCES retrospectives(id)
+    );
+
+    -- Retrospective 标签表
+    CREATE TABLE IF NOT EXISTS retro_tags (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      retro_id INTEGER NOT NULL,
+      tag TEXT NOT NULL,
+      FOREIGN KEY (retro_id) REFERENCES retrospectives(id)
+    );
+
+    -- 创建索引
     CREATE INDEX IF NOT EXISTS idx_retro_sprint ON retrospectives(sprint_id);
     CREATE INDEX IF NOT EXISTS idx_retro_date ON retrospectives(date);
     CREATE INDEX IF NOT EXISTS idx_retro_content_category ON retro_content(category);
     CREATE INDEX IF NOT EXISTS idx_retro_tags_tag ON retro_tags(tag);
-    CREATE TABLE IF NOT EXISTS task_history (id INTEGER PRIMARY KEY AUTOINCREMENT, ticket_id TEXT NOT NULL, title TEXT, status TEXT, assigned_to TEXT, started_at TIMESTAMP, completed_at TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-    CREATE TABLE IF NOT EXISTS message_history (id INTEGER PRIMARY KEY AUTOINCREMENT, message_id TEXT UNIQUE, from_agent TEXT, to_agent TEXT, type TEXT, payload TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+
+    -- 任务历史表
+    CREATE TABLE IF NOT EXISTS task_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ticket_id TEXT NOT NULL,
+      title TEXT,
+      status TEXT,
+      assigned_to TEXT,
+      started_at TIMESTAMP,
+      completed_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      skill_feedback_json TEXT,
+      feedback_processed INTEGER DEFAULT 0
+    );
+
+    -- 消息历史表
+    CREATE TABLE IF NOT EXISTS message_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      message_id TEXT UNIQUE,
+      from_agent TEXT,
+      to_agent TEXT,
+      type TEXT,
+      payload TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE INDEX IF NOT EXISTS idx_task_status ON task_history(status);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_task_history_unique_inprogress
+      ON task_history(ticket_id) WHERE status = 'in_progress';
     CREATE INDEX IF NOT EXISTS idx_message_type ON message_history(type);
-    CREATE TABLE IF NOT EXISTS execution_checkpoints (id INTEGER PRIMARY KEY AUTOINCREMENT, ticket_id TEXT NOT NULL, slaver_id TEXT NOT NULL, phase TEXT NOT NULL, state_json TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE(ticket_id, slaver_id));
+
+    -- 执行检查点表（断点恢复）
+    CREATE TABLE IF NOT EXISTS execution_checkpoints (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ticket_id TEXT NOT NULL,
+      slaver_id TEXT NOT NULL,
+      phase TEXT NOT NULL,
+      state_json TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(ticket_id, slaver_id)
+    );
+
     CREATE INDEX IF NOT EXISTS idx_checkpoint_slaver ON execution_checkpoints(slaver_id);
+
+    -- TASK-199: TaskCheckpoint断点续传表（CAS版本控制）
+    CREATE TABLE IF NOT EXISTS task_checkpoints (
+      task_id    TEXT    PRIMARY KEY,
+      data       TEXT    NOT NULL,
+      version    INTEGER NOT NULL DEFAULT 0,
+      updated_at INTEGER NOT NULL
+    );
+
+    -- 任务消息表（结构化存储 LLM 执行消息）
+    CREATE TABLE IF NOT EXISTS task_messages (
+      id        INTEGER PRIMARY KEY AUTOINCREMENT,
+      task_id   TEXT    NOT NULL,
+      seq       INTEGER NOT NULL,
+      type      TEXT    NOT NULL CHECK(type IN ('text','tool_use','tool_result','thinking','error')),
+      tool      TEXT,
+      content   TEXT,
+      input_json TEXT,
+      output    TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(task_id, seq)
+    );
+    CREATE INDEX IF NOT EXISTS idx_task_messages_task_id ON task_messages(task_id, seq);
+
+    -- Agent-Skills 关联表（TASK-068）
+    CREATE TABLE IF NOT EXISTS agent_skills (
+      agent_id  TEXT NOT NULL,
+      skill_id  TEXT NOT NULL,
+      PRIMARY KEY (agent_id, skill_id)
+    );
+
+    -- 任务队列表（TASK-065: 原子性领取）
+    CREATE TABLE IF NOT EXISTS tickets (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'ready',
+      priority INTEGER NOT NULL DEFAULT 0,
+      assignee TEXT,
+      claimed_at TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);
+    CREATE INDEX IF NOT EXISTS idx_tickets_priority ON tickets(priority DESC, created_at ASC);
+
+    -- 知识库全文检索（FTS5）
+    CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts USING fts5(
+      doc_id UNINDEXED,
+      content,
+      source_path UNINDEXED
+    );
+
+    -- 知识库向量存储
+    CREATE TABLE IF NOT EXISTS knowledge_embeddings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      doc_id TEXT NOT NULL UNIQUE,
+      content TEXT NOT NULL,
+      source_path TEXT NOT NULL,
+      embedding TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    -- Skill Graph: 节点表（TASK-102a）
+    CREATE TABLE IF NOT EXISTS skill_nodes (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL CHECK(type IN ('skill', 'expert')),
+      domain TEXT NOT NULL,
+      level INTEGER DEFAULT 1 CHECK(level BETWEEN 1 AND 3),
+      model_hint TEXT,
+      triggers TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Skill Graph: 边表（TASK-102a）
+    CREATE TABLE IF NOT EXISTS skill_edges (
+      source_id TEXT NOT NULL,
+      target_id TEXT NOT NULL,
+      weight REAL DEFAULT 0.5 CHECK(weight BETWEEN 0.0 AND 1.0),
+      co_activation_count INTEGER DEFAULT 1,
+      active INTEGER DEFAULT 1,
+      last_activated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (source_id, target_id)
+    );
   `);
+
+  // Migration: add skill_feedback_json and feedback_processed columns if missing (TASK-104b)
+  try {
+    db.prepare(`ALTER TABLE task_history ADD COLUMN skill_feedback_json TEXT`).run();
+  } catch { /* column already exists */ }
+  try {
+    db.prepare(`ALTER TABLE task_history ADD COLUMN feedback_processed INTEGER DEFAULT 0`).run();
+  } catch { /* column already exists */ }
 }
 
 function escapeLikePattern(str: string): string {
@@ -423,6 +581,11 @@ export class AsyncSQLiteClient implements ISQLiteClient {
 
       this.worker.on('error', (err) => {
         console.error('[AsyncSQLite] Worker error:', err);
+        if (this.worker) {
+          this.worker.terminate();
+          this.worker = null;
+        }
+        this.ready = false;
         resolve({ success: false, error: new EketError(EketErrorCode.SQLITE_CONNECTION_FAILED, err.message) });
       });
 

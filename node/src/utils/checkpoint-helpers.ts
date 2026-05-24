@@ -92,7 +92,7 @@ export async function recordACComplete(
  */
 export async function recordTestsPassedComplete(
   testCommand: string,
-  exitCode: number = 0
+  exitCode = 0
 ): Promise<void> {
   await safeCheckpoint('tests_passed', {
     tests: {

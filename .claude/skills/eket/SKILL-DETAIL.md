@@ -145,10 +145,12 @@ node dist/index.js project:init
 ### Node.js 核心模块
 - `core/master-election.ts` — 三级Master选举（Redis SETNX/SQLite/File）
 - `core/message-queue.ts` — 消息队列（Redis Pub/Sub + 文件降级）
+- `core/state-reconciler.ts` — WAL 降级消息重放与状态自愈对齐 (TASK-Y01)
 - `core/circuit-breaker.ts` — 断路器（closed/open/half_open）
 - `core/cache-layer.ts` — LRU内存缓存 + Redis二级缓存
 - `core/agent-pool.ts` — Agent Pool（负载均衡、角色选择）
 - `core/workflow-engine.ts` — 工作流引擎
+- `utils/semantic-validator.ts` — AI 语义级计划质量审查门禁 (TASK-Y02)
 
 ### 降级架构
 ```

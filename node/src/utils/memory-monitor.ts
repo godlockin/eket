@@ -96,6 +96,11 @@ export class MemoryMonitor extends EventEmitter {
     this.checkTimer = setInterval(() => {
       this.checkMemory();
     }, this.config.checkInterval);
+
+    // Unref timer to allow process to exit if no other handles are active
+    if (this.checkTimer && typeof this.checkTimer.unref === 'function') {
+      this.checkTimer.unref();
+    }
   }
 
   /**

@@ -8,12 +8,12 @@ import * as path from 'path';
 
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 
-import { resolveModel, getModelDisplayName, type ModelTier } from './model-router.js';
-import { createModelConfig } from './model-provider.js';
+import { alertManager } from './alert-manager.js';
 import { contextTracker } from './context-tracker.js';
 import { identifyErrorType } from './error-identifier.js';
+import { createModelConfig } from './model-provider.js';
+import { resolveModel, getModelDisplayName, type ModelTier } from './model-router.js';
 import { logContextOverflow, saveTaskContext, saveSessionSnapshot } from './recovery-logger.js';
-import { alertManager } from './alert-manager.js';
 import { checkAndReportIfNeeded } from './slaver-context-monitor.js'; // TASK-608
 
 // ============================================================================

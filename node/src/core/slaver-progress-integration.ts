@@ -26,8 +26,9 @@
  * ```
  */
 
-import { ProgressTracker } from './progress-tracker.js';
 import { CheckpointMetadata, TaskPhase } from '../types/progress-tracker.js';
+
+import { ProgressTracker } from './progress-tracker.js';
 
 /**
  * Global singleton ProgressTracker instance

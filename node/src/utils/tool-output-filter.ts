@@ -71,9 +71,9 @@ export function filterToolOutput(
 function detectToolType(toolName: string): ToolType {
   const lower = toolName.toLowerCase();
 
-  if (lower.includes('grep')) return 'grep';
-  if (lower.includes('glob')) return 'glob';
-  if (lower.includes('ls') || lower.includes('list')) return 'ls';
+  if (lower.includes('grep')) {return 'grep';}
+  if (lower.includes('glob')) {return 'glob';}
+  if (lower.includes('ls') || lower.includes('list')) {return 'ls';}
 
   return 'unknown';
 }
@@ -103,7 +103,7 @@ function filterGrepOutput(output: string): string {
   // Parse grep output format: "file:line:content"
   const parsed = lines.map((line) => {
     const match = line.match(/^([^:]+):(\d+):(.+)$/);
-    if (!match) return { raw: line, file: '', lineNum: 0, content: line, exact: false };
+    if (!match) {return { raw: line, file: '', lineNum: 0, content: line, exact: false };}
 
     const [, file, lineNum, content] = match;
     // Heuristic: exact match if content contains pattern as whole word
@@ -115,8 +115,8 @@ function filterGrepOutput(output: string): string {
 
   // Sort: exact matches first, then by file+line
   const sorted = parsed.sort((a, b) => {
-    if (a.exact !== b.exact) return a.exact ? -1 : 1;
-    if (a.file !== b.file) return a.file.localeCompare(b.file);
+    if (a.exact !== b.exact) {return a.exact ? -1 : 1;}
+    if (a.file !== b.file) {return a.file.localeCompare(b.file);}
     return a.lineNum - b.lineNum;
   });
 
@@ -218,7 +218,7 @@ function filterUnknownOutput(output: string): string {
  * Append "... N more results" footer
  */
 function appendFooter(filtered: string, omitted: number): string {
-  if (omitted <= 0) return filtered;
+  if (omitted <= 0) {return filtered;}
 
   return `${filtered}\n\n[... ${omitted} more results omitted]`;
 }

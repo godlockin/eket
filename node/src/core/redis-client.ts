@@ -36,6 +36,7 @@ export class RedisClient {
   private config: RedisClientConfig;
   private isConnected = false;
   private isClusterMode = false;
+  private subscriberClients: any[] = [];
 
   constructor(config: RedisClientConfig) {
     // Defensive copy to prevent external mutation
@@ -229,6 +230,15 @@ export class RedisClient {
    * 关闭连接
    */
   async disconnect(): Promise<void> {
+    for (const subscriber of this.subscriberClients) {
+      try {
+        await subscriber.quit();
+      } catch (err) {
+        console.error('[Redis] Failed to quit subscriber client:', err);
+      }
+    }
+    this.subscriberClients = [];
+
     if (this.client) {
       if (this.isClusterMode) {
         await (this.client as IORedisClusterClient).quit();
@@ -439,6 +449,7 @@ export class RedisClient {
         password: this.config.password,
         db: this.config.db,
       });
+      this.subscriberClients.push(subscriber);
 
       // Promise-based subscribe
       await subscriber.subscribe(channel);

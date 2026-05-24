@@ -319,4 +319,112 @@ describe('gate:review command', () => {
     expect(depDim?.status).toBe('warn');
     expect(depDim?.note).toContain('FEAT-001');
   });
+
+  // --------------------------------------------------------------------------
+  // AI Semantic Quality Gate Integration
+  // --------------------------------------------------------------------------
+
+  it('should skip AI semantic gate check when analysis-report.md does not exist', async () => {
+    createTicket(tmpDir, 'FEAT-070');
+
+    const result = await gateReview('FEAT-070', {});
+    expect(result.success).toBe(true);
+    const reports = (result as { success: true; data: GateReviewReport[] }).data;
+    expect(reports[0]!.decision).toBe('APPROVE');
+    
+    const aiDim = reports[0]!.dimensions.find((d) => d.name === 'AI 语义级计划质检');
+    expect(aiDim).toBeDefined();
+    expect(aiDim?.status).toBe('warn');
+    expect(aiDim?.note).toContain('未找到 analysis-report.md');
+  });
+
+  it('should VETO when analysis-report.md has poor quality (e.g. contains TODO)', async () => {
+    createTicket(tmpDir, 'FEAT-071');
+
+    // Create the slaver's analysis-report.md directory and file
+    const reportDir = path.join(tmpDir, 'jira', 'tickets', 'FEAT-071');
+    fs.mkdirSync(reportDir, { recursive: true });
+    
+    const poorReportContent = `
+# Task Analysis Report: FEAT-071
+
+## 1. Requirements Understanding
+We will check and verify this specific requirement to make sure all parameters are aligned and robust.
+
+## 2. Technical Approach
+TODO: Write implementation details later. We will figure out what classes to write at a later point.
+
+## 3. Impact Analysis
+Low impact across all files.
+
+## 4. Task Breakdown
+- Task 1: TODO
+
+## 5. Risk Assessment
+No risk has been identified so far.
+    `;
+    fs.writeFileSync(path.join(reportDir, 'analysis-report.md'), poorReportContent);
+
+    // Turn on the test fallback so we don't try to call external LLM APIs
+    process.env.EKET_TEST_FALLBACK = 'true';
+    
+    try {
+      const result = await gateReview('FEAT-071', {});
+      expect(result.success).toBe(true);
+      const reports = (result as { success: true; data: GateReviewReport[] }).data;
+      expect(reports[0]!.decision).toBe('VETO');
+      
+      const aiDim = reports[0]!.dimensions.find((d) => d.name === 'AI 语义级计划质检');
+      expect(aiDim).toBeDefined();
+      expect(aiDim?.status).toBe('fail');
+      expect(aiDim?.note).toContain('得分: 50');
+    } finally {
+      delete process.env.EKET_TEST_FALLBACK;
+    }
+  });
+
+  it('should APPROVE when analysis-report.md has high quality', async () => {
+    createTicket(tmpDir, 'FEAT-072');
+
+    const reportDir = path.join(tmpDir, 'jira', 'tickets', 'FEAT-072');
+    fs.mkdirSync(reportDir, { recursive: true });
+    
+    const richReportContent = `
+# Task Analysis Report: FEAT-072
+
+## 1. Requirements Understanding
+We will successfully implement the AI Semantic Quality Gate validator to block bad code plans.
+
+## 2. Technical Approach
+We will instantiate SemanticValidator inside gate-review.ts and verify all 5 core dimensions are present.
+We will use SHA256 caching to skip subsequent AI calls.
+
+## 3. Impact Analysis
+Low schema impact, high developer plan quality impact.
+
+## 4. Task Breakdown
+- Task A: Write validator (2h)
+- Task B: Add integration tests (2h)
+
+## 5. Risk Assessment
+Risk of API downtime is mitigated by the robust offline fallback mechanism.
+    `;
+    fs.writeFileSync(path.join(reportDir, 'analysis-report.md'), richReportContent);
+
+    process.env.EKET_TEST_FALLBACK = 'true';
+    
+    try {
+      const result = await gateReview('FEAT-072', {});
+      expect(result.success).toBe(true);
+      const reports = (result as { success: true; data: GateReviewReport[] }).data;
+      expect(reports[0]!.decision).toBe('APPROVE');
+      
+      const aiDim = reports[0]!.dimensions.find((d) => d.name === 'AI 语义级计划质检');
+      expect(aiDim).toBeDefined();
+      expect(aiDim?.status).toBe('pass');
+      expect(aiDim?.note).toContain('得分: 80');
+    } finally {
+      delete process.env.EKET_TEST_FALLBACK;
+    }
+  });
 });
