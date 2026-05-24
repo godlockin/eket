@@ -4,11 +4,157 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>EKET API Documentation</title>
+  <title>EKET API Documentation Index</title>
   <style>
     /* Default styles provided by pandoc.
     ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
     */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
     span.smallcaps{font-variant: small-caps;}
     div.columns{display: flex; gap: min(4vw, 1.5em);}
     div.column{flex: auto; overflow-x: auto;}
@@ -89,101 +235,11 @@
     code span.vs { color: #4070a0; } /* VerbatimString */
     code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
   </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css" />
 </head>
 <body>
 <header id="title-block-header">
-<h1 class="title">EKET API Documentation</h1>
+<h1 class="title">EKET API Documentation Index</h1>
 </header>
-<nav id="TOC" role="doc-toc">
-<ul>
-<li><a href="#eket-api-documentation-index"
-id="toc-eket-api-documentation-index">EKET API Documentation Index</a>
-<ul>
-<li><a href="#documentation-structure"
-id="toc-documentation-structure">📚 Documentation Structure</a>
-<ul>
-<li><a href="#auto-generated-documentation"
-id="toc-auto-generated-documentation">Auto-Generated
-Documentation</a></li>
-<li><a href="#manually-curated-guides"
-id="toc-manually-curated-guides">Manually Curated Guides</a></li>
-</ul></li>
-<li><a href="#quick-start" id="toc-quick-start">🚀 Quick Start</a>
-<ul>
-<li><a href="#installation" id="toc-installation">Installation</a></li>
-<li><a href="#basic-usage" id="toc-basic-usage">Basic Usage</a></li>
-</ul></li>
-<li><a href="#core-modules-overview" id="toc-core-modules-overview">📦
-Core Modules Overview</a>
-<ul>
-<li><a href="#core-module" id="toc-core-module">Core Module</a></li>
-<li><a href="#commands-module" id="toc-commands-module">Commands
-Module</a></li>
-<li><a href="#utils-module" id="toc-utils-module">Utils Module</a></li>
-</ul></li>
-<li><a href="#architecture-overview" id="toc-architecture-overview">🏗️
-Architecture Overview</a></li>
-<li><a href="#common-use-cases" id="toc-common-use-cases">🎯 Common Use
-Cases</a>
-<ul>
-<li><a href="#use-case-1-claim-and-complete-a-task"
-id="toc-use-case-1-claim-and-complete-a-task">Use Case 1: Claim and
-Complete a Task</a></li>
-<li><a href="#use-case-2-search-knowledge-base-before-development"
-id="toc-use-case-2-search-knowledge-base-before-development">Use Case 2:
-Search Knowledge Base Before Development</a></li>
-<li><a href="#use-case-3-deploy-to-production"
-id="toc-use-case-3-deploy-to-production">Use Case 3: Deploy to
-Production</a></li>
-<li><a href="#use-case-4-monitor-agent-health"
-id="toc-use-case-4-monitor-agent-health">Use Case 4: Monitor Agent
-Health</a></li>
-</ul></li>
-<li><a href="#typescript-api-examples"
-id="toc-typescript-api-examples">📖 TypeScript API Examples</a>
-<ul>
-<li><a href="#example-1-task-assignment"
-id="toc-example-1-task-assignment">Example 1: Task Assignment</a></li>
-<li><a href="#example-2-message-passing"
-id="toc-example-2-message-passing">Example 2: Message Passing</a></li>
-<li><a href="#example-3-error-handling"
-id="toc-example-3-error-handling">Example 3: Error Handling</a></li>
-</ul></li>
-<li><a href="#testing" id="toc-testing">🧪 Testing</a>
-<ul>
-<li><a href="#run-all-tests" id="toc-run-all-tests">Run All
-Tests</a></li>
-<li><a href="#run-specific-module-tests"
-id="toc-run-specific-module-tests">Run Specific Module Tests</a></li>
-<li><a href="#coverage-report" id="toc-coverage-report">Coverage
-Report</a></li>
-</ul></li>
-<li><a href="#configuration" id="toc-configuration">🔧 Configuration</a>
-<ul>
-<li><a href="#minimal-config.yml" id="toc-minimal-config.yml">Minimal
-config.yml</a></li>
-<li><a href="#environment-variables"
-id="toc-environment-variables">Environment Variables</a></li>
-</ul></li>
-<li><a href="#troubleshooting" id="toc-troubleshooting">🐛
-Troubleshooting</a>
-<ul>
-<li><a href="#common-errors" id="toc-common-errors">Common
-Errors</a></li>
-<li><a href="#debug-mode" id="toc-debug-mode">Debug Mode</a></li>
-</ul></li>
-<li><a href="#additional-resources" id="toc-additional-resources">📚
-Additional Resources</a></li>
-<li><a href="#contributing" id="toc-contributing">📝 Contributing</a>
-<ul>
-<li><a href="#adding-new-documentation"
-id="toc-adding-new-documentation">Adding New Documentation</a></li>
-</ul></li>
-<li><a href="#license" id="toc-license">📜 License</a></li>
-</ul></li>
-</ul>
-</nav>
 <h1 id="eket-api-documentation-index">EKET API Documentation Index</h1>
 <p><strong>Version</strong>: 2.9.0-alpha<br />
 <strong>Last Updated</strong>: 2026-05-10<br />
