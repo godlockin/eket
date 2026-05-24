@@ -61,8 +61,8 @@ export function registerServerStart(program: Command): void {
       try {
         // ── Step 1: Try to start Rust server in background ──────────────────
         const rustApiUrl = process.env.EKET_RUST_API_URL || 'http://localhost:9877';
-        const dbPath = process.env.EKET_SQLITE_PATH || `${process.env.HOME}/.eket/eket.db`;
-        const ticketsDir = process.env.EKET_TICKETS_DIR || `${process.cwd()}/../jira/tickets`;
+        const dbPath = process.env.EKET_SQLITE_PATH || `${process.cwd()}/.eket/data/sqlite/eket.db`;
+        const ticketsDir = process.env.EKET_TICKETS_DIR || `${process.cwd()}/jira/tickets`;
 
         spinner.text = 'Starting Rust API server...';
         tryStartRustServer(dbPath, ticketsDir);
