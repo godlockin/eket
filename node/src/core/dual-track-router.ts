@@ -8,8 +8,6 @@
 
 import { MasterElection } from './master-election.js';
 import { EventBus } from './event-bus.js';
-import type { Result } from '../types/index.js';
-import { EketError, EketErrorCode } from '../types/index.js';
 
 // ============================================================================
 // Environment Detection Helper
@@ -337,15 +335,15 @@ export class DualTrackEventBus {
     await this.nodeFallback.publish(eventType, payload, source);
   }
 
-  on<T>(eventType: string, handler: any, options?: any): void {
+  on(eventType: string, handler: any, options?: any): void {
     this.nodeFallback.on(eventType, handler, options);
   }
 
-  once<T>(eventType: string, handler: any, options?: any): void {
+  once(eventType: string, handler: any, options?: any): void {
     this.nodeFallback.once(eventType, handler, options);
   }
 
-  off<T>(eventType: string, handler: any): void {
+  off(eventType: string, handler: any): void {
     this.nodeFallback.off(eventType, handler);
   }
 
