@@ -19,6 +19,7 @@
 | [patterns/knowledge-flywheel.md](patterns/knowledge-flywheel.md) | 知识飞轮模式 — task:claim 自动推送 pitfalls/patterns、complete 触发 Curator |
 | [patterns/task-effort-human-units.md](patterns/task-effort-human-units.md) | 任务工时人类单位 — 2d/0.5d/3h/480min 换算规则 |
 | [patterns/unblocked-ticket-notification-design.md](patterns/unblocked-ticket-notification-design.md) | 依赖解除通知设计 — unblocked-queue.json、heartbeat 优先分发、Saga 步骤 |
+| [patterns/dual-track-router.md](patterns/dual-track-router.md) | 双轨路由器模式 — Rust/JS 自动切换、断路器保护、接口抽象、降级透明 |
 
 ---
 
@@ -92,6 +93,7 @@
 | [retrospectives/epics/EPIC-002.md](retrospectives/epics/EPIC-002.md) | EPIC-002 综合经验教训 — PR收尾/rebase/CI/专家体系（addyosmani agent-skills引入） |
 | [retrospectives/epics/EPIC-003.md](retrospectives/epics/EPIC-003.md) | EPIC-003 回灌经验教训 — cherry-pick分叉、三分支对齐、历史债务处理 |
 | [retrospectives/epics/EPIC-004.md](retrospectives/epics/EPIC-004.md) | EPIC-004 持续改进经验教训 — Worktree丢失、防卡死、Post-Process、分支清理 |
+| [retrospectives/epics/EPIC-010.md](retrospectives/epics/EPIC-010.md) | EPIC-010 Rust 高性能核心 — 双轨降级/三级选举/WAL重放/TypeScript strict 踩坑 |
 
 ### Pull Requests (2026)
 | 文件 | 摘要 |
@@ -129,4 +131,4 @@
 
 ---
 
-*文件总数：47 | 上次更新：2026-05-07*
+*文件总数：89 | 上次更新：2026-05-24*
