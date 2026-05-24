@@ -1,5 +1,7 @@
 # 四级降级模式（Shell → Rust → Node.js → Shell fallback）
 
+> **迁移提示**：架构设计部分已迁移至 `docs/architecture/degradation.md`，本文档保留实现细节和实战经验。
+
 > 2026-05-04 更新：Rust binary 作为 Level 1 插入，原 Node.js 降为 Level 2，原三级升为四级。
 
 **场景**：框架需要在不同环境（仅 bash、有 Rust binary、有 Node.js、有 Redis）下都能运行  

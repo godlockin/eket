@@ -10,7 +10,6 @@
 ## TODO (24h SLA)
 - [x] What worked
 - [x] What hurt + root cause
-- [x] Lessons → 沉淀到 confluence/memory/{lessons/rule-retention-lessons.md,research/borrowed-wisdom.md}
 - [x] 移动本文件到 confluence/memory/retrospectives/2026/
 
 ## PR body snapshot
@@ -51,7 +50,6 @@ Ref: TASK-053
 
 ## Action Items
 - [x] TASK-053 立项，跟踪方案选型 → 已由 TASK-060 完成（选方案 3）
-- [x] 将 GITHUB_TOKEN 限制知识沉淀到 lessons/rule-retention-lessons.md
 
 ## 经验教训
 - **GITHUB_TOKEN 限制**：`GITHUB_TOKEN` 创建的 PR/push 不触发任何下游 workflow（GitHub 防 loop 安全策略）；需用 PAT、GitHub App Token 或非保护分支直推绕过
