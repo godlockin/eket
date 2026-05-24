@@ -20,6 +20,7 @@ import { EketError, EketErrorCode } from '../types/index.js';
 
 import { RedisClient } from './redis-client.js';
 import { SQLiteManager } from './sqlite-manager.js';
+import { StateReconciler } from './state-reconciler.js';
 
 // ============================================================================
 // Connection Manager Class
@@ -61,6 +62,7 @@ export class ConnectionManager {
         this.currentLevel = 'remote_redis';
         this.remoteRedisAvailable = true;
         console.log('[ConnectionManager] Connected to remote Redis');
+        this.triggerReconcile();
         return { success: true, data: this.currentLevel };
       }
     }
@@ -74,6 +76,7 @@ export class ConnectionManager {
         this.fallbackCount++;
         this.lastFallbackTime = Date.now();
         console.log('[ConnectionManager] Connected to local Redis (fallback)');
+        this.triggerReconcile();
         return { success: true, data: this.currentLevel };
       }
     }
@@ -86,6 +89,7 @@ export class ConnectionManager {
       this.fallbackCount++;
       this.lastFallbackTime = Date.now();
       console.log('[ConnectionManager] Connected to SQLite (fallback)');
+      this.triggerReconcile();
       return { success: true, data: this.currentLevel };
     }
 
@@ -244,7 +248,19 @@ export class ConnectionManager {
   }
 
   /**
-   * 尝试升级到更高级别的连接
+   * 触发后台数据对齐重放流程
+   */
+  private triggerReconcile(): void {
+    const queueDir = this.getFileQueueDir();
+    if (!queueDir) return;
+    const reconciler = new StateReconciler(queueDir, this.sqliteClient, null);
+    reconciler.reconcile().catch((err: any) => {
+      console.warn(`[ConnectionManager] Background reconciliation failed: ${err.message}`);
+    });
+  }
+
+  /**
+   * 尝试升级到更高级级别的连接
    */
   async tryUpgrade(): Promise<Result<ConnectionLevel>> {
     const currentLevel = this.currentLevel;
@@ -256,6 +272,7 @@ export class ConnectionManager {
         this.currentLevel = 'sqlite';
         this.sqliteAvailable = true;
         console.log('[ConnectionManager] Upgraded to SQLite');
+        this.triggerReconcile();
         return { success: true, data: this.currentLevel };
       }
     }
@@ -267,6 +284,7 @@ export class ConnectionManager {
         this.currentLevel = 'local_redis';
         this.localRedisAvailable = true;
         console.log('[ConnectionManager] Upgraded to local Redis');
+        this.triggerReconcile();
         return { success: true, data: this.currentLevel };
       }
     }
@@ -278,6 +296,7 @@ export class ConnectionManager {
         this.currentLevel = 'remote_redis';
         this.remoteRedisAvailable = true;
         console.log('[ConnectionManager] Upgraded to remote Redis');
+        this.triggerReconcile();
         return { success: true, data: this.currentLevel };
       }
     }

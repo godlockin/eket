@@ -11,14 +11,15 @@
  * - Timestamps are monotonic
  */
 
+import { execFile } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';
-import { Command } from 'commander';
-import { execFile } from 'child_process';
 import { promisify } from 'util';
 
-import { parseProgressMarkdown } from '../utils/progress-parser.js';
+import { Command } from 'commander';
+
 import { Checkpoint } from '../types/progress-tracker.js';
+import { parseProgressMarkdown } from '../utils/progress-parser.js';
 
 const execFileAsync = promisify(execFile);
 

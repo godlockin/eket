@@ -7,7 +7,9 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
+
 import { Command } from 'commander';
+
 import { printError } from '../utils/error-handler.js';
 
 /**

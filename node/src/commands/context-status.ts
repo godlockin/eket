@@ -4,6 +4,7 @@
  */
 
 import type { Command } from 'commander';
+
 import { contextTracker } from '../core/context-tracker.js';
 
 /**

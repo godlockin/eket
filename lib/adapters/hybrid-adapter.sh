@@ -98,6 +98,24 @@ exec_shell() {
     fi
 }
 
+# 序列化参数为 JSON 数组格式，并处理特殊字符转义
+serialize_args_json() {
+    local first=true
+    echo -n "["
+    for arg in "$@"; do
+        if [ "$first" = true ]; then
+            first=false
+        else
+            echo -n ", "
+        fi
+        # 转义反斜杠和双引号
+        local escaped="${arg//\\/\\\\}"
+        escaped="${escaped//\"/\\\"}"
+        echo -n "\"$escaped\""
+    done
+    echo -n "]"
+}
+
 # 降级到文件队列模式
 exec_fallback() {
     local cmd="$1"
@@ -109,10 +127,13 @@ exec_fallback() {
     mkdir -p "$queue_dir"
 
     local msg_file="$queue_dir/${cmd}_$(date +%s).msg"
+    local json_args
+    json_args=$(serialize_args_json "$@")
+
     cat > "$msg_file" << EOF
 {
   "command": "$cmd",
-  "args": $@,
+  "args": $json_args,
   "timestamp": "$(date -Iseconds)",
   "status": "pending"
 }
@@ -196,7 +217,8 @@ route_command() {
     echo "  Shell:   start, status, claim, docker-redis, docker-sqlite"
     echo ""
     echo "提示：运行 './scripts/enable-advanced.sh' 启用更多功能"
-    return 1
+    exec_fallback "$cmd" "$@"
+    return 0
 }
 
 # 显示帮助
