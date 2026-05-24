@@ -47,26 +47,204 @@ Slaver 每完成一个子阶段后，必须依次回答以下 4 个问题：
 
 ---
 
-## 2. 启动流程
+## 2. 任务生命周期与 Master 信息交换协议
 
-### 2.1 加载活跃上下文（TASK-079）
+### 2.1 Worktree 隔离（强制）
+
+**每个 Slaver 必须在独立 Worktree 中工作**，禁止多个 Slaver 共享同一工作目录。
+
+```bash
+# 领取任务后立即创建 worktree
+git worktree add .worktrees/TASK-XXX -b feature/TASK-XXX-desc
+
+# 切换到 worktree 目录工作
+cd .worktrees/TASK-XXX
+```
+
+**为什么强制**：
+- 多 Agent 共享 `.git` 目录 → `index.lock` 死锁（EPIC-003 教训）
+- `isolation: "worktree"` 有 CWD 切换 bug → 代码丢失（EPIC-004 教训）
+- 手动 `git worktree add` 是唯一可靠方式
+
+**参见**：`confluence/memory/patterns/git-worktree-eket-integration.md`
+
+---
+
+### 2.2 任务生命周期 5 阶段
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  阶段 1: CLAIM        阶段 2: ANALYSIS     阶段 3: IN_PROGRESS              │
+│  ─────────────────    ─────────────────    ─────────────────────            │
+│  领取任务             分析设计             开发实现                          │
+│  创建 Worktree        提交分析报告         定期进度上报                       │
+│  ↓                    ↓ 等待 Master 审批    ↓                                │
+│  通知 Master          Master 批准/驳回     每 N 分钟上报                      │
+│                                                                             │
+│  阶段 4: TEST         阶段 5: REVIEW                                        │
+│  ─────────────────    ─────────────────                                     │
+│  测试验证             提交 PR                                                │
+│  双轨测试上报         等待 Master 审核                                        │
+│  ↓                    ↓                                                     │
+│  通知 Master 测试完成  Master 合并/驳回                                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 2.3 各阶段 Master 信息交换（强制）
+
+#### 阶段 1：CLAIM（任务领取）
+
+**Slaver 动作**：
+1. 创建独立 worktree
+2. 发送 `task_claimed` 消息
+
+```json
+{
+  "type": "task_claimed",
+  "slaver_id": "<id>",
+  "ticket_id": "TASK-XXX",
+  "worktree_path": "/path/to/.worktrees/TASK-XXX",
+  "timestamp": "ISO8601"
+}
+```
+
+**Master 响应**：确认领取，更新 ticket 状态
+
+---
+
+#### 阶段 2：ANALYSIS（分析设计）
+
+**Slaver 动作**：
+1. 完成分析报告 (`jira/tickets/TASK-XXX/analysis-report.md`)
+2. 发送 `analysis_review_request` 消息
+
+```json
+{
+  "type": "analysis_review_request",
+  "slaver_id": "<id>",
+  "ticket_id": "TASK-XXX",
+  "report_path": "jira/tickets/TASK-XXX/analysis-report.md",
+  "estimated_hours": 4,
+  "timestamp": "ISO8601"
+}
+```
+
+**Master 响应**：
+- `approved` → Slaver 开始开发
+- `rejected` → 附带修改意见，Slaver 重新分析
+- `needs_split` → 任务需拆分，Slaver 等待新 ticket
+
+**⚠️ 未收到 Master 批准前禁止开始编码**
+
+---
+
+#### 阶段 3：IN_PROGRESS（开发实现）
+
+**Slaver 动作**：
+- **上报间隔** = `min(预估工时 / 10, 30分钟)`
+- 发送 `progress_report` 消息（见 §6 Rule 3）
+
+```json
+{
+  "type": "progress_report",
+  "slaver_id": "<id>",
+  "ticket_id": "TASK-XXX",
+  "phase": "in_progress",
+  "percent": 60,
+  "completed": ["核心逻辑", "单元测试"],
+  "remaining": ["集成测试", "文档"],
+  "blocked": false,
+  "timestamp": "ISO8601"
+}
+```
+
+**遇到阻塞时**：
+```json
+{
+  "type": "blocked_report",
+  "slaver_id": "<id>",
+  "ticket_id": "TASK-XXX",
+  "blocked_by": "依赖 TASK-YYY 未完成",
+  "blocked_duration_min": 45,
+  "timestamp": "ISO8601"
+}
+```
+
+**Master 响应**：监控进度，超时触发诊断（见 MASTER-RULES §Rule 3）
+
+---
+
+#### 阶段 4：TEST（测试验证）
+
+**Slaver 动作**：
+1. 执行双轨测试（见 §5）
+2. 发送 `test_complete` 消息
+
+```json
+{
+  "type": "test_complete",
+  "slaver_id": "<id>",
+  "ticket_id": "TASK-XXX",
+  "test_results": {
+    "track1_validation": { "passed": 45, "failed": 0 },
+    "track2_adversarial": { "issues_found": 2, "severity": ["P2", "P2"] }
+  },
+  "ready_for_pr": true,
+  "timestamp": "ISO8601"
+}
+```
+
+**Master 响应**：
+- `proceed_to_pr` → Slaver 提交 PR
+- `fix_issues` → 附带问题列表，Slaver 修复后重新测试
+
+---
+
+#### 阶段 5：REVIEW（PR 审核）
+
+**Slaver 动作**：
+1. 推送代码到远程分支
+2. 创建 PR 并发送 `pr_review_request` 消息
+
+```json
+{
+  "type": "pr_review_request",
+  "slaver_id": "<id>",
+  "ticket_id": "TASK-XXX",
+  "branch": "feature/TASK-XXX-desc",
+  "pr_url": "https://github.com/xxx/pull/123",
+  "pr_description_path": "outbox/review_requests/TASK-XXX-pr.md",
+  "timestamp": "ISO8601"
+}
+```
+
+**Master 响应**：
+- `approved` → 合并 PR，Slaver 执行复盘
+- `changes_requested` → 附带修改意见，Slaver 修改后重新提交
+- `rejected` → 说明原因，Slaver 回到 IN_PROGRESS 重做
+
+---
+
+### 2.4 加载活跃上下文（恢复机制）
 
 Slaver **每次启动**时，必须在执行任何操作前读取 `.eket/ACTIVE_CONTEXT.md`：
 
 ```
 IF .eket/ACTIVE_CONTEXT.md 存在:
   → 读取并展示文件内容
-  → 确认当前 ticket ID、角色、领取时间
+  → 确认当前 ticket ID、角色、领取时间、worktree 路径
+  → cd 到 worktree 目录
   → 继续上次中断的工作（无需重新 claim）
 ELSE:
   → 执行正常领取流程（/eket-claim）
 ```
 
 **文件位置**：`.eket/ACTIVE_CONTEXT.md`  
-**自动生成时机**：每次成功 claim 后由 `injectActiveContext()` 刷新。  
-**手动查看**：`cat .eket/ACTIVE_CONTEXT.md`
+**自动生成时机**：每次成功 claim 后由 `injectActiveContext()` 刷新。
 
-> **为什么重要**：防止 Slaver 重启后遗忘当前任务、重复领取或错误判断状态。
+> **为什么重要**：防止 Slaver 重启后遗忘当前任务、丢失 worktree 路径、重复领取。
 
 ---
 
@@ -157,108 +335,6 @@ echo "exit code: $?"  # 必须为 0
 ### 违反后果
 
 违反 Nyquist Rule 的 PR 描述（仅有文字描述而无命令输出）→ Master **直接 reject**，不进入 review 流程。
-
-### 双轨测试机制（Dual-Track Testing）
-
-**触发条件**：
-- ticket 标注 `[DUAL-TEST]` 标签
-- 功能复杂度高（预估测试工时 >2 小时）
-- 核心业务逻辑（支付/认证/数据完整性）
-- Master 明确要求双轨测试
-
-**执行策略**：同时初始化两组专家团队
-
-#### Track 1: 正向测试组（Validation Team）
-**职责**：验证功能正确性
-
-**专家组成**：
-- QA Engineer：设计测试用例（黄金路径 + 边界条件）
-- Test Automation：编写自动化测试脚本
-- Integration Tester：验证与上下游模块集成
-
-**产出**：
-- 测试用例清单（`tests/<ticket-id>/test-cases.md`）
-- 自动化测试代码（`tests/<ticket-id>/*.test.ts`）
-- 集成测试报告（`tests/<ticket-id>/integration-report.md`）
-
-#### Track 2: 反向纠错组（Adversarial Team）
-**职责**：专门找茬、挑刺、破坏性测试
-
-**专家组成**：
-- Security Auditor：安全漏洞挖掘（注入/XSS/认证绕过）
-- Chaos Engineer：边界条件破坏（极端输入/资源耗尽/并发竞态）
-- Code Critic：代码质量挑刺（反模式/技术债/维护性问题）
-
-**产出**：
-- 漏洞报告（`tests/<ticket-id>/vulnerability-report.md`）
-- 破坏性测试用例（`tests/<ticket-id>/chaos-tests.md`）
-- 代码质量问题清单（`tests/<ticket-id>/code-review-issues.md`）
-
-#### 双轨协同流程
-
-```bash
-# 1. Master 初始化双轨团队
-Agent(description="正向测试组", prompt="验证 <ticket-id> 功能正确性")
-Agent(description="反向纠错组", prompt="挑战 <ticket-id> 实现健壮性")
-
-# 2. 两组并行执行（独立 worktree）
-正向组 → 编写测试用例 → 运行测试 → 生成覆盖率报告
-反向组 → 挖掘漏洞 → 设计破坏性场景 → 生成问题清单
-
-# 3. 交叉验证
-正向组修复反向组发现的问题 → 重新测试
-反向组验证正向组的修复 → 二次挑战
-
-# 4. 合并产出
-合并两组的测试用例 → 统一测试套件
-合并两组的问题清单 → 统一修复 checklist
-```
-
-#### 验收标准
-
-**双轨测试完成的判定**：
-- [ ] 正向组：所有测试用例通过（绿灯）
-- [ ] 反向组：所有已知漏洞/问题已修复或标记为"已知限制"
-- [ ] 交叉验证：正向组确认反向组的修复有效
-- [ ] 覆盖率：代码覆盖率 ≥80%（核心逻辑 ≥95%）
-- [ ] 性能：反向组的破坏性测试未触发性能退化（±10% 基线）
-
-#### 冲突解决
-
-**正向组 vs 反向组意见分歧**：
-- 反向组发现问题但正向组认为"设计如此" → 上报 Master 仲裁
-- 反向组要求修复但工时超预算 → Master 决策（修复/标记技术债/降级处理）
-
-#### 上报格式
-
-双轨测试完成后，Slaver 必须提交统一报告：
-
-```markdown
-## 双轨测试报告：<ticket-id>
-
-**正向组验证结果**：
-- 测试用例总数：X
-- 通过：Y（绿灯）
-- 失败：Z（已修复/待修复）
-- 覆盖率：XX%
-
-**反向组挑战结果**：
-- 发现漏洞：X 个（Severity: High/Medium/Low）
-- 代码质量问题：Y 个
-- 性能问题：Z 个
-- 已修复：X 个，待确认：Y 个，标记技术债：Z 个
-
-**交叉验证**：
-- [ ] 正向组确认反向组修复有效
-- [ ] 反向组二次挑战无新问题
-
-**最终结论**：
-- [x] 双轨测试通过，可提交 PR
-- [ ] 需进一步修复（见问题清单）
-```
-
-### 来源
-复杂功能（如支付/认证）单一测试视角容易遗漏边界情况，双轨机制提升测试质量。
 
 ---
 
@@ -398,117 +474,7 @@ bash confluence/scripts/generate-codebase-map.sh
 
 ---
 
-## 8. 长文档分块写入规则（防任务熔断）
-
-**触发条件**：
-- 文档预计 >200 行
-- 写入时间预计 >5 分钟
-- 包含大量结构化内容（表格/代码块/多层嵌套）
-
-**强制策略**：禁止一次性生成，必须采用**分块写 + 合并 + Review**模式
-
-### 8.1 检测与上报
-
-**Slaver 接收到文档任务时**：
-1. 评估文档规模（行数/复杂度/耗时）
-2. 如预计 >200 行 且 ticket 无 `[CHUNKED-DOC]` 标签：
-   ```bash
-   # 上报 Master
-   echo "[CHUNKED-DOC-REQUEST] 文档预计 X 行，建议分块写入" >> shared/message_queue/inbox/...
-   ```
-3. 等待 Master 确认分块策略（章节/主题/页数）
-
-**如 ticket 已有 `[CHUNKED-DOC]` 标签**：
-- 直接按 Master 指定的分块策略执行
-- 无需上报，立即开始分块写入
-
-### 8.2 分块执行流程
-
-```bash
-# 1. 创建临时分块目录
-mkdir -p .eket/temp-docs/<ticket-id>/
-
-# 2. 顺序写入各块（每块 ≤100 行 或 ≤3 分钟）
-Write(.eket/temp-docs/<ticket-id>/part-1.md, "章节 1 内容")
-git add .eket/temp-docs/<ticket-id>/part-1.md
-git commit -m "docs(<ticket-id>): 章节 1 完成"
-上报进度: "[1/N] done: 章节 1"
-
-Write(.eket/temp-docs/<ticket-id>/part-2.md, "章节 2 内容")
-git add .eket/temp-docs/<ticket-id>/part-2.md
-git commit -m "docs(<ticket-id>): 章节 2 完成"
-上报进度: "[2/N] done: 章节 2"
-
-# 3. 合并完整文档
-cat .eket/temp-docs/<ticket-id>/part-*.md > <final-doc-path>
-git add <final-doc-path>
-git commit -m "docs(<ticket-id>): 合并完整文档"
-
-# 4. 清理临时文件
-git rm -rf .eket/temp-docs/<ticket-id>/
-git commit -m "docs(<ticket-id>): 清理临时分块"
-```
-
-### 8.3 进度上报格式
-
-**每完成一块后立即上报**：
-```yaml
-type: chunked_doc_progress
-slaver_id: <id>
-ticket_id: <id>
-part_index: 2
-total_parts: 5
-part_title: "章节 2：架构设计"
-completed_at: "2026-05-19T12:00:00+08:00"
-```
-
-### 8.4 超时自救
-
-**检测规则**：
-- 单个 Write 操作 >5 分钟 → 立即中断
-- 连续 10 分钟无 commit → 强制保存进度
-
-**自救流程**：
-```bash
-# 1. 保存当前已写入内容
-Write(.eket/temp-docs/<ticket-id>/part-current-interrupted.md, <当前内容>)
-git add .eket/temp-docs/<ticket-id>/part-current-interrupted.md
-git commit -m "docs(<ticket-id>): [INTERRUPTED] 保存进度"
-
-# 2. 上报 Master
-type: chunked_doc_timeout
-slaver_id: <id>
-ticket_id: <id>
-interrupted_at_part: 3
-reason: "单个 Write 超过 5 分钟"
-saved_progress: ".eket/temp-docs/<ticket-id>/part-current-interrupted.md"
-
-# 3. 等待 Master 决策（继续/暂停/取消）
-```
-
-### 8.5 禁止行为
-
-- ❌ 一次性生成 200+ 行文档
-- ❌ 在单个 Write 调用中写入大量内容（>100 行）
-- ❌ 长时间（>5 分钟）无进度上报
-- ❌ 忽略 `[CHUNKED-DOC]` 标签，强行一次性写入
-
-### 8.6 验证 Checklist
-
-分块完成后，Slaver 必须自检：
-- [ ] 所有分块已合并到最终文档
-- [ ] 章节顺序正确
-- [ ] 格式一致（标题层级、列表符号、代码块）
-- [ ] 内部引用有效（链接、锚点）
-- [ ] 临时分块文件已清理
-- [ ] Git history 清晰（每块一个 commit）
-
-### 来源
-防止类似 EPIC-009 M1 completion-report（169 行）一次性写入导致上下文溢出崩溃。
-
----
-
-## 9. 可用命令集（ACI）约束
+## 7. 可用命令集（ACI）约束
 
 Slaver 操作范围受以下命令白名单约束：
 
