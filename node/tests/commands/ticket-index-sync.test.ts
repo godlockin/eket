@@ -127,7 +127,7 @@ describe('syncToSqlite', () => {
 
     const db = new Database(dbPath);
     const rows = db.prepare('SELECT * FROM tickets ORDER BY id').all() as Array<{
-      id: string; status: string; title: string; priority_text: string; type: string | null;
+      id: string; status: string; title: string; priority: string; type: string | null;
     }>;
     db.close();
 
@@ -135,7 +135,7 @@ describe('syncToSqlite', () => {
     expect(rows[0].id).toBe('TASK-100');
     expect(rows[0].status).toBe('done');
     expect(rows[0].title).toBe('T100');
-    expect(rows[0].priority_text).toBe('P1');
+    expect(rows[0].priority).toBe('P1');
     expect(rows[0].type).toBe('task');
     expect(rows[1].id).toBe('TASK-101');
     expect(rows[1].status).toBe('todo');

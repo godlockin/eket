@@ -21,8 +21,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { atomicWrite } from '../utils/atomic-write.js';
-import { execFileNoThrow } from '../utils/execFileNoThrow.js';
+
 import {
   Checkpoint,
   CheckpointMetadata,
@@ -31,6 +30,8 @@ import {
   ProgressTrackerOptions,
   TaskPhase,
 } from '../types/progress-tracker.js';
+import { atomicWrite } from '../utils/atomic-write.js';
+import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 
 export class ProgressTracker {
   private taskId: string;
