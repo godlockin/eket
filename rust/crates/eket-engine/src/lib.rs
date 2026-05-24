@@ -3,6 +3,7 @@ pub mod knowledge;
 pub mod knowledge_base;
 pub mod recommender;
 pub mod event_bus;
+pub mod reconciler;
 pub mod monitors;
 pub mod workflow;
 pub mod ticket_engine;
@@ -15,3 +16,4 @@ pub mod context_filter;
 pub mod context_budget;
 pub mod step_snapshot;
 pub mod memory;
+
