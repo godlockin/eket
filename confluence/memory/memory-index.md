@@ -9,53 +9,68 @@
 
 | 文件 | 摘要 |
 |------|------|
-| [patterns/knowledge-system.md](patterns/knowledge-system.md) | EKET 知识沉淀系统 — L0~L4 分层、写入时机、GC 流程 |
-| [patterns/master-slaver-coordination.md](patterns/master-slaver-coordination.md) | Master-Slaver 协调模式（实现细节）— 架构设计见 docs/architecture/coordination.md |
-| [patterns/four-level-degradation.md](patterns/four-level-degradation.md) | 四级降级模式（实现细节）— 架构设计见 docs/architecture/degradation.md |
-| [patterns/multi-layer-intent-aggregation.md](patterns/multi-layer-intent-aggregation.md) | 多层意图聚合模式 — 4层模型、4注入点、冲突澄清流程 |
-| [patterns/expertise-tag-design.md](patterns/expertise-tag-design.md) | expertise tag 设计模式 — 白名单、heartbeat评分派送、等待队列、auto-scaffold |
-| [patterns/expert-dispatch-waiting.md](patterns/expert-dispatch-waiting.md) | Expert Dispatch 等待队列 + 按需召唤 — 完整流程图、优先级、文件约定 |
-| [patterns/git-worktree-eket-integration.md](patterns/git-worktree-eket-integration.md) | Git Worktree + EKET 集成 — task:claim 自动创建、complete 清理、CWD 注意事项 |
-| [patterns/knowledge-flywheel.md](patterns/knowledge-flywheel.md) | 知识飞轮模式 — task:claim 自动推送 pitfalls/patterns、complete 触发 Curator |
-| [patterns/task-effort-human-units.md](patterns/task-effort-human-units.md) | 任务工时人类单位 — 2d/0.5d/3h/480min 换算规则 |
-| [patterns/unblocked-ticket-notification-design.md](patterns/unblocked-ticket-notification-design.md) | 依赖解除通知设计 — unblocked-queue.json、heartbeat 优先分发、Saga 步骤 |
-| [patterns/dual-track-router.md](patterns/dual-track-router.md) | 双轨路由器模式 — Rust/JS 自动切换、断路器保护、接口抽象、降级透明 |
+| [dual-track-router.md](patterns/dual-track-router.md) | 双轨路由器模式 — Rust/JS 自动切换、断路器保护、接口抽象 |
+| [four-level-degradation.md](patterns/four-level-degradation.md) | 四级降级模式 — Shell→Rust→Node.js→Redis |
+| [master-slaver-coordination.md](patterns/master-slaver-coordination.md) | Master-Slaver 协调模式 |
+| [knowledge-system.md](patterns/knowledge-system.md) | 知识沉淀系统 — L0~L4 分层、GC 流程 |
+| [knowledge-flywheel.md](patterns/knowledge-flywheel.md) | 知识飞轮 — claim 推送、complete 触发 Curator |
+| [expert-dispatch-waiting.md](patterns/expert-dispatch-waiting.md) | Expert Dispatch 等待队列 + 按需召唤 |
+| [expertise-tag-design.md](patterns/expertise-tag-design.md) | expertise tag 设计 — 白名单、评分派送 |
+| [git-worktree-eket-integration.md](patterns/git-worktree-eket-integration.md) | Git Worktree + EKET 集成 |
+| [multi-layer-intent-aggregation.md](patterns/multi-layer-intent-aggregation.md) | 多层意图聚合 — 4层模型、冲突澄清 |
+| [non-blocking-git-push.md](patterns/non-blocking-git-push.md) | 非阻塞 Git Push 模式 |
+| [task-effort-human-units.md](patterns/task-effort-human-units.md) | 任务工时人类单位换算 |
+| [unblocked-ticket-notification-design.md](patterns/unblocked-ticket-notification-design.md) | 依赖解除通知设计 |
 
 ---
 
-## ⚠️ pitfalls/ — 已知坑（避免重蹈）
+## ⚠️ pitfalls/ — 已知坑
 
 | 文件 | 摘要 |
 |------|------|
-| [pitfalls/async-test-leak.md](pitfalls/async-test-leak.md) | Jest 异步测试泄漏 — Redis 连接/定时器未清理导致 force-exit |
-| [pitfalls/git-mv-directory-not-exist.md](pitfalls/git-mv-directory-not-exist.md) | `git mv` 目标目录不存在时报错 — 先 `mkdir -p` 再 mv |
-| [pitfalls/sqlite-inmemory-testclient-thread.md](pitfalls/sqlite-inmemory-testclient-thread.md) | SQLite In-Memory + FastAPI TestClient 线程隔离 — StaticPool 解法 |
-| [pitfalls/context-explosion-defense.md](pitfalls/context-explosion-defense.md) | Agent 上下文爆炸防御 — 溢出触发点、阻断规则、/compact 时机 |
-| [pitfalls/branch-order-wrong-description.md](pitfalls/branch-order-wrong-description.md) | 分支顺序描述错误 — 先确认项目 branch flow，EKET 正确顺序 feature→testing→main→miao |
+| [async-test-leak.md](pitfalls/async-test-leak.md) | Jest 异步测试泄漏 — Redis 连接/定时器未清理 |
+| [branch-order-wrong-description.md](pitfalls/branch-order-wrong-description.md) | 分支顺序描述错误 |
+| [context-explosion-defense.md](pitfalls/context-explosion-defense.md) | Agent 上下文爆炸防御 |
+| [context-tracker-not-triggered.md](pitfalls/context-tracker-not-triggered.md) | Context Tracker 未触发根因 |
+| [git-mv-directory-not-exist.md](pitfalls/git-mv-directory-not-exist.md) | git mv 目标目录不存在 |
+| [master-single-point-failure.md](pitfalls/master-single-point-failure.md) | Master 单点故障 |
+| [perf-ac-ambiguity.md](pitfalls/perf-ac-ambiguity.md) | 性能验收标准模糊 |
+| [slaver-worktree-code-loss.md](pitfalls/slaver-worktree-code-loss.md) | Slaver Worktree 代码丢失 |
+| [sqlite-inmemory-testclient-thread.md](pitfalls/sqlite-inmemory-testclient-thread.md) | SQLite In-Memory 线程隔离 |
 
 ---
 
-## 📚 lessons/ — 实战经验教训
+## 📚 lessons/ — 实战经验
 
 | 文件 | 摘要 |
 |------|------|
-| [lessons/red-team-bug-patterns.md](lessons/red-team-bug-patterns.md) | 红队审查 Bug 模式 — tokio Mutex、AbortHandle、archive顺序、FTS5触发器、CAS、fast-fail |
-| [lessons/multi-agent-collab-lessons.md](lessons/multi-agent-collab-lessons.md) | 多智能体协作 — 任务分配、并行执行风险、规则遗忘防治、进度上报 |
-| [lessons/research-methodology.md](lessons/research-methodology.md) | 跨项目研究方法论 — 借鉴过滤标准、研究流程、各轮要点速查 |
-| [lessons/eket-project-hygiene.md](lessons/eket-project-hygiene.md) | EKET 项目卫生 — template/引用、僵尸ticket、三仓库归属、版本号同步、Skills注册 |
-| [lessons/spec4-feedback-intent-lessons.md](lessons/spec4-feedback-intent-lessons.md) | Spec 4 反馈+意图系统实战经验教训 — 线程隔离、import路径、slaver超时、None语义（外部项目 Python/FastAPI） |
-| [lessons/compare-test-before-replace.md](lessons/compare-test-before-replace.md) | 修改在用逻辑：隔离对比测试后再替换 — 场景隔离方式、替换时机、大 release 专家组评审门卫 |
-| [lessons/slaver-exit-cleanup.md](lessons/slaver-exit-cleanup.md) | Slaver 退出清理机制 — task:complete 时清理 elected_master/slaver 状态 |
+| [multi-agent-collab-lessons.md](lessons/multi-agent-collab-lessons.md) | 多智能体协作经验 |
+| [red-team-bug-patterns.md](lessons/red-team-bug-patterns.md) | 红队审查 Bug 模式 |
+| [research-methodology.md](lessons/research-methodology.md) | 跨项目研究方法论 |
+| [compare-test-before-replace.md](lessons/compare-test-before-replace.md) | 修改前隔离对比测试 |
+| [slaver-exit-cleanup.md](lessons/slaver-exit-cleanup.md) | Slaver 退出清理机制 |
+| [context-optimization-lessons-2026-05-10.md](lessons/context-optimization-lessons-2026-05-10.md) | 上下文优化经验 |
+| [deep-cleanup-lessons-2026-05-07.md](lessons/deep-cleanup-lessons-2026-05-07.md) | 深度清理经验 |
+| [epic-006-slaver-lessons-2026-05-09.md](lessons/epic-006-slaver-lessons-2026-05-09.md) | EPIC-006 Slaver 经验 |
+| [EPIC-005-lessons.md](lessons/EPIC-005-lessons.md) | EPIC-005 经验 |
+| [project-level-data-isolation.md](lessons/project-level-data-isolation.md) | 项目级数据隔离 |
+| [spec4-feedback-intent-lessons.md](lessons/spec4-feedback-intent-lessons.md) | Spec 4 反馈系统经验 |
+| [TASK-226-lessons-learned.md](lessons/TASK-226-lessons-learned.md) | TASK-226 经验 |
 
 ---
 
-## 🔬 research/ — 外部项目研究笔记
+## 📘 guides/ — SOP 与指南
 
 | 文件 | 摘要 |
 |------|------|
-| [research/borrowed-wisdom.md](research/borrowed-wisdom.md) | EKET 借鉴知识库总索引 — 所有外部借鉴点汇总（713行，主文档） |
-| [research/ruflo-research.md](research/ruflo-research.md) | ruflo 借鉴研究 — HNSW 向量检索、TrustScore 评分、拒绝点清单 |
-| [research/redis-architecture.md](research/redis-architecture.md) | Redis 架构分析与 TASK-142 wont-fix 决策依据 |
+| [project-hygiene.md](guides/project-hygiene.md) | 项目卫生规范 — docs/memory边界、规则格式 |
+| [ticket-numbering-rules.md](guides/ticket-numbering-rules.md) | Ticket 编号规则 |
+| [agent-prompt-template.md](guides/agent-prompt-template.md) | Agent Prompt 防卡死模板 |
+| [branch-strategy.md](guides/branch-strategy.md) | 分支策略指南 |
+| [ci-troubleshooting.md](guides/ci-troubleshooting.md) | CI 故障排查手册 |
+| [codebase-maintenance.md](guides/codebase-maintenance.md) | 代码库维护指南 |
+| [context-token-budget.md](guides/context-token-budget.md) | Context Token 预算管理 |
+| [worktree-agent.md](guides/worktree-agent.md) | Worktree Agent 最佳实践 |
 
 ---
 
@@ -63,63 +78,64 @@
 
 | 文件 | 摘要 |
 |------|------|
-| [glossary/terms.md](glossary/terms.md) | EKET 核心术语定义 — Master/Slaver/Ticket/Gate/Handoff 等 |
+| [terms.md](glossary/terms.md) | EKET 核心术语定义 |
 
 ---
 
-## 📘 guides/ — SOP 模板与操作指南
+## 🔬 research/ — 研究文档
 
 | 文件 | 摘要 |
 |------|------|
-| [guides/agent-prompt-template.md](guides/agent-prompt-template.md) | Agent Prompt 防卡死模板 — Bash timeout/SSH push/心跳监控SOP（可直接复制使用） |
-| [guides/branch-strategy.md](guides/branch-strategy.md) | 分支策略指南 — 拓扑/决策矩阵/三分支对齐SOP/危险操作 |
-| [guides/ci-troubleshooting.md](guides/ci-troubleshooting.md) | CI 故障排查手册 — 依赖/编译/测试/lint/PR体积/Actions |
-| [guides/codebase-maintenance.md](guides/codebase-maintenance.md) | 代码库与文档维护 — 四类文档债、清理顺序、重组两步法、archive规范 |
-| [guides/context-token-budget.md](guides/context-token-budget.md) | Agent 上下文与 Token 预算管理 — 溢出预防/Write bug/节约规则 |
-| [guides/worktree-agent.md](guides/worktree-agent.md) | Worktree Agent 产物丢失根因分析与最佳实践 — CWD不可靠、checklist、merge-back步骤 |
+| [borrowed-wisdom.md](research/borrowed-wisdom.md) | 外部项目借鉴研究 (711行) |
+
+---
+
+## 🛠️ solutions/ — 技术方案
+
+| 文件 | 摘要 |
+|------|------|
+| [context-overflow-defense.md](solutions/context-overflow-defense.md) | 上下文溢出防御方案 (v2) |
+| [docs-html-rendering-spec.md](solutions/docs-html-rendering-spec.md) | Docs HTML 渲染规范 |
+| [master-failure-defense-system.md](solutions/master-failure-defense-system.md) | Master 故障防御系统 |
 
 ---
 
 ## 🔁 retrospectives/ — 复盘记录
 
-### Sprints
-| 文件 | 摘要 |
-|------|------|
-| [retrospectives/sprints/sprint-001.md](retrospectives/sprints/sprint-001.md) | Sprint 001 回顾 |
-
 ### EPICs
 | 文件 | 摘要 |
 |------|------|
-| [retrospectives/epics/EPIC-002.md](retrospectives/epics/EPIC-002.md) | EPIC-002 综合经验教训 — PR收尾/rebase/CI/专家体系（addyosmani agent-skills引入） |
-| [retrospectives/epics/EPIC-003.md](retrospectives/epics/EPIC-003.md) | EPIC-003 回灌经验教训 — cherry-pick分叉、三分支对齐、历史债务处理 |
-| [retrospectives/epics/EPIC-004.md](retrospectives/epics/EPIC-004.md) | EPIC-004 持续改进经验教训 — Worktree丢失、防卡死、Post-Process、分支清理 |
-| [retrospectives/epics/EPIC-010.md](retrospectives/epics/EPIC-010.md) | EPIC-010 Rust 高性能核心 — 双轨降级/三级选举/WAL重放/TypeScript strict 踩坑 |
+| [epics/EPIC-002.md](retrospectives/epics/EPIC-002.md) | EPIC-002 — PR收尾/专家体系 |
+| [epics/EPIC-003.md](retrospectives/epics/EPIC-003.md) | EPIC-003 — cherry-pick/三分支对齐 |
+| [epics/EPIC-004.md](retrospectives/epics/EPIC-004.md) | EPIC-004 — Worktree/防卡死/Post-Process |
+| [epics/EPIC-006-summary.md](retrospectives/epics/EPIC-006-summary.md) | EPIC-006 — 全项目Review |
+| [epics/EPIC-010.md](retrospectives/epics/EPIC-010.md) | EPIC-010 — Rust高性能核心/双轨降级 |
 
-### Pull Requests (2026)
+### 2026 里程碑
 | 文件 | 摘要 |
 |------|------|
-| [retrospectives/prs/2026/PR75-TASK-050.md](retrospectives/prs/2026/PR75-TASK-050.md) | PR #75 (TASK-050) 复盘 |
-| [retrospectives/prs/2026/PR79-TASK-053.md](retrospectives/prs/2026/PR79-TASK-053.md) | PR #79 (TASK-053) 复盘 |
-| [retrospectives/prs/2026/PR81-TASK-053.md](retrospectives/prs/2026/PR81-TASK-053.md) | PR #81 (TASK-053) 复盘 |
+| [2026/04-rust-migration-review.md](retrospectives/2026/04-rust-migration-review.md) | Rust 迁移复盘 |
+| [2026/05-docuseal-borrowing.md](retrospectives/2026/05-docuseal-borrowing.md) | DocuSeal 借鉴研究 |
+| [2026/05-lessons-learned.md](retrospectives/2026/05-lessons-learned.md) | DB+MD 双写修复 |
+| [2026/05-db-md-sync-fix.md](retrospectives/2026/05-db-md-sync-fix.md) | 同步修复技术报告 |
+| [2026/05-project-100-percent-complete.md](retrospectives/2026/05-project-100-percent-complete.md) | 项目100%完成报告 |
+| [2026/05-EPIC-006-execution-complete-report.md](retrospectives/2026/05-EPIC-006-execution-complete-report.md) | EPIC-006 执行完成报告 |
+| [2026/05-TASK-180-221-batch-fixes.md](retrospectives/2026/05-TASK-180-221-batch-fixes.md) | 批量修复复盘 |
+| [2026/05-TASK-269.md](retrospectives/2026/05-TASK-269.md) | TASK-269 修复复盘 |
+| [2026/05-three-questions-clarification.md](retrospectives/2026/05-three-questions-clarification.md) | 三问澄清 |
 
-### 2026 Milestones
+### Sprints
 | 文件 | 摘要 |
 |------|------|
-| [retrospectives/2026/04-rust-migration-review.md](retrospectives/2026/04-rust-migration-review.md) | EKET Rust 迁移综合 Review 反思 |
-| [retrospectives/2026/05-docuseal-borrowing.md](retrospectives/2026/05-docuseal-borrowing.md) | DocuSeal 借鉴研究综合复盘 |
-| [retrospectives/2026/05-TASK-180-221-batch-fixes.md](retrospectives/2026/05-TASK-180-221-batch-fixes.md) | TASK-180~221 批量修复复盘 |
-| [retrospectives/2026/05-TASK-269.md](retrospectives/2026/05-TASK-269.md) | TASK-269 Bug 修复复盘 — task:complete + slaver 实例化 |
-| [retrospectives/2026/05-lessons-learned.md](retrospectives/2026/05-lessons-learned.md) | DB+MD 双写失效排查与修复 — 3 Critical Pitfalls、3 Patterns、84 张状态修正 |
-| [retrospectives/2026/05-db-md-sync-fix.md](retrospectives/2026/05-db-md-sync-fix.md) | DB+MD 同步修复技术报告 — TASK-270~281 实施细节 |
-| [retrospectives/2026/05-project-status.md](retrospectives/2026/05-project-status.md) | 项目 100% 完成状态报告（2026-05-06）|
+| [sprints/sprint-001.md](retrospectives/sprints/sprint-001.md) | Sprint 001 回顾 |
 
 ---
 
-## 📦 archive/ — 归档索引
+## 📦 archive/ — 归档
 
 | 文件 | 摘要 |
 |------|------|
-| [archive/INDEX.md](archive/INDEX.md) | 归档文件索引 — 低引用/过期文档压缩归档清单 |
+| [INDEX.md](archive/INDEX.md) | 归档文件索引 |
 
 ---
 
@@ -127,8 +143,8 @@
 
 | 文件 | 摘要 |
 |------|------|
-| [codebase-map.md](codebase-map.md) | EKET 代码库架构地图 — 目录结构、核心模块、技术栈 |
+| [codebase-map.md](codebase-map.md) | EKET 代码库架构地图 |
 
 ---
 
-*文件总数：89 | 上次更新：2026-05-24*
+*文件总数：85 | 上次更新：2026-05-24*
