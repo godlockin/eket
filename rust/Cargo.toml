@@ -61,6 +61,13 @@ async-trait = "0.1"
 tantivy = "0.22"
 dashmap = "5"
 
+# Code Analysis (tree-sitter)
+tree-sitter = "0.24"
+tree-sitter-typescript = "0.23"
+tree-sitter-python = "0.23"
+tree-sitter-rust = "0.23"
+tree-sitter-go = "0.23"
+
 # Webhook
 reqwest = { version = "0.12", features = ["json"] }
 hmac = "0.12"
