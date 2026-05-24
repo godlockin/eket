@@ -145,6 +145,7 @@ node dist/index.js project:init
 ### Node.js 核心模块
 - `core/master-election.ts` — 三级Master选举（Redis SETNX/SQLite/File）
 - `core/message-queue.ts` — 消息队列（Redis Pub/Sub + 文件降级）
+- `core/dual-track-router.ts` — 双轨制自适应降级运行引擎 (Track A: Rust Core, Track B: Node.js Fallback) (TASK-Z03)
 - `core/state-reconciler.ts` — WAL 降级消息重放与状态自愈对齐 (TASK-Y01)
 - `core/circuit-breaker.ts` — 断路器（closed/open/half_open）
 - `core/cache-layer.ts` — LRU内存缓存 + Redis二级缓存
