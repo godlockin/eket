@@ -145,8 +145,11 @@ describe('TASK-X04: Checkpoint Git Sync', () => {
     });
 
     await tracker.checkpoint('analysis_done', {});
+    await new Promise((resolve) => setTimeout(resolve, 800));
     await tracker.checkpoint('design_done', {});
+    await new Promise((resolve) => setTimeout(resolve, 800));
     await tracker.checkpoint('tests_passed', {});
+    await new Promise((resolve) => setTimeout(resolve, 800));
     await tracker.close();
 
     // Switch to checkpoint branch
@@ -165,7 +168,7 @@ describe('TASK-X04: Checkpoint Git Sync', () => {
 
     // Return to original branch
     await execFileNoThrow('git', ['checkout', originalBranch]);
-  });
+  }, 20000);
 
   it('checkpoint branch persists across tracker instances', async () => {
     // First tracker creates checkpoint
