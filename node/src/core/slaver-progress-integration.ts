@@ -26,9 +26,13 @@
  * ```
  */
 
-import { CheckpointMetadata, TaskPhase } from '../types/progress-tracker.js';
-
 import { ProgressTracker } from './progress-tracker.js';
+import { SlaverWatchdog } from './slaver-watchdog.js';
+import { IOActivityMonitor, type HangReport } from './io-activity-monitor.js';
+import { CheckpointMetadata, TaskPhase, type ResumeContext } from '../types/progress-tracker.js';
+import { createMessage } from './message-queue.js';
+import fs from 'fs/promises';
+import path from 'path';
 
 /**
  * Global singleton ProgressTracker instance
@@ -36,9 +40,51 @@ import { ProgressTracker } from './progress-tracker.js';
 let globalTracker: ProgressTracker | null = null;
 
 /**
+ * Global singleton Watchdog instance (TASK-AUTO-03)
+ */
+let globalWatchdog: SlaverWatchdog | null = null;
+
+/**
+ * Global singleton IOActivityMonitor instance (TASK-AUTO-05)
+ */
+let globalIOMonitor: IOActivityMonitor | null = null;
+
+/**
  * Flag to enable/disable progress tracking (controlled by env var)
  */
 const ENABLE_TRACKING = process.env.ENABLE_PROGRESS_TRACKING !== 'false';
+
+/**
+ * Handle hang detection callback (TASK-AUTO-05)
+ * Sends alert message to Master via message queue
+ */
+async function handleHangDetected(report: HangReport): Promise<void> {
+  try {
+    // Create alert message
+    const message = createMessage(
+      'hang_detected',
+      report.slaverId,
+      'master',
+      report as unknown as Record<string, unknown>,
+      'high'
+    );
+
+    // Write to message queue
+    const inboxPath = path.resolve(process.cwd(), 'shared/message_queue/inbox');
+    await fs.mkdir(inboxPath, { recursive: true });
+
+    const fileName = `hang_${report.taskId}_${Date.now()}.json`;
+    const filePath = path.join(inboxPath, fileName);
+
+    await fs.writeFile(filePath, JSON.stringify(message, null, 2), 'utf-8');
+
+    console.error(`[IOActivityMonitor] Hang alert sent to Master: ${filePath}`);
+  } catch (error) {
+    console.error(
+      `[IOActivityMonitor] Failed to send hang alert: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
 
 /**
  * Initialize ProgressTracker for a new task
@@ -47,8 +93,15 @@ const ENABLE_TRACKING = process.env.ENABLE_PROGRESS_TRACKING !== 'false';
  *
  * @param taskId - Ticket ID (e.g., "TASK-X02")
  * @param slaverId - Slaver instance ID (e.g., "slaver_1234567890_abc123")
+ * @param options - Optional initialization options (TASK-X06: resume support)
  */
-export async function initializeProgressTracker(taskId: string, slaverId: string): Promise<void> {
+export async function initializeProgressTracker(
+  taskId: string,
+  slaverId: string,
+  options?: {
+    resumeFrom?: ResumeContext;
+  }
+): Promise<void> {
   if (!ENABLE_TRACKING) {
     console.log('[ProgressTracker] Disabled via ENABLE_PROGRESS_TRACKING=false');
     return;
@@ -67,14 +120,43 @@ export async function initializeProgressTracker(taskId: string, slaverId: string
       flushIntervalMs: 30000, // 30s async flush
       outputDir: `jira/tickets/${taskId}`,
       progressFileName: 'progress.md',
+      resumeFrom: options?.resumeFrom, // TASK-X06: Pass resume context
     });
 
-    // Record task_claimed checkpoint
-    await safeCheckpoint('task_claimed', {
-      notes: `Task ${taskId} claimed by ${slaverId}`,
-    });
+    // Record task_claimed checkpoint (only if not resuming)
+    if (!options?.resumeFrom) {
+      await safeCheckpoint('task_claimed', {
+        notes: `Task ${taskId} claimed by ${slaverId}`,
+      });
+    }
 
     console.log(`[ProgressTracker] Initialized for ${taskId} (slaver: ${slaverId})`);
+
+    // TASK-AUTO-03: Start Watchdog
+    if (process.env.ENABLE_SLAVER_WATCHDOG !== 'false') {
+      globalWatchdog = new SlaverWatchdog(taskId, globalTracker);
+      console.log('[Watchdog] Started (timeout: 500s, heartbeat: 60s)');
+    }
+
+    // TASK-AUTO-05: Start IOActivityMonitor
+    if (process.env.ENABLE_IO_ACTIVITY_MONITOR !== 'false') {
+      globalIOMonitor = new IOActivityMonitor({
+        taskId,
+        slaverId,
+        timeoutMs: 180000, // 180s
+        onHang: handleHangDetected,
+        enableHealthEndpoint: process.env.ENABLE_HEALTH_ENDPOINT === 'true',
+        healthPort: parseInt(process.env.HEALTH_PORT || '3001', 10),
+      });
+
+      // Hook checkpoint events
+      globalTracker.on('checkpoint', () => {
+        globalIOMonitor?.recordActivity();
+      });
+
+      await globalIOMonitor.start();
+      console.log('[IOActivityMonitor] Started (timeout: 180s)');
+    }
   } catch (error) {
     // Non-critical: log warning but don't block task execution
     console.warn(
@@ -182,6 +264,35 @@ export async function completeAC(acId: string, metadata?: CheckpointMetadata): P
  * Called by submit-pr command or when task is completed/abandoned.
  */
 export async function closeProgressTracker(): Promise<void> {
+  // TASK-AUTO-03: Close Watchdog first
+  if (globalWatchdog) {
+    try {
+      await globalWatchdog.close();
+      console.log('[Watchdog] Closed successfully');
+    } catch (error) {
+      console.warn(
+        `[Watchdog] Close failed (non-critical): ${error instanceof Error ? error.message : String(error)}`
+      );
+    } finally {
+      globalWatchdog = null;
+    }
+  }
+
+  // TASK-AUTO-05: Close IOActivityMonitor
+  if (globalIOMonitor) {
+    try {
+      await globalIOMonitor.stop();
+      console.log('[IOActivityMonitor] Closed successfully');
+    } catch (error) {
+      console.warn(
+        `[IOActivityMonitor] Close failed (non-critical): ${error instanceof Error ? error.message : String(error)}`
+      );
+    } finally {
+      globalIOMonitor = null;
+    }
+  }
+
+  // Close ProgressTracker
   if (!globalTracker) {
     return;
   }
@@ -210,4 +321,12 @@ export function getProgressTracker(): ProgressTracker | null {
  */
 export function isTrackingActive(): boolean {
   return ENABLE_TRACKING && globalTracker !== null;
+}
+
+/**
+ * Get current Watchdog instance (for debugging/testing)
+ * TASK-AUTO-03
+ */
+export function getWatchdog(): SlaverWatchdog | null {
+  return globalWatchdog;
 }

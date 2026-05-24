@@ -7,6 +7,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 
 import { Command } from 'commander';
 import ora from 'ora';
@@ -25,8 +27,11 @@ import { appendTaskMessage, injectActiveContext as injectActiveContextData } fro
 import { reviewTicket } from '../core/ticket-reviewer.js';
 import { WorktreeManager } from '../core/worktree-manager.js';
 import type { Instance, Ticket } from '../types/index.js';
+import type { ResumeContext } from '../types/progress-tracker.js';
 import { printError, logSuccess } from '../utils/error-handler.js';
 import { findProjectRoot } from '../utils/process-cleanup.js';
+import { parseProgressMarkdown } from '../utils/progress-parser.js';
+import { promptResumeStrategy, formatTimeAgo } from '../utils/resume-prompt.js';
 
 import {
   loadConfig,
@@ -35,6 +40,8 @@ import {
   initializeProfile,
   sendClaimMessage,
 } from './claim-helpers.js';
+
+const execFileAsync = promisify(execFile);
 
 
 /**
@@ -65,6 +72,7 @@ interface ClaimOptions {
   auto: boolean;
   role?: string;
   assign?: boolean;
+  resume?: boolean; // TASK-X06: Resume from checkpoint
 }
 
 /**
@@ -208,6 +216,138 @@ export function getIsolationMode(): 'worktree' | 'none' {
 }
 
 /**
+ * Check if checkpoint branch exists (remote or local)
+ * TASK-X06, AC-1
+ */
+async function checkCheckpointBranch(taskId: string): Promise<boolean> {
+  const branch = `checkpoint/${taskId}`;
+
+  try {
+    // Try remote first
+    await execFileAsync('git', ['ls-remote', '--heads', 'origin', branch], {
+      cwd: process.cwd(),
+      timeout: 5000,
+    });
+    return true;
+  } catch {
+    // Fallback to local
+    try {
+      const { stdout } = await execFileAsync('git', ['branch', '--list', branch], {
+        cwd: process.cwd(),
+      });
+      return stdout.trim().length > 0;
+    } catch {
+      return false;
+    }
+  }
+}
+
+/**
+ * Resume task from checkpoint
+ * TASK-X06: Core resume logic (AC-1~4)
+ */
+async function resumeTask(
+  projectRoot: string,
+  taskId: string
+): Promise<ResumeContext | null> {
+  console.log(`\n🔄 Resuming task: ${taskId}...\n`);
+
+  // AC-1: Check checkpoint branch existence
+  const checkpointBranch = `checkpoint/${taskId}`;
+  const exists = await checkCheckpointBranch(taskId);
+
+  if (!exists) {
+    console.log('⚠️  No checkpoint found, starting fresh.\n');
+    return null;
+  }
+
+  // Fetch and checkout checkpoint branch
+  try {
+    await execFileAsync('git', ['fetch', 'origin', checkpointBranch], {
+      cwd: projectRoot,
+      timeout: 10000,
+    });
+  } catch {
+    // Fallback to local branch
+  }
+
+  try {
+    await execFileAsync('git', ['checkout', checkpointBranch], {
+      cwd: projectRoot,
+    });
+    console.log(`✅ Checked out ${checkpointBranch}\n`);
+  } catch (error) {
+    console.log(`❌ Failed to checkout checkpoint: ${error instanceof Error ? error.message : String(error)}\n`);
+    return null;
+  }
+
+  // AC-2: Read progress.md
+  const progressPath = path.join(projectRoot, `jira/tickets/${taskId}/progress.md`);
+  let progressContent: string;
+  try {
+    progressContent = fs.readFileSync(progressPath, 'utf-8');
+  } catch {
+    console.log('❌ Failed to read progress.md, aborting.\n');
+    return null;
+  }
+
+  const parseResult = parseProgressMarkdown(progressContent, taskId);
+  if (!parseResult.success || !parseResult.data) {
+    console.log('❌ Failed to parse progress.md, aborting.\n');
+    return null;
+  }
+
+  const snapshot = parseResult.data;
+
+  // Display completed ACs
+  console.log('✅ Completed:\n');
+  const completedCheckpoints = snapshot.checkpoints.filter(
+    (cp) => cp.phase !== 'note' && !cp.phase.endsWith('_start')
+  );
+
+  if (completedCheckpoints.length === 0) {
+    console.log('   (No completed work yet)\n');
+  } else {
+    for (const cp of completedCheckpoints) {
+      const timeAgo = formatTimeAgo(new Date(cp.timestamp));
+      const phaseName = cp.phase.replace(/_done$/, '');
+      console.log(`   - ${phaseName} (${timeAgo})`);
+      if (cp.metadata.files && cp.metadata.files.length > 0) {
+        console.log(`     Files: ${cp.metadata.files.join(', ')}`);
+      }
+    }
+    console.log('');
+  }
+
+  // Display last update info
+  const lastUpdate = new Date(snapshot.lastUpdate);
+  console.log(`Last Update: ${formatTimeAgo(lastUpdate)} by ${snapshot.slaverId}\n`);
+
+  // AC-3: Ask resume strategy
+  const choice = await promptResumeStrategy();
+
+  if (choice === 'abort') {
+    console.log('\n⚠️  Resume aborted.\n');
+    return null;
+  }
+
+  if (choice === 're-analyze') {
+    console.log('\n🔍 Re-analyzing task from scratch...\n');
+    return null; // Return null to trigger fresh claim
+  }
+
+  // choice === 'continue'
+  console.log('\n▶️  Continuing from checkpoint...\n');
+
+  // AC-4: Return resume context
+  return {
+    completedPhases: snapshot.completedPhases,
+    currentPhase: snapshot.currentPhase,
+    checkpoints: snapshot.checkpoints,
+  };
+}
+
+/**
  * 注册 claim 命令
  */
 export function registerClaim(program: Command): void {
@@ -217,17 +357,20 @@ export function registerClaim(program: Command): void {
     .option('-a, --auto', 'Auto claim highest priority task', false)
     .option('-r, --role <role>', 'Specify role type')
     .option('--assign', 'Use task assigner for automatic assignment', false)
+    .option('--resume', 'Resume from existing checkpoint (TASK-X06)', false)
     .addHelpText(
       'after',
       `
 Examples:
   $ eket-cli task:claim                         # Show available tasks
   $ eket-cli task:claim FEAT-123                # Claim specific task
+  $ eket-cli task:claim FEAT-123 --resume       # Resume from checkpoint
   $ eket-cli task:claim auto                    # Auto claim highest priority
   $ eket-cli task:claim -a -r frontend_dev      # Auto claim with role
 
 Related Commands:
   $ eket-cli task:list                          # List all tasks
+  $ eket-cli task:status <id>                   # Check checkpoint status
   $ eket-cli instance:start                     # Start instance after claiming
   $ eket-cli submit-pr                          # Submit PR after completion
 `
@@ -247,6 +390,19 @@ Related Commands:
           ],
         });
         process.exit(1);
+      }
+
+      // 获取 Slaver ID
+      const slaverId = getOrCreateSlaverId(projectRoot);
+
+      // TASK-X06: Handle resume flag
+      let resumeContext: ResumeContext | null = null;
+      if (options.resume && ticketId) {
+        resumeContext = await resumeTask(projectRoot, ticketId);
+        if (resumeContext === null && options.resume) {
+          // User chose abort or checkpoint invalid
+          console.log('Falling back to fresh claim...\n');
+        }
       }
 
       // 2. 读取配置
@@ -313,11 +469,9 @@ Related Commands:
       }
 
       // 5. 任务分配（如果启用）
-      // 5. 任务分配（如果启用）
       let assignedInstance: Instance | undefined;
 
       // 5.0 SQLite 原子事务领取（防竞争）
-      const slaverId = getOrCreateSlaverId(projectRoot);
       const sqliteClient = createSQLiteManager();
       const sqliteConnected = await sqliteClient.connect();
       if (sqliteConnected.success) {
@@ -567,8 +721,10 @@ ${reviewResult.issues.map((i: string) => `- ${i}`).join('\n')}
         status: 'in_progress',
       });
 
-      // 13. 初始化 ProgressTracker（TASK-X02）
-      await initializeProgressTracker(selectedTicket.id, slaverId);
+      // 13. 初始化 ProgressTracker（TASK-X02，TASK-X06）
+      await initializeProgressTracker(selectedTicket.id, slaverId, {
+        resumeFrom: resumeContext ?? undefined,
+      });
 
       logSuccess('Task claimed successfully', [
         `Task: ${selectedTicket.id}`,

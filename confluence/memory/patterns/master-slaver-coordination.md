@@ -1,5 +1,7 @@
 # Master-Slaver 协调模式
 
+> **迁移提示**：架构设计部分已迁移至 `docs/architecture/coordination.md`，本文档保留实现细节和实战经验。
+
 **场景**：AI 多智能体框架中，需要协调多个执行 Agent 并行工作时  
 **方案**：  
 1. Master 负责需求分析、任务拆解、Slaver 初始化 — 禁止亲手写代码  

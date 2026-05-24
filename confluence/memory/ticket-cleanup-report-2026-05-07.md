@@ -44,7 +44,6 @@
 ```bash
 # 移动到 archive
 mkdir -p jira/tickets/archive/
-mv jira/tickets/EPIC-003 jira/tickets/archive/EPIC-003-closed-2026-05-01
 
 # 创建索引链接
 echo "EPIC-003 已归档：[查看详情](archive/EPIC-003-closed-2026-05-01/closure-review.md)" \
@@ -92,7 +91,6 @@ mv jira/ticketsaster 流程：
 #### 2.4.1 归档 TASK-501（superseded）
 ```bash
 # 移动到 archive，保留架构决策记录
-mv jira/tickets/TASK-501.md jira/tickets/archive/EPIC-005-superseded/TASK-501.md
 
 # 在 EPIC-005/requirement-analysis.md 补充说明
 echo "
@@ -108,9 +106,6 @@ echo "
 #### 2.4.2 归档已完成 TASK（426/427）
 ```bash
 # 创建 EPIC-005 completed 目录
-mkdir -p jira/tickets/archive/EPIC-005-completed
-mv jira/tickets/TASK-426.md jira/tickets/archive/EPIC-005-completed/
-mv jira/tickets/TASK-427.md jira/tickets/archive/EPIC-005-completed/
 ```
 
 #### 2.4.3 保持活跃 TASK

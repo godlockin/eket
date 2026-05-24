@@ -10,7 +10,6 @@
 ## TODO (24h SLA)
 - [x] What worked
 - [x] What hurt + root cause
-- [x] Lessons → 沉淀到 confluence/memory/{lessons/rule-retention-lessons.md,research/borrowed-wisdom.md}
 - [x] 移动本文件到 confluence/memory/retrospectives/2026/
 
 ## PR body snapshot

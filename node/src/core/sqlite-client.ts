@@ -51,9 +51,8 @@ export class SQLiteClient {
     if (dbPath) {
       this.dbPath = dbPath;
     } else {
-      // 默认路径：~/.eket/data/sqlite/eket.db
-      const homeDir = process.env.HOME || process.env.USERPROFILE || '.';
-      this.dbPath = path.join(homeDir, '.eket', 'data', 'sqlite', 'eket.db');
+      // 默认路径：<项目根目录>/.eket/data/sqlite/eket.db
+      this.dbPath = path.join(process.cwd(), '.eket', 'data', 'sqlite', 'eket.db');
     }
   }
 

@@ -26,6 +26,8 @@
 | [SKILLS_SYSTEM.md](architecture/SKILLS_SYSTEM.md) | Skills 系统设计 |
 | [MULTI_INSTANCE_DESIGN.md](architecture/MULTI_INSTANCE_DESIGN.md) | 多实例设计 |
 | [OPENCLAW-INTEGRATION-DESIGN.md](architecture/OPENCLAW-INTEGRATION-DESIGN.md) | OpenCLAW 集成 |
+| [degradation.md](architecture/degradation.md) | 四级降级架构（Shell → Node → Rust → Redis+SQLite 容灾链路） |
+| [coordination.md](architecture/coordination.md) | Master-Slaver 协调模式（任务分发、状态同步、越权防护） |
 
 ---
 

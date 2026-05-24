@@ -21,7 +21,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-
+import { EventEmitter } from 'events';
 import {
   Checkpoint,
   CheckpointMetadata,
@@ -33,7 +33,7 @@ import {
 import { atomicWrite } from '../utils/atomic-write.js';
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
 
-export class ProgressTracker {
+export class ProgressTracker extends EventEmitter {
   private taskId: string;
   private slaverId: string;
   private flushIntervalMs: number;
@@ -54,6 +54,7 @@ export class ProgressTracker {
   private flushTimer: NodeJS.Timeout | null = null;
 
   constructor(options: ProgressTrackerOptions) {
+    super(); // Initialize EventEmitter
     this.taskId = options.taskId;
     this.slaverId = options.slaverId;
     this.flushIntervalMs = options.flushIntervalMs ?? 30000; // 30s default
@@ -69,6 +70,16 @@ export class ProgressTracker {
     // Git checkpoint config
     this.gitEnabled = options.gitEnabled ?? (process.env.ENABLE_GIT_CHECKPOINT !== 'false');
     this.checkpointBranch = `checkpoint/${this.taskId}`;
+
+    // Resume from checkpoint (TASK-X06, AC-4)
+    if (options.resumeFrom) {
+      this.completedPhases = options.resumeFrom.completedPhases;
+      this.currentPhase = options.resumeFrom.currentPhase;
+      this.checkpoints = options.resumeFrom.checkpoints;
+      console.log(
+        `[ProgressTracker] Resumed from checkpoint (${this.completedPhases.size} phases completed)`
+      );
+    }
 
     // Start auto-flush timer
     this.startFlushTimer();
@@ -107,6 +118,12 @@ export class ProgressTracker {
    * @param metadata - Additional checkpoint data
    */
   async checkpoint(phase: string, metadata: CheckpointMetadata): Promise<void> {
+    // Skip already completed phases (TASK-X06, AC-4)
+    if (this.completedPhases.has(phase)) {
+      console.log(`[ProgressTracker] Skipping already completed phase: ${phase}`);
+      return;
+    }
+
     const checkpoint: Checkpoint = {
       timestamp: new Date().toISOString(),
       phase,
@@ -114,6 +131,9 @@ export class ProgressTracker {
     };
 
     this.checkpoints.push(checkpoint);
+
+    // Emit checkpoint event for IOActivityMonitor (TASK-AUTO-05)
+    this.emit('checkpoint', { phase, metadata });
 
     // Sync flush for critical phases
     if (this.syncPhases.has(phase)) {
