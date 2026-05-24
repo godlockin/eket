@@ -74,7 +74,7 @@ impl RustEventBus {
 **Blocks**: TASK-Z03  
 **Created**: 2026-05-24  
 ---
-status: review
+status: done
 assignee: "backend_dev"
 branch: "feature/TASK-Z02-rust-message-bus"
 ac_completed: 3/3
@@ -83,3 +83,4 @@ test_coverage: 100%
 ## Status Change Log
 - 2026-05-24: `ready` -> `in_progress` (claimed by backend_dev)
 - 2026-05-24: `in_progress` -> `review` (completed by backend_dev)
+- 2026-05-24: `review` -> `done` (approved and merged by master)
