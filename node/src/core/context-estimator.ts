@@ -8,10 +8,12 @@
  * - Alert: triggers Master notification at 150K+ threshold
  */
 
-import { encoding_for_model } from '@dqbd/tiktoken';
-import glob from 'glob';
 import { readFileSync, statSync } from 'fs';
 import { promisify } from 'util';
+
+import { encoding_for_model } from '@dqbd/tiktoken';
+import glob from 'glob';
+
 import { ContextAlert, AlertContext } from './context-alert.js';
 
 const globAsync = promisify(glob);

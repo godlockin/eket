@@ -187,7 +187,7 @@ function parseCompletedCheckpoint(
 ): ParsedCheckpoint | null {
   // Format: - [x] phase_name (MM/DD/YYYY, HH:MM:SS AM/PM)
   const match = line.match(/- \[x\] (.+?) \((.+?)\)/);
-  if (!match) return null;
+  if (!match) {return null;}
 
   const phase = match[1].trim();
   const timestamp = parseTimestamp(match[2]);
@@ -198,7 +198,7 @@ function parseCompletedCheckpoint(
   let idx = currentLineIndex;
   while (idx < allLines.length - 1) {
     const nextLine = allLines[idx].trim();
-    if (!nextLine.startsWith('- ')) break;
+    if (!nextLine.startsWith('- ')) {break;}
 
     // artifact
     const artifactMatch = nextLine.match(/- artifact: (.+)/);

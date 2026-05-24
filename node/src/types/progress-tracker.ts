@@ -97,7 +97,7 @@ export interface ProgressTrackerOptions {
   /** Progress file name (default: progress.md) */
   progressFileName?: string;
   /** Sync flush phases (trigger immediate write) */
-  syncPhases?: (TaskPhase | string)[];
+  syncPhases?: Array<TaskPhase | string>;
   /** Enable git commit + push checkpoint (default: true) */
   gitEnabled?: boolean;
 }
@@ -105,7 +105,7 @@ export interface ProgressTrackerOptions {
 /**
  * Phases that trigger immediate flush (critical checkpoints)
  */
-export const DEFAULT_SYNC_PHASES: (TaskPhase | string)[] = [
+export const DEFAULT_SYNC_PHASES: Array<TaskPhase | string> = [
   TaskPhase.ANALYSIS,
   TaskPhase.DESIGN,
   TaskPhase.READY_FOR_PR,

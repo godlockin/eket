@@ -5,6 +5,7 @@
  */
 
 import { execFileNoThrow } from '../utils/execFileNoThrow.js';
+
 import type { MessageMetadata } from './recovery-logger.js';
 
 /**
@@ -12,7 +13,7 @@ import type { MessageMetadata } from './recovery-logger.js';
  * Chinese: ~2 chars/token, English: ~4 chars/token
  */
 function estimateTokens(text: string): number {
-  if (!text || text.length === 0) return 0;
+  if (!text || text.length === 0) {return 0;}
 
   let chineseChars = 0;
   let otherChars = 0;
@@ -176,7 +177,7 @@ export class ContextTracker {
   /**
    * Get stats for all sessions (debugging)
    */
-  getStats(): { sessionId: string; tokens: number; lastCompact: number }[] {
+  getStats(): Array<{ sessionId: string; tokens: number; lastCompact: number }> {
     return Array.from(this.sessionTokens.entries()).map(([sessionId, tokens]) => ({
       sessionId,
       tokens,
@@ -231,8 +232,8 @@ export class ContextTracker {
   checkRisk(sessionId: string): 'none' | 'low' | 'high' {
     const tokens = this.sessionTokens.get(sessionId) || 0;
 
-    if (tokens > 120000) return 'high';
-    if (tokens > 80000) return 'low';
+    if (tokens > 120000) {return 'high';}
+    if (tokens > 80000) {return 'low';}
     return 'none';
   }
 }

@@ -71,13 +71,13 @@ function findTicketPath(projectRoot: string, taskId: string): string | null {
 
   // Try flat structure: jira/tickets/TASK-XXX.md
   const flatPath = path.join(ticketsDir, `${taskId}.md`);
-  if (fs.existsSync(flatPath)) return flatPath;
+  if (fs.existsSync(flatPath)) {return flatPath;}
 
   // Try EPIC structure: jira/tickets/EPIC-XXX/TASK-XXX.md
   const epics = fs.readdirSync(ticketsDir).filter((name) => name.startsWith('EPIC-'));
   for (const epic of epics) {
     const epicPath = path.join(ticketsDir, epic, `${taskId}.md`);
-    if (fs.existsSync(epicPath)) return epicPath;
+    if (fs.existsSync(epicPath)) {return epicPath;}
   }
 
   return null;
@@ -108,7 +108,7 @@ function parseTicket(ticketPath: string): TicketMetadata {
     const lines = acSection[1].split('\n');
     lines.forEach((line) => {
       const acMatch = line.match(/^-\s+\[\s*\]\s+(.+)$/);
-      if (acMatch) acceptanceCriteria.push(acMatch[1].trim());
+      if (acMatch) {acceptanceCriteria.push(acMatch[1].trim());}
     });
   }
 
