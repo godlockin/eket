@@ -372,7 +372,8 @@ export type MessageType =
   | 'dependency_notify'
   | 'status_change'
   | 'handover_request'
-  | 'handover_complete';
+  | 'handover_complete'
+  | 'hang_detected'; // TASK-AUTO-05
 
 export type MessagePriority = 'low' | 'normal' | 'high' | 'urgent';
 
