@@ -102,3 +102,17 @@ CREATE TABLE IF NOT EXISTS master_lock (
     acquired_at TEXT NOT NULL,
     expires_at  TEXT NOT NULL
 );
+
+-- Message History Table for StateReconciler and general message tracing
+CREATE TABLE IF NOT EXISTS message_history (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    message_id  TEXT UNIQUE,
+    from_agent  TEXT,
+    to_agent    TEXT,
+    type        TEXT,
+    payload     TEXT,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_message_type ON message_history(type);
+

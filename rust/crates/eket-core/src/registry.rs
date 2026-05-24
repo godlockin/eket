@@ -343,7 +343,9 @@ mod tests {
     use serde_json::json;
 
     fn make_registry() -> InstanceRegistry {
-        let pool = create_pool(":memory:").expect("in-memory db");
+        let unique_id = uuid::Uuid::new_v4().to_string();
+        let db_path = format!("file:memdb_registry_{}?mode=memory&cache=shared", unique_id);
+        let pool = create_pool(&db_path).expect("in-memory db");
         let db = Arc::new(SqliteClient::new(pool));
         let redis = Arc::new(EketRedisClient::new_unavailable());
         InstanceRegistry::new(db, redis)
