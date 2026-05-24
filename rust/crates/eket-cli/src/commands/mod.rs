@@ -35,3 +35,6 @@ pub mod expert_compose;
 pub mod expert_summon;
 pub mod memory_review;
 pub mod webhook;
+pub mod batch;
+pub mod fingerprint;
+pub mod analyze_structure;
