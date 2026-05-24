@@ -46,6 +46,7 @@ export class SlaverWatchdog {
   private startTime: number = Date.now();
   private lastActivity: number = Date.now();
   private heartbeatFilePath: string;
+  private status: string = 'active';
 
   // Config
   private timeoutWarningMs: number;
@@ -115,7 +116,7 @@ export class SlaverWatchdog {
         timestamp,
         taskId: this.taskId,
         elapsed,
-        status: 'active',
+        status: this.status,
       });
 
       await fs.writeFile(this.heartbeatFilePath, content, 'utf-8');
@@ -185,6 +186,7 @@ export class SlaverWatchdog {
    * Update heartbeat status field
    */
   private async updateHeartbeatStatus(status: string): Promise<void> {
+    this.status = status;
     try {
       const timestamp = Date.now();
       const elapsed = timestamp - this.startTime;

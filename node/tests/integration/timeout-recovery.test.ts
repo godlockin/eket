@@ -61,13 +61,22 @@ describe('Timeout Recovery Integration', () => {
       .catch(() => false);
     expect(exists).toBe(true);
 
-    // Wait for timeout warning + async processing
-    await new Promise((resolve) => setTimeout(resolve, 600));
-
-    // Verify heartbeat status updated
-    const heartbeatContent = await fs.readFile(heartbeatPath, 'utf-8');
-    const heartbeatData = JSON.parse(heartbeatContent);
-    expect(heartbeatData.status).toBe('timeout_warning');
+    // Poll for status to become timeout_warning (up to 3 seconds)
+    let status = '';
+    for (let i = 0; i < 30; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      try {
+        const heartbeatContent = await fs.readFile(heartbeatPath, 'utf-8');
+        const heartbeatData = JSON.parse(heartbeatContent);
+        status = heartbeatData.status;
+        if (status === 'timeout_warning') {
+          break;
+        }
+      } catch (err) {
+        // Ignore read/parse errors during concurrent write
+      }
+    }
+    expect(status).toBe('timeout_warning');
 
     await watchdog.close();
     await tracker.close();
