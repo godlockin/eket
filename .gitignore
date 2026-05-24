@@ -213,6 +213,9 @@ confluence/memory/retrospectives/*
 !confluence/memory/retrospectives/sprint-*.md
 !confluence/memory/retrospectives/phase-*.md
 !confluence/memory/retrospectives/[0-9]*/
+!confluence/memory/retrospectives/epics/
+!confluence/memory/retrospectives/sprints/
+!confluence/memory/retrospectives/prs/
 
 # Build artifacts
 confluence/memory/.eket-index-state.json
