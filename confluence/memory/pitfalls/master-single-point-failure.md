@@ -1,44 +1,49 @@
-# 架构缺陷分析：Master 单点故障问题
+# Master 单点故障与性能瓶颈
 
-**发现时间**: 2026-05-14 19:35  
+**发现时间**: 2026-05-14  
 **严重性**: 🔴 **Critical**  
-**提出人**: 用户
+**状态**: ✅ 已有解决方案（见 MASTER-RULES.md §Rule 4）
 
 ---
 
 ## 问题
 
-**用户质疑**: 
-1. "多个模式都能生效吗？" → Master 监控依赖 Master 活跃
-2. "Master 自己假死了怎么办？" → **单点故障，无 Failover**
-
-**当前架构**: Master 监控 Slaver，但**谁监控 Master？**
+1. **性能瓶颈**：并行 Slaver > 3 时，Master 处理消息队列成为瓶颈
+2. **单点故障**：Master 假死后，所有 Slaver 工作中断，无 Failover
 
 ---
 
-## 解决方案：外部 Supervisor
+## 解决方案
 
-### 架构
+### 1. 负载分担 — 专属助理委托
+
+| 助理角色 | 分担工作 |
+|----------|---------|
+| `pr_reviewer` | 4-Level 代码审核 |
+| `scrum_master` | 心跳监控、进度催促 |
+| `incident_reviewer` | 超时诊断 |
+| `analysis_reviewer` | 分析报告审核 |
+| `test_reviewer` | 测试结果审核 |
+
+**权限边界**：助理只能建议，Master 做最终决策。
+
+**自动触发**：
+- 消息积压 > 10 → 启动 scrum_master
+- 待审 PR > 3 → 启动 pr_reviewer
+- 超时事件 > 2 → 启动 incident_reviewer
+
+### 2. 单点故障兜底 — 外部 Supervisor
+
 ```
 Supervisor (Bash/Cron, 独立进程)
-  ├─> 监控 Master 心跳
-  ├─> 监控 Slaver 心跳 (备份)
-  └─> 创建告警 + 恢复队列
+  ├─> 监控 Master 心跳（10 分钟阈值）
+  ├─> 故障时写入 recovery_queue.jsonl
+  └─> 发送告警到 .eket/logs/
 
 Master 恢复后:
-  ├─> 读取恢复队列
-  └─> 处理积压任务
+  └─> 优先处理 recovery_queue
 ```
-
-### 需要补充 3 个 Tasks
-
-**TASK-AUTO-13**: Supervisor 脚本 (2h)
-**TASK-AUTO-14**: Master 心跳 (1h)  
-**TASK-AUTO-15**: 恢复队列处理 (1.5h)
 
 ---
 
-**风险**: 🔴 Master 单点未解决  
-**方案**: 外部 Supervisor 兜底
-
-需要立即实现？
+**详细规则**: 见 `template/docs/MASTER-RULES.md` §Rule 4
