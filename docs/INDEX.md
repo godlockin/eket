@@ -1,6 +1,6 @@
 # EKET 框架文档导航
 
-**版本**: 2.14.0-beta | **最后更新**: 2026-04-26
+**版本**: 2.14.0-beta | **最后更新**: 2026-05-24
 
 > 文档中心入口。Rust 迁移完成后的四级架构文档索引。
 
@@ -28,6 +28,8 @@
 | [OPENCLAW-INTEGRATION-DESIGN.md](architecture/OPENCLAW-INTEGRATION-DESIGN.md) | OpenCLAW 集成 |
 | [degradation.md](architecture/degradation.md) | 四级降级架构（Shell → Node → Rust → Redis+SQLite 容灾链路） |
 | [coordination.md](architecture/coordination.md) | Master-Slaver 协调模式（任务分发、状态同步、越权防护） |
+| [analysis-architecture.md](architecture/analysis-architecture.md) | 代码分析架构（确定性脚本 + LLM 分离设计）🆕 |
+| [schema.md](architecture/schema.md) | Schema 定义（节点/边类型，含非代码文件）🆕 |
 
 ---
 
@@ -38,6 +40,8 @@
 | [SHELL-MODE.md](guides/SHELL-MODE.md) | Level 0 Shell 模式操作指南 |
 | [NODEJS-MODE.md](guides/NODEJS-MODE.md) | Level 2 Node.js 模式指南 |
 | [FULL-STACK-MODE.md](guides/FULL-STACK-MODE.md) | 全栈模式（Rust + Node + Redis） |
+| [incremental-analysis.md](guides/incremental-analysis.md) | 增量分析指南（fingerprint 变更检测）🆕 |
+| [batch-processing.md](guides/batch-processing.md) | 批次处理指南（大任务拆解）🆕 |
 
 ---
 
@@ -75,6 +79,7 @@
 
 | 文档 | 说明 |
 |------|------|
+| [cli-reference.md](reference/cli-reference.md) | CLI 命令完整参考（analyze/batch/fingerprint）🆕 |
 | [error-codes.md](reference/error-codes.md) | 错误码参考 |
 | [EKET-PROTOCOL.md](reference/EKET-PROTOCOL.md) | 协议规范入口（详见 protocol/ 目录） |
 
