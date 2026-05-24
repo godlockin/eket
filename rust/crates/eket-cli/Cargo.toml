@@ -28,6 +28,7 @@ rusqlite = { workspace = true }
 r2d2 = { workspace = true }
 r2d2_sqlite = { workspace = true }
 glob = "0.3.3"
+walkdir = "2"
 
 [dev-dependencies]
 tempfile = "3.27.0"

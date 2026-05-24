@@ -30,7 +30,17 @@ sha2 = { workspace = true }
 hex = { workspace = true }
 aes-gcm = "0.10"
 rand = "0.8"
+regex = { workspace = true }
 url = "2"
+dashmap = { workspace = true }
+
+# Code Analysis (tree-sitter)
+tree-sitter = { workspace = true }
+tree-sitter-typescript = { workspace = true }
+tree-sitter-python = { workspace = true }
+tree-sitter-rust = { workspace = true }
+tree-sitter-go = { workspace = true }
+streaming-iterator = "0.1"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

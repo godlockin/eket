@@ -217,6 +217,30 @@ enum Commands {
     /// Webhook management (add / list / remove / events / retry)
     #[command(name = "webhook", subcommand_required = true)]
     Webhook(commands::webhook::WebhookArgs),
+
+    /// Compute batches for large codebase analysis
+    #[command(name = "batch:compute")]
+    BatchCompute(commands::batch::BatchComputeArgs),
+
+    /// Show batch file info and statistics
+    #[command(name = "batch:info")]
+    BatchInfo(commands::batch::BatchInfoArgs),
+
+    /// Build fingerprints for incremental change detection
+    #[command(name = "fingerprint:build")]
+    FingerprintBuild(commands::fingerprint::FingerprintBuildArgs),
+
+    /// Diff current state against fingerprint baseline
+    #[command(name = "fingerprint:diff")]
+    FingerprintDiff(commands::fingerprint::FingerprintDiffArgs),
+
+    /// Show fingerprint statistics
+    #[command(name = "fingerprint:stats")]
+    FingerprintStats(commands::fingerprint::FingerprintStatsArgs),
+
+    /// Analyze code structure using tree-sitter (TASK-E11-001)
+    #[command(name = "analyze:structure")]
+    AnalyzeStructure(commands::analyze_structure::AnalyzeStructureArgs),
 }
 
 #[tokio::main]
@@ -303,5 +327,11 @@ async fn main() -> Result<()> {
         Commands::MemoryReview(args) => commands::memory_review::run(args).await,
         Commands::ExpertSummon(args) => commands::expert_summon::run(args).await,
         Commands::Webhook(args) => commands::webhook::run(args).await,
+        Commands::BatchCompute(args) => commands::batch::run_compute(args).await,
+        Commands::BatchInfo(args) => commands::batch::run_info(args).await,
+        Commands::FingerprintBuild(args) => commands::fingerprint::run_build(args).await,
+        Commands::FingerprintDiff(args) => commands::fingerprint::run_diff(args).await,
+        Commands::FingerprintStats(args) => commands::fingerprint::run_stats(args).await,
+        Commands::AnalyzeStructure(args) => commands::analyze_structure::run(args).await,
     }
 }
