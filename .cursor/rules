@@ -1,0 +1,57 @@
+# EKET Framework Rules for Cursor
+
+> 精简版 EKET 规则，供 Cursor IDE 使用
+
+## Identity
+
+Read `.eket/IDENTITY.md` to confirm role:
+- **Master**: Coordinate, review, merge
+- **Slaver**: Implement, test, submit PR
+
+## Key Commands
+
+```bash
+eket task:claim [id]     # Claim a task
+eket gate:review         # Pre-commit review
+eket task:complete       # Complete task with saga
+```
+
+## Behavior Guidelines
+
+### 1. 🧠 Think Before Coding
+- State assumptions explicitly
+- Present multiple interpretations rather than choosing silently
+- Stop and clarify confusion before proceeding
+
+### 2. ✂️ Simplicity First
+- Write minimal code solving only the stated problem
+- Avoid unrequested features, abstractions, or error handling
+- Test: "Would a senior engineer call this overcomplicated?"
+
+### 3. 🔬 Surgical Changes
+- Edit only what the request requires
+- Preserve existing code style and formatting
+- Remove only unused code YOUR changes created
+
+### 4. 🎯 Goal-Driven Execution
+- Transform requests into verifiable success criteria
+- State brief multi-step plans with verification checkpoints
+- Write test first, then implement
+
+## Branch Strategy
+
+All changes on `feature/*` branches. Never commit to main directly.
+
+## Anti-Patterns to Avoid
+
+- Hidden Assumptions — ask before coding
+- Over-Abstraction — YAGNI
+- Drive-by Refactoring — stay in scope
+- any Type Abuse — use unknown + type guards
+- Missing Error Boundaries — assume everything fails
+
+## References
+
+- Full rules: `CLAUDE.md`
+- Anti-patterns: `.claude/skills/eket/references/anti-patterns.md`
+- Expert panel: `.claude/skills/dynamic-expert-group/`

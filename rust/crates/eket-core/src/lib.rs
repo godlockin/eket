@@ -16,6 +16,7 @@ pub mod expert_skill_bridge;
 pub mod expertise_embedding;
 pub mod file;
 pub mod fingerprint;
+pub mod gate;
 pub mod guardrail;
 pub mod middleware_pipeline;
 pub mod migrations;
