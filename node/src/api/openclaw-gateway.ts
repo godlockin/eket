@@ -78,7 +78,7 @@ export class OpenCLAWGateway {
     });
   }
 
-  private server: any = null;
+  private server: http.Server | null = null;
 
   public start(): Promise<void> {
     return new Promise((resolve, reject) => {

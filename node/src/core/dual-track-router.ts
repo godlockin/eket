@@ -7,7 +7,7 @@
  */
 
 import { MasterElection } from './master-election.js';
-import { EventBus } from './event-bus.js';
+import { EventBus, type EventHandler, type SubscriptionOptions } from './event-bus.js';
 
 // ============================================================================
 // Environment Detection Helper
@@ -40,11 +40,12 @@ export async function detectRustEnvironment(
       track: 'B',
       reason: `Rust server health endpoint returned status ${resp.status}`,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
     return {
       available: false,
       track: 'B',
-      reason: `Failed to connect to Rust server: ${err.message}`,
+      reason: `Failed to connect to Rust server: ${message}`,
     };
   } finally {
     // Cancel fetch response body to release the socket back to the undici connection pool
@@ -89,7 +90,7 @@ export class RustElectionAdapter implements IMasterElection {
         throw new Error(`Rust server response is not JSON (Content-Type: ${contentType})`);
       }
 
-      const data = (await resp.json()) as any;
+      const data = (await resp.json()) as { success?: boolean };
       return !!(data && data.success);
     } finally {
       if (resp && resp.body && !resp.bodyUsed) {
@@ -108,7 +109,7 @@ export class NodeElectionFallback implements IMasterElection {
 
   async tryElect(): Promise<boolean> {
     const res = await this.election.elect();
-    return res.success && !!(res.data && (res.data as any).isMaster);
+    return res.success && !!(res.data && (res.data as { isMaster?: boolean }).isMaster);
   }
 }
 
@@ -164,9 +165,10 @@ export class DualTrackElection implements IMasterElection {
     if (this.currentTrack === 'A') {
       try {
         return await this.rustAdapter.tryElect();
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
         console.warn(
-          `[Dual-Track] Rust Core 异常或不可用，自动降级至 JS 本轨。原因: ${err.message}`
+          `[Dual-Track] Rust Core 异常或不可用，自动降级至 JS 本轨。原因: ${message}`
         );
         this.currentTrack = 'B';
         this.lastFailureTime = Date.now();
@@ -187,7 +189,7 @@ export class RustEventBusAdapter {
     this.apiUrl = apiUrl || process.env.EKET_RUST_API_URL || 'http://localhost:9877';
   }
 
-  async publish(eventType: string, payload: any, source?: string): Promise<void> {
+  async publish(eventType: string, payload: unknown, source?: string): Promise<void> {
     let resp: Response | undefined;
     try {
       resp = await fetch(`${this.apiUrl}/api/v1/events`, {
@@ -265,9 +267,10 @@ export class DualTrackEventBus {
     if (this.currentTrack === 'A') {
       try {
         await this.rustAdapter.publish(eventType, payload, source);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
         console.warn(
-          `[Dual-Track] Rust EventBus emit 失败，降级至 JS 本轨。原因: ${err.message}`
+          `[Dual-Track] Rust EventBus emit 失败，降级至 JS 本轨。原因: ${message}`
         );
         this.currentTrack = 'B';
         this.lastFailureTime = Date.now();
@@ -292,9 +295,10 @@ export class DualTrackEventBus {
     if (this.currentTrack === 'A') {
       try {
         await this.rustAdapter.publish(eventType, payload, source);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
         console.warn(
-          `[Dual-Track] Rust EventBus emitAsync 失败，降级至 JS 本轨。原因: ${err.message}`
+          `[Dual-Track] Rust EventBus emitAsync 失败，降级至 JS 本轨。原因: ${message}`
         );
         this.currentTrack = 'B';
         this.lastFailureTime = Date.now();
@@ -317,9 +321,10 @@ export class DualTrackEventBus {
     if (this.currentTrack === 'A') {
       try {
         await this.rustAdapter.publish(eventType, payload, source);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
         console.warn(
-          `[Dual-Track] Rust EventBus publish 失败，降级至 JS 本轨。原因: ${err.message}`
+          `[Dual-Track] Rust EventBus publish 失败，降级至 JS 本轨。原因: ${message}`
         );
         this.currentTrack = 'B';
         this.lastFailureTime = Date.now();
@@ -335,15 +340,15 @@ export class DualTrackEventBus {
     await this.nodeFallback.publish(eventType, payload, source);
   }
 
-  on(eventType: string, handler: any, options?: any): void {
+  on<T>(eventType: string, handler: EventHandler<T>, options?: SubscriptionOptions): void {
     this.nodeFallback.on(eventType, handler, options);
   }
 
-  once(eventType: string, handler: any, options?: any): void {
+  once<T>(eventType: string, handler: EventHandler<T>, options?: Omit<SubscriptionOptions, 'once'>): void {
     this.nodeFallback.once(eventType, handler, options);
   }
 
-  off(eventType: string, handler: any): void {
+  off<T>(eventType: string, handler: EventHandler<T>): void {
     this.nodeFallback.off(eventType, handler);
   }
 

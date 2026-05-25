@@ -20,8 +20,29 @@ export interface ReconciledMessage {
   filePath: string;
   timestamp: number;
   channel: string;
-  data: Message | any;
+  data: ReconciledMessageData;
   type: 'json' | 'msg';
+}
+
+/** Loose structure for parsed file messages */
+interface ReconciledMessageData {
+  id?: string;
+  timestamp?: string | number;
+  _channel?: string;
+  _enqueue_time?: number;
+  command?: string;
+  from?: string;
+  to?: string;
+  type?: string;
+  payload?: unknown;
+  ticketId?: string;
+  title?: string;
+  status?: string;
+  priority?: number;
+  assignee?: string | null;
+  claimedAt?: string | null;
+  createdAt?: string;
+  [key: string]: unknown;
 }
 
 function findProjectRootSync(): string {
@@ -92,7 +113,7 @@ export class StateReconciler {
           let id = '';
           let timestamp = Date.now();
           let channel = 'default';
-          let messageData: any = parsed;
+          let messageData: ReconciledMessageData = parsed as ReconciledMessageData;
           let fileType: 'json' | 'msg' = file.endsWith('.msg') ? 'msg' : 'json';
 
           if (fileType === 'msg') {
@@ -104,8 +125,8 @@ export class StateReconciler {
             // OptimizedFileQueueManager v2 格式
             if (parsed.metadata && parsed.metadata.version === 2) {
               const wrapper = parsed;
-              messageData = wrapper.message;
-              id = messageData.id;
+              messageData = wrapper.message as ReconciledMessageData;
+              id = messageData.id || `v2_msg_${Date.now()}`;
               channel = messageData._channel || 'default';
               timestamp = messageData.timestamp
                 ? new Date(messageData.timestamp).getTime()
@@ -164,11 +185,12 @@ export class StateReconciler {
       this.releaseReconcileLock();
       console.log(`[StateReconciler] 数据对齐完成，共成功重放 ${replayedCount} 条历史降级消息。`);
       return { success: true, data: replayedCount };
-    } catch (err: any) {
+    } catch (err: unknown) {
       this.releaseReconcileLock();
+      const message = err instanceof Error ? err.message : String(err);
       return {
         success: false,
-        error: new EketError(EketErrorCode.QUEUE_ERROR, `对齐恢复失败: ${err.message}`),
+        error: new EketError(EketErrorCode.QUEUE_ERROR, `对齐恢复失败: ${message}`),
       };
     }
   }
@@ -228,7 +250,8 @@ export class StateReconciler {
     // 正常的 MQ 消息类型回放
     if (this.mq && this.mq.getMode() === 'redis') {
       console.log(`[StateReconciler] 重新发布降级消息到 Redis Channel: ${msg.channel}`);
-      const pubResult = await this.mq.publish(msg.channel, msg.data);
+      // Cast to Message - file queue messages may be incomplete but MQ handles gracefully
+      const pubResult = await this.mq.publish(msg.channel, msg.data as unknown as Message);
       return pubResult.success;
     }
 

@@ -602,12 +602,13 @@ export async function gateReview(
         report.vetoDetails.defects.push(`AI 语义级计划质检不合格 (得分: ${semResult.score}): ${semResult.reason}`);
         report.vetoDetails.resubmitConditions.push('重新完善 analysis-report.md，提供具体可行的技术路线与文件更改计划');
       }
-    } catch (err: any) {
-      console.warn(`      ⚠️ AI 语义级质检异常: ${err.message}`);
+    } catch (err: unknown) {
+      const errMessage = err instanceof Error ? err.message : String(err);
+      console.warn(`      ⚠️ AI 语义级质检异常: ${errMessage}`);
       report.dimensions.push({
         name: 'AI 语义级计划质检',
         status: 'warn',
-        note: `质检异常: ${err.message} (降级通过)`,
+        note: `质检异常: ${errMessage} (降级通过)`,
       });
     }
   } else {

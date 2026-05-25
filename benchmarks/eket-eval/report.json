@@ -1,0 +1,63 @@
+{
+  "timestamp": "2026-05-25T14:25:00.000Z",
+  "framework": "EKET",
+  "version": "2.19.0-beta",
+  "results": [
+    {
+      "dimension": "Test Suite Health",
+      "score": 1764,
+      "maxScore": 1764,
+      "percentage": 100,
+      "details": {
+        "passed": 1764,
+        "failed": 0,
+        "total": 1764,
+        "testSuites": 129
+      }
+    },
+    {
+      "dimension": "Code Quality (Type Safety)",
+      "score": 54,
+      "maxScore": 100,
+      "percentage": 54,
+      "details": {
+        "anyUsage": 46,
+        "totalFiles": 213,
+        "avgAnyPerFile": "0.22"
+      }
+    },
+    {
+      "dimension": "Ticket Resolution",
+      "score": 15,
+      "maxScore": 60,
+      "percentage": 25,
+      "details": {
+        "completed": 15,
+        "total": 60,
+        "pending": 45
+      }
+    },
+    {
+      "dimension": "Documentation Coverage",
+      "score": 50,
+      "maxScore": 50,
+      "percentage": 100,
+      "details": {
+        "confluenceDocs": 85
+      }
+    },
+    {
+      "dimension": "Test Coverage Ratio",
+      "score": 49,
+      "maxScore": 100,
+      "percentage": 49,
+      "details": {
+        "sourceLines": 65915,
+        "testLines": 32404,
+        "ratio": "49.2%"
+      }
+    }
+  ],
+  "overallScore": 72,
+  "grade": "C"
+}

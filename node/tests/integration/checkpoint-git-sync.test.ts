@@ -137,6 +137,9 @@ describe('TASK-X04: Checkpoint Git Sync', () => {
   });
 
   it('multiple checkpoints create multiple commits', async () => {
+    // Ensure clean state: delete checkpoint branch if exists from previous tests
+    await execFileNoThrow('git', ['branch', '-D', CHECKPOINT_BRANCH]);
+
     const tracker = new ProgressTracker({
       taskId: TEST_TASK_ID,
       slaverId: TEST_SLAVER_ID,
