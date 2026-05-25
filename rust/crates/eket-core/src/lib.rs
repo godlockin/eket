@@ -3,6 +3,7 @@
 
 pub mod analyzer;
 pub mod batch;
+pub mod benchmark;
 pub mod cache;
 pub mod circuit_breaker;
 pub mod config;
@@ -12,6 +13,7 @@ pub mod doc_lifecycle;
 pub mod edge;
 pub mod election;
 pub mod error;
+pub mod expert;
 pub mod expert_skill_bridge;
 pub mod expertise_embedding;
 pub mod file;
