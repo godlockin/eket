@@ -1,0 +1,465 @@
+{
+  "timestamp": "2026-05-25T22:51:28.862567",
+  "framework": "EKET v2.9.0-alpha (SWE-bench Enhanced)",
+  "dataset": "SWE-bench Lite",
+  "mode": "simulation",
+  "total_instances": 50,
+  "resolved": 27,
+  "failed": 19,
+  "timeout": 2,
+  "error": 2,
+  "resolve_rate": 54.0,
+  "avg_duration": 54.35941143093821,
+  "results": [
+    {
+      "instance_id": "astropy__astropy-12907",
+      "repo": "astropy/astropy",
+      "status": "failed",
+      "patch_generated": true,
+      "tests_passed": false,
+      "duration_seconds": 66.63769215866404,
+      "error_message": "Partial fix, some tests still failing"
+    },
+    {
+      "instance_id": "astropy__astropy-14182",
+      "repo": "astropy/astropy",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 58.90019938560511,
+      "error_message": null
+    },
+    {
+      "instance_id": "astropy__astropy-14365",
+      "repo": "astropy/astropy",
+      "status": "error",
+      "patch_generated": false,
+      "tests_passed": null,
+      "duration_seconds": 47.854257561031936,
+      "error_message": "Patch format validation failed after retries"
+    },
+    {
+      "instance_id": "astropy__astropy-14995",
+      "repo": "astropy/astropy",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 37.42529891063785,
+      "error_message": null
+    },
+    {
+      "instance_id": "astropy__astropy-6938",
+      "repo": "astropy/astropy",
+      "status": "failed",
+      "patch_generated": true,
+      "tests_passed": false,
+      "duration_seconds": 78.43353042279062,
+      "error_message": "Patch generated but tests failed"
+    },
+    {
+      "instance_id": "astropy__astropy-7746",
+      "repo": "astropy/astropy",
+      "status": "failed",
+      "patch_generated": false,
+      "tests_passed": null,
+      "duration_seconds": 76.20780262425382,
+      "error_message": "Could not identify correct file to modify"
+    },
+    {
+      "instance_id": "django__django-10914",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 87.97299910358267,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-10924",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 80.5503834979882,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-11001",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": true,
+      "tests_passed": false,
+      "duration_seconds": 75.09926369010186,
+      "error_message": "Patch generated but tests failed"
+    },
+    {
+      "instance_id": "django__django-11019",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": false,
+      "tests_passed": null,
+      "duration_seconds": 37.60668684878935,
+      "error_message": "Could not identify correct file to modify"
+    },
+    {
+      "instance_id": "django__django-11039",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 54.46800270999206,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-11049",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 19.52781677445609,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-11099",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 40.83729859343458,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-11133",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 80.36316544273566,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-11179",
+      "repo": "django/django",
+      "status": "timeout",
+      "patch_generated": false,
+      "tests_passed": null,
+      "duration_seconds": 62.04527332887616,
+      "error_message": "Agent timed out during analysis"
+    },
+    {
+      "instance_id": "django__django-11283",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 78.26138225387191,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-11422",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": true,
+      "tests_passed": false,
+      "duration_seconds": 55.77850086552975,
+      "error_message": "Patch generated but tests failed"
+    },
+    {
+      "instance_id": "django__django-11564",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 32.47368976830592,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-11583",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": true,
+      "tests_passed": false,
+      "duration_seconds": 36.58275692859075,
+      "error_message": "Patch generated but tests failed"
+    },
+    {
+      "instance_id": "django__django-11620",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": true,
+      "tests_passed": false,
+      "duration_seconds": 88.5047939466502,
+      "error_message": "Patch generated but tests failed"
+    },
+    {
+      "instance_id": "django__django-11630",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": true,
+      "tests_passed": false,
+      "duration_seconds": 27.652295819808202,
+      "error_message": "Patch generated but tests failed"
+    },
+    {
+      "instance_id": "django__django-11742",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": true,
+      "tests_passed": false,
+      "duration_seconds": 34.50357718691188,
+      "error_message": "Patch generated but tests failed"
+    },
+    {
+      "instance_id": "django__django-11797",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 47.14835360702866,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-11815",
+      "repo": "django/django",
+      "status": "timeout",
+      "patch_generated": false,
+      "tests_passed": null,
+      "duration_seconds": 49.370072757091144,
+      "error_message": "Agent timed out during analysis"
+    },
+    {
+      "instance_id": "django__django-11848",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 72.62632943289825,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-11905",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 75.47784234780784,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-11910",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": true,
+      "tests_passed": false,
+      "duration_seconds": 29.889888594789543,
+      "error_message": "Patch generated but tests failed"
+    },
+    {
+      "instance_id": "django__django-11964",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 79.87040105034644,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-11999",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 41.78262661300867,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-12113",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 33.274772533316565,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-12125",
+      "repo": "django/django",
+      "status": "error",
+      "patch_generated": false,
+      "tests_passed": null,
+      "duration_seconds": 83.52325112679394,
+      "error_message": "Patch format validation failed after retries"
+    },
+    {
+      "instance_id": "django__django-12184",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": false,
+      "tests_passed": null,
+      "duration_seconds": 46.54991378908473,
+      "error_message": "Could not identify correct file to modify"
+    },
+    {
+      "instance_id": "django__django-12284",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 81.84642579828133,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-12286",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 22.06536843834563,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-12308",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": false,
+      "tests_passed": null,
+      "duration_seconds": 24.23698575798503,
+      "error_message": "Could not identify correct file to modify"
+    },
+    {
+      "instance_id": "django__django-12453",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 77.8692608518027,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-12470",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 41.05437805434583,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-12497",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 45.68924623009779,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-12589",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 17.537750668246254,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-12700",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 32.27716005268689,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-12708",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": false,
+      "tests_passed": null,
+      "duration_seconds": 83.53993888426598,
+      "error_message": "Could not identify correct file to modify"
+    },
+    {
+      "instance_id": "django__django-12747",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 65.59322963878972,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-12856",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": false,
+      "tests_passed": null,
+      "duration_seconds": 15.584657909106955,
+      "error_message": "Could not identify correct file to modify"
+    },
+    {
+      "instance_id": "django__django-12908",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 34.746828801929155,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-12915",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": false,
+      "tests_passed": null,
+      "duration_seconds": 62.560570716718864,
+      "error_message": "Could not identify correct file to modify"
+    },
+    {
+      "instance_id": "django__django-12983",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 45.510522979054784,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-13028",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": true,
+      "tests_passed": false,
+      "duration_seconds": 48.58079731765287,
+      "error_message": "Patch generated but tests failed"
+    },
+    {
+      "instance_id": "django__django-13033",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": true,
+      "tests_passed": false,
+      "duration_seconds": 73.77513298224825,
+      "error_message": "Partial fix, some tests still failing"
+    },
+    {
+      "instance_id": "django__django-13158",
+      "repo": "django/django",
+      "status": "resolved",
+      "patch_generated": true,
+      "tests_passed": true,
+      "duration_seconds": 39.496606752324354,
+      "error_message": null
+    },
+    {
+      "instance_id": "django__django-13220",
+      "repo": "django/django",
+      "status": "failed",
+      "patch_generated": false,
+      "tests_passed": null,
+      "duration_seconds": 88.80559003825485,
+      "error_message": "Could not identify correct file to modify"
+    }
+  ]
+}

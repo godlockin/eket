@@ -181,12 +181,13 @@ export class SemanticValidator {
       this.writeCache(contentHash, validationResult);
 
       return validationResult;
-    } catch (err: any) {
+    } catch (err: unknown) {
       // 在生产环境中如果调用 LLM 失败，则优雅降级为简单规则过滤，但在测试中我们会传递 mock。
       // 下面实现简易的降级匹配逻辑防止因为网络中断而阻断开发：
+      const errMessage = err instanceof Error ? err.message : String(err);
       const isMockOrTest = (process.env.NODE_ENV === 'test' || process.env.EKET_MOCK_LLM === 'true') && !process.env.EKET_TEST_FALLBACK;
       if (isMockOrTest && !this.llmCaller) {
-        throw new Error(`LLM call failed in test mode: ${err.message}`);
+        throw new Error(`LLM call failed in test mode: ${errMessage}`);
       }
 
       // 生产环境降级：如果包含 TODO/TBD 或明显的模版拷贝，或者重复 AC，直接判定不合格
@@ -250,7 +251,14 @@ export class SemanticValidator {
       throw new Error(`LLM API returned status ${response.status}: ${errText}`);
     }
 
-    const result: any = await response.json();
+    interface OpenAIResponse {
+      choices?: Array<{
+        message?: {
+          content?: string;
+        };
+      }>;
+    }
+    const result = (await response.json()) as OpenAIResponse;
     return result.choices?.[0]?.message?.content || '';
   }
 }

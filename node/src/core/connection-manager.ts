@@ -254,8 +254,9 @@ export class ConnectionManager {
     const queueDir = this.getFileQueueDir();
     if (!queueDir) return;
     const reconciler = new StateReconciler(queueDir, this.sqliteClient, null);
-    reconciler.reconcile().catch((err: any) => {
-      console.warn(`[ConnectionManager] Background reconciliation failed: ${err.message}`);
+    reconciler.reconcile().catch((err: unknown) => {
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn(`[ConnectionManager] Background reconciliation failed: ${message}`);
     });
   }
 
