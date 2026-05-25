@@ -242,7 +242,12 @@ impl ImportanceCalculator {
     pub fn generate_report(&self, task_id: &str) -> TeamScoreReport {
         let scores = self.calculate_scores();
         let mut sorted_scores = scores.clone();
-        sorted_scores.sort_by(|a, b| b.overall_score.partial_cmp(&a.overall_score).unwrap());
+        // Use safe comparison that handles NaN (treats as equal)
+        sorted_scores.sort_by(|a, b| {
+            b.overall_score
+                .partial_cmp(&a.overall_score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
 
         let total_tokens: u64 = scores.iter().map(|s| s.tokens_used).sum();
         let total_contributions: u32 = scores.iter().map(|s| s.contribution_count).sum();
@@ -260,7 +265,7 @@ impl ImportanceCalculator {
             average_score: avg_score,
             timestamp: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
+                .unwrap_or_default()
                 .as_secs(),
         }
     }
@@ -456,5 +461,33 @@ mod tests {
 
         // Bad expert should be underperformer
         assert!(underperformers.iter().any(|s| s.agent_id == "bad"));
+    }
+
+    #[test]
+    fn test_nan_weights_safe() {
+        // Test that NaN weights don't cause panic
+        let weights = ImportanceWeights {
+            task_contribution: f64::NAN,
+            quality_impact: 0.3,
+            efficiency: 0.2,
+            adoption_rate: 0.1,
+        };
+        let mut calc = ImportanceCalculator::with_weights(weights);
+        calc.register_agent("test", "Test Agent");
+        calc.record_contribution(ExpertContribution {
+            agent_id: "test".to_string(),
+            task_id: "TASK-001".to_string(),
+            contribution_type: ContributionType::Solution,
+            tokens_used: 100,
+            adopted: true,
+            quality_rating: Some(5),
+            timestamp: 0,
+            content: None,
+        });
+
+        // Should not panic even with NaN weights
+        let report = calc.generate_report("TASK-001");
+        assert_eq!(report.scores.len(), 1);
+        // Score will be NaN but sorting should not panic
     }
 }
