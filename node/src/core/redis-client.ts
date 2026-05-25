@@ -36,7 +36,7 @@ export class RedisClient {
   private config: RedisClientConfig;
   private isConnected = false;
   private isClusterMode = false;
-  private subscriberClients: any[] = [];
+  private subscriberClients: IORedisClient[] = [];
 
   constructor(config: RedisClientConfig) {
     // Defensive copy to prevent external mutation

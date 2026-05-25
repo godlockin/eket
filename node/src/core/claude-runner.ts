@@ -6,7 +6,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { execFileNoThrow } from '../utils/execFileNoThrow.js';
+import { execFileNoThrow, type ExecResult } from '../utils/execFileNoThrow.js';
 
 import { alertManager } from './alert-manager.js';
 import { contextTracker } from './context-tracker.js';
@@ -296,7 +296,7 @@ export async function runClaude(options: ClaudeRunOptions): Promise<ClaudeRunRes
  * @returns Recovery result or throws error
  */
 async function handle400Error(
-  result: any,
+  result: ExecResult,
   options: ClaudeRunOptions,
   originalArgs: string[],
   modelName: string
