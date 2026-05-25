@@ -112,39 +112,47 @@ impl MetricsCollector {
         let total_cost = total_tokens as f64 / 1000.0 * self.cost_per_1k_tokens;
         let avg_cost = if total > 0 { total_cost / total as f64 } else { 0.0 };
 
-        // Aggregate by type
-        let mut by_type: std::collections::HashMap<String, TypeMetrics> = std::collections::HashMap::new();
+        // Aggregate by type (including avg_tokens and avg_duration)
+        let mut by_type: std::collections::HashMap<String, (TypeMetrics, u64, f64)> = std::collections::HashMap::new();
         for task in &self.tasks {
             let entry = by_type.entry(task.task_type.clone()).or_default();
-            entry.total += 1;
+            entry.0.total += 1;
             if task.passed {
-                entry.passed += 1;
+                entry.0.passed += 1;
             }
+            entry.1 += task.tokens;  // accumulate tokens
+            entry.2 += task.duration_secs;  // accumulate duration
         }
-        for (_, metrics) in by_type.iter_mut() {
-            metrics.pass_rate = if metrics.total > 0 {
-                metrics.passed as f64 / metrics.total as f64
-            } else {
-                0.0
-            };
-        }
+        let by_type: std::collections::HashMap<String, TypeMetrics> = by_type
+            .into_iter()
+            .map(|(k, (mut m, tokens, duration))| {
+                m.pass_rate = if m.total > 0 { m.passed as f64 / m.total as f64 } else { 0.0 };
+                m.avg_tokens = if m.total > 0 { tokens as f64 / m.total as f64 } else { 0.0 };
+                m.avg_duration = if m.total > 0 { duration / m.total as f64 } else { 0.0 };
+                (k, m)
+            })
+            .collect();
 
-        // Aggregate by difficulty
-        let mut by_difficulty: std::collections::HashMap<u8, TypeMetrics> = std::collections::HashMap::new();
+        // Aggregate by difficulty (including avg_tokens and avg_duration)
+        let mut by_difficulty: std::collections::HashMap<u8, (TypeMetrics, u64, f64)> = std::collections::HashMap::new();
         for task in &self.tasks {
             let entry = by_difficulty.entry(task.difficulty).or_default();
-            entry.total += 1;
+            entry.0.total += 1;
             if task.passed {
-                entry.passed += 1;
+                entry.0.passed += 1;
             }
+            entry.1 += task.tokens;
+            entry.2 += task.duration_secs;
         }
-        for (_, metrics) in by_difficulty.iter_mut() {
-            metrics.pass_rate = if metrics.total > 0 {
-                metrics.passed as f64 / metrics.total as f64
-            } else {
-                0.0
-            };
-        }
+        let by_difficulty: std::collections::HashMap<u8, TypeMetrics> = by_difficulty
+            .into_iter()
+            .map(|(k, (mut m, tokens, duration))| {
+                m.pass_rate = if m.total > 0 { m.passed as f64 / m.total as f64 } else { 0.0 };
+                m.avg_tokens = if m.total > 0 { tokens as f64 / m.total as f64 } else { 0.0 };
+                m.avg_duration = if m.total > 0 { duration / m.total as f64 } else { 0.0 };
+                (k, m)
+            })
+            .collect();
 
         EvalMetrics {
             total_tasks: total,

@@ -143,8 +143,9 @@ impl BenchmarkHarness {
 
     /// Finalize and generate result
     pub fn finalize(self) -> BenchmarkResult {
-        let metrics = self.collector.finalize();
+        // Capture elapsed BEFORE consuming collector
         let run_duration = self.collector.elapsed().as_secs_f64();
+        let metrics = self.collector.finalize();
 
         BenchmarkResult {
             config: self.config,
@@ -152,7 +153,7 @@ impl BenchmarkHarness {
             outcomes: self.outcomes,
             timestamp: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
+                .unwrap_or_default()
                 .as_secs(),
             run_duration_secs: run_duration,
         }
