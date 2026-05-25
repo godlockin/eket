@@ -1,0 +1,72 @@
+{
+  "name": "EKET SWE-bench Lite Evaluation",
+  "timestamp": "2026-05-25T22:01:17.952208",
+  "total_instances": 5,
+  "evaluated": 5,
+  "skipped": 0,
+  "avg_similarity": 0.0,
+  "total_tokens": 0,
+  "total_duration_secs": 7.152557373046875e-07,
+  "instances": [
+    {
+      "instance_id": "astropy__astropy-12907",
+      "repo": "astropy/astropy",
+      "problem_statement": "Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels\nConsider the following model:\r\n\r\n```python\r\nfrom astropy.modeling import models as m\r\nfrom astropy.modeling.separable import separability_matrix\r\n\r\ncm = m.Linear1D(10) & m.Linear1D(5)\r\n```\r\n\r\nIt's separability matrix as you might expect is a diagonal:\r\n\r\n```python\r\n>>> separability_matrix(cm)\r\narray([[ True, False],\r\n       [False,  True]])\r\n```\r\n\r\nIf I make the model more complex:\r\n```python\r\n>>> ",
+      "gold_patch": "diff --git a/astropy/modeling/separable.py b/astropy/modeling/separable.py\n--- a/astropy/modeling/separable.py\n+++ b/astropy/modeling/separable.py\n@@ -242,7 +242,7 @@ def _cstack(left, right):\n         cright = _coord_matrix(right, 'right', noutp)\n     else:\n         cright = np.zeros((noutp, right.shape[1]))\n-        cright[-right.shape[0]:, -right.shape[1]:] = 1\n+        cright[-right.shape[0]:, -right.shape[1]:] = right\n \n     return np.hstack([cleft, cright])\n \n",
+      "generated_patch": "",
+      "similarity_score": 0.0,
+      "tokens_used": 0,
+      "duration_secs": 0.0,
+      "status": "failed",
+      "error": null
+    },
+    {
+      "instance_id": "astropy__astropy-14182",
+      "repo": "astropy/astropy",
+      "problem_statement": "Please support header rows in RestructuredText output\n### Description\r\n\r\nIt would be great if the following would work:\r\n\r\n```Python\r\n>>> from astropy.table import QTable\r\n>>> import astropy.units as u\r\n>>> import sys\r\n>>> tbl = QTable({'wave': [350,950]*u.nm, 'response': [0.7, 1.2]*u.count})\r\n>>> tbl.write(sys.stdout,  format=\"ascii.rst\")\r\n===== ========\r\n wave response\r\n===== ========\r\n350.0      0.7\r\n950.0      1.2\r\n===== ========\r\n>>> tbl.write(sys.stdout,  format=\"ascii.fixed_width\", header",
+      "gold_patch": "diff --git a/astropy/io/ascii/rst.py b/astropy/io/ascii/rst.py\n--- a/astropy/io/ascii/rst.py\n+++ b/astropy/io/ascii/rst.py\n@@ -27,7 +27,6 @@ def get_fixedwidth_params(self, line):\n \n \n class SimpleRSTData(FixedWidthData):\n-    start_line = 3\n     end_line = -1\n     splitter_class = FixedWidthTwoLineDataSplitter\n \n@@ -39,12 +38,29 @@ class RST(FixedWidth):\n \n     Example::\n \n-        ==== ===== ======\n-        Col1  Col2  Col3\n-        ==== ===== ======\n-          1    2.3  Hello\n-          2    4.5  Worlds\n-        ==== ===== ======\n+      >>> from astropy.table import QTable\n+      >>> import astropy.units as u\n+      >>> import sys\n+      >>> tbl = QTable({\"wave\": [350, 950] * u.nm, \"response\": [0.7, 1.2] * u.count})\n+      >>> tbl.write(sys.stdout,  format=\"ascii.rst\")\n+      ===== ========\n+       wave response\n+      ===== ========\n+      350.0      0.7\n+      950.0      1.2\n+      ===== ========\n+\n+    Like other fixed-width formats, when writing a table you can provide ``header_rows``\n+    to specify a list of table rows to output as the header.  For example::\n+\n+      >>> tbl.write(sys.stdout,  format=\"ascii.rst\", header_rows=['name', 'unit'])\n+      ===== ========\n+       wave response\n+         nm       ct\n+      ===== ========\n+      350.0      0.7\n+      950.0      1.2\n+      ===== ========\n \n     Currently there is no support for reading tables which utilize continuation lines,\n     or for ones which define column spans through the use of an additional\n@@ -57,10 +73,15 @@ class RST(FixedWidth):\n     data_class = SimpleRSTData\n     header_class = SimpleRSTHeader\n \n-    def __init__(self):\n-        super().__init__(delimiter_pad=None, bookend=False)\n+    def __init__(self, header_rows=None):\n+        super().__init__(delimiter_pad=None, bookend=False, header_rows=header_rows)\n \n     def write(self, lines):\n         lines = super().write(lines)\n-        lines = [lines[1]] + lines + [lines[1]]\n+        idx = len(self.header.header_rows)\n+        lines = [lines[idx]] + lines + [lines[idx]]\n         return lines\n+\n+    def read(self, table):\n+        self.data.start_line = 2 + len(self.header.header_rows)\n+        return super().read(table)\n",
+      "generated_patch": "",
+      "similarity_score": 0.0,
+      "tokens_used": 0,
+      "duration_secs": 7.152557373046875e-07,
+      "status": "failed",
+      "error": null
+    },
+    {
+      "instance_id": "astropy__astropy-14365",
+      "repo": "astropy/astropy",
+      "problem_statement": "ascii.qdp Table format assumes QDP commands are upper case\n### Description\n\nascii.qdp assumes that commands in a QDP file are upper case, for example, for errors they must be \"READ SERR 1 2\" whereas QDP itself is not case sensitive and case use \"read serr 1 2\". \r\n\r\nAs many QDP files are created by hand, the expectation that all commands be all-caps should be removed.\n\n### Expected behavior\n\nThe following qdp file should read into a `Table` with errors, rather than crashing.\r\n```\r\nread serr 1 2 \r",
+      "gold_patch": "diff --git a/astropy/io/ascii/qdp.py b/astropy/io/ascii/qdp.py\n--- a/astropy/io/ascii/qdp.py\n+++ b/astropy/io/ascii/qdp.py\n@@ -68,7 +68,7 @@ def _line_type(line, delimiter=None):\n     _new_re = rf\"NO({sep}NO)+\"\n     _data_re = rf\"({_decimal_re}|NO|[-+]?nan)({sep}({_decimal_re}|NO|[-+]?nan))*)\"\n     _type_re = rf\"^\\s*((?P<command>{_command_re})|(?P<new>{_new_re})|(?P<data>{_data_re})?\\s*(\\!(?P<comment>.*))?\\s*$\"\n-    _line_type_re = re.compile(_type_re)\n+    _line_type_re = re.compile(_type_re, re.IGNORECASE)\n     line = line.strip()\n     if not line:\n         return \"comment\"\n@@ -306,7 +306,7 @@ def _get_tables_from_qdp_file(qdp_file, input_colnames=None, delimiter=None):\n \n             values = []\n             for v in line.split(delimiter):\n-                if v == \"NO\":\n+                if v.upper() == \"NO\":\n                     values.append(np.ma.masked)\n                 else:\n                     # Understand if number is int or float\n",
+      "generated_patch": "",
+      "similarity_score": 0.0,
+      "tokens_used": 0,
+      "duration_secs": 0.0,
+      "status": "failed",
+      "error": null
+    },
+    {
+      "instance_id": "astropy__astropy-14995",
+      "repo": "astropy/astropy",
+      "problem_statement": "In v5.3, NDDataRef mask propagation fails when one of the operand does not have a mask\n### Description\n\nThis applies to v5.3. \r\n\r\nIt looks like when one of the operand does not have a mask, the mask propagation when doing arithmetic, in particular with `handle_mask=np.bitwise_or` fails.  This is not a problem in v5.2.\r\n\r\nI don't know enough about how all that works, but it seems from the error that the operand without a mask is set as a mask of None's and then the bitwise_or tries to operate on ",
+      "gold_patch": "diff --git a/astropy/nddata/mixins/ndarithmetic.py b/astropy/nddata/mixins/ndarithmetic.py\n--- a/astropy/nddata/mixins/ndarithmetic.py\n+++ b/astropy/nddata/mixins/ndarithmetic.py\n@@ -520,10 +520,10 @@ def _arithmetic_mask(self, operation, operand, handle_mask, axis=None, **kwds):\n         elif self.mask is None and operand is not None:\n             # Make a copy so there is no reference in the result.\n             return deepcopy(operand.mask)\n-        elif operand is None:\n+        elif operand.mask is None:\n             return deepcopy(self.mask)\n         else:\n-            # Now lets calculate the resulting mask (operation enforces copy)\n+            # Now let's calculate the resulting mask (operation enforces copy)\n             return handle_mask(self.mask, operand.mask, **kwds)\n \n     def _arithmetic_wcs(self, operation, operand, compare_wcs, **kwds):\n",
+      "generated_patch": "",
+      "similarity_score": 0.0,
+      "tokens_used": 0,
+      "duration_secs": 0.0,
+      "status": "failed",
+      "error": null
+    },
+    {
+      "instance_id": "astropy__astropy-6938",
+      "repo": "astropy/astropy",
+      "problem_statement": "Possible bug in io.fits related to D exponents\nI came across the following code in ``fitsrec.py``:\r\n\r\n```python\r\n        # Replace exponent separator in floating point numbers\r\n        if 'D' in format:\r\n            output_field.replace(encode_ascii('E'), encode_ascii('D'))\r\n```\r\n\r\nI think this may be incorrect because as far as I can tell ``replace`` is not an in-place operation for ``chararray`` (it returns a copy). Commenting out this code doesn't cause any tests to fail so I think this code ",
+      "gold_patch": "diff --git a/astropy/io/fits/fitsrec.py b/astropy/io/fits/fitsrec.py\n--- a/astropy/io/fits/fitsrec.py\n+++ b/astropy/io/fits/fitsrec.py\n@@ -1261,7 +1261,7 @@ def _scale_back_ascii(self, col_idx, input_field, output_field):\n \n         # Replace exponent separator in floating point numbers\n         if 'D' in format:\n-            output_field.replace(encode_ascii('E'), encode_ascii('D'))\n+            output_field[:] = output_field.replace(b'E', b'D')\n \n \n def _get_recarray_field(array, key):\n",
+      "generated_patch": "",
+      "similarity_score": 0.0,
+      "tokens_used": 0,
+      "duration_secs": 0.0,
+      "status": "failed",
+      "error": null
+    }
+  ]
+}
