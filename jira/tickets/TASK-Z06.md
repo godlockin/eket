@@ -1,7 +1,7 @@
 # TASK-Z06: commands/ 模块单元测试
 
 **EPIC**: EPIC-014  
-**状态**: pending  
+**状态**: wontfix  
 **优先级**: P0  
 **预估**: 2d  
 **负责人**: 待分配  
@@ -71,3 +71,4 @@ node/tests/unit/commands/
 | 日期 | 变更 | 操作人 |
 |------|------|--------|
 | 2026-05-25 | 创建 Ticket | Master |
+| 2026-05-26 | wontfix: 质量>数量，已创建测试因内联复制反模式删除 | Master |

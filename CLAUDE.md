@@ -48,6 +48,18 @@ eket knowledge:search "<关键词>"          # 检索经验
 
 **环境变量**: 复制 `.env.example` 为 `.env`，设置 `OPENCLAW_API_KEY`（≥16 字符）
 
+## Git 操作
+
+**分支同步**: 使用 `bash scripts/sync-branches.sh`，或手动按顺序：checkpoint → testing → main → miao
+
+**SSH 失败降级**: 自动切换 HTTPS：`git push https://github.com/godlockin/eket.git <branch>`
+
+## 测试
+
+**Rust 测试**: 必须从 `rust/` 目录执行：`cd rust && cargo test`
+
+**新测试验证**: 先单独运行新测试 `npm test -- --testPathPattern=<pattern>`，通过后再跑全量
+
 ---
 
 > 详细规则见对应 RULES.md，分支策略见 `confluence/memory/branch-strategy-guide.md`  

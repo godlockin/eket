@@ -1,0 +1,8 @@
+{
+  "hooks": {
+    "postEdit": [
+      {"pattern": "**/*.rs", "command": "cd rust && cargo fmt --check"},
+      {"pattern": "**/*.py", "command": "ruff check --fix"}
+    ]
+  }
+}
