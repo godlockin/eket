@@ -1,0 +1,336 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - navigation [ref=e5]:
+        - list [ref=e7]:
+          - listitem [ref=e8]:
+            - link "首页" [ref=e9] [cursor=pointer]:
+              - /url: http://www.qbitai.com/
+          - listitem [ref=e10]:
+            - link "资讯" [ref=e11] [cursor=pointer]:
+              - /url: https://www.qbitai.com/category/%e8%b5%84%e8%ae%af
+          - listitem [ref=e12]:
+            - link "智能车" [ref=e13] [cursor=pointer]:
+              - /url: https://www.qbitai.com/category/auto
+          - listitem [ref=e14]:
+            - link "智库" [ref=e15] [cursor=pointer]:
+              - /url: https://www.qbitai.com/category/zhiku
+          - listitem [ref=e16]:
+            - link "活动" [ref=e17] [cursor=pointer]:
+              - /url: https://www.qbitai.com/category/huodong
+          - listitem [ref=e18]:
+            - link "MEET大会" [ref=e19] [cursor=pointer]:
+              - /url: https://www.qbitai.com/meet/meet2026/
+          - listitem [ref=e20]:
+            - link "AIGC" [ref=e21] [cursor=pointer]:
+              - /url: https://www.qbitai.com/meet/aigc2025/
+      - link [ref=e23] [cursor=pointer]:
+        - /url: https://www.qbitai.com/
+      - generic [ref=e24]:
+        - link [ref=e26] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - link [ref=e29] [cursor=pointer]:
+          - /url: https://weibo.com/qbitai?is_all=1
+  - generic [ref=e32]:
+    - generic [ref=e33]:
+      - generic: < img id="wx_img" src="https://www.qbitai.com/wp-content/uploads/imgs/qbitai-logo-1.png" width="400" height="400">
+      - generic [ref=e34]:
+        - heading "对科技圈，小红书是个「新绿洲」" [level=1] [ref=e35]
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - img [ref=e38]
+            - emphasis [ref=e39]:
+              - link "梦瑶" [ref=e40] [cursor=pointer]:
+                - /url: https://www.qbitai.com/author/mengyao
+          - text: 2025-12-30 12:49:17
+          - generic [ref=e41]:
+            - text: 来源：
+            - link "量子位" [ref=e42] [cursor=pointer]:
+              - /url: https://www.qbitai.com
+        - paragraph [ref=e43]:
+          - strong [ref=e44]: 作者｜张鹏
+        - paragraph [ref=e45]:
+          - strong [ref=e46]: 编辑｜连冉
+        - paragraph [ref=e47]: 我最近意识到，自己刷小红书的时间越来越多了，而且，原因很奇特：
+        - paragraph [ref=e48]: 我竟然是去刷科技动态和找创新产品的！
+        - paragraph [ref=e49]: 没错，虽然我有很多内容渠道和自己写的Agent可以做这些事，包括极客公园整个编辑部、社区团队、投资团队都在帮我做这件事，甚至连我的抖音都被自己「调教」为科技频道了，但是我统计了下我的小红书使用时长，今年上升最明显。
+        - paragraph [ref=e50]: 我仔细想了想，可能是因为小红书上有种比较独特的「人间视角」，看着许多真实的人在科技话题上「自然涌现」的讨论，和彼此间的「吵吵闹闹」，似乎能更好的支持自己一些更具体的「直觉感知」。
+        - paragraph [ref=e51]: 我甚至觉得，对于科技圈来说，过去大家觉得主要是为了「吃喝玩乐」的小红书，如今正在有一种「新绿洲」的即视感。
+        - paragraph [ref=e52]: 这个感觉不好一句说清，不妨写一篇出来看看大家是不是也有所共鸣吧。
+        - heading "从科技内容的「夜市烟火气」开始" [level=1] [ref=e53]
+        - paragraph [ref=e54]: 不知道大家是否和我一样，在过去几年的AI浪潮里，因为要疯狂学习和跟上时代，阅读了大量科技内容，但逐渐也时不时会有一个厌倦感，有时候会感觉我们在谈论科技、商业资讯的时候，是不是在消费一种「工业快餐」？
+        - paragraph [ref=e55]: 因为AI热潮，也因为运用上AI能力，科技内容的生产流程已经有点高度标准化了——把类似论文成果和跑分成果、还有ARR和融资额、以及新出现行业术语这些内容打包，高效地生产后把信息填进读者的脑子里。
+        - paragraph [ref=e56]: 这种内容确实能「管饱」，解决你获取资讯的需求，但说实话，也带着一种因为信息过载而产生的焦虑感——根本读不完，但好像你不读你就要被时代抛弃了。
+        - paragraph [ref=e57]: 但我发现在小红书这样的社区里，科技内容的消费模式正在发生一些改变，如果说传统资讯是标准化的「快餐店」，那么现在的社区生态更像是一个喧闹、鲜活的「人间夜市」。
+        - paragraph [ref=e58]: 在这个「夜市」里，流量的逻辑变了，内容的逻辑也变了。这里的博主和开发者，正在做一件很有价值的事情——圈点和翻译。
+        - paragraph [ref=e59]: 或者更准确的说是：去中心化的编辑+跨世界观的翻译，也就是他们的选择和筛选，加上他们的跨世界观表达，去「降维」了那些晦涩的技术概念，甚至把技术变成立即马上的直观体验。
+        - paragraph [ref=e60]: 举个今年我印象比较深刻的例子。今年AI圈的核心一直在讲大模型的Context（上下文）工程和Agent能力，显然是个非常重要的概念。
+        - paragraph [ref=e61]: 但我最近对这个概念印象深刻的圈点，反而是在小红书上看到的。有博主把其他平台上一位技术人对Agent相关的上下文问题和工作流问题的解读，在小红书上发了出来，这里面确实对技术概念做了很好的抽象，但更精彩的还在评论区——有人进一步将这些逻辑抽象，提炼为「来龙去脉」问题：
+        - paragraph [ref=e62]: 「来龙（context，背景信息、数据），去脉（workflow，任务指令/目标/路径），要思考两者在不同清晰度情况下该如何设计业务」。你看，这种来自真实用户的「神总结」，带来的启发是非常独特的，这个概念感觉一下子就鲜活通透了，有时候即便刚看完万字长文，也一样需要这种提纲挈领的。
+        - paragraph [ref=e63]: 再比如，大模型的生成能力，我们熟悉的是用来做分析，写文档。但在小红书上，它演变成了「小猫文学」——用户用AI模仿猫的口吻写日记、搞怪。
+        - paragraph [ref=e64]:
+          - text: 甚至有人把AI调教成了「完美男友」或「人生导师」，这里面的技术或许谈不上多高深，但只要看看底下的评论，你对这个世界的「分辨率」依然会因此提升：你会看到用户眼里的AI是什么样，以及他们究竟需要什么样的 AI。
+          - strong [ref=e65]: 科技的解释权和方向感，同样需要来自那些能把「技术」翻译成「生活体感」的人。
+        - paragraph [ref=e66]: 另一个很直观的感受来自于已经举办16年的极客公园创新大会（GeekPark IF）。以前大会结束后我们最关心的是后续传播的阅读量、全网的分发报道数据。这很好理解，极客公园团队把自己一年对科技圈的判断理解做成一个「贺岁片」似的大会内容，当然特别希望看到这些努力的意义。
+        - paragraph [ref=e67]: 但从2年前我们开始邀请小红书一起参与IF大会，我每年都更加能从小红书上感受到，认真做一场科技大会是值得的。
+        - generic [ref=e68]:
+          - paragraph [ref=e69]:
+            - img [ref=e70]
+          - paragraph
+        - paragraph [ref=e71]: 比如今年我自己的小红书信息流里，就刷到了上百篇参会者发认真分享的IF大会的笔记。他们自己的视角和观点，他们的眼睛里看到的大会里那些具体的收获，是「原生」的、没有修饰的分享，它是如此的「真实而具体」，它能让你看到极客公园团队努力创造的东西，也真的有「真实而具体」的意义。
+        - paragraph [ref=e72]: 还有一个比较让我印象深刻的是小红书上强烈的「活人感」。就像你家旁边的夜市大排档还蕴含着「和有趣老板聊几句的乐趣」。你光顾一个摊位，往往不只是因为东西好吃，可能也是因为这个摊主是个「熟人」。
+        - paragraph [ref=e73]: 今年小红书发起的AMA (Ask Me Anything) 活动就挺典型的，不少科技圈的大咖和创业者都参与了这个直接回答用户提问的活动。体验了科技圈内「坐而论道」之外的沟通方式。
+        - paragraph [ref=e74]: 在前段时间在极客公园创新大会2026的一场沙龙上，散兵（小红书科技运营负责人）提到一个细节，最初这些创业者和学者是很「i」的，过去不知道怎么社交，习惯的是用产品和思想征服世界，但AMA这种形式让他们发现，原来大众喜欢的是平等的对话，而对话本身就有意义。
+        - generic [ref=e75]:
+          - paragraph [ref=e76]:
+            - img [ref=e77]
+          - paragraph
+        - paragraph [ref=e78]: 在这个过程中，信息的密度可能不如一篇万字研报，但连接的强度和愉悦感是前所未有的。对此我深有感触，在参与AMA时，我发现大量提问都聚焦于创业起步期的核心认知——如何验证PMF、如何实现增长、如何理解早期融资……
+        - paragraph [ref=e79]: 当你针对这些具体的困惑给出解答，你能清晰地感知到这对屏幕那头的人是真实有用的。这种传递认知与经验的过程，让意义变得无比「具体」。
+        - paragraph [ref=e80]: 以前写篇文章觉得自己能「帮所有人」，但其实你也不知道他是谁，他在哪里？但当你感受到真的帮到一个具体的人，这种「具体的意义」，就很开心。
+        - paragraph [ref=e81]:
+          - strong [ref=e82]: 这个「具体」还是来自于小红书上活跃着大量充满好奇、在生活中使用科技的普通人。
+          - text: 「活人感」也是小红书的底色之一——毕竟是
+          - strong [ref=e83]: 一个由真实需求交织而成的UGC生态。
+        - paragraph [ref=e84]: 当真实的人和具体的需求在这里高度聚集时，它改变的就不止是内容的消费模式，也深刻地重构了产品创造的逻辑。
+        - heading "当创业者在「街区」Build in Public" [level=1] [ref=e85]
+        - paragraph [ref=e86]: 既然我们厘清了这里的底层「土壤」——海量的、带着具体需求的「人」，那么对于创业者，尤其是AI时代的超级个体来说，选择在哪里「出生」，逻辑也就开始变得不同了。
+        - paragraph [ref=e87]: 我有一个观察：传统的流量平台像是一个巨大的「公共广场」，而小红书像是一个充满左邻右舍的「街区」。
+        - paragraph [ref=e88]: 为什么会有这种差别？
+        - paragraph [ref=e89]:
+          - text: 有一个Panel里提到的细节，让我印象很深。在2024年初AI浪潮刚来袭时，面对技术圈一天一个样的迭代，小红书做了一个反直觉的判断：
+          - strong [ref=e90]: 追逐最新的资讯意义不大，因为技术迭代太快了；「科技里的人」，才是最关键的。
+        - paragraph [ref=e91]: 所以，他们当时没有盯着技术参数，而是去放大了那些「普通人与AI的真实交互」——比如我们前面提到的AI恋爱、DeepSeek玩法等等。
+        - paragraph [ref=e92]: 所以有了这些普通人脑洞大开的参与，有了前面说的那个喧闹的「夜市」。
+        - paragraph [ref=e93]: 而这个「夜市」里涌动的、最真实具体的「人味儿」和需求，也恰恰反哺了最核心的科技圈层，帮助「拆掉了」那堵技术走向大众的墙。
+        - paragraph [ref=e94]: 这就解释了为什么小红书会成为一个「科技街区」：
+        - paragraph [ref=e95]: 在广场上，你需要声量，需要拿着大喇叭喊，周围充斥着辩论、站队和噪音。但在街区里，你是邻居。邻居之间不谈宏大叙事，谈的是「这东西好不好用」、「能不能帮我解决这个问题」。这种场域属性的差异，直接决定了创业逻辑的根本性扭转。
+        - paragraph [ref=e96]: 过去做产品，创业者习惯「憋大招」。关起门来开发1年，然后开一场发布会，希望征服市场能买单。但在AI时代，有一种新的创业显学，叫Build in Public（在公众面前构建）。
+        - paragraph [ref=e97]: 最近我在小红书上看到一个非常有意思的现象：营销正在变得极度前置。散兵在panel上说，现在很多开发者，产品还没写一行代码，甚至只是有一个Idea，就敢发笔记出来「口嗨」。
+        - paragraph [ref=e98]: 这在以前叫「画饼」，但在今天的「街区」逻辑里，这叫低成本验证（MVP）。
+        - generic [ref=e99]:
+          - paragraph [ref=e100]:
+            - img [ref=e101]
+          - paragraph
+        - heading "△Plan Coach的开发者苏晓江｜图片来源：极客公园" [level=1] [ref=e102]
+        - paragraph [ref=e103]: Plan Coach的开发者苏晓江（机器猫），是一个独立开发者，而在做Plan Coach之前，他本来是一个技术主管，想做个产品治治自己的拖延症。然后他没有选择闷头写代码，而是先把「站起来去洗碗」这个痛点拆解成笔记在小红书上发了出来。结果一天之内，3000多个陌生人给他点赞。
+        - paragraph [ref=e104]: 这3000个赞是什么？是需求，是信心，更是第一批种子用户。它说明只要你的产品足够Amazing，能解决「邻居们」的具体问题，它就会被看到。
+        - paragraph [ref=e105]: 在「街区」里创业，还有很合理的一点在于反馈的及时性和颗粒度。
+        - paragraph [ref=e106]: 陈锴杰（Macaron AI创始人）在同一场panel上分享过一个细节。他们在设计产品时，纠结了三天三夜要不要用粉红色。结果发到小红书上一看，用户不仅不反感，反而因为这个配色觉得「真香」。
+        - paragraph [ref=e107]: 更夸张的是，前面提到的苏晓江收到了1000多条用户反馈，这些用户是真的把自己当成了「精神股东」。他们会催更、会投票决定下一个功能做什么，甚至会因为开发者采纳了自己的建议而兴奋不已。
+        - generic [ref=e108]:
+          - paragraph [ref=e109]:
+            - img [ref=e110]
+          - paragraph
+        - heading "△Plan coach在小红书上请用户投票新功能" [level=1] [ref=e111]
+        - paragraph [ref=e112]: 这种关系不再是冷冰冰的「开发者-用户」，而是有点变成了一种「养成系」的共生关系。用户看着产品从0到1长大，他们对产品的包容度和忠诚度，是那些靠买量砸出来的用户完全无法比拟的。
+        - paragraph [ref=e113]: 为什么这些看似微小的、垂直的「超级个体」能在小红书上活下来，甚至活得很好？因为AI能力实际上提升了商业世界的「分辨率」。
+        - paragraph [ref=e114]: 在传统互联网时代，为了覆盖开发成本，我们必须做几千万日活的「大产品」，必须去满足「最大公约数」的需求。但在AI时代，生产要素变便宜了，开发的门槛被空前拉低了。
+        - paragraph [ref=e115]: 这就意味着，我们可以把镜头拉得更「微距」，去服务那些曾经被视为「太小」、「太碎」的需求。
+        - paragraph [ref=e116]: 在Macaron AI上，我看到了20万个千奇百怪的小应用。其中有一个应用，专门用来记录「拉屎」。听起来是不是很荒诞？但这恰恰证明了世界的丰富性。在小红书这个「街区」里，哪怕你只服务1万人的垂直需求，只要你真的做到了，做好了，你也能找到这1万个「邻居」。
+        - paragraph [ref=e117]: 这里有足够真实的用户需求，有足够强烈的反馈机制。在这个时代，「流量」只会越来越昂贵，因为流量是平台的；但「共鸣」是免费的，因为那是开发者可以用自己的世界观、审美和能力换来的。
+        - paragraph [ref=e118]: 所以对于提升商业世界分辨率的独立开发者来说，这1万个精准用户提供的商业价值和逻辑自洽，更符合创新的本质——从解决问题开始。
+        - paragraph [ref=e119]: 我想这也是为什么在小红书，能看到许多 年轻的创业者，在小红书上完成了「从0到1再到100」的蜕变。他们起初可能只是作为一个独立开发者，做出了一些初创产品，然后在社区里验证了想法，拿到了融资——像Flowith这样在小红书一路成长起来的案例，正在变得越来越多。
+        - paragraph [ref=e120]: 创业需要依托创新，创新需要从创造开始，而创造的起点，是解决你足够理解的，「具体而有意义」的问题。
+        - paragraph [ref=e121]: 过去十年，移动互联网教会了我们太多的「商业公式」。创业需要回归「创造」的本质。在小红书上，我看到很多开发者不再是为了「我们要切入一个百亿赛道」而出发，而是因为「我想解决一个让自己抓狂的小问题」或者「我想表达一种审美」。
+        - paragraph [ref=e122]: 作为一个创造的起点，这可能就足够了。很多了不起的人和事情，往往就是这样开始的。
+        - emphasis [ref=e125]: 版权所有，未经授权不得以任何形式转载及使用，违者必究。
+      - link "小红书" [ref=e128] [cursor=pointer]:
+        - /url: https://www.qbitai.com/tag/%e5%b0%8f%e7%ba%a2%e4%b9%a6
+      - generic [ref=e129]:
+        - link:
+          - /url: "#"
+        - generic [ref=e130]:
+          - link [ref=e131] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e132]
+          - link "梦瑶" [ref=e133] [cursor=pointer]:
+            - /url: https://www.qbitai.com/author/mengyao
+        - list [ref=e135]:
+          - listitem [ref=e136]:
+            - link "卷到今天，Agent的含金量还在提升丨AIGC2026圆桌论坛" [ref=e137] [cursor=pointer]:
+              - /url: https://www.qbitai.com/2026/05/423421.html
+            - generic [ref=e138]: 2026-05-24
+          - listitem [ref=e139]:
+            - link "谷歌CEO承认Coding落后了" [ref=e140] [cursor=pointer]:
+              - /url: https://www.qbitai.com/2026/05/423390.html
+            - generic [ref=e141]: 2026-05-24
+          - listitem [ref=e142]:
+            - link "什么！你说胡彦斌也在苦修Vibe Coding" [ref=e143] [cursor=pointer]:
+              - /url: https://www.qbitai.com/2026/05/423213.html
+            - generic [ref=e144]: 2026-05-24
+          - listitem [ref=e145]:
+            - link "融资700亿！DeepSeek Code真要来了，ACM金牌大神崔添翼挂帅" [ref=e146] [cursor=pointer]:
+              - /url: https://www.qbitai.com/2026/05/422624.html
+            - generic [ref=e147]: 2026-05-22
+      - generic [ref=e148]:
+        - link "分享到新浪微博" [ref=e152] [cursor=pointer]:
+          - /url: https://service.weibo.com/share/share.php?url=https://www.qbitai.com/2025/12/366249.html&title=对科技圈，小红书是个「新绿洲」&appkey=4017757111&searchPic=true&ralateUid=6105753431
+        - link [ref=e154] [cursor=pointer]:
+          - /url: ""
+      - generic [ref=e156]:
+        - heading "相关阅读" [level=3] [ref=e157]
+        - list [ref=e158]:
+          - generic [ref=e159]:
+            - generic [ref=e160]:
+              - link:
+                - /url: https://www.qbitai.com/2025/01/245950.html
+            - link:
+              - /url: https://www.qbitai.com/2025/01/245950.html
+            - generic [ref=e161]:
+              - link:
+                - /url: https://www.qbitai.com/2025/01/245950.html
+              - heading "小红书AI翻译加急上线，网友评论区玩起Prompt，背后模型被扒" [level=4] [ref=e162]:
+                - link:
+                  - /url: https://www.qbitai.com/2025/01/245950.html
+                - link "小红书AI翻译加急上线，网友评论区玩起Prompt，背后模型被扒" [ref=e163] [cursor=pointer]:
+                  - /url: https://www.qbitai.com/2025/01/245950.html
+              - generic [ref=e164]:
+                - link "白交" [ref=e166] [cursor=pointer]:
+                  - /url: /?author=24
+                - generic [ref=e167]: 2025-01-20
+          - generic [ref=e168]:
+            - generic [ref=e169]:
+              - link:
+                - /url: https://www.qbitai.com/2022/10/38878.html
+            - link:
+              - /url: https://www.qbitai.com/2022/10/38878.html
+            - generic [ref=e170]:
+              - link:
+                - /url: https://www.qbitai.com/2022/10/38878.html
+              - heading "推荐算法为什么越来越懂你？来听青橙奖得主给你唠背后的技术" [level=4] [ref=e171]:
+                - link:
+                  - /url: https://www.qbitai.com/2022/10/38878.html
+                - link "推荐算法为什么越来越懂你？来听青橙奖得主给你唠背后的技术" [ref=e172] [cursor=pointer]:
+                  - /url: https://www.qbitai.com/2022/10/38878.html
+              - generic [ref=e173]:
+                - link "允中" [ref=e175] [cursor=pointer]:
+                  - /url: /?author=15
+                - generic [ref=e176]: 2022-10-25
+          - generic [ref=e177]:
+            - generic [ref=e178]:
+              - link:
+                - /url: https://www.qbitai.com/2022/04/34259.html
+            - link:
+              - /url: https://www.qbitai.com/2022/04/34259.html
+            - generic [ref=e179]:
+              - link:
+                - /url: https://www.qbitai.com/2022/04/34259.html
+              - heading "有人翻小红书种草，有人却翻到了最新AI技术趋势" [level=4] [ref=e180]:
+                - link:
+                  - /url: https://www.qbitai.com/2022/04/34259.html
+                - link "有人翻小红书种草，有人却翻到了最新AI技术趋势" [ref=e181] [cursor=pointer]:
+                  - /url: https://www.qbitai.com/2022/04/34259.html
+              - generic [ref=e182]:
+                - link "白交" [ref=e184] [cursor=pointer]:
+                  - /url: /?author=24
+                - generic [ref=e185]: 2022-04-23
+          - generic [ref=e186]:
+            - generic [ref=e187]:
+              - link:
+                - /url: https://www.qbitai.com/2023/03/42977.html
+            - link:
+              - /url: https://www.qbitai.com/2023/03/42977.html
+            - generic [ref=e188]:
+              - link:
+                - /url: https://www.qbitai.com/2023/03/42977.html
+              - heading "一年节省几个亿，小红书秘籍对外公开" [level=4] [ref=e189]:
+                - link:
+                  - /url: https://www.qbitai.com/2023/03/42977.html
+                - link "一年节省几个亿，小红书秘籍对外公开" [ref=e190] [cursor=pointer]:
+                  - /url: https://www.qbitai.com/2023/03/42977.html
+              - generic [ref=e191]:
+                - link "鱼羊" [ref=e193] [cursor=pointer]:
+                  - /url: /?author=16
+                - generic [ref=e194]: 2023-03-20
+          - generic [ref=e195]:
+            - generic [ref=e196]:
+              - link:
+                - /url: https://www.qbitai.com/2022/12/40577.html
+            - link:
+              - /url: https://www.qbitai.com/2022/12/40577.html
+            - generic [ref=e197]:
+              - link:
+                - /url: https://www.qbitai.com/2022/12/40577.html
+              - heading "ChatGPT会成为下一代搜索引擎吗？来和UCSB李磊一起聊聊 | 直播预告" [level=4] [ref=e198]:
+                - link:
+                  - /url: https://www.qbitai.com/2022/12/40577.html
+                - link "ChatGPT会成为下一代搜索引擎吗？来和UCSB李磊一起聊聊 | 直播预告" [ref=e199] [cursor=pointer]:
+                  - /url: https://www.qbitai.com/2022/12/40577.html
+              - generic [ref=e200]:
+                - link "鱼羊" [ref=e202] [cursor=pointer]:
+                  - /url: /?author=16
+                - generic [ref=e203]: 2022-12-20
+          - generic [ref=e204]:
+            - generic [ref=e205]:
+              - link:
+                - /url: https://www.qbitai.com/2022/07/36375.html
+            - link:
+              - /url: https://www.qbitai.com/2022/07/36375.html
+            - generic [ref=e206]:
+              - link:
+                - /url: https://www.qbitai.com/2022/07/36375.html
+              - heading "深度学习能颠覆视频编解码吗？国家技术发明奖一等奖得主在小红书给你唠" [level=4] [ref=e207]:
+                - link:
+                  - /url: https://www.qbitai.com/2022/07/36375.html
+                - link "深度学习能颠覆视频编解码吗？国家技术发明奖一等奖得主在小红书给你唠" [ref=e208] [cursor=pointer]:
+                  - /url: https://www.qbitai.com/2022/07/36375.html
+              - generic [ref=e209]:
+                - link "鱼羊" [ref=e211] [cursor=pointer]:
+                  - /url: /?author=16
+                - generic [ref=e212]: 2022-07-26
+    - generic [ref=e214]:
+      - heading "热门文章" [level=3] [ref=e215]
+      - link "菲尔兹奖得主都看懵了：OpenAI非数学模型首次自主突破80年未解数学难题 2026-05-21" [ref=e217] [cursor=pointer]:
+        - /url: https://www.qbitai.com/2026/05/422032.html
+        - heading "菲尔兹奖得主都看懵了：OpenAI非数学模型首次自主突破80年未解数学难题" [level=4] [ref=e220]
+        - generic [ref=e221]: 2026-05-21
+      - link "智象未来超两千亿参数图像大模型HiDream-O1-Image-Pro发布，融资持续提速 2026-05-20" [ref=e223] [cursor=pointer]:
+        - /url: https://www.qbitai.com/2026/05/420753.html
+        - heading "智象未来超两千亿参数图像大模型HiDream-O1-Image-Pro发布，融资持续提速" [level=4] [ref=e226]
+        - generic [ref=e227]: 2026-05-20
+      - link "太初元碁洪源：异构计算能力将成为未来AI算力基础设施的重要方向｜AIGC2026 2026-05-20" [ref=e229] [cursor=pointer]:
+        - /url: https://www.qbitai.com/2026/05/420743.html
+        - heading "太初元碁洪源：异构计算能力将成为未来AI算力基础设施的重要方向｜AIGC2026" [level=4] [ref=e232]
+        - generic [ref=e233]: 2026-05-20
+      - link "腾讯混元开源全新翻译模型Hy-MT2 ，上线小程序「腾讯Hy翻译」 2026-05-21" [ref=e235] [cursor=pointer]:
+        - /url: https://www.qbitai.com/2026/05/422068.html
+        - heading "腾讯混元开源全新翻译模型Hy-MT2 ，上线小程序「腾讯Hy翻译」" [level=4] [ref=e238]
+        - generic [ref=e239]: 2026-05-21
+      - link "Artificial Analysis放榜：千问3.7问鼎国产模型冠军，全球前五 2026-05-21" [ref=e241] [cursor=pointer]:
+        - /url: https://www.qbitai.com/2026/05/422009.html
+        - heading "Artificial Analysis放榜：千问3.7问鼎国产模型冠军，全球前五" [level=4] [ref=e244]
+        - generic [ref=e245]: 2026-05-21
+  - generic [ref=e247]:
+    - generic [ref=e248]:
+      - list [ref=e249]:
+        - listitem [ref=e250]:
+          - link "关于量子位|" [ref=e251] [cursor=pointer]:
+            - /url: /?page_id=99
+        - listitem [ref=e252]:
+          - link "加入我们|" [ref=e253] [cursor=pointer]:
+            - /url: /?page_id=101
+        - listitem [ref=e254]:
+          - link "寻求报道|" [ref=e255] [cursor=pointer]:
+            - /url: /?page_id=103
+        - listitem [ref=e256]:
+          - link "商务合作" [ref=e257] [cursor=pointer]:
+            - /url: /?page_id=105
+      - generic [ref=e258]:
+        - link [ref=e259] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - link [ref=e262] [cursor=pointer]:
+          - /url: https://weibo.com/qbitai?is_all=1
+        - link [ref=e264] [cursor=pointer]:
+          - /url: https://www.zhihu.com/org/liang-zi-wei-48/activities
+        - link [ref=e266] [cursor=pointer]:
+          - /url: https://www.toutiao.com/c/user/53624121633/#mid=1556041376883713
+    - generic [ref=e268]:
+      - generic [ref=e269]:
+        - link [ref=e270] [cursor=pointer]:
+          - /url: "#"
+        - text: 追踪人工智能新趋势，报道科技行业新突破
+      - paragraph [ref=e272]:
+        - text: 量子位 QbitAI 版权所有©北京极客伙伴科技有限公司
+        - link "京ICP备17005886号-1" [ref=e273] [cursor=pointer]:
+          - /url: https://beian.miit.gov.cn/
