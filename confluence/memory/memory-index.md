@@ -23,7 +23,7 @@
 
 ---
 
-## ⚠️ pitfalls/ — 已知坑 (9)
+## ⚠️ pitfalls/ — 已知坑 (11)
 
 | 文件 | 摘要 |
 |------|------|
@@ -31,18 +31,21 @@
 | [branch-order-wrong-description.md](pitfalls/branch-order-wrong-description.md) | 分支顺序描述错误 |
 | [context-explosion-defense.md](pitfalls/context-explosion-defense.md) | Agent 上下文爆炸防御 |
 | [context-tracker-not-triggered.md](pitfalls/context-tracker-not-triggered.md) | Context Tracker 未触发根因 |
+| [coverage-driven-development.md](pitfalls/coverage-driven-development.md) | **覆盖率驱动开发** — 数字目标陷阱 |
 | [git-mv-directory-not-exist.md](pitfalls/git-mv-directory-not-exist.md) | git mv 目标目录不存在 |
 | [master-single-point-failure.md](pitfalls/master-single-point-failure.md) | Master 单点故障 |
 | [perf-ac-ambiguity.md](pitfalls/perf-ac-ambiguity.md) | 性能验收标准模糊 |
 | [slaver-worktree-code-loss.md](pitfalls/slaver-worktree-code-loss.md) | Slaver Worktree 代码丢失 |
 | [sqlite-inmemory-testclient-thread.md](pitfalls/sqlite-inmemory-testclient-thread.md) | SQLite In-Memory 线程隔离 |
+| [test-inline-copy-antipattern.md](pitfalls/test-inline-copy-antipattern.md) | **测试内联复制** — 假阳性测试 |
 
 ---
 
-## 📚 lessons/ — 实战经验 (12)
+## 📚 lessons/ — 实战经验 (13)
 
 | 文件 | 摘要 |
 |------|------|
+| [epic-014-benchmark-lessons.md](lessons/epic-014-benchmark-lessons.md) | **EPIC-014 测评改进** — 测试质量>数量、类型安全ROI |
 | [multi-agent-collab-lessons.md](lessons/multi-agent-collab-lessons.md) | 多智能体协作 — 任务分配、并行风险 |
 | [red-team-bug-patterns.md](lessons/red-team-bug-patterns.md) | 红队 Bug 模式 — tokio Mutex、AbortHandle |
 | [research-methodology.md](lessons/research-methodology.md) | 跨项目研究方法论 |
@@ -116,4 +119,4 @@
 
 ---
 
-*文件总数：68 | 上次更新：2026-05-24*
+*文件总数：71 | 上次更新：2026-05-25*

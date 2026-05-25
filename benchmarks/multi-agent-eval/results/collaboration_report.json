@@ -1,0 +1,341 @@
+{
+  "timestamp": "2026-05-25T22:33:31.007223",
+  "framework": "EKET v2.19.0-beta",
+  "benchmark": "Multi-Agent Collaboration",
+  "total_tasks": 10,
+  "completed": 10,
+  "completion_rate": 100.0,
+  "metrics": {
+    "avg_collab_score": 0.8,
+    "avg_initiative_entropy": 0.96,
+    "avg_team_efficiency": 7.005,
+    "agent_importance_ranking": [
+      [
+        "master",
+        0.6798
+      ],
+      [
+        "slaver-ux",
+        0.59
+      ],
+      [
+        "slaver-database",
+        0.578
+      ],
+      [
+        "slaver-devops",
+        0.5569999999999999
+      ],
+      [
+        "slaver-frontend",
+        0.5458000000000001
+      ],
+      [
+        "slaver-architect",
+        0.5426666666666667
+      ],
+      [
+        "slaver-tester",
+        0.5312
+      ],
+      [
+        "slaver-security",
+        0.527
+      ],
+      [
+        "slaver-technical_writer",
+        0.485
+      ],
+      [
+        "slaver-backend",
+        0.474125
+      ]
+    ]
+  },
+  "results": [
+    {
+      "task_id": "COLLAB-001",
+      "status": "completed",
+      "duration_seconds": 141.52058851305168,
+      "agents_involved": [
+        "slaver-architect",
+        "slaver-backend",
+        "slaver-frontend",
+        "slaver-tester",
+        "master"
+      ],
+      "metrics": {
+        "collab_score": 0.8,
+        "initiative_entropy": 0.969,
+        "intervention_rate": 0.28937947008170084,
+        "agent_importance_scores": {
+          "slaver-architect": 0.537,
+          "slaver-backend": 0.543,
+          "slaver-frontend": 0.573,
+          "slaver-tester": 0.632,
+          "master": 0.563
+        },
+        "team_efficiency": 5.855059655324791,
+        "task_completion_rate": 1.0,
+        "handoff_success_rate": 0.9068199606191069,
+        "checkpoint_reliability": 0.9616591154697653
+      },
+      "handoffs": 4,
+      "checkpoints": 2
+    },
+    {
+      "task_id": "COLLAB-002",
+      "status": "completed",
+      "duration_seconds": 188.3924257808655,
+      "agents_involved": [
+        "slaver-architect",
+        "slaver-security",
+        "slaver-backend",
+        "master"
+      ],
+      "metrics": {
+        "collab_score": 0.8,
+        "initiative_entropy": 0.979,
+        "intervention_rate": 0.2173112022598392,
+        "agent_importance_scores": {
+          "slaver-architect": 0.513,
+          "slaver-security": 0.498,
+          "slaver-backend": 0.518,
+          "master": 0.566
+        },
+        "team_efficiency": 7.467085871487521,
+        "task_completion_rate": 1.0,
+        "handoff_success_rate": 0.9167894545904334,
+        "checkpoint_reliability": 0.9694768760549984
+      },
+      "handoffs": 3,
+      "checkpoints": 2
+    },
+    {
+      "task_id": "COLLAB-003",
+      "status": "completed",
+      "duration_seconds": 47.58183476737603,
+      "agents_involved": [
+        "slaver-architect",
+        "slaver-technical_writer",
+        "master"
+      ],
+      "metrics": {
+        "collab_score": 0.8,
+        "initiative_entropy": 0.943,
+        "intervention_rate": 0.12807109944132353,
+        "agent_importance_scores": {
+          "slaver-architect": 0.531,
+          "slaver-technical_writer": 0.48,
+          "master": 0.763
+        },
+        "team_efficiency": 7.945516458569807,
+        "task_completion_rate": 1.0,
+        "handoff_success_rate": 0.9195648982264607,
+        "checkpoint_reliability": 0.9529485229069836
+      },
+      "handoffs": 2,
+      "checkpoints": 2
+    },
+    {
+      "task_id": "COLLAB-004",
+      "status": "completed",
+      "duration_seconds": 185.61077349821994,
+      "agents_involved": [
+        "slaver-backend",
+        "slaver-frontend",
+        "slaver-devops",
+        "slaver-tester",
+        "master"
+      ],
+      "metrics": {
+        "collab_score": 0.8,
+        "initiative_entropy": 0.953,
+        "intervention_rate": 0.29071346822728594,
+        "agent_importance_scores": {
+          "slaver-backend": 0.416,
+          "slaver-frontend": 0.542,
+          "slaver-devops": 0.627,
+          "slaver-tester": 0.508,
+          "master": 0.637
+        },
+        "team_efficiency": 6.359740080188027,
+        "task_completion_rate": 1.0,
+        "handoff_success_rate": 0.9021134126470028,
+        "checkpoint_reliability": 0.9561436328221393
+      },
+      "handoffs": 4,
+      "checkpoints": 3
+    },
+    {
+      "task_id": "COLLAB-005",
+      "status": "completed",
+      "duration_seconds": 172.26485979736577,
+      "agents_involved": [
+        "slaver-backend",
+        "slaver-database",
+        "slaver-tester",
+        "master"
+      ],
+      "metrics": {
+        "collab_score": 0.8,
+        "initiative_entropy": 0.965,
+        "intervention_rate": 0.24290552384989253,
+        "agent_importance_scores": {
+          "slaver-backend": 0.414,
+          "slaver-database": 0.578,
+          "slaver-tester": 0.56,
+          "master": 0.672
+        },
+        "team_efficiency": 5.678385888606984,
+        "task_completion_rate": 1.0,
+        "handoff_success_rate": 0.9476131090257482,
+        "checkpoint_reliability": 0.958911800996537
+      },
+      "handoffs": 3,
+      "checkpoints": 5
+    },
+    {
+      "task_id": "COLLAB-006",
+      "status": "completed",
+      "duration_seconds": 218.39655248548553,
+      "agents_involved": [
+        "slaver-architect",
+        "slaver-security",
+        "slaver-backend",
+        "slaver-frontend",
+        "master"
+      ],
+      "metrics": {
+        "collab_score": 0.8,
+        "initiative_entropy": 0.937,
+        "intervention_rate": 0.12967327835706408,
+        "agent_importance_scores": {
+          "slaver-architect": 0.496,
+          "slaver-security": 0.556,
+          "slaver-backend": 0.453,
+          "slaver-frontend": 0.614,
+          "master": 0.718
+        },
+        "team_efficiency": 4.258771040356925,
+        "task_completion_rate": 1.0,
+        "handoff_success_rate": 0.9499371130559762,
+        "checkpoint_reliability": 0.9740848296952687
+      },
+      "handoffs": 4,
+      "checkpoints": 5
+    },
+    {
+      "task_id": "COLLAB-007",
+      "status": "completed",
+      "duration_seconds": 163.00423049447318,
+      "agents_involved": [
+        "slaver-frontend",
+        "slaver-ux",
+        "master"
+      ],
+      "metrics": {
+        "collab_score": 0.8,
+        "initiative_entropy": 0.985,
+        "intervention_rate": 0.2552559311523219,
+        "agent_importance_scores": {
+          "slaver-frontend": 0.488,
+          "slaver-ux": 0.59,
+          "master": 0.77
+        },
+        "team_efficiency": 13.078149920255184,
+        "task_completion_rate": 1.0,
+        "handoff_success_rate": 0.9298151496942528,
+        "checkpoint_reliability": 0.9877169871829531
+      },
+      "handoffs": 2,
+      "checkpoints": 5
+    },
+    {
+      "task_id": "COLLAB-008",
+      "status": "completed",
+      "duration_seconds": 37.48304283723834,
+      "agents_involved": [
+        "slaver-architect",
+        "slaver-backend",
+        "slaver-technical_writer",
+        "master"
+      ],
+      "metrics": {
+        "collab_score": 0.8,
+        "initiative_entropy": 0.96,
+        "intervention_rate": 0.18371932733705665,
+        "agent_importance_scores": {
+          "slaver-architect": 0.664,
+          "slaver-backend": 0.516,
+          "slaver-technical_writer": 0.49,
+          "master": 0.643
+        },
+        "team_efficiency": 4.425453990538685,
+        "task_completion_rate": 1.0,
+        "handoff_success_rate": 0.8558393642378449,
+        "checkpoint_reliability": 0.9939890710129176
+      },
+      "handoffs": 3,
+      "checkpoints": 3
+    },
+    {
+      "task_id": "COLLAB-009",
+      "status": "completed",
+      "duration_seconds": 252.87369914227486,
+      "agents_involved": [
+        "slaver-architect",
+        "slaver-backend",
+        "slaver-frontend",
+        "slaver-devops",
+        "slaver-tester",
+        "master"
+      ],
+      "metrics": {
+        "collab_score": 0.8,
+        "initiative_entropy": 0.962,
+        "intervention_rate": 0.12744778953561942,
+        "agent_importance_scores": {
+          "slaver-architect": 0.515,
+          "slaver-backend": 0.456,
+          "slaver-frontend": 0.512,
+          "slaver-devops": 0.487,
+          "slaver-tester": 0.402,
+          "master": 0.718
+        },
+        "team_efficiency": 4.826254826254826,
+        "task_completion_rate": 1.0,
+        "handoff_success_rate": 0.92863800775713,
+        "checkpoint_reliability": 0.9565423718851047
+      },
+      "handoffs": 5,
+      "checkpoints": 3
+    },
+    {
+      "task_id": "COLLAB-010",
+      "status": "completed",
+      "duration_seconds": 250.38201897830004,
+      "agents_involved": [
+        "slaver-backend",
+        "slaver-tester",
+        "master"
+      ],
+      "metrics": {
+        "collab_score": 0.8,
+        "initiative_entropy": 0.951,
+        "intervention_rate": 0.16495731469368377,
+        "agent_importance_scores": {
+          "slaver-backend": 0.477,
+          "slaver-tester": 0.554,
+          "master": 0.748
+        },
+        "team_efficiency": 10.159316555068113,
+        "task_completion_rate": 1.0,
+        "handoff_success_rate": 0.872842097285686,
+        "checkpoint_reliability": 0.9956357876871683
+      },
+      "handoffs": 2,
+      "checkpoints": 2
+    }
+  ]
+}
