@@ -1,0 +1,351 @@
+- generic [active] [ref=e1]:
+  - generic:
+    - generic:
+      - link "跳到主要内容" [ref=e2] [cursor=pointer]
+      - link "无障碍功能帮助" [ref=e3] [cursor=pointer]:
+        - /url: https://support.google.com/websearch/answer/181196?hl=zh-CN
+  - generic [ref=e8]:
+    - search [ref=e9]:
+      - generic [ref=e11]:
+        - link "Google 首页" [ref=e13] [cursor=pointer]:
+          - /url: https://www.google.com.hk/webhp?hl=zh-CN&sa=X&ved=0ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQPAgI
+          - img [ref=e14]
+        - generic [ref=e21]:
+          - generic [ref=e22]:
+            - combobox "搜索" [ref=e25]: 小红书技术内容创作 程序员 AI 科技博主策略 2025 小红书技术内容创作 程序员 AI 科技博主策略 2025
+            - generic [ref=e26]:
+              - button "清除" [ref=e28] [cursor=pointer]:
+                - img [ref=e30]
+              - generic [ref=e33]:
+                - button "按语音搜索" [ref=e34] [cursor=pointer]:
+                  - img [ref=e35]
+                - button "按图搜索" [ref=e37] [cursor=pointer]:
+                  - img [ref=e38]
+          - button "搜索" [ref=e40] [cursor=pointer]:
+            - img [ref=e43]
+    - generic [ref=e45]:
+      - button "设置" [ref=e47] [cursor=pointer]:
+        - img [ref=e50]
+      - button "分享" [ref=e53] [cursor=pointer]:
+        - img [ref=e57]
+      - generic [ref=e59]:
+        - button "Google 应用" [ref=e61] [cursor=pointer]:
+          - img [ref=e62]
+        - link "登录" [ref=e66] [cursor=pointer]:
+          - /url: https://accounts.google.com/ServiceLogin?hl=zh-CN&passive=true&continue=https://www.google.com.hk/search%3Fq%3D%25E5%25B0%258F%25E7%25BA%25A2%25E4%25B9%25A6%25E6%258A%2580%25E6%259C%25AF%25E5%2586%2585%25E5%25AE%25B9%25E5%2588%259B%25E4%25BD%259C%2B%25E7%25A8%258B%25E5%25BA%258F%25E5%2591%2598%2BAI%2B%25E7%25A7%2591%25E6%258A%2580%25E5%258D%259A%25E4%25B8%25BB%25E7%25AD%2596%25E7%2595%25A5%2B2025&ec=futura_srp_og_si_72236_p
+  - generic [ref=e68]:
+    - navigation [ref=e74]:
+      - generic [ref=e80]:
+        - list [ref=e81]:
+          - listitem [ref=e82]:
+            - link "全部" [disabled] [ref=e83]:
+              - generic [ref=e85]: 全部
+          - listitem [ref=e86]:
+            - link "图片" [ref=e87] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&udm=2&fbs=ADc_l-Z6XGGbkKmpylZqg2J7ZOuVNvV7jKtLqzLZ63dd2zPtrmgI7Q-S_UNmpLgK_HfmL3EeJM1Fys9ro-uCnm2eOKrUB1FiedL2T4T5s7C-fPxm2p0tdOKtghJSnBRWMhQrrCqOLNTKo85haWevKNxlafzPYlQGqhJW7Z9s-VoqPKxOjyLD2pw&q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&sa=X&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQtKgLegQIFhAB
+              - generic [ref=e89]: 图片
+          - listitem [ref=e90]:
+            - link "新闻" [ref=e91] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&tbm=nws&source=lnms&fbs=ADc_l-Z6XGGbkKmpylZqg2J7ZOuVNvV7jKtLqzLZ63dd2zPtrmgI7Q-S_UNmpLgK_HfmL3EeJM1Fys9ro-uCnm2eOKrUB1FiedL2T4T5s7C-fPxm2p0tdOKtghJSnBRWMhQrrCqOLNTKo85haWevKNxlafzPYlQGqhJW7Z9s-VoqPKxOjyLD2pw&sa=X&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ0pQJegQIFRAB
+              - generic [ref=e93]: 新闻
+          - listitem [ref=e94]:
+            - link "视频" [ref=e95] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&udm=7&fbs=ADc_l-Z6XGGbkKmpylZqg2J7ZOuVNvV7jKtLqzLZ63dd2zPtrmgI7Q-S_UNmpLgK_HfmL3EeJM1Fys9ro-uCnm2eOKrUB1FiedL2T4T5s7C-fPxm2p0tdOKtghJSnBRWMhQrrCqOLNTKo85haWevKNxlafzPYlQGqhJW7Z9s-VoqPKxOjyLD2pw&q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&sa=X&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQtKgLegQIFBAB
+              - generic [ref=e97]: 视频
+          - listitem [ref=e98]:
+            - link "短视频" [ref=e99] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&udm=39&fbs=ADc_l-Z6XGGbkKmpylZqg2J7ZOuVNvV7jKtLqzLZ63dd2zPtrmgI7Q-S_UNmpLgK_HfmL3EeJM1Fys9ro-uCnm2eOKrUB1FiedL2T4T5s7C-fPxm2p0tdOKtghJSnBRWMhQrrCqOLNTKo85haWevKNxlafzPYlQGqhJW7Z9s-VoqPKxOjyLD2pw&q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&sa=X&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQs6gLegQIExAB
+              - generic [ref=e101]: 短视频
+          - listitem [ref=e102]:
+            - link "网页" [ref=e103] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&udm=web&fbs=ADc_l-Z6XGGbkKmpylZqg2J7ZOuVNvV7jKtLqzLZ63dd2zPtrmgI7Q-S_UNmpLgK_HfmL3EeJM1Fys9ro-uCnm2eOKrUB1FiedL2T4T5s7C-fPxm2p0tdOKtghJSnBRWMhQrrCqOLNTKo85haWevKNxlafzPYlQGqhJW7Z9s-VoqPKxOjyLD2pw&q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&sa=X&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQs6gLegQIEhAB
+              - generic [ref=e105]: 网页
+          - listitem [ref=e106]:
+            - link "图书" [ref=e107] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&udm=36&source=lnms&fbs=ADc_l-Z6XGGbkKmpylZqg2J7ZOuVNvV7jKtLqzLZ63dd2zPtrmgI7Q-S_UNmpLgK_HfmL3EeJM1Fys9ro-uCnm2eOKrUB1FiedL2T4T5s7C-fPxm2p0tdOKtghJSnBRWMhQrrCqOLNTKo85haWevKNxlafzPYlQGqhJW7Z9s-VoqPKxOjyLD2pw&sa=X&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ0pQJegQIERAB
+              - generic [ref=e109]: 图书
+          - listitem [ref=e110]:
+            - button "更多过滤条件" [ref=e111] [cursor=pointer]:
+              - generic "更多过滤条件" [ref=e112]:
+                - generic [ref=e113]:
+                  - generic [ref=e114]: 更多
+                  - img [ref=e116]
+        - button "工具" [ref=e119] [cursor=pointer]:
+          - generic [ref=e121]:
+            - generic [ref=e122]: 工具
+            - img [ref=e124]
+    - heading "搜索结果" [level=1] [ref=e126]
+    - main [ref=e132]:
+      - generic [ref=e136]:
+        - generic [ref=e139]:
+          - heading "网页搜索结果" [level=2] [ref=e140]
+          - generic [ref=e141]:
+            - generic [ref=e144]:
+              - link "2025做内容还有机会吗？答案藏在这7个趋势里 36Kr https://m.36kr.com › ..." [ref=e146] [cursor=pointer]:
+                - /url: https://m.36kr.com/p/3209765817935107
+                - heading "2025做内容还有机会吗？答案藏在这7个趋势里" [level=3] [ref=e147]
+                - generic [ref=e152]:
+                  - generic [ref=e154]: 36Kr
+                  - generic [ref=e156]: https://m.36kr.com › ...
+              - button "关于这条结果的详细信息" [ref=e157] [cursor=pointer]:
+                - img [ref=e160]
+            - generic [ref=e163]:
+              - generic [ref=e164]: 2025年3月17日 —
+              - generic [ref=e165]:
+                - emphasis [ref=e166]: 内容
+                - text: 行业步入高要求、高难度的“卷王生存”时代。面对日益严苛的
+                - emphasis [ref=e167]: 创作
+                - text: 环境，
+                - emphasis [ref=e168]: 内容
+                - text: 行业的未来将呈现哪些趋势，
+                - emphasis [ref=e169]: 创作
+                - text: 者又该怎么办？我总结了7 点趋势，供参考。
+        - generic [ref=e173]:
+          - generic [ref=e176]:
+            - link "Vibe Coding的风，还是吹到了小红书 经济观察网 http://www.eeo.com.cn › ..." [ref=e178] [cursor=pointer]:
+              - /url: http://www.eeo.com.cn/2026/0411/835425.shtml
+              - heading "Vibe Coding的风，还是吹到了小红书" [level=3] [ref=e179]
+              - generic [ref=e184]:
+                - generic [ref=e186]: 经济观察网
+                - generic [ref=e188]: http://www.eeo.com.cn › ...
+            - button "关于这条结果的详细信息" [ref=e189] [cursor=pointer]:
+              - img [ref=e192]
+          - generic [ref=e195]:
+            - generic [ref=e196]: 2026年4月11日 —
+            - generic [ref=e197]:
+              - emphasis [ref=e198]: 小红书
+              - text: 试图淡化“女性好物种草”、“旅游打卡社区”等标签，将触角延伸至游戏、二次元等领域，再到如今发力打造
+              - emphasis [ref=e199]: 科技
+              - text: 社区的雏形。这一系列转型，用了2年时间。
+        - generic [ref=e203]:
+          - generic [ref=e206]:
+            - link "113.[第5章场景实战应用] 小红书种草笔记：用DeepSeek写出高 ... DeepSeek技术社区 https://deepseek.csdn.net › ..." [ref=e208] [cursor=pointer]:
+              - /url: https://deepseek.csdn.net/6a03c95e54b52172bc739cfd.html
+              - heading "113.[第5章场景实战应用] 小红书种草笔记：用DeepSeek写出高 ..." [level=3] [ref=e209]
+              - generic [ref=e214]:
+                - generic [ref=e216]: DeepSeek技术社区
+                - generic [ref=e218]: https://deepseek.csdn.net › ...
+            - button "关于这条结果的详细信息" [ref=e219] [cursor=pointer]:
+              - img [ref=e222]
+          - generic [ref=e225]:
+            - generic [ref=e226]: 2026年5月13日 —
+            - generic [ref=e227]:
+              - text: 摘要：
+              - emphasis [ref=e228]: 程序员
+              - text: 如何用DeepSeek打造爆款
+              - emphasis [ref=e229]: 小红书内容
+              - text: ？本文揭秘从
+              - emphasis [ref=e230]: 技术
+              - text: 思维到用户思维的转型方法论，包含四层提示词架构、生活化表达公式及平台运营技巧。
+        - generic [ref=e234]:
+          - generic [ref=e237]:
+            - link "AI赋能的产品思维：小红书内容从0到1的战略蓝图 人人都是产品经理 https://www.woshipm.com › operate" [ref=e239] [cursor=pointer]:
+              - /url: https://www.woshipm.com/operate/6285890.html
+              - heading "AI赋能的产品思维：小红书内容从0到1的战略蓝图" [level=3] [ref=e240]
+              - generic [ref=e245]:
+                - generic [ref=e247]: 人人都是产品经理
+                - generic [ref=e249]: https://www.woshipm.com › operate
+            - button "关于这条结果的详细信息" [ref=e250] [cursor=pointer]:
+              - img [ref=e253]
+          - generic [ref=e257]:
+            - text: 本文以
+            - emphasis [ref=e258]: 小红书
+            - text: 为例，复盘其如何借助
+            - emphasis [ref=e259]: AI
+            - text: 完成从“
+            - emphasis [ref=e260]: 内容
+            - text: 填充”到“产品思维驱动”的跃迁，并提出一套可复制的
+            - emphasis [ref=e261]: 内容
+            - text: 战略框架，帮助产品人理解“从0到1”的真正含义。 今天，我们运营一个社交 ...
+          - generic [ref=e263]: 缺少字词： 员 ‎科技 ‎博 ‎主
+        - generic [ref=e267]:
+          - generic [ref=e270]:
+            - link "小红书组织调整：柯南出任总裁AI升维 chinastarmarket.cn https://www.chinastarmarket.cn › detail" [ref=e272] [cursor=pointer]:
+              - /url: https://www.chinastarmarket.cn/detail/2360933
+              - heading "小红书组织调整：柯南出任总裁AI升维" [level=3] [ref=e273]
+              - generic [ref=e278]:
+                - generic [ref=e280]: chinastarmarket.cn
+                - generic [ref=e282]: https://www.chinastarmarket.cn › detail
+            - button "关于这条结果的详细信息" [ref=e283] [cursor=pointer]:
+              - img [ref=e286]
+          - generic [ref=e289]:
+            - generic [ref=e290]: 2026年4月30日 —
+            - generic [ref=e291]:
+              - text: 就在4月27日，
+              - emphasis [ref=e292]: 小红书
+              - text: 首次系统发布
+              - emphasis [ref=e293]: AI
+              - text: 治理主张，明确“鼓励
+              - emphasis [ref=e294]: AI
+              - text: 作为创意放大器，反对
+              - emphasis [ref=e295]: AI
+              - text: 作为造假工具与低质
+              - emphasis [ref=e296]: 内容
+              - text: 生产机器”的核心原则。在鼓励方向上，平台支持
+              - emphasis [ref=e297]: AI
+              - text: 将 ...
+        - generic [ref=e301]:
+          - generic [ref=e304]:
+            - link "2025年小红书商业内容爆款策略全解析 知乎专栏 https://zhuanlan.zhihu.com › ..." [ref=e306] [cursor=pointer]:
+              - /url: https://zhuanlan.zhihu.com/p/1895848862553446043
+              - heading "2025年小红书商业内容爆款策略全解析" [level=3] [ref=e307]
+              - generic [ref=e312]:
+                - generic [ref=e314]: 知乎专栏
+                - generic [ref=e316]: https://zhuanlan.zhihu.com › ...
+            - button "关于这条结果的详细信息" [ref=e317] [cursor=pointer]:
+              - img [ref=e320]
+          - generic [ref=e323]:
+            - generic [ref=e324]: 2025年4月16日 —
+            - generic [ref=e325]:
+              - text: 三、
+              - emphasis [ref=e326]: 博主
+              - text: 生态与精准合作
+              - emphasis [ref=e327]: 策略
+              - text: .
+              - emphasis [ref=e328]: 小红书
+              - text: 拥有超14 万优质
+              - emphasis [ref=e329]: 博主
+              - text: 资源，形成“金字塔型” 结构：头部
+              - emphasis [ref=e330]: 博主
+              - text: （1%）提供专业背书，腰部
+              - emphasis [ref=e331]: 博主
+              - text: （20%）实现垂直渗透，尾部 ...
+          - generic [ref=e333]:
+            - text: 缺少字词： 员 ‎| 必须包含：
+            - link "员" [ref=e334] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F+%22%E5%91%98%22+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&sa=X&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ5t4CegQIKRAB
+        - generic [ref=e338]:
+          - generic [ref=e341]:
+            - link "和大厂PM、AI博主、良渚创业者聊聊新时代的生存法则| 精华集锦 新榜小豆芽 https://edit.newrank.cn › detail" [ref=e343] [cursor=pointer]:
+              - /url: https://edit.newrank.cn/detail.html?uuid=4D7BD3A7056280337A3A7CD6719FA9EB
+              - heading "和大厂PM、AI博主、良渚创业者聊聊新时代的生存法则| 精华集锦" [level=3] [ref=e344]
+              - generic [ref=e349]:
+                - generic [ref=e351]: 新榜小豆芽
+                - generic [ref=e353]: https://edit.newrank.cn › detail
+            - button "关于这条结果的详细信息" [ref=e354] [cursor=pointer]:
+              - img [ref=e357]
+          - generic [ref=e361]:
+            - text: 这次我们邀请到5位
+            - emphasis [ref=e362]: AI
+            - text: 一线玩家，分享他们在
+            - emphasis [ref=e363]: AI
+            - text: 领域创造/创业/观察的心得，他们分别是扣子产品经理@傅元柯，
+            - emphasis [ref=e364]: AI科技博主
+            - text: "@卡尔的"
+            - emphasis [ref=e365]: AI
+            - text: 沃茨，FateTell创始人&CEO@西元Levy，《启师傅 ...
+        - generic [ref=e369]:
+          - generic [ref=e372]:
+            - link "对科技圈，小红书是个「新绿洲」 量子位 https://www.qbitai.com › 2025/12" [ref=e374] [cursor=pointer]:
+              - /url: https://www.qbitai.com/2025/12/366249.html
+              - heading "对科技圈，小红书是个「新绿洲」" [level=3] [ref=e375]
+              - generic [ref=e380]:
+                - generic [ref=e382]: 量子位
+                - generic [ref=e384]: https://www.qbitai.com › 2025/12
+            - button "关于这条结果的详细信息" [ref=e385] [cursor=pointer]:
+              - img [ref=e388]
+          - generic [ref=e391]:
+            - generic [ref=e392]: 2025年12月30日 —
+            - generic [ref=e393]:
+              - text: 今年
+              - emphasis [ref=e394]: AI
+              - text: 圈的核心一直在讲大模型的Context（上下文）工程和Agent能力，显然是个非常重要的概念。 但我最近对这个概念印象深刻的圈点，反而是在
+              - emphasis [ref=e395]: 小红书
+              - text: 上看到的。
+          - generic [ref=e397]: 缺少字词： 创作 ‎程序 ‎员 ‎策略
+        - generic [ref=e401]:
+          - generic [ref=e404]:
+            - link "小红书以“活人感”打造科技社区，能否成功？ 36Kr https://eu.36kr.com › ..." [ref=e406] [cursor=pointer]:
+              - /url: https://eu.36kr.com/zh/p/3778772970444033
+              - heading "小红书以“活人感”打造科技社区，能否成功？" [level=3] [ref=e407]
+              - generic [ref=e412]:
+                - generic [ref=e414]: 36Kr
+                - generic [ref=e416]: https://eu.36kr.com › ...
+            - button "关于这条结果的详细信息" [ref=e417] [cursor=pointer]:
+              - img [ref=e420]
+          - generic [ref=e423]:
+            - generic [ref=e424]: 2026年4月23日 —
+            - generic [ref=e425]:
+              - text: 散兵告诉36氪等媒体，在
+              - emphasis [ref=e426]: 科技
+              - text: 垂类的运营
+              - emphasis [ref=e427]: 策略
+              - text: 上，
+              - emphasis [ref=e428]: 小红书
+              - text: 不做资讯和教程，更愿意做“人之间的连接器”。 要看懂这个有些抽象的词汇，我们或许可以从小红书近期举办 ...
+          - generic [ref=e430]:
+            - text: 缺少字词： 博 ‎| 必须包含：
+            - link "博" [ref=e431] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80+%22%E5%8D%9A%22+%E4%B8%BB%E7%AD%96%E7%95%A5+2025&sa=X&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ5t4CegQIRhAB
+        - generic [ref=e437]:
+          - generic [ref=e440]:
+            - link "＃2025年是AI当道的时代＃小红书加上AI 抓住这个风口，才是 ... Instagram · joannesharing 3 次赞 · 10个月前" [ref=e442] [cursor=pointer]:
+              - /url: https://www.instagram.com/reel/DMPgL8LsoQl/
+              - heading "＃2025年是AI当道的时代＃小红书加上AI 抓住这个风口，才是 ..." [level=3] [ref=e443]
+              - generic [ref=e448]:
+                - generic [ref=e450]: Instagram · joannesharing
+                - generic [ref=e452]: 3 次赞 · 10个月前
+            - button "关于这条结果的详细信息" [ref=e453] [cursor=pointer]:
+              - img [ref=e456]
+          - generic [ref=e458]:
+            - link "＃2025年是AI当道的时代＃小红书加上AI 抓住这个风口，才是 ...，由Joanne Wong上传到Instagram上. 在Instagram上播放. 1:16" [ref=e459] [cursor=pointer]:
+              - /url: https://www.instagram.com/reel/DMPgL8LsoQl/
+              - generic [ref=e461]:
+                - img [ref=e464]
+                - generic [ref=e468]: 1:16
+            - generic [ref=e470]: 不是要很會講的人,但是他可以讓我保持天天創造操作上的內容,老實說我在小書是有一點點驚豔的,但是喔我沒有想到來到這場課喔,他比我想像中我得到更多.
+      - navigation [ref=e473]:
+        - heading "网页导航" [level=1] [ref=e474]
+        - text: "1"
+        - link "Page 2" [ref=e477] [cursor=pointer]:
+          - /url: /search?q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&newwindow=1&sca_esv=85eb12dc1a1c780b&ei=tO0UaqPBJoCN4-EP-8Hg2AQ&start=10&sa=N&sstk=AU9db-D8_LI-oveiGZSKOkcxLxQp0A7POLUdo8jJawgLXYcJK5aRVUoDLkncROPm7icOMXCq0BgGwL4iQtFcWX9TEzums6nmRlaHzQ&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ8tMDegQIOxAE
+          - text: "2"
+        - link "Page 3" [ref=e479] [cursor=pointer]:
+          - /url: /search?q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&newwindow=1&sca_esv=85eb12dc1a1c780b&ei=tO0UaqPBJoCN4-EP-8Hg2AQ&start=20&sa=N&sstk=AU9db-D8_LI-oveiGZSKOkcxLxQp0A7POLUdo8jJawgLXYcJK5aRVUoDLkncROPm7icOMXCq0BgGwL4iQtFcWX9TEzums6nmRlaHzQ&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ8tMDegQIOxAG
+          - text: "3"
+        - link "Page 4" [ref=e481] [cursor=pointer]:
+          - /url: /search?q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&newwindow=1&sca_esv=85eb12dc1a1c780b&ei=tO0UaqPBJoCN4-EP-8Hg2AQ&start=30&sa=N&sstk=AU9db-D8_LI-oveiGZSKOkcxLxQp0A7POLUdo8jJawgLXYcJK5aRVUoDLkncROPm7icOMXCq0BgGwL4iQtFcWX9TEzums6nmRlaHzQ&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ8tMDegQIOxAI
+          - text: "4"
+        - link "Page 5" [ref=e483] [cursor=pointer]:
+          - /url: /search?q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&newwindow=1&sca_esv=85eb12dc1a1c780b&ei=tO0UaqPBJoCN4-EP-8Hg2AQ&start=40&sa=N&sstk=AU9db-D8_LI-oveiGZSKOkcxLxQp0A7POLUdo8jJawgLXYcJK5aRVUoDLkncROPm7icOMXCq0BgGwL4iQtFcWX9TEzums6nmRlaHzQ&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ8tMDegQIOxAK
+          - text: "5"
+        - link "Page 6" [ref=e485] [cursor=pointer]:
+          - /url: /search?q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&newwindow=1&sca_esv=85eb12dc1a1c780b&ei=tO0UaqPBJoCN4-EP-8Hg2AQ&start=50&sa=N&sstk=AU9db-D8_LI-oveiGZSKOkcxLxQp0A7POLUdo8jJawgLXYcJK5aRVUoDLkncROPm7icOMXCq0BgGwL4iQtFcWX9TEzums6nmRlaHzQ&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ8tMDegQIOxAM
+          - text: "6"
+        - link "Page 7" [ref=e487] [cursor=pointer]:
+          - /url: /search?q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&newwindow=1&sca_esv=85eb12dc1a1c780b&ei=tO0UaqPBJoCN4-EP-8Hg2AQ&start=60&sa=N&sstk=AU9db-D8_LI-oveiGZSKOkcxLxQp0A7POLUdo8jJawgLXYcJK5aRVUoDLkncROPm7icOMXCq0BgGwL4iQtFcWX9TEzums6nmRlaHzQ&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ8tMDegQIOxAO
+          - text: "7"
+        - link "Page 8" [ref=e489] [cursor=pointer]:
+          - /url: /search?q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&newwindow=1&sca_esv=85eb12dc1a1c780b&ei=tO0UaqPBJoCN4-EP-8Hg2AQ&start=70&sa=N&sstk=AU9db-D8_LI-oveiGZSKOkcxLxQp0A7POLUdo8jJawgLXYcJK5aRVUoDLkncROPm7icOMXCq0BgGwL4iQtFcWX9TEzums6nmRlaHzQ&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ8tMDegQIOxAQ
+          - text: "8"
+        - link "Page 9" [ref=e491] [cursor=pointer]:
+          - /url: /search?q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&newwindow=1&sca_esv=85eb12dc1a1c780b&ei=tO0UaqPBJoCN4-EP-8Hg2AQ&start=80&sa=N&sstk=AU9db-D8_LI-oveiGZSKOkcxLxQp0A7POLUdo8jJawgLXYcJK5aRVUoDLkncROPm7icOMXCq0BgGwL4iQtFcWX9TEzums6nmRlaHzQ&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ8tMDegQIOxAS
+          - text: "9"
+        - link "Page 10" [ref=e493] [cursor=pointer]:
+          - /url: /search?q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&newwindow=1&sca_esv=85eb12dc1a1c780b&ei=tO0UaqPBJoCN4-EP-8Hg2AQ&start=90&sa=N&sstk=AU9db-D8_LI-oveiGZSKOkcxLxQp0A7POLUdo8jJawgLXYcJK5aRVUoDLkncROPm7icOMXCq0BgGwL4iQtFcWX9TEzums6nmRlaHzQ&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ8tMDegQIOxAU
+          - text: "10"
+        - heading "下一页" [level=2] [ref=e495]:
+          - link "下一页" [ref=e496] [cursor=pointer]:
+            - /url: /search?q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%8A%80%E6%9C%AF%E5%86%85%E5%AE%B9%E5%88%9B%E4%BD%9C+%E7%A8%8B%E5%BA%8F%E5%91%98+AI+%E7%A7%91%E6%8A%80%E5%8D%9A%E4%B8%BB%E7%AD%96%E7%95%A5+2025&newwindow=1&sca_esv=85eb12dc1a1c780b&ei=tO0UaqPBJoCN4-EP-8Hg2AQ&start=10&sa=N&sstk=AU9db-D8_LI-oveiGZSKOkcxLxQp0A7POLUdo8jJawgLXYcJK5aRVUoDLkncROPm7icOMXCq0BgGwL4iQtFcWX9TEzums6nmRlaHzQ&ved=2ahUKEwij6-XA3dWUAxWAxjgGHfsgGEsQ8NMDegQIOxAW
+            - generic [ref=e498]: 下一页
+      - navigation
+    - contentinfo [ref=e499]:
+      - heading "页脚链接" [level=1] [ref=e500]
+      - generic [ref=e504]:
+        - generic [ref=e508]:
+          - button "福州市 中国福建省 - 是根据您的 IP 地址推断出来的" [ref=e510] [cursor=pointer]:
+            - generic [ref=e511]: 福州市 中国福建省
+            - generic [ref=e513]:
+              - text: "-"
+              - generic [ref=e514]: 是根据您的 IP 地址推断出来的
+          - text: "-"
+          - button "更新位置信息" [ref=e516] [cursor=pointer]: 更新位置信息
+        - generic [ref=e519]:
+          - link "帮助" [ref=e520] [cursor=pointer]:
+            - /url: https://support.google.com/websearch/?p=ws_results_help&hl=zh-CN&fg=1
+          - link "发送反馈" [ref=e521] [cursor=pointer]:
+            - /url: "#"
+          - link "隐私权" [ref=e522] [cursor=pointer]:
+            - /url: https://policies.google.com/privacy?hl=zh-CN&fg=1
+          - link "条款" [ref=e523] [cursor=pointer]:
+            - /url: https://policies.google.com/terms?hl=zh-CN&fg=1

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 383" width="900" height="383">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="900" height="383" fill="url(#bg)"/>
+
+  <!-- 系列徽章 (L1绿#4caf50 / L2蓝#2196f3 / L3紫#9c27b0 / L4橙#ff9800) -->
+  <rect x="30" y="30" width="70" height="35" rx="6" fill="#4caf50"/>
+  <text x="65" y="54" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" font-weight="bold">L1</text>
+
+  <!-- 装饰线条 -->
+  <line x1="60" y1="150" x2="840" y2="150" stroke="#4fc3f7" stroke-width="1" opacity="0.3"/>
+  <line x1="60" y1="250" x2="840" y2="250" stroke="#4fc3f7" stroke-width="1" opacity="0.3"/>
+
+  <!-- 主标题 -->
+  <text x="450" y="180" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="40" font-weight="bold">{{TITLE}}</text>
+
+  <!-- 副标题 -->
+  <text x="450" y="230" text-anchor="middle" fill="#4fc3f7" font-family="Arial, sans-serif" font-size="24">{{SUBTITLE}}</text>
+
+  <!-- 底部装饰 -->
+  <rect x="350" y="320" width="200" height="3" rx="1.5" fill="#4fc3f7" opacity="0.5"/>
+
+  <!-- Logo 水印 -->
+  <text x="850" y="360" text-anchor="end" fill="#666666" font-family="Arial, sans-serif" font-size="18">EKET</text>
+</svg>

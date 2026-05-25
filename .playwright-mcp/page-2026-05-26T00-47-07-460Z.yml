@@ -1,0 +1,400 @@
+- generic [active] [ref=e1]:
+  - generic:
+    - generic:
+      - link "跳到主要内容" [ref=e2] [cursor=pointer]
+      - link "无障碍功能帮助" [ref=e3] [cursor=pointer]:
+        - /url: https://support.google.com/websearch/answer/181196?hl=zh-CN
+  - generic [ref=e8]:
+    - search [ref=e9]:
+      - generic [ref=e11]:
+        - link "Google 首页" [ref=e13] [cursor=pointer]:
+          - /url: https://www.google.com.hk/webhp?hl=zh-CN&sa=X&ved=0ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQPAgI
+          - img [ref=e14]
+        - generic [ref=e21]:
+          - generic [ref=e22]:
+            - combobox "搜索" [ref=e25]: 微信公众号用户画像 2025 阅读习惯 用户特征 深度内容 微信公众号用户画像 2025 阅读习惯 用户特征 深度内容
+            - generic [ref=e26]:
+              - button "清除" [ref=e28] [cursor=pointer]:
+                - img [ref=e30]
+              - generic [ref=e33]:
+                - button "按语音搜索" [ref=e34] [cursor=pointer]:
+                  - img [ref=e35]
+                - button "按图搜索" [ref=e37] [cursor=pointer]:
+                  - img [ref=e38]
+          - button "搜索" [ref=e40] [cursor=pointer]:
+            - img [ref=e43]
+    - generic [ref=e45]:
+      - button "设置" [ref=e47] [cursor=pointer]:
+        - img [ref=e50]
+      - button "分享" [ref=e53] [cursor=pointer]:
+        - img [ref=e57]
+      - generic [ref=e59]:
+        - button "Google 应用" [ref=e61] [cursor=pointer]:
+          - img [ref=e62]
+        - link "登录" [ref=e66] [cursor=pointer]:
+          - /url: https://accounts.google.com/ServiceLogin?hl=zh-CN&passive=true&continue=https://www.google.com.hk/search%3Fq%3D%25E5%25BE%25AE%25E4%25BF%25A1%25E5%2585%25AC%25E4%25BC%2597%25E5%258F%25B7%25E7%2594%25A8%25E6%2588%25B7%25E7%2594%25BB%25E5%2583%258F%2B2025%2B%25E9%2598%2585%25E8%25AF%25BB%25E4%25B9%25A0%25E6%2583%25AF%2B%25E7%2594%25A8%25E6%2588%25B7%25E7%2589%25B9%25E5%25BE%2581%2B%25E6%25B7%25B1%25E5%25BA%25A6%25E5%2586%2585%25E5%25AE%25B9&ec=futura_srp_og_si_72236_p
+  - generic [ref=e68]:
+    - navigation [ref=e74]:
+      - generic [ref=e80]:
+        - list [ref=e81]:
+          - listitem [ref=e82]:
+            - link "全部" [disabled] [ref=e83]:
+              - generic [ref=e85]: 全部
+          - listitem [ref=e86]:
+            - link "图片" [ref=e87] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&udm=2&fbs=ADc_l-Z6XGGbkKmpylZqg2J7ZOuVNvV7jKtLqzLZ63dd2zPtrlrkSDkQE0bh2n9b50yhQrm6qhPEtiGHq0ZNdEH-EgOF_63DnRos8982zl7bHw5c2mZZETu15JH-nfYHKTVwr9zb_egp6IBLGT8sUdM1Z0SsQf1p93jPd2Z9UdOL03PDddhIaZNjdzNkT5_0zb4anrqC5mCn&q=%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%8F%B7%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F+2025+%E9%98%85%E8%AF%BB%E4%B9%A0%E6%83%AF+%E7%94%A8%E6%88%B7%E7%89%B9%E5%BE%81+%E6%B7%B1%E5%BA%A6%E5%86%85%E5%AE%B9&sa=X&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQtKgLegQIEBAB
+              - generic [ref=e89]: 图片
+          - listitem [ref=e90]:
+            - link "短视频" [ref=e91] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&udm=39&fbs=ADc_l-Z6XGGbkKmpylZqg2J7ZOuVNvV7jKtLqzLZ63dd2zPtrlrkSDkQE0bh2n9b50yhQrm6qhPEtiGHq0ZNdEH-EgOF_63DnRos8982zl7bHw5c2mZZETu15JH-nfYHKTVwr9zb_egp6IBLGT8sUdM1Z0SsQf1p93jPd2Z9UdOL03PDddhIaZNjdzNkT5_0zb4anrqC5mCn&q=%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%8F%B7%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F+2025+%E9%98%85%E8%AF%BB%E4%B9%A0%E6%83%AF+%E7%94%A8%E6%88%B7%E7%89%B9%E5%BE%81+%E6%B7%B1%E5%BA%A6%E5%86%85%E5%AE%B9&sa=X&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQs6gLegQIERAB
+              - generic [ref=e93]: 短视频
+          - listitem [ref=e94]:
+            - link "视频" [ref=e95] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&udm=7&fbs=ADc_l-Z6XGGbkKmpylZqg2J7ZOuVNvV7jKtLqzLZ63dd2zPtrlrkSDkQE0bh2n9b50yhQrm6qhPEtiGHq0ZNdEH-EgOF_63DnRos8982zl7bHw5c2mZZETu15JH-nfYHKTVwr9zb_egp6IBLGT8sUdM1Z0SsQf1p93jPd2Z9UdOL03PDddhIaZNjdzNkT5_0zb4anrqC5mCn&q=%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%8F%B7%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F+2025+%E9%98%85%E8%AF%BB%E4%B9%A0%E6%83%AF+%E7%94%A8%E6%88%B7%E7%89%B9%E5%BE%81+%E6%B7%B1%E5%BA%A6%E5%86%85%E5%AE%B9&sa=X&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQtKgLegQIDhAB
+              - generic [ref=e97]: 视频
+          - listitem [ref=e98]:
+            - link "新闻" [ref=e99] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&q=%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%8F%B7%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F+2025+%E9%98%85%E8%AF%BB%E4%B9%A0%E6%83%AF+%E7%94%A8%E6%88%B7%E7%89%B9%E5%BE%81+%E6%B7%B1%E5%BA%A6%E5%86%85%E5%AE%B9&tbm=nws&source=lnms&fbs=ADc_l-Z6XGGbkKmpylZqg2J7ZOuVNvV7jKtLqzLZ63dd2zPtrlrkSDkQE0bh2n9b50yhQrm6qhPEtiGHq0ZNdEH-EgOF_63DnRos8982zl7bHw5c2mZZETu15JH-nfYHKTVwr9zb_egp6IBLGT8sUdM1Z0SsQf1p93jPd2Z9UdOL03PDddhIaZNjdzNkT5_0zb4anrqC5mCn&sa=X&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQ0pQJegQIEhAB
+              - generic [ref=e101]: 新闻
+          - listitem [ref=e102]:
+            - link "图书" [ref=e103] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&q=%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%8F%B7%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F+2025+%E9%98%85%E8%AF%BB%E4%B9%A0%E6%83%AF+%E7%94%A8%E6%88%B7%E7%89%B9%E5%BE%81+%E6%B7%B1%E5%BA%A6%E5%86%85%E5%AE%B9&udm=36&source=lnms&fbs=ADc_l-Z6XGGbkKmpylZqg2J7ZOuVNvV7jKtLqzLZ63dd2zPtrlrkSDkQE0bh2n9b50yhQrm6qhPEtiGHq0ZNdEH-EgOF_63DnRos8982zl7bHw5c2mZZETu15JH-nfYHKTVwr9zb_egp6IBLGT8sUdM1Z0SsQf1p93jPd2Z9UdOL03PDddhIaZNjdzNkT5_0zb4anrqC5mCn&sa=X&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQ0pQJegQIDxAB
+              - generic [ref=e105]: 图书
+          - listitem [ref=e106]:
+            - link "网页" [ref=e107] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&udm=web&fbs=ADc_l-Z6XGGbkKmpylZqg2J7ZOuVNvV7jKtLqzLZ63dd2zPtrlrkSDkQE0bh2n9b50yhQrm6qhPEtiGHq0ZNdEH-EgOF_63DnRos8982zl7bHw5c2mZZETu15JH-nfYHKTVwr9zb_egp6IBLGT8sUdM1Z0SsQf1p93jPd2Z9UdOL03PDddhIaZNjdzNkT5_0zb4anrqC5mCn&q=%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%8F%B7%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F+2025+%E9%98%85%E8%AF%BB%E4%B9%A0%E6%83%AF+%E7%94%A8%E6%88%B7%E7%89%B9%E5%BE%81+%E6%B7%B1%E5%BA%A6%E5%86%85%E5%AE%B9&sa=X&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQs6gLegQIExAB
+              - generic [ref=e109]: 网页
+          - listitem [ref=e110]:
+            - button "更多过滤条件" [ref=e111] [cursor=pointer]:
+              - generic "更多过滤条件" [ref=e112]:
+                - generic [ref=e113]:
+                  - generic [ref=e114]: 更多
+                  - img [ref=e116]
+        - button "工具" [ref=e119] [cursor=pointer]:
+          - generic [ref=e121]:
+            - generic [ref=e122]: 工具
+            - img [ref=e124]
+    - heading "搜索结果" [level=1] [ref=e126]
+    - main [ref=e132]:
+      - generic [ref=e136]:
+        - generic [ref=e139]:
+          - heading "网页搜索结果" [level=2] [ref=e140]
+          - generic [ref=e141]:
+            - generic [ref=e144]:
+              - link "微信公众号用户画像：从入门到精通，做好内容运营与用户分析 九数云BI https://www.jiushuyun.com › blog" [ref=e146] [cursor=pointer]:
+                - /url: https://www.jiushuyun.com/blog/wy/44196.html
+                - heading "微信公众号用户画像：从入门到精通，做好内容运营与用户分析" [level=3] [ref=e147]
+                - generic [ref=e152]:
+                  - generic [ref=e154]: 九数云BI
+                  - generic [ref=e156]: https://www.jiushuyun.com › blog
+              - button "关于这条结果的详细信息" [ref=e157] [cursor=pointer]:
+                - img [ref=e160]
+            - generic [ref=e163]:
+              - generic [ref=e164]: 2025年9月10日 —
+              - generic [ref=e165]:
+                - text: 微信公
+                - emphasis [ref=e166]: 众
+                - text: 号用户画像是指基于用户的性别、年龄、地区、兴趣等多维度数据，对公众号受众进行结构化分析，从而帮助内容运营与营销决策。它就像一面镜子，反映出 ...
+        - generic [ref=e170]:
+          - generic [ref=e173]:
+            - link "2025年微信公众号阅读量怎么计算？最新提升 ... 壹伴编辑器 https://yiban.io › geo" [ref=e175] [cursor=pointer]:
+              - /url: https://yiban.io/geo/31747
+              - heading "2025年微信公众号阅读量怎么计算？最新提升 ..." [level=3] [ref=e176]
+              - generic [ref=e181]:
+                - generic [ref=e183]: 壹伴编辑器
+                - generic [ref=e185]: https://yiban.io › geo
+            - button "关于这条结果的详细信息" [ref=e186] [cursor=pointer]:
+              - img [ref=e189]
+          - generic [ref=e192]:
+            - generic [ref=e193]: 2025年10月22日 —
+            - generic [ref=e194]:
+              - emphasis [ref=e195]: 公众号阅读
+              - text: 量计算规则和提升方法是很多
+              - emphasis [ref=e196]: 用户
+              - text: 关注的问题，经过实测，我们推荐使用壹伴助手来快速解决，它能够通过AI自动化分析
+              - emphasis [ref=e197]: 阅读
+              - text: 数据并提供全流程优化方案， ...
+          - generic [ref=e199]: 缺少字词： 习惯 ‎特征
+        - generic [ref=e204]:
+          - heading "相关问题" [level=2] [ref=e206]
+          - generic [ref=e207]:
+            - button "用户画像包括哪些内容？" [ref=e213] [cursor=pointer]:
+              - generic [ref=e215]: 用户画像包括哪些内容？
+              - img [ref=e218]
+            - button "微信公众号图片限制？" [ref=e227] [cursor=pointer]:
+              - generic [ref=e229]: 微信公众号图片限制？
+              - img [ref=e232]
+            - button "微信公众号阅读量计算？" [ref=e241] [cursor=pointer]:
+              - generic [ref=e243]: 微信公众号阅读量计算？
+              - img [ref=e246]
+            - button "如何查看微信公众号浏览记录？" [ref=e255] [cursor=pointer]:
+              - generic [ref=e257]: 如何查看微信公众号浏览记录？
+              - img [ref=e260]
+        - generic [ref=e265]:
+          - heading "网页搜索结果" [level=2] [ref=e266]
+          - generic [ref=e267]:
+            - generic [ref=e270]:
+              - link "一文理解用户画像 极光推送 https://www.jiguang.cn › tips" [ref=e272] [cursor=pointer]:
+                - /url: https://www.jiguang.cn/tips/1227
+                - heading "一文理解用户画像" [level=3] [ref=e273]
+                - generic [ref=e278]:
+                  - generic [ref=e280]: 极光推送
+                  - generic [ref=e282]: https://www.jiguang.cn › tips
+              - button "关于这条结果的详细信息" [ref=e283] [cursor=pointer]:
+                - img [ref=e286]
+            - generic [ref=e289]:
+              - generic [ref=e290]: 2025年3月18日 —
+              - generic [ref=e291]:
+                - emphasis [ref=e292]: 用户画像
+                - text: 通常包括人口统计信息（如性别、年龄、地域等）、行为模式（如购买记录、浏览历史等）以及兴趣偏好（如爱好、关注点等），它是一种公共语言，能够串联起 ...
+        - generic [ref=e296]:
+          - generic [ref=e299]:
+            - link "微信用户画像2025 Nanjing Marketing Group https://nanjingmarketinggroup.com › ... › WeChat" [ref=e301] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/cn/blog/%E5%BE%AE%E4%BF%A1%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F2025
+              - heading "微信用户画像2025" [level=3] [ref=e302]
+              - generic [ref=e307]:
+                - generic [ref=e309]: Nanjing Marketing Group
+                - generic [ref=e311]: https://nanjingmarketinggroup.com › ... › WeChat
+            - button "关于这条结果的详细信息" [ref=e312] [cursor=pointer]:
+              - img [ref=e315]
+          - generic [ref=e318]:
+            - generic [ref=e319]: 2025年9月11日 —
+            - generic [ref=e320]:
+              - text: 截至
+              - emphasis [ref=e321]: "2025"
+              - text: 年初，
+              - emphasis [ref=e322]: 微信
+              - text: 官方公布的全球月活跃
+              - emphasis [ref=e323]: 用户
+              - text: 总数已突破14.02 亿。在本文中，我将围绕这些
+              - emphasis [ref=e324]: 用户
+              - text: 群体的构成，以及他们日常使用
+              - emphasis [ref=e325]: 微信
+              - text: 的场景与目的展开探讨。
+          - generic [ref=e327]: 缺少字词： 阅读 ‎习惯 ‎特征 ‎深度
+        - generic [ref=e331]:
+          - generic [ref=e334]:
+            - link "数据运营｜微信公众号用户数据指标分析 CSDN博客 https://blog.csdn.net › article › details" [ref=e336] [cursor=pointer]:
+              - /url: https://blog.csdn.net/qq_43371556/article/details/136170072
+              - heading "数据运营｜微信公众号用户数据指标分析" [level=3] [ref=e337]
+              - generic [ref=e342]:
+                - generic [ref=e344]: CSDN博客
+                - generic [ref=e346]: https://blog.csdn.net › article › details
+            - button "关于这条结果的详细信息" [ref=e347] [cursor=pointer]:
+              - img [ref=e350]
+          - generic [ref=e353]:
+            - generic [ref=e354]: 2024年4月10日 —
+            - generic [ref=e355]:
+              - text: 报告提供了
+              - emphasis [ref=e356]: 微信公众号
+              - text: 的运营效果、
+              - emphasis [ref=e357]: 用户阅读习惯
+              - text: 和互动行为等数据，帮助 ...
+              - emphasis [ref=e358]: 深度
+              - text: 指标，包括阅读数、在看数和点赞数。文章详细讲解了参数获取 ...
+        - generic [ref=e362]:
+          - generic [ref=e365]:
+            - link "您是如何分析微信用户画像的？ 径硕科技 https://www.jingdigital.com › articles" [ref=e367] [cursor=pointer]:
+              - /url: https://www.jingdigital.com/articles/3649/
+              - heading "您是如何分析微信用户画像的？" [level=3] [ref=e368]
+              - generic [ref=e373]:
+                - generic [ref=e375]: 径硕科技
+                - generic [ref=e377]: https://www.jingdigital.com › articles
+            - button "关于这条结果的详细信息" [ref=e378] [cursor=pointer]:
+              - img [ref=e381]
+          - generic [ref=e384]:
+            - generic [ref=e385]: 2019年6月6日 —
+            - generic [ref=e386]:
+              - text: 由此，
+              - emphasis [ref=e387]: 微信公众号
+              - text: 的运营者可以通过
+              - emphasis [ref=e388]: 用户画像
+              - text: 提供的性别、年龄段、地点、兴趣爱好等标签，分别展示不同的
+              - emphasis [ref=e389]: 内容
+              - text: 给
+              - emphasis [ref=e390]: 用户
+              - text: ", 以达到精准营销。只有真正搞明白"
+              - emphasis [ref=e391]: 用户
+              - text: 是谁 ...
+        - generic [ref=e395]:
+          - generic [ref=e398]:
+            - link "2025 年公众号起步全指南：从0 到1 搭建你的内容阵地 掘金 https://juejin.cn › 阅读" [ref=e400] [cursor=pointer]:
+              - /url: https://juejin.cn/post/7545378879961006089
+              - heading "2025 年公众号起步全指南：从0 到1 搭建你的内容阵地" [level=3] [ref=e401]
+              - generic [ref=e406]:
+                - generic [ref=e408]: 掘金
+                - generic [ref=e410]: https://juejin.cn › 阅读
+            - button "关于这条结果的详细信息" [ref=e411] [cursor=pointer]:
+              - img [ref=e414]
+          - generic [ref=e417]:
+            - generic [ref=e418]: 2025年9月2日 —
+            - generic [ref=e419]:
+              - text: 避免选择过于宽泛的领域，
+              - emphasis [ref=e420]: "2025"
+              - text: 年的
+              - emphasis [ref=e421]: 公众号
+              - text: 生态更青睐垂直深耕的创作者。 其次是目标人群
+              - emphasis [ref=e422]: 画像
+              - text: ：明确你的核心读者是谁，他们的年龄、痛点、
+              - emphasis [ref=e423]: 阅读习惯
+              - text: 是什么？学生 ...
+          - generic [ref=e425]:
+            - text: 缺少字词： 特征 ‎| 必须包含：
+            - link "特征" [ref=e426] [cursor=pointer]:
+              - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&q=%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%8F%B7%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F+2025+%E9%98%85%E8%AF%BB%E4%B9%A0%E6%83%AF+%E7%94%A8%E6%88%B7+%22%E7%89%B9%E5%BE%81%22+%E6%B7%B1%E5%BA%A6%E5%86%85%E5%AE%B9&sa=X&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQ5t4CegQIVBAB
+        - generic [ref=e430]:
+          - generic [ref=e433]:
+            - link "2025公众号推荐机制全解析：新号30天快速突破流量池的5个 ... jzl.com https://www.jzl.com › news" [ref=e435] [cursor=pointer]:
+              - /url: https://www.jzl.com/news/79
+              - heading "2025公众号推荐机制全解析：新号30天快速突破流量池的5个 ..." [level=3] [ref=e436]
+              - generic [ref=e441]:
+                - generic [ref=e443]: jzl.com
+                - generic [ref=e445]: https://www.jzl.com › news
+            - button "关于这条结果的详细信息" [ref=e446] [cursor=pointer]:
+              - img [ref=e449]
+          - generic [ref=e452]:
+            - generic [ref=e453]: 2025年8月8日 —
+            - generic [ref=e454]:
+              - emphasis [ref=e455]: "2025"
+              - text: 年的
+              - emphasis [ref=e456]: 公众号
+              - text: 推荐机制已形成"社交关系+兴趣标签+行为数据"的三维模型。系统通过分析
+              - emphasis [ref=e457]: 用户
+              - text: 的
+              - emphasis [ref=e458]: 阅读习惯
+              - text: 、互动行为（点赞/在看/转发）、社交链（好友关注/分享） ...
+          - generic [ref=e460]: 缺少字词： 画像 ‎特征
+        - generic [ref=e464]:
+          - generic [ref=e467]:
+            - link "2025最火的消费画像报表？Z世代数据特征解析。 finereport.com https://www.finereport.com › blog › article" [ref=e469] [cursor=pointer]:
+              - /url: https://www.finereport.com/blog/article/67dcdbcc67e61534ee11466f
+              - heading "2025最火的消费画像报表？Z世代数据特征解析。" [level=3] [ref=e470]
+              - generic [ref=e475]:
+                - generic [ref=e477]: finereport.com
+                - generic [ref=e479]: https://www.finereport.com › blog › article
+            - button "关于这条结果的详细信息" [ref=e480] [cursor=pointer]:
+              - img [ref=e483]
+          - generic [ref=e486]:
+            - generic [ref=e487]: 2025年3月21日 —
+            - generic [ref=e488]:
+              - emphasis [ref=e489]: 用户画像
+              - text: ： 基于
+              - emphasis [ref=e490]: 用户
+              - text: 数据，创建详细的
+              - emphasis [ref=e491]: 用户画像
+              - text: ，了解
+              - emphasis [ref=e492]: 用户
+              - text: 的消费
+              - emphasis [ref=e493]: 习惯
+              - text: 和偏好。 ...
+              - emphasis [ref=e494]: 用户
+              - text: 生成
+              - emphasis [ref=e495]: 内容
+              - text: （UGC）： 鼓励
+              - emphasis [ref=e496]: 用户
+              - text: 生成
+              - emphasis [ref=e497]: 内容
+              - text: ，增加品牌与
+              - emphasis [ref=e498]: 用户
+              - text: 之间的互动。
+        - generic [ref=e502]:
+          - heading "图片" [level=2] [ref=e506]
+          - generic [ref=e510]:
+            - generic [ref=e514] [cursor=pointer]:
+              - link "KAWO科握发布《2025中国社媒平台全方位概览》 | KAWO 科握 KAWO":
+                - /url: https://kawo.com/cn/%E5%8D%9A%E5%AE%A2/kawo%E7%A7%91%E6%8F%A1%E5%8F%91%E5%B8%83%E3%80%8A2025%E4%B8%AD%E5%9B%BD%E7%A4%BE%E5%AA%92%E5%B9%B3%E5%8F%B0%E5%85%A8%E6%96%B9%E4%BD%8D%E6%A6%82%E8%A7%88%E3%80%8B
+              - button "KAWO科握发布《2025中国社媒平台全方位概览》 | KAWO 科握" [ref=e516]:
+                - img "KAWO科握发布《2025中国社媒平台全方位概览》 | KAWO 科握" [ref=e518]
+              - generic [ref=e520]:
+                - generic [ref=e522]: KAWO科握发布《2025中国社媒平台全方位概览》 | KAWO 科握
+                - generic [ref=e523]:
+                  - generic [ref=e530]: KAWO
+                  - button "关于这条结果的详细信息" [ref=e533]:
+                    - img [ref=e536]
+            - generic [ref=e541] [cursor=pointer]:
+              - link "2026 知乎用户画像| Nanjing Marketing Group Nanjing Marketing Group":
+                - /url: https://nanjingmarketinggroup.com/cn/blog/%E7%9F%A5%E4%B9%8E%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F
+              - button "2026 知乎用户画像| Nanjing Marketing Group" [ref=e543]:
+                - img "2026 知乎用户画像| Nanjing Marketing Group" [ref=e545]
+              - generic [ref=e547]:
+                - generic [ref=e549]: 2026 知乎用户画像| Nanjing Marketing Group
+                - generic [ref=e550]:
+                  - generic [ref=e557]: Nanjing Marketing Group
+                  - button "关于这条结果的详细信息" [ref=e560]:
+                    - img [ref=e563]
+            - generic [ref=e568] [cursor=pointer]:
+              - link "2025「活跃用户」研究报告（小红书平台） - 千瓜数据- qian-gua.com 千瓜数据":
+                - /url: https://www.qian-gua.com/information/detail/3149
+              - button "2025「活跃用户」研究报告（小红书平台） - 千瓜数据- qian-gua.com" [ref=e570]:
+                - img "2025「活跃用户」研究报告（小红书平台） - 千瓜数据- qian-gua.com" [ref=e572]
+              - generic [ref=e574]:
+                - generic [ref=e576]: 2025「活跃用户」研究报告（小红书平台） - 千瓜数据- qian-gua.com
+                - generic [ref=e577]:
+                  - generic [ref=e584]: 千瓜数据
+                  - button "关于这条结果的详细信息" [ref=e587]:
+                    - img [ref=e590]
+          - button "显示更多图片" [ref=e593] [cursor=pointer]:
+            - separator [ref=e594]
+            - generic [ref=e595]:
+              - generic [ref=e596]: 显示更多图片
+              - img [ref=e598]
+      - generic [ref=e601]:
+        - generic [ref=e606]:
+          - heading "用户还搜索了" [level=2] [ref=e608]
+          - generic [ref=e610]:
+            - generic [ref=e611]:
+              - link "微信公众号阅读量购买" [ref=e615] [cursor=pointer]:
+                - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&q=%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%8F%B7%E9%98%85%E8%AF%BB%E9%87%8F%E8%B4%AD%E4%B9%B0&sa=X&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQ1QJ6BAg5EAE
+                - generic [ref=e616]:
+                  - generic [ref=e621]: 微信公众号阅读量购买
+                  - img [ref=e625]
+              - link "公众号阅读量自助下单" [ref=e630] [cursor=pointer]:
+                - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&q=%E5%85%AC%E4%BC%97%E5%8F%B7%E9%98%85%E8%AF%BB%E9%87%8F%E8%87%AA%E5%8A%A9%E4%B8%8B%E5%8D%95&sa=X&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQ1QJ6BAg4EAE
+                - generic [ref=e631]:
+                  - generic [ref=e636]: 公众号阅读量自助下单
+                  - img [ref=e640]
+            - generic [ref=e642]:
+              - link "视频号用户画像" [ref=e646] [cursor=pointer]:
+                - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&q=%E8%A7%86%E9%A2%91%E5%8F%B7%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F&sa=X&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQ1QJ6BAg7EAE
+                - generic [ref=e647]:
+                  - generic [ref=e652]: 视频号用户画像
+                  - img [ref=e656]
+              - link "微信日活" [ref=e661] [cursor=pointer]:
+                - /url: /search?newwindow=1&sca_esv=85eb12dc1a1c780b&q=%E5%BE%AE%E4%BF%A1%E6%97%A5%E6%B4%BB&sa=X&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQ1QJ6BAg6EAE
+                - generic [ref=e662]:
+                  - generic [ref=e667]: 微信日活
+                  - img [ref=e671]
+        - navigation [ref=e673]:
+          - heading "网页导航" [level=1] [ref=e674]
+          - text: "1"
+          - link "Page 2" [ref=e677] [cursor=pointer]:
+            - /url: /search?q=%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%8F%B7%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F+2025+%E9%98%85%E8%AF%BB%E4%B9%A0%E6%83%AF+%E7%94%A8%E6%88%B7%E7%89%B9%E5%BE%81+%E6%B7%B1%E5%BA%A6%E5%86%85%E5%AE%B9&newwindow=1&sca_esv=85eb12dc1a1c780b&ei=de0UapSDFvyJjuMP3eXjkQU&start=10&sa=N&sstk=AU9db-CfCPB2Il3GiiNSZd65kpL68OGCd1NBbRJboJvu1QzyFcRwnroXzjZDHoPtiRSxqjE9IqLwrqb1grBabFP3V4KetEZ_McRpXw&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQ8tMDegQINRAE
+            - text: "2"
+          - link "Page 3" [ref=e679] [cursor=pointer]:
+            - /url: /search?q=%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%8F%B7%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F+2025+%E9%98%85%E8%AF%BB%E4%B9%A0%E6%83%AF+%E7%94%A8%E6%88%B7%E7%89%B9%E5%BE%81+%E6%B7%B1%E5%BA%A6%E5%86%85%E5%AE%B9&newwindow=1&sca_esv=85eb12dc1a1c780b&ei=de0UapSDFvyJjuMP3eXjkQU&start=20&sa=N&sstk=AU9db-CfCPB2Il3GiiNSZd65kpL68OGCd1NBbRJboJvu1QzyFcRwnroXzjZDHoPtiRSxqjE9IqLwrqb1grBabFP3V4KetEZ_McRpXw&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQ8tMDegQINRAG
+            - text: "3"
+          - heading "下一页" [level=2] [ref=e681]:
+            - link "下一页" [ref=e682] [cursor=pointer]:
+              - /url: /search?q=%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%8F%B7%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F+2025+%E9%98%85%E8%AF%BB%E4%B9%A0%E6%83%AF+%E7%94%A8%E6%88%B7%E7%89%B9%E5%BE%81+%E6%B7%B1%E5%BA%A6%E5%86%85%E5%AE%B9&newwindow=1&sca_esv=85eb12dc1a1c780b&ei=de0UapSDFvyJjuMP3eXjkQU&start=10&sa=N&sstk=AU9db-CfCPB2Il3GiiNSZd65kpL68OGCd1NBbRJboJvu1QzyFcRwnroXzjZDHoPtiRSxqjE9IqLwrqb1grBabFP3V4KetEZ_McRpXw&ved=2ahUKEwjUkdCi3dWUAxX8hGMGHd3yOFIQ8NMDegQINRAI
+              - generic [ref=e684]: 下一页
+      - navigation
+    - contentinfo [ref=e685]:
+      - heading "页脚链接" [level=1] [ref=e686]
+      - generic [ref=e690]:
+        - generic [ref=e694]:
+          - button "福州市 中国福建省 - 是根据您的 IP 地址推断出来的" [ref=e696] [cursor=pointer]:
+            - generic [ref=e697]: 福州市 中国福建省
+            - generic [ref=e699]:
+              - text: "-"
+              - generic [ref=e700]: 是根据您的 IP 地址推断出来的
+          - text: "-"
+          - button "更新位置信息" [ref=e702] [cursor=pointer]: 更新位置信息
+        - generic [ref=e705]:
+          - link "帮助" [ref=e706] [cursor=pointer]:
+            - /url: https://support.google.com/websearch/?p=ws_results_help&hl=zh-CN&fg=1
+          - link "发送反馈" [ref=e707] [cursor=pointer]:
+            - /url: "#"
+          - link "隐私权" [ref=e708] [cursor=pointer]:
+            - /url: https://policies.google.com/privacy?hl=zh-CN&fg=1
+          - link "条款" [ref=e709] [cursor=pointer]:
+            - /url: https://policies.google.com/terms?hl=zh-CN&fg=1

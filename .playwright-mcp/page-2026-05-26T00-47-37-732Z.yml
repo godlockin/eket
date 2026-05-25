@@ -1,0 +1,412 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - text:                                      
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - link "nanjing-marketing-group_logo_tinypng" [ref=e8] [cursor=pointer]:
+            - /url: https://nanjingmarketinggroup.com
+          - generic [ref=e10]:
+            - text: 
+            - list [ref=e11]:
+              - listitem [ref=e12]:
+                - generic [ref=e13] [cursor=pointer]:
+                  - text: 解决方案
+                  - generic [ref=e14]: 
+              - listitem [ref=e15]:
+                - generic [ref=e16] [cursor=pointer]:
+                  - text: 垂直行业
+                  - generic [ref=e17]: 
+              - listitem [ref=e18]:
+                - link "客户案例" [ref=e19] [cursor=pointer]:
+                  - /url: https://nanjingmarketinggroup.com/cn/clients
+              - listitem [ref=e20]:
+                - link "博客" [ref=e21] [cursor=pointer]:
+                  - /url: https://nanjingmarketinggroup.com/cn/blog
+              - listitem [ref=e22]:
+                - link "关于我们" [ref=e23] [cursor=pointer]:
+                  - /url: https://nanjingmarketinggroup.com/cn/about
+        - link "联系我们" [ref=e25] [cursor=pointer]:
+          - /url: https://nanjingmarketinggroup.com/cn/contact-us
+      - navigation "Language Switcher" [ref=e30]:
+        - list [ref=e31]:
+          - listitem [ref=e32]:
+            - link "Switch to English" [ref=e33] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/blog/wechat-user-demographics
+              - text: English
+          - listitem [ref=e34]:
+            - link "Switch to Español" [ref=e35] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/es/blog/demografia-de-usuarios-de-wechat-2025
+              - text: Español
+          - listitem [ref=e36]:
+            - link "Switch to Deutsch" [ref=e37] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/de
+              - text: Deutsch
+    - main [ref=e38]:
+      - generic [ref=e39]:
+        - img [ref=e40]
+        - generic [ref=e46]:
+          - heading "微信用户画像2025" [level=1] [ref=e47]
+          - navigation [ref=e49]:
+            - link "Home" [ref=e51] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/cn/
+            - generic [ref=e53]: 
+            - link "博客" [ref=e55] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/cn/./blog
+            - generic [ref=e57]: 
+            - link "新媒体营销" [ref=e59] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/cn/./blog/chinese-social-marketing
+            - generic [ref=e61]: 
+            - link "微信" [ref=e63] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/cn/./blog/chinese-social-marketing/wechat-cn
+            - generic [ref=e65]: 
+            - link "微信用户画像2025" [ref=e67] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/cn/blog/%e5%be%ae%e4%bf%a1%e7%94%a8%e6%88%b7%e7%94%bb%e5%83%8f2025
+      - generic [ref=e73]:
+        - time [ref=e74]: Posted on September 11, 2025
+        - generic [ref=e76]:
+          - link [ref=e77] [cursor=pointer]:
+            - /url: https://nanjingmarketinggroup.com/cn/blog/author/nara-bi
+          - generic [ref=e79]:
+            - link "Nara Bi" [ref=e80] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/cn/blog/author/nara-bi
+            - generic [ref=e81]:
+              - text: With over 10 years of experience in digital marketing in China, Nara specializes in developing data-driven strategies that align with Chinese consumer behavior and cultural nuances. She has a proven track record of leveraging key platforms such as WeChat, Baidu, and Rednote to drive measurable growth and market penetration for international brands. Nara’s expertise combines deep market insight with performance analysis to deliver sustainable results in a complex digital landscape.See her professional profile on
+              - link "LinkedIn" [ref=e82] [cursor=pointer]:
+                - /url: https://www.linkedin.com/in/%E5%AE%87%E5%AE%81-%E6%AF%95-59b69315a/
+              - text: .
+        - generic [ref=e84]:
+          - paragraph [ref=e85]:
+            - text: 2025年5月14日，腾讯控股发布了2025年第一季度财报。
+            - link "数据显示" [ref=e86] [cursor=pointer]:
+              - /url: https://news.qq.com/rain/a/20250516A08CUZ00
+            - text: ，微信及WeChat（微信海外版）的合并全球月活跃用户数首次突破14亿，
+            - strong [ref=e87]: 达到14.02亿
+            - text: ，创下历史新高。
+          - paragraph [ref=e88]:
+            - text: 若以 2025 年中国总人口约14.16亿人计算，虽然这14.02亿用户覆盖的是全球，但这一数字已接近中国人口总数；如果以世界人口
+            - strong [ref=e89]: 约82.32 亿
+            - text: 来算，就好比微信用户覆盖了全球
+            - strong [ref=e90]: 约17%
+            - text: 的人口。足见微信生态在全球范围内的巨大影响力。
+          - heading "重点总结：" [level=3] [ref=e91]:
+            - strong [ref=e92]: 重点总结：
+          - list [ref=e93]:
+            - listitem [ref=e94]: 微信的全球月活跃用户数已超过14亿。
+            - listitem [ref=e95]: 当前用户中人数占比最大的年龄段为51岁及以上，显示出“银发经济”的崛起趋势。
+            - listitem [ref=e96]: 用户性别分布较为均衡，男性占53%，女性占47%。
+            - listitem [ref=e97]: 四线及以下城市的用户数量已接近一线城市水平。
+            - listitem [ref=e98]: 企业可依据这些微信用户画像，开展公众号、微信广告、视频号、小程序等多种营销活动。
+          - paragraph [ref=e99]: 微信坐拥如此多的用户，就宛如拥有了一个不断升级、增长的海量信息库、流量池，接下来让我们一起来看看2025微信用户画像。以下用户画像年龄、性别、城市分布数据引用自KAWO2025中国社交媒体平台指南。
+          - paragraph [ref=e100]:
+            - strong [ref=e101]: 年龄：
+          - paragraph [ref=e102]: 约22.3%的微信用户年龄在24岁以下，25-30岁人群是最小的群体，占微信用户的13.7%，31-40岁的人占22%。虽然微信在年轻人用户中很受欢迎，但近年来，由于“银发经济”的崛起和国家普网的成果显著，41-50岁的人占19.2%，51岁以上的人群占总用户的22.8%，比例最高。
+          - figure [ref=e104]
+          - paragraph [ref=e105]:
+            - strong [ref=e106]: 性别分布
+            - strong
+            - text: 微信用户的性别分化相对均匀。男性占用户群约53%，而女性则占47%。
+          - figure [ref=e108]
+          - paragraph [ref=e109]:
+            - strong [ref=e110]: 城市分布
+          - paragraph [ref=e111]: 中国一线与新一线城市的用户分布比例依旧为最高，33.1%，而比例第二位的却是四线及以下城市，二线城市比例最低，为19.3%，三线城市用户占比21%。
+          - figure [ref=e113]
+          - heading "微信用户主要行为场景" [level=2] [ref=e114]:
+            - strong [ref=e115]: 微信用户主要行为场景
+          - paragraph [ref=e116]: 自微信2011年开始以社交工具问世以来，已经过去了14个年头。而微信的应用场景也已经从单一的聊天工具扩展到多场景全覆盖，微信已然成为一个多功能的“超级平台”。
+          - list [ref=e117]:
+            - listitem [ref=e118]:
+              - strong [ref=e119]: 基础社交
+              - text: ：文字、语音、朋友圈分享。
+          - figure [ref=e121]
+          - paragraph [ref=e122]:
+            - emphasis [ref=e123]: 微信的聊天页面
+            - strong
+          - list [ref=e124]:
+            - listitem [ref=e125]:
+              - strong [ref=e126]: 信息获取
+              - text: ：公众号推送、视频号内容。
+          - figure [ref=e128]
+          - paragraph [ref=e129]:
+            - emphasis [ref=e130]: Genie高空作业平台的微信公众号文章
+          - list [ref=e131]:
+            - listitem [ref=e132]:
+              - strong [ref=e133]: 支付/交易
+              - text: ：微信支付、红包、打车、点餐、电商。
+          - figure [ref=e135]
+          - paragraph [ref=e136]:
+            - emphasis [ref=e137]: 使用微信支付可以购物、充值
+            - strong
+          - list [ref=e138]:
+            - listitem [ref=e139]:
+              - strong [ref=e140]: 工作/学习
+              - text: ：企业微信、群作业、视频会议。
+          - figure [ref=e142]
+          - paragraph [ref=e143]:
+            - emphasis [ref=e144]: 微信企业客服，添加好友后可以发送活动信息和产品资讯
+          - list [ref=e145]:
+            - listitem [ref=e146]:
+              - strong [ref=e147]: 娱乐
+              - text: ：小游戏、直播。
+          - figure [ref=e149]
+          - paragraph [ref=e150]:
+            - emphasis [ref=e151]: 微信小游戏的页面
+            - strong
+          - paragraph [ref=e152]:
+            - text: 我们最近做了一个关于用户最近使用微信最多的场景的
+            - link "小调查" [ref=e153] [cursor=pointer]:
+              - /url: https://www.douyin.com/user/self?from_tab_name=main&modal_id=7542761039100726554
+            - text: ，参与用户为108人，调查结果显示使用最多的场景是微信聊天、然后是微信支付和微信朋友圈。
+          - figure [ref=e155]
+          - paragraph [ref=e156]: 不断的探索和丰富用户使用场景的目的很明确，就是尽可能的将用户锁定在微信APP中，增加用户粘性和使用时长，占有更多的市场份额。
+          - paragraph [ref=e157]:
+            - text: 腾讯财报显示，2024年，
+            - link "腾讯毛利同比增长19%至3492亿元" [ref=e158] [cursor=pointer]:
+              - /url: https://www.sohu.com/a/873188478_121956424
+            - text: ，主要由于本土市场游戏、视频号、微信搜一搜及小游戏平台等来源的高毛利率收入强劲增长。
+          - paragraph [ref=e159]: 可见核心市场正在成熟，这种持续的增长依托于庞大的用户基础，更进一步凸显了微信有能力为腾讯带来更多的盈利，并保持高水平的用户参与度。
+          - paragraph [ref=e160]: 看到这里，你一定会对微信这块大金矿产生巨大的兴趣，期望可以从巨大的用户群里中掘金，但又不知从何下手，别着急，可以看看其他企业是怎么做的？
+          - heading "企业在微信上能做什么？" [level=2] [ref=e161]:
+            - strong [ref=e162]: 企业在微信上能做什么？
+          - list [ref=e163]:
+            - listitem [ref=e164]:
+              - strong [ref=e165]: 开设微信公众号
+              - strong
+          - paragraph [ref=e166]: 到2025年，尽管微信公众号将服务号和订阅号的消息进行了折叠，但微信公众号的用户数量和渗透率仍在逐渐提升。
+          - list [ref=e167]:
+            - listitem [ref=e168]: 截至2023年底，微信上的公众号数量已达到2000万，
+            - listitem [ref=e169]: 平均每个用户关注的公众号数量为20个左右。
+            - listitem [ref=e170]: 通过调研300家B2B企业的微信运营公开数据，89%的B2B企业开通并正式开展了公众号运营的工作。
+          - paragraph [ref=e171]:
+            - text: 以上数据出自
+            - link "传声CommNow" [ref=e172] [cursor=pointer]:
+              - /url: https://www.zhihu.com/org/chuan-sheng-commnow-22
+            - text: 知乎文章。
+          - paragraph [ref=e173]: 可以说，微信公众号已经成为了企业对外的一个必备窗口。
+          - figure [ref=e175]
+          - paragraph [ref=e176]:
+            - emphasis [ref=e177]: 被折叠的微信服务号和订阅号消息框
+          - paragraph [ref=e178]: 企业可以通过创建品牌的微信公众号，发布品牌相关内容，进行品牌曝光、内容营销、活动引流。
+          - list [ref=e179]:
+            - listitem [ref=e180]:
+              - strong [ref=e181]: 微信广告
+              - strong
+          - paragraph [ref=e182]: 微信广告的形式多样，包括朋友圈广告、公众号广告、搜一搜广告、视频号广告等，广告覆盖率超80%的用户群体，虽然投入成本普遍高于其他平台，但转化率稳定，起投预算不高，适合长期品牌建设。
+          - figure [ref=e184]
+          - paragraph [ref=e185]:
+            - emphasis [ref=e186]: GBG全球地址验证专家的微信朋友圈广告视频样式
+          - paragraph [ref=e187]: 基于微信后台的用户群体和微信大数据对用户贴上的“标签”，你可以使用微信广告快速的定位到你想要的用户群体并把你的广告推送给他。
+          - paragraph [ref=e188]:
+            - text: 因为微信广告对于投放行业有一些限制，如果你想要做微信广告，你需要先确保你的行业是准入的，你可以通过查看我们设计的
+            - link "小工具" [ref=e189] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/china-advertising-checker
+            - text: 来预判。
+          - figure [ref=e191]
+          - paragraph [ref=e192]:
+            - emphasis [ref=e193]: 微信广告的后台人群属性筛选截图
+          - list [ref=e194]:
+            - listitem [ref=e195]:
+              - strong [ref=e196]: 微信客服
+              - strong
+          - paragraph [ref=e197]: 通过公众号或小程序绑定客服系统，甚至是开通企业微信，可以帮助企业实现在微信端从品牌曝光到用户咨询、下单、售后的一站式闭环。
+          - figure [ref=e199]
+          - paragraph [ref=e200]:
+            - emphasis [ref=e201]: Lizenzero的微信客服
+          - list [ref=e202]:
+            - listitem [ref=e203]:
+              - strong [ref=e204]: 微信视频号
+          - paragraph [ref=e205]:
+            - text: 根据微信2025年的
+            - link "数据显示" [ref=e206] [cursor=pointer]:
+              - /url: https://news.qq.com/rain/a/20250617A03PCG00
+            - text: ，视频号的日活已经突破8亿。
+          - paragraph [ref=e207]:
+            - text: 而作为微信推出的和B站、小红书、抖音、快手竞争的产品微信视频号，
+            - strong [ref=e208]: 仅用了
+            - text: 短短3年就追平甚至超越 B站和快手的部分用户规模。涵盖的使用场景包括短视频、直播带货（但需要注意，视频号目前对外国人主播的直播功能扔处于限制的状态）、内容广告。视频号短视频使用时长在中国市场占比甚至已然
+            - strong [ref=e209]: 接近抖音
+            - text: 。
+          - paragraph [ref=e210]: 对于企业来说，视频号的强大在于可以和微信公众号互联，便于双向引流，尤其适合B2B行业在微信平台快速获客。企业在视频号上同步的视频内容更容易被用户看到。
+          - figure [ref=e212]
+          - paragraph [ref=e213]:
+            - emphasis [ref=e214]: Samtec的微信视频号主页，与微信公众号连通
+          - list [ref=e215]:
+            - listitem [ref=e216]:
+              - strong [ref=e217]: 微信小程序
+          - paragraph [ref=e218]:
+            - link "数据显示" [ref=e219] [cursor=pointer]:
+              - /url: https://www.thepaper.cn/newsDetail_forward_29602559
+            - text: 截止至2024年10月份，微信小程序用户达到9.49亿，月人均使用时长已经达到1.7小时，月人均使用次数也达到近70次，同比分别增长了15.1%、5.2%，百万用户量以上的微信小程序占比已经达到14.1%。
+          - paragraph [ref=e220]: 微信小程序可以说满足了大部分用户的各种使用场景，从定外卖、打车、查询信息、到支付电话费都可以通过小程序实现，尤其是众多大品牌也都开发出了小程序版，将小程序的流量和用户粘性大幅度提升。
+          - figure [ref=e222]
+          - paragraph [ref=e223]:
+            - emphasis [ref=e224]: 美团外卖的微信小程序主页
+          - paragraph [ref=e225]: 一部分企业也会使用微信小程序进行产品和功能展示来代替企业官网。有些小程序还会包含在线订购、客服支持、白皮书下载、会员系统等功能。
+          - list [ref=e226]:
+            - listitem [ref=e227]:
+              - strong [ref=e228]: 其他功能
+              - strong
+          - paragraph [ref=e229]: 除了以上功能外，微信还推出了一些特殊功能，比如春节期间爆火的红包封面，可以帮助企业定制专属红包封面，进一步宣传企业形象；微信群直播，便于一些有固定客群或教育类可以给用户提供直播授课，这些都在助力企业更好的在微信上吸引和维护住潜在的客户群体。
+          - figure [ref=e231]
+          - paragraph [ref=e232]:
+            - emphasis [ref=e233]: NanJingMarketingGroup团队2021年设计的微信红包封面
+          - paragraph [ref=e234]:
+            - text: 在中国，微信是名副其实的全民级工具。
+            - link "根据调查显示" [ref=e235] [cursor=pointer]:
+              - /url: https://baijiahao.baidu.com/s?id=1840557485121573653&wfr=spider&for=pc
+            - text: ，中国用户的微信日均使用时间接近
+            - strong [ref=e236]: 2小时
+            - text: ，日发送消息
+            - strong [ref=e237]: 450亿条
+            - text: ，音视频通话
+            - strong [ref=e238]: 4.1亿次/天
+            - text: 。
+          - paragraph [ref=e239]: 如今，如此庞大规模的微信用户数表明，微信已经成为世界第六大受欢迎的应用软件。
+          - figure [ref=e241]
+          - paragraph [ref=e242]:
+            - emphasis [ref=e243]: 截至2025年2月，全球最受欢迎的社交网络（按月活跃用户数量，单位：百万）— 来源：Statista
+          - paragraph [ref=e244]: 微信蕴藏着无限的机遇，在这座巨大的金矿里，你需要做的就是尽快占尽先机，赶紧入驻。
+          - separator [ref=e245]
+          - paragraph [ref=e246]: 如果你已经做好了准备，欢迎与我们联系！
+        - generic [ref=e249]:
+          - link "Email this" [ref=e250] [cursor=pointer]:
+            - /url: mailto:?subject=微信用户画像2025&body=https://nanjingmarketinggroup.com/cn/blog/微信用户画像2025
+            - generic [ref=e251]: 
+          - link "Share this" [ref=e252] [cursor=pointer]:
+            - /url: https://www.facebook.com/sharer/sharer.php?u=https://nanjingmarketinggroup.com/cn/blog/微信用户画像2025&quote=微信用户画像2025
+            - generic [ref=e253]: 
+          - link "Share this" [ref=e254] [cursor=pointer]:
+            - /url: https://twitter.com/intent/tweet?text=微信用户画像2025&url=https://nanjingmarketinggroup.com/cn/blog/微信用户画像2025
+            - img [ref=e256]
+          - link "Share this" [ref=e258] [cursor=pointer]:
+            - /url: https://www.linkedin.com/shareArticle?mini=true&url=https://nanjingmarketinggroup.com/cn/blog/微信用户画像2025
+            - generic [ref=e259]: 
+          - link "Share this" [ref=e260] [cursor=pointer]:
+            - /url: https://web.whatsapp.com/send?text=微信用户画像2025 https://nanjingmarketinggroup.com/cn/blog/微信用户画像2025
+            - generic [ref=e261]: 
+      - generic [ref=e268]:
+        - heading "Start With a Free Consultation" [level=3] [ref=e273]:
+          - strong [ref=e274]: Start With a Free Consultation
+        - generic [ref=e279]:
+          - paragraph [ref=e280]: We’ll identify the potential obstacles hindering your expansion in China, and we’ll recommend the best course of action based on your individual needs.
+          - paragraph [ref=e281]: If you think we’re a good fit, you’ll receive a proposal within a week.
+        - link "Request Free Consultation" [ref=e284] [cursor=pointer]:
+          - /url: https://nanjingmarketinggroup.com/contact-us
+  - contentinfo [ref=e286]:
+    - generic [ref=e290]:
+      - generic [ref=e293]:
+        - heading "公司" [level=4] [ref=e296]:
+          - strong [ref=e297]: 公司
+        - generic [ref=e300]:
+          - paragraph [ref=e301]:
+            - link "关于我们" [ref=e303] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/cn/about
+          - paragraph [ref=e304]:
+            - link "博客" [ref=e306] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/cn/blog
+          - paragraph [ref=e307]:
+            - link "联系我们" [ref=e309] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/cn/contact-us
+      - generic [ref=e312]:
+        - heading "服务" [level=4] [ref=e315]:
+          - strong [ref=e316]: 服务
+        - generic [ref=e319]:
+          - paragraph [ref=e320]:
+            - link "B2B行业解决方案" [ref=e322] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/cn/solutions/chinese-b2b-marketing
+          - paragraph [ref=e323]:
+            - link "教育行业解决方案" [ref=e325] [cursor=pointer]:
+              - /url: https://nanjingmarketinggroup.com/cn/solutions/china-education-marketing
+      - generic [ref=e328]:
+        - heading "联系我们" [level=4] [ref=e331]:
+          - strong [ref=e332]: 联系我们
+        - generic [ref=e334]:
+          - paragraph [ref=e335]:
+            - strong [ref=e336]: 电话：
+            - text: +86 (0)25 8655 1570
+          - paragraph [ref=e337]: 周一至周五： 上午9点 – 下午5点（北京时间）
+          - paragraph [ref=e338]:
+            - strong [ref=e339]: 地址：
+            - text: 江苏省南京市秦淮区中山东路288号新世纪广场A座1705室 邮编 210002
+        - heading "关注我们" [level=4] [ref=e343]:
+          - strong [ref=e344]: 关注我们
+        - paragraph [ref=e347]:
+          - strong [ref=e348]: 市场营销
+        - generic [ref=e350]:
+          - link "Newsletter" [ref=e352] [cursor=pointer]:
+            - /url: https://tinyurl.com/nanjingmg
+            - generic [ref=e353]: email
+          - link "LinkedIn" [ref=e355] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/nanjing-marketing-group/
+            - generic [ref=e356]: 
+          - link "YouTube" [ref=e358] [cursor=pointer]:
+            - /url: https://www.youtube.com/@nanjingmg
+            - generic [ref=e359]: 
+          - link "Instagram" [ref=e361] [cursor=pointer]:
+            - /url: https://www.instagram.com/nanjingmg/
+            - generic [ref=e362]: 
+          - link "TikTok" [ref=e364] [cursor=pointer]:
+            - /url: https://www.tiktok.com/@nanjingmg
+            - generic [ref=e365]: 
+        - paragraph [ref=e368]:
+          - strong [ref=e369]: 泛兴趣内容
+        - generic [ref=e371]:
+          - link "Instagram" [ref=e373] [cursor=pointer]:
+            - /url: https://www.instagram.com/taitlawton/
+            - generic [ref=e374]: 
+          - link "YouTube" [ref=e376] [cursor=pointer]:
+            - /url: https://www.youtube.com/taitlawton
+            - generic [ref=e377]: 
+          - link "TikTok" [ref=e379] [cursor=pointer]:
+            - /url: https://www.tiktok.com/@taitlawton
+            - generic [ref=e380]: 
+          - link "LinkedIn" [ref=e382] [cursor=pointer]:
+            - /url: https://www.linkedin.com/in/taitlawton/
+            - generic [ref=e383]: 
+      - generic [ref=e389]:
+        - paragraph [ref=e395]:
+          - link "隐私政策" [ref=e396] [cursor=pointer]:
+            - /url: https://nanjingmarketinggroup.com/privacy-policy
+        - paragraph [ref=e402]: © 2026 Nanjing Marketing Group Ltd., 版权所有。
+  - button "Back to top" [ref=e403] [cursor=pointer]:
+    - generic [ref=e404]: 
+  - generic:
+    - generic [ref=e406]:
+      - link "×" [ref=e408] [cursor=pointer]:
+        - /url: "#"
+      - navigation [ref=e410]:
+        - list [ref=e411]:
+          - list [ref=e412]:
+            - listitem [ref=e413]:
+              - link "重点总结：" [ref=e414] [cursor=pointer]:
+                - /url: "#"
+          - listitem [ref=e415]:
+            - link "微信用户主要行为场景" [ref=e416] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e417]:
+            - link "企业在微信上能做什么？" [ref=e418] [cursor=pointer]:
+              - /url: "#"
+    - link "← TABLE OF CONTENTS" [ref=e419] [cursor=pointer]:
+      - /url: "#"
+      - generic [ref=e420]: ←
+      - generic [ref=e421]: TABLE OF CONTENTS
+  - navigation "Language Switcher" [ref=e422]:
+    - list [ref=e423]:
+      - listitem [ref=e424]:
+        - link "Switch to English (English)" [ref=e425] [cursor=pointer]:
+          - /url: https://nanjingmarketinggroup.com/blog/wechat-user-demographics
+          - text: English
+      - listitem [ref=e426]:
+        - link "Switch to 中文 (中文)" [ref=e427] [cursor=pointer]:
+          - /url: https://nanjingmarketinggroup.com/cn/blog/%e5%be%ae%e4%bf%a1%e7%94%a8%e6%88%b7%e7%94%bb%e5%83%8f2025
+          - text: 中文
+      - listitem [ref=e428]:
+        - link "Switch to Spanish (Español)" [ref=e429] [cursor=pointer]:
+          - /url: https://nanjingmarketinggroup.com/es/blog/demografia-de-usuarios-de-wechat-2025
+          - text: Español
+          - generic [ref=e430]: (Spanish)
+      - listitem [ref=e431]:
+        - link "Switch to German (Deutsch)" [ref=e432] [cursor=pointer]:
+          - /url: https://nanjingmarketinggroup.com/de
+          - text: Deutsch
+          - generic [ref=e433]: (German)

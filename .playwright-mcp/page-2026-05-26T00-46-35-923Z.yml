@@ -1,0 +1,407 @@
+- generic [ref=e2]:
+  - text:     
+  - generic [ref=e4]:
+    - link "千瓜数据 - 小红书数据分析平台" [ref=e6] [cursor=pointer]:
+      - /url: /
+      - img "千瓜数据 - 小红书数据分析平台" [ref=e7]
+    - generic [ref=e8]: 运营资讯
+    - list [ref=e9]:
+      - listitem [ref=e10] [cursor=pointer]:
+        - link "文章" [ref=e11]:
+          - /url: /qg/information
+      - listitem [ref=e12] [cursor=pointer]:
+        - link "问答" [ref=e13]:
+          - /url: /ask/index
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - textbox "输入关键词搜索" [ref=e16]
+        - button "" [ref=e17] [cursor=pointer]:
+          - generic [ref=e18]: 
+      - link "提问" [ref=e19] [cursor=pointer]:
+        - /url: /ask/form
+    - link "登录/注册" [ref=e23] [cursor=pointer]:
+      - /url: ""
+  - generic [ref=e24]:
+    - generic [ref=e25]:
+      - generic [ref=e26] [cursor=pointer]:
+        - generic [ref=e27]: 
+        - text: 客服
+      - generic [ref=e28] [cursor=pointer]:
+        - generic [ref=e29]: 
+        - text: APP
+    - generic [ref=e32] [cursor=pointer]: 
+  - generic [ref=e34]:
+    - generic [ref=e35]:
+      - text: 当前位置：
+      - list [ref=e36]:
+        - listitem [ref=e37]:
+          - link "首页" [ref=e38] [cursor=pointer]:
+            - /url: /
+          - generic [ref=e39]: 
+        - listitem [ref=e40]:
+          - link "行业洞察" [ref=e41] [cursor=pointer]:
+            - /url: /qg/informations/1/1
+          - generic [ref=e42]: 
+        - listitem [ref=e43]:
+          - link "2025「活跃用户」研究报告（小红书平台）" [ref=e44]:
+            - /url: javascript:;
+          - text: 
+    - generic [ref=e45]:
+      - generic [ref=e46]:
+        - heading "2025「活跃用户」研究报告（小红书平台）" [level=1] [ref=e47]
+        - generic [ref=e48]: 作者：千瓜数据 时间：2025-04-24 10:05:08
+        - paragraph [ref=e49]
+        - generic [ref=e50]:
+          - img [ref=e52]
+          - paragraph [ref=e53]
+          - generic [ref=e54]:
+            - generic [ref=e56]:
+              - img [ref=e59]
+              - generic [ref=e60]:
+                - paragraph [ref=e61]:
+                  - text: 据小红书官方最新通案，平台拥有
+                  - strong [ref=e62]: 3亿月活用户，内容分享者超1亿
+                  - text: ，月均搜索渗透率达70%。社区中
+                  - strong [ref=e63]: 男女比例达3:7，00后占比35%，95后占比50%
+                  - strong [ref=e64]: ，一二线城市用户占比50%。
+                - paragraph:
+                  - strong
+                - paragraph [ref=e65]
+                - paragraph [ref=e66]: 真实而细微、温暖而广阔、生动富有个性的社区环境，持续影响人群心智，推动着消费变化，为品牌提供各式种草灵感。
+            - img [ref=e69]
+        - paragraph [ref=e70]
+        - paragraph [ref=e71]
+        - generic [ref=e72]:
+          - generic [ref=e73]:
+            - text: 本期报告，
+            - strong [ref=e74]:
+              - generic [ref=e75]: 《202
+            - strong [ref=e76]: "5"
+            - strong [ref=e77]: 「活跃用户
+            - strong [ref=e78]:
+              - generic [ref=e79]: 」研究报告（小红书平台》
+            - strong [ref=e81]: （本文仅展示部分，完整版共45页领取见文末）
+            - text: 。通过全行业、八大热门行业的人群剖析
+          - generic [ref=e82]: （美妆个护、服饰穿搭、食品饮料、母婴育儿、家居、运动户外、大健康、宠物）
+          - text: ，助力品牌洞悉消费者心智，把握用户种草策略方向。
+        - generic [ref=e83]:
+          - paragraph [ref=e89]
+          - img [ref=e92]
+          - paragraph [ref=e94]:
+            - strong [ref=e95]: 报告概要：
+          - paragraph [ref=e96]
+          - img [ref=e100]
+          - paragraph [ref=e103]:
+            - strong [ref=e104]: 全行业 活跃用户画像
+          - generic [ref=e108]:
+            - img
+          - img [ref=e111]
+          - paragraph [ref=e112]
+          - paragraph [ref=e113]:
+            - img [ref=e114]
+          - paragraph [ref=e115]:
+            - img [ref=e116]
+          - img [ref=e120]
+          - img [ref=e124]
+          - paragraph [ref=e127]:
+            - strong [ref=e128]: 美妆个护行业 用户洞察
+          - generic [ref=e132]:
+            - img
+          - img [ref=e135]
+          - paragraph [ref=e136]
+          - paragraph [ref=e137]:
+            - img [ref=e138]
+          - paragraph [ref=e139]:
+            - img [ref=e140]
+          - generic [ref=e141]: ▲更多精彩，请获取完整版报告
+          - img [ref=e145]
+          - img [ref=e149]
+          - paragraph [ref=e152]:
+            - strong [ref=e153]: 服饰穿搭行业 用户洞察
+          - generic [ref=e157]:
+            - img
+          - img [ref=e160]
+          - paragraph [ref=e161]
+          - paragraph [ref=e162]:
+            - img [ref=e163]
+          - paragraph [ref=e164]:
+            - img [ref=e165]
+          - paragraph [ref=e166]: ▲更多精彩，请获取完整版报告
+          - img [ref=e171]
+          - img [ref=e175]
+          - paragraph [ref=e178]:
+            - strong [ref=e179]: 食品饮料行业 用户洞察
+          - generic [ref=e183]:
+            - img
+          - img [ref=e186]
+          - paragraph [ref=e187]
+          - paragraph [ref=e188]:
+            - img [ref=e189]
+          - paragraph [ref=e190]:
+            - img [ref=e191]
+          - paragraph [ref=e192]: ▲更多精彩，请获取完整版报告
+          - generic [ref=e193]:
+            - img [ref=e196]
+            - img [ref=e200]
+            - paragraph [ref=e203]:
+              - strong [ref=e204]: 宠物行业 用户洞察
+            - generic [ref=e208]:
+              - img
+            - img [ref=e211]
+          - paragraph [ref=e217]
+          - paragraph [ref=e218]:
+            - img [ref=e219]
+          - paragraph [ref=e220]:
+            - img [ref=e221]
+          - generic [ref=e222]: ▲报告涵盖家居、运动户外、大健康行业等热门行业
+          - generic [ref=e223]: 更多精彩，请在文末获取完整版报告
+          - paragraph [ref=e225]
+          - paragraph [ref=e226]
+          - generic [ref=e227]:
+            - generic [ref=e231]:
+              - generic:
+                - generic:
+                  - paragraph
+              - generic [ref=e232]:
+                - paragraph [ref=e235]:
+                  - strong [ref=e236]: 商业推广建议
+                - img [ref=e239]
+            - paragraph [ref=e241]
+            - generic [ref=e243]:
+              - paragraph [ref=e246]: "本期研究，千瓜基于小红书平台活跃用户，深入剖析人群生活方式、内容偏好、消费趋势等，总结如下:"
+              - generic [ref=e247]:
+                - generic:
+                  - img
+                - generic [ref=e250]:
+                  - img
+                - generic [ref=e251]:
+                  - paragraph [ref=e254]:
+                    - strong [ref=e255]: 美妆个护行业：
+                    - text: 泛人群场景持续扩大，市场高度细化，
+                    - strong [ref=e256]: 「功效护肤」
+                    - text: 备受关注。
+                    - strong [ref=e258]: 美甲、个护赛道热度飙升，“妆养一体”理念崛起
+                    - text: ，推动产品迭代升级。人群关注的内容从生活方式出发，妆容讲究“应时应景应人”，对产品使用提出多元诉求。
+                  - paragraph [ref=e259]
+              - generic [ref=e260]:
+                - generic:
+                  - img
+                - generic [ref=e263]:
+                  - img
+                - generic [ref=e264]:
+                  - paragraph [ref=e267]:
+                    - strong [ref=e268]: 服饰穿搭行业：
+                    - text: 较其他行业年轻化程度较高，易被先锋的时尚理念吸引，TA们可以把小众穿成大众、也能突破传统场景穿出新潮流。
+                    - strong [ref=e269]: 「低饱和」
+                    - text: 色彩不断掀起热潮，
+                    - strong [ref=e270]: 「姐感」
+                    - text: 成为新的流行；
+                    - strong [ref=e271]: 配饰市场增长迅速，功能性服饰持续发力
+                    - text: 。品牌可把握色彩和人设，引领和创新穿搭体验。
+                  - paragraph [ref=e272]
+              - generic [ref=e273]:
+                - generic:
+                  - img
+                - generic [ref=e276]:
+                  - img
+                - generic [ref=e277]:
+                  - paragraph [ref=e280]:
+                    - strong [ref=e281]: 食品饮料行业：
+                    - text: 人群饮食偏好呈
+                    - strong [ref=e282]: 「质价比&体验」
+                    - text: 双重期待，
+                    - strong [ref=e283]: “零食、饮品”
+                    - text: 相关产品热度仍然较高，兼具
+                    - strong [ref=e284]: “地方风味”与“绿色营养”的生鲜果蔬
+                    - text: 赛道增长迅速。品牌需关注
+                    - strong [ref=e285]: 食物在自然节奏中焕发的生命力
+                    - text: ，通过“天人合一”的饮食哲学，与消费者建立深度连接。
+                  - paragraph [ref=e286]
+              - generic [ref=e287]:
+                - generic:
+                  - img
+                - generic [ref=e290]:
+                  - img
+                - generic [ref=e291]:
+                  - paragraph [ref=e294]:
+                    - strong [ref=e295]: 母婴育儿行业：
+                    - text: 新生代育儿理念
+                    - strong [ref=e296]: 「自我价值重塑」与「科学养育」
+                    - text: 双轨并行。父母与孩子双向成长，亲子互动内容热度较高；观念
+                    - strong [ref=e297]: 从“精养”延伸至“慧养”
+                    - text: ，除了食品、服饰、日用品刚需用品，文娱类产品关注度提升，相关品牌可针对不同阶段的养育需求，展现产品的寓教于乐。
+                  - paragraph [ref=e298]
+              - generic [ref=e299]:
+                - generic:
+                  - img
+                - generic [ref=e302]:
+                  - img
+                - generic [ref=e303]:
+                  - paragraph [ref=e306]:
+                    - strong [ref=e307]: 家居行业：
+                    - text: 新世代人群重塑家的想象，“家空间”从功能堆叠迈向情感共鸣。
+                    - strong [ref=e308]: 「兴趣驱动」、「治愈系风格」
+                    - text: 以生活愿景为锚点，撬动“家语境”叙事新可能；
+                    - strong [ref=e309]: “智能家电、家居小物”
+                    - text: 关注提升，用户希望得到“能省事、有幸福感”的生活方案。
+                  - paragraph [ref=e310]
+              - generic [ref=e311]:
+                - generic:
+                  - img
+                - generic [ref=e314]:
+                  - img
+                - generic [ref=e315]:
+                  - paragraph [ref=e318]:
+                    - strong [ref=e319]: 运动户外行业：
+                    - text: 男女比例达到4:6，
+                    - strong [ref=e320]: 整体消费力较高，追求健康生活，对产品的选择兼顾美感和专业
+                    - text: 。室内、户外并行爆发，生活习惯已逐渐培养起来。
+                    - strong [ref=e321]: 「形体管理和力量训练」
+                    - text: 是关注重点，可长线布局减脂、增肌、体态等内容，并从产品功效、空间使用、穿着感受出发，让运动更专业、舒适。
+                  - paragraph [ref=e322]
+              - generic [ref=e323]:
+                - generic:
+                  - img
+                - generic [ref=e326]:
+                  - img
+                - generic [ref=e327]:
+                  - paragraph [ref=e330]:
+                    - strong [ref=e331]: 大健康行业：
+                    - text: 全民健康时代来临，诉求聚焦
+                    - strong [ref=e332]: “即时”与“顺时”
+                    - text: 两大趋势，关联养颜、食补、轻运动等多种养生方式。肠胃、失眠、疲劳等痛点逐渐扩大，推动
+                    - strong [ref=e334]: 「肝脏养护、五官保养」
+                    - text: 等新兴需求崛起。品牌可围绕便捷、时间与细分场景精准种草，抢占大健康赛道风口。
+                  - paragraph [ref=e335]
+              - generic [ref=e336]:
+                - generic:
+                  - img
+                - generic [ref=e339]:
+                  - img
+                - paragraph [ref=e343]:
+                  - strong [ref=e344]: 宠物行业：
+                  - text: 以
+                  - strong [ref=e345]: 品质型人群为主，独居人群成为一大推手
+                  - text: 。人宠亲密度持续升温，养宠愈发科学化、精细化，消费呈“囤货”向“高频、高质购买”趋势。
+                  - strong [ref=e346]: 「功能性营养、人宠关系
+                  - text: 」内容话题高热，同时
+                  - strong [ref=e348]: “宠物服务”
+                  - text: 迎来发展机遇。营销除了功能刚需，还需注重情感向、公益向的拓展。
+              - paragraph [ref=e349]
+              - paragraph [ref=e352]: 小红书丈量着当代生活的千百种切面，不同年龄、不同观念的碰撞交融，创造着生活的形状。未来各个行业将如何发展？千瓜与你一同关注。
+          - img [ref=e355]
+          - paragraph [ref=e356]
+          - paragraph [ref=e358]:
+            - generic [ref=e359]:
+              - text: 文章篇幅有限，报告仅展示部分，感兴趣的小伙伴，欢迎扫码
+              - strong [ref=e361]: 添加商务顾问，免费获取高清完整报告
+              - text: （共45页）。
+            - text: （注：千瓜会员可联系商务顾问获取完整报告，非千瓜会员可分享文章至朋友圈后联系商务顾问领取）
+          - paragraph [ref=e362]
+          - paragraph [ref=e363]:
+            - img [ref=e364]
+        - generic [ref=e367]:
+          - paragraph [ref=e370]:
+            - img [ref=e371]
+          - generic [ref=e374]:
+            - paragraph [ref=e375]:
+              - img [ref=e376]
+            - paragraph [ref=e377]
+            - paragraph [ref=e378]:
+              - img [ref=e379]
+      - generic [ref=e380]:
+        - link "上一篇 2025「生命力」种草趋势洞察报告（小红书平台）" [ref=e381] [cursor=pointer]:
+          - /url: /information/detail/3177
+          - generic [ref=e382]: 上一篇
+          - generic [ref=e383]: 2025「生命力」种草趋势洞察报告（小红书平台）
+        - link "小红书「新兴品类」洞察报告（2025年第1季度） 下一篇" [ref=e384] [cursor=pointer]:
+          - /url: /information/detail/3145
+          - generic [ref=e385]: 小红书「新兴品类」洞察报告（2025年第1季度）
+          - generic [ref=e386]: 下一篇
+    - generic [ref=e387]:
+      - generic [ref=e388]:
+        - heading "最热文章" [level=2] [ref=e389]
+        - list [ref=e390]:
+          - listitem [ref=e391]:
+            - link "2025「活跃用户」研究报告（小红书平台）" [ref=e392] [cursor=pointer]:
+              - /url: /information/detail/3149
+          - listitem [ref=e393]:
+            - link "2024「活跃用户」研究报告（小红书平台）" [ref=e394] [cursor=pointer]:
+              - /url: /information/detail/2898
+          - listitem [ref=e395]:
+            - link "小红书「新兴品类」洞察报告（2025年第1季度）" [ref=e396] [cursor=pointer]:
+              - /url: /information/detail/3145
+          - listitem [ref=e397]:
+            - link "年中报告｜2025小红书热门行业数据洞察" [ref=e398] [cursor=pointer]:
+              - /url: /information/detail/3191
+          - listitem [ref=e399]:
+            - link "2025「兴趣生活」数据洞察报告（小红书平台）" [ref=e400] [cursor=pointer]:
+              - /url: /information/detail/3197
+      - generic [ref=e401]:
+        - heading "小红书推荐相关词条" [level=2] [ref=e402]
+        - generic [ref=e403]:
+          - link "小红书运营" [ref=e404] [cursor=pointer]:
+            - /url: /qg/informations/1/1/8
+          - link "小红书品牌营销" [ref=e405] [cursor=pointer]:
+            - /url: /qg/informations/1/1/10
+          - link "小红书数据分析" [ref=e406] [cursor=pointer]:
+            - /url: /qg/informations/1/1/4
+          - link "千瓜数据" [ref=e407] [cursor=pointer]:
+            - /url: /qg/informations/1/1/11
+          - link "小红书笔记" [ref=e408] [cursor=pointer]:
+            - /url: /qg/informations/1/1/9
+          - link "小红书kol" [ref=e409] [cursor=pointer]:
+            - /url: /qg/informations/1/1/6
+          - link "小红书排行榜" [ref=e410] [cursor=pointer]:
+            - /url: /qg/informations/1/1/1
+          - link "小红书榜单" [ref=e411] [cursor=pointer]:
+            - /url: /qg/informations/1/1/7
+          - link "小红书达人搜索" [ref=e412] [cursor=pointer]:
+            - /url: /qg/informations/1/1/12
+          - link "小红书品牌种草" [ref=e413] [cursor=pointer]:
+            - /url: /qg/informations/1/1/13
+  - generic [ref=e415]:
+    - generic [ref=e416]:
+      - term [ref=e417]: 关于千瓜
+      - definition [ref=e418]:
+        - link "关于我们" [ref=e419] [cursor=pointer]:
+          - /url: /Home/AboutUs
+      - definition [ref=e420]:
+        - link "用户协议" [ref=e421] [cursor=pointer]:
+          - /url: /appfile/UserAgreement
+      - definition [ref=e422]:
+        - link "个人信息保护政策" [ref=e423] [cursor=pointer]:
+          - /url: /appfile/PrivacyAgreement
+    - generic [ref=e424]:
+      - term [ref=e425]: 产品介绍
+      - definition [ref=e426]:
+        - link "产品指南" [ref=e427] [cursor=pointer]:
+          - /url: /help/articlen
+      - definition [ref=e428]:
+        - generic [ref=e429] [cursor=pointer]: 产品价格
+    - generic [ref=e430]:
+      - term [ref=e431]: 更多产品
+      - definition [ref=e432]:
+        - link "飞瓜" [ref=e433] [cursor=pointer]:
+          - /url: https://www.feigua.cn/?chl=qiangua
+      - definition [ref=e434]:
+        - link "西瓜" [ref=e435] [cursor=pointer]:
+          - /url: http://data.xiguaji.com/?chl=qiangua
+      - definition [ref=e436]:
+        - link "智投" [ref=e437] [cursor=pointer]:
+          - /url: https://zhitou-h5.feigua.cn/?source=MTg3NDc=
+      - definition [ref=e438]:
+        - link "云略" [ref=e439] [cursor=pointer]:
+          - /url: https://www.yunluepro.com/?chl=qiangua
+    - definition [ref=e441]:
+      - paragraph [ref=e442]: 营销数据咨询
+      - generic [ref=e444]: 商务顾问-涛涛
+    - paragraph [ref=e445]:
+      - text: Copyright © 2014-2026 千瓜数据雷达 ∣ 福州果集信息科技有限公司
+      - link "闽ICP备19018186号" [ref=e446] [cursor=pointer]:
+        - /url: https://beian.miit.gov.cn
+      - link "∣ 备案logo 闽公网安备 35010402351303号 ∣ 法律顾问：垦丁律师事务所" [ref=e447] [cursor=pointer]:
+        - /url: http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=35010402351303
+        - text: ∣
+        - img "备案logo" [ref=e448]
+        - text: 闽公网安备 35010402351303号 ∣ 法律顾问：垦丁律师事务所
