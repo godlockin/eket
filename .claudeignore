@@ -292,3 +292,4 @@ sys_init/
 inbox/human_feedback/*
 !inbox/human_feedback/.gitkeep
 
+output/
