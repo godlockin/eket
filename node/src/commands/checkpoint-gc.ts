@@ -16,11 +16,12 @@
  *   eket checkpoint:gc --older-than 14d         # Custom threshold
  */
 
+import { execFile } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';
-import { Command } from 'commander';
-import { execFile } from 'child_process';
 import { promisify } from 'util';
+
+import { Command } from 'commander';
 
 import type { GCOptions, CheckpointBranch, TaskStatus, PRStatus } from '../types/checkpoint-gc.js';
 
@@ -369,9 +370,9 @@ function parseDuration(duration: string): number {
   const value = parseInt(match[1], 10);
   const unit = match[2];
 
-  if (unit === 'd') return value * 24 * 3600 * 1000;
-  if (unit === 'h') return value * 3600 * 1000;
-  if (unit === 'm') return value * 60 * 1000;
+  if (unit === 'd') {return value * 24 * 3600 * 1000;}
+  if (unit === 'h') {return value * 3600 * 1000;}
+  if (unit === 'm') {return value * 60 * 1000;}
 
   throw new Error(`Invalid duration unit: ${unit}`);
 }
@@ -381,10 +382,10 @@ function parseDuration(duration: string): number {
  */
 function formatAge(ageMs: number): string {
   const days = Math.floor(ageMs / (24 * 3600 * 1000));
-  if (days > 0) return `${days}d`;
+  if (days > 0) {return `${days}d`;}
 
   const hours = Math.floor(ageMs / (3600 * 1000));
-  if (hours > 0) return `${hours}h`;
+  if (hours > 0) {return `${hours}h`;}
 
   const minutes = Math.floor(ageMs / (60 * 1000));
   return `${minutes}m`;

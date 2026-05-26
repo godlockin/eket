@@ -10,9 +10,10 @@
  * - 命令模式识别
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import {
   SessionTracker,
+  SESSION_TTL_MS,
   checkFactForcing,
   extractFilePath,
   isDeleteCommand,
@@ -114,6 +115,120 @@ describe('Fact-Forcing Gate', () => {
       expect(tracker.hasRead('session-1', 'file2.ts')).toBe(false);
       expect(tracker.hasRead('session-2', 'file2.ts')).toBe(true);
       expect(tracker.hasRead('session-2', 'file1.ts')).toBe(false);
+    });
+
+    describe('TTL and memory management', () => {
+      beforeEach(() => {
+        jest.useFakeTimers();
+      });
+
+      afterEach(() => {
+        jest.useRealTimers();
+      });
+
+      it('should have default TTL of 30 minutes', () => {
+        expect(SESSION_TTL_MS).toBe(30 * 60 * 1000);
+      });
+
+      it('should accept custom TTL via constructor', () => {
+        const shortTtlTracker = new SessionTracker(1000); // 1 second
+        shortTtlTracker.recordRead('session', 'file.ts');
+        expect(shortTtlTracker.hasRead('session', 'file.ts')).toBe(true);
+
+        jest.advanceTimersByTime(1001);
+        // Next access triggers cleanup
+        expect(shortTtlTracker.hasRead('session', 'file.ts')).toBe(false);
+      });
+
+      it('should cleanup expired sessions on access', () => {
+        const shortTtlTracker = new SessionTracker(100); // 100ms
+        shortTtlTracker.recordRead('old-session', 'old-file.ts');
+
+        expect(shortTtlTracker.getSessionCount()).toBe(1);
+
+        jest.advanceTimersByTime(150); // Exceed TTL
+        // Access creates new session and triggers cleanup
+        shortTtlTracker.recordRead('new-session', 'new-file.ts');
+
+        expect(shortTtlTracker.getSessionCount()).toBe(1);
+        expect(shortTtlTracker.hasRead('old-session', 'old-file.ts')).toBe(false);
+        expect(shortTtlTracker.hasRead('new-session', 'new-file.ts')).toBe(true);
+      });
+
+      it('should refresh lastAccess on each access', () => {
+        const shortTtlTracker = new SessionTracker(100);
+        shortTtlTracker.recordRead('session', 'file1.ts');
+
+        jest.advanceTimersByTime(50); // 50ms elapsed
+        // Access refreshes lastAccess
+        shortTtlTracker.recordRead('session', 'file2.ts');
+
+        jest.advanceTimersByTime(60); // 60ms more (110ms total from start, but only 60ms from last access)
+        // Should still be valid because lastAccess was refreshed
+        expect(shortTtlTracker.hasRead('session', 'file1.ts')).toBe(true);
+        expect(shortTtlTracker.hasRead('session', 'file2.ts')).toBe(true);
+      });
+
+      it('should return correct session count', () => {
+        tracker.recordRead('session-1', 'file.ts');
+        tracker.recordRead('session-2', 'file.ts');
+        tracker.recordRead('session-3', 'file.ts');
+
+        expect(tracker.getSessionCount()).toBe(3);
+      });
+
+      it('should clear all sessions', () => {
+        tracker.recordRead('session-1', 'file.ts');
+        tracker.recordRead('session-2', 'file.ts');
+        expect(tracker.getSessionCount()).toBe(2);
+
+        tracker.clearAllSessions();
+        expect(tracker.getSessionCount()).toBe(0);
+        expect(tracker.hasRead('session-1', 'file.ts')).toBe(false);
+        expect(tracker.hasRead('session-2', 'file.ts')).toBe(false);
+      });
+
+      it('should not expire active sessions', () => {
+        const shortTtlTracker = new SessionTracker(100);
+        shortTtlTracker.recordRead('active', 'file.ts');
+        shortTtlTracker.recordRead('inactive', 'file.ts');
+
+        jest.advanceTimersByTime(80); // Not expired yet
+        // Keep 'active' alive
+        shortTtlTracker.hasRead('active', 'file.ts');
+
+        jest.advanceTimersByTime(50); // 130ms total - inactive should expire
+
+        // Trigger cleanup
+        shortTtlTracker.recordRead('new', 'file.ts');
+
+        expect(shortTtlTracker.hasRead('active', 'file.ts')).toBe(true);
+        // inactive expired (130ms since last access > 100ms TTL)
+        // Note: We need another session to check inactive
+        expect(shortTtlTracker.getSessionCount()).toBe(2); // active + new
+      });
+    });
+
+    describe('path normalization edge cases', () => {
+      it('should normalize paths with ../', () => {
+        tracker.recordRead(sessionId, 'src/../src/utils/helper.ts');
+        expect(tracker.hasRead(sessionId, 'src/utils/helper.ts')).toBe(true);
+      });
+
+      it('should normalize paths with double slashes', () => {
+        tracker.recordRead(sessionId, 'src//utils//helper.ts');
+        expect(tracker.hasRead(sessionId, 'src/utils/helper.ts')).toBe(true);
+      });
+
+      it('should normalize paths with trailing slash', () => {
+        tracker.recordRead(sessionId, 'src/utils/');
+        expect(tracker.hasRead(sessionId, 'src/utils')).toBe(true);
+      });
+
+      it('should normalize complex paths', () => {
+        tracker.recordRead(sessionId, './foo/../bar//baz/');
+        expect(tracker.hasRead(sessionId, 'bar/baz')).toBe(true);
+      });
     });
   });
 

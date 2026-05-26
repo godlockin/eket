@@ -5,9 +5,9 @@
  * Phase 4.3 - Integrated with TaskAssigner and InstanceRegistry
  */
 
+import { execFile } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { execFile } from 'child_process';
 import { promisify } from 'util';
 
 import { Command } from 'commander';

@@ -117,7 +117,7 @@ export interface DispatcherResult<T = unknown> {
  * Check 注册表
  * 全局单例，管理所有注册的 checks
  */
-class CheckRegistry {
+export class CheckRegistry {
   private checks: Map<string, Check<unknown>> = new Map();
   private groups: Map<string, Set<string>> = new Map();
 
@@ -135,14 +135,17 @@ class CheckRegistry {
       if (!this.groups.has(group)) {
         this.groups.set(group, new Set());
       }
-      this.groups.get(group)!.add(check.id);
+      const groupSet = this.groups.get(group);
+      if (groupSet) {
+        groupSet.add(check.id);
+      }
     }
   }
 
   /**
    * 批量注册
    */
-  registerAll<T>(checks: Check<T>[], group?: string): void {
+  registerAll<T>(checks: Array<Check<T>>, group?: string): void {
     for (const check of checks) {
       this.register(check, group);
     }
@@ -172,10 +175,10 @@ class CheckRegistry {
   /**
    * 获取分组内应执行的 checks（根据当前 profile 过滤）
    */
-  getEnabledChecks<T>(group: string, context?: HookContext): Check<T>[] {
+  getEnabledChecks<T>(group: string, context?: HookContext): Array<Check<T>> {
     const ids = this.getGroup(group);
     const ctx = context ?? getHookContext();
-    const result: Check<T>[] = [];
+    const result: Array<Check<T>> = [];
 
     for (const id of ids) {
       const check = this.checks.get(id);
@@ -208,7 +211,7 @@ export const checkRegistry = new CheckRegistry();
  * 聚合多个 checks 到单一入口，支持 profile 过滤
  */
 export class HookDispatcher<T = unknown> {
-  private checks: Check<T>[] = [];
+  private checks: Array<Check<T>> = [];
   private config: DispatcherConfig;
 
   constructor(config: DispatcherConfig = {}) {
@@ -232,7 +235,7 @@ export class HookDispatcher<T = unknown> {
   /**
    * 添加多个 checks
    */
-  addChecks(checks: Check<T>[]): this {
+  addChecks(checks: Array<Check<T>>): this {
     this.checks.push(...checks);
     return this;
   }
@@ -269,7 +272,7 @@ export class HookDispatcher<T = unknown> {
     const verbose = this.config.verbose || isDebugEnabled();
 
     // 过滤应执行的 checks
-    const checksToRun: Check<T>[] = [];
+    const checksToRun: Array<Check<T>> = [];
     for (const check of this.checks) {
       if (shouldRunHook(check.id, { profiles: check.profiles }, hookContext)) {
         checksToRun.push(check);
@@ -415,7 +418,7 @@ export class HookDispatcher<T = unknown> {
   /**
    * 获取已添加的 checks
    */
-  getChecks(): readonly Check<T>[] {
+  getChecks(): ReadonlyArray<Check<T>> {
     return this.checks;
   }
 }

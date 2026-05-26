@@ -46,10 +46,10 @@ import { startInstance, listAvailableRoles } from './commands/start-instance.js'
 import { registerSubmitPR } from './commands/submit-pr.js';
 import { registerTaskCreate } from './commands/task-create.js';
 import { registerTaskProgress } from './commands/task-progress.js';
+import { taskResetRetryCommand } from './commands/task-reset-retry.js';
 import { registerTaskResume, registerTaskResumeCheckpoint } from './commands/task-resume.js';
 import { registerTaskStatus } from './commands/task-status.js';
 import { registerTaskVerify } from './commands/task-verify.js';
-import { taskResetRetryCommand } from './commands/task-reset-retry.js';
 import { registerTeamStatus } from './commands/team-status.js';
 import { registerUltrareview } from './commands/ultrareview.js';
 import { registerWorkflowCommands } from './commands/workflow.js';
@@ -184,6 +184,53 @@ export {
   type ProgressBarConfig,
   type ProgressStep,
 } from './utils/progress.js';
+
+// ============================================================================
+// EPIC-016: ECC 工程实践借鉴
+// ============================================================================
+
+// Token Budget Dashboard
+export {
+  TokenMeter,
+  BudgetState,
+  BudgetColors,
+  type TokenUsage,
+} from './core/token-meter.js';
+
+// Hook Profile System
+export {
+  shouldRunHook,
+  getHookProfile,
+  filterEnabledHooks,
+  isDebugEnabled,
+  type HookProfile,
+  type HookDefinition,
+  type HookContext,
+} from './hooks/hook-flags.js';
+
+// Hook Dispatcher
+export {
+  HookDispatcher,
+  CheckRegistry,
+  checkRegistry,
+  type Check,
+  type CheckResult,
+  type CheckContext,
+} from './hooks/dispatcher.js';
+
+// Fact-Forcing Gate
+export {
+  checkFactForcing,
+  SessionTracker,
+  globalSessionTracker,
+  createFactForcingNode,
+} from './hooks/pre-tool-use/fact-forcing-gate.js';
+
+// Bash Security Dispatcher
+export {
+  checkBashCommand,
+  registerBashChecks,
+} from './hooks/pre-bash-dispatcher.js';
 
 const pkg = {
   name: 'eket-cli',

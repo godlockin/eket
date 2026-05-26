@@ -146,9 +146,9 @@ export function getHookProfile(): HookProfile {
     return envProfile;
   }
 
-  if (envProfile && isDebugEnabled()) {
-    // Use console.log directly to avoid recursion
-    console.log(`[HOOK:${DEFAULT_PROFILE}] Invalid profile "${envProfile}", falling back to "${DEFAULT_PROFILE}"`);
+  if (envProfile) {
+    // Always warn for invalid profile, not just in debug mode
+    console.warn(`[HOOK] Invalid EKET_HOOK_PROFILE="${envProfile}", using "${DEFAULT_PROFILE}". Valid values: minimal, standard, strict`);
   }
 
   return DEFAULT_PROFILE;
@@ -208,7 +208,7 @@ export function parseProfile(
   value: string | undefined,
   fallback: HookProfile = DEFAULT_PROFILE
 ): HookProfile {
-  if (!value) return fallback;
+  if (!value) {return fallback;}
   const normalized = value.toLowerCase();
   return isValidProfile(normalized) ? normalized : fallback;
 }
@@ -357,7 +357,7 @@ export function defineStrictHook(
  */
 export function logDebug(message: string, hookId?: string, context?: HookContext): void {
   const ctx = context ?? getHookContext();
-  if (!ctx.debug) return;
+  if (!ctx.debug) {return;}
 
   const profile = ctx.profile;
   const prefix = hookId ? `[HOOK:${profile}:${hookId}]` : `[HOOK:${profile}]`;

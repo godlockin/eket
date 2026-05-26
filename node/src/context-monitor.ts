@@ -9,9 +9,10 @@
  *   {"tokens": 85000, "method": "precise", "threshold": "warn"}
  */
 
-import { ContextEstimator } from './core/context-estimator.js';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
+
+import { ContextEstimator } from './core/context-estimator.js';
 
 interface LogEntry {
   timestamp: number;
@@ -27,8 +28,8 @@ const THRESHOLDS = {
 } as const;
 
 function getThreshold(tokens: number): LogEntry['threshold'] {
-  if (tokens >= THRESHOLDS.DANGER) return 'danger';
-  if (tokens >= THRESHOLDS.WARN) return 'warn';
+  if (tokens >= THRESHOLDS.DANGER) {return 'danger';}
+  if (tokens >= THRESHOLDS.WARN) {return 'warn';}
   return 'safe';
 }
 
