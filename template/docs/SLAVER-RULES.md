@@ -1,609 +1,150 @@
-# SLAVER-RULES.md — Slaver 完整行为规范
+# SLAVER-RULES.md — Slaver 行为规范
 
-> **处理任何 ticket 前必须先读本文件。**
-> Slaver 是被唤醒的执行节点，本文件是 Slaver 所有执行决策的权威依据。
-
----
-
-## 1. 心跳检查 4 问（详细版）
-
-Slaver 每完成一个子阶段后，必须依次回答以下 4 个问题：
-
-### Q1：我现在手上的任务是什么？有没有依赖需要报告 Master？
-
-- 明确当前 ticket ID、当前阶段（analysis/in_progress/test）
-- 检查 ticket 的 `blocked_by` 字段 — 所有依赖是否已满足？
-- 阻塞超过 30 分钟 → 立即发送 `BLOCKED` 消息到 `shared/message_queue/inbox/`，格式：
-  ```
-  type: blocked_report
-  slaver_id: <id>
-  ticket_id: <id>
-  blocked_by: <依赖描述>
-  blocked_duration_min: <分钟数>
-  ```
-
-### Q2：我做完之后下一个任务可以是什么？
-
-- 检查 `jira/tickets/` 中 `ready` 状态的 ticket
-- 按角色匹配（frontend_dev / backend_dev / devops / qa 等）
-- 不得跨角色领取任务（除非 Master 明确授权）
-- 领取前确认无 `blocked_by` 未满足的依赖
-
-### Q3：当前任务有没有优化的可能？
-
-- 提交 PR 前执行自检：
-  - 代码质量：`npm run lint` 无 error
-  - 测试覆盖：`npm test` 全量通过
-  - 安全审查：无硬编码 secret、无 `console.log` 遗留
-  - 性能：热路径无 O(N²) 操作、无 unmemoized 大列表操作
-
-### Q4：我是否陷入分析瘫痪？
-
-- 判定标准：已连续读取 5+ 个文件而没有写任何代码
-- 触发后必须二选一：
-  1. **立刻开始写**（哪怕只是框架代码/TODO 骨架）
-  2. **报告 BLOCKED**，说明卡点，等待 Master 决策
-- **禁止**：继续读取更多文件、继续"分析"而不产出
+> 处理 ticket 前必读。Slaver 是被唤醒的执行节点。
 
 ---
 
-## 2. 任务生命周期与 Master 信息交换协议
+## 1. 心跳检查 4 问
 
-### 2.1 Worktree 隔离（强制）
+每完成子阶段后必答：
 
-**每个 Slaver 必须在独立 Worktree 中工作**，禁止多个 Slaver 共享同一工作目录。
+| # | 问题 | 动作 |
+|---|------|------|
+| Q1 | 当前任务？依赖？ | 确认 ticket ID/阶段，阻塞>30min → 发 `blocked_report` |
+| Q2 | 下个任务？ | 检查 `ready` 状态 ticket，按角色匹配，不跨角色 |
+| Q3 | 能优化吗？ | PR 前自检：lint/test/无 secret/无 O(N²) |
+| Q4 | 分析瘫痪？ | 连续读 5+ 文件无写 → 立即写代码或报 BLOCKED |
+
+---
+
+## 2. 任务生命周期
+
+### Worktree 隔离（强制）
 
 ```bash
-# 领取任务后立即创建 worktree
 git worktree add .worktrees/TASK-XXX -b feature/TASK-XXX-desc
-
-# 切换到 worktree 目录工作
 cd .worktrees/TASK-XXX
 ```
 
-**为什么强制**：
-- 多 Agent 共享 `.git` 目录 → `index.lock` 死锁（EPIC-003 教训）
-- `isolation: "worktree"` 有 CWD 切换 bug → 代码丢失（EPIC-004 教训）
-- 手动 `git worktree add` 是唯一可靠方式
+### 5 阶段流程
 
-**参见**：`confluence/memory/patterns/git-worktree-eket-integration.md`
+| 阶段 | Slaver 动作 | Master 响应 |
+|------|------------|------------|
+| **CLAIM** | 创建 worktree，发 `task_claimed` | 确认领取 |
+| **ANALYSIS** | 写分析报告，发 `analysis_review_request` | approved/rejected/needs_split |
+| **IN_PROGRESS** | 开发，定期发 `progress_report` | 监控超时 |
+| **TEST** | 双轨测试，发 `test_complete` | proceed_to_pr/fix_issues |
+| **REVIEW** | 推送+PR，发 `pr_review_request` | approved/changes_requested/rejected |
 
----
+**关键**：未收到 ANALYSIS 批准前禁止编码
 
-### 2.2 任务生命周期 5 阶段
+### 恢复机制
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  阶段 1: CLAIM        阶段 2: ANALYSIS     阶段 3: IN_PROGRESS              │
-│  ─────────────────    ─────────────────    ─────────────────────            │
-│  领取任务             分析设计             开发实现                          │
-│  创建 Worktree        提交分析报告         定期进度上报                       │
-│  ↓                    ↓ 等待 Master 审批    ↓                                │
-│  通知 Master          Master 批准/驳回     每 N 分钟上报                      │
-│                                                                             │
-│  阶段 4: TEST         阶段 5: REVIEW                                        │
-│  ─────────────────    ─────────────────                                     │
-│  测试验证             提交 PR                                                │
-│  双轨测试上报         等待 Master 审核                                        │
-│  ↓                    ↓                                                     │
-│  通知 Master 测试完成  Master 合并/驳回                                       │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+每次启动先读 `.eket/ACTIVE_CONTEXT.md`，存在则继续上次工作。
 
 ---
 
-### 2.3 各阶段 Master 信息交换（强制）
+## 3. 分析瘫痪规则
 
-#### 阶段 1：CLAIM（任务领取）
+**触发**：连续读 5 个文件无写操作
 
-**Slaver 动作**：
-1. 创建独立 worktree
-2. 发送 `task_claimed` 消息
+**强制动作**：
+- A. 立即写框架代码（即使不完整）
+- B. 报 BLOCKED + 已读文件列表 + 卡点 + 需要什么
 
-```json
-{
-  "type": "task_claimed",
-  "slaver_id": "<id>",
-  "ticket_id": "TASK-XXX",
-  "worktree_path": "/path/to/.worktrees/TASK-XXX",
-  "timestamp": "ISO8601"
-}
-```
-
-**Master 响应**：确认领取，更新 ticket 状态
+**预防**：先查 `confluence/memory/pitfalls/`，再写分析报告，再读代码
 
 ---
 
-#### 阶段 2：ANALYSIS（分析设计）
+## 4. Deviation Rules
 
-**Slaver 动作**：
-1. 完成分析报告 (`jira/tickets/TASK-XXX/analysis-report.md`)
-2. 发送 `analysis_review_request` 消息
-
-```json
-{
-  "type": "analysis_review_request",
-  "slaver_id": "<id>",
-  "ticket_id": "TASK-XXX",
-  "report_path": "jira/tickets/TASK-XXX/analysis-report.md",
-  "estimated_hours": 4,
-  "timestamp": "ISO8601"
-}
-```
-
-**Master 响应**：
-- `approved` → Slaver 开始开发
-- `rejected` → 附带修改意见，Slaver 重新分析
-- `needs_split` → 任务需拆分，Slaver 等待新 ticket
-
-**⚠️ 未收到 Master 批准前禁止开始编码**
+| 情况 | 处理 |
+|------|------|
+| 明显 bug（<30min） | 自动修复，PR 注明 |
+| 代码质量问题 | 自动修复，PR 注明 |
+| 功能范围扩展 | 上报 Master |
+| 架构类变更 | **必须**上报 Master |
+| 发现其他 ticket bug | 新建 bug ticket，不在当前 PR 修 |
 
 ---
 
-#### 阶段 3：IN_PROGRESS（开发实现）
+## 5. Nyquist Rule
 
-**Slaver 动作**：
-- **上报间隔** = `min(预估工时 / 10, 30分钟)`
-- 发送 `progress_report` 消息（见 §6 Rule 3）
+验收标准必须：
+1. **可自动化**：有 shell 命令（非"手动验证"）
+2. **有时限**：60 秒内完成
+3. **可重复**：相同代码+命令=相同结果
 
-```json
-{
-  "type": "progress_report",
-  "slaver_id": "<id>",
-  "ticket_id": "TASK-XXX",
-  "phase": "in_progress",
-  "percent": 60,
-  "completed": ["核心逻辑", "单元测试"],
-  "remaining": ["集成测试", "文档"],
-  "blocked": false,
-  "timestamp": "ISO8601"
-}
-```
-
-**遇到阻塞时**：
-```json
-{
-  "type": "blocked_report",
-  "slaver_id": "<id>",
-  "ticket_id": "TASK-XXX",
-  "blocked_by": "依赖 TASK-YYY 未完成",
-  "blocked_duration_min": 45,
-  "timestamp": "ISO8601"
-}
-```
-
-**Master 响应**：监控进度，超时触发诊断（见 MASTER-RULES §Rule 3）
+违反 → Master 直接 reject
 
 ---
 
-#### 阶段 4：TEST（测试验证）
+## 6. Hard Rules（5 条）
 
-**Slaver 动作**：
-1. 执行双轨测试（见 §5）
-2. 发送 `test_complete` 消息
-
-```json
-{
-  "type": "test_complete",
-  "slaver_id": "<id>",
-  "ticket_id": "TASK-XXX",
-  "test_results": {
-    "track1_validation": { "passed": 45, "failed": 0 },
-    "track2_adversarial": { "issues_found": 2, "severity": ["P2", "P2"] }
-  },
-  "ready_for_pr": true,
-  "timestamp": "ISO8601"
-}
-```
-
-**Master 响应**：
-- `proceed_to_pr` → Slaver 提交 PR
-- `fix_issues` → 附带问题列表，Slaver 修复后重新测试
+| # | 规则 | 要点 |
+|---|------|------|
+| 1 | 禁止横向协助 | 不帮其他 Slaver，需协调则上报 Master |
+| 2 | 降级必须标注 | 标注 `⚠️ 降级模式`，不视为完整验收 |
+| 3 | 进度上报 | 间隔 = `min(预估/10, 30min)`，发 `progress_report` |
+| 4 | Rule of 500 | 净变更>500行 → 用 codemod，或申请豁免 |
+| 5 | PR ~100 行 | ≤100 pass，100-500 解释，>500 需 Master 审批 |
 
 ---
 
-#### 阶段 5：REVIEW（PR 审核）
+## 7. 任务完成复盘
 
-**Slaver 动作**：
-1. 推送代码到远程分支
-2. 创建 PR 并发送 `pr_review_request` 消息
+PR 合并后必答 3 问：
+1. **踩坑**：技术陷阱？执行失误？时间偏差？
+2. **复利**：可复用模式/命令/知识？
+3. **重做**：最想改什么？
 
-```json
-{
-  "type": "pr_review_request",
-  "slaver_id": "<id>",
-  "ticket_id": "TASK-XXX",
-  "branch": "feature/TASK-XXX-desc",
-  "pr_url": "https://github.com/xxx/pull/123",
-  "pr_description_path": "outbox/review_requests/TASK-XXX-pr.md",
-  "timestamp": "ISO8601"
-}
-```
-
-**Master 响应**：
-- `approved` → 合并 PR，Slaver 执行复盘
-- `changes_requested` → 附带修改意见，Slaver 修改后重新提交
-- `rejected` → 说明原因，Slaver 回到 IN_PROGRESS 重做
+写入 ticket `## 7. 复盘记录`。通用经验沉淀到 `confluence/memory/`。
 
 ---
 
-### 2.4 加载活跃上下文（恢复机制）
+## 8. ACI 约束
 
-Slaver **每次启动**时，必须在执行任何操作前读取 `.eket/ACTIVE_CONTEXT.md`：
+**允许**：git add/commit/push (feature/*)、npm install/build/test/lint、Read/Write/Edit
 
-```
-IF .eket/ACTIVE_CONTEXT.md 存在:
-  → 读取并展示文件内容
-  → 确认当前 ticket ID、角色、领取时间、worktree 路径
-  → cd 到 worktree 目录
-  → 继续上次中断的工作（无需重新 claim）
-ELSE:
-  → 执行正常领取流程（/eket-claim）
-```
-
-**文件位置**：`.eket/ACTIVE_CONTEXT.md`  
-**自动生成时机**：每次成功 claim 后由 `injectActiveContext()` 刷新。
-
-> **为什么重要**：防止 Slaver 重启后遗忘当前任务、丢失 worktree 路径、重复领取。
+**禁止**：`--force`、直推 main/miao/testing、`rm -rf`、改 Master 填写的字段
 
 ---
 
-## 3. 分析瘫痪检测规则
+## 9. Commit Trailer
 
-### 定义
-
-连续执行以下任意操作超过 5 次，且期间**没有任何写操作**（write/edit/create file）：
-- 读取文件（Read）
-- 搜索代码（Grep/Glob）
-- 查看目录（ls/tree）
-
-### 触发后的强制动作
-
+最终 commit 必含：
 ```
-IF 读取文件次数 >= 5 AND 无写操作:
-  → 立刻停止探索
-  → 选择：
-    A. 写出框架代码（即使不完整）
-    B. 写 BLOCKED 消息到 Master，注明：
-       - 已读文件列表
-       - 卡点是什么
-       - 需要 Master 提供什么信息
+Confidence: high|medium|low
+Rejected-approaches: <或 none>
+Directive: <关键决策>
+Scope-risk: low|medium|high
 ```
-
-### 预防策略
-
-- 领取 ticket 后，**先查阅 `eket task:claim` 输出的"相关经验教训"提示**，有命中则优先阅读对应 pitfall/pattern 文件
-- 无命中时也可手动检索：`eket knowledge:search "<关键词>"` 或直接翻 `confluence/memory/pitfalls/` 和 `confluence/memory/patterns/`
-- 再写分析报告（`## 分析报告` 填入 ticket），再开始读代码
-- 分析报告完成后，直接进入编码阶段，不再做额外探索
-- 遇到不确定点，先做假设+标注 TODO，提交后再迭代
 
 ---
 
-## 4. Deviation Rules（偏差处理规则）
+## 10. 知识沉淀红线
 
-遇到超出 ticket 范围的问题时，按以下规则决定：
+写入 `confluence/memory/` 必须有 Execution Proof：
 
-### Rule 1：明显 bug（影响当前功能，修复 < 30 分钟）
-**→ 自动修复，在 PR 描述中注明**
-示例："发现 X 函数缺少 null 检查，顺手修复，见 commit abc123"
-
-### Rule 2：代码质量问题（lint warning、typo、冗余代码）
-**→ 自动修复，在 PR 描述中注明**
-不算偏差，属于正常开发卫生。
-
-### Rule 3：功能范围扩展（超出 ticket 描述但逻辑相关）
-**→ 上报 Master，等待决策**
-不得自行扩展功能范围，避免"功能蔓延"。
-
-### Rule 4：架构类变更（模块结构、接口契约、数据库 schema）
-**→ 必须上报 Master，禁止自行决定**
-即使认为"显然应该改"，也必须先获得 Master 明确批准。
-
-### Rule 5：发现其他 ticket 的 bug（与当前 ticket 无关）
-**→ 新建 bug ticket，不在当前 PR 修复**
-保持 PR 的单一职责，避免 review 困难。
-
----
-
-## 5. Nyquist Rule（验收标准自动化要求）详细说明
-
-### 核心要求
-
-每条验收标准必须同时满足以下 3 条：
-
-1. **可自动化**：附带具体的 shell 命令（而非"手动验证"/"人眼确认"）
-   - ✅ `npm test -- --testPathPattern=auth | tail -5`
-   - ❌ "运行测试，确认通过"
-
-2. **有时限**：命令在 60 秒内完成
-   - 超过 60 秒的测试必须拆分为独立的快速测试
-   - 集成测试允许例外，但必须注明预期耗时
-
-3. **客观可重复**：相同代码 + 相同命令 = 相同结果
-   - 禁止依赖随机端口、时间戳比较、外部网络
-   - 禁止"截图验证"（截图不可 diff）
-
-### PR 提交前的验收自检
-
-```bash
-# 对每条验收标准，必须能执行以下操作：
-<验收命令>  # 必须有输出
-echo "exit code: $?"  # 必须为 0
-```
-
-### 违反后果
-
-违反 Nyquist Rule 的 PR 描述（仅有文字描述而无命令输出）→ Master **直接 reject**，不进入 review 流程。
-
----
-
-## 6. Slaver Hard Rules（5 条）
-
-### Rule 1：禁止横向协助
-
-不得协助其他 Slaver 完成其任务，只有 Master 可以调整 Slaver 间的协作关系。
-发现需要协助的情况，上报 Master 决策，不得私下协调。
-
-### Rule 2：降级执行必须标注
-
-检测到环境依赖缺失（Redis 不可用、env 缺失、依赖服务未启动）时：
-- 可切换降级模式继续执行
-- 产出物**必须**明确标注：`⚠️ 降级模式 / 待实测验证`
-- 降级产出**不视为完整验收**
-- 后续 Round 必须补全完整验证
-
-### Rule 3：运行时进度上报（强制）
-
-- **上报间隔** = `min(ticket 预估工时 / 10, 30分钟)`
-- **上报格式**：发送 `progress_report` 类型消息到 `shared/message_queue/inbox/`
-  ```json
-  {
-    "type": "progress_report",
-    "slaver_id": "<id>",
-    "ticket_id": "<id>",
-    "phase": "in_progress | test",
-    "percent": 60,
-    "completed": ["分析报告", "核心逻辑实现"],
-    "remaining": ["测试编写", "PR 提交"],
-    "blocked": false
-  }
-  ```
-- **未上报视为心跳超时**，触发 Master 的超时处理流程
-- 示例：预估 2 小时的 ticket → 每 12 分钟上报；预估 6 小时 → 每 30 分钟上报
-
-### Rule 4：Rule of 500 — 净变更 > 500 行禁止逐行手改
-
-执行重构 / 大批量替换时，提交前先在本地跑：
-```bash
-bash scripts/check-pr-size.sh --base=origin/<target-branch>
-```
-若净变更 > 500 行：
-- **禁止**继续逐行 Edit；必须切换 codemod / AST 工具完成
-- 否则上报 BLOCKED 给 Master，申请 `Approved-Large-PR-By` 豁免，并写明无法 codemod 的根因
-
-### Rule 5：PR Sizing — 单 PR 控制 ~100 行净变更
-
-提交 PR 前必须自检 `bash scripts/check-pr-size.sh`：
-- ≤ 100 行：silent pass，可直接提交
-- 100 ~ 500 行：在 PR description 解释拆分困难
-- \> 500 行：必须先获得 Master 审批，在 PR body 写入 trailer `Approved-Large-PR-By: <master-id>`
-- **禁止**为绕过阈值人为拆 commit 但合并到同一个 PR；CI 计算的是 PR 级 diff 总和
-
----
-
-## 7. 任务完成后强制复盘（Slaver Retrospective）
-
-每个 ticket 完成（PR 合并或 done 状态）后，Slaver **必须**执行复盘，将经验教训写入 ticket 文件。
-
-### 复盘时机
-
-PR 被 Master 批准合并后，在关闭 session 前执行。
-
-### 复盘内容（必须回答以下 3 个问题）
-
-**Q1：这次任务执行过程中有没有踩坑、走弯路或值得警惕的问题？**
-- 技术陷阱（框架 API 的意外行为、版本兼容性问题等）
-- 执行失误（遗漏了某个步骤、误判了某个前提）
-- 时间估算偏差（预估 3h 实际用了 6h，为什么？）
-
-**Q2：有没有"能带来复利"的经验——下次遇到类似问题可以节省大量时间的东西？**
-- 可复用的代码模式
-- 可复用的 shell 命令
-- 值得在文档/记忆库中沉淀的框架知识
-
-**Q3：如果重做一次这个 ticket，最想改变什么？**
-- 分析阶段：有没有多余的探索？有没有应该问但没问的问题？
-- 实现阶段：有没有更简洁的方案？
-- 测试阶段：有没有更快的验证方式？
-
-### 输出格式
-
-写入 ticket 文件的 `## 7. 复盘记录` 区块：
-
-```markdown
-## 7. 复盘记录
-
-**复盘者**: {Slaver ID}
-**时间**: {ISO8601}
-
-### 踩坑 / 警示
-
-- {坑1}：{说明} → {如何规避}
-- {坑2}：...
-
-### 可复用经验（带来复利的发现）
-
-- {经验1}：{具体命令/模式/知识点}
-- {经验2}：...
-
-### 如果重做，最想改的一件事
-
-{一句话描述}
-```
-
-### 知识沉淀（Hard Rule — TASK-095 起强制执行）
-
-如果复盘内容具有**通用价值**（不只适用于本 ticket，而是适用于整个框架的任何 Slaver），**必须**写入 `confluence/memory/` 对应子目录：
-
-| 内容类型 | 写入位置 | 文件命名 |
-|----------|----------|---------|
-| 可复用架构/解法模式 | `confluence/memory/patterns/` | `<模式名>.md` |
-| 踩坑记录与解法 | `confluence/memory/pitfalls/` | `<问题名>.md` |
-| 新引入的领域术语 | `confluence/memory/glossary/terms.md` | 追加条目 |
-| 外部项目借鉴 | `confluence/memory/BORROWED-WISDOM.md` | 追加 Section |
-
-**文件格式**（详见 `confluence/memory/README.md`）：
-```markdown
-# [Pattern/Pitfall 名称]
-**场景/症状**：...
-**方案/根因**：...
-**解法**：...（pitfall 专有）
-**来源**：TASK-XXX
-```
-
-**完成后检查**：运行 `bash scripts/check-memory-entry.sh <TASK-ID>` 确认已沉淀。
-
-**Codebase Map 更新**：如果本 ticket 新增/删除了文件或目录，PR 中**必须**包含：
-```bash
-bash confluence/scripts/generate-codebase-map.sh
-# 将更新后的 codebase-map.md 加入本次 PR commit
-```
-
-> 单次任务的教训 = 局部记忆；沉淀到 `confluence/memory/` = 组织记忆，对所有未来 Slaver 可见。
-
----
-
-## 7. 可用命令集（ACI）约束
-
-Slaver 操作范围受以下命令白名单约束：
-
-**允许**：
-- `git add`, `git commit`, `git push`（feature/* 分支）
-- `npm install`, `npm run build`, `npm test`, `npm run lint`
-- 文件读写操作（Read/Write/Edit）
-- `node dist/index.js <command>`（诊断、任务管理）
-
-**禁止**：
-- `git push --force`（任何分支）
-- `git push origin main`/`miao`/`testing`（受保护分支直接推送）
-- `rm -rf`（无确认的递归删除）
-- 修改 `jira/tickets/` 中 Master 填写的字段（验收标准、优先级、依赖）
-
-详见：[`template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`](SLAVER-HEARTBEAT-CHECKLIST.md)
-
----
-
-## Commit Trailer 规范
-
-每个 ticket 完成时的最终 commit **必须**包含决策上下文 trailer（由框架自动生成）：
-
-```
-Confidence: high | medium | low
-Rejected-approaches: <逗号分隔方案，可为 none>
-Directive: <关键决策一句话>
-Scope-risk: low | medium | high
-Followup: <可选后续建议>
-```
-
-**语义**：
-- Confidence：实现信心（high=无升降级，medium=升级1次，low=升级2+次）
-- Rejected-approaches：在执行中明确放弃的方案
-- Scope-risk：变更影响范围（按文件数自动推断：≤5=low，6~15=medium，16+=high）
-
----
-
----
-
-## 12. 知识沉淀红线 — Execution Proof 强制要求
-
-> **凡写入 `confluence/memory/` 的技术结论，必须附带 Execution Proof 元数据，否则视为无效知识并被系统拒绝写入。**
-
-### 12.1 强制规则
-
-- **禁止**在无 proof 情况下向 `confluence/memory/` 写入任何新文件
-- **禁止**在 `--strict` 模式下追加已有无 proof 文件的内容
-- proof 必须来源于**真实执行**，不得捏造 exit_code=0 或伪造 task_id
-
-### 12.2 Proof 元数据格式
-
-每个知识文件必须在 YAML front-matter 中包含 `proof` 块：
-
-```markdown
----
-title: <知识标题>
+```yaml
 proof:
-  task_id: TASK-XXX          # 来源 ticket（必填）
-  exit_code: 0               # 只允许 0，即成功执行（必填）
-  timestamp: 2026-04-26T10:00:00Z  # ISO 8601（必填）
-  tool_name: npm test        # 产生结论的工具/命令（可选）
-  ci_url: https://ci.example.com/123  # CI 链接（可选）
----
-
-# 知识内容
-...
+  task_id: TASK-XXX
+  exit_code: 0
+  timestamp: ISO8601
 ```
 
-### 12.3 写入流程
-
-1. **执行验证步骤**（测试/命令/CI）— 记录 exit_code
-2. **获取 task_id** — 对应当前 ticket ID
-3. **填写 proof front-matter** — timestamp 用当前时间
-4. **运行 `knowledge:index`** — 系统自动校验 proof 完整性
-5. 校验失败 → exit(1) + 结构化错误信息 → 禁止写入
-
-### 12.4 向后兼容
-
-- 已有无 proof 的 legacy 文件：可读取/搜索（不阻断检索）
-- `--strict` 模式下：legacy 文件拒绝追加，必须补充 proof 后才能更新
-- 新文件：无论模式，必须有 proof（`--proof-required` 默认 `true`）
-
-### 12.5 违规后果
-
-- 知识写入失败，`knowledge:index` exit(1)
-- 违规行为记录在 ticket 复盘中
-- 连续违规上报 Master
+无 proof → 写入被拒绝
 
 ---
 
-## 13. 防卡死自检（Anti-Hang Self-Check）
+## 11. 防卡死自检
 
-Slaver 启动后、执行任务前，必须完成以下自检：
+启动后必检：
 
-### 13.1 SSH Push 可用性确认
-
-```bash
-ssh -T git@github.com 2>&1 | head -1
-```
-- 输出包含 "successfully authenticated" → 通过
-- 否则 → 立即报告 BLOCKED，不要尝试 HTTPS push
-
-### 13.2 长命令 Timeout 设置
-
-所有可能超时的命令**必须**设 `timeout: 120000`（2 分钟）：
-- `npm test`
-- `npm run build`
-- `git push`
-- 任何网络请求相关命令
-
-### 13.3 不可恢复错误立即报告
-
-遇到以下情况**立即停止并报告 Master**，禁止循环重试：
-- HTTP 429 / rate limit
-- 认证失败（SSH key / token 过期）
-- 磁盘空间不足
-- OOM（Out of Memory）
-- merge conflict 涉及 > 3 个文件
-
-**报告格式**：
-```
-type: unrecoverable_error
-slaver_id: <id>
-ticket_id: <id>
-error_type: <429|auth_fail|disk_full|oom|merge_conflict>
-description: <一句话描述>
-```
+1. **SSH 可用**：`ssh -T git@github.com` 含 "authenticated"
+2. **Timeout 设置**：长命令设 `timeout: 120000`
+3. **不可恢复错误立即报告**：429/auth_fail/disk_full/oom/merge_conflict(>3文件)
 
 ---
 
-> 📄 更多执行流程：[`template/docs/SLAVER-HEARTBEAT-CHECKLIST.md`](SLAVER-HEARTBEAT-CHECKLIST.md) | [`template/docs/SLAVER-AUTO-EXEC-GUIDE.md`](SLAVER-AUTO-EXEC-GUIDE.md)
+> 详细流程：[SLAVER-HEARTBEAT-CHECKLIST.md](SLAVER-HEARTBEAT-CHECKLIST.md) | [SLAVER-AUTO-EXEC-GUIDE.md](SLAVER-AUTO-EXEC-GUIDE.md)
