@@ -1,15 +1,28 @@
+---
+name: git-mv-directory-not-exist
+type: pitfall
+created: 2026-04-15
+source: TASK-090
+tags: [git, filesystem, cli]
+confidence: high
+---
+
 # git mv 目标目录不存在时报错
 
-**症状**：  
-执行 `git mv src/old-path dst/new-path/file.md` 时报错：  
-`fatal: destination 'dst/new-path/file.md' is not a directory`  
-或文件移动后 git 未追踪
+> git mv 要求目标目录已存在，否则静默失败或报错
 
-**根因**：  
-`git mv` 要求目标目录已存在于工作树。即使目录在 git 历史中存在，  
-若本地尚未创建该目录，命令同样失败。
+## 症状
 
-**解法**：  
+执行 `git mv src/old-path dst/new-path/file.md` 时报错：
+- `fatal: destination 'dst/new-path/file.md' is not a directory`
+- 或文件移动后 git 未追踪
+
+## 根因
+
+`git mv` 要求目标目录已存在于工作树。即使目录在 git 历史中存在，若本地尚未创建该目录，命令同样失败。
+
+## 方案
+
 ```bash
 # 先创建目录
 mkdir -p dst/new-path/
@@ -17,7 +30,8 @@ mkdir -p dst/new-path/
 git mv src/old-path/file.md dst/new-path/file.md
 ```
 
-或使用 `mv` + `git add/rm` 两步替代：  
+或使用 `mv` + `git add/rm` 两步替代：
+
 ```bash
 mkdir -p dst/new-path/
 mv src/old-path/file.md dst/new-path/
@@ -25,4 +39,13 @@ git rm src/old-path/file.md
 git add dst/new-path/file.md
 ```
 
-**来源**：TASK-090（文件迁移任务）
+## 反模式
+
+```bash
+# 反模式：直接 git mv 到不存在的目录
+git mv file.md non-existent-dir/  # 会失败
+```
+
+## 相关
+
+- Git 官方文档：https://git-scm.com/docs/git-mv

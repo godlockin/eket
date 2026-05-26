@@ -1,0 +1,559 @@
+- generic [active] [ref=e1]:
+  - generic:
+    - generic:
+      - link "Skip to main content" [ref=e2] [cursor=pointer]
+      - link "Accessibility help" [ref=e3] [cursor=pointer]:
+        - /url: https://support.google.com/websearch/answer/181196?hl=en
+  - generic [ref=e8]:
+    - search [ref=e9]:
+      - generic [ref=e11]:
+        - link "Go to Google Home" [ref=e13] [cursor=pointer]:
+          - /url: https://www.google.com/webhp?hl=en&sa=X&ved=0ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQPAgI
+          - img [ref=e14]
+        - generic [ref=e21]:
+          - generic [ref=e22]:
+            - combobox "Search" [ref=e25]: gemini 3.1 flash image vs gemini 3 pro image generation comparison benchmark 2025 2026 gemini 3.1 flash image vs gemini 3 pro image generation comparison benchmark 2025 2026
+            - generic [ref=e26]:
+              - button "Clear" [ref=e28] [cursor=pointer]:
+                - img [ref=e30]
+              - generic [ref=e33]:
+                - button "Search by voice" [ref=e34] [cursor=pointer]:
+                  - img [ref=e35]
+                - button "Search by image" [ref=e37] [cursor=pointer]:
+                  - img [ref=e38]
+          - button "Search" [ref=e40] [cursor=pointer]:
+            - img [ref=e43]
+    - generic [ref=e45]:
+      - button "Settings" [ref=e47] [cursor=pointer]:
+        - img [ref=e50]
+      - generic [ref=e53]:
+        - button "Google apps" [ref=e55] [cursor=pointer]:
+          - img [ref=e56]
+        - link "Sign in" [ref=e60] [cursor=pointer]:
+          - /url: https://accounts.google.com/ServiceLogin?hl=en&passive=true&continue=https://www.google.com/search%3Fq%3Dgemini%2B3.1%2Bflash%2Bimage%2Bvs%2Bgemini%2B3%2Bpro%2Bimage%2Bgeneration%2Bcomparison%2Bbenchmark%2B2025%2B2026%26sei%3Df8cVapLBOaDBkPIP1d7f-Ac&ec=futura_srp_og_si_72236_p
+  - generic [ref=e62]:
+    - navigation [ref=e68]:
+      - generic [ref=e74]:
+        - list [ref=e75]:
+          - listitem [ref=e76]:
+            - link "AI Mode" [ref=e79] [cursor=pointer]:
+              - /url: /search?q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sca_esv=0716f69066676062&udm=50&fbs=ADc_l-aN0CWEZBOHjofHoaMMDiKpaEWjvZ2Py1XXV8d8KvlI3vxYI1tojT_24H7Q4iMwclSJUz4FcZOM5Pq33gz9PnkySpOwhWLSmy32d1ONyO_Wrv7mAKrNDKTNCT-p6qZDvYKkr2upU_-SljCxOK2M71akCmn8xr_KZcRReX1XREtiZHY80vdwxJ6hb_VXDcQvbLItxRlvIo_E_nLhEUNA3Tx6a6JJsg&aep=1&ntc=1&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ2J8OegQIERAD
+              - generic [ref=e82]: AI Mode
+          - listitem [ref=e83]:
+            - link "All" [disabled] [ref=e84]:
+              - generic [ref=e86]: All
+          - listitem [ref=e87]:
+            - link "Images" [ref=e88] [cursor=pointer]:
+              - /url: /search?sca_esv=0716f69066676062&udm=2&fbs=ADc_l-aN0CWEZBOHjofHoaMMDiKpaEWjvZ2Py1XXV8d8KvlI3vxYI1tojT_24H7Q4iMwclSJUz4FcZOM5Pq33gz9PnkySpOwhWLSmy32d1ONyO_Wrv7mAKrNDKTNCT-p6qZDvYKkr2upU_-SljCxOK2M71akCmn8xr_KZcRReX1XREtiZHY80vdwxJ6hb_VXDcQvbLItxRlvIo_E_nLhEUNA3Tx6a6JJsg&q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQtKgLegQIFxAB
+              - generic [ref=e90]: Images
+          - listitem [ref=e91]:
+            - link "Short videos" [ref=e92] [cursor=pointer]:
+              - /url: /search?sca_esv=0716f69066676062&udm=39&fbs=ADc_l-aN0CWEZBOHjofHoaMMDiKpaEWjvZ2Py1XXV8d8KvlI3vxYI1tojT_24H7Q4iMwclSJUz4FcZOM5Pq33gz9PnkySpOwhWLSmy32d1ONyO_Wrv7mAKrNDKTNCT-p6qZDvYKkr2upU_-SljCxOK2M71akCmn8xr_KZcRReX1XREtiZHY80vdwxJ6hb_VXDcQvbLItxRlvIo_E_nLhEUNA3Tx6a6JJsg&q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQs6gLegQIFRAB
+              - generic [ref=e94]: Short videos
+          - listitem [ref=e95]:
+            - link "Videos" [ref=e96] [cursor=pointer]:
+              - /url: /search?sca_esv=0716f69066676062&udm=7&fbs=ADc_l-aN0CWEZBOHjofHoaMMDiKpaEWjvZ2Py1XXV8d8KvlI3vxYI1tojT_24H7Q4iMwclSJUz4FcZOM5Pq33gz9PnkySpOwhWLSmy32d1ONyO_Wrv7mAKrNDKTNCT-p6qZDvYKkr2upU_-SljCxOK2M71akCmn8xr_KZcRReX1XREtiZHY80vdwxJ6hb_VXDcQvbLItxRlvIo_E_nLhEUNA3Tx6a6JJsg&q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQtKgLegQIFhAB
+              - generic [ref=e98]: Videos
+          - listitem [ref=e99]:
+            - link "Shopping" [ref=e100] [cursor=pointer]:
+              - /url: /search?sca_esv=0716f69066676062&udm=28&fbs=ADc_l-aN0CWEZBOHjofHoaMMDiKpaEWjvZ2Py1XXV8d8KvlI3vxYI1tojT_24H7Q4iMwclSJUz4FcZOM5Pq33gz9PnkySpOwhWLSmy32d1ONyO_Wrv7mAKrNDKTNCT-p6qZDvYKkr2upU_-SljCxOK2M71akCmn8xr_KZcRReX1XREtiZHY80vdwxJ6hb_VXDcQvbLItxRlvIo_E_nLhEUNA3Tx6a6JJsg&q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&ved=1t:220175&ictx=111
+              - generic [ref=e102]: Shopping
+          - listitem [ref=e103]:
+            - link "News" [ref=e104] [cursor=pointer]:
+              - /url: /search?sca_esv=0716f69066676062&q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&tbm=nws&source=lnms&fbs=ADc_l-aN0CWEZBOHjofHoaMMDiKpaEWjvZ2Py1XXV8d8KvlI3vxYI1tojT_24H7Q4iMwclSJUz4FcZOM5Pq33gz9PnkySpOwhWLSmy32d1ONyO_Wrv7mAKrNDKTNCT-p6qZDvYKkr2upU_-SljCxOK2M71akCmn8xr_KZcRReX1XREtiZHY80vdwxJ6hb_VXDcQvbLItxRlvIo_E_nLhEUNA3Tx6a6JJsg&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ0pQJegQIFBAB
+              - generic [ref=e106]: News
+          - listitem [ref=e107]:
+            - button "More filters" [ref=e108] [cursor=pointer]:
+              - generic "More filters" [ref=e109]:
+                - generic [ref=e110]:
+                  - generic [ref=e111]: More
+                  - img [ref=e113]
+        - button "Tools" [ref=e116] [cursor=pointer]:
+          - generic [ref=e118]:
+            - generic [ref=e119]: Tools
+            - img [ref=e121]
+    - heading "Search Results" [level=1] [ref=e123]
+    - generic [ref=e128]:
+      - generic [ref=e147]:
+        - generic [ref=e149]:
+          - generic [ref=e151]:
+            - generic [ref=e152]:
+              - img [ref=e153]
+              - heading "AI Overview" [level=2] [ref=e155]
+            - button "About this result" [ref=e159]:
+              - img [ref=e161]
+          - generic [ref=e181]:
+            - generic [ref=e184]:
+              - generic [ref=e185]:
+                - text: In the 2025–2026 benchmark landscape, Gemini’s image generation utilizes distinct underlying models.
+                - mark [ref=e186]:
+                  - strong [ref=e187]: Gemini 3.1 Flash Image
+                  - text: (formerly Imagen 3/Fast) prioritizes speed and cost efficiency for quick iterations, whereas
+                  - strong [ref=e188]: Gemini 3 Pro Image
+                  - text: (utilizing the "Nano Banana" architecture) provides superior prompt adherence, advanced typographic control, and editing capabilities
+                - text: .
+                - generic [ref=e190]:
+                  - link "blog.google (+4) - View related links" [ref=e191] [cursor=pointer]:
+                    - /url: https://blog.google/innovation-and-ai/products/nano-banana-pro/
+                  - button "blog.google (+4) - View related links" [disabled] [ref=e192]:
+                    - generic [ref=e194]:
+                      - generic [ref=e195]: blog.google
+                      - generic [ref=e196]: "+4"
+              - heading "Core Comparison" [level=3] [ref=e197]
+              - table [ref=e200]:
+                - rowgroup [ref=e201]:
+                  - row "Feature View related links Gemini 3.1 Flash Image Gemini 3 Pro Image" [ref=e202]:
+                    - columnheader "Feature View related links" [ref=e203]:
+                      - text: Feature
+                      - button "View related links" [disabled] [ref=e206]:
+                        - img [ref=e208]
+                    - columnheader "Gemini 3.1 Flash Image" [ref=e210]
+                    - columnheader "Gemini 3 Pro Image" [ref=e211]
+                  - row [ref=e212]:
+                    - cell [ref=e213]:
+                      - strong [ref=e214]: Primary Focus
+                    - cell [ref=e215]: Speed, affordability, and scalable throughput.
+                    - cell [ref=e216]: Complex prompt adherence, typography, and precision.
+                  - row [ref=e217]:
+                    - cell [ref=e218]:
+                      - strong [ref=e219]: Underlying Tech
+                    - cell [ref=e220]: Imagen 3 engine.
+                    - cell [ref=e221]: "\"Nano Banana\" generation architecture."
+                  - row [ref=e222]:
+                    - cell [ref=e223]:
+                      - strong [ref=e224]: Text Rendering
+                    - cell [ref=e225]: Good, but can struggle with complex paragraphs or specific font names.
+                    - cell [ref=e226]: Flawless typographic control; can specify exact fonts, short lines, or long paragraphs.
+                  - row [ref=e227]:
+                    - cell [ref=e228]:
+                      - strong [ref=e229]: Image Editing
+                    - cell [ref=e230]: Basic one-shot generation and lightweight touch-ups.
+                    - cell [ref=e231]: Advanced, highly precise multi-turn editing without full regeneration.
+                  - row [ref=e232]:
+                    - cell [ref=e233]:
+                      - strong [ref=e234]: Cost
+                    - cell [ref=e235]: ~$0.02 to $0.04 per image (API).
+                    - cell [ref=e236]: ~$0.08 to $0.12+ per image (significantly higher compute).
+              - heading [level=3] [ref=e238]: Benchmark Consensus (2025–2026)
+              - list [ref=e240]:
+                - listitem [ref=e241]:
+                  - generic [ref=e242]:
+                    - strong [ref=e243]: "Prompt Interpretations & Realism:"
+                    - text: Both models lean on Google's highly-rated
+                    - generic [ref=e244]: Imagen 3
+                    - text: baseline, which frequently outperforms specialized models (like Midjourney or Flux) in human evaluation for overall composition and visual preference.
+                - listitem [ref=e245]:
+                  - generic [ref=e246]:
+                    - strong [ref=e247]: "Text in Images:"
+                    - text: The Gemini 3 Pro Image model stands out in independent AI benchmarks specifically for text-to-image design. While Flash generates basic readable text, Pro consistently renders correctly-spelled, legible paragraphs and complex typography.
+                - listitem [ref=e248]:
+                  - generic [ref=e249]:
+                    - strong [ref=e250]: "Speed vs. Power:"
+                    - text: Flash is designed for sub-second, high-volume production. Pro uses significantly more internal reasoning tokens to parse ambiguous, nuanced creative instructions.
+                  - generic [ref=e252]:
+                    - link [ref=e253] [cursor=pointer]:
+                      - /url: https://blog.google/innovation-and-ai/products/nano-banana-pro/
+                    - button [disabled] [ref=e254]:
+                      - generic [ref=e256]:
+                        - generic [ref=e257]: blog.google
+                        - generic [ref=e258]: "+6"
+              - heading [level=3] [ref=e260]: Where to Use
+              - list [ref=e262]:
+                - listitem [ref=e263]:
+                  - generic [ref=e264]:
+                    - text: Choose
+                    - strong [ref=e265]: Gemini 3.1 Flash Image
+                    - text: through the
+                    - generic [ref=e266]: Google AI Studio
+                    - text: for rapid prototyping, concept sketches, or when generating assets at scale.
+                - listitem [ref=e267]:
+                  - generic [ref=e268]:
+                    - text: Use
+                    - strong [ref=e269]: Gemini 3 Pro Image
+                    - text: via the
+                    - generic [ref=e270]: Google Cloud Enterprise Agent Platform
+                    - text: for marketing mockups, high-resolution (4K) needs, or precise brand-consistent assets.
+                  - generic [ref=e272]:
+                    - link [ref=e273] [cursor=pointer]:
+                      - /url: https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/3-pro-image
+                    - button [disabled] [ref=e274]:
+                      - generic [ref=e276]:
+                        - generic [ref=e277]: Google Cloud Documentation
+                        - generic [ref=e278]: "+3"
+            - generic [ref=e285]:
+              - generic [ref=e287]:
+                - button "9 sites" [ref=e288] [cursor=pointer]:
+                  - generic [ref=e297]: 9 sites
+                - button "About this result" [ref=e302] [cursor=pointer]:
+                  - img [ref=e304]
+              - list [ref=e307]:
+                - listitem [ref=e308]:
+                  - generic [ref=e309]:
+                    - 'link "Gemini 3 Flash: Full Guide to Google''s Massive AI Upgrade .... Opens in new tab." [ref=e310] [cursor=pointer]':
+                      - /url: https://www.youtube.com/watch?v=xTKz-ourO1A
+                    - generic [ref=e311]:
+                      - generic [ref=e312]:
+                        - generic [ref=e313]:
+                          - generic [ref=e314]: "Gemini 3 Flash: Full Guide to Google's Massive AI Upgrade ..."
+                          - generic [ref=e315]: Jan 5, 2026 — gemini 3 flash Who's fast this thing delivers prolevel reasoning. while running three times faster. and costing a fraction of what...
+                        - button "26:13" [ref=e319] [cursor=pointer]:
+                          - generic [ref=e320]: 26:13
+                          - img [ref=e323]
+                          - img [ref=e327]
+                      - generic [ref=e329]:
+                        - generic [ref=e336]:
+                          - generic [ref=e337]: YouTube
+                          - generic [ref=e338]: ·
+                          - generic [ref=e339]: AI Master
+                        - button "About this result" [ref=e343] [cursor=pointer]:
+                          - img [ref=e345]
+                - listitem [ref=e349]:
+                  - generic [ref=e350]:
+                    - link "Introducing Nano Banana Pro - Google Blog. Opens in new tab." [ref=e351] [cursor=pointer]:
+                      - /url: https://blog.google/innovation-and-ai/products/nano-banana-pro/
+                    - generic [ref=e352]:
+                      - generic [ref=e354]:
+                        - generic [ref=e355]: Introducing Nano Banana Pro - Google Blog
+                        - generic [ref=e356]: Nov 20, 2025 — Nano Banana Pro is the best model for creating images with correctly rendered and legible text directly in the image, whether you'
+                      - generic [ref=e358]:
+                        - generic [ref=e363]: blog.google
+                        - button [ref=e367] [cursor=pointer]:
+                          - img [ref=e369]
+                - listitem [ref=e373]:
+                  - generic [ref=e374]:
+                    - link [ref=e375] [cursor=pointer]:
+                      - /url: https://blog.google/innovation-and-ai/technology/developers-tools/gemini-3-pro-image-developers/
+                    - generic [ref=e376]:
+                      - generic [ref=e378]:
+                        - generic [ref=e379]: Build with Nano Banana Pro, our Gemini 3 Pro Image model
+                        - generic [ref=e380]: Nov 19, 2025 — Use Gemini 2.5 Flash Image for faster, lower cost image generation, or 3 Pro Image for higher quality image generation, with highe...
+                      - generic [ref=e382]:
+                        - generic [ref=e387]: blog.google
+                        - button [ref=e391] [cursor=pointer]:
+                          - img [ref=e393]
+        - button "Show more AI Overview" [ref=e399]:
+          - generic [ref=e401] [cursor=pointer]:
+            - generic [ref=e402]: Show more
+            - img [ref=e404]
+      - main [ref=e407]:
+        - generic [ref=e411]:
+          - generic [ref=e414]:
+            - heading "Web results" [level=2] [ref=e415]
+            - generic [ref=e416]:
+              - generic [ref=e419]:
+                - link "Gemini 3.1 Pro - Model Card Google DeepMind https://deepmind.google › Models › Model cards" [ref=e421] [cursor=pointer]:
+                  - /url: https://deepmind.google/models/model-cards/gemini-3-1-pro/
+                  - heading "Gemini 3.1 Pro - Model Card" [level=3] [ref=e422]
+                  - generic [ref=e427]:
+                    - generic [ref=e429]: Google DeepMind
+                    - generic [ref=e431]: https://deepmind.google › Models › Model cards
+                - button "About this result" [ref=e432] [cursor=pointer]:
+                  - img [ref=e435]
+              - generic [ref=e438]:
+                - generic [ref=e439]: Feb 19, 2026 —
+                - generic [ref=e440]:
+                  - emphasis [ref=e441]: Gemini 3.1 Pro
+                  - text: is the next iteration in the Gemini 3 series of models, a suite of highly capable, natively multimodal reasoning models.
+              - generic [ref=e443]:
+                - text: "Missing: 2025 ‎| Show results with:"
+                - link "2025" [ref=e444] [cursor=pointer]:
+                  - /url: /search?sca_esv=0716f69066676062&q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+%222025%22+2026&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ5t4CegQIHhAB
+          - generic [ref=e448]:
+            - generic [ref=e451]:
+              - 'link "Gemini 3 Flash: frontier intelligence built for speed blog.google https://blog.google › products-and-platforms › products" [ref=e453] [cursor=pointer]':
+                - /url: https://blog.google/products-and-platforms/products/gemini/gemini-3-flash/
+                - 'heading "Gemini 3 Flash: frontier intelligence built for speed" [level=3] [ref=e454]'
+                - generic [ref=e459]:
+                  - generic [ref=e461]: blog.google
+                  - generic [ref=e463]: https://blog.google › products-and-platforms › products
+              - button "About this result" [ref=e464] [cursor=pointer]:
+                - img [ref=e467]
+            - generic [ref=e470]:
+              - generic [ref=e471]: Dec 17, 2025 —
+              - generic [ref=e472]:
+                - text: On SWE-bench Verified, a benchmark for evaluating coding agent capabilities,
+                - emphasis [ref=e473]: Gemini 3 Flash achieves a score of 78
+                - text: "%, outperforming not only the ..."
+              - link "Read more" [ref=e474] [cursor=pointer]:
+                - /url: https://blog.google/products-and-platforms/products/gemini/gemini-3-flash/#:~:text=On%20SWE%2Dbench%20Verified%2C%20a%20benchmark,but%20also%20Gemini%203%20Pro.
+          - generic [ref=e479]:
+            - heading "People also ask" [level=2] [ref=e481]
+            - generic [ref=e482]:
+              - button "Which is better Gemini 3 Pro or Flash?" [ref=e488] [cursor=pointer]:
+                - generic [ref=e490]: Which is better Gemini 3 Pro or Flash?
+                - img [ref=e493]
+              - button "What version of Gemini is best for image generation?" [ref=e502] [cursor=pointer]:
+                - generic [ref=e504]: What version of Gemini is best for image generation?
+                - img [ref=e507]
+              - button "Is Gemini 3.1 better than 3?" [ref=e516] [cursor=pointer]:
+                - generic [ref=e518]: Is Gemini 3.1 better than 3?
+                - img [ref=e521]
+              - button "Is the Gemini 3 Pro the best model right now?" [ref=e530] [cursor=pointer]:
+                - generic [ref=e532]: Is the Gemini 3 Pro the best model right now?
+                - img [ref=e535]
+          - generic [ref=e540]:
+            - heading "Web results" [level=2] [ref=e541]
+            - generic [ref=e542]:
+              - generic [ref=e545]:
+                - link "We benchmarked Gemini 3.1 pro, Gemini 3 Flash and ... Reddit · r/GoogleGeminiAI 10+ comments · 2 months ago" [ref=e547] [cursor=pointer]:
+                  - /url: https://www.reddit.com/r/GoogleGeminiAI/comments/1rr6721/we_benchmarked_gemini_31_pro_gemini_3_flash_and/
+                  - heading "We benchmarked Gemini 3.1 pro, Gemini 3 Flash and ..." [level=3] [ref=e548]
+                  - generic [ref=e553]:
+                    - generic [ref=e555]: Reddit · r/GoogleGeminiAI
+                    - generic [ref=e557]: 10+ comments · 2 months ago
+                - button "About this result" [ref=e558] [cursor=pointer]:
+                  - img [ref=e561]
+              - generic [ref=e564]:
+                - generic [ref=e565]:
+                  - emphasis [ref=e566]: Gemini 3.1 Pro scores 85 on Visual QA
+                  - text: . The next closest model (GPT-5.4) scores 78. Flash is in the 60s. So Gemini 3.1 Pro's overall lead comes ...
+                - link "Read more" [ref=e567] [cursor=pointer]:
+                  - /url: https://www.reddit.com/r/GoogleGeminiAI/comments/1rr6721/we_benchmarked_gemini_31_pro_gemini_3_flash_and/#:~:text=Gemini%203.1%20Pro%20scores%2085,comes%20almost%20entirely%20from%20VQA.
+              - generic [ref=e570]:
+                - generic [ref=e571]:
+                  - 'link "Gemini 3 Pro vs Gemini 3.1 Pro : r/google" [ref=e574] [cursor=pointer]':
+                    - /url: https://www.reddit.com/r/google/comments/1r9qzpi/gemini_3_pro_vs_gemini_31_pro/
+                    - generic [ref=e575]:
+                      - emphasis [ref=e576]: Gemini 3 Pro vs Gemini 3.1 Pro
+                      - text: ": r/google"
+                  - generic [ref=e578]: 27 posts
+                  - generic [ref=e580]: Feb 21, 2026
+                - generic [ref=e581]:
+                  - 'link "Gemini 3.1 Flash-Lite Benchmark Comparison : r/Bard" [ref=e584] [cursor=pointer]':
+                    - /url: https://www.reddit.com/r/Bard/comments/1rjusj5/gemini_31_flashlite_benchmark_comparison/
+                    - generic [ref=e585]:
+                      - emphasis [ref=e586]: Gemini 3.1 Flash
+                      - text: "-Lite"
+                      - emphasis [ref=e587]: Benchmark Comparison
+                      - text: ": r/Bard"
+                  - generic [ref=e589]: 39 posts
+                  - generic [ref=e591]: Mar 3, 2026
+                - link "More results from www.reddit.com" [ref=e595] [cursor=pointer]:
+                  - /url: /search?q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026+site:www.reddit.com&sca_esv=0716f69066676062&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQrQIoAnoECEAQAw
+              - generic [ref=e597]: "Missing: 2025 ‎2026"
+          - generic [ref=e601]:
+            - generic [ref=e604]:
+              - 'link "Gemini 3.1 Models: Flash vs Pro Verdent AI https://www.verdent.ai › guides › gemini-3-1-flash-lite-v..." [ref=e606] [cursor=pointer]':
+                - /url: https://www.verdent.ai/guides/gemini-3-1-flash-lite-vs-flash-vs-pro
+                - 'heading "Gemini 3.1 Models: Flash vs Pro" [level=3] [ref=e607]'
+                - generic [ref=e612]:
+                  - generic [ref=e614]: Verdent AI
+                  - generic [ref=e616]: https://www.verdent.ai › guides › gemini-3-1-flash-lite-v...
+              - button "About this result" [ref=e617] [cursor=pointer]:
+                - img [ref=e620]
+            - generic [ref=e623]:
+              - generic [ref=e624]: Mar 12, 2026 —
+              - generic [ref=e625]:
+                - emphasis [ref=e626]: An honest comparison of all three Gemini 3.1 models
+                - text: — Flash-Lite, Flash, and Pro — with clear guidance on which fits your use case.
+          - generic [ref=e630]:
+            - generic [ref=e633]:
+              - 'link "7 Gemini Models Compared: Which to Use in 2026 (Pro, ... TeamAI https://teamai.com › blog › large-language-models-llms" [ref=e635] [cursor=pointer]':
+                - /url: https://teamai.com/blog/large-language-models-llms/gemini-models-explained-the-complete-2026-guide/
+                - 'heading "7 Gemini Models Compared: Which to Use in 2026 (Pro, ..." [level=3] [ref=e636]'
+                - generic [ref=e641]:
+                  - generic [ref=e643]: TeamAI
+                  - generic [ref=e645]: https://teamai.com › blog › large-language-models-llms
+              - button "About this result" [ref=e646] [cursor=pointer]:
+                - img [ref=e649]
+            - generic [ref=e652]:
+              - generic [ref=e653]: May 11, 2026 —
+              - generic [ref=e654]:
+                - text: "One important nuance:"
+                - emphasis [ref=e655]: Gemini 3 Flash now outperforms Gemini 2.5 Pro on benchmark scores
+                - text: . So “Flash” no longer means “lower quality.” It means “ ...
+              - link "Read more" [ref=e656] [cursor=pointer]:
+                - /url: https://teamai.com/blog/large-language-models-llms/gemini-models-explained-the-complete-2026-guide/#:~:text=One%20important%20nuance%3A%20Gemini%203,It%20means%20%E2%80%9Coptimized%20for%20throughput.
+          - generic [ref=e660]:
+            - generic [ref=e663]:
+              - link "Gemini 3.1 Pro Preview vs Gemini 3 Flash ... Artificial Analysis https://artificialanalysis.ai › models › comparisons › gemi..." [ref=e665] [cursor=pointer]:
+                - /url: https://artificialanalysis.ai/models/comparisons/gemini-3-1-pro-preview-vs-gemini-3-flash-reasoning
+                - heading "Gemini 3.1 Pro Preview vs Gemini 3 Flash ..." [level=3] [ref=e666]
+                - generic [ref=e671]:
+                  - generic [ref=e673]: Artificial Analysis
+                  - generic [ref=e675]: https://artificialanalysis.ai › models › comparisons › gemi...
+              - button "About this result" [ref=e676] [cursor=pointer]:
+                - img [ref=e679]
+            - generic [ref=e683]:
+              - emphasis [ref=e684]: Comparison between Gemini 3.1 Pro Preview and Gemini 3 Flash Preview
+              - text: (Reasoning) across intelligence, price, speed, context window and more.
+          - generic [ref=e688]:
+            - generic [ref=e691]:
+              - link "Gemini 3.1 Pro vs Gemini 3 Flash Comparison LLM Stats https://llm-stats.com › Models › Compare" [ref=e693] [cursor=pointer]:
+                - /url: https://llm-stats.com/models/compare/gemini-3.1-pro-preview-vs-gemini-3-flash-preview
+                - heading "Gemini 3.1 Pro vs Gemini 3 Flash Comparison" [level=3] [ref=e694]
+                - generic [ref=e699]:
+                  - generic [ref=e701]: LLM Stats
+                  - generic [ref=e703]: https://llm-stats.com › Models › Compare
+              - button "About this result" [ref=e704] [cursor=pointer]:
+                - img [ref=e707]
+            - generic [ref=e710]:
+              - generic [ref=e711]:
+                - text: Gemini 3.1 Pro vs Gemini 3 Flash.
+                - emphasis [ref=e712]: Gemini 3.1 Pro significantly outperforms across most benchmarks
+                - text: . Gemini 3 Flash is 5.0x cheaper per token.
+              - link "Read more" [ref=e713] [cursor=pointer]:
+                - /url: https://llm-stats.com/models/compare/gemini-3.1-pro-preview-vs-gemini-3-flash-preview#:~:text=Gemini%203.1%20Pro%20vs%20Gemini,is%205.0x%20cheaper%20per%20token.
+          - generic [ref=e717]:
+            - generic [ref=e720]:
+              - link "Migrate from Gemini 3 Pro Preview to Gemini 3.1 Pro Preview ... Google AI Developers Forum https://discuss.ai.google.dev › migrate-from-gemini-3-p..." [ref=e722] [cursor=pointer]:
+                - /url: https://discuss.ai.google.dev/t/migrate-from-gemini-3-pro-preview-to-gemini-3-1-pro-preview-before-march-9-2026/127062
+                - heading "Migrate from Gemini 3 Pro Preview to Gemini 3.1 Pro Preview ..." [level=3] [ref=e723]
+                - generic [ref=e728]:
+                  - generic [ref=e730]: Google AI Developers Forum
+                  - generic [ref=e732]: https://discuss.ai.google.dev › migrate-from-gemini-3-p...
+              - button "About this result" [ref=e733] [cursor=pointer]:
+                - img [ref=e736]
+            - generic [ref=e739]:
+              - generic [ref=e740]: Feb 26, 2026 —
+              - generic [ref=e741]:
+                - text: For me,
+                - emphasis [ref=e742]: Gemini 3.0 Pro is FAR better for creativity and storytelling
+                - text: . It is more expressive, more emotionally capable, and far more natural in ...
+              - link "Read more" [ref=e743] [cursor=pointer]:
+                - /url: https://discuss.ai.google.dev/t/migrate-from-gemini-3-pro-preview-to-gemini-3-1-pro-preview-before-march-9-2026/127062#:~:text=For%20me%2C%20Gemini%203.0%20Pro,natural%20in%20long%2Dform%20creative%20work.
+          - generic [ref=e750]:
+            - generic [ref=e753]:
+              - 'link "Gemini 3 Flash: Full Guide to Google''s Massive AI Upgrade ... YouTube · AI Master 7.7K+ views · 4 months ago" [ref=e755] [cursor=pointer]':
+                - /url: https://www.youtube.com/watch?v=xTKz-ourO1A
+                - 'heading "Gemini 3 Flash: Full Guide to Google''s Massive AI Upgrade ..." [level=3] [ref=e756]'
+                - generic [ref=e761]:
+                  - generic [ref=e763]: YouTube · AI Master
+                  - generic [ref=e765]: 7.7K+ views · 4 months ago
+              - button "About this result" [ref=e766] [cursor=pointer]:
+                - img [ref=e769]
+            - generic [ref=e771]:
+              - 'button "Gemini 3 Flash: Full Guide to Google''s Massive AI Upgrade ... by AI Master on YouTube. Play on Google. 26:13" [ref=e772] [cursor=pointer]':
+                - generic [ref=e774]:
+                  - img [ref=e777]
+                  - generic [ref=e780]:
+                    - generic [ref=e781]: 26:13
+                    - img [ref=e784]
+              - generic [ref=e787]: Gemini 3 Flash delivers Pro-level reasoning at 3x the speed—surpassing Gemini 2.5 Pro on major benchmarks while costing less. This is the ...
+            - button "8 key moments in this video" [ref=e792] [cursor=pointer]:
+              - generic [ref=e795]:
+                - generic [ref=e798]: 8 key moments in this video
+                - img [ref=e800]
+            - generic [ref=e803]: "Missing: 3.1 ‎generation"
+          - generic [ref=e807]:
+            - generic [ref=e810]:
+              - 'link "Google: Nano Banana 2 (Gemini 3.1 Flash Image Preview) vs ... krater.ai https://krater.ai › AI Models" [ref=e812] [cursor=pointer]':
+                - /url: https://krater.ai/compare/gemini-3-1-flash-image-preview-vs-gemini-3-pro-preview
+                - 'heading "Google: Nano Banana 2 (Gemini 3.1 Flash Image Preview) vs ..." [level=3] [ref=e813]'
+                - generic [ref=e818]:
+                  - generic [ref=e820]: krater.ai
+                  - generic [ref=e822]: https://krater.ai › AI Models
+              - button "About this result" [ref=e823] [cursor=pointer]:
+                - img [ref=e826]
+            - generic [ref=e829]:
+              - generic [ref=e830]:
+                - text: Built for advanced development and agentic workflows,
+                - emphasis [ref=e831]: Gemini 3 Pro
+                - text: provides robust tool-calling, long-horizon planning stability, and strong zero-shot ...
+              - link "Read more" [ref=e832] [cursor=pointer]:
+                - /url: https://krater.ai/compare/gemini-3-1-flash-image-preview-vs-gemini-3-pro-preview#:~:text=Built%20for%20advanced%20development%20and,UI%2C%20visualization%2C%20and%20coding%20tasks.
+            - generic [ref=e834]:
+              - text: "Missing: 2025 ‎| Show results with:"
+              - link "2025" [ref=e835] [cursor=pointer]:
+                - /url: /search?sca_esv=0716f69066676062&q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+%222025%22+2026&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ5t4CegQIPxAB
+        - generic [ref=e837]:
+          - generic [ref=e842]:
+            - heading "People also search for" [level=2] [ref=e844]
+            - generic [ref=e846]:
+              - generic [ref=e847]:
+                - link "Gemini 3.1 Pro parameters" [ref=e851] [cursor=pointer]:
+                  - /url: /search?sca_esv=0716f69066676062&q=Gemini+3.1+Pro+parameters&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ1QJ6BAgqEAE
+                  - generic [ref=e852]:
+                    - generic [ref=e857]: Gemini 3.1 Pro parameters
+                    - img [ref=e861]
+                - link "Gemini 3 Flash vs Pro benchmarks" [ref=e866] [cursor=pointer]:
+                  - /url: /search?sca_esv=0716f69066676062&q=Gemini+3+Flash+vs+Pro+benchmarks&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ1QJ6BAgrEAE
+                  - generic [ref=e867]:
+                    - generic [ref=e872]: Gemini 3 Flash vs Pro benchmarks
+                    - img [ref=e876]
+                - link "Gemini 3.1 Pro vs Gemini 3 Pro" [ref=e881] [cursor=pointer]:
+                  - /url: /search?sca_esv=0716f69066676062&q=Gemini+3.1+Pro+vs+Gemini+3+Pro&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ1QJ6BAgtEAE
+                  - generic [ref=e882]:
+                    - generic [ref=e887]: Gemini 3.1 Pro vs Gemini 3 Pro
+                    - img [ref=e891]
+                - link "Gemini 3.1 Pro parameter count" [ref=e896] [cursor=pointer]:
+                  - /url: /search?sca_esv=0716f69066676062&q=Gemini+3.1+Pro+parameter+count&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ1QJ6BAg3EAE
+                  - generic [ref=e897]:
+                    - generic [ref=e902]: Gemini 3.1 Pro parameter count
+                    - img [ref=e906]
+              - generic [ref=e908]:
+                - link "Gemini 3 Flash vs Gemini 2.5 Pro" [ref=e912] [cursor=pointer]:
+                  - /url: /search?sca_esv=0716f69066676062&q=Gemini+3+Flash+vs+Gemini+2.5+Pro&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ1QJ6BAgzEAE
+                  - generic [ref=e913]:
+                    - generic [ref=e918]: Gemini 3 Flash vs Gemini 2.5 Pro
+                    - img [ref=e922]
+                - link "Gemini 3 Flash vs Gemini 3 Pro" [ref=e927] [cursor=pointer]:
+                  - /url: /search?sca_esv=0716f69066676062&q=Gemini+3+Flash+vs+Gemini+3+Pro&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ1QJ6BAgyEAE
+                  - generic [ref=e928]:
+                    - generic [ref=e933]: Gemini 3 Flash vs Gemini 3 Pro
+                    - img [ref=e937]
+                - link "Gemini 3.1 Pro Image" [ref=e942] [cursor=pointer]:
+                  - /url: /search?sca_esv=0716f69066676062&q=Gemini+3.1+Pro+Image&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ1QJ6BAgvEAE
+                  - generic [ref=e943]:
+                    - generic [ref=e948]: Gemini 3.1 Pro Image
+                    - img [ref=e952]
+                - link "Gemini 3.1 Pro High" [ref=e957] [cursor=pointer]:
+                  - /url: /search?sca_esv=0716f69066676062&q=Gemini+3.1+Pro+High&sa=X&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ1QJ6BAguEAE
+                  - generic [ref=e958]:
+                    - generic [ref=e963]: Gemini 3.1 Pro High
+                    - img [ref=e967]
+          - navigation [ref=e969]:
+            - heading "Page Navigation" [level=1] [ref=e970]
+            - text: "1"
+            - link "Page 2" [ref=e973] [cursor=pointer]:
+              - /url: /search?q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sca_esv=0716f69066676062&ei=g8cVaqWfOYzDkPIPi_yeqAU&start=10&sa=N&sstk=AU9db-CZt93hGGkPParohXICWVXjq2Zem7GC7YjmQF2FGNH_YRh53AeZxd0hP4EHHHyUWIrsYiruZm-qzfZxwHxiFp4nyFNdqh9psw&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ8tMDegQIQRAE
+              - text: "2"
+            - link "Page 3" [ref=e975] [cursor=pointer]:
+              - /url: /search?q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sca_esv=0716f69066676062&ei=g8cVaqWfOYzDkPIPi_yeqAU&start=20&sa=N&sstk=AU9db-CZt93hGGkPParohXICWVXjq2Zem7GC7YjmQF2FGNH_YRh53AeZxd0hP4EHHHyUWIrsYiruZm-qzfZxwHxiFp4nyFNdqh9psw&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ8tMDegQIQRAG
+              - text: "3"
+            - link "Page 4" [ref=e977] [cursor=pointer]:
+              - /url: /search?q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sca_esv=0716f69066676062&ei=g8cVaqWfOYzDkPIPi_yeqAU&start=30&sa=N&sstk=AU9db-CZt93hGGkPParohXICWVXjq2Zem7GC7YjmQF2FGNH_YRh53AeZxd0hP4EHHHyUWIrsYiruZm-qzfZxwHxiFp4nyFNdqh9psw&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ8tMDegQIQRAI
+              - text: "4"
+            - link "Page 5" [ref=e979] [cursor=pointer]:
+              - /url: /search?q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sca_esv=0716f69066676062&ei=g8cVaqWfOYzDkPIPi_yeqAU&start=40&sa=N&sstk=AU9db-CZt93hGGkPParohXICWVXjq2Zem7GC7YjmQF2FGNH_YRh53AeZxd0hP4EHHHyUWIrsYiruZm-qzfZxwHxiFp4nyFNdqh9psw&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ8tMDegQIQRAK
+              - text: "5"
+            - link "Page 6" [ref=e981] [cursor=pointer]:
+              - /url: /search?q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sca_esv=0716f69066676062&ei=g8cVaqWfOYzDkPIPi_yeqAU&start=50&sa=N&sstk=AU9db-CZt93hGGkPParohXICWVXjq2Zem7GC7YjmQF2FGNH_YRh53AeZxd0hP4EHHHyUWIrsYiruZm-qzfZxwHxiFp4nyFNdqh9psw&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ8tMDegQIQRAM
+              - text: "6"
+            - link "Page 7" [ref=e983] [cursor=pointer]:
+              - /url: /search?q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sca_esv=0716f69066676062&ei=g8cVaqWfOYzDkPIPi_yeqAU&start=60&sa=N&sstk=AU9db-CZt93hGGkPParohXICWVXjq2Zem7GC7YjmQF2FGNH_YRh53AeZxd0hP4EHHHyUWIrsYiruZm-qzfZxwHxiFp4nyFNdqh9psw&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ8tMDegQIQRAO
+              - text: "7"
+            - link "Page 8" [ref=e985] [cursor=pointer]:
+              - /url: /search?q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sca_esv=0716f69066676062&ei=g8cVaqWfOYzDkPIPi_yeqAU&start=70&sa=N&sstk=AU9db-CZt93hGGkPParohXICWVXjq2Zem7GC7YjmQF2FGNH_YRh53AeZxd0hP4EHHHyUWIrsYiruZm-qzfZxwHxiFp4nyFNdqh9psw&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ8tMDegQIQRAQ
+              - text: "8"
+            - link "Page 9" [ref=e987] [cursor=pointer]:
+              - /url: /search?q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sca_esv=0716f69066676062&ei=g8cVaqWfOYzDkPIPi_yeqAU&start=80&sa=N&sstk=AU9db-CZt93hGGkPParohXICWVXjq2Zem7GC7YjmQF2FGNH_YRh53AeZxd0hP4EHHHyUWIrsYiruZm-qzfZxwHxiFp4nyFNdqh9psw&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ8tMDegQIQRAS
+              - text: "9"
+            - link "Page 10" [ref=e989] [cursor=pointer]:
+              - /url: /search?q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sca_esv=0716f69066676062&ei=g8cVaqWfOYzDkPIPi_yeqAU&start=90&sa=N&sstk=AU9db-CZt93hGGkPParohXICWVXjq2Zem7GC7YjmQF2FGNH_YRh53AeZxd0hP4EHHHyUWIrsYiruZm-qzfZxwHxiFp4nyFNdqh9psw&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ8tMDegQIQRAU
+              - text: "10"
+            - heading "Next" [level=2] [ref=e991]:
+              - link "Next" [ref=e992] [cursor=pointer]:
+                - /url: /search?q=gemini+3.1+flash+image+vs+gemini+3+pro+image+generation+comparison+benchmark+2025+2026&sca_esv=0716f69066676062&ei=g8cVaqWfOYzDkPIPi_yeqAU&start=10&sa=N&sstk=AU9db-CZt93hGGkPParohXICWVXjq2Zem7GC7YjmQF2FGNH_YRh53AeZxd0hP4EHHHyUWIrsYiruZm-qzfZxwHxiFp4nyFNdqh9psw&ved=2ahUKEwjl7POcrdeUAxWMIUQIHQu-B1UQ8NMDegQIQRAW
+                - generic [ref=e994]: Next
+        - navigation
+    - contentinfo [ref=e995]:
+      - heading "Footer Links" [level=1] [ref=e996]
+      - generic [ref=e1000]:
+        - generic [ref=e1004]:
+          - button "Los Angeles, California - From your IP address" [ref=e1006] [cursor=pointer]:
+            - generic [ref=e1007]: Los Angeles, California
+            - generic [ref=e1009]:
+              - text: "-"
+              - generic [ref=e1010]: From your IP address
+          - text: "-"
+          - button "Update location" [ref=e1012] [cursor=pointer]: Update location
+        - generic [ref=e1015]:
+          - link "Help" [ref=e1016] [cursor=pointer]:
+            - /url: https://support.google.com/websearch/?p=ws_results_help&hl=en&fg=1
+          - link "Send feedback" [ref=e1017] [cursor=pointer]:
+            - /url: "#"
+          - link "Privacy" [ref=e1018] [cursor=pointer]:
+            - /url: https://policies.google.com/privacy?hl=en&fg=1
+          - link "Terms" [ref=e1019] [cursor=pointer]:
+            - /url: https://policies.google.com/terms?hl=en&fg=1
