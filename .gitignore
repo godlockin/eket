@@ -234,3 +234,4 @@ inbox/human_feedback/*
 !inbox/human_feedback/.gitkeep
 
 .claude/skills/eket/experts/extended
+output/
