@@ -1,8 +1,13 @@
 {
   "hooks": {
-    "postEdit": [
-      {"pattern": "**/*.rs", "command": "cd rust && cargo fmt --check"},
-      {"pattern": "**/*.py", "command": "ruff check --fix"}
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {"pattern": "**/*.rs", "command": "cd rust && cargo fmt --check"},
+          {"pattern": "**/*.py", "command": "ruff check --fix"}
+        ]
+      }
     ]
   }
 }
