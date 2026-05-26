@@ -252,7 +252,7 @@ export class ConnectionManager {
    */
   private triggerReconcile(): void {
     const queueDir = this.getFileQueueDir();
-    if (!queueDir) return;
+    if (!queueDir) {return;}
     const reconciler = new StateReconciler(queueDir, this.sqliteClient, null);
     reconciler.reconcile().catch((err: unknown) => {
       const message = err instanceof Error ? err.message : String(err);

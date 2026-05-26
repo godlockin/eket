@@ -70,13 +70,13 @@ const DEFAULT_COST_RATES: CostRates = {
  * TokenMeter class for tracking and visualizing token budget
  */
 export class TokenMeter {
-  private current: number = 0;
+  private current = 0;
   private readonly limit: number;
   private readonly costRates: CostRates;
-  private inputTokens: number = 0;
-  private outputTokens: number = 0;
+  private inputTokens = 0;
+  private outputTokens = 0;
 
-  constructor(limit: number = 200000, costRates: CostRates = DEFAULT_COST_RATES) {
+  constructor(limit = 200000, costRates: CostRates = DEFAULT_COST_RATES) {
     this.limit = limit;
     this.costRates = costRates;
   }
@@ -85,6 +85,9 @@ export class TokenMeter {
    * Add input tokens
    */
   addInput(tokens: number): void {
+    if (tokens < 0) {
+      throw new Error(`Token count cannot be negative: ${tokens}`);
+    }
     this.inputTokens += tokens;
     this.current += tokens;
   }
@@ -93,6 +96,9 @@ export class TokenMeter {
    * Add output tokens
    */
   addOutput(tokens: number): void {
+    if (tokens < 0) {
+      throw new Error(`Token count cannot be negative: ${tokens}`);
+    }
     this.outputTokens += tokens;
     this.current += tokens;
   }
@@ -117,7 +123,7 @@ export class TokenMeter {
   /**
    * Reset token count (e.g., after compact)
    */
-  reset(toValue: number = 0): void {
+  reset(toValue = 0): void {
     this.current = toValue;
     this.inputTokens = toValue;
     this.outputTokens = 0;
@@ -129,10 +135,10 @@ export class TokenMeter {
   getState(): BudgetState {
     const percentage = this.getPercentage();
 
-    if (percentage > 100) return BudgetState.OverBudget;
-    if (percentage >= 90) return BudgetState.Alert90;
-    if (percentage >= 75) return BudgetState.Alert75;
-    if (percentage >= 50) return BudgetState.Alert50;
+    if (percentage > 100) {return BudgetState.OverBudget;}
+    if (percentage >= 90) {return BudgetState.Alert90;}
+    if (percentage >= 75) {return BudgetState.Alert75;}
+    if (percentage >= 50) {return BudgetState.Alert50;}
     return BudgetState.Normal;
   }
 
@@ -202,7 +208,7 @@ export function formatCost(cost: number): string {
  */
 export function renderProgressBar(
   percentage: number,
-  width: number = 20,
+  width = 20,
   state: BudgetState = BudgetState.Normal
 ): string {
   const fillWidth = Math.min(Math.round((percentage / 100) * width), width);
@@ -220,7 +226,7 @@ export function renderProgressBar(
 /**
  * Render full token budget widget for CLI
  */
-export function renderTokenBudgetWidget(usage: TokenUsage, showCost: boolean = true): string {
+export function renderTokenBudgetWidget(usage: TokenUsage, showCost = true): string {
   const { current, limit, estimatedCost, state, percentage } = usage;
 
   const progressBar = renderProgressBar(percentage, 20, state);

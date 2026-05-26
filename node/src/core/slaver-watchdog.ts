@@ -17,6 +17,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+
 import { ProgressTracker } from './progress-tracker.js';
 
 export interface WatchdogOptions {
@@ -46,7 +47,7 @@ export class SlaverWatchdog {
   private startTime: number = Date.now();
   private lastActivity: number = Date.now();
   private heartbeatFilePath: string;
-  private status: string = 'active';
+  private status = 'active';
 
   // Config
   private timeoutWarningMs: number;

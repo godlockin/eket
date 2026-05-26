@@ -706,7 +706,7 @@ Audit:
       if (!result.success) {
         process.exit(1);
       }
-      
+
       const hasVeto = result.data?.some(r => r.decision === 'VETO');
       if (hasVeto) {
         process.exit(1);

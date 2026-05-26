@@ -13,7 +13,6 @@
  * - ResourceLimitCheck: 检测资源消耗命令
  */
 
-import type { HookProfile } from './hook-flags.js';
 import {
   Check,
   CheckContext,
@@ -22,6 +21,7 @@ import {
   createDispatcher,
   checkRegistry,
 } from './dispatcher.js';
+import type { HookProfile } from './hook-flags.js';
 
 // ============================================================================
 // Bash Check Context
@@ -332,11 +332,22 @@ export async function checkBashCommand(
   });
 
   if (!result.allPassed) {
-    const failedResult = result.results.get(result.firstFailure!);
+    if (!result.firstFailure) {
+      return {
+        allowed: true,
+        warnings: result.executed.length === 0
+          ? ['No checks were executed (all skipped by profile)']
+          : undefined,
+      };
+    }
+    const failedResult = result.results.get(result.firstFailure);
+    if (!failedResult) {
+      return { allowed: false, reason: `Check "${result.firstFailure}" failed but result not found` };
+    }
     return {
       allowed: false,
-      reason: failedResult?.reason ?? 'Check failed',
-      warnings: failedResult?.warnings,
+      reason: failedResult.reason ?? 'Check failed',
+      warnings: failedResult.warnings,
     };
   }
 
