@@ -1,191 +1,202 @@
 # EKET Framework
 
-**EKET (Elite Knowledge & Engineering Team) — Human-AI Special Forces Team Coordination Protocol | Version 2.14.0-beta**
-**Last Update**: 2026-04-26
+**EKET (Elite Knowledge & Engineering Team) — Human-AI Special Forces Team Coordination Protocol**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/version-2.14.0--beta-blue.svg)](CHANGELOG.md)
 
 [English](README.md) | [中文说明](README_zh-CN.md)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Rust](https://img.shields.io/badge/Rust-1.75+-orange.svg)](https://www.rust-lang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-blue.svg)](https://nodejs.org/)
-[![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)](https://www.gnu.org/software/bash/)
-
-> **EKET (Elite Knowledge & Engineering Team)** is a **Human-AI Special Forces Team Coordination Protocol** — not a solo tool, not a large team platform.
->
-> The target formation: **1–5 humans** setting direction, making decisions, and reviewing output — plus **N AI Slavers** handling execution at scale. A human Slaver and an AI Slaver follow the exact same protocol: claim a ticket, deliver, get reviewed. The protocol doesn't care which kind you are.
->
-> 💡 **Core Philosophy: Human judgment × AI execution density**. EKET persists task states, message buses, and memory engines entirely within the local file system and Git — three physically separate repos (confluence / jira / code). Using a **four-level progressive architecture** (Shell → Rust → Node.js → Shell fallback), it automatically degrades based on available infrastructure, ensuring reliable multi-agent delivery even without cloud services.
-
-## 🎯 Vision & Mission
-
-- **Vision**: A coordination protocol for human-AI special forces teams: 1–5 humans setting direction, N AI agents handling execution at scale. The same protocol works whether a Slaver is human or AI — both claim tickets, deliver, and get reviewed identically.
-- **Mission**: Make AI agents production-grade collaborators, not toys. Through strict role isolation (Master controls direction, Slavers own execution), file-system-native state persistence, and graceful degradation from Rust → Shell, EKET ensures reliable multi-agent software delivery even without cloud infrastructure.
-
-## 🌟 Core Concepts & Features
-
-- 🤖 **Special Forces Team Model**: 1–5 humans provide direction and final judgment. N AI Slavers execute tickets in parallel. Human and AI Slavers are interchangeable — same ticket schema, same mailbox protocol, same PR review gate.
-- 🗂️ **Three-Repo Physical Separation**: `repo-confluence/` (knowledge base), `repo-jira/` (ticket lifecycle), and `repo-code/` (deliverables) are three independent Git repos. Communication happens via mailbox files, file queues, and SSE.
-- ⚙️ **Industrial-Grade Constraints**: Feature branch workflows, TDD, mandatory Analysis Reports, required PR reviews — prevent hallucination accumulation.
-- 🧠 **Multi-Level Persistent Memory Engine**: Layered memory management (session cache, project experience dictionary, Confluence global knowledge base).
-- 🛡️ **Four-Level Elastic Runtime (Graceful Degradation)**:
-  - **Level 0 (Pure Shell)**: Zero dependencies, instant startup. Runs on any machine.
-  - **Level 1 (Rust)**: High-performance core (~21ms/cmd, ~12MB memory). axum HTTP API for Dashboard.
-  - **Level 2 (Node.js)**: Web Dashboard, OpenCLAW Gateway, Claude API integration.
-  - **Level 3 (Shell fallback)**: Engaged when Node.js is unavailable.
+> **1–5 humans** set direction and make decisions. **N AI agents** handle execution at scale.
+> Human Slaver and AI Slaver follow the exact same protocol: claim a ticket, deliver, get reviewed.
 
 ---
 
 ## 🚀 Quick Start
 
-### One-Click Installation (Recommended)
+### Level 1: 最简安装（推荐新用户）
 
-Download prebuilt binaries (no compilation required):
+只需要 Claude Code 增强？一行命令搞定：
 
 ```bash
-curl -fsSL https://github.com/godlockin/eket/releases/latest/download/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-setup.sh | bash
 ```
 
-Verify installation:
+**安装内容：**
+- `~/.claude/skills/eket/` — AI 能力描述
+- `~/.claude/commands/` — 30+ 个 /slash 命令
+- `~/.claude/hooks/` — 上下文监控、防盲改等
+
+**立即使用：** 在 Claude Code 中输入 `/eket-start`
+
+---
+
+### Level 2: 项目初始化
+
+想在某个项目中使用完整框架？
 
 ```bash
-eket-rust --version  # Rust version (~10 MB)
-eket-node --version  # Node version (~50 MB)
-eket doctor          # Environment check
+cd your-project
+curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-setup.sh | bash -s -- --init
 ```
 
-### Developer Local Build
+**额外创建：**
+```
+your-project/
+├── CLAUDE.md           # Claude Code 项目指令
+├── AGENTS.md           # 多 Agent 协作规范
+├── .claude/            # 项目级配置
+├── .eket/              # 运行时状态（不入库）
+├── confluence/         # 知识库
+│   └── memory/         # 经验教训
+└── jira/               # 任务管理
+    ├── tickets/        # 任务卡片
+    └── epics/          # 史诗追踪
+```
 
-For source code modification or debugging:
+---
+
+### Level 3: 完整安装（含 CLI）
+
+需要命令行工具、HTTP API、Dashboard？
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-setup.sh | bash -s -- --full
+```
+
+**额外安装：**
+- `~/.local/bin/eket` — Rust CLI（~8MB，高性能）
+
+```bash
+# CLI 命令示例
+eket system:doctor          # 环境诊断
+eket task:create "标题"      # 创建任务
+eket task:claim TASK-001    # 领取任务
+eket server --port 9877     # 启动 HTTP API
+```
+
+---
+
+## 📦 安装方式对比
+
+| 方式 | 下载量 | 适合场景 | 命令 |
+|------|--------|----------|------|
+| **Level 1** | ~50MB | 只用 Claude Code | `curl ... \| bash` |
+| **Level 2** | ~50MB | 项目中使用完整框架 | `... \| bash -s -- --init` |
+| **Level 3** | ~60MB | 需要 CLI/API/Dashboard | `... \| bash -s -- --full` |
+| **开发者** | ~9GB | 修改源码、贡献代码 | `git clone` |
+
+### 开发者安装（完整源码）
+
+```bash
+# 完整克隆（包含历史）
 git clone https://github.com/godlockin/eket.git
+
+# 或 shallow clone（推荐，节省 8GB+）
+git clone --depth 1 https://github.com/godlockin/eket.git
+
 cd eket
-bash scripts/dev-install.sh
-```
+npm install           # 安装依赖
+npm test              # 运行测试
 
-**详细安装指南**: [installation.md](docs/installation.md)
+# 编译 Rust CLI（可选）
+cd rust && cargo build --release
+```
 
 ---
 
-## 🏗️ Four-Level Architecture
+## 🎯 核心命令（Claude Code）
 
-```
-┌─────────────────────────────────────────────────────┐
-│  Level 0: Shell   lib/adapters/hybrid-adapter.sh    │  zero deps, always available
-├─────────────────────────────────────────────────────┤
-│  Level 1: Rust    eket binary + axum :9877          │  high-performance core (NEW)
-│  ├── CLI (clap): claim / complete / task:create …   │
-│  ├── core/: SQLite, Redis, Election, Queue, Cache   │
-│  └── HTTP API (/api/v1/*) for Node.js Dashboard     │
-├─────────────────────────────────────────────────────┤
-│  Level 2: Node.js (Web / LLM layer)                 │  web UI + Claude API
-│  ├── web-server (Express) → Dashboard               │
-│  ├── openclaw-gateway → LLM proxy                   │
-│  └── claude-runner → Claude API calls               │
-├─────────────────────────────────────────────────────┤
-│  Level 3: Shell fallback (Node.js unavailable)      │
-└─────────────────────────────────────────────────────┘
-```
+在 Claude Code 中输入 `/eket-help` 查看所有命令，常用：
 
-Degradation order: `Rust → Node.js → Shell → graceful exit`
-
-### HTTP API Authentication (Optional)
-
-The Rust HTTP server (`eket server`) supports optional Bearer token authentication:
-
-```bash
-# Start with authentication disabled (default)
-eket server --port 9877
-
-# Enable authentication via environment variable
-EKET_AUTH_TOKEN="your-secret-token-here" eket server
-
-# Or via CLI flag
-eket server --auth-token "your-secret-token-here"
-
-# Access protected endpoints
-curl -H "Authorization: Bearer your-secret-token-here" \
-     http://localhost:9877/api/v1/tasks
-```
-
-**Whitelisted paths** (no auth required): `/ready`, `/live`, `/health`, `/sse/events`
-
-**Error response** (401): `{"error": "invalid_token"}` or `{"error": "missing_token"}`
+| 命令 | 说明 |
+|------|------|
+| `/eket-start` | 启动 Master/Slaver 角色 |
+| `/eket-claim` | 领取任务 |
+| `/eket-status` | 查看当前状态 |
+| `/eket-save` | 保存会话状态 |
+| `/eket-resume` | 恢复会话 |
+| `/eket-office-hours` | 需求分析六问 |
+| `/eket-submit-pr` | 提交 PR |
+| `/eket-review-pr` | 审核 PR |
 
 ---
 
-## 📊 Performance (Rust vs Node.js)
+## 🏗️ 架构概览
 
-| Operation | Rust | Node.js | Improvement |
-|-----------|------|---------|-------------|
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Level 0: Shell    零依赖，任何机器可用                       │
+├─────────────────────────────────────────────────────────────┤
+│  Level 1: Rust     高性能核心 (~21ms/cmd, ~12MB 内存)        │
+│  └── CLI + HTTP API (axum :9877)                            │
+├─────────────────────────────────────────────────────────────┤
+│  Level 2: Node.js  Web Dashboard + LLM Gateway              │
+├─────────────────────────────────────────────────────────────┤
+│  Level 3: Shell    Node.js 不可用时的降级方案                 │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**降级顺序**: Rust → Node.js → Shell → 优雅退出
+
+---
+
+## 🌟 核心特性
+
+- 🤖 **特种兵团模式**: 1–5 人指挥，N 个 AI 并行执行。人类和 AI 使用相同协议。
+- 🗂️ **三仓分离**: confluence（知识库）、jira（任务）、code（代码）物理隔离
+- ⚙️ **工业级约束**: Feature 分支、TDD、分析报告、PR 审核
+- 🧠 **多级记忆**: 会话缓存 → 项目经验 → 全局知识库
+- 🛡️ **弹性降级**: Rust → Node.js → Shell → 优雅退出
+
+---
+
+## 📊 性能（Rust vs Node.js）
+
+| 操作 | Rust | Node.js | 提升 |
+|------|------|---------|------|
 | `task:claim` | ~21ms | ~400ms | **19×** |
-| Startup time | ~8ms | ~1,500ms | **187×** |
-| Memory footprint | ~12MB | ~120MB | **10×** |
-| Test suite | 253 unit tests | 1,519 unit tests | — |
+| 启动时间 | ~8ms | ~1,500ms | **187×** |
+| 内存占用 | ~12MB | ~120MB | **10×** |
 
 ---
 
-## 📋 Core Commands
+## 📖 文档
+
+| 资源 | 说明 |
+|------|------|
+| [`template/docs/MASTER-RULES.md`](template/docs/MASTER-RULES.md) | Master 角色规范 |
+| [`template/docs/SLAVER-RULES.md`](template/docs/SLAVER-RULES.md) | Slaver 角色规范 |
+| [`.claude/skills/eket/SKILL.md`](.claude/skills/eket/SKILL.md) | 命令速查 |
+| [`confluence/memory/`](confluence/memory/) | 知识库 |
+| [`CHANGELOG.md`](CHANGELOG.md) | 版本历史 |
+
+---
+
+## 🔧 升级
 
 ```bash
-# Rust CLI
-eket system:doctor
-eket task:create "ticket title" [--priority P1]
-eket task:claim [TASK-NNN]
-eket task:complete TASK-NNN
-eket master:heartbeat             # long-running Master loop
-eket slaver:poll                  # long-polling mailbox
+# 升级全局安装
+curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-setup.sh | bash
 
-# Node.js (web layer)
-node dist/index.js web:dashboard --port 3000
-node dist/index.js gateway:start --port 8080
-```
-
-Full command reference: [`.claude/skills/eket/SKILL.md`](.claude/skills/eket/SKILL.md)
-
----
-
-## 📖 Documentation
-
-| Resource | Description |
-|----------|-------------|
-| [`docs/`](docs/README.md) | Architecture, guides, ADRs, ops runbooks |
-| [`template/docs/MASTER-RULES.md`](template/docs/MASTER-RULES.md) | Master role rules |
-| [`template/docs/SLAVER-RULES.md`](template/docs/SLAVER-RULES.md) | Slaver role rules |
-| [`CLAUDE.md`](CLAUDE.md) | Claude Code session instructions |
-| [`CHANGELOG.md`](CHANGELOG.md) | Full version history |
-| [`confluence/memory/`](confluence/memory/memory-index.md) | Project knowledge base |
-
----
-
-## 🛠️ Development
-
-```bash
-# Rust
-cd rust && cargo build --release && cargo test --workspace
-
-# Node.js
-cd node && npm run build && npm test && npm run lint
-
-# End-to-end smoke test
-bash tests/e2e_smoke.sh
+# 升级项目（保留配置）
+curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-setup.sh | bash -s -- --upgrade
 ```
 
 ---
 
-## 🎯 Version History
+## 🤝 贡献
 
-See [`CHANGELOG.md`](CHANGELOG.md) for full history.
+1. Fork 仓库
+2. 创建特性分支: `git checkout -b feature/xxx`
+3. 提交到 `testing` 分支
+4. 创建 Pull Request
 
-- **v2.14.0-beta** (2026-04-26) — Red team: 14 bugs fixed (1 P0 + 7 P1 + 6 P2); 253 Rust + 1519 Node tests
-- **v2.13.0** (2026-04-21) — Rust migration complete; axum API server; four-level degradation
-- **v2.9.0-alpha** (2026-04-16) — Master-Slaver Rust CLI bootstrap; three-level degradation
+分支策略: `feature/*` → `testing` → `main` → `miao`
+
+详见 [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
-
-## 🤝 Contributing
-
-Read [CONTRIBUTING.md](CONTRIBUTING.md). Branch strategy: `feature/*` → `testing` → `main` → `miao`.
 
 ## 📜 License
 

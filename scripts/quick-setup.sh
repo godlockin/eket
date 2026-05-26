@@ -1,23 +1,29 @@
 #!/bin/bash
 #
-# EKET Quick Setup - 一键安装 & 项目初始化
+# EKET Quick Setup - 分级安装 & 项目初始化
 #
-# 用法:
-#   # 全局安装（skills + commands）
-#   curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-setup.sh | bash
+# ═══════════════════════════════════════════════════════════════════════════
+# 安装级别:
 #
-#   # 初始化当前项目（完整框架）
-#   curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-setup.sh | bash -s -- --init
+#   Level 1 - 最简安装（仅 Claude Code 增强）
+#     curl -fsSL https://eket.dev/install | bash
+#     安装: skills + commands + hooks → ~/.claude/
+#     适合: 只想在 Claude Code 中使用 EKET 命令
 #
-#   # 本地运行
-#   bash scripts/quick-setup.sh [--init]
+#   Level 2 - 项目初始化
+#     curl -fsSL https://eket.dev/install | bash -s -- --init
+#     额外: 在当前目录创建 CLAUDE.md, confluence/, jira/ 等
+#     适合: 想在某个项目中使用完整 EKET 框架
 #
-# 模式:
-#   (无参数)   全局安装: skills + commands → ~/.claude/
-#   --init     项目初始化: 在当前目录创建完整 EKET 框架
-#   --upgrade  升级已有安装
+#   Level 3 - 完整安装（含 CLI）
+#     curl -fsSL https://eket.dev/install | bash -s -- --full
+#     额外: 下载预编译的 eket CLI 到 ~/.local/bin/
+#     适合: 需要命令行工具、HTTP API、Dashboard
+#
+# ═══════════════════════════════════════════════════════════════════════════
 #
 # 环境变量:
+#   EKET_INSTALL_DIR    CLI 安装目录 (默认: ~/.local/bin)
 #   EKET_SKILLS_DIR     Skills 目录 (默认: ~/.claude/skills/eket)
 #   EKET_COMMANDS_DIR   Commands 目录 (默认: ~/.claude/commands)
 #   EKET_VERSION        指定版本 (默认: latest)
@@ -26,7 +32,7 @@
 set -euo pipefail
 
 # ─────────────────────────────────────────────
-# 颜色和图标
+# 颜色
 # ─────────────────────────────────────────────
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -36,13 +42,14 @@ CYAN='\033[0;36m'
 MAGENTA='\033[0;35m'
 NC='\033[0m'
 BOLD='\033[1m'
+DIM='\033[2m'
 
 print_banner() {
   echo ""
   echo -e "${CYAN}╔═══════════════════════════════════════════════════════════════╗${NC}"
   echo -e "${CYAN}║${NC}                                                               ${CYAN}║${NC}"
   echo -e "${CYAN}║${NC}   ${BOLD}EKET Quick Setup${NC}                                          ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}   ${MAGENTA}Master-Slaver 协作框架 | 一键安装${NC}                        ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}   ${DIM}Human-AI Special Forces Team Coordination${NC}                 ${CYAN}║${NC}"
   echo -e "${CYAN}║${NC}                                                               ${CYAN}║${NC}"
   echo -e "${CYAN}╚═══════════════════════════════════════════════════════════════╝${NC}"
   echo ""
@@ -52,396 +59,420 @@ log_step() { echo -e "${BLUE}→${NC} $1"; }
 log_ok()   { echo -e "${GREEN}✓${NC} $1"; }
 log_warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 log_err()  { echo -e "${RED}✗${NC} $1"; }
+log_dim()  { echo -e "${DIM}  $1${NC}"; }
 
 # ─────────────────────────────────────────────
 # 配置
 # ─────────────────────────────────────────────
+INSTALL_DIR="${EKET_INSTALL_DIR:-$HOME/.local/bin}"
 SKILLS_DIR="${EKET_SKILLS_DIR:-$HOME/.claude/skills/eket}"
 COMMANDS_DIR="${EKET_COMMANDS_DIR:-$HOME/.claude/commands}"
 HOOKS_DIR="$HOME/.claude/hooks"
 VERSION="${EKET_VERSION:-latest}"
 REPO_URL="https://github.com/godlockin/eket"
-MODE="${1:-global}"  # global | --init | --upgrade
+REPO_RAW="https://raw.githubusercontent.com/godlockin/eket/main"
+
+# 解析安装级别
+LEVEL=1
+INIT_PROJECT=false
+for arg in "$@"; do
+  case "$arg" in
+    --init)     LEVEL=2; INIT_PROJECT=true ;;
+    --full)     LEVEL=3 ;;
+    --upgrade)  LEVEL=1 ;;
+    --help|-h)  show_help; exit 0 ;;
+  esac
+done
 
 # 临时目录
 TMP_DIR=""
-
 cleanup() {
-  if [ -n "$TMP_DIR" ] && [ -d "$TMP_DIR" ]; then
-    rm -rf "$TMP_DIR"
-  fi
+  [ -n "$TMP_DIR" ] && [ -d "$TMP_DIR" ] && rm -rf "$TMP_DIR"
 }
 trap cleanup EXIT
+
+# ─────────────────────────────────────────────
+# 帮助
+# ─────────────────────────────────────────────
+show_help() {
+  cat << 'EOF'
+EKET Quick Setup - 分级安装
+
+用法:
+  curl -fsSL https://eket.dev/install | bash [-- OPTIONS]
+  bash scripts/quick-setup.sh [OPTIONS]
+
+安装级别:
+  (默认)      Level 1: skills + commands + hooks → ~/.claude/
+  --init      Level 2: + 在当前目录初始化项目框架
+  --full      Level 3: + 下载 eket CLI 到 ~/.local/bin/
+
+选项:
+  --upgrade   升级已有安装（等同于默认）
+  --help      显示此帮助
+
+环境变量:
+  EKET_INSTALL_DIR    CLI 安装目录 (默认: ~/.local/bin)
+  EKET_SKILLS_DIR     Skills 目录 (默认: ~/.claude/skills/eket)
+  EKET_VERSION        指定版本 (默认: latest)
+
+示例:
+  # 最简安装
+  curl -fsSL https://eket.dev/install | bash
+
+  # 初始化项目
+  cd my-project && curl -fsSL https://eket.dev/install | bash -s -- --init
+
+  # 完整安装（含 CLI）
+  curl -fsSL https://eket.dev/install | bash -s -- --full
+EOF
+}
+
+# ─────────────────────────────────────────────
+# 平台检测
+# ─────────────────────────────────────────────
+detect_platform() {
+  local os arch
+  case "$(uname -s)" in
+    Linux*)  os="linux" ;;
+    Darwin*) os="darwin" ;;
+    *)       os="unknown" ;;
+  esac
+  case "$(uname -m)" in
+    x86_64|amd64)  arch="amd64" ;;
+    arm64|aarch64) arch="arm64" ;;
+    *)             arch="unknown" ;;
+  esac
+  echo "${os}-${arch}"
+}
 
 # ─────────────────────────────────────────────
 # 依赖检查
 # ─────────────────────────────────────────────
 check_deps() {
   log_step "检查依赖..."
-
   local missing=()
   for cmd in curl git; do
-    if ! command -v "$cmd" &>/dev/null; then
-      missing+=("$cmd")
-    fi
+    command -v "$cmd" &>/dev/null || missing+=("$cmd")
   done
 
   if [ ${#missing[@]} -gt 0 ]; then
-    log_err "缺少依赖: ${missing[*]}"
-    echo ""
-    echo "安装方式:"
+    log_err "缺少: ${missing[*]}"
     if [[ "$(uname -s)" == "Darwin"* ]]; then
       echo "  brew install ${missing[*]}"
     else
-      echo "  sudo apt install ${missing[*]}  # Ubuntu/Debian"
+      echo "  sudo apt install ${missing[*]}"
     fi
     exit 1
   fi
-
   log_ok "依赖检查通过"
 }
 
 # ─────────────────────────────────────────────
-# 下载仓库（shallow clone）
+# 下载仓库（shallow clone，排除大目录）
 # ─────────────────────────────────────────────
 download_repo() {
-  log_step "下载 EKET 仓库 (shallow clone)..."
-
+  log_step "下载 EKET (shallow clone, ~50MB)..."
   TMP_DIR=$(mktemp -d)
 
-  if git clone --depth 1 "$REPO_URL.git" "$TMP_DIR/eket" 2>/dev/null; then
-    log_ok "仓库下载完成"
-    return 0
+  # 使用 sparse checkout 只下载必要文件
+  if git clone --depth 1 --filter=blob:none --sparse "$REPO_URL.git" "$TMP_DIR/eket" 2>/dev/null; then
+    cd "$TMP_DIR/eket"
+    git sparse-checkout set \
+      .claude/skills/eket \
+      template/.claude \
+      template/hooks \
+      template/CLAUDE.md \
+      template/AGENTS.md \
+      template/confluence \
+      template/jira \
+      template/docs \
+      scripts 2>/dev/null || true
+    # 初始化 submodule
+    git submodule update --init --recursive .claude/skills/eket 2>/dev/null || true
+    cd - >/dev/null
+    log_ok "下载完成"
   else
-    log_err "下载失败"
-    return 1
+    log_err "下载失败，尝试完整 clone..."
+    git clone --depth 1 "$REPO_URL.git" "$TMP_DIR/eket" 2>/dev/null || {
+      log_err "无法下载仓库"
+      exit 1
+    }
   fi
 }
 
 # ─────────────────────────────────────────────
-# 安装全局 Skills
+# Level 1: 安装 Skills
 # ─────────────────────────────────────────────
 install_skills() {
   log_step "安装 Skills → $SKILLS_DIR"
-
   mkdir -p "$(dirname "$SKILLS_DIR")"
 
-  # 复制 skills
   if [ -d "$TMP_DIR/eket/.claude/skills/eket" ]; then
     rm -rf "$SKILLS_DIR"
     cp -r "$TMP_DIR/eket/.claude/skills/eket" "$SKILLS_DIR"
 
-    # 初始化 submodule（如果需要）
-    if [ -f "$SKILLS_DIR/.gitmodules" ]; then
-      log_step "初始化 experts submodule..."
-      (cd "$TMP_DIR/eket" && git submodule update --init --recursive .claude/skills/eket 2>/dev/null) || true
-      if [ -d "$TMP_DIR/eket/.claude/skills/eket/experts" ]; then
-        cp -r "$TMP_DIR/eket/.claude/skills/eket/experts" "$SKILLS_DIR/"
-      fi
+    # experts submodule
+    if [ -d "$TMP_DIR/eket/.claude/skills/eket/experts" ]; then
+      cp -r "$TMP_DIR/eket/.claude/skills/eket/experts" "$SKILLS_DIR/" 2>/dev/null || true
     fi
 
-    log_ok "Skills 安装完成 ($(ls "$SKILLS_DIR"/*.md 2>/dev/null | wc -l | tr -d ' ') 个文件)"
+    local count
+    count=$(find "$SKILLS_DIR" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+    log_ok "Skills ($count 个文件)"
   else
-    log_warn "Skills 目录不存在"
+    log_warn "Skills 目录未找到"
   fi
 }
 
 # ─────────────────────────────────────────────
-# 安装全局 Commands（slash 命令）
+# Level 1: 安装 Commands
 # ─────────────────────────────────────────────
 install_commands() {
   log_step "安装 Commands → $COMMANDS_DIR"
-
   mkdir -p "$COMMANDS_DIR"
 
-  # 复制 commands
-  if [ -d "$TMP_DIR/eket/template/.claude/commands" ]; then
+  local src="$TMP_DIR/eket/template/.claude/commands"
+  if [ -d "$src" ]; then
     local count=0
-    for cmd in "$TMP_DIR/eket/template/.claude/commands"/eket-*.sh; do
-      if [ -f "$cmd" ]; then
-        cp "$cmd" "$COMMANDS_DIR/"
-        ((count++)) || true
-      fi
+    for f in "$src"/eket-*.sh "$src"/_eket_common.sh "$src"/*.md; do
+      [ -f "$f" ] && cp "$f" "$COMMANDS_DIR/" && ((count++)) || true
     done
-
-    # 复制通用库
-    if [ -f "$TMP_DIR/eket/template/.claude/commands/_eket_common.sh" ]; then
-      cp "$TMP_DIR/eket/template/.claude/commands/_eket_common.sh" "$COMMANDS_DIR/"
-    fi
-
-    log_ok "Commands 安装完成 ($count 个命令)"
+    log_ok "Commands ($count 个)"
   else
-    log_warn "Commands 目录不存在"
+    log_warn "Commands 目录未找到"
   fi
 }
 
 # ─────────────────────────────────────────────
-# 安装全局 Hooks
+# Level 1: 安装 Hooks
 # ─────────────────────────────────────────────
 install_hooks() {
   log_step "安装 Hooks → $HOOKS_DIR"
-
   mkdir -p "$HOOKS_DIR"
 
-  # 复制 hooks
-  if [ -d "$TMP_DIR/eket/template/hooks" ]; then
+  local src="$TMP_DIR/eket/template/hooks"
+  if [ -d "$src" ]; then
     local count=0
-    for hook in "$TMP_DIR/eket/template/hooks"/*.js; do
-      if [ -f "$hook" ]; then
-        cp "$hook" "$HOOKS_DIR/"
-        ((count++)) || true
-      fi
+    for f in "$src"/*.js; do
+      [ -f "$f" ] && cp "$f" "$HOOKS_DIR/" && ((count++)) || true
     done
-    log_ok "Hooks 安装完成 ($count 个钩子)"
-
-    echo ""
-    log_warn "Hooks 需要在 ~/.claude/settings.json 中配置才能生效"
-    echo "  示例配置:"
-    echo '  {'
-    echo '    "hooks": {'
-    echo '      "PostToolUse": ["node ~/.claude/hooks/context-monitor.js"],'
-    echo '      "PreToolUse": ["node ~/.claude/hooks/read-guard.js"]'
-    echo '    }'
-    echo '  }'
+    log_ok "Hooks ($count 个)"
+    log_dim "提示: 需在 ~/.claude/settings.json 中配置才能生效"
   else
-    log_warn "Hooks 目录不存在"
+    log_warn "Hooks 目录未找到"
   fi
 }
 
 # ─────────────────────────────────────────────
-# 初始化当前项目
+# Level 2: 初始化项目
 # ─────────────────────────────────────────────
 init_project() {
-  log_step "初始化项目框架..."
-
-  local project_dir="$PWD"
+  local dir="$PWD"
+  log_step "初始化项目 → $dir"
 
   # 检查是否已初始化
-  if [ -f "$project_dir/.eket/IDENTITY.md" ]; then
-    log_warn "项目已初始化，跳过"
+  if [ -f "$dir/CLAUDE.md" ] && [ -d "$dir/.eket" ]; then
+    log_warn "项目已初始化，跳过 (删除 .eket/ 可重新初始化)"
     return 0
   fi
 
   # 创建目录结构
-  log_step "创建目录结构..."
-  mkdir -p "$project_dir/.claude/commands"
-  mkdir -p "$project_dir/.eket/state"
-  mkdir -p "$project_dir/.eket/sessions"
-  mkdir -p "$project_dir/.eket/logs"
-  mkdir -p "$project_dir/confluence/memory/lessons"
-  mkdir -p "$project_dir/confluence/architecture"
-  mkdir -p "$project_dir/jira/tickets"
-  mkdir -p "$project_dir/jira/epics"
+  mkdir -p "$dir/.claude/commands"
+  mkdir -p "$dir/.eket/state"
+  mkdir -p "$dir/.eket/sessions"
+  mkdir -p "$dir/.eket/logs"
+  mkdir -p "$dir/confluence/memory/lessons"
+  mkdir -p "$dir/confluence/architecture"
+  mkdir -p "$dir/jira/tickets"
+  mkdir -p "$dir/jira/epics"
 
-  # 复制模板文件
-  log_step "复制模板文件..."
+  # 复制模板
+  local tpl="$TMP_DIR/eket/template"
 
-  # CLAUDE.md
-  if [ -f "$TMP_DIR/eket/template/CLAUDE.md" ]; then
-    cp "$TMP_DIR/eket/template/CLAUDE.md" "$project_dir/"
-    log_ok "CLAUDE.md"
-  fi
+  [ -f "$tpl/CLAUDE.md" ] && cp "$tpl/CLAUDE.md" "$dir/" && log_ok "CLAUDE.md"
+  [ -f "$tpl/AGENTS.md" ] && cp "$tpl/AGENTS.md" "$dir/" && log_ok "AGENTS.md"
+  [ -f "$tpl/.claude/settings.json" ] && cp "$tpl/.claude/settings.json" "$dir/.claude/" && log_ok ".claude/settings.json"
 
-  # AGENTS.md
-  if [ -f "$TMP_DIR/eket/template/AGENTS.md" ]; then
-    cp "$TMP_DIR/eket/template/AGENTS.md" "$project_dir/"
-    log_ok "AGENTS.md"
-  fi
+  # 链接全局 commands
+  for cmd in "$COMMANDS_DIR"/eket-*.sh; do
+    [ -f "$cmd" ] && ln -sf "$cmd" "$dir/.claude/commands/" 2>/dev/null || true
+  done
 
-  # .claude/settings.json
-  if [ -f "$TMP_DIR/eket/template/.claude/settings.json" ]; then
-    cp "$TMP_DIR/eket/template/.claude/settings.json" "$project_dir/.claude/"
-    log_ok ".claude/settings.json"
-  fi
-
-  # 项目级 commands（链接到全局或复制）
-  if [ -d "$COMMANDS_DIR" ]; then
-    for cmd in "$COMMANDS_DIR"/eket-*.sh; do
-      if [ -f "$cmd" ]; then
-        ln -sf "$cmd" "$project_dir/.claude/commands/" 2>/dev/null || cp "$cmd" "$project_dir/.claude/commands/"
-      fi
-    done
-    log_ok "Commands 链接完成"
-  fi
+  # confluence/jira 模板
+  [ -d "$tpl/confluence" ] && cp -r "$tpl/confluence"/* "$dir/confluence/" 2>/dev/null && log_ok "confluence/"
+  [ -d "$tpl/jira" ] && cp -r "$tpl/jira"/* "$dir/jira/" 2>/dev/null && log_ok "jira/"
 
   # IDENTITY.md
-  cat > "$project_dir/.eket/IDENTITY.md" << 'EOF'
+  cat > "$dir/.eket/IDENTITY.md" << EOF
 # EKET Identity
 
 **角色**: 未设置
 **初始化时间**: $(date -Iseconds)
 
-## 角色选择
-
-启动时请选择角色：
-
-- **Master**: 需求分析、任务拆解、PR 审核、团队协调
-- **Slaver**: 任务执行、代码实现、测试编写、PR 提交
-
-运行 `/eket-start` 选择角色并开始工作。
+运行 \`/eket-start\` 选择 Master 或 Slaver 角色。
 EOF
-  # 替换日期
-  sed -i '' "s/\$(date -Iseconds)/$(date -Iseconds)/" "$project_dir/.eket/IDENTITY.md" 2>/dev/null || true
+  log_ok ".eket/IDENTITY.md"
 
-  log_ok "IDENTITY.md"
-
-  # confluence 模板
-  if [ -d "$TMP_DIR/eket/template/confluence" ]; then
-    cp -r "$TMP_DIR/eket/template/confluence"/* "$project_dir/confluence/" 2>/dev/null || true
-    log_ok "Confluence 模板"
-  fi
-
-  # jira 模板
-  if [ -d "$TMP_DIR/eket/template/jira" ]; then
-    cp -r "$TMP_DIR/eket/template/jira"/* "$project_dir/jira/" 2>/dev/null || true
-    log_ok "Jira 模板"
-  fi
-
-  # .gitignore 追加
-  if [ -f "$project_dir/.gitignore" ]; then
-    if ! grep -q ".eket/state" "$project_dir/.gitignore" 2>/dev/null; then
-      echo "" >> "$project_dir/.gitignore"
-      echo "# EKET" >> "$project_dir/.gitignore"
-      echo ".eket/state/" >> "$project_dir/.gitignore"
-      echo ".eket/logs/" >> "$project_dir/.gitignore"
-      echo ".eket/sessions/" >> "$project_dir/.gitignore"
+  # .gitignore
+  if [ -f "$dir/.gitignore" ]; then
+    grep -q ".eket/state" "$dir/.gitignore" 2>/dev/null || {
+      echo -e "\n# EKET\n.eket/state/\n.eket/logs/\n.eket/sessions/" >> "$dir/.gitignore"
       log_ok ".gitignore 已更新"
-    fi
+    }
+  else
+    echo -e "# EKET\n.eket/state/\n.eket/logs/\n.eket/sessions/" > "$dir/.gitignore"
+    log_ok ".gitignore 已创建"
   fi
 
   log_ok "项目初始化完成"
 }
 
 # ─────────────────────────────────────────────
-# 打印已安装的命令
+# Level 3: 安装 CLI
 # ─────────────────────────────────────────────
-print_commands() {
-  echo ""
-  echo -e "${BOLD}已安装的 Slash 命令:${NC}"
-  echo ""
+install_cli() {
+  log_step "下载 EKET CLI → $INSTALL_DIR"
 
-  local cmds=(
-    "/eket-start        启动 Master/Slaver 角色"
-    "/eket-claim        领取任务"
-    "/eket-status       查看当前状态"
-    "/eket-save         保存会话状态"
-    "/eket-resume       恢复会话"
-    "/eket-office-hours 需求分析六问"
-    "/eket-submit-pr    提交 PR"
-    "/eket-review-pr    审核 PR"
-    "/eket-merge        合并 PR"
-    "/eket-help         查看所有命令"
-  )
+  local platform
+  platform=$(detect_platform)
 
-  for cmd in "${cmds[@]}"; do
-    echo -e "  ${GREEN}${cmd%% *}${NC}${cmd#* }"
-  done
+  if [[ "$platform" == *"unknown"* ]]; then
+    log_warn "不支持的平台: $platform，跳过 CLI 安装"
+    return 1
+  fi
 
-  echo ""
-  echo -e "  运行 ${CYAN}/eket-help${NC} 查看完整命令列表"
+  mkdir -p "$INSTALL_DIR"
+
+  # 尝试从 releases 下载
+  local artifact="eket-${platform}"
+  local url="$REPO_URL/releases/latest/download/$artifact"
+  local tmp_bin
+  tmp_bin=$(mktemp)
+
+  if curl -fsSL "$url" -o "$tmp_bin" 2>/dev/null; then
+    chmod +x "$tmp_bin"
+    mv "$tmp_bin" "$INSTALL_DIR/eket"
+    log_ok "CLI 已安装 ($INSTALL_DIR/eket)"
+
+    # 配置 PATH
+    if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
+      local rc=""
+      case "$SHELL" in
+        */zsh)  rc="$HOME/.zshrc" ;;
+        */bash) rc="$HOME/.bashrc" ;;
+      esac
+      if [ -n "$rc" ] && [ -f "$rc" ]; then
+        grep -q "$INSTALL_DIR" "$rc" 2>/dev/null || {
+          echo -e "\n# EKET CLI\nexport PATH=\"$INSTALL_DIR:\$PATH\"" >> "$rc"
+          log_dim "已添加到 $rc，重启终端生效"
+        }
+      fi
+    fi
+    return 0
+  else
+    rm -f "$tmp_bin"
+    log_warn "预编译 CLI 下载失败 (可能尚无 release)"
+    log_dim "可以手动编译: cd eket/rust && cargo build --release"
+    return 1
+  fi
 }
 
 # ─────────────────────────────────────────────
 # 验证安装
 # ─────────────────────────────────────────────
 verify_install() {
+  echo ""
   log_step "验证安装..."
 
-  local success=true
+  local ok=true
 
-  # 检查 skills
+  # Skills
   if [ -f "$SKILLS_DIR/SKILL.md" ]; then
     log_ok "Skills: $SKILLS_DIR"
   else
-    log_warn "Skills 未完整安装"
-    success=false
+    log_warn "Skills 未完整"
+    ok=false
   fi
 
-  # 检查 commands
+  # Commands
   local cmd_count
   cmd_count=$(ls "$COMMANDS_DIR"/eket-*.sh 2>/dev/null | wc -l | tr -d ' ')
   if [ "$cmd_count" -gt 0 ]; then
-    log_ok "Commands: $COMMANDS_DIR ($cmd_count 个)"
+    log_ok "Commands: $cmd_count 个"
   else
     log_warn "Commands 未安装"
-    success=false
+    ok=false
   fi
 
-  # 检查 hooks
+  # Hooks
   local hook_count
   hook_count=$(ls "$HOOKS_DIR"/*.js 2>/dev/null | wc -l | tr -d ' ')
-  if [ "$hook_count" -gt 0 ]; then
-    log_ok "Hooks: $HOOKS_DIR ($hook_count 个)"
-  else
-    log_warn "Hooks 未安装"
+  [ "$hook_count" -gt 0 ] && log_ok "Hooks: $hook_count 个"
+
+  # CLI (Level 3)
+  if [ "$LEVEL" -ge 3 ]; then
+    if [ -x "$INSTALL_DIR/eket" ]; then
+      log_ok "CLI: $INSTALL_DIR/eket"
+    else
+      log_warn "CLI 未安装"
+    fi
   fi
 
-  # 检查 Claude Code
-  if [ -d "$HOME/.claude" ]; then
-    log_ok "Claude目录存在"
-  else
-    log_warn "Claude Code 未安装"
-    log_warn "请先安装: https://claude.ai/code"
+  # Project (Level 2)
+  if [ "$INIT_PROJECT" = true ]; then
+    if [ -f "$PWD/CLAUDE.md" ] && [ -d "$PWD/.eket" ]; then
+      log_ok "项目: $PWD"
+    else
+      log_warn "项目初始化不完整"
+      ok=false
+    fi
   fi
 
-  if [ "$success" = true ]; then
-    return 0
-  else
-    return 1
-  fi
+  $ok
 }
 
 # ─────────────────────────────────────────────
-# 打印使用说明
+# 打印结果
 # ─────────────────────────────────────────────
-print_usage_global() {
-  echo ""
-  echo -e "${GREEN}═════════════════════════════════════════════════════════════${NC}"
-  echo -e "${GREEN}  ✓ EKET 全局安装完成！${NC}"
-  echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
-
-  print_commands
-
-  echo -e "${BOLD}下一步:${NC}"
-  echo ""
-  echo "  1. 在项目中初始化 EKET 框架:"
-  echo ""
-  echo -e "     ${CYAN}cd your-project${NC}"
-  echo -e "     ${CYAN}curl -fsSL $REPO_URL/raw/main/scripts/quick-setup.sh | bash -s -- --init${NC}"
-  echo ""
-  echo "  2. 或在 Claude Code 中直接使用:"
-  echo ""
-  echo -e "     ${CYAN}/eket-start${NC}    # 启动角色选择"
-  echo -e "     ${CYAN}/eket-help${NC}     # 查看所有命令"
-  echo ""
-  echo -e "${CYAN}文档: $REPO_URL#readme${NC}"
-  echo ""
-}
-
-print_usage_init() {
+print_success() {
   echo ""
   echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
-  echo -e "${GREEN}  ✓ EKET 项目初始化完成！${NC}"
+  echo -e "${GREEN}  ✓ EKET 安装完成！ (Level $LEVEL)${NC}"
   echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
   echo ""
-  echo -e "${BOLD}已创建:${NC}"
+
+  echo -e "${BOLD}已安装组件:${NC}"
   echo ""
-  echo "  CLAUDE.md              # Claude Code 项目指令"
-  echo "  AGENTS.md              # 多 Agent 协作规范"
-  echo "  .claude/               # Claude Code 配置"
-  echo "  .eket/                 # EKET 运行时状态"
-  echo "  confluence/            # 知识库"
-  echo "  jira/                  # 任务管理"
+  echo "  Skills     → $SKILLS_DIR"
+  echo "  Commands   → $COMMANDS_DIR"
+  echo "  Hooks      → $HOOKS_DIR"
+  [ "$LEVEL" -ge 3 ] && [ -x "$INSTALL_DIR/eket" ] && echo "  CLI        → $INSTALL_DIR/eket"
+  [ "$INIT_PROJECT" = true ] && echo "  项目框架   → $PWD"
   echo ""
 
-  print_commands
+  echo -e "${BOLD}常用命令 (在 Claude Code 中):${NC}"
+  echo ""
+  echo -e "  ${GREEN}/eket-start${NC}        启动 Master/Slaver"
+  echo -e "  ${GREEN}/eket-claim${NC}        领取任务"
+  echo -e "  ${GREEN}/eket-status${NC}       查看状态"
+  echo -e "  ${GREEN}/eket-save${NC}         保存会话"
+  echo -e "  ${GREEN}/eket-help${NC}         所有命令"
+  echo ""
 
-  echo -e "${BOLD}开始使用:${NC}"
-  echo ""
-  echo "  在 Claude Code 中运行:"
-  echo ""
-  echo -e "     ${CYAN}/eket-start${NC}    # 选择 Master 或 Slaver 角色"
-  echo ""
+  if [ "$LEVEL" -lt 2 ]; then
+    echo -e "${BOLD}下一步:${NC}"
+    echo ""
+    echo "  初始化项目:"
+    echo -e "    ${CYAN}cd your-project${NC}"
+    echo -e "    ${CYAN}curl -fsSL $REPO_RAW/scripts/quick-setup.sh | bash -s -- --init${NC}"
+    echo ""
+  fi
+
+  if [ "$LEVEL" -lt 3 ]; then
+    echo -e "${DIM}完整安装 (含 CLI): bash -s -- --full${NC}"
+  fi
+
   echo -e "${CYAN}文档: $REPO_URL#readme${NC}"
   echo ""
 }
@@ -452,58 +483,50 @@ print_usage_init() {
 main() {
   print_banner
 
+  local level_name
+  case "$LEVEL" in
+    1) level_name="最简安装 (Skills + Commands + Hooks)" ;;
+    2) level_name="项目初始化" ;;
+    3) level_name="完整安装 (含 CLI)" ;;
+  esac
+  echo -e "${MAGENTA}安装级别: Level $LEVEL - $level_name${NC}"
+  echo ""
+
   local start_time
   start_time=$(date +%s)
-
-  # 解析参数
-  case "$MODE" in
-    --init)
-      echo -e "${MAGENTA}模式: 项目初始化${NC}"
-      echo ""
-      ;;
-    --upgrade)
-      echo -e "${MAGENTA}模式: 升级${NC}"
-      echo ""
-      ;;
-    *)
-      echo -e "${MAGENTA}模式: 全局安装${NC}"
-      echo ""
-      MODE="global"
-      ;;
-  esac
 
   check_deps
   download_repo
 
-  # 全局安装（始终执行）
+  # Level 1: 基础组件
   install_skills
   install_commands
   install_hooks
 
-  # 项目初始化（仅 --init 模式）
-  if [ "$MODE" = "--init" ]; then
+  # Level 2: 项目初始化
+  if [ "$INIT_PROJECT" = true ]; then
     echo ""
     init_project
   fi
 
-  echo ""
-  if verify_install; then
-    local end_time elapsed
-    end_time=$(date +%s)
-    elapsed=$((end_time - start_time))
+  # Level 3: CLI
+  if [ "$LEVEL" -ge 3 ]; then
     echo ""
-    echo -e "${GREEN}安装耗时: ${elapsed} 秒${NC}"
+    install_cli || true
+  fi
 
-    if [ "$MODE" = "--init" ]; then
-      print_usage_init
-    else
-      print_usage_global
-    fi
+  if verify_install; then
+    local elapsed
+    elapsed=$(($(date +%s) - start_time))
+    echo ""
+    echo -e "${GREEN}耗时: ${elapsed} 秒${NC}"
+    print_success
   else
     echo ""
     log_warn "安装未完全成功，请检查上述警告"
     echo ""
-    echo "如需帮助，请访问: $REPO_URL/issues"
+    echo "帮助: $REPO_URL/issues"
+    exit 1
   fi
 }
 
