@@ -51,14 +51,14 @@ init_directories() {
   done
 
   # 复制模板文件
-  TEMPLATES_SRC="$EKET_ROOT/templates"
-  TEMPLATES_DST="$PROJECT_ROOT/templates"
+  TEMPLATES_SRC="$EKET_ROOT/hbs-templates"
+  TEMPLATES_DST="$PROJECT_ROOT/hbs-templates"
   if [ -d "$TEMPLATES_SRC" ]; then
     if [ ! -d "$TEMPLATES_DST" ]; then
       cp -r "$TEMPLATES_SRC" "$TEMPLATES_DST"
-      ok "templates/ 已复制"
+      ok "hbs-templates/ 已复制"
     else
-      echo "  - templates/ 已存在，跳过"
+      echo "  - hbs-templates/ 已存在，跳过"
     fi
   fi
 }
