@@ -1,10 +1,10 @@
 # TASK-E16-05: Memory 模板规范化
 
 **EPIC**: EPIC-016  
-**状态**: ready  
+**状态**: done  
 **优先级**: P2  
 **预估**: 1d  
-**负责人**: 待分配  
+**负责人**: Slaver (文档/规范专家)  
 **依赖**: 无
 
 ---
@@ -79,9 +79,9 @@ confluence/memory/
 
 ## 验收标准
 
-- [ ] 模板文档 `template/memory-template.md` 创建
-- [ ] 现有 memory 文件迁移（至少 pitfalls/）
-- [ ] `check-memory-format.sh` 脚本可用
+- [x] 模板文档 `template/memory-template.md` 创建
+- [x] 现有 memory 文件迁移（至少 pitfalls/）
+- [x] `check-memory-format.sh` 脚本可用
 - [ ] CI 添加 memory 格式检查（可选）
 
 ## 技术要点
@@ -97,3 +97,4 @@ confluence/memory/
 | 日期 | 变更 | 操作人 |
 |------|------|--------|
 | 2026-05-27 | 创建 Ticket | Master |
+| 2026-05-27 | 完成实现：模板+验证脚本+3 文件迁移 | Slaver |

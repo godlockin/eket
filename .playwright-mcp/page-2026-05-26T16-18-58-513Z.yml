@@ -1,0 +1,400 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e3]:
+    - figure [ref=e4]:
+      - img "The Google logo"
+    - link "Skip to main content" [ref=e5] [cursor=pointer]:
+      - /url: "#jump-content"
+      - generic [ref=e6]: Skip to main content
+    - link "The Keyword" [ref=e8] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e9]: The Keyword
+    - navigation "Main" [ref=e10]:
+      - list [ref=e12]:
+        - listitem [ref=e13]:
+          - button "Home" [ref=e14] [cursor=pointer]
+        - listitem [ref=e15]:
+          - button "Innovation & AI" [ref=e16] [cursor=pointer]:
+            - text: Innovation & AI
+            - figure
+        - listitem [ref=e17]:
+          - button "Products & platforms" [ref=e18] [cursor=pointer]:
+            - text: Products & platforms
+            - figure
+        - listitem [ref=e19]:
+          - button "Company news" [ref=e20] [cursor=pointer]:
+            - text: Company news
+            - figure
+        - listitem [ref=e21]:
+          - button "Feed" [ref=e22] [cursor=pointer]
+    - generic [ref=e23]:
+      - button "Search" [ref=e24] [cursor=pointer]:
+        - img [ref=e26]
+      - generic [ref=e28]:
+        - img [ref=e31]
+        - combobox "Change Region" [ref=e36] [cursor=pointer]:
+          - option "Global (English)" [selected]
+          - option "Africa (English)"
+          - option "Australia (English)"
+          - option "Brasil (Português)"
+          - option "Canada (English)"
+          - option "Canada (Français)"
+          - option "Česko (Čeština)"
+          - option "Deutschland (Deutsch)"
+          - option "España (Español)"
+          - option "France (Français)"
+          - option "Greece (Ελληνικά)"
+          - option "India (English)"
+          - option "Indonesia (Bahasa Indonesia)"
+          - option "Italia (Italiano)"
+          - option "日本 (日本語)"
+          - option "대한민국 (한국어)"
+          - option "Latinoamérica (Español)"
+          - option "الشرق الأوسط وشمال أفريقيا (اللغة العربية)"
+          - option "MENA (English)"
+          - option "Nederlands (Nederland)"
+          - option "New Zealand (English)"
+          - option "Polska (Polski)"
+          - option "Portugal (Português)"
+          - option "Sverige (Svenska)"
+          - option "ประเทศไทย (ไทย)"
+          - option "Türkiye (Türkçe)"
+          - option "台灣 (中文)"
+      - button "Secondary menu" [ref=e38] [cursor=pointer]:
+        - img [ref=e40]
+    - link "Newsletter subscribe" [ref=e43] [cursor=pointer]:
+      - /url: /newsletter-subscribe/
+      - text: Subscribe
+  - main [ref=e44]:
+    - article [ref=e45]:
+      - generic [ref=e47]:
+        - navigation "Breadcrumb" [ref=e51]:
+          - list [ref=e52]:
+            - listitem [ref=e53]:
+              - link "The Keyword" [ref=e54] [cursor=pointer]:
+                - /url: https://blog.google/
+                - img [ref=e55]
+            - listitem [ref=e57]:
+              - img [ref=e58]
+              - link "Innovation & AI" [ref=e60] [cursor=pointer]:
+                - /url: https://blog.google/innovation-and-ai/
+            - listitem [ref=e61]:
+              - img [ref=e62]
+              - link "Technology" [ref=e64] [cursor=pointer]:
+                - /url: https://blog.google/innovation-and-ai/technology/
+            - listitem [ref=e65]:
+              - img [ref=e66]
+              - link "Developer tools" [ref=e68] [cursor=pointer]:
+                - /url: https://blog.google/innovation-and-ai/technology/developers-tools/
+        - heading "Build with Nano Banana Pro, our Gemini 3 Pro Image model" [level=1] [ref=e70]
+      - generic [ref=e71]:
+        - generic [ref=e73]:
+          - paragraph [ref=e77]: 7 min read
+          - paragraph [ref=e78]: Here’s how developers can use Nano Banana Pro (Gemini 3 Pro Image), a powerful new image generation and editing model with advanced features and creative control.
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - generic [ref=e81]:
+              - figure [ref=e82]:
+                - img "Alisa Fortin" [ref=e84]
+              - generic [ref=e85]:
+                - generic [ref=e86]: Alisa Fortin
+                - generic [ref=e87]: Product Manager, Google DeepMind
+            - generic [ref=e88]:
+              - generic [ref=e89]: "N"
+              - generic [ref=e90]:
+                - generic [ref=e91]: Naina Raisinghani
+                - generic [ref=e92]: Product Manager, Google DeepMind
+          - button "Share" [ref=e95] [cursor=pointer]:
+            - img [ref=e96]
+            - generic [ref=e98]: Share
+      - figure [ref=e101]:
+        - img "Image with multiple input-output images with the text Build with Nano Banana Pro in the center" [ref=e104]
+      - generic [ref=e107]:
+        - img [ref=e111]
+        - generic [ref=e114]:
+          - paragraph [ref=e115]:
+            - text: Today, we’re releasing
+            - link "Nano Banana Pro" [ref=e116] [cursor=pointer]:
+              - /url: https://blog.google/technology/ai/nano-banana-pro
+            - text: (Gemini 3 Pro Image), a higher-fidelity model built on
+            - link "Gemini 3 Pro" [ref=e117] [cursor=pointer]:
+              - /url: https://blog.google/products/gemini/gemini-3/
+            - text: for developers to access studio-quality image generation. This follows our release of
+            - link "Nano Banana" [ref=e118] [cursor=pointer]:
+              - /url: https://developers.googleblog.com/en/introducing-gemini-2-5-flash-image/
+            - text: (Gemini 2.5 Flash Image) just a few months ago. Since then, we’ve loved seeing the community put its
+            - link "key features" [ref=e119] [cursor=pointer]:
+              - /url: https://github.com/PicoTrex/Awesome-Nano-Banana-images/blob/main/README_en.md
+            - text: to work — from character consistency to
+            - link "photo restoration" [ref=e120] [cursor=pointer]:
+              - /url: https://x.com/hsavas/status/1960757462182605059?s=20
+            - text: ", and even using its capabilities to make"
+            - link "local edits" [ref=e121] [cursor=pointer]:
+              - /url: https://x.com/seezatnap/status/1964010356071629289?s=20
+            - text: in an infinite canvas.
+          - paragraph [ref=e122]:
+            - text: This state-of-the-art image generation and editing model is starting to roll out in paid preview to build a new wave of intelligent, multimodal applications with the
+            - link "Gemini API" [ref=e123] [cursor=pointer]:
+              - /url: https://ai.google.dev/gemini-api/docs
+            - text: in
+            - link "Google AI Studio" [ref=e124] [cursor=pointer]:
+              - /url: https://ai.studio/banana-pro
+            - text: and
+            - link "Vertex AI" [ref=e125] [cursor=pointer]:
+              - /url: https://console.cloud.google.com/vertex-ai/studio/multimodal
+            - text: for enterprises. This model unlocks high-fidelity images with higher accuracy in text rendering and robust world knowledge, supercharged by the model's ability to use grounding with Google Search to retrieve data based on the user's prompt.
+        - generic [ref=e127]:
+          - img "Gemini 3 Pro Image Text to Image AI benchmark bar chart compared to other leading competitors" [ref=e130]
+          - paragraph [ref=e134]: Gemini 3 Pro Image excels on Text to Image AI benchmarks.
+        - paragraph [ref=e137]:
+          - text: We are also expanding the reach of Gemini 3 Pro Image across the developer ecosystem. In
+          - link "Google Antigravity" [ref=e138] [cursor=pointer]:
+            - /url: https://antigravity.google/
+          - text: — our new agentic development platform — coding agents can now directly leverage these image generation capabilities to generate detailed UI mockups for user review or even new visual assets before implementing in code. Additionally, leading creative platforms are integrating the model, including Adobe and Figma.
+        - generic [ref=e140]:
+          - heading "High fidelity and controls" [level=2] [ref=e141]
+          - paragraph [ref=e142]: If you’re building advanced tools that require precision, Gemini 3 Pro Image gives you control over the physics (lighting, camera, focus, color grading) and composition of the image to ensure professional-quality outputs.
+        - generic [ref=e144]:
+          - img "Image showing a side by side of an input image of the silhouette of a man with scattered sun rays and an output image where the same image with more volumetric lighting using AI" [ref=e147]
+          - generic [ref=e150]:
+            - paragraph [ref=e151]: A silhouette lost in a sea of golden bokeh and morning mist.
+            - paragraph [ref=e152]: "Prompt: Replace volumetric lighting with bokeh"
+        - paragraph [ref=e155]:
+          - text: With 2K and 4k resolution available, you can ensure outputs meet resolution standards required for professional production. Effortlessly create cohesive advertisements by combining diverse elements such as product images, logos, and references. Achieve consistent resemblance for up to five individuals, integrate six high-fidelity shots, or blend as many as fourteen standard inputs into a single, polished ad. Try our
+          - link "demo app" [ref=e156] [cursor=pointer]:
+            - /url: http://aistudio.google.com/apps/bundled/product_mockup
+          - text: that allows you to pair logos with products to create your own mockup designs.
+        - generic [ref=e158]:
+          - generic "Video showing a demo app with a tshirt getting updated with a logo in spray paint effect" [ref=e162]: Sorry, your browser doesn't support embedded videos, but don't worry, you can and watch it with your favorite video player!
+          - paragraph [ref=e166]: Demo app that brings product design to life with reference images. Sequences shortened.
+        - generic [ref=e168]:
+          - heading "Improved text rendering and localization" [level=2] [ref=e169]
+          - paragraph [ref=e170]: Gemini 3 Pro Image offers a significant leap forward from 2.5 Flash Image, transforming abstract image generation into functional assets. It excels in handling logic and language, and delivers state-of-the-art text rendering, producing clear, accurate text integrated in your images.
+        - generic [ref=e172]:
+          - generic [ref=e174]:
+            - img "Image showing the words Mint, soup, taco, curry, sushi, pasta, apple and pizza rendered using food items with AI"
+          - generic [ref=e177]:
+            - paragraph [ref=e178]: Creative food photography where each word is artistically spelled out using the actual ingredients associated with that food.
+            - paragraph [ref=e179]: "Prompt: Make 8 sophisticated minimalistic logos, each is a fun food word, and make letters from realistic food to express the meaning of this word. composition: a rendering of all logos on a single solid white background"
+        - paragraph [ref=e182]:
+          - text: It's also an ideal solution for developing marketing collateral, educational content and numerous other applications. Try the model’s capabilities in our
+          - link "comic book generator app" [ref=e183] [cursor=pointer]:
+            - /url: http://aistudio.google.com/apps/bundled/personalized_comics
+          - text: in Google AI Studio, where you can create original multi-page comic books featuring you and a friend, complete with advanced text rendering and stylization.
+        - generic [ref=e185]:
+          - generic "Video showing a demo of two images being uploaded to an app to create a digital comic with text rendered within using AI" [ref=e189]: Sorry, your browser doesn't support embedded videos, but don't worry, you can and watch it with your favorite video player!
+          - paragraph [ref=e193]: Demo app that creates a comic book in your chosen language based on photos and selected genre. Sequences shortened.
+        - paragraph [ref=e196]: With Gemini 3 Pro Image, we’ve removed the barrier between image generation and localization logic. This advanced model grasps the semantic context of an image, enabling effortless language changes on elements like menus, signs, or documents utilizing image-to-image generation keeping original artistic style or layout.
+        - generic [ref=e198]:
+          - generic [ref=e200]:
+            - img "Side by side of an input image of a set of cans with text and output image with text on can translated in French using AI"
+          - generic [ref=e203]:
+            - paragraph [ref=e204]: A beverage campaign concept showcasing accurate translation and rendering of English text into French.
+            - paragraph [ref=e205]: "Prompt: Translate to French"
+        - generic [ref=e207]:
+          - heading "Access to the world’s knowledge" [level=2] [ref=e208]
+          - paragraph [ref=e209]:
+            - text: Gemini 3 Pro Image connects a vast knowledge base to produce more factual assets over previous image generation models. Additionally, when enabled, grounding with Google Search connects the model to real-time web content for data-driven outputs. This is particularly valuable for applications requiring precise representations, such as biological diagrams or historical maps. Try this for yourself with our
+            - link "demo app" [ref=e210] [cursor=pointer]:
+              - /url: https://aistudio.google.com/apps/bundled/info_genius?showPreview=true&showAssistant=true
+            - text: where you can dynamically create infographics on any topic tailored to your audience.
+        - generic [ref=e212]:
+          - generic [ref=e214]:
+            - img "An infographic for bike care and maintenance essentials built with a simple text prompt using AI"
+          - paragraph [ref=e218]: Bike care and maintenance infographic generated from a demo app that creates educational infographics.
+        - generic [ref=e220]:
+          - heading "Go bananas and start building today" [level=2] [ref=e221]
+          - paragraph [ref=e222]:
+            - text: This new model release incorporates much of the input you have already shared with us, but we aren’t stopping here. To ensure clear provenance in AI-generated media, we have integrated
+            - link "SynthID digital watermarks" [ref=e223] [cursor=pointer]:
+              - /url: https://blog.google/technology/ai/ai-image-verification-gemini-app/
+            - text: directly into every image created or edited with Gemini 3 Pro Image to denote its AI-generated or edited origin.
+          - paragraph [ref=e224]:
+            - text: Start by exploring our
+            - link "collection of apps" [ref=e225] [cursor=pointer]:
+              - /url: https://aistudio.google.com/apps?source=showcase&showcaseTag=nano-banana
+            - text: that use Gemini 3 Pro Image to spark your imagination and see what’s possible. Once you’re inspired, remix these demo apps or integrate the model directly into your own projects via the
+            - link "Gemini API" [ref=e226] [cursor=pointer]:
+              - /url: http://ai.google.dev/gemini-api/docs
+            - text: in
+            - link "Google AI Studio" [ref=e227] [cursor=pointer]:
+              - /url: http://aistudio.google.com/
+            - text: and
+            - link "Vertex AI" [ref=e228] [cursor=pointer]:
+              - /url: https://console.cloud.google.com/vertex-ai/studio/multimodal
+            - text: for enterprise use. For technical details along the way, check out the
+            - link "documentation" [ref=e229] [cursor=pointer]:
+              - /url: https://ai.google.dev/gemini-api/docs/image-generation
+            - text: ","
+            - link "prompt guide" [ref=e230] [cursor=pointer]:
+              - /url: https://ai.google.dev/gemini-api/docs/image-generation#prompt-guide
+            - text: ","
+            - link "cookbook" [ref=e231] [cursor=pointer]:
+              - /url: https://colab.sandbox.google.com/github/google-gemini/cookbook/blob/main/quickstarts/Get_Started_Nano_Banana.ipynb#nano-banana-pro
+            - text: or visit the
+            - link "developer forum" [ref=e232] [cursor=pointer]:
+              - /url: https://discuss.ai.google.dev/
+            - text: to get help and share feedback.
+        - generic [ref=e235]:
+          - generic [ref=e237]:
+            - img "A table showing comparison between Gemini 2 Pro Image and Gemini 2.5 Flash Image models across speed, quality and cost"
+          - paragraph [ref=e241]: Use Gemini 2.5 Flash Image for faster, lower cost image generation, or 3 Pro Image for higher quality image generation, with higher cost and latency.
+        - generic [ref=e242]:
+          - generic [ref=e244]: "POSTED IN:"
+          - navigation [ref=e245]:
+            - list [ref=e246]:
+              - listitem [ref=e247]:
+                - link "Developer tools" [ref=e248] [cursor=pointer]:
+                  - /url: " https://blog.google/innovation-and-ai/technology/developers-tools/ "
+              - listitem [ref=e249]:
+                - link "AI Products" [ref=e250] [cursor=pointer]:
+                  - /url: " https://blog.google/innovation-and-ai/products/ "
+              - listitem [ref=e251]:
+                - link "Gemini models" [ref=e252] [cursor=pointer]:
+                  - /url: " https://blog.google/products-and-platforms/products/gemini/ "
+    - generic [ref=e254]:
+      - heading "Related stories" [level=3] [ref=e257]:
+        - generic [ref=e258]: Related stories
+      - button "Next item" [ref=e259] [cursor=pointer]
+      - region [ref=e262]:
+        - link "Google Play - Here\\u0027s what developers can do with the latest Google Play updates. - At Google I/O, we introduced new ways for developers to expand their reach and scale their business with less complexity.We’re expanding their reach by meeting users whe… - By - May 21, 2026" [ref=e264] [cursor=pointer]:
+          - /url: https://blog.google/feed/google-play-updates-google-io-2026/
+          - generic [ref=e265]:
+            - generic [ref=e267]: Google Play
+            - heading [level=4] [ref=e268]: Here's what developers can do with the latest Google Play updates.
+          - generic [ref=e270]: May 21, 2026
+          - img [ref=e271]
+        - link "AI Products - Making it easier to understand how content was created and edited - By Laurie Richardson & Pushmeet Kohli - May 19, 2026" [ref=e273] [cursor=pointer]:
+          - /url: https://blog.google/innovation-and-ai/products/identifying-ai-generated-media-online/
+          - generic [ref=e274]:
+            - generic [ref=e276]: AI Products
+            - heading [level=4] [ref=e277]: Making it easier to understand how content was created and edited
+          - generic [ref=e278]:
+            - generic [ref=e279]: By Laurie Richardson & Pushmeet Kohli -
+            - generic [ref=e280]: May 19, 2026
+          - img [ref=e281]
+        - link "Gemini models - Introducing Gemini Omni - By Koray Kavukcuoglu - May 19, 2026" [ref=e283] [cursor=pointer]:
+          - /url: https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/
+          - generic [ref=e284]:
+            - generic [ref=e286]: Gemini models
+            - heading [level=4] [ref=e287]: Introducing Gemini Omni
+          - generic [ref=e289]: By Koray Kavukcuoglu
+          - img [ref=e290]
+        - 'link "AI - I/O 2026: Welcome to the agentic Gemini era - By Sundar Pichai - May 19, 2026" [ref=e292] [cursor=pointer]':
+          - /url: https://blog.google/innovation-and-ai/sundar-pichai-io-2026/
+          - generic [ref=e293]:
+            - generic [ref=e295]: AI
+            - heading [level=4] [ref=e296]: "I/O 2026: Welcome to the agentic Gemini era"
+          - generic [ref=e297]:
+            - generic [ref=e298]: By Sundar Pichai -
+            - generic [ref=e299]: May 19, 2026
+          - img [ref=e300]
+        - 'link "Gemini models - Gemini 3.5: frontier intelligence with action - By Koray Kavukcuoglu & Jeff Dean & Oriol Vinyals & Noam Shazeer - May 19, 2026" [ref=e302] [cursor=pointer]':
+          - /url: https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-5/
+          - generic [ref=e303]:
+            - generic [ref=e305]: Gemini models
+            - heading [level=4] [ref=e306]: "Gemini 3.5: frontier intelligence with action"
+          - generic [ref=e307]:
+            - generic [ref=e308]: By Koray Kavukcuoglu & Jeff Dean & Oriol Vinyals & Noam Shazeer -
+            - generic [ref=e309]: May 19, 2026
+          - img [ref=e310]
+        - link "Developer tools - Introducing Managed Agents in the Gemini API - By Ali Çevik & Philipp Schmid - May 19, 2026" [ref=e312] [cursor=pointer]:
+          - /url: https://blog.google/innovation-and-ai/technology/developers-tools/managed-agents-gemini-api/
+          - generic [ref=e313]:
+            - generic [ref=e315]: Developer tools
+            - heading [level=4] [ref=e316]: Introducing Managed Agents in the Gemini API
+          - generic [ref=e317]:
+            - generic [ref=e318]: By Ali Çevik & Philipp Schmid -
+            - generic [ref=e319]: May 19, 2026
+          - img [ref=e320]
+      - tablist "Pagination" [ref=e321]:
+        - tab "Jump to position 1" [selected] [ref=e322] [cursor=pointer]:
+          - generic [ref=e323]: Jump to position 1
+        - tab "Jump to position 2" [ref=e324] [cursor=pointer]:
+          - generic [ref=e325]: Jump to position 2
+        - tab "Jump to position 3" [ref=e326] [cursor=pointer]:
+          - generic [ref=e327]: Jump to position 3
+        - tab "Jump to position 4" [ref=e328] [cursor=pointer]:
+          - generic [ref=e329]: Jump to position 4
+        - tab "Jump to position 5" [ref=e330] [cursor=pointer]:
+          - generic [ref=e331]: Jump to position 5
+        - tab "Jump to position 6" [ref=e332] [cursor=pointer]:
+          - generic [ref=e333]: Jump to position 6
+  - contentinfo [ref=e334]:
+    - generic [ref=e337]:
+      - paragraph [ref=e338]: Follow Us
+      - list [ref=e339]:
+        - listitem [ref=e340]:
+          - link "Instagram" [ref=e341] [cursor=pointer]:
+            - /url: https://www.instagram.com/google/
+            - img [ref=e342]
+        - listitem [ref=e344]:
+          - link "x.com" [ref=e345] [cursor=pointer]:
+            - /url: https://twitter.com/google
+            - img [ref=e346]
+        - listitem [ref=e348]:
+          - link "YouTube" [ref=e349] [cursor=pointer]:
+            - /url: https://www.youtube.com/google
+            - img [ref=e350]
+        - listitem [ref=e352]:
+          - link "Facebook" [ref=e353] [cursor=pointer]:
+            - /url: https://www.facebook.com/Google
+            - img [ref=e354]
+        - listitem [ref=e356]:
+          - link "LinkedIn" [ref=e357] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/google
+            - img [ref=e358]
+    - generic [ref=e360]:
+      - link "The Google logo" [ref=e362] [cursor=pointer]:
+        - /url: https://www.google.com
+        - img [ref=e363]
+      - list [ref=e365]:
+        - listitem [ref=e366]:
+          - link "Privacy" [ref=e367] [cursor=pointer]:
+            - /url: https://policies.google.com/privacy
+        - listitem [ref=e368]:
+          - link "Terms" [ref=e369] [cursor=pointer]:
+            - /url: https://policies.google.com/terms
+        - listitem [ref=e370]:
+          - link "About Google" [ref=e371] [cursor=pointer]:
+            - /url: https://about.google/
+        - listitem [ref=e372]:
+          - link "Google Products" [ref=e373] [cursor=pointer]:
+            - /url: https://about.google/products/
+        - listitem [ref=e374]:
+          - link "About the Keyword" [ref=e375] [cursor=pointer]:
+            - /url: /about/
+      - list [ref=e376]:
+        - listitem [ref=e377]:
+          - link "Help" [ref=e378] [cursor=pointer]:
+            - /url: https://support.google.com
+            - img [ref=e379]
+            - text: Help
+        - listitem [ref=e381]:
+          - combobox "Change Region" [ref=e383] [cursor=pointer]:
+            - option "Global (English)" [selected]
+            - option "Africa (English)"
+            - option "Australia (English)"
+            - option "Brasil (Português)"
+            - option "Canada (English)"
+            - option "Canada (Français)"
+            - option "Česko (Čeština)"
+            - option "Deutschland (Deutsch)"
+            - option "España (Español)"
+            - option "France (Français)"
+            - option "Greece (Ελληνικά)"
+            - option "India (English)"
+            - option "Indonesia (Bahasa Indonesia)"
+            - option "Italia (Italiano)"
+            - option "日本 (日本語)"
+            - option "대한민국 (한국어)"
+            - option "Latinoamérica (Español)"
+            - option "الشرق الأوسط وشمال أفريقيا (اللغة العربية)"
+            - option "MENA (English)"
+            - option "Nederlands (Nederland)"
+            - option "New Zealand (English)"
+            - option "Polska (Polski)"
+            - option "Portugal (Português)"
+            - option "Sverige (Svenska)"
+            - option "ประเทศไทย (ไทย)"
+            - option "Türkiye (Türkçe)"
+            - option "台灣 (中文)"

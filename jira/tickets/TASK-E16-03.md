@@ -1,10 +1,10 @@
 # TASK-E16-03: Token 预算仪表盘
 
 **EPIC**: EPIC-016  
-**状态**: ready  
+**状态**: done  
 **优先级**: P1  
 **预估**: 2d  
-**负责人**: 待分配  
+**负责人**: 数据/可视化专家 Slaver  
 **依赖**: 无
 
 ---
@@ -65,11 +65,11 @@ function getTokenUsage(): TokenUsage {
 
 ## 验收标准
 
-- [ ] Dashboard 显示 token 用量进度条
-- [ ] 5 级色阶正确渲染
-- [ ] 千分位格式化（`124,000`）
-- [ ] 估算成本显示（可选）
-- [ ] Alert75+ 时输出提示
+- [x] Dashboard 显示 token 用量进度条
+- [x] 5 级色阶正确渲染
+- [x] 千分位格式化（`124,000`）
+- [x] 估算成本显示（可选）
+- [x] Alert75+ 时输出提示
 
 ## 技术要点
 
@@ -84,3 +84,4 @@ function getTokenUsage(): TokenUsage {
 | 日期 | 变更 | 操作人 |
 |------|------|--------|
 | 2026-05-27 | 创建 Ticket | Master |
+| 2026-05-27 | 实现 TokenMeter 类 + CLI 渲染组件 + 40 个单元测试 | Slaver |
