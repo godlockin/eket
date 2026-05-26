@@ -20,8 +20,7 @@
  * ```
  */
 
-import { promises as fs } from 'fs';
-import { existsSync } from 'fs';
+import { promises as fs , existsSync } from 'fs';
 import * as path from 'path';
 
 export interface RetryState {

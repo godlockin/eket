@@ -6,8 +6,8 @@
  * failures dynamically switches subsequent operations seamlessly to the Node.js implementation.
  */
 
-import { MasterElection } from './master-election.js';
 import { EventBus, type EventHandler, type SubscriptionOptions } from './event-bus.js';
+import { MasterElection } from './master-election.js';
 
 // ============================================================================
 // Environment Detection Helper
@@ -49,7 +49,7 @@ export async function detectRustEnvironment(
     };
   } finally {
     // Cancel fetch response body to release the socket back to the undici connection pool
-    if (resp && resp.body && !resp.bodyUsed) {
+    if (resp?.body && !resp.bodyUsed) {
       await resp.body.cancel().catch(() => {});
     }
   }
@@ -91,9 +91,9 @@ export class RustElectionAdapter implements IMasterElection {
       }
 
       const data = (await resp.json()) as { success?: boolean };
-      return !!(data && data.success);
+      return !!(data?.success);
     } finally {
-      if (resp && resp.body && !resp.bodyUsed) {
+      if (resp?.body && !resp.bodyUsed) {
         await resp.body.cancel().catch(() => {});
       }
     }
@@ -203,7 +203,7 @@ export class RustEventBusAdapter {
         throw new Error(`Rust server event publish returned status ${resp.status}`);
       }
     } finally {
-      if (resp && resp.body && !resp.bodyUsed) {
+      if (resp?.body && !resp.bodyUsed) {
         await resp.body.cancel().catch(() => {});
       }
     }

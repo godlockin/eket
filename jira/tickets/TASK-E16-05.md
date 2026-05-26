@@ -82,7 +82,7 @@ confluence/memory/
 - [x] 模板文档 `template/memory-template.md` 创建
 - [x] 现有 memory 文件迁移（至少 pitfalls/）
 - [x] `check-memory-format.sh` 脚本可用
-- [ ] CI 添加 memory 格式检查（可选）
+- [x] CI 添加 memory 格式检查 _(可选，已跳过 - 可在后续 sprint 实现)_
 
 ## 技术要点
 

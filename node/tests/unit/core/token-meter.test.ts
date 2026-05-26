@@ -328,3 +328,15 @@ describe('renderCompactStatus', () => {
     expect(status).toContain(BudgetColors[BudgetState.Alert50]);
   });
 });
+
+describe('negative token validation', () => {
+  it('should throw error for negative input tokens', () => {
+    const meter = new TokenMeter(1000);
+    expect(() => meter.addInput(-100)).toThrow('Token count cannot be negative');
+  });
+
+  it('should throw error for negative output tokens', () => {
+    const meter = new TokenMeter(1000);
+    expect(() => meter.addOutput(-50)).toThrow('Token count cannot be negative');
+  });
+});

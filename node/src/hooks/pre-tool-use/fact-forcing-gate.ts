@@ -12,6 +12,8 @@
  * @module FactForcingGate
  */
 
+import path from 'path';
+
 import type { MiddlewareNode } from '../../core/middleware-pipeline.js';
 
 // ============================================================================
@@ -51,30 +53,57 @@ export interface FactForcingConfig {
 // Session Tracker
 // ============================================================================
 
+/** Session TTL: 30 minutes */
+export const SESSION_TTL_MS = 30 * 60 * 1000;
+
+interface SessionData {
+  readFiles: Set<string>;
+  grepPatterns: Set<string>;
+  lastAccess: number;
+}
+
 /**
  * 会话级文件访问追踪器
  * 记录每个会话已读取的文件和已 grep 的模式
+ * 支持 TTL 自动清理过期会话，防止内存泄漏
  */
 export class SessionTracker {
-  private sessions: Map<
-    string,
-    {
-      readFiles: Set<string>;
-      grepPatterns: Set<string>;
+  private sessions: Map<string, SessionData> = new Map();
+  private ttlMs: number;
+
+  constructor(ttlMs: number = SESSION_TTL_MS) {
+    this.ttlMs = ttlMs;
+  }
+
+  /**
+   * 清理过期会话
+   */
+  private cleanupExpiredSessions(): void {
+    const now = Date.now();
+    for (const [sessionId, data] of this.sessions) {
+      if (now - data.lastAccess > this.ttlMs) {
+        this.sessions.delete(sessionId);
+      }
     }
-  > = new Map();
+  }
 
   /**
    * 获取或创建会话数据
    */
-  private getSession(sessionId: string) {
+  private getSession(sessionId: string): SessionData {
+    // 访问时清理过期 session
+    this.cleanupExpiredSessions();
+
     if (!this.sessions.has(sessionId)) {
       this.sessions.set(sessionId, {
         readFiles: new Set(),
         grepPatterns: new Set(),
+        lastAccess: Date.now(),
       });
     }
-    return this.sessions.get(sessionId)!;
+    const session = this.sessions.get(sessionId)!;
+    session.lastAccess = Date.now(); // 更新访问时间
+    return session;
   }
 
   /**
@@ -133,11 +162,32 @@ export class SessionTracker {
   }
 
   /**
+   * 清理所有会话数据
+   */
+  clearAllSessions(): void {
+    this.sessions.clear();
+  }
+
+  /**
+   * 获取当前会话数量
+   */
+  getSessionCount(): number {
+    return this.sessions.size;
+  }
+
+  /**
    * 规范化路径
    */
   private normalizePath(filePath: string): string {
-    // 去除前导 ./ 和规范化分隔符
-    return filePath.replace(/^\.\//, '').replace(/\\/g, '/');
+    // 1. 使用 path.normalize 处理 ../、//、等
+    let normalized = path.normalize(filePath);
+    // 2. 去除前导 ./
+    normalized = normalized.replace(/^\.[\\/]/, '');
+    // 3. 统一使用 / 作为分隔符
+    normalized = normalized.replace(/\\/g, '/');
+    // 4. 去除尾部斜杠
+    normalized = normalized.replace(/\/$/, '');
+    return normalized;
   }
 }
 

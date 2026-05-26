@@ -73,7 +73,7 @@ export class StateReconciler {
    */
   async reconcile(): Promise<Result<number>> {
     console.log(`[StateReconciler] 启动数据对齐流程，扫描目录: ${this.queueDir}`);
-    
+
     if (!fs.existsSync(this.queueDir)) {
       return { success: true, data: 0 };
     }
@@ -109,12 +109,12 @@ export class StateReconciler {
         try {
           const content = fs.readFileSync(filePath, 'utf-8');
           const parsed = JSON.parse(content);
-          
+
           let id = '';
           let timestamp = Date.now();
           let channel = 'default';
           let messageData: ReconciledMessageData = parsed as ReconciledMessageData;
-          let fileType: 'json' | 'msg' = file.endsWith('.msg') ? 'msg' : 'json';
+          const fileType: 'json' | 'msg' = file.endsWith('.msg') ? 'msg' : 'json';
 
           if (fileType === 'msg') {
             // Shell fallback 写入的格式：{ command, args, timestamp, status }
@@ -217,7 +217,7 @@ export class StateReconciler {
     if (this.db) {
       try {
         const result = await this.db.get('SELECT id FROM message_history WHERE message_id = ?', [messageId]);
-        if (result.success && result.data) return true;
+        if (result.success && result.data) {return true;}
       } catch {
         // 忽略错误
       }
@@ -259,7 +259,7 @@ export class StateReconciler {
     if (this.db) {
       try {
         console.log('[StateReconciler Debug] Replaying ticket to SQLite:', msg.data);
-        
+
         // 1. 保存入消息历史
         await this.db.execute(
           'INSERT OR REPLACE INTO message_history (message_id, from_agent, to_agent, type, payload, created_at) VALUES (?, ?, ?, ?, ?, ?)',

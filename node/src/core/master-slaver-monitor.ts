@@ -12,11 +12,12 @@
  * ```
  */
 
-import fs from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
 import { execFile } from 'child_process';
+import { existsSync } from 'fs';
+import fs from 'fs/promises';
+import path from 'path';
 import { promisify } from 'util';
+
 import { AutoRetryManager } from './auto-retry-manager.js';
 
 const execFileAsync = promisify(execFile);

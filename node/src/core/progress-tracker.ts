@@ -19,9 +19,10 @@
  * ```
  */
 
+import { EventEmitter } from 'events';
 import fs from 'fs/promises';
 import path from 'path';
-import { EventEmitter } from 'events';
+
 import {
   Checkpoint,
   CheckpointMetadata,

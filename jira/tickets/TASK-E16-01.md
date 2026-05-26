@@ -1,7 +1,7 @@
 # TASK-E16-01: Fact-Forcing Gate 实现
 
 **EPIC**: EPIC-016  
-**状态**: ready  
+**状态**: done  
 **优先级**: P0  
 **预估**: 2d  
 **负责人**: 待分配  

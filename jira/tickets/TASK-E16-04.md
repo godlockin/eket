@@ -1,7 +1,7 @@
 # TASK-E16-04: Hook Dispatcher 聚合
 
 **EPIC**: EPIC-016  
-**状态**: ready  
+**状态**: done  
 **优先级**: P1  
 **预估**: 1d  
 **负责人**: 待分配  
