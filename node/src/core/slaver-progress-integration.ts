@@ -26,13 +26,16 @@
  * ```
  */
 
-import { ProgressTracker } from './progress-tracker.js';
-import { SlaverWatchdog } from './slaver-watchdog.js';
-import { IOActivityMonitor, type HangReport } from './io-activity-monitor.js';
-import { CheckpointMetadata, TaskPhase, type ResumeContext } from '../types/progress-tracker.js';
-import { createMessage } from './message-queue.js';
 import fs from 'fs/promises';
 import path from 'path';
+
+import { CheckpointMetadata, TaskPhase, type ResumeContext } from '../types/progress-tracker.js';
+
+import { IOActivityMonitor, type HangReport } from './io-activity-monitor.js';
+import { createMessage } from './message-queue.js';
+import { ProgressTracker } from './progress-tracker.js';
+import { SlaverWatchdog } from './slaver-watchdog.js';
+
 
 /**
  * Global singleton ProgressTracker instance

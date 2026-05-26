@@ -67,11 +67,11 @@ export class SemanticValidator {
     const hasRisk = /##\s*.*?(risk|风险).*?/i.test(lowerContent);
 
     const missingSections: string[] = [];
-    if (!hasGoals) missingSections.push('Requirements/Goals (需求分析/目标)');
-    if (!hasApproach) missingSections.push('Technical Approach (技术方案)');
-    if (!hasImpact) missingSections.push('Impact Analysis (影响分析)');
-    if (!hasBreakdown) missingSections.push('Task Breakdown (任务分解)');
-    if (!hasRisk) missingSections.push('Risk Assessment (风险评估)');
+    if (!hasGoals) {missingSections.push('Requirements/Goals (需求分析/目标)');}
+    if (!hasApproach) {missingSections.push('Technical Approach (技术方案)');}
+    if (!hasImpact) {missingSections.push('Impact Analysis (影响分析)');}
+    if (!hasBreakdown) {missingSections.push('Task Breakdown (任务分解)');}
+    if (!hasRisk) {missingSections.push('Risk Assessment (风险评估)');}
 
     if (missingSections.length > 0) {
       return {
@@ -115,7 +115,7 @@ export class SemanticValidator {
       }
     }
     cacheData[contentHash] = result;
-    
+
     // 采用原子写入策略，防止多进程或进程崩溃导致 JSON 文件损坏
     const tmpPath = `${this.cachePath}.tmp.${Date.now()}.${Math.random().toString(36).slice(2, 8)}`;
     try {
@@ -194,10 +194,10 @@ export class SemanticValidator {
       const lowerReport = reportContent.toLowerCase();
       const hasTodo = /todo|tbd|待定|待填/.test(lowerReport);
       const isCopyPaste = lowerReport.includes(ticketAc.toLowerCase().substring(0, 100));
-      
+
       const score = hasTodo || isCopyPaste ? 50 : 80;
-      const reason = hasTodo 
-        ? '方案中包含 TODO/TBD 等待定字样（生产环境降级校验）' 
+      const reason = hasTodo
+        ? '方案中包含 TODO/TBD 等待定字样（生产环境降级校验）'
         : (isCopyPaste ? '方案疑似大面积抄袭或重复 AC（生产环境降级校验）' : '通过基本结构检验（生产环境降级通过）');
       const passed = score >= 70;
 
