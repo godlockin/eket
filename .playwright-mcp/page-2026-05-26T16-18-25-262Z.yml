@@ -1,0 +1,543 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e3]:
+    - figure [ref=e4]:
+      - img "The Google logo"
+    - link "Skip to main content" [ref=e5] [cursor=pointer]:
+      - /url: "#jump-content"
+      - generic [ref=e6]: Skip to main content
+    - link "The Keyword" [ref=e8] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e9]: The Keyword
+    - navigation "Main" [ref=e10]:
+      - list [ref=e12]:
+        - listitem [ref=e13]:
+          - button "Home" [ref=e14] [cursor=pointer]
+        - listitem [ref=e15]:
+          - button "Innovation & AI" [ref=e16] [cursor=pointer]:
+            - text: Innovation & AI
+            - figure
+        - listitem [ref=e17]:
+          - button "Products & platforms" [ref=e18] [cursor=pointer]:
+            - text: Products & platforms
+            - figure
+        - listitem [ref=e19]:
+          - button "Company news" [ref=e20] [cursor=pointer]:
+            - text: Company news
+            - figure
+        - listitem [ref=e21]:
+          - button "Feed" [ref=e22] [cursor=pointer]
+    - generic [ref=e23]:
+      - button "Search" [ref=e24] [cursor=pointer]:
+        - img [ref=e26]
+      - generic [ref=e28]:
+        - img [ref=e31]
+        - combobox "Change Region" [ref=e36] [cursor=pointer]:
+          - option "Global (English)" [selected]
+          - option "Africa (English)"
+          - option "Australia (English)"
+          - option "Brasil (Português)"
+          - option "Canada (English)"
+          - option "Canada (Français)"
+          - option "Česko (Čeština)"
+          - option "Deutschland (Deutsch)"
+          - option "España (Español)"
+          - option "France (Français)"
+          - option "Greece (Ελληνικά)"
+          - option "India (English)"
+          - option "Indonesia (Bahasa Indonesia)"
+          - option "Italia (Italiano)"
+          - option "日本 (日本語)"
+          - option "대한민국 (한국어)"
+          - option "Latinoamérica (Español)"
+          - option "الشرق الأوسط وشمال أفريقيا (اللغة العربية)"
+          - option "MENA (English)"
+          - option "Nederlands (Nederland)"
+          - option "New Zealand (English)"
+          - option "Polska (Polski)"
+          - option "Portugal (Português)"
+          - option "Sverige (Svenska)"
+          - option "ประเทศไทย (ไทย)"
+          - option "Türkiye (Türkçe)"
+          - option "台灣 (中文)"
+      - button "Secondary menu" [ref=e38] [cursor=pointer]:
+        - img [ref=e40]
+    - link "Newsletter subscribe" [ref=e43] [cursor=pointer]:
+      - /url: /newsletter-subscribe/
+      - text: Subscribe
+  - main [ref=e44]:
+    - article [ref=e45]:
+      - generic [ref=e47]:
+        - navigation "Breadcrumb" [ref=e51]:
+          - list [ref=e52]:
+            - listitem [ref=e53]:
+              - link "The Keyword" [ref=e54] [cursor=pointer]:
+                - /url: https://blog.google/
+                - img [ref=e55]
+            - listitem [ref=e57]:
+              - img [ref=e58]
+              - link "Innovation & AI" [ref=e60] [cursor=pointer]:
+                - /url: https://blog.google/innovation-and-ai/
+            - listitem [ref=e61]:
+              - img [ref=e62]
+              - link "Products" [ref=e64] [cursor=pointer]:
+                - /url: https://blog.google/innovation-and-ai/products/
+        - heading "Introducing Nano Banana Pro" [level=1] [ref=e66]
+      - generic [ref=e67]:
+        - generic [ref=e69]:
+          - generic [ref=e71]:
+            - paragraph [ref=e72]: Nov 20, 2025
+            - paragraph [ref=e74]: 14 min read
+          - paragraph [ref=e75]: Turn your visions into studio-quality designs with unprecedented control, improved text rendering and enhanced world knowledge.
+        - generic [ref=e76]:
+          - generic [ref=e78]:
+            - generic [ref=e79]: "N"
+            - generic [ref=e80]:
+              - generic [ref=e81]: Naina Raisinghani
+              - generic [ref=e82]: Product Manager, Google DeepMind
+          - button "Read AI-generated summary" [ref=e85] [cursor=pointer]:
+            - img [ref=e86]
+            - text: Read AI-generated summary
+            - img [ref=e88]
+          - button "Share" [ref=e92] [cursor=pointer]:
+            - img [ref=e93]
+            - generic [ref=e95]: Share
+      - button "Nano Banana Pro with generated images around it" [ref=e100] [cursor=pointer]:
+        - generic [ref=e101]:
+          - img "Nano Banana Pro with generated images around it" [ref=e102]
+          - img [ref=e104]
+          - img [ref=e106]
+      - generic [ref=e110]:
+        - img [ref=e114]
+        - generic [ref=e117]:
+          - paragraph [ref=e118]:
+            - text: Just a few months ago we released
+            - link "Nano Banana" [ref=e119] [cursor=pointer]:
+              - /url: https://blog.google/products/gemini/updated-image-editing-model/
+            - text: ", our Gemini 2.5 Flash Image model. From"
+            - link "restoring old photos" [ref=e120] [cursor=pointer]:
+              - /url: https://x.com/GeminiApp/status/1968693520891351534
+            - text: to generating
+            - link "mini figurines" [ref=e121] [cursor=pointer]:
+              - /url: https://x.com/GeminiApp/status/1962647019090256101
+            - text: ", Nano Banana was a big step in image editing that empowered casual creators to express their creativity."
+          - paragraph [ref=e122]:
+            - text: Today, we’re introducing
+            - link "Nano Banana Pro (Gemini 3 Pro Image)" [ref=e123] [cursor=pointer]:
+              - /url: http://deepmind.google/models/gemini-image/pro
+            - text: ", our new state-of-the art image generation and editing model. Built on"
+            - link "Gemini 3 Pro" [ref=e124] [cursor=pointer]:
+              - /url: https://blog.google/products/gemini/gemini-3/
+            - text: ", Nano Banana Pro uses Gemini’s state-of-the-art reasoning and real-world knowledge to visualize information better than ever before."
+        - generic [ref=e126]:
+          - heading "How Nano Banana Pro helps you bring any idea or design to life" [level=2] [ref=e127]
+          - paragraph [ref=e128]: Nano Banana Pro can help you visualize any idea and design anything — from prototypes, to representing data as infographics, to turning handwritten notes into diagrams.
+          - paragraph [ref=e129]: "With Nano Banana Pro, now you can:"
+          - paragraph [ref=e130]: Generate more accurate, context-rich visuals based on enhanced reasoning, world knowledge and real-time information
+          - paragraph [ref=e131]: With Gemini 3’s advanced reasoning, Nano Banana Pro doesn’t just create beautiful images, it also helps you create more helpful content. You can get accurate educational explainers to learn more about a new subject, like context-rich infographics and diagrams based on the content you provide or facts from the real world. Nano Banana Pro can also connect to Google Search's vast knowledge base to help you create a quick snapshot for a recipe or visualize real-time information like weather or sports.
+        - region "carousel" [ref=e134]:
+          - button "Previous item" [ref=e135] [cursor=pointer]:
+            - img [ref=e137]
+          - button "Next item" [ref=e139] [cursor=pointer]:
+            - img [ref=e141]
+          - generic [ref=e143]:
+            - tabpanel [ref=e144]:
+              - generic [ref=e146]:
+                - img "Infographic about plants using nano banana pro" [ref=e154]
+                - paragraph [ref=e157]:
+                  - text: An infographic of the common house plant, String of Turtles, with information on origins, care essentials and growth patterns....
+                  - button "Read more" [ref=e158] [cursor=pointer]
+            - tabpanel [ref=e159]:
+              - generic [ref=e161]:
+                - img [ref=e169]
+                - paragraph [ref=e172]:
+                  - text: Step-by-step infographic for making Elaichi Chai (cardamom tea), demonstrating the ability to visualize recipes and real-world information....
+                  - button [ref=e173] [cursor=pointer]: Read more
+            - tabpanel [ref=e174]:
+              - generic [ref=e176]:
+                - img [ref=e184]
+                - paragraph [ref=e188]: We used Nano Banana Pro to pull in real-time weather via Search grounding to build a pop-art infographic.
+          - tablist [ref=e189]:
+            - tab "Jump to position 1" [selected] [ref=e190] [cursor=pointer]
+            - tab "Jump to position 2" [ref=e191] [cursor=pointer]
+            - tab "Jump to position 3" [ref=e192] [cursor=pointer]
+        - generic [ref=e194]:
+          - paragraph [ref=e195]: Generate better visuals with more accurate, legible text directly in the image in multiple languages
+          - paragraph [ref=e196]:
+            - text: Nano Banana Pro is the best model for creating images with correctly rendered and legible text directly in the image, whether you’re looking for a short tagline, or a long paragraph. Gemini 3 is great at understanding depth and nuance, which unlocks a world of possibilities with image editing and generation — especially with text. Now
+            - link "you can create" [ref=e197] [cursor=pointer]:
+              - /url: https://blog.google/products/gemini/prompting-tips-nano-banana-pro
+            - text: more detailed text in mockups or posters with a wider variety of textures, fonts and calligraphy. With Gemini’s enhanced multilingual reasoning, you can generate text in multiple languages, or localize and translate your content so you can scale internationally and/or share content more easily with friends and family.
+        - region "carousel" [ref=e200]:
+          - button "Previous item" [ref=e201] [cursor=pointer]:
+            - img [ref=e203]
+          - button "Next item" [ref=e205] [cursor=pointer]:
+            - img [ref=e207]
+          - generic [ref=e209]:
+            - tabpanel [ref=e210]:
+              - generic [ref=e212]:
+                - 'img "Storyboard showing four panels for \"Urban Astronaut\": establishing shot, medium shot, close-up, and POV shot up city buildings." [ref=e220]'
+                - generic [ref=e223]:
+                  - paragraph [ref=e224]: A black and white storyboard sketch showing an establishing shot, medium shot, close-up, and POV shot for a film scene.
+                  - paragraph [ref=e225]: "Prompt: Create a storyboard for this scene"
+            - tabpanel [ref=e226]:
+              - generic [ref=e228]:
+                - img [ref=e236]
+                - paragraph [ref=e239]:
+                  - text: The word 'BERLIN' integrated into the architecture of a city block, spanning across multiple buildings....
+                  - button [ref=e240] [cursor=pointer]: Read more
+            - tabpanel [ref=e241]:
+              - generic [ref=e243]:
+                - img [ref=e251]
+                - paragraph [ref=e254]:
+                  - text: Calligraphy inspired by meaning, showcasing the ability to generate expressive text with a wider variety of textures and fonts....
+                  - button [ref=e255] [cursor=pointer]: Read more
+            - tabpanel [ref=e256]:
+              - generic [ref=e258]:
+                - img [ref=e266]
+                - paragraph [ref=e269]:
+                  - text: A beverage campaign concept showcasing accurate translation and rendering of English text into Korean....
+                  - button [ref=e270] [cursor=pointer]: Read more
+            - tabpanel [ref=e271]:
+              - generic [ref=e273]:
+                - img [ref=e281]
+                - paragraph [ref=e284]:
+                  - text: A graphic design featuring the word 'TYPOGRAPHY' with a retro, screen-printed texture....
+                  - button [ref=e285] [cursor=pointer]: Read more
+            - tabpanel [ref=e286]:
+              - generic [ref=e288]:
+                - img [ref=e296]
+                - paragraph [ref=e299]:
+                  - text: Blending text and texture in a creative way by integrating the phrase into a woodchopping scene....
+                  - button [ref=e300] [cursor=pointer]: Read more
+          - tablist [ref=e301]:
+            - tab "Jump to position 1" [selected] [ref=e302] [cursor=pointer]
+            - tab "Jump to position 2" [ref=e303] [cursor=pointer]
+            - tab "Jump to position 3" [ref=e304] [cursor=pointer]
+            - tab "Jump to position 4" [ref=e305] [cursor=pointer]
+            - tab "Jump to position 5" [ref=e306] [cursor=pointer]
+            - tab "Jump to position 6" [ref=e307] [cursor=pointer]
+        - generic [ref=e309]:
+          - paragraph [ref=e310]: Create high-fidelity visuals with upgraded creative capabilities
+          - list [ref=e311]:
+            - listitem [ref=e312]: "Consistency by design: With Nano Banana Pro, you can blend more elements than ever before, using up to 14 images and maintaining the consistency and resemblance of up to 5 people. Whether turning sketches into products or blueprints into photorealistic 3D structures, you can now bridge the gap between concept and creation. Apply your desired visual look and feel to your mockups with ease, ensuring your branding remains seamless and consistent across every touchpoint."
+        - region "carousel" [ref=e315]:
+          - button "Previous item" [ref=e316] [cursor=pointer]:
+            - img [ref=e318]
+          - button "Next item" [ref=e320] [cursor=pointer]:
+            - img [ref=e322]
+          - generic [ref=e324]:
+            - tabpanel [ref=e325]:
+              - generic [ref=e327]:
+                - img "Fluffy characters watching TV" [ref=e335]
+                - paragraph [ref=e338]:
+                  - text: Maintaining the consistency of up to 14 inputs, including multiple characters, across a complex composition....
+                  - button "Read more" [ref=e339] [cursor=pointer]
+            - tabpanel [ref=e340]:
+              - generic [ref=e342]:
+                - img [ref=e350]
+                - paragraph [ref=e353]:
+                  - text: Craft lifestyle scenes by combining multiple elements....
+                  - button [ref=e354] [cursor=pointer]: Read more
+            - tabpanel [ref=e355]:
+              - generic [ref=e357]:
+                - img [ref=e365]
+                - generic [ref=e368]:
+                  - paragraph [ref=e369]: Create surreal landscapes by combining multiple input elements.
+                  - paragraph [ref=e370]: "Prompt: Combine these images into one appropriately arranged cinematic image in 16:9 format"
+            - tabpanel [ref=e371]:
+              - generic [ref=e373]:
+                - img [ref=e381]
+                - paragraph [ref=e384]:
+                  - text: A high-fashion editorial shot set in a desert landscape that maintains the consistency and resemblance of the people from the 6 input photos....
+                  - button [ref=e385] [cursor=pointer]: Read more
+          - tablist [ref=e386]:
+            - tab "Jump to position 1" [selected] [ref=e387] [cursor=pointer]
+            - tab "Jump to position 2" [ref=e388] [cursor=pointer]
+            - tab "Jump to position 3" [ref=e389] [cursor=pointer]
+            - tab "Jump to position 4" [ref=e390] [cursor=pointer]
+        - list [ref=e393]:
+          - listitem [ref=e394]: "Studio-quality creative controls: With Nano Banana Pro's new capabilities we are putting advanced creative controls directly into your hands. Select, refine and transform any part of an image with improved localized editing. Adjust camera angles, change the focus and apply sophisticated color grading, or even transform scene lighting (e.g. changing day to night or creating a bokeh effect). Your creations are ready for any platform, from social media to print, thanks to a range of available aspect ratios and available 2K and 4K resolution"
+        - region "carousel" [ref=e397]:
+          - button "Previous item" [ref=e398] [cursor=pointer]:
+            - img [ref=e400]
+          - button "Next item" [ref=e402] [cursor=pointer]:
+            - img [ref=e404]
+          - generic [ref=e406]:
+            - tabpanel [ref=e407]:
+              - generic [ref=e409]:
+                - img "changing the aspect ratio of an image using Nano Banana" [ref=e417]
+                - paragraph [ref=e420]:
+                  - text: Change the look and feel of an image for a range of platforms by adapting the aspect ratio....
+                  - button "Read more" [ref=e421] [cursor=pointer]
+            - tabpanel [ref=e422]:
+              - generic [ref=e424]:
+                - img [ref=e432]
+                - generic [ref=e435]:
+                  - paragraph [ref=e436]: Lighting and focus controls applied to transform a scene from day to night.
+                  - paragraph [ref=e437]: "Prompt: Turn this scene into nighttime"
+            - tabpanel [ref=e438]:
+              - generic [ref=e440]:
+                - img [ref=e448]
+                - paragraph [ref=e451]:
+                  - text: Obscure or enlighten a section of your image with lighting controls to achieve specific dramatic effects....
+                  - button [ref=e452] [cursor=pointer]: Read more
+            - tabpanel [ref=e453]:
+              - generic [ref=e455]:
+                - img [ref=e463]
+                - generic [ref=e466]:
+                  - paragraph [ref=e467]: Bring out the details of your composition by adjusting the depth of field or focal point (e.g., focusing on the flowers).
+                  - paragraph [ref=e468]: "Prompt: Focus on the flowers"
+          - tablist [ref=e469]:
+            - tab "Jump to position 1" [selected] [ref=e470] [cursor=pointer]
+            - tab "Jump to position 2" [ref=e471] [cursor=pointer]
+            - tab "Jump to position 3" [ref=e472] [cursor=pointer]
+            - tab "Jump to position 4" [ref=e473] [cursor=pointer]
+        - generic [ref=e475]:
+          - heading "How you can try Nano Banana Pro today" [level=2] [ref=e476]
+          - paragraph [ref=e477]: "Across our products and services, you now have a choice: the original Nano Banana for fast, fun editing, or Nano Banana Pro for complex compositions requiring the highest quality and visually sophisticated results."
+          - list [ref=e478]:
+            - listitem [ref=e479]:
+              - text: "Consumers and students: Rolling out globally in the"
+              - link "Gemini app" [ref=e480] [cursor=pointer]:
+                - /url: https://gemini.google/overview/image-generation/
+              - text: when you select ‘Create images’ with the ‘Thinking’ model. Our free-tier users will receive limited free quotas, after which they will revert to the original Nano Banana model. Google AI Plus, Pro and Ultra subscribers receive higher quotas. For AI Mode in Search, Nano Banana Pro is available in the U.S. for Google AI Pro and Ultra subscribers. For
+              - link "NotebookLM" [ref=e481] [cursor=pointer]:
+                - /url: https://notebooklm.google/
+              - text: ", Nano Banana Pro is also available for subscribers globally."
+            - listitem [ref=e482]:
+              - text: "Professionals: We're upgrading image generation in"
+              - link "Google Ads" [ref=e483] [cursor=pointer]:
+                - /url: https://business.google.com/us/google-ads/
+              - text: to Nano Banana Pro to put cutting-edge creative and editing power directly into the hands of advertisers globally. It’s also rolling out starting today to
+              - link "Workspace customers" [ref=e484] [cursor=pointer]:
+                - /url: http://workspaceupdates.googleblog.com/2025/11/workspace-nano-banana-pro.html
+              - text: in
+              - link "Google Slides" [ref=e485] [cursor=pointer]:
+                - /url: https://slides.new/
+              - text: and
+              - link "Vids" [ref=e486] [cursor=pointer]:
+                - /url: https://vids.new/
+              - text: .
+            - listitem [ref=e487]:
+              - text: "Developers and enterprise: Starting to roll out in the"
+              - link "Gemini API and Google AI Studio" [ref=e488] [cursor=pointer]:
+                - /url: https://blog.google/technology/developers/gemini-3-pro-image-developers
+              - text: ", and in"
+              - link "Google Antigravity" [ref=e489] [cursor=pointer]:
+                - /url: http://antigravity.google/
+              - text: to create rich UX layouts & mockups;
+              - link "enterprises" [ref=e490] [cursor=pointer]:
+                - /url: https://cloud.google.com/blog/products/ai-machine-learning/nano-banana-pro-available-for-enterprise
+              - text: can start building in Vertex AI for scaled creation today and it’s coming soon to Gemini Enterprise.
+            - listitem [ref=e491]:
+              - text: "Creatives: Starting to roll out to Google AI Ultra subscribers in"
+              - link "Flow" [ref=e492] [cursor=pointer]:
+                - /url: http://flow.google/
+              - text: ", our AI filmmaking tool, to give creatives, filmmakers and marketers even more precision and control over their frames and scenes."
+        - generic [ref=e494]:
+          - heading "How to identify AI-generated images in the Gemini app" [level=2] [ref=e495]
+          - paragraph [ref=e496]:
+            - text: We believe it’s critical to know when an image is AI-generated. This is why all media generated by Google’s tools are embedded with our imperceptible
+            - link "SynthID" [ref=e497] [cursor=pointer]:
+              - /url: https://deepmind.google/models/synthid/
+            - text: digital watermark.
+          - paragraph [ref=e498]: "Today, we are putting a powerful verification tool directly in consumers’ hands: you can now upload an image into the Gemini app and simply ask if it was generated by Google AI, thanks to SynthID technology. We are starting with English language prompts for images, and will expand to more languages, audio and video soon."
+        - generic [ref=e503]:
+          - img [ref=e506]
+          - generic "Example of AI image detection" [ref=e508]: Sorry, your browser doesn't support embedded videos, but don't worry, you can and watch it with your favorite video player!
+        - generic [ref=e510]:
+          - paragraph [ref=e511]: In addition to SynthID, we will maintain a visible watermark (the Gemini sparkle) on images generated by free and Google AI Pro tier users, to make images even more easy to detect as Google AI-generated.
+          - paragraph [ref=e512]: Recognizing the need for a clean visual canvas for professional work, we will remove the visible watermark from images generated by Google AI Ultra subscribers and within the Google AI Studio developer tool.
+          - paragraph [ref=e513]:
+            - text: You can find out more about how we’re increasing transparency in AI content with SynthID in our
+            - link "blog post" [ref=e514] [cursor=pointer]:
+              - /url: https://blog.google/technology/ai/ai-image-verification-gemini-app/
+            - text: .
+        - link "Related Article. Image with multiple input-output images with the text Build with Nano Banana Pro in the center. Build with Nano Banana Pro. Nano Banana Pro, or Gemini 3 Pro Image, is our most advanced image generation and editing model. See more" [ref=e516] [cursor=pointer]:
+          - /url: https://blog.google/innovation-and-ai/technology/developers-tools/gemini-3-pro-image-developers/
+          - paragraph [ref=e518]: Related Article
+          - generic [ref=e519]:
+            - figure [ref=e521]:
+              - img [ref=e523]
+            - generic [ref=e524]:
+              - heading [level=2] [ref=e525]: Build with Nano Banana Pro
+              - paragraph [ref=e526]: Nano Banana Pro, or Gemini 3 Pro Image, is our most advanced image generation and editing model.
+            - generic [ref=e527]:
+              - generic [ref=e528]: See more
+              - img [ref=e530]
+        - link "Related Article. Collage of images created with Google AI Nano Banana Pro. Nano Banana Pro prompting tips. Here are some tips for writing more effective prompts for image generation and editing in Gemini using Nano Banana Pro. See more" [ref=e532] [cursor=pointer]:
+          - /url: https://blog.google/products-and-platforms/products/gemini/prompting-tips-nano-banana-pro/
+          - paragraph [ref=e534]: Related Article
+          - generic [ref=e535]:
+            - figure [ref=e537]:
+              - img [ref=e539]
+            - generic [ref=e540]:
+              - heading [level=2] [ref=e541]: Nano Banana Pro prompting tips
+              - paragraph [ref=e542]: Here are some tips for writing more effective prompts for image generation and editing in Gemini using Nano Banana Pro.
+            - generic [ref=e543]:
+              - generic [ref=e544]: See more
+              - img [ref=e546]
+        - generic [ref=e548]:
+          - generic [ref=e550]: "POSTED IN:"
+          - navigation [ref=e551]:
+            - list [ref=e552]:
+              - listitem [ref=e553]:
+                - link "AI Products" [ref=e554] [cursor=pointer]:
+                  - /url: " https://blog.google/innovation-and-ai/products/ "
+              - listitem [ref=e555]:
+                - link "Gemini models" [ref=e556] [cursor=pointer]:
+                  - /url: " https://blog.google/products-and-platforms/products/gemini/ "
+              - listitem [ref=e557]:
+                - link "Gemini App" [ref=e558] [cursor=pointer]:
+                  - /url: " https://blog.google/products-and-platforms/products/gemini/ "
+              - listitem [ref=e559]:
+                - link "Search" [ref=e560] [cursor=pointer]:
+                  - /url: " https://blog.google/products-and-platforms/products/search/ "
+    - generic [ref=e562]:
+      - heading "Related stories" [level=3] [ref=e565]:
+        - generic [ref=e566]: Related stories
+      - button "Previous item" [disabled]
+      - button "Next item" [ref=e567] [cursor=pointer]
+      - region [ref=e570]:
+        - link "Search - We’re partnering with U.S. Soccer to bring fans closer to the action with Search. - Soccer is the most searched sport in the world, and U.S. fans’ passion is reaching new heights. To fuel that excitement, we’re partnering with the U.S. Men’s and Women’s… - By - May 21, 2026" [ref=e572] [cursor=pointer]:
+          - /url: https://blog.google/company-news/inside-google/company-announcements/us-soccer-teams/
+          - generic [ref=e573]:
+            - generic [ref=e575]: Search
+            - heading [level=4] [ref=e576]: We’re partnering with U.S. Soccer to bring fans closer to the action with Search.
+          - generic [ref=e578]: May 21, 2026
+          - img [ref=e579]
+        - link "AI - 100 things we announced at I/O 2026 - By Keyword Team - May 20, 2026" [ref=e581] [cursor=pointer]:
+          - /url: https://blog.google/innovation-and-ai/technology/ai/google-io-2026-all-our-announcements/
+          - generic [ref=e582]:
+            - generic [ref=e584]: AI
+            - heading [level=4] [ref=e585]: 100 things we announced at I/O 2026
+          - generic [ref=e586]:
+            - generic [ref=e587]: By Keyword Team -
+            - generic [ref=e588]: May 20, 2026
+          - img [ref=e589]
+        - link "AI Products - Making it easier to understand how content was created and edited - By Laurie Richardson & Pushmeet Kohli - May 19, 2026" [ref=e591] [cursor=pointer]:
+          - /url: https://blog.google/innovation-and-ai/products/identifying-ai-generated-media-online/
+          - generic [ref=e592]:
+            - generic [ref=e594]: AI Products
+            - heading [level=4] [ref=e595]: Making it easier to understand how content was created and edited
+          - generic [ref=e596]:
+            - generic [ref=e597]: By Laurie Richardson & Pushmeet Kohli -
+            - generic [ref=e598]: May 19, 2026
+          - img [ref=e599]
+        - link "Search - How AI Mode is changing the way people search in the U.S. - By Shivani Mohan - May 19, 2026" [ref=e601] [cursor=pointer]:
+          - /url: https://blog.google/products-and-platforms/products/search/ai-mode-us-insights/
+          - generic [ref=e602]:
+            - generic [ref=e604]: Search
+            - heading [level=4] [ref=e605]: How AI Mode is changing the way people search in the U.S.
+          - generic [ref=e606]:
+            - generic [ref=e607]: By Shivani Mohan -
+            - generic [ref=e608]: May 19, 2026
+          - img [ref=e609]
+        - link "Gemini models - Introducing Gemini Omni - By Koray Kavukcuoglu - May 19, 2026" [ref=e611] [cursor=pointer]:
+          - /url: https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/
+          - generic [ref=e612]:
+            - generic [ref=e614]: Gemini models
+            - heading [level=4] [ref=e615]: Introducing Gemini Omni
+          - generic [ref=e617]: By Koray Kavukcuoglu
+          - img [ref=e618]
+        - 'link "AI - I/O 2026: Welcome to the agentic Gemini era - By Sundar Pichai - May 19, 2026" [ref=e620] [cursor=pointer]':
+          - /url: https://blog.google/innovation-and-ai/sundar-pichai-io-2026/
+          - generic [ref=e621]:
+            - generic [ref=e623]: AI
+            - heading [level=4] [ref=e624]: "I/O 2026: Welcome to the agentic Gemini era"
+          - generic [ref=e625]:
+            - generic [ref=e626]: By Sundar Pichai -
+            - generic [ref=e627]: May 19, 2026
+          - img [ref=e628]
+      - tablist "Pagination" [ref=e629]:
+        - tab "Jump to position 1" [selected] [ref=e630] [cursor=pointer]:
+          - generic [ref=e631]: Jump to position 1
+        - tab "Jump to position 2" [ref=e632] [cursor=pointer]:
+          - generic [ref=e633]: Jump to position 2
+        - tab "Jump to position 3" [ref=e634] [cursor=pointer]:
+          - generic [ref=e635]: Jump to position 3
+        - tab "Jump to position 4" [ref=e636] [cursor=pointer]:
+          - generic [ref=e637]: Jump to position 4
+        - tab "Jump to position 5" [ref=e638] [cursor=pointer]:
+          - generic [ref=e639]: Jump to position 5
+        - tab "Jump to position 6" [ref=e640] [cursor=pointer]:
+          - generic [ref=e641]: Jump to position 6
+  - contentinfo [ref=e642]:
+    - generic [ref=e645]:
+      - paragraph [ref=e646]: Follow Us
+      - list [ref=e647]:
+        - listitem [ref=e648]:
+          - link "Instagram" [ref=e649] [cursor=pointer]:
+            - /url: https://www.instagram.com/google/
+            - img [ref=e650]
+        - listitem [ref=e652]:
+          - link "x.com" [ref=e653] [cursor=pointer]:
+            - /url: https://twitter.com/google
+            - img [ref=e654]
+        - listitem [ref=e656]:
+          - link "YouTube" [ref=e657] [cursor=pointer]:
+            - /url: https://www.youtube.com/google
+            - img [ref=e658]
+        - listitem [ref=e660]:
+          - link "Facebook" [ref=e661] [cursor=pointer]:
+            - /url: https://www.facebook.com/Google
+            - img [ref=e662]
+        - listitem [ref=e664]:
+          - link "LinkedIn" [ref=e665] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/google
+            - img [ref=e666]
+    - generic [ref=e668]:
+      - link "The Google logo" [ref=e670] [cursor=pointer]:
+        - /url: https://www.google.com
+        - img [ref=e671]
+      - list [ref=e673]:
+        - listitem [ref=e674]:
+          - link "Privacy" [ref=e675] [cursor=pointer]:
+            - /url: https://policies.google.com/privacy
+        - listitem [ref=e676]:
+          - link "Terms" [ref=e677] [cursor=pointer]:
+            - /url: https://policies.google.com/terms
+        - listitem [ref=e678]:
+          - link "About Google" [ref=e679] [cursor=pointer]:
+            - /url: https://about.google/
+        - listitem [ref=e680]:
+          - link "Google Products" [ref=e681] [cursor=pointer]:
+            - /url: https://about.google/products/
+        - listitem [ref=e682]:
+          - link "About the Keyword" [ref=e683] [cursor=pointer]:
+            - /url: /about/
+      - list [ref=e684]:
+        - listitem [ref=e685]:
+          - link "Help" [ref=e686] [cursor=pointer]:
+            - /url: https://support.google.com
+            - img [ref=e687]
+            - text: Help
+        - listitem [ref=e689]:
+          - combobox "Change Region" [ref=e691] [cursor=pointer]:
+            - option "Global (English)" [selected]
+            - option "Africa (English)"
+            - option "Australia (English)"
+            - option "Brasil (Português)"
+            - option "Canada (English)"
+            - option "Canada (Français)"
+            - option "Česko (Čeština)"
+            - option "Deutschland (Deutsch)"
+            - option "España (Español)"
+            - option "France (Français)"
+            - option "Greece (Ελληνικά)"
+            - option "India (English)"
+            - option "Indonesia (Bahasa Indonesia)"
+            - option "Italia (Italiano)"
+            - option "日本 (日本語)"
+            - option "대한민국 (한국어)"
+            - option "Latinoamérica (Español)"
+            - option "الشرق الأوسط وشمال أفريقيا (اللغة العربية)"
+            - option "MENA (English)"
+            - option "Nederlands (Nederland)"
+            - option "New Zealand (English)"
+            - option "Polska (Polski)"
+            - option "Portugal (Português)"
+            - option "Sverige (Svenska)"
+            - option "ประเทศไทย (ไทย)"
+            - option "Türkiye (Türkçe)"
+            - option "台灣 (中文)"

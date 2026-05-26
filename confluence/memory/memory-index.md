@@ -119,4 +119,27 @@
 
 ---
 
-*文件总数：71 | 上次更新：2026-05-25*
+## 模板与规范
+
+Memory 文件需遵循统一格式，详见 [模板文档](../../template/memory-template.md)。
+
+**验证工具**：
+```bash
+# 检查所有 memory 文件格式
+./scripts/check-memory-format.sh
+
+# 检查指定目录
+./scripts/check-memory-format.sh confluence/memory/pitfalls/
+
+# 严格模式（警告也报错）
+./scripts/check-memory-format.sh --strict
+```
+
+**已迁移到新格式**：
+- pitfalls/async-test-leak.md
+- pitfalls/git-mv-directory-not-exist.md
+- pitfalls/sqlite-inmemory-testclient-thread.md
+
+---
+
+*文件总数：71 | 上次更新：2026-05-27*

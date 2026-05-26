@@ -1,0 +1,1168 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e8]:
+          - generic [ref=e9]:
+            - link "Gemini API" [ref=e10] [cursor=pointer]:
+              - /url: /
+              - img "Gemini API" [ref=e12]
+            - generic:
+              - list:
+                - listitem
+          - link "Get API key" [ref=e14] [cursor=pointer]:
+            - /url: https://aistudio.google.com/apikey
+          - link "Cookbook" [ref=e15] [cursor=pointer]:
+            - /url: https://github.com/google-gemini/cookbook
+          - link "Community" [ref=e16] [cursor=pointer]:
+            - /url: https://discuss.ai.google.dev/c/gemini-api/
+        - navigation "Lower tabs" [ref=e22]:
+          - link "Docs, selected" [ref=e24] [cursor=pointer]:
+            - /url: https://ai.google.dev/gemini-api/docs
+            - text: Docs
+          - link "API reference" [ref=e26] [cursor=pointer]:
+            - /url: https://ai.google.dev/api
+    - generic [ref=e27]:
+      - text: filter_list close
+      - navigation "Side menu" [ref=e28]:
+        - text: arrow_back
+        - list [ref=e31]:
+          - listitem [ref=e32]:
+            - generic [ref=e34]: Get started
+          - listitem [ref=e35]:
+            - link "Overview" [ref=e36] [cursor=pointer]:
+              - /url: /gemini-api/docs
+              - generic [ref=e37]: Overview
+          - listitem [ref=e38]:
+            - link "Quickstart" [ref=e39] [cursor=pointer]:
+              - /url: /gemini-api/docs/quickstart
+              - generic [ref=e40]: Quickstart
+          - listitem [ref=e41]:
+            - link "API keys" [ref=e42] [cursor=pointer]:
+              - /url: /gemini-api/docs/api-key
+              - generic [ref=e43]: API keys
+          - listitem [ref=e44]:
+            - link "Libraries" [ref=e45] [cursor=pointer]:
+              - /url: /gemini-api/docs/libraries
+              - generic [ref=e46]: Libraries
+          - listitem [ref=e47]:
+            - link "Pricing" [ref=e48] [cursor=pointer]:
+              - /url: /gemini-api/docs/pricing
+              - generic [ref=e49]: Pricing
+          - listitem [ref=e50]:
+            - link "Interactions API" [ref=e51] [cursor=pointer]:
+              - /url: /gemini-api/docs/interactions
+              - generic [ref=e52]: Interactions API
+          - listitem [ref=e54]:
+            - link "Coding agent setup" [ref=e55] [cursor=pointer]:
+              - /url: /gemini-api/docs/coding-agents
+              - generic [ref=e56]: Coding agent setup
+          - listitem [ref=e57]:
+            - generic [ref=e59]: Models
+          - listitem [ref=e60]:
+            - link "All models" [ref=e61] [cursor=pointer]:
+              - /url: /gemini-api/docs/models
+              - generic [ref=e62]: All models
+          - listitem [ref=e63]:
+            - 'link "Current: Gemini 3.5" [ref=e64] [cursor=pointer]':
+              - /url: /gemini-api/docs/whats-new-gemini-3.5
+              - generic [ref=e65]: "Current: Gemini 3.5"
+          - listitem [ref=e66]:
+            - link "Nano Banana" [ref=e67] [cursor=pointer]:
+              - /url: /gemini-api/docs/image-generation
+              - generic [ref=e68]: Nano Banana
+          - listitem [ref=e69]:
+            - link "Veo" [ref=e70] [cursor=pointer]:
+              - /url: /gemini-api/docs/video
+              - generic [ref=e71]: Veo
+          - listitem [ref=e72]:
+            - link "Lyria 3" [ref=e73] [cursor=pointer]:
+              - /url: /gemini-api/docs/music-generation
+              - generic [ref=e74]: Lyria 3
+          - listitem [ref=e76]:
+            - link "Lyria RealTime" [ref=e77] [cursor=pointer]:
+              - /url: /gemini-api/docs/realtime-music-generation
+              - generic [ref=e78]: Lyria RealTime
+          - listitem [ref=e79]:
+            - link "Imagen" [ref=e80] [cursor=pointer]:
+              - /url: /gemini-api/docs/imagen
+              - generic [ref=e81]: Imagen
+          - listitem [ref=e82]:
+            - link "Text-to-speech" [ref=e83] [cursor=pointer]:
+              - /url: /gemini-api/docs/speech-generation
+              - generic [ref=e84]: Text-to-speech
+          - listitem [ref=e85]:
+            - link "Embeddings" [ref=e86] [cursor=pointer]:
+              - /url: /gemini-api/docs/embeddings
+              - generic [ref=e87]: Embeddings
+          - listitem [ref=e88]:
+            - link "Robotics" [ref=e89] [cursor=pointer]:
+              - /url: /gemini-api/docs/robotics-overview
+              - generic [ref=e90]: Robotics
+          - listitem [ref=e92]:
+            - generic [ref=e94]: Core capabilities
+          - listitem [ref=e95]:
+            - link "Text" [ref=e96] [cursor=pointer]:
+              - /url: /gemini-api/docs/text-generation
+              - generic [ref=e97]: Text
+          - listitem [ref=e98]:
+            - generic [ref=e99]:
+              - text: arrow_drop_down
+              - button "Image " [ref=e100] [cursor=pointer]:
+                - generic [ref=e101]: Image
+                - text: 
+          - listitem [ref=e102]:
+            - generic [ref=e103]:
+              - text: arrow_drop_down
+              - button "Video " [ref=e104] [cursor=pointer]:
+                - generic [ref=e105]: Video
+                - text: 
+          - listitem [ref=e106]:
+            - link "Documents" [ref=e107] [cursor=pointer]:
+              - /url: /gemini-api/docs/document-processing
+              - generic [ref=e108]: Documents
+          - listitem [ref=e109]:
+            - generic [ref=e110]:
+              - text: arrow_drop_down
+              - button "Speech and audio " [ref=e111] [cursor=pointer]:
+                - generic [ref=e112]: Speech and audio
+                - text: 
+          - listitem [ref=e113]:
+            - generic [ref=e114]:
+              - text: arrow_drop_down
+              - button "Thinking " [ref=e115] [cursor=pointer]:
+                - generic [ref=e116]: Thinking
+                - text: 
+          - listitem [ref=e117]:
+            - link "Structured outputs" [ref=e118] [cursor=pointer]:
+              - /url: /gemini-api/docs/structured-output
+              - generic [ref=e119]: Structured outputs
+          - listitem [ref=e120]:
+            - link "Function calling" [ref=e121] [cursor=pointer]:
+              - /url: /gemini-api/docs/function-calling
+              - generic [ref=e122]: Function calling
+          - listitem [ref=e123]:
+            - link "Long context" [ref=e124] [cursor=pointer]:
+              - /url: /gemini-api/docs/long-context
+              - generic [ref=e125]: Long context
+          - listitem [ref=e126]:
+            - generic [ref=e128]: Agents
+          - listitem [ref=e129]:
+            - link "Overview" [ref=e130] [cursor=pointer]:
+              - /url: /gemini-api/docs/agents
+              - generic [ref=e131]: Overview
+          - listitem [ref=e132]:
+            - link "Quickstart" [ref=e133] [cursor=pointer]:
+              - /url: /gemini-api/docs/managed-agents-quickstart
+              - generic [ref=e134]: Quickstart
+          - listitem [ref=e135]:
+            - link "Antigravity Agent" [ref=e136] [cursor=pointer]:
+              - /url: /gemini-api/docs/antigravity-agent
+              - generic [ref=e137]: Antigravity Agent
+          - listitem [ref=e139]:
+            - link "Building managed agents" [ref=e140] [cursor=pointer]:
+              - /url: /gemini-api/docs/custom-agents
+              - generic [ref=e141]: Building managed agents
+          - listitem [ref=e142]:
+            - link "Environments" [ref=e143] [cursor=pointer]:
+              - /url: /gemini-api/docs/agent-environment
+              - generic [ref=e144]: Environments
+          - listitem [ref=e145]:
+            - link "Deep Research Agent" [ref=e146] [cursor=pointer]:
+              - /url: /gemini-api/docs/interactions/deep-research
+              - generic [ref=e147]: Deep Research Agent
+          - listitem [ref=e149]:
+            - generic [ref=e151]: Tools
+          - listitem [ref=e152]:
+            - link "Overview" [ref=e153] [cursor=pointer]:
+              - /url: /gemini-api/docs/tools
+              - generic [ref=e154]: Overview
+          - listitem [ref=e155]:
+            - link "Google Search" [ref=e156] [cursor=pointer]:
+              - /url: /gemini-api/docs/google-search
+              - generic [ref=e157]: Google Search
+          - listitem [ref=e158]:
+            - link "Google Maps" [ref=e159] [cursor=pointer]:
+              - /url: /gemini-api/docs/maps-grounding
+              - generic [ref=e160]: Google Maps
+          - listitem [ref=e161]:
+            - link "Code execution" [ref=e162] [cursor=pointer]:
+              - /url: /gemini-api/docs/code-execution
+              - generic [ref=e163]: Code execution
+          - listitem [ref=e164]:
+            - link "URL context" [ref=e165] [cursor=pointer]:
+              - /url: /gemini-api/docs/url-context
+              - generic [ref=e166]: URL context
+          - listitem [ref=e167]:
+            - link "Computer Use" [ref=e168] [cursor=pointer]:
+              - /url: /gemini-api/docs/computer-use
+              - generic [ref=e169]: Computer Use
+          - listitem [ref=e171]:
+            - link "File Search" [ref=e172] [cursor=pointer]:
+              - /url: /gemini-api/docs/file-search
+              - generic [ref=e173]: File Search
+          - listitem [ref=e174]:
+            - link "Combine Tools and Function calling" [ref=e175] [cursor=pointer]:
+              - /url: /gemini-api/docs/tool-combination
+              - generic [ref=e176]: Combine Tools and Function calling
+          - listitem [ref=e178]:
+            - generic [ref=e180]: Live API
+          - listitem [ref=e181]:
+            - link "Overview" [ref=e182] [cursor=pointer]:
+              - /url: /gemini-api/docs/live-api
+              - generic [ref=e183]: Overview
+          - listitem [ref=e184]:
+            - generic [ref=e185]:
+              - text: arrow_drop_down
+              - button "Get started " [ref=e186] [cursor=pointer]:
+                - generic [ref=e187]: Get started
+                - text: 
+          - listitem [ref=e188]:
+            - link "Capabilities" [ref=e189] [cursor=pointer]:
+              - /url: /gemini-api/docs/live-api/capabilities
+              - generic [ref=e190]: Capabilities
+          - listitem [ref=e191]:
+            - link "Tool use" [ref=e192] [cursor=pointer]:
+              - /url: /gemini-api/docs/live-api/tools
+              - generic [ref=e193]: Tool use
+          - listitem [ref=e194]:
+            - link "Session management" [ref=e195] [cursor=pointer]:
+              - /url: /gemini-api/docs/live-api/session-management
+              - generic [ref=e196]: Session management
+          - listitem [ref=e197]:
+            - link "Ephemeral tokens" [ref=e198] [cursor=pointer]:
+              - /url: /gemini-api/docs/live-api/ephemeral-tokens
+              - generic [ref=e199]: Ephemeral tokens
+          - listitem [ref=e200]:
+            - link "Best practices" [ref=e201] [cursor=pointer]:
+              - /url: /gemini-api/docs/live-api/best-practices
+              - generic [ref=e202]: Best practices
+          - listitem [ref=e203]:
+            - generic [ref=e205]: Optimization
+          - listitem [ref=e206]:
+            - link "Overview" [ref=e207] [cursor=pointer]:
+              - /url: /gemini-api/docs/optimization
+              - generic [ref=e208]: Overview
+          - listitem [ref=e209]:
+            - link "Batch API" [ref=e210] [cursor=pointer]:
+              - /url: /gemini-api/docs/batch-api
+              - generic [ref=e211]: Batch API
+          - listitem [ref=e212]:
+            - link "Webhooks" [ref=e213] [cursor=pointer]:
+              - /url: /gemini-api/docs/webhooks
+              - generic [ref=e214]: Webhooks
+          - listitem [ref=e216]:
+            - link "Flex inference" [ref=e217] [cursor=pointer]:
+              - /url: /gemini-api/docs/flex-inference
+              - generic [ref=e218]: Flex inference
+          - listitem [ref=e220]:
+            - link "Priority inference" [ref=e221] [cursor=pointer]:
+              - /url: /gemini-api/docs/priority-inference
+              - generic [ref=e222]: Priority inference
+          - listitem [ref=e224]:
+            - link "Context caching" [ref=e225] [cursor=pointer]:
+              - /url: /gemini-api/docs/caching
+              - generic [ref=e226]: Context caching
+          - listitem [ref=e227]:
+            - generic [ref=e229]: Guides
+          - listitem [ref=e230]:
+            - link "Streaming" [ref=e231] [cursor=pointer]:
+              - /url: /gemini-api/docs/interactions/streaming
+              - generic [ref=e232]: Streaming
+          - listitem [ref=e233]:
+            - generic [ref=e234]:
+              - text: arrow_drop_down
+              - button "File input " [ref=e235] [cursor=pointer]:
+                - generic [ref=e236]: File input
+                - text: 
+          - listitem [ref=e237]:
+            - link "OpenAI compatibility" [ref=e238] [cursor=pointer]:
+              - /url: /gemini-api/docs/openai
+              - generic [ref=e239]: OpenAI compatibility
+          - listitem [ref=e240]:
+            - link "Media resolution" [ref=e241] [cursor=pointer]:
+              - /url: /gemini-api/docs/media-resolution
+              - generic [ref=e242]: Media resolution
+          - listitem [ref=e243]:
+            - link "Token counting" [ref=e244] [cursor=pointer]:
+              - /url: /gemini-api/docs/tokens
+              - generic [ref=e245]: Token counting
+          - listitem [ref=e246]:
+            - link "Prompt engineering" [ref=e247] [cursor=pointer]:
+              - /url: /gemini-api/docs/prompting-strategies
+              - generic [ref=e248]: Prompt engineering
+          - listitem [ref=e249]:
+            - generic [ref=e250]:
+              - text: arrow_drop_down
+              - button "Logs and datasets " [ref=e251] [cursor=pointer]:
+                - generic [ref=e252]: Logs and datasets
+                - text: 
+          - listitem [ref=e253]:
+            - generic [ref=e254]:
+              - text: arrow_drop_down
+              - button "Safety " [ref=e255] [cursor=pointer]:
+                - generic [ref=e256]: Safety
+                - text: 
+          - listitem [ref=e257]:
+            - generic [ref=e258]:
+              - text: arrow_drop_down
+              - button "Frameworks " [ref=e259] [cursor=pointer]:
+                - generic [ref=e260]: Frameworks
+                - text: 
+          - listitem [ref=e261]:
+            - generic [ref=e263]: Resources
+          - listitem [ref=e264]:
+            - link "Release notes" [ref=e265] [cursor=pointer]:
+              - /url: /gemini-api/docs/changelog
+              - generic [ref=e266]: Release notes
+          - listitem [ref=e267]:
+            - link "Deprecations" [ref=e268] [cursor=pointer]:
+              - /url: /gemini-api/docs/deprecations
+              - generic [ref=e269]: Deprecations
+          - listitem [ref=e270]:
+            - generic [ref=e271]:
+              - text: arrow_drop_down
+              - button "Migration " [ref=e272] [cursor=pointer]:
+                - generic [ref=e273]: Migration
+                - text: 
+          - listitem [ref=e274]:
+            - link "Rate limits" [ref=e275] [cursor=pointer]:
+              - /url: /gemini-api/docs/rate-limits
+              - generic [ref=e276]: Rate limits
+          - listitem [ref=e277]:
+            - link "Billing info" [ref=e278] [cursor=pointer]:
+              - /url: /gemini-api/docs/billing
+              - generic [ref=e279]: Billing info
+          - listitem [ref=e280]:
+            - link "API troubleshooting" [ref=e281] [cursor=pointer]:
+              - /url: /gemini-api/docs/troubleshooting
+              - generic [ref=e282]: API troubleshooting
+          - listitem [ref=e283]:
+            - link "Status" [ref=e284] [cursor=pointer]:
+              - /url: https://aistudio.google.com/status
+              - generic [ref=e285]: Status
+              - generic [ref=e286]: open_in_new
+          - listitem [ref=e287]:
+            - link "Partner and library integrations" [ref=e288] [cursor=pointer]:
+              - /url: /gemini-api/docs/partner-integration
+              - generic [ref=e289]: Partner and library integrations
+          - listitem [ref=e290]:
+            - generic [ref=e291]:
+              - text: arrow_drop_down
+              - button "Google AI Studio " [ref=e292] [cursor=pointer]:
+                - generic [ref=e293]: Google AI Studio
+                - text: 
+          - listitem [ref=e294]:
+            - generic [ref=e295]:
+              - text: arrow_drop_down
+              - button "Google Cloud Platform " [ref=e296] [cursor=pointer]:
+                - generic [ref=e297]: Google Cloud Platform
+                - text: 
+          - listitem [ref=e298]:
+            - generic [ref=e300]: Policies
+          - listitem [ref=e301]:
+            - link "Terms of service" [ref=e302] [cursor=pointer]:
+              - /url: /gemini-api/terms
+              - generic [ref=e303]: Terms of service
+          - listitem [ref=e304]:
+            - link "Available regions" [ref=e305] [cursor=pointer]:
+              - /url: /gemini-api/docs/available-regions
+              - generic [ref=e306]: Available regions
+          - listitem [ref=e307]:
+            - link "Abuse monitoring" [ref=e308] [cursor=pointer]:
+              - /url: /gemini-api/docs/usage-policies
+              - generic [ref=e309]: Abuse monitoring
+          - listitem [ref=e310]:
+            - link "Feedback information" [ref=e311] [cursor=pointer]:
+              - /url: /gemini-api/docs/feedback-policies
+              - generic [ref=e312]: Feedback information
+    - generic [ref=e313]:
+      - main [ref=e314]:
+        - generic [ref=e315]:
+          - article [ref=e316]:
+            - generic [ref=e319]:
+              - link "Gemini Deep Research" [ref=e320] [cursor=pointer]:
+                - /url: /gemini-api/docs/deep-research
+              - text: is now available in preview with collaborative planning, visualization, MCP support, and more.
+            - navigation [ref=e321]:
+              - list "Breadcrumb" [ref=e322]:
+                - listitem [ref=e323]:
+                  - link "Home" [ref=e324] [cursor=pointer]:
+                    - /url: https://ai.google.dev/
+                - listitem [ref=e325]:
+                  - generic [ref=e326]: chevron_right
+                  - link "Gemini API" [ref=e327] [cursor=pointer]:
+                    - /url: https://ai.google.dev/gemini-api
+                - listitem [ref=e328]:
+                  - generic [ref=e329]: chevron_right
+                  - link "Docs" [ref=e330] [cursor=pointer]:
+                    - /url: https://ai.google.dev/gemini-api/docs
+            - generic [ref=e331]:
+              - paragraph
+              - paragraph
+              - generic [ref=e332]:
+                - heading "Nano Banana image generation" [level=1] [ref=e333]
+                - generic [ref=e336]:
+                  - text: Prompt to prototype fully-functional, UI-complete apps, and see Nano Banana 2 integrated with real-world tools, data, and the Gemini ecosystem. All before writing a single line of code.
+                  - list [ref=e337]:
+                    - listitem [ref=e338]:
+                      - link "Try a Nano Banana 2 app" [ref=e339] [cursor=pointer]:
+                        - /url: https://aistudio.google.com/apps/bundled/pet_passport
+                    - listitem [ref=e340]: "Or build your own from prompts:"
+              - paragraph [ref=e341]:
+                - strong [ref=e342]: Nano Banana
+                - text: is the name for Gemini's native image generation capabilities. Gemini can generate and process images conversationally with text, images, or a combination of both. This lets you create, edit, and iterate on visuals with unprecedented control.
+              - paragraph [ref=e343]: "Nano Banana refers to three distinct models available in the Gemini API:"
+              - list [ref=e344]:
+                - listitem [ref=e345]:
+                  - strong [ref=e346]: Nano Banana 2
+                  - text: ": The"
+                  - link "Gemini 3.1 Flash Image Preview" [ref=e347] [cursor=pointer]:
+                    - /url: /gemini-api/docs/models/gemini-3.1-flash-image-preview
+                  - text: model (
+                  - code [ref=e348]: gemini-3.1-flash-image-preview
+                  - text: ). This model serves as the high-efficiency counterpart to Gemini 3 Pro Image, optimized for speed and high-volume developer use cases.
+                - listitem [ref=e349]:
+                  - strong [ref=e350]: Nano Banana Pro
+                  - text: ": The"
+                  - link "Gemini 3 Pro Image Preview" [ref=e351] [cursor=pointer]:
+                    - /url: /gemini-api/docs/models/gemini-3-pro-image-preview
+                  - text: model (
+                  - code [ref=e352]: gemini-3-pro-image-preview
+                  - text: ). This model is designed for professional asset production, utilizing advanced reasoning ("Thinking") to follow complex instructions and render high-fidelity text.
+                - listitem [ref=e353]:
+                  - strong [ref=e354]: Nano Banana
+                  - text: ": The"
+                  - link "Gemini 2.5 Flash Image" [ref=e355] [cursor=pointer]:
+                    - /url: /gemini-api/docs/models/gemini-2.5-flash-image
+                  - text: model (
+                  - code [ref=e356]: gemini-2.5-flash-image
+                  - text: ). This model is designed for speed and efficiency, optimized for high-volume, low-latency tasks.
+              - paragraph [ref=e357]:
+                - text: All generated images include a
+                - link "SynthID watermark" [ref=e358] [cursor=pointer]:
+                  - /url: /responsible/docs/safeguards/synthid
+                - text: .
+              - heading "Image generation (text-to-image)" [level=2] [ref=e359]
+              - heading "Image editing (text-and-image-to-image)" [level=2] [ref=e361]
+              - paragraph [ref=e362]:
+                - strong [ref=e363]: Reminder
+                - text: ": Make sure you have the necessary rights to any images you upload. Don't generate content that infringe on others' rights, including videos or images that deceive, harass, or harm. Your use of this generative AI service is subject to our"
+                - link "Prohibited Use Policy" [ref=e364] [cursor=pointer]:
+                  - /url: https://policies.google.com/terms/generative-ai/use-policy
+                - text: .
+              - paragraph [ref=e365]: Provide an image and use text prompts to add, remove, or modify elements, change the style, or adjust the color grading.
+              - paragraph [ref=e366]:
+                - text: The following example demonstrates uploading
+                - code [ref=e367]: base64
+                - text: encoded images. For multiple images, larger payloads, and supported MIME types, check the
+                - link "Image understanding" [ref=e368] [cursor=pointer]:
+                  - /url: /gemini-api/docs/image-understanding
+                - text: page.
+              - heading "Multi-turn image editing" [level=3] [ref=e370]
+              - paragraph [ref=e371]: Keep generating and editing images conversationally. Chat or multi-turn conversation is the recommended way to iterate on images. The following example shows a prompt to generate an infographic about photosynthesis.
+              - figure "AI-generated infographic about photosynthesis" [ref=e373]:
+                - img "AI-generated infographic about photosynthesis" [ref=e374]
+                - generic [ref=e375]: AI-generated infographic about photosynthesis
+              - paragraph [ref=e376]: You can then use the same chat to change the language on the graphic to Spanish.
+              - figure "AI-generated infographic of photosynthesis in Spanish" [ref=e378]:
+                - img "AI-generated infographic of photosynthesis in Spanish" [ref=e379]
+                - generic [ref=e380]: AI-generated infographic of photosynthesis in Spanish
+              - heading "New with Gemini 3 Image models" [level=2] [ref=e381]
+              - paragraph [ref=e382]: Gemini 3 offers state-of-the-art image generation and editing models. Gemini 3.1 Flash Image is optimized for speed and high-volume use-cases, and Gemini 3 Pro Image is optimized for professional asset production. Designed to tackle the most challenging workflows through advanced reasoning, they excel at complex, multi-turn creation and modification tasks.
+              - list [ref=e383]:
+                - listitem [ref=e384]:
+                  - strong [ref=e385]: High-resolution output
+                  - text: ": Built-in generation capabilities for 1K, 2K, and 4K visuals."
+                  - list [ref=e386]:
+                    - listitem [ref=e387]:
+                      - strong [ref=e388]: Gemini 3.1 Flash Image
+                      - text: adds the smaller 512 (0.5K) resolution.
+                - listitem [ref=e389]:
+                  - strong [ref=e390]: Advanced text rendering
+                  - text: ": Capable of generating legible, stylized text for infographics, menus, diagrams, and marketing assets."
+                - listitem [ref=e391]:
+                  - strong [ref=e392]: Grounding with Google Search
+                  - text: ": The model can use Google Search as a tool to verify facts and generate imagery based on real-time data (e.g., current weather maps, stock charts, recent events)."
+                  - list [ref=e393]:
+                    - listitem [ref=e394]:
+                      - strong [ref=e395]: Gemini 3.1 Flash Image
+                      - text: adds the integration of Grounding with Google Search for Images alongside Web Search.
+                - listitem [ref=e396]:
+                  - strong [ref=e397]: Thinking mode
+                  - text: ": The model utilizes a \"thinking\" process to reason through complex prompts. It generates interim \"thought images\" (visible in the backend but not charged) to refine the composition before producing the final high-quality output."
+                - listitem [ref=e398]:
+                  - strong [ref=e399]: Up to 14 reference images
+                  - text: ": You can now mix up to 14 reference images to produce the final image."
+                - listitem [ref=e400]:
+                  - strong [ref=e401]: New aspect ratios
+                  - text: ": Gemini 3.1 Flash Image Preview adds 1:4, 4:1, 1:8, and 8:1"
+                  - link "aspect ratios" [ref=e402] [cursor=pointer]:
+                    - /url: "#aspect_ratios_and_image_size"
+                  - text: .
+              - heading "Use up to 14 reference images" [level=3] [ref=e403]
+              - paragraph [ref=e404]: "Gemini 3 image models let you to mix up to 14 reference images. These 14 images can include the following:"
+              - table [ref=e405]:
+                - rowgroup [ref=e406]:
+                  - row "Gemini 3.1 Flash Image Preview Gemini 3 Pro Image Preview" [ref=e407]:
+                    - columnheader "Gemini 3.1 Flash Image Preview" [ref=e408]
+                    - columnheader "Gemini 3 Pro Image Preview" [ref=e409]
+                - rowgroup [ref=e410]:
+                  - row "Up to 10 images of objects with high-fidelity to include in the final image Up to 6 images of objects with high-fidelity to include in the final image" [ref=e411]:
+                    - cell "Up to 10 images of objects with high-fidelity to include in the final image" [ref=e412]
+                    - cell "Up to 6 images of objects with high-fidelity to include in the final image" [ref=e413]
+                  - row "Up to 4 images of characters to maintain character consistency Up to 5 images of characters to maintain character consistency" [ref=e414]:
+                    - cell "Up to 4 images of characters to maintain character consistency" [ref=e415]
+                    - cell "Up to 5 images of characters to maintain character consistency" [ref=e416]
+              - figure "AI-generated office group photo" [ref=e418]:
+                - img "AI-generated office group photo" [ref=e419]
+                - generic [ref=e420]: AI-generated office group photo
+              - heading "Grounding with Google Search" [level=3] [ref=e421]
+              - paragraph [ref=e422]:
+                - text: Use the
+                - link "Google Search tool" [ref=e423] [cursor=pointer]:
+                  - /url: /gemini-api/docs/google-search
+                - text: to generate images based on real-time information, such as weather forecasts, stock charts, or recent events.
+              - paragraph [ref=e424]:
+                - text: Note that when using Grounding with Google Search with image generation, image-based search results are not passed to the generation model and are excluded from the response (see
+                - link "Grounding with Google Search for images" [ref=e425] [cursor=pointer]:
+                  - /url: "#image-search"
+                - text: )
+              - figure "AI-generated five day weather chart for San Francisco" [ref=e427]:
+                - img "AI-generated five day weather chart for San Francisco" [ref=e428]
+                - generic [ref=e429]: AI-generated five day weather chart for San Francisco
+              - paragraph [ref=e430]:
+                - text: The response includes
+                - code [ref=e431]: groundingMetadata
+                - text: "which contains the following required fields:"
+              - list [ref=e432]:
+                - listitem [ref=e433]:
+                  - strong [ref=e434]:
+                    - code [ref=e435]: searchEntryPoint
+                  - text: ": Contains the HTML and CSS to render the required search suggestions."
+                - listitem [ref=e436]:
+                  - strong [ref=e437]:
+                    - code [ref=e438]: groundingChunks
+                  - text: ": Returns the top 3 web sources used to ground the generated image"
+              - heading "Grounding with Google Search for Images (3.1 Flash)" [level=3] [ref=e439]
+              - complementary [ref=e440]:
+                - strong [ref=e441]: "Note:"
+                - text: This feature is only available for the Gemini 3.1 Flash Image model.
+              - paragraph [ref=e442]:
+                - text: Grounding with Google Search for images allows models to use web images retrieved via Google Search as visual context for image generation. Image Search is a new search type within the existing Grounding with Google Search tool, functioning alongside standard
+                - link "Web Search" [ref=e443] [cursor=pointer]:
+                  - /url: "#use-with-grounding"
+                - text: .
+              - paragraph [ref=e444]:
+                - text: To enable Image Search, configure the
+                - code [ref=e445]: googleSearch
+                - text: tool in your API request and specify
+                - code [ref=e446]: imageSearch
+                - text: within the
+                - code [ref=e447]: searchTypes
+                - text: object. Image Search can be used independently or together with Web Search.
+              - paragraph [ref=e448]: Note that Grounding with Google Search for images can't be used to search for people.
+              - paragraph [ref=e450]:
+                - strong [ref=e451]: Display requirements
+              - paragraph [ref=e452]: "When you use Image Search within Grounding with Google Search, you must comply with the following conditions:"
+              - list [ref=e453]:
+                - listitem [ref=e454]:
+                  - strong [ref=e455]: Source attribution
+                  - text: ": You must provide a link to the webpage containing the source image (the \"containing page,\" not the image file itself) in a manner that the user will recognize as a link."
+                - listitem [ref=e456]:
+                  - strong [ref=e457]: Direct navigation
+                  - text: ": If you also choose to display the source images, you must provide a direct, single-click path from the source images to its containing source webpage. Any other implementation that delays or abstracts the end user's access to the source webpage, including but not limited to any multi-click path or the use of an intermediate image viewer, is not permitted."
+              - paragraph [ref=e458]:
+                - strong [ref=e459]: Response
+              - paragraph [ref=e460]:
+                - text: For grounded responses using image search, the API provides clear attribution and metadata to link its output to verified sources. Key fields in the
+                - code [ref=e461]: groundingMetadata
+                - text: "object include:"
+              - list [ref=e462]:
+                - listitem [ref=e463]:
+                  - strong [ref=e464]:
+                    - code [ref=e465]: imageSearchQueries
+                  - text: ": The specific queries used by the model for visual context (image search)."
+                - listitem [ref=e466]:
+                  - paragraph [ref=e467]:
+                    - strong [ref=e468]:
+                      - code [ref=e469]: groundingChunks
+                    - text: ": Contains source information for retrieved results. For image sources, these will be returned as redirect URLs using a new image chunk type. This chunk includes:"
+                  - list [ref=e470]:
+                    - listitem [ref=e471]:
+                      - strong [ref=e472]:
+                        - code [ref=e473]: uri
+                      - text: ": The web page URL for attribution (the landing page)."
+                    - listitem [ref=e474]:
+                      - strong [ref=e475]:
+                        - code [ref=e476]: image_uri
+                      - text: ": The direct image URL."
+                - listitem [ref=e477]:
+                  - paragraph [ref=e478]:
+                    - strong [ref=e479]:
+                      - code [ref=e480]: groundingSupports
+                    - text: ": Provides specific mappings that link the generated content to its relevant citation source in the chunks."
+                - listitem [ref=e481]:
+                  - paragraph [ref=e482]:
+                    - strong [ref=e483]:
+                      - code [ref=e484]: searchEntryPoint
+                    - text: ": Includes the \"Google Search\" chip containing compliant HTML and CSS to render Search Suggestions."
+              - heading "Generate images up to 4K resolution" [level=3] [ref=e485]
+              - paragraph [ref=e486]:
+                - text: Gemini 3 image models generate 1K images by default but can also output 2K, 4K, and 512 (0.5K) (Gemini 3.1 Flash Image only) images. To generate higher resolution assets, specify the
+                - code [ref=e487]: image_size
+                - text: in the
+                - code [ref=e488]: generation_config
+                - text: .
+              - paragraph [ref=e489]:
+                - text: You must use an uppercase 'K' (e.g. 1K, 2K, 4K). The
+                - code [ref=e490]: "512"
+                - text: value does not use a 'K' suffix. Lowercase parameters (e.g., 1k) will be rejected.
+              - paragraph [ref=e492]: "The following is an example image generated from this prompt:"
+              - figure "AI-generated Da Vinci style anatomical sketch of a dissected Monarch butterfly." [ref=e493]:
+                - img "AI-generated Da Vinci style anatomical sketch of a dissected Monarch butterfly." [ref=e494]
+                - generic [ref=e495]: AI-generated Da Vinci style anatomical sketch of a dissected Monarch butterfly.
+              - heading "Thinking Process" [level=3] [ref=e496]
+              - paragraph [ref=e497]:
+                - text: Gemini 3 image models are thinking models that use a reasoning process ("Thinking") for complex prompts. This feature is enabled by default and cannot be disabled in the API. To learn more about the thinking process, see the
+                - link "Gemini Thinking" [ref=e498] [cursor=pointer]:
+                  - /url: /gemini-api/docs/thinking
+                - text: guide.
+              - paragraph [ref=e499]: The model generates up to two interim images to test composition and logic. The last image within Thinking is also the final rendered image.
+              - paragraph [ref=e500]: You can check the thoughts that lead to the final image being produced.
+              - heading "Controlling thinking levels" [level=4] [ref=e502]
+              - paragraph [ref=e503]:
+                - text: With Gemini 3.1 Flash Image, you can control the amount of thinking the model uses to balance quality and latency. The default
+                - code [ref=e504]: thinkingLevel
+                - text: is
+                - code [ref=e505]: minimal
+                - text: ", and the supported levels are"
+                - code [ref=e506]: minimal
+                - text: and
+                - code [ref=e507]: high
+                - text: . Setting the
+                - code [ref=e508]: thinkingLevel
+                - text: to
+                - code [ref=e509]: minimal
+                - text: provides the lowest latency responses. Note that minimal thinking does not mean the model uses no thinking at all.
+              - paragraph [ref=e510]:
+                - text: You can add the
+                - code [ref=e511]: includeThoughts
+                - text: boolean to determine whether the model's generated thoughts are returned in the response, or remain hidden.
+              - paragraph [ref=e513]:
+                - text: Note that thinking tokens are billed regardless of whether
+                - code [ref=e514]: includeThoughts
+                - text: is set to
+                - code [ref=e515]: "true"
+                - text: or
+                - code [ref=e516]: "false"
+                - text: ", as the"
+                - link "thinking process" [ref=e517] [cursor=pointer]:
+                  - /url: "#thinking-process"
+                - text: always happens by default whether you view the process or not.
+              - heading "Thought Signatures" [level=4] [ref=e518]
+              - paragraph [ref=e519]:
+                - text: Thought signatures are encrypted representations of the model's internal thought process and are used to preserve reasoning context across multi-turn interactions. All responses include a
+                - code [ref=e520]: thought_signature
+                - text: field. As a general rule, if you receive a thought signature in a model response, you should pass it back exactly as received when sending the conversation history in the next turn. Failure to circulate thought signatures may cause the response to fail. Check the
+                - link "thought signature" [ref=e521] [cursor=pointer]:
+                  - /url: /gemini-api/docs/thought-signatures
+                - text: documentation for more explanations of signatures overall.
+              - complementary [ref=e522]:
+                - strong [ref=e523]: "Note:"
+                - generic [ref=e524]:
+                  - text: If you use the official
+                  - link "Google Gen AI SDKs" [ref=e525] [cursor=pointer]:
+                    - /url: /gemini-api/docs/libraries
+                  - text: and use the chat feature (or append the full model response object directly to history),
+                  - strong [ref=e526]: thought signatures are handled automatically
+                  - text: . You do not need to manually extract or manage them, or change your code.
+              - paragraph [ref=e527]: "Here is how thought signatures work:"
+              - list [ref=e528]:
+                - listitem [ref=e529]:
+                  - text: All
+                  - code [ref=e530]: inline_data
+                  - text: parts with image
+                  - code [ref=e531]: mimetype
+                  - text: which are part of the response should have signature.
+                - listitem [ref=e532]: If there are some text parts at the beginning (before any image) right after the thoughts, the first text part should also have a signature.
+                - listitem [ref=e533]:
+                  - text: If
+                  - code [ref=e534]: inline_data
+                  - text: parts with image
+                  - code [ref=e535]: mimetype
+                  - text: are part of thoughts, they won't have signatures.
+              - paragraph [ref=e536]: "The following code shows an example of where thought signatures are included:"
+              - code [ref=e539]: "[ { \"inline_data\": { \"data\": \"<base64_image_data_0>\", \"mime_type\": \"image/png\" }, \"thought\": true // Thoughts don't have signatures }, { \"inline_data\": { \"data\": \"<base64_image_data_1>\", \"mime_type\": \"image/png\" }, \"thought\": true // Thoughts don't have signatures }, { \"inline_data\": { \"data\": \"<base64_image_data_2>\", \"mime_type\": \"image/png\" }, \"thought\": true // Thoughts don't have signatures }, { \"text\": \"Here is a step-by-step guide to baking macarons, presented in three separate images.\\n\\n### Step 1: Piping the Batter\\n\\nThe first step after making your macaron batter is to pipe it onto a baking sheet. This requires a steady hand to create uniform circles.\\n\\n\", \"thought_signature\": \"<Signature_A>\" // The first non-thought part always has a signature }, { \"inline_data\": { \"data\": \"<base64_image_data_3>\", \"mime_type\": \"image/png\" }, \"thought_signature\": \"<Signature_B>\" // All image parts have a signatures }, { \"text\": \"\\n\\n### Step 2: Baking and Developing Feet\\n\\nOnce piped, the macarons are baked in the oven. A key sign of a successful bake is the development of \\\"feet\\\"—the ruffled edge at the base of each macaron shell.\\n\\n\" // Follow-up text parts don't have signatures }, { \"inline_data\": { \"data\": \"<base64_image_data_4>\", \"mime_type\": \"image/png\" }, \"thought_signature\": \"<Signature_C>\" // All image parts have a signatures }, { \"text\": \"\\n\\n### Step 3: Assembling the Macaron\\n\\nThe final step is to pair the cooled macaron shells by size and sandwich them together with your desired filling, creating the classic macaron dessert.\\n\\n\" }, { \"inline_data\": { \"data\": \"<base64_image_data_5>\", \"mime_type\": \"image/png\" }, \"thought_signature\": \"<Signature_D>\" // All image parts have a signatures } ]"
+              - heading "Other image generation modes" [level=2] [ref=e540]
+              - paragraph [ref=e541]: "Gemini supports other image interaction modes based on prompt structure and context, including:"
+              - list [ref=e542]:
+                - listitem [ref=e543]:
+                  - strong [ref=e544]: "Text to image(s) and text (interleaved):"
+                  - text: Outputs images with related text.
+                  - list [ref=e545]:
+                    - listitem [ref=e546]: "Example prompt: \"Generate an illustrated recipe for a paella.\""
+                - listitem [ref=e547]:
+                  - strong [ref=e548]: Image(s) and text to image(s) and text (interleaved)
+                  - text: ": Uses input images and text to create new related images and text."
+                  - list [ref=e549]:
+                    - listitem [ref=e550]: "Example prompt: (With an image of a furnished room) \"What other color sofas would work in my space? can you update the image?\""
+              - heading "Generate images in batch" [level=2] [ref=e551]
+              - paragraph [ref=e552]:
+                - text: If you need to generate a lot of images, you can use the
+                - link "Batch API" [ref=e553] [cursor=pointer]:
+                  - /url: /gemini-api/docs/batch-api
+                - text: . You get higher
+                - link "rate limits" [ref=e554] [cursor=pointer]:
+                  - /url: /gemini-api/docs/rate-limits
+                - text: in exchange for a turnaround of up to 24 hours.
+              - paragraph [ref=e555]:
+                - text: Check the
+                - link "Batch API image generation documentation" [ref=e556] [cursor=pointer]:
+                  - /url: /gemini-api/docs/batch-api#image-generation
+                - text: and the
+                - link "cookbook" [ref=e557] [cursor=pointer]:
+                  - /url: https://colab.research.google.com/github/google-gemini/cookbook/blob/main/quickstarts/Batch_mode.ipynb
+                - text: for Batch API image examples and code.
+              - heading "Prompting guide and strategies" [level=2] [ref=e558]
+              - paragraph [ref=e559]: "Mastering image generation starts with one fundamental principle:"
+              - blockquote [ref=e560]:
+                - paragraph [ref=e561]:
+                  - strong [ref=e562]: Describe the scene, don't just list keywords.
+                  - text: The model's core strength is its deep language understanding. A narrative, descriptive paragraph will almost always produce a better, more coherent image than a list of disconnected words.
+              - heading "Prompts for generating images" [level=3] [ref=e563]
+              - paragraph [ref=e564]: The following strategies will help you create effective prompts to generate exactly the images you're looking for.
+              - heading "Photography" [level=4] [ref=e565]
+              - paragraph [ref=e566]: For realistic images, use photography terms. Mention camera angles, lens types, lighting, and fine details to guide the model toward a realistic result.
+              - table [ref=e567]:
+                - rowgroup [ref=e568]:
+                  - row "Prompt Generated output" [ref=e569]:
+                    - columnheader "Prompt" [ref=e570]:
+                      - strong [ref=e571]: Prompt
+                    - columnheader "Generated output" [ref=e572]:
+                      - strong [ref=e573]: Generated output
+                - rowgroup [ref=e574]:
+                  - row "A photo of a close-up portrait of an elderly Japanese ceramicist with deep, sun-etched wrinkles and a warm, knowing smile. He is carefully inspecting a freshly glazed tea bowl. The setting is his rustic, sun-drenched workshop. The scene is illuminated by soft, golden hour light streaming through a window, highlighting the fine texture of the clay. Captured with an 85mm portrait lens, resulting in a soft, blurred background (bokeh). The overall mood is serene and masterful. Vertical portrait orientation. Elderly Japanese ceramicist" [ref=e575]:
+                    - cell "A photo of a close-up portrait of an elderly Japanese ceramicist with deep, sun-etched wrinkles and a warm, knowing smile. He is carefully inspecting a freshly glazed tea bowl. The setting is his rustic, sun-drenched workshop. The scene is illuminated by soft, golden hour light streaming through a window, highlighting the fine texture of the clay. Captured with an 85mm portrait lens, resulting in a soft, blurred background (bokeh). The overall mood is serene and masterful. Vertical portrait orientation." [ref=e576]
+                    - cell "Elderly Japanese ceramicist" [ref=e577]:
+                      - img "Elderly Japanese ceramicist" [ref=e578]
+              - heading "Stylized illustrations and stickers" [level=4] [ref=e579]
+              - paragraph [ref=e580]: To create stickers, icons, or assets, be explicit about the style and request a white background.
+              - complementary [ref=e581]:
+                - strong [ref=e582]: "Note:"
+                - text: The model does not support generating a transparent background.
+              - table [ref=e583]:
+                - rowgroup [ref=e584]:
+                  - row "Prompt Generated output" [ref=e585]:
+                    - columnheader "Prompt" [ref=e586]:
+                      - strong [ref=e587]: Prompt
+                    - columnheader "Generated output" [ref=e588]:
+                      - strong [ref=e589]: Generated output
+                - rowgroup [ref=e590]:
+                  - row "A kawaii-style sticker of a happy red panda wearing a tiny bamboo hat. It's munching on a green bamboo leaf. The design features bold, clean outlines, simple cel-shading, and a vibrant color palette. The background must be white. Kawaii red panda sticker" [ref=e591]:
+                    - cell "A kawaii-style sticker of a happy red panda wearing a tiny bamboo hat. It's munching on a green bamboo leaf. The design features bold, clean outlines, simple cel-shading, and a vibrant color palette. The background must be white." [ref=e592]
+                    - cell "Kawaii red panda sticker" [ref=e593]:
+                      - img "Kawaii red panda sticker" [ref=e594]
+              - heading "Accurate text in images" [level=4] [ref=e595]
+              - paragraph [ref=e596]: Gemini excels at rendering text. Be clear about the text, the font style (descriptively), and the overall design. Use Gemini 3 Pro Image Preview for professional asset production.
+              - table [ref=e597]:
+                - rowgroup [ref=e598]:
+                  - row "Prompt Generated output" [ref=e599]:
+                    - columnheader "Prompt" [ref=e600]:
+                      - strong [ref=e601]: Prompt
+                    - columnheader "Generated output" [ref=e602]:
+                      - strong [ref=e603]: Generated output
+                - rowgroup [ref=e604]:
+                  - row "Create a modern, minimalist logo for a coffee shop called 'The Daily Grind'. The text should be in a clean, bold, sans-serif font. The color scheme is black and white. Put the logo in a circle. Use a coffee bean in a clever way. Coffee shop logo" [ref=e605]:
+                    - cell "Create a modern, minimalist logo for a coffee shop called 'The Daily Grind'. The text should be in a clean, bold, sans-serif font. The color scheme is black and white. Put the logo in a circle. Use a coffee bean in a clever way." [ref=e606]
+                    - cell "Coffee shop logo" [ref=e607]:
+                      - img "Coffee shop logo" [ref=e608]
+              - heading "Product mockups and commercial photography" [level=4] [ref=e609]
+              - paragraph [ref=e610]: Perfect for creating clean, professional product shots for ecommerce, advertising, or branding.
+              - table [ref=e611]:
+                - rowgroup [ref=e612]:
+                  - row "Prompt Generated output" [ref=e613]:
+                    - columnheader "Prompt" [ref=e614]:
+                      - strong [ref=e615]: Prompt
+                    - columnheader "Generated output" [ref=e616]:
+                      - strong [ref=e617]: Generated output
+                - rowgroup [ref=e618]:
+                  - row "A high-resolution, studio-lit product photograph of a minimalist ceramic coffee mug in matte black, presented on a polished concrete surface. The lighting is a three-point softbox setup designed to create soft, diffused highlights and eliminate harsh shadows. The camera angle is a slightly elevated 45-degree shot to showcase its clean lines. Ultra-realistic, with sharp focus on the steam rising from the coffee. Square image. Ceramic coffee mug product shot" [ref=e619]:
+                    - cell "A high-resolution, studio-lit product photograph of a minimalist ceramic coffee mug in matte black, presented on a polished concrete surface. The lighting is a three-point softbox setup designed to create soft, diffused highlights and eliminate harsh shadows. The camera angle is a slightly elevated 45-degree shot to showcase its clean lines. Ultra-realistic, with sharp focus on the steam rising from the coffee. Square image." [ref=e620]
+                    - cell "Ceramic coffee mug product shot" [ref=e621]:
+                      - img "Ceramic coffee mug product shot" [ref=e622]
+              - heading "Minimalist and negative space design" [level=4] [ref=e623]
+              - paragraph [ref=e624]: Excellent for creating backgrounds for websites, presentations, or marketing materials where text will be overlaid.
+              - table [ref=e625]:
+                - rowgroup [ref=e626]:
+                  - row "Prompt Generated output" [ref=e627]:
+                    - columnheader "Prompt" [ref=e628]:
+                      - strong [ref=e629]: Prompt
+                    - columnheader "Generated output" [ref=e630]:
+                      - strong [ref=e631]: Generated output
+                - rowgroup [ref=e632]:
+                  - row "A minimalist composition featuring a single, delicate red maple leaf positioned in the bottom-right of the frame. The background is a vast, empty off-white canvas, creating significant negative space for text. Soft, diffused lighting from the top left. Square image. Minimalist design with red maple leaf" [ref=e633]:
+                    - cell "A minimalist composition featuring a single, delicate red maple leaf positioned in the bottom-right of the frame. The background is a vast, empty off-white canvas, creating significant negative space for text. Soft, diffused lighting from the top left. Square image." [ref=e634]
+                    - cell "Minimalist design with red maple leaf" [ref=e635]:
+                      - img "Minimalist design with red maple leaf" [ref=e636]
+              - heading "Sequential art (Comic panel / Storyboard)" [level=4] [ref=e637]
+              - paragraph [ref=e638]: Builds on character consistency and scene description to create panels for visual storytelling. For accuracy with text and storytelling ability, these prompts work best with Gemini 3 Pro and Gemini 3.1 Flash Image Preview.
+              - table [ref=e639]:
+                - rowgroup [ref=e640]:
+                  - row "Prompt Generated output" [ref=e641]:
+                    - columnheader "Prompt" [ref=e642]:
+                      - strong [ref=e643]: Prompt
+                    - columnheader "Generated output" [ref=e644]:
+                      - strong [ref=e645]: Generated output
+                - rowgroup [ref=e646]:
+                  - 'row "Input image: Input image Prompt: Make a 3 panel comic in a gritty, noir art style with high-contrast black and white inks. Put the character in a humurous scene. Gritty noir comic panel" [ref=e647]':
+                    - 'cell "Input image: Input image Prompt: Make a 3 panel comic in a gritty, noir art style with high-contrast black and white inks. Put the character in a humurous scene." [ref=e648]':
+                      - paragraph [ref=e649]:
+                        - strong [ref=e650]: "Input image:"
+                      - figure "Input image" [ref=e651]:
+                        - img "Man in white glasses" [ref=e652]
+                        - generic [ref=e653]: Input image
+                      - paragraph [ref=e654]:
+                        - strong [ref=e655]: "Prompt:"
+                        - text: Make a 3 panel comic in a gritty, noir art style with high-contrast black and white inks. Put the character in a humurous scene.
+                    - cell "Gritty noir comic panel" [ref=e656]:
+                      - img "Gritty noir comic panel" [ref=e657]
+              - heading "Grounding with Google Search" [level=4] [ref=e658]
+              - paragraph [ref=e659]: Use Google Search to generate images based on recent or real-time information. This is useful for news, weather, and other time-sensitive topics.
+              - table [ref=e660]:
+                - rowgroup [ref=e661]:
+                  - row "Prompt Generated output" [ref=e662]:
+                    - columnheader "Prompt" [ref=e663]:
+                      - strong [ref=e664]: Prompt
+                    - columnheader "Generated output" [ref=e665]:
+                      - strong [ref=e666]: Generated output
+                - rowgroup [ref=e667]:
+                  - row "Make a simple but stylish graphic of last night's Arsenal game in the Champion's League Arsenal football score graphic" [ref=e668]:
+                    - cell "Make a simple but stylish graphic of last night's Arsenal game in the Champion's League" [ref=e669]
+                    - cell "Arsenal football score graphic" [ref=e670]:
+                      - img "Arsenal football score graphic" [ref=e671]
+              - heading "Prompts for editing images" [level=3] [ref=e672]
+              - paragraph [ref=e673]: These examples show how to provide images alongside your text prompts for editing, composition, and style transfer.
+              - heading "Adding and removing elements" [level=4] [ref=e674]
+              - paragraph [ref=e675]: Provide an image and describe your change. The model will match the original image's style, lighting, and perspective.
+              - table [ref=e676]:
+                - rowgroup [ref=e677]:
+                  - row "Prompt Generated output" [ref=e678]:
+                    - columnheader "Prompt" [ref=e679]:
+                      - strong [ref=e680]: Prompt
+                    - columnheader "Generated output" [ref=e681]:
+                      - strong [ref=e682]: Generated output
+                - rowgroup [ref=e683]:
+                  - 'row "Input image: Input image Prompt: Using the provided image of my cat, please add a small, knitted wizard hat on its head. Make it look like it''s sitting comfortably and matches the soft lighting of the photo. Cat with wizard hat" [ref=e684]':
+                    - 'cell "Input image: Input image Prompt: Using the provided image of my cat, please add a small, knitted wizard hat on its head. Make it look like it''s sitting comfortably and matches the soft lighting of the photo." [ref=e685]':
+                      - paragraph [ref=e686]:
+                        - strong [ref=e687]: "Input image:"
+                      - figure "Input image" [ref=e688]:
+                        - img "A photorealistic picture of a fluffy ginger cat..." [ref=e689]
+                        - generic [ref=e690]: Input image
+                      - paragraph [ref=e691]:
+                        - strong [ref=e692]: "Prompt:"
+                        - text: Using the provided image of my cat, please add a small, knitted wizard hat on its head. Make it look like it's sitting comfortably and matches the soft lighting of the photo.
+                    - cell "Cat with wizard hat" [ref=e693]:
+                      - img "Cat with wizard hat" [ref=e694]
+              - heading "Inpainting (Semantic masking)" [level=4] [ref=e695]
+              - paragraph [ref=e696]: Conversationally define a "mask" to edit a specific part of an image while leaving the rest untouched.
+              - table [ref=e697]:
+                - rowgroup [ref=e698]:
+                  - row "Prompt Generated output" [ref=e699]:
+                    - columnheader "Prompt" [ref=e700]:
+                      - strong [ref=e701]: Prompt
+                    - columnheader "Generated output" [ref=e702]:
+                      - strong [ref=e703]: Generated output
+                - rowgroup [ref=e704]:
+                  - 'row "Input image: Input image Prompt: Using the provided image of a living room, change only the blue sofa to be a vintage, brown leather chesterfield sofa. Keep the rest of the room, including the pillows on the sofa and the lighting, unchanged. Living room with brown leather sofa" [ref=e705]':
+                    - 'cell "Input image: Input image Prompt: Using the provided image of a living room, change only the blue sofa to be a vintage, brown leather chesterfield sofa. Keep the rest of the room, including the pillows on the sofa and the lighting, unchanged." [ref=e706]':
+                      - paragraph [ref=e707]:
+                        - strong [ref=e708]: "Input image:"
+                      - figure "Input image" [ref=e709]:
+                        - img "A wide shot of a modern, well-lit living room..." [ref=e710]
+                        - generic [ref=e711]: Input image
+                      - paragraph [ref=e712]:
+                        - strong [ref=e713]: "Prompt:"
+                        - text: Using the provided image of a living room, change only the blue sofa to be a vintage, brown leather chesterfield sofa. Keep the rest of the room, including the pillows on the sofa and the lighting, unchanged.
+                    - cell "Living room with brown leather sofa" [ref=e714]:
+                      - img "Living room with brown leather sofa" [ref=e715]
+              - heading "Style transfer" [level=4] [ref=e716]
+              - paragraph [ref=e717]: Provide an image and ask the model to recreate its content in a different artistic style.
+              - table [ref=e718]:
+                - rowgroup [ref=e719]:
+                  - row "Prompt Generated output" [ref=e720]:
+                    - columnheader "Prompt" [ref=e721]:
+                      - strong [ref=e722]: Prompt
+                    - columnheader "Generated output" [ref=e723]:
+                      - strong [ref=e724]: Generated output
+                - rowgroup [ref=e725]:
+                  - 'row "Input image: Input image Prompt: Transform the provided photograph of a modern city street at night into the artistic style of Vincent van Gogh''s ''Starry Night''. Preserve the original composition of buildings and cars, but render all elements with swirling, impasto brushstrokes and a dramatic palette of deep blues and bright yellows. City street in Starry Night style" [ref=e726]':
+                    - 'cell "Input image: Input image Prompt: Transform the provided photograph of a modern city street at night into the artistic style of Vincent van Gogh''s ''Starry Night''. Preserve the original composition of buildings and cars, but render all elements with swirling, impasto brushstrokes and a dramatic palette of deep blues and bright yellows." [ref=e727]':
+                      - paragraph [ref=e728]:
+                        - strong [ref=e729]: "Input image:"
+                      - figure "Input image" [ref=e730]:
+                        - img "A photorealistic, high-resolution photograph of a busy city street..." [ref=e731]
+                        - generic [ref=e732]: Input image
+                      - paragraph [ref=e733]:
+                        - strong [ref=e734]: "Prompt:"
+                        - text: Transform the provided photograph of a modern city street at night into the artistic style of Vincent van Gogh's 'Starry Night'. Preserve the original composition of buildings and cars, but render all elements with swirling, impasto brushstrokes and a dramatic palette of deep blues and bright yellows.
+                    - cell "City street in Starry Night style" [ref=e735]:
+                      - img "City street in Starry Night style" [ref=e736]
+              - 'heading "Advanced composition: Combining multiple images" [level=4] [ref=e737]'
+              - paragraph [ref=e738]: Provide multiple images as context to create a new, composite scene. This is perfect for product mockups or creative collages.
+              - table [ref=e739]:
+                - rowgroup [ref=e740]:
+                  - row "Prompt Generated output" [ref=e741]:
+                    - columnheader "Prompt" [ref=e742]:
+                      - strong [ref=e743]: Prompt
+                    - columnheader "Generated output" [ref=e744]:
+                      - strong [ref=e745]: Generated output
+                - rowgroup [ref=e746]:
+                  - 'row "Input images: Input 1: Dress Input 2: Model Prompt: Create a professional e-commerce fashion photo. Take the blue floral dress from the first image and let the woman from the second image wear it. Generate a realistic, full-body shot of the woman wearing the dress, with the lighting and shadows adjusted to match the outdoor environment. Fashion e-commerce shot" [ref=e747]':
+                    - 'cell "Input images: Input 1: Dress Input 2: Model Prompt: Create a professional e-commerce fashion photo. Take the blue floral dress from the first image and let the woman from the second image wear it. Generate a realistic, full-body shot of the woman wearing the dress, with the lighting and shadows adjusted to match the outdoor environment." [ref=e748]':
+                      - paragraph [ref=e749]:
+                        - strong [ref=e750]: "Input images:"
+                      - 'figure "Input 1: Dress" [ref=e751]':
+                        - img "A professionally shot photo of a blue floral summer dress..." [ref=e752]
+                        - generic [ref=e753]: "Input 1: Dress"
+                      - 'figure "Input 2: Model" [ref=e754]':
+                        - img "Full-body shot of a woman with her hair in a bun..." [ref=e755]
+                        - generic [ref=e756]: "Input 2: Model"
+                      - paragraph [ref=e757]:
+                        - strong [ref=e758]: "Prompt:"
+                        - text: Create a professional e-commerce fashion photo. Take the blue floral dress from the first image and let the woman from the second image wear it. Generate a realistic, full-body shot of the woman wearing the dress, with the lighting and shadows adjusted to match the outdoor environment.
+                    - cell "Fashion e-commerce shot" [ref=e759]:
+                      - img "Fashion e-commerce shot" [ref=e760]
+              - heading "High-fidelity detail preservation" [level=4] [ref=e761]
+              - paragraph [ref=e762]: To ensure critical details (like a face or logo) are preserved during an edit, describe them in great detail along with your edit request.
+              - table [ref=e763]:
+                - rowgroup [ref=e764]:
+                  - row "Prompt Generated output" [ref=e765]:
+                    - columnheader "Prompt" [ref=e766]:
+                      - strong [ref=e767]: Prompt
+                    - columnheader "Generated output" [ref=e768]:
+                      - strong [ref=e769]: Generated output
+                - rowgroup [ref=e770]:
+                  - 'row "Input images: Input 1: Woman Input 2: Logo Prompt: Take the first image of the woman with brown hair, blue eyes, and a neutral expression. Add the logo from the second image onto her black t-shirt. Ensure the woman''s face and features remain completely unchanged. The logo should look like it''s naturally printed on the fabric, following the folds of the shirt. Woman with logo on t-shirt" [ref=e771]':
+                    - 'cell "Input images: Input 1: Woman Input 2: Logo Prompt: Take the first image of the woman with brown hair, blue eyes, and a neutral expression. Add the logo from the second image onto her black t-shirt. Ensure the woman''s face and features remain completely unchanged. The logo should look like it''s naturally printed on the fabric, following the folds of the shirt." [ref=e772]':
+                      - paragraph [ref=e773]:
+                        - strong [ref=e774]: "Input images:"
+                      - 'figure "Input 1: Woman" [ref=e775]':
+                        - img "A professional headshot of a woman with brown hair and blue eyes..." [ref=e776]
+                        - generic [ref=e777]: "Input 1: Woman"
+                      - 'figure "Input 2: Logo" [ref=e778]':
+                        - img "A simple, modern logo with the letters 'G' and 'A'..." [ref=e779]
+                        - generic [ref=e780]: "Input 2: Logo"
+                      - paragraph [ref=e781]:
+                        - strong [ref=e782]: "Prompt:"
+                        - text: Take the first image of the woman with brown hair, blue eyes, and a neutral expression. Add the logo from the second image onto her black t-shirt. Ensure the woman's face and features remain completely unchanged. The logo should look like it's naturally printed on the fabric, following the folds of the shirt.
+                    - cell "Woman with logo on t-shirt" [ref=e783]:
+                      - img "Woman with logo on t-shirt" [ref=e784]
+              - heading "Bring something to life" [level=4] [ref=e785]
+              - paragraph [ref=e786]: Upload a rough sketch or drawing and ask the model to refine it into a finished image.
+              - table [ref=e787]:
+                - rowgroup [ref=e788]:
+                  - row "Prompt Generated output" [ref=e789]:
+                    - columnheader "Prompt" [ref=e790]:
+                      - strong [ref=e791]: Prompt
+                    - columnheader "Generated output" [ref=e792]:
+                      - strong [ref=e793]: Generated output
+                - rowgroup [ref=e794]:
+                  - 'row "Input image: Rough sketch of a car Prompt: Turn this rough pencil sketch of a futuristic car into a polished photo of the finished concept car in a showroom. Keep the sleek lines and low profile from the sketch but add metallic blue paint and neon rim lighting. Polished photo of concept car" [ref=e795]':
+                    - 'cell "Input image: Rough sketch of a car Prompt: Turn this rough pencil sketch of a futuristic car into a polished photo of the finished concept car in a showroom. Keep the sleek lines and low profile from the sketch but add metallic blue paint and neon rim lighting." [ref=e796]':
+                      - paragraph [ref=e797]:
+                        - strong [ref=e798]: "Input image:"
+                      - figure "Rough sketch of a car" [ref=e799]:
+                        - img "Sketch of a car" [ref=e800]
+                        - generic [ref=e801]: Rough sketch of a car
+                      - paragraph [ref=e802]:
+                        - strong [ref=e803]: "Prompt:"
+                        - text: Turn this rough pencil sketch of a futuristic car into a polished photo of the finished concept car in a showroom. Keep the sleek lines and low profile from the sketch but add metallic blue paint and neon rim lighting.
+                    - cell "Polished photo of concept car" [ref=e804]:
+                      - img "Polished photo of concept car" [ref=e805]
+              - 'heading "Character consistency: 360 view" [level=4] [ref=e806]'
+              - paragraph [ref=e807]: You can generate 360-degree views of a character by iteratively prompting for different angles. For best results, include previously generated images in subsequent prompts to maintain consistency. For complex poses, include a reference image of the desired pose.
+              - table [ref=e808]:
+                - rowgroup [ref=e809]:
+                  - row "Prompt Generated output" [ref=e810]:
+                    - columnheader "Prompt" [ref=e811]:
+                      - strong [ref=e812]: Prompt
+                    - columnheader "Generated output" [ref=e813]:
+                      - strong [ref=e814]: Generated output
+                - rowgroup [ref=e815]:
+                  - 'row "Input image: Original image Prompt: A studio portrait of this man against white, in profile looking right Man in white glasses looking right Man in white glasses looking forward" [ref=e816]':
+                    - 'cell "Input image: Original image Prompt: A studio portrait of this man against white, in profile looking right" [ref=e817]':
+                      - paragraph [ref=e818]:
+                        - strong [ref=e819]: "Input image:"
+                      - figure "Original image" [ref=e820]:
+                        - img "Original input of a man in white glasses" [ref=e821]
+                        - generic [ref=e822]: Original image
+                      - paragraph [ref=e823]:
+                        - strong [ref=e824]: "Prompt:"
+                        - text: A studio portrait of this man against white, in profile looking right
+                    - cell "Man in white glasses looking right Man in white glasses looking forward" [ref=e825]:
+                      - figure "Man in white glasses looking right" [ref=e826]:
+                        - img "Output of a man in white glasses looking right" [ref=e827]
+                        - generic [ref=e828]: Man in white glasses looking right
+                      - figure "Man in white glasses looking forward" [ref=e829]:
+                        - img "Output of a man in white glasses looking forward" [ref=e830]
+                        - generic [ref=e831]: Man in white glasses looking forward
+              - heading "Best Practices" [level=3] [ref=e832]
+              - paragraph [ref=e833]: To elevate your results from good to great, incorporate these professional strategies into your workflow.
+              - list [ref=e834]:
+                - listitem [ref=e835]:
+                  - strong [ref=e836]: "Be Hyper-Specific:"
+                  - text: "The more detail you provide, the more control you have. Instead of \"fantasy armor,\" describe it: \"ornate elven plate armor, etched with silver leaf patterns, with a high collar and pauldrons shaped like falcon wings.\""
+                - listitem [ref=e837]:
+                  - strong [ref=e838]: "Provide Context and Intent:"
+                  - text: Explain the
+                  - emphasis [ref=e839]: purpose
+                  - text: of the image. The model's understanding of context will influence the final output. For example, "Create a logo for a high-end, minimalist skincare brand" will yield better results than just "Create a logo."
+                - listitem [ref=e840]:
+                  - strong [ref=e841]: "Iterate and Refine:"
+                  - text: Don't expect a perfect image on the first try. Use the conversational nature of the model to make small changes. Follow up with prompts like, "That's great, but can you make the lighting a bit warmer?" or "Keep everything the same, but change the character's expression to be more serious."
+                - listitem [ref=e842]:
+                  - strong [ref=e843]: "Use Step-by-Step Instructions:"
+                  - text: For complex scenes with many elements, break your prompt into steps. "First, create a background of a serene, misty forest at dawn. Then, in the foreground, add a moss-covered ancient stone altar. Finally, place a single, glowing sword on top of the altar."
+                - listitem [ref=e844]:
+                  - strong [ref=e845]: "Use \"Semantic Negative Prompts\":"
+                  - text: "Instead of saying \"no cars,\" describe the desired scene positively: \"an empty, deserted street with no signs of traffic.\""
+                - listitem [ref=e846]:
+                  - strong [ref=e847]: "Control the Camera:"
+                  - text: Use photographic and cinematic language to control the composition. Terms like
+                  - code [ref=e848]: wide-angle shot
+                  - text: ","
+                  - code [ref=e849]: macro shot
+                  - text: ","
+                  - code [ref=e850]: low-angle perspective
+                  - text: .
+              - heading "Limitations" [level=2] [ref=e851]
+              - list [ref=e852]:
+                - listitem [ref=e853]: "For best performance, use the following languages: EN, ar-EG, de-DE, es-MX, fr-FR, hi-IN, id-ID, it-IT, ja-JP, ko-KR, pt-BR, ru-RU, ua-UA, vi-VN, zh-CN."
+                - listitem [ref=e854]: Image generation does not support audio or video inputs.
+                - listitem [ref=e855]: The model won't always follow the exact number of image outputs that the user explicitly asks for.
+                - listitem [ref=e856]:
+                  - code [ref=e857]: gemini-2.5-flash-image
+                  - text: works best with up to 3 images as input, while
+                  - code [ref=e858]: gemini-3-pro-image-preview
+                  - text: supports 5 images with high fidelity, and up to 14 images in total.
+                  - code [ref=e859]: gemini-3.1-flash-image-preview
+                  - text: supports character resemblance of up to 4 characters and the fidelity of up to 10 objects in a single workflow.
+                - listitem [ref=e860]: When generating text for an image, Gemini works best if you first generate the text and then ask for an image with the text.
+                - listitem [ref=e861]:
+                  - code [ref=e862]: gemini-3.1-flash-image-preview
+                  - text: Grounding with Google Search does not support using real-world images of people from web search at this time.
+                - listitem [ref=e863]:
+                  - text: All generated images include a
+                  - link "SynthID watermark" [ref=e864] [cursor=pointer]:
+                    - /url: /responsible/docs/safeguards/synthid
+                  - text: .
+              - heading "Optional configurations" [level=2] [ref=e865]
+              - paragraph [ref=e866]:
+                - text: You can optionally configure the response modalities and aspect ratio of the model's output in the
+                - code [ref=e867]: config
+                - text: field of
+                - code [ref=e868]: generate_content
+                - text: calls.
+              - heading "Output types" [level=3] [ref=e869]
+              - paragraph [ref=e870]:
+                - text: The model defaults to returning text and image responses (i.e.
+                - code [ref=e871]: response_modalities=['Text', 'Image']
+                - text: ). You can configure the response to return only images without text using
+                - code [ref=e872]: response_modalities=['Image']
+                - text: .
+              - heading "Aspect ratios and image size" [level=3] [ref=e874]
+              - paragraph [ref=e875]:
+                - text: The model defaults to matching the output image size to that of your input image, or otherwise generates 1:1 squares. You can control the aspect ratio of the output image using the
+                - code [ref=e876]: aspect_ratio
+                - text: field under
+                - code [ref=e877]: response_format
+                - text: "in the response request, shown here:"
+              - paragraph
+              - paragraph [ref=e879]: "The different ratios available and the size of the image generated are listed in the following tables:"
+              - heading "Model selection" [level=2] [ref=e881]
+              - paragraph [ref=e882]: Choose the model best suited for your specific use case.
+              - list [ref=e883]:
+                - listitem [ref=e884]:
+                  - paragraph [ref=e885]:
+                    - strong [ref=e886]: Gemini 3.1 Flash Image Preview (Nano Banana 2 Preview)
+                    - text: should be your go-to image generation model, as the best all around performance and intelligence to cost and latency balance. Check the model
+                    - link "pricing" [ref=e887] [cursor=pointer]:
+                      - /url: /gemini-api/docs/pricing#gemini-3.1-flash-image-preview
+                    - text: and
+                    - link "capabilities" [ref=e888] [cursor=pointer]:
+                      - /url: /gemini-api/docs/models/gemini-3.1-flash-image-preview
+                    - text: page for more details.
+                - listitem [ref=e889]:
+                  - paragraph [ref=e890]:
+                    - strong [ref=e891]: Gemini 3 Pro Image Preview (Nano Banana Pro Preview)
+                    - text: is designed for professional asset production and complex instructions. This model features real-world grounding using Google Search, a default "Thinking" process that refines composition prior to generation, and can generate images of up to 4K resolutions. Check the model
+                    - link "pricing" [ref=e892] [cursor=pointer]:
+                      - /url: /gemini-api/docs/pricing#gemini-3-pro-image-preview
+                    - text: and
+                    - link "capabilities" [ref=e893] [cursor=pointer]:
+                      - /url: /gemini-api/docs/models/gemini-3-pro-image-preview
+                    - text: page for more details.
+                - listitem [ref=e894]:
+                  - paragraph [ref=e895]:
+                    - strong [ref=e896]: Gemini 2.5 Flash Image (Nano Banana)
+                    - text: is designed for speed and efficiency. This model is optimized for high-volume, low-latency tasks and generates images at 1024px resolution. Check the model
+                    - link "pricing" [ref=e897] [cursor=pointer]:
+                      - /url: /gemini-api/docs/pricing#gemini-2.5-flash-image
+                    - text: and
+                    - link "capabilities" [ref=e898] [cursor=pointer]:
+                      - /url: /gemini-api/docs/models/gemini-2.5-flash-image
+                    - text: page for more details.
+              - heading "When to use Imagen" [level=3] [ref=e899]
+              - paragraph [ref=e900]:
+                - text: In addition to using Gemini's built-in image generation capabilities, you can also access
+                - link "Imagen" [ref=e901] [cursor=pointer]:
+                  - /url: /gemini-api/docs/imagen
+                - text: ", our specialized image generation model, through the Gemini API."
+              - paragraph [ref=e902]: Imagen 4 should be your go-to model when starting to generate images with Imagen. Choose Imagen 4 Ultra for advanced use-cases or when you need the best image quality (note that can only generate one image at a time).
+              - heading "What's next" [level=2] [ref=e903]
+              - list [ref=e904]:
+                - listitem [ref=e905]:
+                  - text: Find more examples and code samples in the
+                  - link "cookbook guide" [ref=e906] [cursor=pointer]:
+                    - /url: https://colab.research.google.com/github/google-gemini/cookbook/blob/main/quickstarts/Get_Started_Nano_Banana.ipynb
+                  - text: .
+                - listitem [ref=e907]:
+                  - text: Check out the
+                  - link "Veo guide" [ref=e908] [cursor=pointer]:
+                    - /url: /gemini-api/docs/video
+                  - text: to learn how to generate videos with the Gemini API.
+                - listitem [ref=e909]:
+                  - text: To learn more about Gemini models, see
+                  - link "Gemini models" [ref=e910] [cursor=pointer]:
+                    - /url: /gemini-api/docs/models/gemini
+                  - text: .
+            - button "Send feedback" [ref=e912] [cursor=pointer]
+          - generic [ref=e913]:
+            - paragraph [ref=e914]:
+              - text: Except as otherwise noted, the content of this page is licensed under the
+              - link "Creative Commons Attribution 4.0 License" [ref=e915] [cursor=pointer]:
+                - /url: https://creativecommons.org/licenses/by/4.0/
+              - text: ", and code samples are licensed under the"
+              - link "Apache 2.0 License" [ref=e916] [cursor=pointer]:
+                - /url: https://www.apache.org/licenses/LICENSE-2.0
+              - text: . For details, see the
+              - link "Google Developers Site Policies" [ref=e917] [cursor=pointer]:
+                - /url: https://developers.google.com/site-policies
+              - text: . Java is a registered trademark of Oracle and/or its affiliates.
+            - paragraph [ref=e918]: Last updated 2026-05-07 UTC.
+      - generic:
+        - navigation "Footer links"
+      - navigation "Utility links" [ref=e922]:
+        - list [ref=e923]:
+          - listitem [ref=e924]:
+            - link "Terms" [ref=e925] [cursor=pointer]:
+              - /url: //policies.google.com/terms
+          - listitem [ref=e926]:
+            - text: "|"
+            - link "Privacy" [ref=e927] [cursor=pointer]:
+              - /url: //policies.google.com/privacy
+          - text: "|"
