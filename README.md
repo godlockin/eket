@@ -14,77 +14,61 @@
 
 ## 🚀 Quick Start
 
-### Level 1: 最简安装（推荐新用户）
-
-只需要 Claude Code 增强？一行命令搞定：
+### macOS / Linux
 
 ```bash
+# Level 1: 最简安装（Skills + Commands + Hooks）
 curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-setup.sh | bash
+
+# Level 2: 项目初始化
+cd your-project && curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-setup.sh | bash -s -- --init
+
+# Level 3: 完整安装（含 CLI）
+curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-setup.sh | bash -s -- --full
 ```
 
-**安装内容：**
-- `~/.claude/skills/eket/` — AI 能力描述
-- `~/.claude/commands/` — 30+ 个 /slash 命令
-- `~/.claude/hooks/` — 上下文监控、防盲改等
+### Windows (PowerShell)
+
+```powershell
+# Level 1: 最简安装
+irm https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-setup.ps1 | iex
+
+# Level 2: 项目初始化
+cd your-project; .\quick-setup.ps1 -Init
+
+# Level 3: 完整安装
+.\quick-setup.ps1 -Full
+```
+
+> ⚠️ Windows 用户：Slash 命令 (.sh) 需要 Git Bash 或 WSL 执行
 
 **立即使用：** 在 Claude Code 中输入 `/eket-start`
 
 ---
 
-### Level 2: 项目初始化
+## 🤖 多工具支持
 
-想在某个项目中使用完整框架？
+| 工具 | 支持级别 | 配置文件 | 说明 |
+|------|----------|----------|------|
+| **Claude Code** | ✅ 完整 | `CLAUDE.md` | Skills + Commands + Hooks + Subagent |
+| **Cursor** | ✅ 完整 | `CURSOR.md` + `.cursorrules` | 通过项目指令支持 |
+| **GitHub Copilot CLI** | ⚠️ 降级 | `COPILOT.md` | 单 Agent 模式，无 Subagent |
+| **OpenAI Codex** | ⚠️ 降级 | `CODEX.md` | 单 Agent 模式，无 Subagent |
+| **Gemini CLI** | ⚠️ 降级 | `AGENTS.md` | 通用规范 |
+| **其他 LLM Agent** | ⚠️ 降级 | `AGENTS.md` | 通用规范 |
 
-```bash
-cd your-project
-curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-setup.sh | bash -s -- --init
-```
-
-**额外创建：**
-```
-your-project/
-├── CLAUDE.md           # Claude Code 项目指令
-├── AGENTS.md           # 多 Agent 协作规范
-├── .claude/            # 项目级配置
-├── .eket/              # 运行时状态（不入库）
-├── confluence/         # 知识库
-│   └── memory/         # 经验教训
-└── jira/               # 任务管理
-    ├── tickets/        # 任务卡片
-    └── epics/          # 史诗追踪
-```
-
----
-
-### Level 3: 完整安装（含 CLI）
-
-需要命令行工具、HTTP API、Dashboard？
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-setup.sh | bash -s -- --full
-```
-
-**额外安装：**
-- `~/.local/bin/eket` — Rust CLI（~8MB，高性能）
-
-```bash
-# CLI 命令示例
-eket system:doctor          # 环境诊断
-eket task:create "标题"      # 创建任务
-eket task:claim TASK-001    # 领取任务
-eket server --port 9877     # 启动 HTTP API
-```
+**降级模式说明：** 不支持 Skills/Subagent 的工具以单 Agent 模式运行，同时承担简化版 Master + Slaver 职责。
 
 ---
 
 ## 📦 安装方式对比
 
-| 方式 | 下载量 | 适合场景 | 命令 |
-|------|--------|----------|------|
-| **Level 1** | ~50MB | 只用 Claude Code | `curl ... \| bash` |
-| **Level 2** | ~50MB | 项目中使用完整框架 | `... \| bash -s -- --init` |
-| **Level 3** | ~60MB | 需要 CLI/API/Dashboard | `... \| bash -s -- --full` |
-| **开发者** | ~9GB | 修改源码、贡献代码 | `git clone` |
+| 方式 | 平台 | 下载量 | 适合场景 |
+|------|------|--------|----------|
+| **Level 1** | macOS/Linux/Windows | ~50MB | 只用 Claude Code |
+| **Level 2** | macOS/Linux/Windows | ~50MB | 项目中使用完整框架 |
+| **Level 3** | macOS/Linux/Windows | ~60MB | 需要 CLI/API/Dashboard |
+| **开发者** | 全平台 | ~9GB | 修改源码、贡献代码 |
 
 ### 开发者安装（完整源码）
 
