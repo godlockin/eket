@@ -36,6 +36,38 @@
 
 ---
 
+## 2.5 Brief Inference（任务前强制推断）
+
+**红线**：开始实现任何任务前，必须先输出一行"任务理解"。
+
+**格式**：
+```
+📋 任务理解: [任务类型] | [核心目标] | [技术方案] | [风险点]
+```
+
+**示例**：
+| 场景 | Brief Inference |
+|------|-----------------|
+| 功能实现 | 📋 任务理解: 功能实现 \| 添加用户认证 \| JWT + Redis 存储 \| 需要考虑 token 刷新 |
+| Bug 修复 | 📋 任务理解: Bug 修复 \| 修复内存泄漏 \| 添加 TTL 清理机制 \| 需验证不影响现有功能 |
+| 重构 | 📋 任务理解: 重构 \| 拆分 God Object \| 提取 3 个独立类 \| 需保持 API 兼容 |
+| 文档 | 📋 任务理解: 文档 \| 补充 API 文档 \| OpenAPI 3.0 格式 \| 需验证示例可运行 |
+
+**机制价值**：
+| 问题 | Brief Inference 如何解决 |
+|------|-------------------------|
+| AI 盲目套用模板 | 强制思考后再行动 |
+| 理解偏差发现晚 | Master 可在实现前纠正 |
+| 决策无痕迹 | 任务理解成为可追溯记录 |
+
+**Master 响应**：
+- ✅ 理解正确 → "继续执行"
+- ⚠️ 理解偏差 → "纠正：[正确理解]，重新输出 Brief Inference"
+
+**违反后果**：未输出 Brief Inference 直接编码 → PR reject
+
+---
+
 ## 3. 任务生命周期
 
 ### Worktree 隔离（强制）
@@ -163,6 +195,57 @@ proof:
 1. **SSH 可用**：`ssh -T git@github.com` 含 "authenticated"
 2. **Timeout 设置**：长命令设 `timeout: 120000`
 3. **不可恢复错误立即报告**：429/auth_fail/disk_full/oom/merge_conflict(>3文件)
+
+---
+
+## 12. 防截断规则（完整输出）
+
+**红线**：代码输出必须完整可运行，禁止任何形式的省略。
+
+**禁止模式**：
+| 模式 | 示例 | 严重性 |
+|------|------|--------|
+| 省略号 | `// ...` | 🔴 P0 |
+| 保持不变 | `// rest of the code remains the same` | 🔴 P0 |
+| 类似上面 | `// similar to above` | 🔴 P0 |
+| TODO 占位 | `// TODO: implement` | 🟡 P1 |
+| 伪代码 | `// pseudo: fetch data and process` | 🟡 P1 |
+
+**强制规则**：
+1. 代码块必须完整可运行
+2. 禁止用 `...` 省略任何代码
+3. 禁止 placeholder 注释
+4. 文件过长（>200 行）时分段输出，标注 `Part X/Y`
+5. 输出前预估长度，超限主动分段
+
+**错误示例**：
+```typescript
+// ❌ 错误：省略式输出
+function process() {
+  // ... similar to before
+}
+```
+
+**正确示例**：
+```typescript
+// ✅ 正确：完整输出
+function process() {
+  const data = fetchData();
+  return transform(data);
+}
+```
+
+**长文件处理**：
+```
+// Part 1/3: imports and types
+...完整内容...
+
+// Part 2/3: main logic
+...完整内容...
+
+// Part 3/3: exports
+...完整内容...
+```
 
 ---
 

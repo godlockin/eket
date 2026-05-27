@@ -3,6 +3,18 @@
     "postEdit": [
       {"pattern": "**/*.rs", "command": "cd rust && cargo fmt --check"},
       {"pattern": "**/*.py", "command": "ruff check --fix"}
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/post-edit.sh",
+            "timeout": 30
+          }
+        ]
+      }
     ]
   }
 }
