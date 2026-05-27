@@ -1,10 +1,13 @@
-# 覆盖率驱动开发反模式
-
-**严重度**: 中  
-**发现于**: EPIC-014 测评改进  
-**日期**: 2026-05-25
-
 ---
+name: coverage-driven-development
+type: pitfall
+created: 2026-05-25
+source: EPIC-014
+tags: [testing, metrics, anti-pattern]
+confidence: high
+---
+
+# 覆盖率驱动开发反模式
 
 ## 症状
 

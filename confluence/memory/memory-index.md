@@ -41,23 +41,29 @@
 
 ---
 
-## 📚 lessons/ — 实战经验 (13)
+## 📚 lessons/ — 实战经验 (19)
 
 | 文件 | 摘要 |
 |------|------|
-| [epic-014-benchmark-lessons.md](lessons/epic-014-benchmark-lessons.md) | **EPIC-014 测评改进** — 测试质量>数量、类型安全ROI |
-| [multi-agent-collab-lessons.md](lessons/multi-agent-collab-lessons.md) | 多智能体协作 — 任务分配、并行风险 |
-| [red-team-bug-patterns.md](lessons/red-team-bug-patterns.md) | 红队 Bug 模式 — tokio Mutex、AbortHandle |
-| [research-methodology.md](lessons/research-methodology.md) | 跨项目研究方法论 |
+| [borrowing-methodology.md](lessons/borrowing-methodology.md) | **借鉴外部项目** — 提取方法论而非照搬实现 |
+| [claude-code-setup-comparison.md](lessons/claude-code-setup-comparison.md) | Claude Code Setup 方案对比分析 |
 | [compare-test-before-replace.md](lessons/compare-test-before-replace.md) | 修改前隔离对比测试 |
-| [slaver-exit-cleanup.md](lessons/slaver-exit-cleanup.md) | Slaver 退出清理 |
+| [context-defense-guide.md](lessons/context-defense-guide.md) | Context 防护五层体系 |
 | [context-optimization-lessons-2026-05-10.md](lessons/context-optimization-lessons-2026-05-10.md) | 上下文优化 — SKILL.md RAG 化 |
 | [deep-cleanup-lessons-2026-05-07.md](lessons/deep-cleanup-lessons-2026-05-07.md) | 深度清理 — 片段式处理的教训 |
 | [epic-006-slaver-lessons-2026-05-09.md](lessons/epic-006-slaver-lessons-2026-05-09.md) | **Agent 幻觉问题** — background 隔离环境 |
 | [EPIC-005-lessons.md](lessons/EPIC-005-lessons.md) | EPIC-005 — CI/CD 经验、需求对齐 |
+| [epic-014-benchmark-lessons.md](lessons/epic-014-benchmark-lessons.md) | **EPIC-014 测评改进** — 测试质量>数量、类型安全ROI |
+| [epic-016-ab-review-lessons.md](lessons/epic-016-ab-review-lessons.md) | EPIC-016 AB 对抗 Review 经验 |
+| [lazy-load-docs.md](lessons/lazy-load-docs.md) | **按需加载机制** — 大文档快速索引避免上下文占用 |
+| [multi-agent-collab-lessons.md](lessons/multi-agent-collab-lessons.md) | 多智能体协作 — 任务分配、并行风险 |
 | [project-level-data-isolation.md](lessons/project-level-data-isolation.md) | 项目级数据隔离设计 |
+| [red-team-bug-patterns.md](lessons/red-team-bug-patterns.md) | 红队 Bug 模式 — tokio Mutex、AbortHandle |
+| [repo-slimming.md](lessons/repo-slimming.md) | **仓库瘦身** — git-filter-repo 清理误提交的大文件 |
+| [research-methodology.md](lessons/research-methodology.md) | 跨项目研究方法论 |
+| [slaver-exit-cleanup.md](lessons/slaver-exit-cleanup.md) | Slaver 退出清理 |
 | [spec4-feedback-intent-lessons.md](lessons/spec4-feedback-intent-lessons.md) | Spec 4 反馈系统 — Python/FastAPI |
-| [TASK-226-lessons-learned.md](lessons/TASK-226-lessons-learned.md) | Slaver 无权自填 trailer |
+| [tiered-installation-design.md](lessons/tiered-installation-design.md) | 分级安装体系设计 |
 
 ---
 
@@ -115,7 +121,7 @@
 | [glossary/terms.md](glossary/terms.md) | EKET 术语表 |
 | [research/borrowed-wisdom.md](research/borrowed-wisdom.md) | 外部项目借鉴 (711行) |
 | [codebase-map.md](codebase-map.md) | 代码库架构地图 |
-| [archive/](archive/) | 归档 (3 files) |
+| [archive/](archive/) | 归档 (5 files) |
 
 ---
 
@@ -139,6 +145,16 @@ Memory 文件需遵循统一格式，详见 [模板文档](../../template/memory
 - pitfalls/async-test-leak.md
 - pitfalls/git-mv-directory-not-exist.md
 - pitfalls/sqlite-inmemory-testclient-thread.md
+- pitfalls/perf-ac-ambiguity.md
+- pitfalls/context-tracker-not-triggered.md
+- pitfalls/coverage-driven-development.md
+- pitfalls/master-single-point-failure.md
+- pitfalls/slaver-worktree-code-loss.md
+- pitfalls/test-inline-copy-antipattern.md
+- lessons/repo-slimming.md
+- lessons/lazy-load-docs.md
+- lessons/borrowing-methodology.md
+- lessons/epic-016-ab-review-lessons.md
 
 ---
 
@@ -151,4 +167,4 @@ Memory 文件需遵循统一格式，详见 [模板文档](../../template/memory
 
 ---
 
-*文件总数：73 | 上次更新：2026-05-27*
+*文件总数：74 | 上次更新：2026-05-27*
