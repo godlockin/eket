@@ -142,4 +142,13 @@ Memory 文件需遵循统一格式，详见 [模板文档](../../template/memory
 
 ---
 
-*文件总数：71 | 上次更新：2026-05-27*
+## 🔬 research/ — 研究沉淀 (2)
+
+| 文件 | 摘要 |
+|------|------|
+| [llm-patterns/llm-laziness.md](../research/llm-patterns/llm-laziness.md) | LLM 输出截断根因 + 补救技术 |
+| [README.md](../research/README.md) | Research 目录结构说明 |
+
+---
+
+*文件总数：73 | 上次更新：2026-05-27*
