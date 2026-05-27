@@ -102,6 +102,11 @@ source: EPIC-016 AB Review, taste-skill patterns, ADVERSARIAL-REVIEW-PLAYBOOK
 
 - [ ] **CHANGELOG 已更新** — 新功能/修复记录到变更日志
 
+- [ ] **大文档有快速索引** — >200行的 .md 文件必须有 `## 快速索引` 章节
+  ```bash
+  ./scripts/check-lazy-load.sh template/docs/  # 检查所有文档
+  ```
+
 ---
 
 ## P2 可选（锦上添花）
