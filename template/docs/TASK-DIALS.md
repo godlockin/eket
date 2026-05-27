@@ -15,6 +15,24 @@ tags: [ticket, configuration, slaver, execution-strategy]
 
 ---
 
+## 快速参考（按需加载用）
+
+> 只需记住这个表，详细说明按需查看下方章节。
+
+| 场景 | strictness | detail_level | style | 备注 |
+|------|------------|--------------|-------|------|
+| 快速原型 | 3 | 3 | minimal | 验证概念即可 |
+| 常规开发 | 6 | 5 | standard | 默认配置 |
+| 生产核心 | 8 | 7 | standard | 需边界测试 |
+| 安全/合规 | 10 | 9 | thorough | 全覆盖+审计 |
+
+**旋钮速记**：
+- `strictness`: 测试/验收严苛程度 (1=宽松, 10=苛刻)
+- `detail_level`: 文档/日志详细程度 (1=精简, 10=详尽)  
+- `style`: minimal(速战)/standard(标准)/thorough(彻底)
+
+---
+
 ## 概述
 
 三旋钮是 EKET Ticket 系统的参数化配置机制，让 Master 在创建/分配任务时明确告知 Slaver 期望的执行策略。
