@@ -1,10 +1,13 @@
-# Lessons Learned: EPIC-007/008 容错系统实现
-
-**日期**: 2026-05-14  
-**范围**: Context Monitoring + Checkpoint 容错机制  
-**Tags**: #fault-tolerance #context-monitoring #multi-agent #efficiency
-
 ---
+name: slaver-worktree-code-loss
+type: pitfall
+created: 2026-05-14
+source: TASK-636, TASK-X04
+tags: [worktree, agent, git, code-loss]
+confidence: high
+---
+
+# Lessons Learned: EPIC-007/008 容错系统实现
 
 ## 🎯 核心经验
 

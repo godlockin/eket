@@ -1,10 +1,13 @@
-# Master 单点故障与性能瓶颈
-
-**发现时间**: 2026-05-14  
-**严重性**: 🔴 **Critical**  
-**状态**: ✅ 已有解决方案（见 MASTER-RULES.md §Rule 4）
-
 ---
+name: master-single-point-failure
+type: pitfall
+created: 2026-05-14
+source: EPIC-003
+tags: [architecture, high-availability, master-slaver]
+confidence: high
+---
+
+# Master 单点故障与性能瓶颈
 
 ## 问题
 
