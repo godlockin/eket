@@ -1,3 +1,12 @@
+---
+name: perf-ac-ambiguity
+type: pitfall
+created: 2026-05-20
+source: TASK-636
+tags: [performance, acceptance-criteria, specification]
+confidence: high
+---
+
 # Performance AC Ambiguity — "Startup Time"
 
 **场景/症状**: 验收标准说 "启动 < Xms" 但基线实现耗时远超目标

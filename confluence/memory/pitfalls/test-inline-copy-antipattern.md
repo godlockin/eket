@@ -1,10 +1,13 @@
-# 测试内联复制反模式
-
-**严重度**: 高  
-**发现于**: EPIC-014 测评改进  
-**日期**: 2026-05-25
-
 ---
+name: test-inline-copy-antipattern
+type: pitfall
+created: 2026-05-25
+source: EPIC-014
+tags: [testing, anti-pattern, false-positive]
+confidence: high
+---
+
+# 测试内联复制反模式
 
 ## 症状
 

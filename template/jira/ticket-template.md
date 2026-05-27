@@ -1,4 +1,4 @@
-# Jira Ticket 模板 (v2.3.0)
+# Jira Ticket 模板 (v2.4.0)
 
 <!--
 ================================================================================
@@ -10,6 +10,11 @@
 **标题**: {{TITLE}}
 **类型**: {{TYPE}}  <!-- feature / bugfix / task / improvement / research -->
 **优先级**: {{PRIORITY}}  <!-- P0(紧急) / P1(高) / P2(中) / P3(低) -->
+
+<!-- 三旋钮参数化配置 (v2.4.0 新增) -->
+**strictness**: {{STRICTNESS}}  <!-- 1-10, 严格度: 影响代码审查/测试/验收标准严苛程度 -->
+**detail_level**: {{DETAIL_LEVEL}}  <!-- 1-10, 详细度: 影响文档/注释/日志/分析报告详尽程度 -->
+**style**: {{STYLE}}  <!-- minimal / standard / thorough, 执行风格 -->
 
 **状态**: {{STATUS}}  <!-- backlog → analysis → ready → gate_review → in_progress → test → pr_review → done -->
 **创建时间**: {{CREATED_AT}}

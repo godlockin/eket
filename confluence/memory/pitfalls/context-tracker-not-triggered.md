@@ -1,3 +1,12 @@
+---
+name: context-tracker-not-triggered
+type: pitfall
+created: 2026-05-10
+source: TASK-604
+tags: [context-management, auto-compact, token-estimation]
+confidence: high
+---
+
 # ContextTracker 未触发 Auto-Compact 根因分析
 
 **发生时间**: 2026-05-10 00:10  
