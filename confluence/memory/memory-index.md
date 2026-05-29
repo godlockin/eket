@@ -4,12 +4,13 @@
 
 ---
 
-## 📐 patterns/ — 可复用设计模式 (12)
+## 📐 patterns/ — 可复用设计模式 (13)
 
 | 文件 | 摘要 |
 |------|------|
 | [dual-track-router.md](patterns/dual-track-router.md) | 双轨路由器 — Rust/JS 自动切换、断路器、接口抽象 |
 | [four-level-degradation.md](patterns/four-level-degradation.md) | 四级降级 — Shell→Rust→Node.js→Redis |
+| [frontend-animation.md](patterns/frontend-animation.md) | **前端动画模式** — 感受映射、entrance动画、性能优化 |
 | [master-slaver-coordination.md](patterns/master-slaver-coordination.md) | Master-Slaver 协调模式 |
 | [knowledge-system.md](patterns/knowledge-system.md) | 知识沉淀 — L0~L4 分层、GC 流程 |
 | [knowledge-flywheel.md](patterns/knowledge-flywheel.md) | 知识飞轮 — claim 推送、complete 触发 |
@@ -23,7 +24,7 @@
 
 ---
 
-## ⚠️ pitfalls/ — 已知坑 (11)
+## ⚠️ pitfalls/ — 已知坑 (14)
 
 | 文件 | 摘要 |
 |------|------|
@@ -35,13 +36,16 @@
 | [git-mv-directory-not-exist.md](pitfalls/git-mv-directory-not-exist.md) | git mv 目标目录不存在 |
 | [master-single-point-failure.md](pitfalls/master-single-point-failure.md) | Master 单点故障 |
 | [perf-ac-ambiguity.md](pitfalls/perf-ac-ambiguity.md) | 性能验收标准模糊 |
+| [playwright-pitfalls.md](pitfalls/playwright-pitfalls.md) | **Playwright E2E测试** — flaky test根因、正确等待策略、调试工具 |
 | [slaver-worktree-code-loss.md](pitfalls/slaver-worktree-code-loss.md) | Slaver Worktree 代码丢失 |
 | [sqlite-inmemory-testclient-thread.md](pitfalls/sqlite-inmemory-testclient-thread.md) | SQLite In-Memory 线程隔离 |
+| [statistical-pitfalls.md](pitfalls/statistical-pitfalls.md) | **统计测试陷阱** — p值误解、peeking问题、多重比较、SUTVA |
 | [test-inline-copy-antipattern.md](pitfalls/test-inline-copy-antipattern.md) | **测试内联复制** — 假阳性测试 |
+| [test-mock-behavior.md](pitfalls/test-mock-behavior.md) | **测试Mock行为** — Iron Laws: 不测mock、不加test-only方法、理解依赖再mock |
 
 ---
 
-## 📚 lessons/ — 实战经验 (19)
+## 📚 lessons/ — 实战经验 (20)
 
 | 文件 | 摘要 |
 |------|------|
@@ -55,6 +59,7 @@
 | [EPIC-005-lessons.md](lessons/EPIC-005-lessons.md) | EPIC-005 — CI/CD 经验、需求对齐 |
 | [epic-014-benchmark-lessons.md](lessons/epic-014-benchmark-lessons.md) | **EPIC-014 测评改进** — 测试质量>数量、类型安全ROI |
 | [epic-016-ab-review-lessons.md](lessons/epic-016-ab-review-lessons.md) | EPIC-016 AB 对抗 Review 经验 |
+| [karpathy-code-antipatterns.md](lessons/karpathy-code-antipatterns.md) | **Karpathy编码准则** — Think First、Simplicity、Surgical Changes、Goal-Driven |
 | [lazy-load-docs.md](lessons/lazy-load-docs.md) | **按需加载机制** — 大文档快速索引避免上下文占用 |
 | [multi-agent-collab-lessons.md](lessons/multi-agent-collab-lessons.md) | 多智能体协作 — 任务分配、并行风险 |
 | [project-level-data-isolation.md](lessons/project-level-data-isolation.md) | 项目级数据隔离设计 |
@@ -167,4 +172,4 @@ Memory 文件需遵循统一格式，详见 [模板文档](../../template/memory
 
 ---
 
-*文件总数：74 | 上次更新：2026-05-27*
+*文件总数：79 | 上次更新：2026-05-29*
