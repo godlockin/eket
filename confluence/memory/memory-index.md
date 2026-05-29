@@ -119,6 +119,23 @@
 
 ---
 
+## 💀 failure-archive/ — 失败案例 (3)
+
+| 文件 | 失败原因 | 停滞天数 |
+|------|---------|----------|
+| [skeleton-analysis.md](../failure-archive/skeleton-analysis.md) | **性能瓶颈** — MediaPipe Python API 12fps (目标30fps) | ~2190天 |
+| [recommender.md](../failure-archive/recommender.md) | **过早工程化** — 未验证算法就投入完整架构 | 1965天 |
+| [tsearch.md](../failure-archive/tsearch.md) | **重复造轮子** — 与Elasticsearch竞争,无差异化 | 1897天 |
+| [index.md](../failure-archive/index.md) | **失败案例索引** — 按失败原因分类 | - |
+| [README.md](../failure-archive/README.md) | **使用指南** — 如何记录失败、自动检测 | - |
+
+**共同教训**:
+- ✅ 先验证核心价值,再工程化
+- ✅ 明确MVP边界,避免范围蠕变
+- ✅ 造轮子前明确差异化
+
+---
+
 ## 其他
 
 | 目录/文件 | 说明 |
@@ -172,4 +189,4 @@ Memory 文件需遵循统一格式，详见 [模板文档](../../template/memory
 
 ---
 
-*文件总数：79 | 上次更新：2026-05-29*
+*文件总数：87 (新增failure-archive 5个文件 + 索引更新 + 检测脚本) | 上次更新：2026-05-29*
