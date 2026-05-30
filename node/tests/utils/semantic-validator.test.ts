@@ -195,5 +195,178 @@ No high risk. Cache avoids latency.
       expect(result2.score).toBe(90);
       expect(callCount).toBe(1); // Call count should remain 1!
     });
+
+    it('should handle corrupted cache file gracefully', async () => {
+      // Write corrupted cache
+      fs.writeFileSync(cachePath, 'not valid json {{{{', 'utf-8');
+
+      const mockLLMCaller = async (): Promise<string> => {
+        return JSON.stringify({ score: 85, reason: 'Good report.' });
+      };
+
+      const validator = new SemanticValidator({
+        projectRoot: tempProjectRoot,
+        llmCaller: mockLLMCaller,
+      });
+
+      // Should not throw, should proceed to call LLM
+      const result = await validator.validate(ticketAc, validReport);
+      expect(result.passed).toBe(true);
+      expect(result.score).toBe(85);
+    });
+  });
+
+  describe('LLM Response Parsing', () => {
+    const ticketAc = 'AC-1: Test AC';
+    const validReport = `
+# Analysis Report
+
+## 1. Requirements Understanding
+Test requirement understanding with sufficient detail to meet the minimum byte requirement.
+We are implementing a new feature that requires careful planning.
+
+## 2. Technical Approach
+Test technical approach with specific file changes to src/components/Feature.tsx.
+We will also modify utils/helper.ts and add new tests in tests/feature.test.ts.
+
+## 3. Impact Analysis
+Test impact analysis covering database, API, and frontend components.
+The change is backward compatible.
+
+## 4. Task Breakdown
+- Task 1: First task - implement core logic
+- Task 2: Second task - add tests
+- Task 3: Third task - documentation
+
+## 5. Risk Assessment
+No major risks. Mitigation strategies are in place for edge cases.
+    `;
+
+    it('should extract JSON from markdown code block response', async () => {
+      const mockLLMCaller = async (): Promise<string> => {
+        return '```json\n{"score": 75, "reason": "Wrapped in code block"}\n```';
+      };
+
+      const validator = new SemanticValidator({
+        projectRoot: tempProjectRoot,
+        llmCaller: mockLLMCaller,
+      });
+
+      const result = await validator.validate(ticketAc, validReport);
+      expect(result.passed).toBe(true);
+      expect(result.score).toBe(75);
+      expect(result.reason).toContain('code block');
+    });
+
+    it('should handle LLM response with extra text around JSON', async () => {
+      const mockLLMCaller = async (): Promise<string> => {
+        return 'Here is my evaluation:\n{"score": 80, "reason": "Good plan"}\nThank you.';
+      };
+
+      const validator = new SemanticValidator({
+        projectRoot: tempProjectRoot,
+        llmCaller: mockLLMCaller,
+      });
+
+      const result = await validator.validate(ticketAc, validReport);
+      expect(result.passed).toBe(true);
+      expect(result.score).toBe(80);
+    });
+  });
+
+  describe('Production Fallback (Graceful Degradation)', () => {
+    const ticketAc = 'AC-1: Check for TODO markers\nAC-2: Validate approach';
+
+    it('should fallback and detect TODO/TBD markers when LLM fails in production', async () => {
+      const reportWithTodo = `
+# Analysis Report
+
+## 1. Requirements Understanding
+We need to implement the feature.
+
+## 2. Technical Approach
+TODO: Design the implementation approach later.
+
+## 3. Impact Analysis
+TBD: Impact analysis pending.
+
+## 4. Task Breakdown
+- Task 1: To be determined
+
+## 5. Risk Assessment
+No major risks.
+      `;
+
+      // Save original env
+      const originalEnv = process.env.EKET_TEST_FALLBACK;
+      process.env.EKET_TEST_FALLBACK = 'true';
+
+      const mockLLMCaller = async (): Promise<string> => {
+        throw new Error('Network error');
+      };
+
+      const validator = new SemanticValidator({
+        projectRoot: tempProjectRoot,
+        llmCaller: mockLLMCaller,
+      });
+
+      const result = await validator.validate(ticketAc, reportWithTodo);
+      expect(result.passed).toBe(false);
+      expect(result.score).toBe(50);
+      expect(result.reason).toContain('TODO/TBD');
+
+      // Restore env
+      if (originalEnv !== undefined) {
+        process.env.EKET_TEST_FALLBACK = originalEnv;
+      } else {
+        delete process.env.EKET_TEST_FALLBACK;
+      }
+    });
+
+    it('should fallback and pass when report has valid structure without issues', async () => {
+      const cleanReport = `
+# Analysis Report
+
+## 1. Requirements Understanding
+We need to implement a new authentication feature for the system.
+
+## 2. Technical Approach
+We will use JWT tokens and implement middleware in auth/middleware.ts.
+The changes will affect user-service.ts and session-manager.ts files.
+
+## 3. Impact Analysis
+Medium impact on existing authentication flow, no breaking changes expected.
+
+## 4. Task Breakdown
+- Task 1: Implement JWT token validation
+- Task 2: Add session management
+
+## 5. Risk Assessment
+Low risk overall, good test coverage planned.
+      `;
+
+      const originalEnv = process.env.EKET_TEST_FALLBACK;
+      process.env.EKET_TEST_FALLBACK = 'true';
+
+      const mockLLMCaller = async (): Promise<string> => {
+        throw new Error('API timeout');
+      };
+
+      const validator = new SemanticValidator({
+        projectRoot: tempProjectRoot,
+        llmCaller: mockLLMCaller,
+      });
+
+      const result = await validator.validate(ticketAc, cleanReport);
+      // Clean report should pass with fallback
+      expect(result.passed).toBe(true);
+      expect(result.reason).toContain('通过基本结构检验');
+
+      if (originalEnv !== undefined) {
+        process.env.EKET_TEST_FALLBACK = originalEnv;
+      } else {
+        delete process.env.EKET_TEST_FALLBACK;
+      }
+    });
   });
 });
