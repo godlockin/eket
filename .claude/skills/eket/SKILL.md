@@ -61,6 +61,26 @@ Hybrid: Rust(Core/CLI/SQLite/EventBus) + Node.js(Hook Server/Dashboard) + Shell(
 
 `feature/*` → testing → main → miao（三分支同步：`bash scripts/sync-branches.sh`）
 
+## 按需加载规则
+
+| 触发场景 | 读取 | 大小 |
+|----------|------|------|
+| Master 角色确认 | `template/docs/MASTER-RULES.md` | ~140行 |
+| Slaver 角色确认 | `template/docs/SLAVER-RULES.md` | ~250行 |
+| PR 提交前 | `template/docs/PR-PREFLIGHT-CHECKLIST.md` | ~240行 |
+| 代码 Review 时 | `template/docs/ANTI-PATTERNS.md` (仅索引，按分类查) | 索引~50行 |
+| 创建/领取 ticket | `template/docs/TASK-DIALS.md` (仅快速参考) | ~50行摘要 |
+| 深度分析 | `SKILL-DETAIL.md#preamble` | 按需 |
+| EPIC 验收 | `SKILL-DETAIL.md#adversarial-review` | 按需 |
+
+**加载原则**：
+- 角色文件（RULES）：确认角色后一次性加载
+- 检查清单（CHECKLIST）：PR 提交时加载
+- 反模式（ANTI-PATTERNS）：**不要全量加载**，只加载索引，按分类查询
+- 三旋钮（DIALS）：只读快速参考表，详细说明按需
+
+**注意**：ANTI-PATTERNS.md 有 844 行，禁止一次性加载全文。使用时先读索引（前 50 行），按分类 grep 查询具体条目。
+
 ## 深度分析既存项目
 
-检测到「分析/接手/重构评估/借鉴」需求时，先用 AskUserQuestion 询问分析模式（借鉴/接手/重构/快照）和团队配置（默认全栈/引导式定制），再执行。详见 `SKILL-DETAIL.md#preamble`。
+检测到「分析/接手/重构评估/借鉴」需求时，先用 AskUserQuestion 询问分析模式（借鉴/接手/重构/快照）和团队配置（默认全栈/引导式定制），再执行。
