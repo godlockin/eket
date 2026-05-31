@@ -8,8 +8,10 @@ use std::path::Path;
 /// File category for classification
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum FileCategory {
     /// Source code files (.rs, .ts, .py, etc.)
+    #[default]
     Code,
     /// Configuration files (yaml, json, toml, .env, etc.)
     Config,
@@ -27,11 +29,6 @@ pub enum FileCategory {
     Meta,
 }
 
-impl Default for FileCategory {
-    fn default() -> Self {
-        Self::Code
-    }
-}
 
 /// Common dotfile config patterns (case-insensitive)
 const DOTFILE_CONFIGS: &[&str] = &[
@@ -105,7 +102,7 @@ impl FileCategory {
         } else {
             &filename_lower
         };
-        if META_FILENAMES.iter().any(|&f| basename == f) {
+        if META_FILENAMES.contains(&basename) {
             return FileCategory::Meta;
         }
 

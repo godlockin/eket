@@ -125,12 +125,12 @@ pub fn extract(content: &str, lang: SupportedLanguage) -> StructuralAnalysis {
     // tree-sitter 0.24: use StreamingIterator
     while let Some(m) = matches.next() {
         let capture_names: Vec<&str> = m.captures.iter()
-            .map(|c| query.capture_names()[c.index as usize].as_ref())
+            .map(|c| query.capture_names()[c.index as usize])
             .collect();
 
         // Function declarations
         if capture_names.contains(&"fn.def") {
-            if let Some(info) = extract_function(&m, &query, content) {
+            if let Some(info) = extract_function(m, &query, content) {
                 let key = (info.name.clone(), info.start_line);
                 if seen_functions.insert(key) {
                     analysis.functions.push(info);
@@ -140,7 +140,7 @@ pub fn extract(content: &str, lang: SupportedLanguage) -> StructuralAnalysis {
 
         // Class declarations
         if capture_names.contains(&"class.def") {
-            if let Some(info) = extract_class(&m, &query, content, "class") {
+            if let Some(info) = extract_class(m, &query, content, "class") {
                 let key = (info.name.clone(), info.start_line);
                 if seen_classes.insert(key) {
                     analysis.classes.push(info);
@@ -150,7 +150,7 @@ pub fn extract(content: &str, lang: SupportedLanguage) -> StructuralAnalysis {
 
         // Interface declarations
         if capture_names.contains(&"interface.def") {
-            if let Some(info) = extract_class(&m, &query, content, "interface") {
+            if let Some(info) = extract_class(m, &query, content, "interface") {
                 let key = (info.name.clone(), info.start_line);
                 if seen_classes.insert(key) {
                     analysis.classes.push(info);
@@ -160,28 +160,28 @@ pub fn extract(content: &str, lang: SupportedLanguage) -> StructuralAnalysis {
 
         // Import statements
         if capture_names.contains(&"import.def") {
-            if let Some(info) = extract_import(&m, &query, content) {
+            if let Some(info) = extract_import(m, &query, content) {
                 analysis.imports.push(info);
             }
         }
 
         // Export statements
         if capture_names.contains(&"export.def") {
-            if let Some(info) = extract_export(&m, &query, content) {
+            if let Some(info) = extract_export(m, &query, content) {
                 analysis.exports.push(info);
             }
         }
 
         // Method definitions (for class enrichment)
         if capture_names.contains(&"method.def") {
-            if let Some(name) = get_capture_text(&m, &query, "method.name", content) {
+            if let Some(name) = get_capture_text(m, &query, "method.name", content) {
                 current_class_methods.push(name);
             }
         }
 
         // Property definitions (for class enrichment)
         if capture_names.contains(&"property.def") {
-            if let Some(name) = get_capture_text(&m, &query, "property.name", content) {
+            if let Some(name) = get_capture_text(m, &query, "property.name", content) {
                 current_class_properties.push(name);
             }
         }
@@ -390,6 +390,7 @@ fn collect_errors(node: &tree_sitter::Node, content: &str, errors: &mut Vec<Pars
     collect_errors_recursive(node, content, errors, 0);
 }
 
+#[allow(clippy::only_used_in_recursion)]
 fn collect_errors_recursive(node: &tree_sitter::Node, content: &str, errors: &mut Vec<ParseError>, depth: usize) {
     if depth > MAX_ERROR_DEPTH {
         return;
