@@ -24,9 +24,9 @@ jobs:
       - name: Run actionlint
         uses: raven-actions/actionlint@v2
         with:
-          # shellcheck SC2086 (word splitting) — workflow shell 里 gh CLI 大量使用裸变量，降级为 warning
-          # 其他 shellcheck check 保持默认
-          shellcheck_ignore: SC2086
+          # SC2086 (word splitting) - workflow shell 里 gh CLI 大量使用裸变量
+          # 使用 flags 传递 shellcheck 忽略规则
+          flags: -shellcheck="shellcheck -e SC2086"
 
       - name: YAML parse + step-count sanity
         run: |

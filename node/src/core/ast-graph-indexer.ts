@@ -315,7 +315,7 @@ class LightweightASTParser {
     return entities;
   }
 
-  private parseImports(content: string, filePath: string, lines: string[]): CodeEdge[] {
+  private parseImports(content: string, filePath: string, _lines: string[]): CodeEdge[] {
     const edges: CodeEdge[] = [];
 
     // Match: import { A, B } from './module'
@@ -414,10 +414,10 @@ class LightweightASTParser {
   }
 
   private parseFunctionCalls(
-    content: string,
+    _content: string,
     filePath: string,
     entities: CodeEntity[],
-    lines: string[]
+    _lines: string[]
   ): CodeEdge[] {
     const edges: CodeEdge[] = [];
     const functionEntities = entities.filter(e => e.type === 'function');
@@ -429,7 +429,7 @@ class LightweightASTParser {
     for (const func of functionEntities) {
       if (func.endLine === undefined) continue;
 
-      const funcBody = lines.slice(func.startLine - 1, func.endLine).join('\n');
+      const funcBody = _lines.slice(func.startLine - 1, func.endLine).join('\n');
 
       // Match function calls: functionName(
       const callRegex = /\b(\w+)\s*\(/g;
