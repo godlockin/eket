@@ -1,0 +1,23 @@
+# Expert Review: {{epic_id}}
+
+## Reviewers
+{{#each reviewers}}
+- {{name}} ({{role}})
+{{/each}}
+
+## Review Summary
+{{summary}}
+
+## Findings
+{{#each findings}}
+### {{category}}
+- **Severity**: {{severity}}
+- **Description**: {{description}}
+- **Recommendation**: {{recommendation}}
+{{/each}}
+
+## Approval Status
+{{status}}
+
+---
+*Generated at {{timestamp}}*
