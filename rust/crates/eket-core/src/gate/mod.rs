@@ -5,4 +5,4 @@
 
 pub mod checks;
 
-pub use checks::surgical::{SurgicalChangesCheck, SurgicalReport, UnrelatedChange, Severity};
+pub use checks::surgical::{Severity, SurgicalChangesCheck, SurgicalReport, UnrelatedChange};

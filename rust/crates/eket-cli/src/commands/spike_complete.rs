@@ -3,7 +3,7 @@
 /// Usage: eket spike:complete <SPIKE_ID> --outcome adopt|reject|defer [--notes "<text>"]
 use anyhow::Result;
 use clap::Parser;
-use eket_core::doc_lifecycle::{DocEvent, TemplateRenderer, handle_event};
+use eket_core::doc_lifecycle::{handle_event, DocEvent, TemplateRenderer};
 use serde_json::json;
 use std::path::PathBuf;
 
@@ -45,11 +45,15 @@ pub async fn run(args: SpikeCompleteArgs) -> Result<()> {
     let renderer = TemplateRenderer::new();
 
     // Update ticket status
-    let ticket_path = root.join("jira").join("tickets").join(format!("{}.md", &args.spike_id));
+    let ticket_path = root
+        .join("jira")
+        .join("tickets")
+        .join(format!("{}.md", &args.spike_id));
     if ticket_path.exists() {
         let content = std::fs::read_to_string(&ticket_path)?;
-        let updated = content.replace("**状态**: todo", "**状态**: done")
-                             .replace("**状态**: in-progress", "**状态**: done");
+        let updated = content
+            .replace("**状态**: todo", "**状态**: done")
+            .replace("**状态**: in-progress", "**状态**: done");
         std::fs::write(&ticket_path, updated)?;
     }
 
@@ -73,7 +77,9 @@ pub async fn run(args: SpikeCompleteArgs) -> Result<()> {
     if let Some(ref notes) = args.notes {
         if findings_path.exists() {
             use std::io::Write as IoWrite;
-            let mut f = std::fs::OpenOptions::new().append(true).open(&findings_path)?;
+            let mut f = std::fs::OpenOptions::new()
+                .append(true)
+                .open(&findings_path)?;
             writeln!(f, "\n## 备注\n\n{notes}")?;
         }
     }
@@ -125,6 +131,8 @@ mod tests {
         .await
         .unwrap();
 
-        assert!(root.join("confluence/spikes/SPIKE-001/findings.md").exists());
+        assert!(root
+            .join("confluence/spikes/SPIKE-001/findings.md")
+            .exists());
     }
 }

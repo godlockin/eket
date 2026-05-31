@@ -56,7 +56,6 @@ pub enum NodeType {
     Meta,
 }
 
-
 /// Regex for detecting SQL CREATE TABLE statement (not in comments)
 fn create_table_regex() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();

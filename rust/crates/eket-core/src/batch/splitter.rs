@@ -171,7 +171,12 @@ fn split_by_path_prefix_recursive(
                     result.push(group);
                 } else {
                     // 递归分割
-                    result.extend(split_by_path_prefix_recursive(files, group, max_nodes, recursion_depth + 1));
+                    result.extend(split_by_path_prefix_recursive(
+                        files,
+                        group,
+                        max_nodes,
+                        recursion_depth + 1,
+                    ));
                 }
             }
             return result;

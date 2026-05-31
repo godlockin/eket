@@ -10,11 +10,11 @@ use clap::Args;
 use eket_core::{
     config::EketConfig,
     db::{create_pool, SqliteClient},
+    expert_skill_bridge::ExpertSkillBridge,
     guardrail::GuardrailRunner,
     middleware_pipeline::{Pipeline, PipelineCtx},
     ticket::{find_ticket, scan_todo_tickets, TicketFile},
     types::{ExecutionCheckpoint, TicketStatus},
-    expert_skill_bridge::ExpertSkillBridge,
 };
 use serde_json::json;
 use std::path::{Path, PathBuf};
@@ -65,14 +65,10 @@ fn get_or_create_slaver_id(project_root: &Path) -> String {
 
 // ─── Active Context ───────────────────────────────────────────────────────────
 
-fn write_active_context(
-    project_root: &Path,
-    ticket: &TicketFile,
-    slaver_id: &str,
-) -> Result<()> {
+fn write_active_context(project_root: &Path, ticket: &TicketFile, slaver_id: &str) -> Result<()> {
     use eket_core::skill_index::{
-        default_search_roots, load_skill_index,
-        parse_assigned_experts, load_expert_profiles, format_expert_section,
+        default_search_roots, format_expert_section, load_expert_profiles, load_skill_index,
+        parse_assigned_experts,
     };
 
     let dir = project_root.join(".eket");
@@ -82,17 +78,23 @@ fn write_active_context(
     // ── Model routing via skill index ──
     let skill_roots = default_search_roots(project_root);
     let skill_idx = load_skill_index(&skill_roots);
-    let domain = ticket.id
+    let domain = ticket
+        .id
         .split('-')
         .next()
         .unwrap_or("default")
         .to_lowercase();
-    let recommended_level = skill_idx.model_route_table
+    let recommended_level = skill_idx
+        .model_route_table
         .get(&domain)
         .or_else(|| skill_idx.model_route_table.get("default"))
         .copied()
         .unwrap_or(2);
-    let level_name = match recommended_level { 3 => "opus", 2 => "sonnet", _ => "haiku" };
+    let level_name = match recommended_level {
+        3 => "opus",
+        2 => "sonnet",
+        _ => "haiku",
+    };
 
     // ── Expert profile injection ──
     let ticket_path = {
@@ -147,8 +149,15 @@ fn write_active_context(
                     if skills.is_empty() {
                         String::new()
                     } else {
-                        let list = skills.iter().map(|s| format!("- {}", s)).collect::<Vec<_>>().join("\n");
-                        format!("\n## Available Skills\n<!-- 基于专家角色 {} 自动注入 -->\n{}\n", rid, list)
+                        let list = skills
+                            .iter()
+                            .map(|s| format!("- {}", s))
+                            .collect::<Vec<_>>()
+                            .join("\n");
+                        format!(
+                            "\n## Available Skills\n<!-- 基于专家角色 {} 自动注入 -->\n{}\n",
+                            rid, list
+                        )
                     }
                 }
                 Err(_) => String::new(),
@@ -207,7 +216,9 @@ fn write_active_context(
 /// Uses BEGIN IMMEDIATE to serialize concurrent claims.
 fn try_atomic_claim(client: &SqliteClient, ticket_id: &str, slaver_id: &str) -> bool {
     // Use SQLite transaction to atomically check+update status
-    client.claim_ticket_atomic(ticket_id, slaver_id).unwrap_or(true)
+    client
+        .claim_ticket_atomic(ticket_id, slaver_id)
+        .unwrap_or(true)
 }
 
 // ─── Role filter ──────────────────────────────────────────────────────────────
@@ -234,7 +245,9 @@ fn filter_by_role(tickets: Vec<TicketFile>, tickets_dir: &Path, role: &str) -> V
                         .split(',')
                         .map(|s| s.trim())
                         .collect();
-                    return tags.iter().any(|tag| *tag == "any" || tag.to_lowercase() == role_lower);
+                    return tags
+                        .iter()
+                        .any(|tag| *tag == "any" || tag.to_lowercase() == role_lower);
                 }
             }
             // Fallback: plain content substring match
@@ -270,11 +283,9 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
     // If --role is given without explicit ticket_id: also filter by role when auto-picking
     // Keep existing behavior when ticket_id is given
     let mut ticket = match args.ticket_id {
-        Some(ref id) => find_ticket(&tickets_dir, id)
-            .map_err(|e| anyhow::anyhow!("{e}"))?,
+        Some(ref id) => find_ticket(&tickets_dir, id).map_err(|e| anyhow::anyhow!("{e}"))?,
         None => {
-            let mut todos = scan_todo_tickets(&tickets_dir)
-                .map_err(|e| anyhow::anyhow!("{e}"))?;
+            let mut todos = scan_todo_tickets(&tickets_dir).map_err(|e| anyhow::anyhow!("{e}"))?;
 
             // Apply role filter if --role is given
             if let Some(ref role) = args.role {
@@ -282,10 +293,13 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
             }
 
             if todos.is_empty() {
-                println!("{}", serde_json::to_string_pretty(&json!({
-                    "status": "no_tickets",
-                    "message": "No todo tickets available",
-                }))?);
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&json!({
+                        "status": "no_tickets",
+                        "message": "No todo tickets available",
+                    }))?
+                );
                 return Ok(());
             }
             // auto=true or no ticket_id: pick highest priority (first from sorted list)
@@ -318,7 +332,8 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
     }
 
     // Update ticket file: todo → in_progress
-    ticket.set_status(TicketStatus::InProgress, Some(&slaver_id))
+    ticket
+        .set_status(TicketStatus::InProgress, Some(&slaver_id))
         .map_err(|e| anyhow::anyhow!("Failed to update ticket: {e}"))?;
 
     // Save checkpoint to SQLite
@@ -355,7 +370,7 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
 
     // Doc lifecycle: append 分析记录 section to ticket
     {
-        use eket_core::doc_lifecycle::{DocEvent, TemplateRenderer, handle_event};
+        use eket_core::doc_lifecycle::{handle_event, DocEvent, TemplateRenderer};
         let event = DocEvent::TaskClaimed {
             ticket_id: ticket.id.clone(),
             slaver_id: slaver_id.clone(),
@@ -371,21 +386,20 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
 
     // Run Pipeline with GuardrailMiddleware (TASK-233)
     // Build pipeline: always include default claim guardrails; optionally add SlaverRulesGuardrail
-    let mut pipeline = Pipeline::new()
-        .add_middleware(crate::guardrail_middleware::GuardrailMiddleware::new(
-            GuardrailRunner::default_for_claim(),
-        ));
+    let mut pipeline = Pipeline::new().add_middleware(
+        crate::guardrail_middleware::GuardrailMiddleware::new(GuardrailRunner::default_for_claim()),
+    );
 
     if !rules_path.is_empty() {
         if let Some(slaver_guardrail) =
             crate::slaver_rules::load_slaver_rules_guardrail(&rules_path)
         {
-            let inner_runner = eket_core::guardrail::GuardrailRunner::from_checks(vec![
-                Box::new(slaver_guardrail),
-            ]);
-            pipeline = pipeline.add_middleware(crate::guardrail_middleware::GuardrailMiddleware::new(
-                inner_runner,
-            ));
+            let inner_runner = eket_core::guardrail::GuardrailRunner::from_checks(vec![Box::new(
+                slaver_guardrail,
+            )]);
+            pipeline = pipeline.add_middleware(
+                crate::guardrail_middleware::GuardrailMiddleware::new(inner_runner),
+            );
         }
     }
 
@@ -442,7 +456,7 @@ pub async fn run(args: TaskClaimArgs) -> Result<()> {
 // ─── Memory hint search ───────────────────────────────────────────────────────
 
 struct MemoryHint {
-    category: String,  // pitfall / pattern / lesson
+    category: String, // pitfall / pattern / lesson
     title: String,
     snippet: String,
     path: String,
@@ -451,17 +465,46 @@ struct MemoryHint {
 /// 从 confluence/memory/{pitfalls,patterns,lessons}/ 搜索与 ticket 相关的条目。
 /// 匹配逻辑：ticket title 中的关键词与文件名或文件内容首 300 字符做 case-insensitive 子串匹配。
 /// 最多返回 3 条，静默失败（不影响主流程）。
-fn search_memory_hints(project_root: &Path, ticket_title: &str, ticket_id: &str) -> Vec<MemoryHint> {
+fn search_memory_hints(
+    project_root: &Path,
+    ticket_title: &str,
+    ticket_id: &str,
+) -> Vec<MemoryHint> {
     let mut hints = Vec::new();
 
     // 提取关键词：去除常见停用词，取前 8 个 token
-    let stopwords = ["the", "a", "an", "and", "or", "to", "in", "of", "for",
-                     "with", "add", "fix", "update", "refactor", "implement",
-                     "新增", "修改", "添加", "更新", "修复", "实现", "重构"];
+    let stopwords = [
+        "the",
+        "a",
+        "an",
+        "and",
+        "or",
+        "to",
+        "in",
+        "of",
+        "for",
+        "with",
+        "add",
+        "fix",
+        "update",
+        "refactor",
+        "implement",
+        "新增",
+        "修改",
+        "添加",
+        "更新",
+        "修复",
+        "实现",
+        "重构",
+    ];
     let keywords: Vec<String> = ticket_title
         .split_whitespace()
         .chain(ticket_id.split('-'))
-        .map(|w| w.to_lowercase().trim_matches(|c: char| !c.is_alphanumeric()).to_string())
+        .map(|w| {
+            w.to_lowercase()
+                .trim_matches(|c: char| !c.is_alphanumeric())
+                .to_string()
+        })
         .filter(|w| w.len() >= 3 && !stopwords.contains(&w.as_str()))
         .take(8)
         .collect();
@@ -472,18 +515,23 @@ fn search_memory_hints(project_root: &Path, ticket_title: &str, ticket_id: &str)
 
     let memory_root = project_root.join("confluence/memory");
     let search_dirs = [
-        ("pitfall",  memory_root.join("pitfalls")),
-        ("pattern",  memory_root.join("patterns")),
-        ("lesson",   memory_root.join("lessons")),
+        ("pitfall", memory_root.join("pitfalls")),
+        ("pattern", memory_root.join("patterns")),
+        ("lesson", memory_root.join("lessons")),
     ];
 
     'outer: for (category, dir) in &search_dirs {
-        let Ok(entries) = std::fs::read_dir(dir) else { continue };
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            continue;
+        };
         for entry in entries.flatten() {
             let path = entry.path();
-            if path.extension().and_then(|e| e.to_str()) != Some("md") { continue }
+            if path.extension().and_then(|e| e.to_str()) != Some("md") {
+                continue;
+            }
 
-            let filename = path.file_name()
+            let filename = path
+                .file_name()
                 .and_then(|n| n.to_str())
                 .unwrap_or("")
                 .to_lowercase();
@@ -493,30 +541,44 @@ fn search_memory_hints(project_root: &Path, ticket_title: &str, ticket_id: &str)
 
             // 再匹配文件头 400 字节（避免读大文件）
             let content_match = if !name_match {
-                std::fs::read(&path).ok()
+                std::fs::read(&path)
+                    .ok()
                     .and_then(|b| {
-                        let preview = String::from_utf8_lossy(&b[..b.len().min(400)]).to_lowercase();
+                        let preview =
+                            String::from_utf8_lossy(&b[..b.len().min(400)]).to_lowercase();
                         Some(keywords.iter().any(|kw| preview.contains(kw.as_str())))
                     })
                     .unwrap_or(false)
-            } else { false };
+            } else {
+                false
+            };
 
-            if !name_match && !content_match { continue }
+            if !name_match && !content_match {
+                continue;
+            }
 
             // 读文件取标题行 + 首段摘要
-            let Ok(content) = std::fs::read_to_string(&path) else { continue };
-            let title = content.lines()
+            let Ok(content) = std::fs::read_to_string(&path) else {
+                continue;
+            };
+            let title = content
+                .lines()
                 .find(|l| l.starts_with('#'))
                 .unwrap_or(&filename)
-                .trim_start_matches('#').trim()
+                .trim_start_matches('#')
+                .trim()
                 .to_string();
-            let snippet = content.lines()
+            let snippet = content
+                .lines()
                 .skip_while(|l| l.starts_with('#') || l.trim().is_empty())
                 .take(2)
                 .collect::<Vec<_>>()
                 .join(" ")
-                .chars().take(120).collect::<String>();
-            let rel_path = path.strip_prefix(project_root)
+                .chars()
+                .take(120)
+                .collect::<String>();
+            let rel_path = path
+                .strip_prefix(project_root)
                 .map(|p| p.display().to_string())
                 .unwrap_or_else(|_| path.display().to_string());
 
@@ -527,7 +589,9 @@ fn search_memory_hints(project_root: &Path, ticket_title: &str, ticket_id: &str)
                 path: rel_path,
             });
 
-            if hints.len() >= 3 { break 'outer; }
+            if hints.len() >= 3 {
+                break 'outer;
+            }
         }
     }
 
@@ -614,7 +678,13 @@ fn create_worktree(project_root: &Path, ticket_id: &str, title: &str) -> Result<
 
     // Try creating worktree with a new branch
     let status = std::process::Command::new("git")
-        .args(["worktree", "add", &worktree_dir.to_string_lossy(), "-b", &branch])
+        .args([
+            "worktree",
+            "add",
+            &worktree_dir.to_string_lossy(),
+            "-b",
+            &branch,
+        ])
         .current_dir(project_root)
         .status();
 

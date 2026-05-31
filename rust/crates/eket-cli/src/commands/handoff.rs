@@ -98,7 +98,9 @@ mod tests {
     fn setup_client_with_ticket(db_path: &str, ticket_id: &str, assignee: &str) -> SqliteClient {
         let pool = create_pool(db_path).unwrap();
         let client = SqliteClient::new(pool);
-        client.create_ticket(ticket_id, "Test ticket", "P1", "feature").unwrap();
+        client
+            .create_ticket(ticket_id, "Test ticket", "P1", "feature")
+            .unwrap();
         client.update_ticket_assignee(ticket_id, assignee).unwrap();
         client
     }

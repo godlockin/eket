@@ -115,10 +115,7 @@ impl InstanceRegistry {
             let key = format!("{}{}", REDIS_KEY_PREFIX, instance_id);
             // Re-fetch current value to set new expiry (EXPIRE-like via SET with new TTL)
             if let Ok(Some(val)) = self.redis.get(&key).await {
-                let _ = self
-                    .redis
-                    .set(&key, &val, Some(HEARTBEAT_TTL_SECS))
-                    .await;
+                let _ = self.redis.set(&key, &val, Some(HEARTBEAT_TTL_SECS)).await;
             }
         }
 
@@ -133,8 +130,8 @@ impl InstanceRegistry {
 
         tokio::task::spawn_blocking(move || {
             let conn = db.pool().get()?;
-            let cutoff = (Utc::now() - chrono::Duration::seconds(HEARTBEAT_TTL_SECS as i64))
-                .to_rfc3339();
+            let cutoff =
+                (Utc::now() - chrono::Duration::seconds(HEARTBEAT_TTL_SECS as i64)).to_rfc3339();
 
             let (sql, params_vec): (String, Vec<String>) = match &role {
                 Some(r) => (
@@ -219,7 +216,10 @@ impl InstanceRegistry {
                     true,
                 )
             } else {
-                ("UPDATE slaver_instances SET status = ?1 WHERE id = ?2", false)
+                (
+                    "UPDATE slaver_instances SET status = ?1 WHERE id = ?2",
+                    false,
+                )
             };
 
             let affected = conn.execute(sql, params![s, id])?;
@@ -288,9 +288,8 @@ impl InstanceRegistry {
 
         tokio::task::spawn_blocking(move || {
             let conn = db.pool().get()?;
-            let mut stmt = conn.prepare(
-                "SELECT state_json FROM instance_execution_states WHERE ticket_id = ?1",
-            )?;
+            let mut stmt = conn
+                .prepare("SELECT state_json FROM instance_execution_states WHERE ticket_id = ?1")?;
             let result = stmt.query_row(params![tid], |row| row.get::<_, String>(0));
             match result {
                 Ok(s) => {
@@ -321,11 +320,7 @@ fn row_to_info(row: &rusqlite::Row<'_>) -> rusqlite::Result<InstanceInfo> {
         status: row.get(3)?,
         // TASK-192: Fail on corrupted timestamp instead of fallback to now()
         last_seen: last_seen_str.parse::<DateTime<Utc>>().map_err(|e| {
-            rusqlite::Error::FromSqlConversionFailure(
-                4,
-                rusqlite::types::Type::Text,
-                Box::new(e),
-            )
+            rusqlite::Error::FromSqlConversionFailure(4, rusqlite::types::Type::Text, Box::new(e))
         })?,
         metadata: metadata_str
             .as_deref()
@@ -425,7 +420,10 @@ mod tests {
 
         reg.mark_offline("inst-off").await.unwrap();
         let all = reg.discover(None).await.unwrap();
-        assert!(all.is_empty(), "offline instances must not appear in discover");
+        assert!(
+            all.is_empty(),
+            "offline instances must not appear in discover"
+        );
     }
 
     #[tokio::test]
@@ -547,9 +545,7 @@ mod tests {
         let mut handles = vec![];
         for _ in 0..10 {
             let r = Arc::clone(&reg);
-            let h = tokio::spawn(async move {
-                r.set_status("slaver-race", "idle").await
-            });
+            let h = tokio::spawn(async move { r.set_status("slaver-race", "idle").await });
             handles.push(h);
         }
 

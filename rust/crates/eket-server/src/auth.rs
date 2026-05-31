@@ -8,7 +8,7 @@ use axum::{
     response::{Json, Response},
 };
 use constant_time_eq::constant_time_eq;
-use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
+use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
@@ -63,7 +63,10 @@ pub async fn auth_middleware(
         .and_then(|v| v.strip_prefix("Bearer "));
 
     let Some(token) = provided else {
-        return Err((StatusCode::UNAUTHORIZED, Json(json!({"error": "missing_token"}))));
+        return Err((
+            StatusCode::UNAUTHORIZED,
+            Json(json!({"error": "missing_token"})),
+        ));
     };
 
     // Try JWT first (if configured)
@@ -83,7 +86,10 @@ pub async fn auth_middleware(
         }
     }
 
-    Err((StatusCode::UNAUTHORIZED, Json(json!({"error": "invalid_token"}))))
+    Err((
+        StatusCode::UNAUTHORIZED,
+        Json(json!({"error": "invalid_token"})),
+    ))
 }
 
 #[cfg(test)]
@@ -93,8 +99,16 @@ mod tests {
 
     fn make_jwt(secret: &str, exp_offset_secs: i64) -> String {
         let exp = (chrono::Utc::now().timestamp() + exp_offset_secs) as usize;
-        let claims = Claims { sub: "test".into(), exp };
-        encode(&Header::default(), &claims, &EncodingKey::from_secret(secret.as_bytes())).unwrap()
+        let claims = Claims {
+            sub: "test".into(),
+            exp,
+        };
+        encode(
+            &Header::default(),
+            &claims,
+            &EncodingKey::from_secret(secret.as_bytes()),
+        )
+        .unwrap()
     }
 
     #[test]

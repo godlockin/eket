@@ -227,9 +227,7 @@ fn decrypt_with_key(ciphertext: &str, key: Option<&[u8; 32]>) -> String {
 
     // Try AES-GCM format: "hex_nonce:hex_ciphertext"
     if let Some((nonce_hex, ct_hex)) = ciphertext.split_once(':') {
-        if let (Ok(nonce_bytes), Ok(ct_bytes)) =
-            (hex::decode(nonce_hex), hex::decode(ct_hex))
-        {
+        if let (Ok(nonce_bytes), Ok(ct_bytes)) = (hex::decode(nonce_hex), hex::decode(ct_hex)) {
             if nonce_bytes.len() == 12 {
                 let cipher = Aes256Gcm::new(key.into());
                 let nonce = Nonce::from_slice(&nonce_bytes);
@@ -268,7 +266,8 @@ fn decrypt_with_key(ciphertext: &str, key: Option<&[u8; 32]>) -> String {
 // ─── HMAC-SHA256 signature ────────────────────────────────────────────────────
 
 /// Compute `HMAC-SHA256(secret, body)` as lowercase hex.
-pub fn sign_payload(secret: &str, body: &[u8]) -> String {    use hmac::{Hmac, Mac};
+pub fn sign_payload(secret: &str, body: &[u8]) -> String {
+    use hmac::{Hmac, Mac};
     use sha2::Sha256;
     type HmacSha256 = Hmac<Sha256>;
 
@@ -288,8 +287,7 @@ pub fn sign_payload(secret: &str, body: &[u8]) -> String {    use hmac::{Hmac, M
 ///   127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16,
 ///   169.254.0.0/16 (link-local / cloud metadata), ::1.
 pub fn validate_webhook_url(url: &str) -> Result<()> {
-    let parsed = url::Url::parse(url)
-        .with_context(|| format!("invalid URL: {url}"))?;
+    let parsed = url::Url::parse(url).with_context(|| format!("invalid URL: {url}"))?;
 
     match parsed.scheme() {
         "http" | "https" => {}
@@ -330,15 +328,25 @@ fn is_ssrf_risk_ip(ip: IpAddr) -> bool {
         IpAddr::V4(v4) => {
             let o = v4.octets();
             // 127.0.0.0/8 — loopback
-            if o[0] == 127 { return true; }
+            if o[0] == 127 {
+                return true;
+            }
             // 10.0.0.0/8 — private
-            if o[0] == 10 { return true; }
+            if o[0] == 10 {
+                return true;
+            }
             // 172.16.0.0/12 — private
-            if o[0] == 172 && (16..=31).contains(&o[1]) { return true; }
+            if o[0] == 172 && (16..=31).contains(&o[1]) {
+                return true;
+            }
             // 192.168.0.0/16 — private
-            if o[0] == 192 && o[1] == 168 { return true; }
+            if o[0] == 192 && o[1] == 168 {
+                return true;
+            }
             // 169.254.0.0/16 — link-local / cloud metadata (AWS 169.254.169.254)
-            if o[0] == 169 && o[1] == 254 { return true; }
+            if o[0] == 169 && o[1] == 254 {
+                return true;
+            }
             false
         }
         IpAddr::V6(v6) => {
@@ -421,8 +429,7 @@ impl WebhookStore {
         let mut result = Vec::new();
         for row in rows {
             let (id, url_enc, secret_enc, events_str, created_at) = row?;
-            let events: Vec<String> =
-                serde_json::from_str(&events_str).unwrap_or_default();
+            let events: Vec<String> = serde_json::from_str(&events_str).unwrap_or_default();
             result.push(WebhookUrl {
                 id,
                 url: decrypt(&url_enc),
@@ -437,7 +444,8 @@ impl WebhookStore {
     /// Same as `list_urls` but returns `WebhookUrlPublic` — secret is masked.
     /// Use this for CLI output and API responses.
     pub fn list_urls_public(&self) -> Result<Vec<WebhookUrlPublic>> {
-        self.list_urls().map(|v| v.into_iter().map(Into::into).collect())
+        self.list_urls()
+            .map(|v| v.into_iter().map(Into::into).collect())
     }
 
     pub fn remove_url(&self, id: &str) -> Result<u64> {
@@ -450,10 +458,7 @@ impl WebhookStore {
 
     // ── webhook_event_records ─────────────────────────────────────────────────
 
-    pub fn list_records(
-        &self,
-        status_filter: Option<&str>,
-    ) -> Result<Vec<WebhookEventRecord>> {
+    pub fn list_records(&self, status_filter: Option<&str>) -> Result<Vec<WebhookEventRecord>> {
         let conn = self.conn()?;
         ensure_webhook_tables(&conn)?;
 
@@ -620,11 +625,7 @@ pub fn retry_delay(attempt: i64) -> std::time::Duration {
 }
 
 /// Dispatch `event` to all matching webhook URLs concurrently.  Never returns Err.
-pub async fn dispatch_event(
-    pool: DbPool,
-    event: WebhookEvent,
-    payload: serde_json::Value,
-) {
+pub async fn dispatch_event(pool: DbPool, event: WebhookEvent, payload: serde_json::Value) {
     let store = WebhookStore::new(pool.clone());
     let event_str = event.as_str();
 
@@ -756,7 +757,10 @@ async fn poll_due_retries(store: &WebhookStore) {
         let wh_url = match urls.iter().find(|u| u.id == record.webhook_url_id) {
             Some(u) => u.clone(),
             None => {
-                warn!("webhook poller: url {} not found for record {}", record.webhook_url_id, record.id);
+                warn!(
+                    "webhook poller: url {} not found for record {}",
+                    record.webhook_url_id, record.id
+                );
                 continue;
             }
         };
@@ -768,7 +772,10 @@ async fn poll_due_retries(store: &WebhookStore) {
         let attempt = record.attempt;
         handles.push(tokio::spawn(async move {
             let store2 = WebhookStore::new(pool2.clone());
-            deliver_one(pool2, &store2, &client2, &wh_url, &record_id, &event_str, &payload, attempt).await;
+            deliver_one(
+                pool2, &store2, &client2, &wh_url, &record_id, &event_str, &payload, attempt,
+            )
+            .await;
         }));
     }
     for h in handles {
@@ -825,16 +832,20 @@ async fn deliver_one(
             let status = resp.status().as_u16();
             if status < 400 {
                 info!("webhook delivered: record={record_id} status={status}");
-                store.mark_success(&conn, record_id, status).unwrap_or_else(|e| {
-                    warn!("webhook: mark_success failed: {e}");
-                });
+                store
+                    .mark_success(&conn, record_id, status)
+                    .unwrap_or_else(|e| {
+                        warn!("webhook: mark_success failed: {e}");
+                    });
             } else {
                 warn!("webhook failed: record={record_id} http={status} attempt={attempt}");
                 let next_attempt = attempt + 1;
                 if next_attempt >= MAX_ATTEMPTS {
-                    store.mark_failed(&conn, record_id, Some(status)).unwrap_or_else(|e| {
-                        warn!("webhook: mark_failed: {e}");
-                    });
+                    store
+                        .mark_failed(&conn, record_id, Some(status))
+                        .unwrap_or_else(|e| {
+                            warn!("webhook: mark_failed: {e}");
+                        });
                 } else {
                     store
                         .mark_retry(&conn, record_id, Some(status), attempt)
@@ -848,13 +859,17 @@ async fn deliver_one(
             warn!("webhook request error: record={record_id} err={e} attempt={attempt}");
             let next_attempt = attempt + 1;
             if next_attempt >= MAX_ATTEMPTS {
-                store.mark_failed(&conn, record_id, None).unwrap_or_else(|e2| {
-                    warn!("webhook: mark_failed: {e2}");
-                });
+                store
+                    .mark_failed(&conn, record_id, None)
+                    .unwrap_or_else(|e2| {
+                        warn!("webhook: mark_failed: {e2}");
+                    });
             } else {
-                store.mark_retry(&conn, record_id, None, attempt).unwrap_or_else(|e2| {
-                    warn!("webhook: mark_retry: {e2}");
-                });
+                store
+                    .mark_retry(&conn, record_id, None, attempt)
+                    .unwrap_or_else(|e2| {
+                        warn!("webhook: mark_retry: {e2}");
+                    });
             }
         }
     }
@@ -887,7 +902,11 @@ mod tests {
         let store = WebhookStore::new(pool.clone());
 
         let wh = store
-            .add_url("https://example.com/hook", &["task.completed".to_string()], None)
+            .add_url(
+                "https://example.com/hook",
+                &["task.completed".to_string()],
+                None,
+            )
             .unwrap();
 
         let list = store.list_urls().unwrap();
@@ -925,7 +944,11 @@ mod tests {
 
         // add a url + create a record + mark failed
         let wh = store
-            .add_url("https://example.com/hook", &["task.completed".to_string()], None)
+            .add_url(
+                "https://example.com/hook",
+                &["task.completed".to_string()],
+                None,
+            )
             .unwrap();
         {
             let conn = pool.get().unwrap();
@@ -999,12 +1022,7 @@ mod tests {
         let record_id = {
             let conn = pool.get().unwrap();
             let id = store
-                .create_record(
-                    &conn,
-                    &wh.id,
-                    "task.completed",
-                    &serde_json::json!({}),
-                )
+                .create_record(&conn, &wh.id, "task.completed", &serde_json::json!({}))
                 .unwrap();
             store.mark_failed(&conn, &id, Some(503)).unwrap();
             id
@@ -1014,7 +1032,10 @@ mod tests {
 
         let records = store.list_records(Some("pending")).unwrap();
         assert_eq!(records.len(), 1);
-        assert_eq!(records[0].attempt, 0, "reset_for_retry should reset attempt to 0");
+        assert_eq!(
+            records[0].attempt, 0,
+            "reset_for_retry should reset attempt to 0"
+        );
     }
 
     #[test]
@@ -1037,7 +1058,8 @@ mod tests {
             conn.execute(
                 "UPDATE webhook_event_records SET next_retry_at = ?1 WHERE id = ?2",
                 rusqlite::params![past_str, id],
-            ).unwrap();
+            )
+            .unwrap();
             id
         };
 
@@ -1065,7 +1087,8 @@ mod tests {
             conn.execute(
                 "UPDATE webhook_event_records SET next_retry_at = ?1 WHERE id = ?2",
                 rusqlite::params![future_str, id],
-            ).unwrap();
+            )
+            .unwrap();
         }
 
         let due = store.get_due_retries(Utc::now()).unwrap();
@@ -1121,9 +1144,7 @@ mod tests {
     fn add_url_rejects_ssrf() {
         let pool = make_pool();
         let store = WebhookStore::new(pool);
-        assert!(store
-            .add_url("http://127.0.0.1/hook", &[], None)
-            .is_err());
+        assert!(store.add_url("http://127.0.0.1/hook", &[], None).is_err());
     }
 
     // ── secret泄漏防护 ────────────────────────────────────────────────────────

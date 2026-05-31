@@ -59,7 +59,8 @@ impl<S: Send + Sync + Clone + 'static> SagaExecutor<S> {
                     // Rollback completed steps in reverse order
                     for done_name in completed.iter().rev() {
                         // Find the step by name
-                        if let Some(done_step) = self.steps.iter().find(|s| s.name() == *done_name) {
+                        if let Some(done_step) = self.steps.iter().find(|s| s.name() == *done_name)
+                        {
                             if let Err(comp_err) = done_step.compensate(&state).await {
                                 compensation_errors.push(CompensationError {
                                     step: done_name.to_string(),
@@ -112,11 +113,19 @@ mod tests {
 
     #[async_trait]
     impl SagaStep<i32> for AddStep {
-        fn name(&self) -> &str { &self.name }
-        async fn forward(&self, state: i32) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+        fn name(&self) -> &str {
+            &self.name
+        }
+        async fn forward(
+            &self,
+            state: i32,
+        ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
             Ok(state + self.delta)
         }
-        async fn compensate(&self, _state: &i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        async fn compensate(
+            &self,
+            _state: &i32,
+        ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             Ok(())
         }
     }
@@ -127,11 +136,19 @@ mod tests {
 
     #[async_trait]
     impl SagaStep<i32> for FailStep {
-        fn name(&self) -> &str { &self.name }
-        async fn forward(&self, _state: i32) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+        fn name(&self) -> &str {
+            &self.name
+        }
+        async fn forward(
+            &self,
+            _state: i32,
+        ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
             Err("step failed".into())
         }
-        async fn compensate(&self, _state: &i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        async fn compensate(
+            &self,
+            _state: &i32,
+        ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             Ok(())
         }
     }
@@ -144,11 +161,19 @@ mod tests {
 
     #[async_trait]
     impl SagaStep<i32> for TrackingStep {
-        fn name(&self) -> &str { &self.name }
-        async fn forward(&self, state: i32) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+        fn name(&self) -> &str {
+            &self.name
+        }
+        async fn forward(
+            &self,
+            state: i32,
+        ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
             Ok(state + self.delta)
         }
-        async fn compensate(&self, _state: &i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        async fn compensate(
+            &self,
+            _state: &i32,
+        ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             self.compensated.lock().unwrap().push(self.name.clone());
             Ok(())
         }
@@ -160,11 +185,19 @@ mod tests {
 
     #[async_trait]
     impl SagaStep<i32> for FailCompensateStep {
-        fn name(&self) -> &str { &self.name }
-        async fn forward(&self, state: i32) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+        fn name(&self) -> &str {
+            &self.name
+        }
+        async fn forward(
+            &self,
+            state: i32,
+        ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
             Ok(state + 1)
         }
-        async fn compensate(&self, _state: &i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        async fn compensate(
+            &self,
+            _state: &i32,
+        ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             Err("compensation failed".into())
         }
     }
@@ -174,9 +207,18 @@ mod tests {
     #[tokio::test]
     async fn all_steps_succeed() {
         let result = SagaExecutor::new()
-            .add_step(AddStep { name: "step1".into(), delta: 10 })
-            .add_step(AddStep { name: "step2".into(), delta: 5 })
-            .add_step(AddStep { name: "step3".into(), delta: 3 })
+            .add_step(AddStep {
+                name: "step1".into(),
+                delta: 10,
+            })
+            .add_step(AddStep {
+                name: "step2".into(),
+                delta: 5,
+            })
+            .add_step(AddStep {
+                name: "step3".into(),
+                delta: 3,
+            })
             .execute(0)
             .await;
 
@@ -193,23 +235,45 @@ mod tests {
         let c1 = compensated.clone();
         let c2 = compensated.clone();
 
-        struct TrackFail { name: String, compensated: Arc<Mutex<Vec<String>>> }
+        struct TrackFail {
+            name: String,
+            compensated: Arc<Mutex<Vec<String>>>,
+        }
         #[async_trait]
         impl SagaStep<i32> for TrackFail {
-            fn name(&self) -> &str { &self.name }
-            async fn forward(&self, _state: i32) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+            fn name(&self) -> &str {
+                &self.name
+            }
+            async fn forward(
+                &self,
+                _state: i32,
+            ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
                 Err("fail".into())
             }
-            async fn compensate(&self, _state: &i32) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+            async fn compensate(
+                &self,
+                _state: &i32,
+            ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 self.compensated.lock().unwrap().push(self.name.clone());
                 Ok(())
             }
         }
 
         let result = SagaExecutor::new()
-            .add_step(TrackingStep { name: "s1".into(), delta: 1, compensated: c1 })
-            .add_step(TrackingStep { name: "s2".into(), delta: 2, compensated: c2 })
-            .add_step(TrackFail { name: "s3".into(), compensated: compensated.clone() })
+            .add_step(TrackingStep {
+                name: "s1".into(),
+                delta: 1,
+                compensated: c1,
+            })
+            .add_step(TrackingStep {
+                name: "s2".into(),
+                delta: 2,
+                compensated: c2,
+            })
+            .add_step(TrackFail {
+                name: "s3".into(),
+                compensated: compensated.clone(),
+            })
             .execute(0)
             .await;
 
@@ -226,8 +290,12 @@ mod tests {
     #[tokio::test]
     async fn compensation_itself_fails() {
         let result = SagaExecutor::new()
-            .add_step(FailCompensateStep { name: "ok-step".into() })
-            .add_step(FailStep { name: "bad-step".into() })
+            .add_step(FailCompensateStep {
+                name: "ok-step".into(),
+            })
+            .add_step(FailStep {
+                name: "bad-step".into(),
+            })
             .execute(0)
             .await;
 
@@ -235,7 +303,9 @@ mod tests {
         assert_eq!(result.failed_step.as_deref(), Some("bad-step"));
         assert_eq!(result.compensation_errors.len(), 1);
         assert_eq!(result.compensation_errors[0].step, "ok-step");
-        assert!(result.compensation_errors[0].error.contains("compensation failed"));
+        assert!(result.compensation_errors[0]
+            .error
+            .contains("compensation failed"));
     }
 
     #[tokio::test]
@@ -251,7 +321,10 @@ mod tests {
     #[tokio::test]
     async fn single_step_success() {
         let result = SagaExecutor::new()
-            .add_step(AddStep { name: "only".into(), delta: 7 })
+            .add_step(AddStep {
+                name: "only".into(),
+                delta: 7,
+            })
             .execute(1)
             .await;
 
@@ -263,7 +336,9 @@ mod tests {
     #[tokio::test]
     async fn single_step_failure() {
         let result = SagaExecutor::new()
-            .add_step(FailStep { name: "solo-fail".into() })
+            .add_step(FailStep {
+                name: "solo-fail".into(),
+            })
             .execute(0)
             .await;
 

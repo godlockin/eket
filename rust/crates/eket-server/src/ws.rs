@@ -13,18 +13,12 @@ use eket_engine::ticket_engine::WorkflowEvent;
 use crate::AppState;
 
 /// Upgrade HTTP request to WebSocket and hand off to `handle_socket`.
-pub async fn ws_handler(
-    ws: WebSocketUpgrade,
-    State(state): State<AppState>,
-) -> impl IntoResponse {
+pub async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> impl IntoResponse {
     let rx = state.event_tx.subscribe();
     ws.on_upgrade(move |socket| handle_socket(socket, rx))
 }
 
-async fn handle_socket(
-    mut socket: WebSocket,
-    mut rx: broadcast::Receiver<WorkflowEvent>,
-) {
+async fn handle_socket(mut socket: WebSocket, mut rx: broadcast::Receiver<WorkflowEvent>) {
     loop {
         tokio::select! {
             recv_result = rx.recv() => {

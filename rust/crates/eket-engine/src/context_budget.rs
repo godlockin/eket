@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-use crate::workflow::{ContextBudget, estimate_value_tokens};
+use crate::workflow::{estimate_value_tokens, ContextBudget};
 
 /// Metadata keys that must never be removed by max_tokens trimming.
 const METADATA_KEYS: &[&str] = &["task_id", "step_id", "instance_id", "workflow_id"];
@@ -85,7 +85,10 @@ mod tests {
     use serde_json::json;
 
     fn make_data(pairs: &[(&str, Value)]) -> HashMap<String, Value> {
-        pairs.iter().map(|(k, v)| (k.to_string(), v.clone())).collect()
+        pairs
+            .iter()
+            .map(|(k, v)| (k.to_string(), v.clone()))
+            .collect()
     }
 
     #[test]
@@ -95,7 +98,10 @@ mod tests {
             ("tool_result_search", json!([1, 2, 3])),
             ("user_message", json!("hello")),
         ]);
-        let budget = ContextBudget { exclude_tool_outputs: true, ..Default::default() };
+        let budget = ContextBudget {
+            exclude_tool_outputs: true,
+            ..Default::default()
+        };
         apply_budget(&mut data, &budget);
         assert!(!data.contains_key("tool_output_1"));
         assert!(!data.contains_key("tool_result_search"));
@@ -123,7 +129,10 @@ mod tests {
     fn test_keep_recent_n_truncates_history() {
         let history = json!([1, 2, 3, 4, 5]);
         let mut data = make_data(&[("history", history)]);
-        let budget = ContextBudget { keep_recent_n: Some(3), ..Default::default() };
+        let budget = ContextBudget {
+            keep_recent_n: Some(3),
+            ..Default::default()
+        };
         apply_budget(&mut data, &budget);
         let arr = data["history"].as_array().unwrap();
         assert_eq!(arr.len(), 3);
@@ -140,9 +149,15 @@ mod tests {
             ("small_field", json!("tiny")),
         ]);
         // Set max_tokens very small so large_field must be removed
-        let budget = ContextBudget { max_tokens: Some(5), ..Default::default() };
+        let budget = ContextBudget {
+            max_tokens: Some(5),
+            ..Default::default()
+        };
         apply_budget(&mut data, &budget);
-        assert!(!data.contains_key("large_field"), "large_field should be trimmed");
+        assert!(
+            !data.contains_key("large_field"),
+            "large_field should be trimmed"
+        );
     }
 
     #[test]
@@ -155,7 +170,10 @@ mod tests {
             ("workflow_id", json!("w-001")),
             ("big_removable", json!(large_str)),
         ]);
-        let budget = ContextBudget { max_tokens: Some(20), ..Default::default() };
+        let budget = ContextBudget {
+            max_tokens: Some(20),
+            ..Default::default()
+        };
         apply_budget(&mut data, &budget);
         // All metadata keys must survive
         assert!(data.contains_key("task_id"));

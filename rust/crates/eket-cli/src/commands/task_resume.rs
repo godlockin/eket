@@ -21,7 +21,10 @@ pub struct TaskResumeArgs {
 }
 
 pub async fn run(args: TaskResumeArgs) -> Result<()> {
-    let db_path = args.db_path.clone().unwrap_or_else(|| ".eket/eket.db".to_string());
+    let db_path = args
+        .db_path
+        .clone()
+        .unwrap_or_else(|| ".eket/eket.db".to_string());
 
     let pool = build_pool(&db_path)?;
     let engine = TicketEngine::new(pool);

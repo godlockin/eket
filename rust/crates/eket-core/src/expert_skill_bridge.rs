@@ -1,10 +1,10 @@
+use serde::{Deserialize, Serialize};
 /// ExpertSkillBridge — 专家 × Skills 关联机制
 ///
 /// 从 ~/.claude/skills/eket/experts/default/*.md 加载专家配置，
 /// 提供按 skills 需求匹配专家、按 epic 类型推荐专家组合等能力。
 use std::collections::HashMap;
 use std::path::Path;
-use serde::{Deserialize, Serialize};
 
 // ─── Data Structures ──────────────────────────────────────────────────────────
 
@@ -163,7 +163,11 @@ impl ExpertSkillBridge {
             })
             .collect();
 
-        matches.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
+        matches.sort_by(|a, b| {
+            b.score
+                .partial_cmp(&a.score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
         matches
     }
 
@@ -208,12 +212,10 @@ fn dir_to_pkg_name(dir: &Path) -> String {
 }
 
 /// 递归扫目录加载 .md 专家文件（跳过 INDEX.md）
-fn load_dir_recursive(
-    dir: &Path,
-    pkg: &str,
-    experts: &mut HashMap<String, ExpertProfile>,
-) {
-    let Ok(entries) = std::fs::read_dir(dir) else { return };
+fn load_dir_recursive(dir: &Path, pkg: &str, experts: &mut HashMap<String, ExpertProfile>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
     for entry in entries.flatten() {
         let path = entry.path();
         if path.is_dir() {
@@ -256,10 +258,7 @@ fn epic_type_to_skills(epic_type: &str) -> Vec<String> {
             "systematic-debugging".into(),
             "brainstorming".into(),
         ],
-        "security" => vec![
-            "security-review".into(),
-            "systematic-debugging".into(),
-        ],
+        "security" => vec!["security-review".into(), "systematic-debugging".into()],
         "performance" => vec![
             "improve-codebase-architecture".into(),
             "systematic-debugging".into(),
@@ -342,7 +341,10 @@ mod tests {
     fn expert_skill_load_and_query() {
         let dir = TempDir::new().unwrap();
 
-        make_expert_md(&dir, "architect.md", r#"
+        make_expert_md(
+            &dir,
+            "architect.md",
+            r#"
 id: eket.architect.001
 name: Alex Chen
 name_cn: 陈架构
@@ -358,9 +360,13 @@ skills:
   contextual:
     - skill: security-review
       when: "domain=security"
-"#);
+"#,
+        );
 
-        make_expert_md(&dir, "backend.md", r#"
+        make_expert_md(
+            &dir,
+            "backend.md",
+            r#"
 id: eket.backend.001
 name: Wei Zhang
 name_cn: 张后端
@@ -376,7 +382,8 @@ skills:
   contextual:
     - skill: security-review
       when: null
-"#);
+"#,
+        );
 
         let bridge = ExpertSkillBridge::load_from_dir(dir.path()).unwrap();
 
@@ -389,7 +396,10 @@ skills:
         let matches = bridge.compose_by_skills(&["systematic-debugging", "fastapi-expert"]);
         assert!(!matches.is_empty());
         // backend matches both
-        let backend = matches.iter().find(|m| m.expert_id == "eket.backend.001").unwrap();
+        let backend = matches
+            .iter()
+            .find(|m| m.expert_id == "eket.backend.001")
+            .unwrap();
         assert_eq!(backend.score, 1.0);
 
         // recommend_for_epic

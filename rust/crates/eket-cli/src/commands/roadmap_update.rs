@@ -3,7 +3,7 @@
 /// Usage: eket roadmap:update <PROJECT_ID> [--quarter <Q1-2026>]
 use anyhow::Result;
 use clap::Parser;
-use eket_core::doc_lifecycle::{DocEvent, TemplateRenderer, handle_event};
+use eket_core::doc_lifecycle::{handle_event, DocEvent, TemplateRenderer};
 use serde_json::json;
 use std::path::PathBuf;
 

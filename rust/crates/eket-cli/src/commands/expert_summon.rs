@@ -104,9 +104,9 @@ pub fn summon_roles(client: &SqliteClient, roles: &[String]) -> Result<SummonRes
 
     for role in roles {
         let instances = client.list_instances(None)?;
-        let exists = instances.iter().any(|inst| {
-            inst.role == *role || inst.skills.iter().any(|s| s == role)
-        });
+        let exists = instances
+            .iter()
+            .any(|inst| inst.role == *role || inst.skills.iter().any(|s| s == role));
 
         if exists {
             // Return the matching instance id
@@ -205,20 +205,29 @@ mod tests {
         let roles = vec!["rust".to_string()];
         let res = summon_roles(&client, &roles).unwrap();
         assert_eq!(res.summoned.len(), 1, "should have summoned 1 instance");
-        assert!(res.summoned[0].starts_with("rust_"), "id should start with role prefix");
+        assert!(
+            res.summoned[0].starts_with("rust_"),
+            "id should start with role prefix"
+        );
         assert!(res.already_exist.is_empty(), "should not be already_exist");
 
         // Verify in DB
         let instances = client.list_instances(None).unwrap();
         assert!(
-            instances.iter().any(|i| i.role == "rust" && i.status == "idle"),
+            instances
+                .iter()
+                .any(|i| i.role == "rust" && i.status == "idle"),
             "DB should contain rust slaver with idle status"
         );
 
         // Second summon: should detect existing
         let res2 = summon_roles(&client, &roles).unwrap();
         assert!(res2.summoned.is_empty(), "should not summon again");
-        assert_eq!(res2.already_exist.len(), 1, "should detect existing instance");
+        assert_eq!(
+            res2.already_exist.len(),
+            1,
+            "should detect existing instance"
+        );
     }
 
     #[test]

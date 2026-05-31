@@ -129,8 +129,12 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let (client, mailbox, sender) = make_setup(&dir);
 
-        client.create_ticket("TASK-10", "Test", "P1", "task").unwrap();
-        client.upsert_instance("slaver-a", "slaver", &[], "busy").unwrap();
+        client
+            .create_ticket("TASK-10", "Test", "P1", "task")
+            .unwrap();
+        client
+            .upsert_instance("slaver-a", "slaver", &[], "busy")
+            .unwrap();
 
         sender
             .send_task_result(
@@ -162,8 +166,12 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let (client, mailbox, sender) = make_setup(&dir);
 
-        client.create_ticket("TASK-11", "Fail test", "P2", "task").unwrap();
-        client.upsert_instance("slaver-b", "slaver", &[], "busy").unwrap();
+        client
+            .create_ticket("TASK-11", "Fail test", "P2", "task")
+            .unwrap();
+        client
+            .upsert_instance("slaver-b", "slaver", &[], "busy")
+            .unwrap();
 
         sender
             .send_task_result(
@@ -192,7 +200,9 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let (client, mailbox, sender) = make_setup(&dir);
 
-        client.upsert_instance("slaver-c", "slaver", &[], "idle").unwrap();
+        client
+            .upsert_instance("slaver-c", "slaver", &[], "idle")
+            .unwrap();
 
         // Record initial last_seen
         let before = client.get_instance("slaver-c").unwrap().unwrap().last_seen;
@@ -217,6 +227,9 @@ mod tests {
         poll_once(&client, &mailbox).await;
 
         let after = client.get_instance("slaver-c").unwrap().unwrap().last_seen;
-        assert!(after > before, "last_seen should be updated after heartbeat");
+        assert!(
+            after > before,
+            "last_seen should be updated after heartbeat"
+        );
     }
 }

@@ -1,12 +1,12 @@
+use eket_core::db::SqliteClient;
+use eket_core::error::{EketError, EketResult};
+use eket_core::pubsub::RedisPubSub;
+use rusqlite::params;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::Arc;
-use serde::{Deserialize, Serialize};
 use tokio::fs;
 use tracing::{debug, error, info, warn};
-use eket_core::db::SqliteClient;
-use eket_core::pubsub::RedisPubSub;
-use eket_core::error::{EketError, EketResult};
-use rusqlite::params;
 
 #[cfg(unix)]
 extern "C" {
@@ -61,12 +61,8 @@ impl StateReconciler {
         db: Option<Arc<SqliteClient>>,
         pubsub: Option<Arc<RedisPubSub>>,
     ) -> Self {
-        let q_dir = queue_dir.unwrap_or_else(|| {
-            find_project_root()
-                .join(".eket")
-                .join("data")
-                .join("queue")
-        });
+        let q_dir = queue_dir
+            .unwrap_or_else(|| find_project_root().join(".eket").join("data").join("queue"));
         Self {
             queue_dir: q_dir,
             db,
@@ -76,7 +72,10 @@ impl StateReconciler {
 
     /// Triggers the state alignment flow
     pub async fn reconcile(&self) -> EketResult<usize> {
-        info!("[StateReconciler] Starting data alignment, scanning: {:?}", self.queue_dir);
+        info!(
+            "[StateReconciler] Starting data alignment, scanning: {:?}",
+            self.queue_dir
+        );
 
         if !self.queue_dir.exists() {
             return Ok(0);
@@ -84,7 +83,9 @@ impl StateReconciler {
 
         // 1. Acquire distributed lock to prevent concurrent alignment tasks
         if !self.acquire_reconcile_lock().await {
-            info!("[StateReconciler] Failed to acquire lock or reconciler already running, skipping");
+            info!(
+                "[StateReconciler] Failed to acquire lock or reconciler already running, skipping"
+            );
             return Ok(0);
         }
 
@@ -98,15 +99,17 @@ impl StateReconciler {
 
     async fn do_reconcile(&self) -> EketResult<usize> {
         // 2. Scan fallback queue directory for JSON and MSG files
-        let mut entries = fs::read_dir(&self.queue_dir).await.map_err(|e| {
-            EketError::Other(format!("Failed to read queue dir: {e}"))
-        })?;
+        let mut entries = fs::read_dir(&self.queue_dir)
+            .await
+            .map_err(|e| EketError::Other(format!("Failed to read queue dir: {e}")))?;
 
         let mut reconciled_msgs = Vec::new();
 
-        while let Some(entry) = entries.next_entry().await.map_err(|e| {
-            EketError::Other(format!("Failed to read entry: {e}"))
-        })? {
+        while let Some(entry) = entries
+            .next_entry()
+            .await
+            .map_err(|e| EketError::Other(format!("Failed to read entry: {e}")))?
+        {
             let path = entry.path();
             if !path.is_file() {
                 continue;
@@ -132,7 +135,10 @@ impl StateReconciler {
             let content = match fs::read_to_string(&path).await {
                 Ok(c) => c,
                 Err(e) => {
-                    warn!("[StateReconciler] Failed to read message file {:?}: {}", path, e);
+                    warn!(
+                        "[StateReconciler] Failed to read message file {:?}: {}",
+                        path, e
+                    );
                     continue;
                 }
             };
@@ -140,7 +146,10 @@ impl StateReconciler {
             let parsed: serde_json::Value = match serde_json::from_str(&content) {
                 Ok(val) => val,
                 Err(e) => {
-                    warn!("[StateReconciler] Failed to parse message file JSON {:?}: {}", path, e);
+                    warn!(
+                        "[StateReconciler] Failed to parse message file JSON {:?}: {}",
+                        path, e
+                    );
                     continue;
                 }
             };
@@ -155,7 +164,10 @@ impl StateReconciler {
 
             if is_msg {
                 // Shell fallback message
-                let file_stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("unknown");
+                let file_stem = path
+                    .file_stem()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("unknown");
                 id = format!("shell_fallback_{}", file_stem);
                 if let Some(ts_val) = parsed.get("timestamp") {
                     if let Some(ts_str) = ts_val.as_str() {
@@ -169,7 +181,8 @@ impl StateReconciler {
                 channel = String::from("commands");
             } else {
                 // Regular JSON file message
-                let has_version2 = parsed.get("metadata")
+                let has_version2 = parsed
+                    .get("metadata")
                     .and_then(|m| m.get("version"))
                     .and_then(|v| v.as_u64())
                     .map(|v| v == 2)
@@ -181,12 +194,16 @@ impl StateReconciler {
                     parsed.clone()
                 };
 
-                id = message_val.get("id")
+                id = message_val
+                    .get("id")
                     .and_then(|i| i.as_str())
                     .map(|s| s.to_string())
-                    .unwrap_or_else(|| format!("file_msg_{}", chrono::Utc::now().timestamp_millis()));
+                    .unwrap_or_else(|| {
+                        format!("file_msg_{}", chrono::Utc::now().timestamp_millis())
+                    });
 
-                channel = message_val.get("_channel")
+                channel = message_val
+                    .get("_channel")
                     .and_then(|c| c.as_str())
                     .map(|s| s.to_string())
                     .unwrap_or_else(|| String::from("default"));
@@ -199,7 +216,9 @@ impl StateReconciler {
                     } else if let Some(ts_int) = ts_val.as_i64() {
                         timestamp = ts_int;
                     }
-                } else if let Some(eq_val) = message_val.get("_enqueue_time").and_then(|v| v.as_i64()) {
+                } else if let Some(eq_val) =
+                    message_val.get("_enqueue_time").and_then(|v| v.as_i64())
+                {
                     timestamp = eq_val;
                 }
 
@@ -228,26 +247,33 @@ impl StateReconciler {
         for msg in reconciled_msgs {
             match self.check_duplicate(&msg.id).await {
                 Ok(true) => {
-                    debug!("[StateReconciler] Duplicate found for message {}, deleting file", msg.id);
+                    debug!(
+                        "[StateReconciler] Duplicate found for message {}, deleting file",
+                        msg.id
+                    );
                     let _ = fs::remove_file(&msg.file_path).await;
                 }
-                _ => {
-                    match self.replay_message(&msg).await {
-                        Ok(replayed) => {
-                            if replayed {
-                                replayed_count += 1;
-                                let _ = fs::remove_file(&msg.file_path).await;
-                            }
-                        }
-                        Err(e) => {
-                            error!("[StateReconciler] Failed to replay message {}: {}", msg.id, e);
+                _ => match self.replay_message(&msg).await {
+                    Ok(replayed) => {
+                        if replayed {
+                            replayed_count += 1;
+                            let _ = fs::remove_file(&msg.file_path).await;
                         }
                     }
-                }
+                    Err(e) => {
+                        error!(
+                            "[StateReconciler] Failed to replay message {}: {}",
+                            msg.id, e
+                        );
+                    }
+                },
             }
         }
 
-        info!("[StateReconciler] Data alignment complete. Replayed {} messages.", replayed_count);
+        info!(
+            "[StateReconciler] Data alignment complete. Replayed {} messages.",
+            replayed_count
+        );
         Ok(replayed_count)
     }
 
@@ -269,7 +295,9 @@ impl StateReconciler {
         if let Some(db) = &self.db {
             let conn = db.pool().get().map_err(EketError::from)?;
 
-            let mut stmt = conn.prepare("SELECT 1 FROM message_history WHERE message_id = ?1").map_err(EketError::from)?;
+            let mut stmt = conn
+                .prepare("SELECT 1 FROM message_history WHERE message_id = ?1")
+                .map_err(EketError::from)?;
 
             let exists = stmt.exists(params![message_id]).unwrap_or(false);
             if exists {
@@ -285,7 +313,10 @@ impl StateReconciler {
         let now_rfc3339 = chrono::Utc::now().to_rfc3339();
 
         if msg.file_type == "msg" {
-            info!("[StateReconciler] Replaying shell fallback command: {:?}", msg.data);
+            info!(
+                "[StateReconciler] Replaying shell fallback command: {:?}",
+                msg.data
+            );
             if let Some(db) = &self.db {
                 let conn = db.pool().get().map_err(EketError::from)?;
 
@@ -316,10 +347,20 @@ impl StateReconciler {
         if let Some(db) = &self.db {
             let conn = db.pool().get().map_err(EketError::from)?;
 
-            let from = msg.data.get("from").and_then(|v| v.as_str()).unwrap_or("file_queue");
+            let from = msg
+                .data
+                .get("from")
+                .and_then(|v| v.as_str())
+                .unwrap_or("file_queue");
             let to = msg.data.get("to").and_then(|v| v.as_str()).unwrap_or("all");
-            let type_str = msg.data.get("type").and_then(|v| v.as_str()).unwrap_or("file_message");
-            let payload_str = msg.data.get("payload")
+            let type_str = msg
+                .data
+                .get("type")
+                .and_then(|v| v.as_str())
+                .unwrap_or("file_message");
+            let payload_str = msg
+                .data
+                .get("payload")
                 .map(|v| serde_json::to_string(v).unwrap_or_default())
                 .unwrap_or_else(|| serde_json::to_string(&msg.data).unwrap_or_default());
 
@@ -330,23 +371,38 @@ impl StateReconciler {
             ).map_err(EketError::from)?;
 
             // 3. If it contains ticket information, upsert it into the tickets table
-            let ticket_id_val = msg.data.get("ticketId").or_else(|| msg.data.get("ticket_id"));
+            let ticket_id_val = msg
+                .data
+                .get("ticketId")
+                .or_else(|| msg.data.get("ticket_id"));
             if let Some(tid_val) = ticket_id_val {
                 if let Some(tid) = tid_val.as_str() {
                     let title = msg.data.get("title").and_then(|v| v.as_str()).unwrap_or("");
-                    let status = msg.data.get("status").and_then(|v| v.as_str()).unwrap_or("ready");
-                    let priority = msg.data.get("priority")
+                    let status = msg
+                        .data
+                        .get("status")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("ready");
+                    let priority = msg
+                        .data
+                        .get("priority")
                         .and_then(|v| {
                             if let Some(p_str) = v.as_str() {
                                 Some(p_str.to_string())
-                            } else { v.as_i64().map(|p_int| p_int.to_string()) }
+                            } else {
+                                v.as_i64().map(|p_int| p_int.to_string())
+                            }
                         })
                         .unwrap_or_else(|| "P2".to_string());
                     let assignee = msg.data.get("assignee").and_then(|v| v.as_str());
-                    let claimed_at = msg.data.get("claimedAt")
+                    let claimed_at = msg
+                        .data
+                        .get("claimedAt")
                         .or_else(|| msg.data.get("claimed_at"))
                         .and_then(|v| v.as_str());
-                    let created_at = msg.data.get("createdAt")
+                    let created_at = msg
+                        .data
+                        .get("createdAt")
                         .or_else(|| msg.data.get("created_at"))
                         .and_then(|v| v.as_str())
                         .unwrap_or(&now_rfc3339);
@@ -414,7 +470,8 @@ mod tests {
     async fn test_reconcile_json_message_replay() {
         let temp_dir = TempDir::new().unwrap();
         let db = init_test_db(":memory:");
-        let reconciler = StateReconciler::new(Some(temp_dir.path().to_path_buf()), Some(db.clone()), None);
+        let reconciler =
+            StateReconciler::new(Some(temp_dir.path().to_path_buf()), Some(db.clone()), None);
 
         // Write a mock JSON file message
         let msg_id = "test_msg_123";
@@ -435,7 +492,9 @@ mod tests {
             }
         });
 
-        fs::write(&msg_file, serde_json::to_string(&msg_data).unwrap()).await.unwrap();
+        fs::write(&msg_file, serde_json::to_string(&msg_data).unwrap())
+            .await
+            .unwrap();
 
         let count = reconciler.reconcile().await.unwrap();
         assert_eq!(count, 1);
@@ -445,19 +504,23 @@ mod tests {
 
         // Check SQLite message_history
         let conn = db.pool().get().unwrap();
-        let exists: bool = conn.query_row(
-            "SELECT 1 FROM message_history WHERE message_id = ?1",
-            params![msg_id],
-            |_| Ok(true)
-        ).unwrap_or(false);
+        let exists: bool = conn
+            .query_row(
+                "SELECT 1 FROM message_history WHERE message_id = ?1",
+                params![msg_id],
+                |_| Ok(true),
+            )
+            .unwrap_or(false);
         assert!(exists);
 
         // Check SQLite tickets
-        let t_exists: bool = conn.query_row(
-            "SELECT 1 FROM tickets WHERE id = 'TICKET-789' AND status = 'in_progress'",
-            [],
-            |_| Ok(true)
-        ).unwrap_or(false);
+        let t_exists: bool = conn
+            .query_row(
+                "SELECT 1 FROM tickets WHERE id = 'TICKET-789' AND status = 'in_progress'",
+                [],
+                |_| Ok(true),
+            )
+            .unwrap_or(false);
         assert!(t_exists);
     }
 
@@ -465,7 +528,8 @@ mod tests {
     async fn test_reconcile_shell_msg_replay() {
         let temp_dir = TempDir::new().unwrap();
         let db = init_test_db(":memory:");
-        let reconciler = StateReconciler::new(Some(temp_dir.path().to_path_buf()), Some(db.clone()), None);
+        let reconciler =
+            StateReconciler::new(Some(temp_dir.path().to_path_buf()), Some(db.clone()), None);
 
         // Write a mock shell fallback command file (.msg)
         let file_stem = "cmd_456";
@@ -475,7 +539,9 @@ mod tests {
             "timestamp": "2026-05-24T12:00:00Z"
         });
 
-        fs::write(&msg_file, serde_json::to_string(&msg_data).unwrap()).await.unwrap();
+        fs::write(&msg_file, serde_json::to_string(&msg_data).unwrap())
+            .await
+            .unwrap();
 
         let count = reconciler.reconcile().await.unwrap();
         assert_eq!(count, 1);
@@ -485,11 +551,13 @@ mod tests {
 
         // Check SQLite message_history
         let conn = db.pool().get().unwrap();
-        let exists: bool = conn.query_row(
-            "SELECT 1 FROM message_history WHERE message_id = ?1",
-            params![format!("shell_fallback_{}", file_stem)],
-            |_| Ok(true)
-        ).unwrap_or(false);
+        let exists: bool = conn
+            .query_row(
+                "SELECT 1 FROM message_history WHERE message_id = ?1",
+                params![format!("shell_fallback_{}", file_stem)],
+                |_| Ok(true),
+            )
+            .unwrap_or(false);
         assert!(exists);
     }
 
@@ -497,7 +565,8 @@ mod tests {
     async fn test_reconcile_duplicate_handling() {
         let temp_dir = TempDir::new().unwrap();
         let db = init_test_db(":memory:");
-        let reconciler = StateReconciler::new(Some(temp_dir.path().to_path_buf()), Some(db.clone()), None);
+        let reconciler =
+            StateReconciler::new(Some(temp_dir.path().to_path_buf()), Some(db.clone()), None);
 
         let msg_id = "test_msg_dup";
         let msg_file = temp_dir.path().join(format!("{}.json", msg_id));
@@ -509,7 +578,9 @@ mod tests {
             "payload": { "data": "hello" }
         });
 
-        fs::write(&msg_file, serde_json::to_string(&msg_data).unwrap()).await.unwrap();
+        fs::write(&msg_file, serde_json::to_string(&msg_data).unwrap())
+            .await
+            .unwrap();
 
         // 1. Manually insert the message into message_history to simulate duplicate
         {
@@ -530,7 +601,8 @@ mod tests {
     async fn test_reconcile_processed_json_duplicate() {
         let temp_dir = TempDir::new().unwrap();
         let db = init_test_db(":memory:");
-        let reconciler = StateReconciler::new(Some(temp_dir.path().to_path_buf()), Some(db.clone()), None);
+        let reconciler =
+            StateReconciler::new(Some(temp_dir.path().to_path_buf()), Some(db.clone()), None);
 
         let msg_id = "processed_dup";
         let msg_file = temp_dir.path().join(format!("{}.json", msg_id));
@@ -539,14 +611,21 @@ mod tests {
             "from": "agent_1"
         });
 
-        fs::write(&msg_file, serde_json::to_string(&msg_data).unwrap()).await.unwrap();
+        fs::write(&msg_file, serde_json::to_string(&msg_data).unwrap())
+            .await
+            .unwrap();
 
         // Create processed.json containing the message ID
         let processed_file = temp_dir.path().join("processed.json");
         let processed_data = json!({
             "ids": [msg_id]
         });
-        fs::write(&processed_file, serde_json::to_string(&processed_data).unwrap()).await.unwrap();
+        fs::write(
+            &processed_file,
+            serde_json::to_string(&processed_data).unwrap(),
+        )
+        .await
+        .unwrap();
 
         let count = reconciler.reconcile().await.unwrap();
         assert_eq!(count, 0);
@@ -557,12 +636,15 @@ mod tests {
     async fn test_reconcile_concurrent_lock() {
         let temp_dir = TempDir::new().unwrap();
         let db = init_test_db(":memory:");
-        let reconciler1 = StateReconciler::new(Some(temp_dir.path().to_path_buf()), Some(db.clone()), None);
+        let reconciler1 =
+            StateReconciler::new(Some(temp_dir.path().to_path_buf()), Some(db.clone()), None);
         let reconciler2 = StateReconciler::new(Some(temp_dir.path().to_path_buf()), Some(db), None);
 
         // Manually write lock with a running pid (our own pid is always running!)
         let lock_path = temp_dir.path().join("reconcile.lock");
-        fs::write(&lock_path, std::process::id().to_string()).await.unwrap();
+        fs::write(&lock_path, std::process::id().to_string())
+            .await
+            .unwrap();
 
         let count = reconciler2.reconcile().await.unwrap();
         // Should bypass because of concurrent run lock

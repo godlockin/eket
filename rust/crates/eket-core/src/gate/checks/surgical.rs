@@ -96,13 +96,16 @@ impl SurgicalChangesCheck {
             if line.starts_with("diff --git") || line.starts_with("+++ ") {
                 // Finalize previous file
                 if let Some(ref file) = current_file {
-                    if is_style_only && (file_additions > 0 || file_deletions > 0) && config.warn_style_only
-                        && !is_in_scope(file, task_scope) {
-                            unrelated_changes.push(UnrelatedChange {
-                                file: file.clone(),
-                                reason: "style-only change".to_string(),
-                            });
-                        }
+                    if is_style_only
+                        && (file_additions > 0 || file_deletions > 0)
+                        && config.warn_style_only
+                        && !is_in_scope(file, task_scope)
+                    {
+                        unrelated_changes.push(UnrelatedChange {
+                            file: file.clone(),
+                            reason: "style-only change".to_string(),
+                        });
+                    }
                 }
 
                 // Start new file
@@ -134,13 +137,16 @@ impl SurgicalChangesCheck {
 
         // Finalize last file
         if let Some(ref file) = current_file {
-            if is_style_only && (file_additions > 0 || file_deletions > 0) && config.warn_style_only
-                && !is_in_scope(file, task_scope) {
-                    unrelated_changes.push(UnrelatedChange {
-                        file: file.clone(),
-                        reason: "style-only change".to_string(),
-                    });
-                }
+            if is_style_only
+                && (file_additions > 0 || file_deletions > 0)
+                && config.warn_style_only
+                && !is_in_scope(file, task_scope)
+            {
+                unrelated_changes.push(UnrelatedChange {
+                    file: file.clone(),
+                    reason: "style-only change".to_string(),
+                });
+            }
         }
 
         // Determine severity
@@ -200,14 +206,22 @@ impl SurgicalChangesCheck {
 
         output.push_str(&format!("🔬 Surgical Changes Check {}\n", severity_icon));
 
-        let files_status = if report.files_changed <= config.max_files { "✓" } else { "⚠" };
+        let files_status = if report.files_changed <= config.max_files {
+            "✓"
+        } else {
+            "⚠"
+        };
         output.push_str(&format!(
             "├── Files: {} (≤{} {})\n",
             report.files_changed, config.max_files, files_status
         ));
 
         let total_lines = report.lines_added + report.lines_removed;
-        let lines_status = if total_lines <= config.max_lines { "✓" } else { "⚠" };
+        let lines_status = if total_lines <= config.max_lines {
+            "✓"
+        } else {
+            "⚠"
+        };
         output.push_str(&format!(
             "├── Lines: +{} / -{} (≤{} {})\n",
             report.lines_added, report.lines_removed, config.max_lines, lines_status
@@ -256,7 +270,11 @@ fn is_whitespace_only_change(content: &str) -> bool {
         return true;
     }
     // Comment-only (common patterns)
-    if trimmed.starts_with("//") || trimmed.starts_with('#') || trimmed.starts_with("/*") || trimmed.starts_with('*') {
+    if trimmed.starts_with("//")
+        || trimmed.starts_with('#')
+        || trimmed.starts_with("/*")
+        || trimmed.starts_with('*')
+    {
         return true;
     }
     false
@@ -277,7 +295,8 @@ mod tests {
 
     #[test]
     fn test_empty_diff() {
-        let report = SurgicalChangesCheck::analyze("", &TaskScope::default(), &SurgicalConfig::default());
+        let report =
+            SurgicalChangesCheck::analyze("", &TaskScope::default(), &SurgicalConfig::default());
         assert_eq!(report.files_changed, 0);
         assert_eq!(report.severity, Severity::Info);
     }
@@ -292,7 +311,8 @@ mod tests {
      println!("Hello");
  }
 "#;
-        let report = SurgicalChangesCheck::analyze(diff, &TaskScope::default(), &SurgicalConfig::default());
+        let report =
+            SurgicalChangesCheck::analyze(diff, &TaskScope::default(), &SurgicalConfig::default());
         assert_eq!(report.files_changed, 1);
         assert_eq!(report.lines_added, 1);
         assert_eq!(report.severity, Severity::Info);

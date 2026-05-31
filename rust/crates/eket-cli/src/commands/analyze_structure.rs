@@ -6,7 +6,7 @@ use anyhow::Result;
 use clap::Args;
 use std::path::PathBuf;
 
-use eket_core::analyzer::{analyze_file, SupportedLanguage, StructuralAnalysis};
+use eket_core::analyzer::{analyze_file, StructuralAnalysis, SupportedLanguage};
 
 #[derive(Args)]
 pub struct AnalyzeStructureArgs {
@@ -66,7 +66,10 @@ fn analyze_single_file(path: &PathBuf, lang_override: Option<&str>) -> Result<St
     Ok(analyze_file(path))
 }
 
-fn analyze_directory(dir: &PathBuf, lang_override: Option<&str>) -> Result<Vec<StructuralAnalysis>> {
+fn analyze_directory(
+    dir: &PathBuf,
+    lang_override: Option<&str>,
+) -> Result<Vec<StructuralAnalysis>> {
     let mut results = vec![];
 
     let supported_extensions = ["ts", "tsx", "js", "jsx", "mjs", "cjs", "py", "rs", "go"];
@@ -77,7 +80,10 @@ fn analyze_directory(dir: &PathBuf, lang_override: Option<&str>) -> Result<Vec<S
         .filter_entry(|e| {
             // Skip hidden dirs and common ignore patterns
             let name = e.file_name().to_string_lossy();
-            !name.starts_with('.') && name != "node_modules" && name != "target" && name != "__pycache__"
+            !name.starts_with('.')
+                && name != "node_modules"
+                && name != "target"
+                && name != "__pycache__"
         })
     {
         let entry = match entry {
@@ -90,7 +96,9 @@ fn analyze_directory(dir: &PathBuf, lang_override: Option<&str>) -> Result<Vec<S
         }
 
         // Check extension
-        let ext = entry.path().extension()
+        let ext = entry
+            .path()
+            .extension()
             .and_then(|e| e.to_str())
             .unwrap_or("");
 
@@ -113,7 +121,10 @@ fn parse_language(s: &str) -> Result<SupportedLanguage> {
         "python" | "py" => Ok(SupportedLanguage::Python),
         "rust" | "rs" => Ok(SupportedLanguage::Rust),
         "go" => Ok(SupportedLanguage::Go),
-        _ => anyhow::bail!("Unsupported language: {}. Supported: typescript, javascript, python, rust, go", s),
+        _ => anyhow::bail!(
+            "Unsupported language: {}. Supported: typescript, javascript, python, rust, go",
+            s
+        ),
     }
 }
 
@@ -137,9 +148,18 @@ mod tests {
 
     #[test]
     fn test_parse_language() {
-        assert!(matches!(parse_language("typescript"), Ok(SupportedLanguage::TypeScript)));
-        assert!(matches!(parse_language("ts"), Ok(SupportedLanguage::TypeScript)));
-        assert!(matches!(parse_language("Python"), Ok(SupportedLanguage::Python)));
+        assert!(matches!(
+            parse_language("typescript"),
+            Ok(SupportedLanguage::TypeScript)
+        ));
+        assert!(matches!(
+            parse_language("ts"),
+            Ok(SupportedLanguage::TypeScript)
+        ));
+        assert!(matches!(
+            parse_language("Python"),
+            Ok(SupportedLanguage::Python)
+        ));
         assert!(parse_language("java").is_err());
     }
 }

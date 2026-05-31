@@ -33,11 +33,17 @@ pub struct HookResponse {
 
 impl HookResponse {
     pub fn allow() -> Self {
-        Self { allow: true, reason: None }
+        Self {
+            allow: true,
+            reason: None,
+        }
     }
 
     pub fn deny(reason: impl Into<String>) -> Self {
-        Self { allow: false, reason: Some(reason.into()) }
+        Self {
+            allow: false,
+            reason: Some(reason.into()),
+        }
     }
 }
 
@@ -58,11 +64,21 @@ pub struct DefaultHookHandler;
 
 #[async_trait::async_trait]
 impl HookHandler for DefaultHookHandler {
-    async fn on_pre_tool_use(&self, _req: &HookRequest) -> HookResponse { HookResponse::allow() }
-    async fn on_post_tool_use(&self, _req: &HookRequest) -> HookResponse { HookResponse::allow() }
-    async fn on_teammate_idle(&self, _req: &HookRequest) -> HookResponse { HookResponse::allow() }
-    async fn on_task_completed(&self, _req: &HookRequest) -> HookResponse { HookResponse::allow() }
-    async fn on_permission_request(&self, _req: &HookRequest) -> HookResponse { HookResponse::allow() }
+    async fn on_pre_tool_use(&self, _req: &HookRequest) -> HookResponse {
+        HookResponse::allow()
+    }
+    async fn on_post_tool_use(&self, _req: &HookRequest) -> HookResponse {
+        HookResponse::allow()
+    }
+    async fn on_teammate_idle(&self, _req: &HookRequest) -> HookResponse {
+        HookResponse::allow()
+    }
+    async fn on_task_completed(&self, _req: &HookRequest) -> HookResponse {
+        HookResponse::allow()
+    }
+    async fn on_permission_request(&self, _req: &HookRequest) -> HookResponse {
+        HookResponse::allow()
+    }
 }
 
 // ─── HookRegistry ────────────────────────────────────────────────────────────
@@ -109,7 +125,9 @@ impl HookRegistry {
 
 impl Default for HookRegistry {
     fn default() -> Self {
-        Self { handler: std::sync::RwLock::new(None) }
+        Self {
+            handler: std::sync::RwLock::new(None),
+        }
     }
 }
 
@@ -127,9 +145,10 @@ pub async fn pre_tool_use(
     Json(req): Json<HookRequest>,
 ) -> Result<Json<HookResponse>, (StatusCode, Json<Value>)> {
     let req2 = req.clone();
-    let resp = state.hook_registry.dispatch(|h| async move {
-        h.on_pre_tool_use(&req2).await
-    }).await;
+    let resp = state
+        .hook_registry
+        .dispatch(|h| async move { h.on_pre_tool_use(&req2).await })
+        .await;
     Ok(Json(resp))
 }
 
@@ -138,9 +157,10 @@ pub async fn post_tool_use(
     Json(req): Json<HookRequest>,
 ) -> Result<Json<HookResponse>, (StatusCode, Json<Value>)> {
     let req2 = req.clone();
-    let resp = state.hook_registry.dispatch(|h| async move {
-        h.on_post_tool_use(&req2).await
-    }).await;
+    let resp = state
+        .hook_registry
+        .dispatch(|h| async move { h.on_post_tool_use(&req2).await })
+        .await;
     Ok(Json(resp))
 }
 
@@ -149,9 +169,10 @@ pub async fn teammate_idle(
     Json(req): Json<HookRequest>,
 ) -> Result<Json<HookResponse>, (StatusCode, Json<Value>)> {
     let req2 = req.clone();
-    let resp = state.hook_registry.dispatch(|h| async move {
-        h.on_teammate_idle(&req2).await
-    }).await;
+    let resp = state
+        .hook_registry
+        .dispatch(|h| async move { h.on_teammate_idle(&req2).await })
+        .await;
     Ok(Json(resp))
 }
 
@@ -160,9 +181,10 @@ pub async fn task_completed(
     Json(req): Json<HookRequest>,
 ) -> Result<Json<HookResponse>, (StatusCode, Json<Value>)> {
     let req2 = req.clone();
-    let resp = state.hook_registry.dispatch(|h| async move {
-        h.on_task_completed(&req2).await
-    }).await;
+    let resp = state
+        .hook_registry
+        .dispatch(|h| async move { h.on_task_completed(&req2).await })
+        .await;
     Ok(Json(resp))
 }
 
@@ -171,9 +193,10 @@ pub async fn permission_request(
     Json(req): Json<HookRequest>,
 ) -> Result<Json<HookResponse>, (StatusCode, Json<Value>)> {
     let req2 = req.clone();
-    let resp = state.hook_registry.dispatch(|h| async move {
-        h.on_permission_request(&req2).await
-    }).await;
+    let resp = state
+        .hook_registry
+        .dispatch(|h| async move { h.on_permission_request(&req2).await })
+        .await;
     Ok(Json(resp))
 }
 
@@ -182,16 +205,16 @@ pub async fn permission_request(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{AppState, EventBus};
     use axum::body::Body;
     use axum::http::{Method, Request};
     use axum::routing::post;
     use axum::Router;
+    use eket_core::db::{create_pool, SqliteClient};
     use http_body_util::BodyExt;
     use std::path::PathBuf;
     use tempfile::TempDir;
     use tower::util::ServiceExt;
-    use eket_core::db::{create_pool, SqliteClient};
-    use crate::{AppState, EventBus};
 
     fn make_state(tmp: &TempDir) -> AppState {
         let db_path = tmp.path().join("test.db");
@@ -275,10 +298,18 @@ mod tests {
             async fn on_pre_tool_use(&self, _r: &HookRequest) -> HookResponse {
                 HookResponse::deny("blocked")
             }
-            async fn on_post_tool_use(&self, _r: &HookRequest) -> HookResponse { HookResponse::allow() }
-            async fn on_teammate_idle(&self, _r: &HookRequest) -> HookResponse { HookResponse::allow() }
-            async fn on_task_completed(&self, _r: &HookRequest) -> HookResponse { HookResponse::allow() }
-            async fn on_permission_request(&self, _r: &HookRequest) -> HookResponse { HookResponse::allow() }
+            async fn on_post_tool_use(&self, _r: &HookRequest) -> HookResponse {
+                HookResponse::allow()
+            }
+            async fn on_teammate_idle(&self, _r: &HookRequest) -> HookResponse {
+                HookResponse::allow()
+            }
+            async fn on_task_completed(&self, _r: &HookRequest) -> HookResponse {
+                HookResponse::allow()
+            }
+            async fn on_permission_request(&self, _r: &HookRequest) -> HookResponse {
+                HookResponse::allow()
+            }
         }
 
         let tmp = TempDir::new().unwrap();

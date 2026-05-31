@@ -100,14 +100,24 @@ fn run_migrations(pool: &DbPool) -> EketResult<()> {
     // Backfill trust-score columns for pre-existing slaver_instances tables
     let existing_cols: Vec<String> = {
         let mut stmt = conn.prepare("PRAGMA table_info(slaver_instances)")?;
-        let cols = stmt.query_map([], |row| row.get::<_, String>(1))?
+        let cols = stmt
+            .query_map([], |row| row.get::<_, String>(1))?
             .collect::<Result<Vec<_>, _>>()?;
         cols
     };
     for (col, ddl) in &[
-        ("completed_count",  "ALTER TABLE slaver_instances ADD COLUMN completed_count  INTEGER NOT NULL DEFAULT 0"),
-        ("failed_count",     "ALTER TABLE slaver_instances ADD COLUMN failed_count     INTEGER NOT NULL DEFAULT 0"),
-        ("total_latency_ms", "ALTER TABLE slaver_instances ADD COLUMN total_latency_ms INTEGER NOT NULL DEFAULT 0"),
+        (
+            "completed_count",
+            "ALTER TABLE slaver_instances ADD COLUMN completed_count  INTEGER NOT NULL DEFAULT 0",
+        ),
+        (
+            "failed_count",
+            "ALTER TABLE slaver_instances ADD COLUMN failed_count     INTEGER NOT NULL DEFAULT 0",
+        ),
+        (
+            "total_latency_ms",
+            "ALTER TABLE slaver_instances ADD COLUMN total_latency_ms INTEGER NOT NULL DEFAULT 0",
+        ),
     ] {
         if !existing_cols.iter().any(|c| c == col) {
             conn.execute_batch(ddl)?;
@@ -118,18 +128,40 @@ fn run_migrations(pool: &DbPool) -> EketResult<()> {
     // TASK-255 + TASK-256: Backfill tickets table columns (idempotent)
     let ticket_cols: Vec<String> = {
         let mut stmt = conn.prepare("PRAGMA table_info(tickets)")?;
-        let cols = stmt.query_map([], |row| row.get::<_, String>(1))?
+        let cols = stmt
+            .query_map([], |row| row.get::<_, String>(1))?
             .collect::<Result<Vec<_>, _>>()?;
         cols
     };
     for (col, ddl) in &[
-        ("source",       "ALTER TABLE tickets ADD COLUMN source TEXT NOT NULL DEFAULT 'cli'"),
-        ("claimed_at",   "ALTER TABLE tickets ADD COLUMN claimed_at   DATETIME"),
-        ("blocked_at",   "ALTER TABLE tickets ADD COLUMN blocked_at   DATETIME"),
-        ("unblocked_at", "ALTER TABLE tickets ADD COLUMN unblocked_at DATETIME"),
-        ("completed_at", "ALTER TABLE tickets ADD COLUMN completed_at DATETIME"),
-        ("type",         "ALTER TABLE tickets ADD COLUMN type TEXT NOT NULL DEFAULT 'feature'"),
-        ("updated_at",   "ALTER TABLE tickets ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now'))"),
+        (
+            "source",
+            "ALTER TABLE tickets ADD COLUMN source TEXT NOT NULL DEFAULT 'cli'",
+        ),
+        (
+            "claimed_at",
+            "ALTER TABLE tickets ADD COLUMN claimed_at   DATETIME",
+        ),
+        (
+            "blocked_at",
+            "ALTER TABLE tickets ADD COLUMN blocked_at   DATETIME",
+        ),
+        (
+            "unblocked_at",
+            "ALTER TABLE tickets ADD COLUMN unblocked_at DATETIME",
+        ),
+        (
+            "completed_at",
+            "ALTER TABLE tickets ADD COLUMN completed_at DATETIME",
+        ),
+        (
+            "type",
+            "ALTER TABLE tickets ADD COLUMN type TEXT NOT NULL DEFAULT 'feature'",
+        ),
+        (
+            "updated_at",
+            "ALTER TABLE tickets ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now'))",
+        ),
     ] {
         if !ticket_cols.iter().any(|c| c == col) {
             conn.execute_batch(ddl)?;
@@ -137,9 +169,7 @@ fn run_migrations(pool: &DbPool) -> EketResult<()> {
         }
     }
     // Source index (idempotent)
-    conn.execute_batch(
-        "CREATE INDEX IF NOT EXISTS idx_tickets_source ON tickets(source);"
-    )?;
+    conn.execute_batch("CREATE INDEX IF NOT EXISTS idx_tickets_source ON tickets(source);")?;
 
     // TASK-278: Migrate legacy priority values (INTEGER or numeric TEXT) to Px format
     conn.execute_batch(
@@ -162,7 +192,7 @@ fn run_migrations(pool: &DbPool) -> EketResult<()> {
                     END
                 ELSE priority
             END
-        WHERE typeof(priority) = 'integer' OR priority GLOB '[0-3]';"
+        WHERE typeof(priority) = 'integer' OR priority GLOB '[0-3]';",
     )?;
     debug!("TASK-278: Migrated priority INTEGER/numeric TEXT → Px format");
 
@@ -180,7 +210,6 @@ impl SqliteClient {
     pub fn new(pool: DbPool) -> Self {
         Self { pool }
     }
-
 
     /// Expose pool for advanced consumers (e.g. registry).
     pub fn pool(&self) -> &DbPool {
@@ -329,36 +358,37 @@ impl SqliteClient {
              FROM tickets WHERE status = ?1 ORDER BY priority ASC, created_at ASC",
         )?;
 
-        let tickets = stmt.query_map(params![status.to_string()], |row| {
-            let deps_str: Option<String> = row.get(6)?;
-            let status_str: String = row.get(2)?;
-            Ok(Ticket {
-                id: row.get(0)?,
-                title: row.get(1)?,
-                status: parse_status(&status_str),
-                priority: row.get(3)?,
-                r#type: row.get(4)?,
-                assignee: row.get(5)?,
-                dependencies: deps_str
-                    .as_deref()
-                    .and_then(|s| serde_json::from_str::<Vec<String>>(s).ok())
-                    .unwrap_or_default(),
-                created_at: row
-                    .get::<_, String>(7)?
-                    .parse()
-                    .unwrap_or_else(|_| chrono::Utc::now()),
-                updated_at: row
-                    .get::<_, String>(8)?
-                    .parse()
-                    .unwrap_or_else(|_| chrono::Utc::now()),
-                source: Default::default(),
-                claimed_at: None,
-                blocked_at: None,
-                unblocked_at: None,
-                completed_at: None,
-            })
-        })?
-        .collect::<Result<Vec<_>, _>>()?;
+        let tickets = stmt
+            .query_map(params![status.to_string()], |row| {
+                let deps_str: Option<String> = row.get(6)?;
+                let status_str: String = row.get(2)?;
+                Ok(Ticket {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    status: parse_status(&status_str),
+                    priority: row.get(3)?,
+                    r#type: row.get(4)?,
+                    assignee: row.get(5)?,
+                    dependencies: deps_str
+                        .as_deref()
+                        .and_then(|s| serde_json::from_str::<Vec<String>>(s).ok())
+                        .unwrap_or_default(),
+                    created_at: row
+                        .get::<_, String>(7)?
+                        .parse()
+                        .unwrap_or_else(|_| chrono::Utc::now()),
+                    updated_at: row
+                        .get::<_, String>(8)?
+                        .parse()
+                        .unwrap_or_else(|_| chrono::Utc::now()),
+                    source: Default::default(),
+                    claimed_at: None,
+                    blocked_at: None,
+                    unblocked_at: None,
+                    completed_at: None,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
 
         Ok(tickets)
     }
@@ -511,7 +541,10 @@ impl SqliteClient {
 
         let mut stmt = conn.prepare(&sql)?;
         let rows = stmt
-            .query_map(rusqlite::params_from_iter(param_values.iter()), map_ticket_row)?
+            .query_map(
+                rusqlite::params_from_iter(param_values.iter()),
+                map_ticket_row,
+            )?
             .collect::<Result<Vec<_>, _>>()?;
         Ok(rows)
     }
@@ -633,10 +666,7 @@ impl SqliteClient {
     /// Delete instance.
     pub fn delete_instance(&self, id: &str) -> EketResult<bool> {
         let conn = self.pool.get()?;
-        let rows = conn.execute(
-            "DELETE FROM slaver_instances WHERE id = ?1",
-            params![id],
-        )?;
+        let rows = conn.execute("DELETE FROM slaver_instances WHERE id = ?1", params![id])?;
         Ok(rows > 0)
     }
 
@@ -711,11 +741,13 @@ impl SqliteClient {
         let conn = self.pool.get()?;
         conn.execute_batch("BEGIN IMMEDIATE")?;
 
-        let existing: i64 = conn.query_row(
-            "SELECT COUNT(*) FROM execution_checkpoints WHERE ticket_id = ?1",
-            params![ticket_id],
-            |r| r.get(0),
-        ).unwrap_or(0);
+        let existing: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM execution_checkpoints WHERE ticket_id = ?1",
+                params![ticket_id],
+                |r| r.get(0),
+            )
+            .unwrap_or(0);
 
         if existing > 0 {
             conn.execute_batch("ROLLBACK")?;
@@ -779,8 +811,8 @@ impl SqliteClient {
                 Ok((
                     row.get::<_, String>(0)?,
                     InstanceScoringStats {
-                        completed_count:  row.get(1)?,
-                        failed_count:     row.get(2)?,
+                        completed_count: row.get(1)?,
+                        failed_count: row.get(2)?,
                         total_latency_ms: row.get(3)?,
                     },
                 ))
@@ -808,7 +840,9 @@ fn map_ticket_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<TicketRow> {
             .get::<_, Option<String>>(7)?
             .and_then(|s| s.parse().ok())
             .unwrap_or(0),
-        source: row.get::<_, Option<String>>(8)?.unwrap_or_else(|| "cli".to_owned()),
+        source: row
+            .get::<_, Option<String>>(8)?
+            .unwrap_or_else(|| "cli".to_owned()),
         claimed_at: row.get(9)?,
         blocked_at: row.get(10)?,
         unblocked_at: row.get(11)?,
@@ -817,8 +851,9 @@ fn map_ticket_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<TicketRow> {
 }
 
 fn map_instance_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<InstanceRow> {
-    let skills_json: String =
-        row.get::<_, Option<String>>(2)?.unwrap_or_else(|| "[]".to_owned());
+    let skills_json: String = row
+        .get::<_, Option<String>>(2)?
+        .unwrap_or_else(|| "[]".to_owned());
     let skills: Vec<String> = serde_json::from_str(&skills_json).unwrap_or_default();
     Ok(InstanceRow {
         id: row.get(0)?,
@@ -830,8 +865,9 @@ fn map_instance_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<InstanceRow> {
 }
 
 fn map_retro_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<RetroRow> {
-    let tags_json: String =
-        row.get::<_, Option<String>>(3)?.unwrap_or_else(|| "[]".to_owned());
+    let tags_json: String = row
+        .get::<_, Option<String>>(3)?
+        .unwrap_or_else(|| "[]".to_owned());
     let tags: Vec<String> = serde_json::from_str(&tags_json).unwrap_or_default();
     Ok(RetroRow {
         id: row.get(0)?,
@@ -910,13 +946,19 @@ mod tests {
         };
         client.save_checkpoint(&cp).unwrap();
         assert!(client.delete_checkpoint("TASK-002", "slaver_2").unwrap());
-        assert!(client.get_checkpoint("TASK-002", "slaver_2").unwrap().is_none());
+        assert!(client
+            .get_checkpoint("TASK-002", "slaver_2")
+            .unwrap()
+            .is_none());
     }
 
     #[test]
     fn get_nonexistent_checkpoint_returns_none() {
         let client = make_client();
-        assert!(client.get_checkpoint("TASK-999", "nobody").unwrap().is_none());
+        assert!(client
+            .get_checkpoint("TASK-999", "nobody")
+            .unwrap()
+            .is_none());
     }
 
     #[test]
@@ -967,13 +1009,19 @@ mod tests {
     fn ticket_list_with_filters() {
         let client = make_client();
         client.create_ticket("T-1", "Alpha", "P1", "bug").unwrap();
-        client.create_ticket("T-2", "Beta", "P2", "feature").unwrap();
-        client.update_ticket_status_str("T-1", "in_progress").unwrap();
+        client
+            .create_ticket("T-2", "Beta", "P2", "feature")
+            .unwrap();
+        client
+            .update_ticket_status_str("T-1", "in_progress")
+            .unwrap();
 
         let all = client.list_tickets(None, None, None).unwrap();
         assert_eq!(all.len(), 2);
 
-        let in_progress = client.list_tickets(Some("in_progress"), None, None).unwrap();
+        let in_progress = client
+            .list_tickets(Some("in_progress"), None, None)
+            .unwrap();
         assert_eq!(in_progress.len(), 1);
         assert_eq!(in_progress[0].id, "T-1");
 
@@ -996,7 +1044,9 @@ mod tests {
     #[test]
     fn ticket_delete() {
         let client = make_client();
-        client.create_ticket("T-4", "Delete me", "P3", "chore").unwrap();
+        client
+            .create_ticket("T-4", "Delete me", "P3", "chore")
+            .unwrap();
         assert!(client.delete_ticket("T-4").unwrap());
         assert!(client.get_ticket_row("T-4").unwrap().is_none());
         assert!(!client.delete_ticket("T-4").unwrap());
@@ -1008,7 +1058,9 @@ mod tests {
     fn instance_upsert_and_get() {
         let client = make_client();
         let skills = vec!["rust".to_owned(), "sql".to_owned()];
-        client.upsert_instance("inst-1", "slaver", &skills, "idle").unwrap();
+        client
+            .upsert_instance("inst-1", "slaver", &skills, "idle")
+            .unwrap();
         let inst = client.get_instance("inst-1").unwrap().unwrap();
         assert_eq!(inst.role, "slaver");
         assert_eq!(inst.skills, skills);
@@ -1018,7 +1070,9 @@ mod tests {
     #[test]
     fn instance_upsert_updates_existing() {
         let client = make_client();
-        client.upsert_instance("inst-2", "slaver", &[], "idle").unwrap();
+        client
+            .upsert_instance("inst-2", "slaver", &[], "idle")
+            .unwrap();
         client
             .upsert_instance("inst-2", "master", &["planning".to_owned()], "busy")
             .unwrap();
@@ -1030,8 +1084,12 @@ mod tests {
     #[test]
     fn instance_list_with_role_filter() {
         let client = make_client();
-        client.upsert_instance("inst-3", "slaver", &[], "idle").unwrap();
-        client.upsert_instance("inst-4", "master", &[], "idle").unwrap();
+        client
+            .upsert_instance("inst-3", "slaver", &[], "idle")
+            .unwrap();
+        client
+            .upsert_instance("inst-4", "master", &[], "idle")
+            .unwrap();
         let slavers = client.list_instances(Some("slaver")).unwrap();
         assert_eq!(slavers.len(), 1);
         assert_eq!(slavers[0].id, "inst-3");
@@ -1042,7 +1100,9 @@ mod tests {
     #[test]
     fn instance_update_status_and_last_seen() {
         let client = make_client();
-        client.upsert_instance("inst-5", "slaver", &[], "idle").unwrap();
+        client
+            .upsert_instance("inst-5", "slaver", &[], "idle")
+            .unwrap();
         assert!(client.update_instance_status("inst-5", "busy").unwrap());
         assert!(client.update_instance_last_seen("inst-5").unwrap());
         let inst = client.get_instance("inst-5").unwrap().unwrap();
@@ -1053,7 +1113,9 @@ mod tests {
     #[test]
     fn instance_delete() {
         let client = make_client();
-        client.upsert_instance("inst-6", "slaver", &[], "idle").unwrap();
+        client
+            .upsert_instance("inst-6", "slaver", &[], "idle")
+            .unwrap();
         assert!(client.delete_instance("inst-6").unwrap());
         assert!(client.get_instance("inst-6").unwrap().is_none());
     }
@@ -1144,8 +1206,9 @@ mod tests {
                             END
                         ELSE priority
                     END
-                WHERE typeof(priority) = 'integer' OR priority GLOB '[0-3]';"
-            ).unwrap();
+                WHERE typeof(priority) = 'integer' OR priority GLOB '[0-3]';",
+            )
+            .unwrap();
         }
 
         // Verify migration
@@ -1161,9 +1224,15 @@ mod tests {
     #[test]
     fn priority_order_by_works_correctly() {
         let client = make_client();
-        client.create_ticket("T-P2", "Priority 2", "P2", "task").unwrap();
-        client.create_ticket("T-P0", "Priority 0", "P0", "bug").unwrap();
-        client.create_ticket("T-P1", "Priority 1", "P1", "feature").unwrap();
+        client
+            .create_ticket("T-P2", "Priority 2", "P2", "task")
+            .unwrap();
+        client
+            .create_ticket("T-P0", "Priority 0", "P0", "bug")
+            .unwrap();
+        client
+            .create_ticket("T-P1", "Priority 1", "P1", "feature")
+            .unwrap();
 
         let all = client.list_tickets(None, None, None).unwrap();
         assert_eq!(all.len(), 3);

@@ -31,7 +31,11 @@ fn git_last_commit(repo_path: &Path) -> Option<String> {
         .output()
         .ok()?;
     let s = String::from_utf8_lossy(&out.stdout).trim().to_string();
-    if s.is_empty() { None } else { Some(s) }
+    if s.is_empty() {
+        None
+    } else {
+        Some(s)
+    }
 }
 
 fn repo_info(path: &Path) -> Value {
@@ -47,13 +51,16 @@ fn count_in_progress_tickets(tickets_dir: &Path) -> usize {
     if !tickets_dir.exists() {
         return 0;
     }
-    let Ok(entries) = std::fs::read_dir(tickets_dir) else { return 0 };
+    let Ok(entries) = std::fs::read_dir(tickets_dir) else {
+        return 0;
+    };
     let mut count = 0;
     for entry in entries.flatten() {
         let path = entry.path();
         if path.extension().and_then(|e| e.to_str()) == Some("md") {
             if let Ok(content) = std::fs::read_to_string(&path) {
-                if content.contains("状态: in_progress") || content.contains("status: in_progress") {
+                if content.contains("状态: in_progress") || content.contains("status: in_progress")
+                {
                     count += 1;
                 }
             }
@@ -68,7 +75,9 @@ fn find_active_slavers(heartbeat_dir: &Path) -> Vec<String> {
     }
     let now = SystemTime::now();
     let threshold = Duration::from_secs(300); // 5 min
-    let Ok(entries) = std::fs::read_dir(heartbeat_dir) else { return vec![] };
+    let Ok(entries) = std::fs::read_dir(heartbeat_dir) else {
+        return vec![];
+    };
     let mut active = Vec::new();
     for entry in entries.flatten() {
         let path = entry.path();
@@ -92,23 +101,35 @@ fn load_repo_paths(eket_root: &Path) -> (PathBuf, PathBuf, PathBuf) {
     let config_path = eket_root.join("config/config.yml");
 
     if let Ok(content) = std::fs::read_to_string(&config_path) {
-        let confluence = extract_yaml_path(&content, "confluence").map(PathBuf::from)
+        let confluence = extract_yaml_path(&content, "confluence")
+            .map(PathBuf::from)
             .unwrap_or_else(|| parent.join("confluence"));
-        let jira = extract_yaml_path(&content, "jira").map(PathBuf::from)
+        let jira = extract_yaml_path(&content, "jira")
+            .map(PathBuf::from)
             .unwrap_or_else(|| parent.join("jira"));
-        let code = extract_yaml_path(&content, "code").map(PathBuf::from)
+        let code = extract_yaml_path(&content, "code")
+            .map(PathBuf::from)
             .unwrap_or_else(|| parent.join("code_repo"));
         return (confluence, jira, code);
     }
 
-    (parent.join("confluence"), parent.join("jira"), parent.join("code_repo"))
+    (
+        parent.join("confluence"),
+        parent.join("jira"),
+        parent.join("code_repo"),
+    )
 }
 
 fn extract_yaml_path(content: &str, key: &str) -> Option<String> {
     for line in content.lines() {
         let trimmed = line.trim();
         if trimmed.starts_with(&format!("{key}:")) || trimmed.starts_with(&format!("{key}_path:")) {
-            let val = trimmed.split_once(':')?.1.trim().trim_matches('"').trim_matches('\'');
+            let val = trimmed
+                .split_once(':')?
+                .1
+                .trim()
+                .trim_matches('"')
+                .trim_matches('\'');
             if !val.is_empty() {
                 return Some(val.to_string());
             }

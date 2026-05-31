@@ -221,12 +221,7 @@ mod tests {
 
     #[test]
     fn test_outcome_passed() {
-        let outcome = TaskOutcome::passed(
-            "TEST-001",
-            vec!["src/main.rs".to_string()],
-            1000,
-            5.5,
-        );
+        let outcome = TaskOutcome::passed("TEST-001", vec!["src/main.rs".to_string()], 1000, 5.5);
 
         assert!(outcome.passed);
         assert_eq!(outcome.tokens_used, 1000);

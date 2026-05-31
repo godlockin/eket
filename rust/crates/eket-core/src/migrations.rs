@@ -1,4 +1,4 @@
-use rusqlite::{Connection, Result, params};
+use rusqlite::{params, Connection, Result};
 use tracing::info;
 
 pub struct MigrationRunner<'a> {
@@ -15,7 +15,10 @@ impl<'a> MigrationRunner<'a> {
         let current = self.current_version()?;
         for migration in MIGRATIONS.iter().filter(|m| m.version > current) {
             self.apply(migration)?;
-            info!("Applied migration v{}: {}", migration.version, migration.name);
+            info!(
+                "Applied migration v{}: {}",
+                migration.version, migration.name
+            );
         }
         Ok(())
     }
@@ -42,9 +45,9 @@ impl<'a> MigrationRunner<'a> {
 
     /// Returns list of (version, name) for all applied migrations
     pub fn status(&self) -> Result<Vec<(i64, String, String)>> {
-        let mut stmt = self.conn.prepare(
-            "SELECT version, name, applied_at FROM schema_version ORDER BY version",
-        )?;
+        let mut stmt = self
+            .conn
+            .prepare("SELECT version, name, applied_at FROM schema_version ORDER BY version")?;
         let rows = stmt.query_map([], |row| {
             Ok((
                 row.get::<_, i64>(0)?,

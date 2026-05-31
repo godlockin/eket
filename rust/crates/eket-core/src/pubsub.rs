@@ -77,7 +77,11 @@ impl RedisPubSub {
             loop {
                 match msg_rx.recv().await {
                     Ok(frame) => {
-                        let payload = frame.value.as_str().map(|s| s.to_string()).unwrap_or_default();
+                        let payload = frame
+                            .value
+                            .as_str()
+                            .map(|s| s.to_string())
+                            .unwrap_or_default();
                         if tx.send(payload).await.is_err() {
                             // Receiver dropped — stop loop
                             break;
@@ -144,7 +148,9 @@ mod tests {
         assert!(rx.is_ok(), "subscribe must not error");
 
         // publish should succeed silently
-        let result = ps.publish(CHANNEL_MASTER_CHANGED, r#"{"event":"elected"}"#).await;
+        let result = ps
+            .publish(CHANNEL_MASTER_CHANGED, r#"{"event":"elected"}"#)
+            .await;
         assert!(result.is_ok(), "publish must not error");
 
         // unsubscribe must not error

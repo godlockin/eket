@@ -168,7 +168,6 @@ impl std::fmt::Display for EdgeType {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
