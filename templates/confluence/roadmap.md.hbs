@@ -1,0 +1,20 @@
+# Roadmap
+
+## Vision
+{{vision}}
+
+## Milestones
+{{#each milestones}}
+### {{name}}
+- **Target**: {{target_date}}
+- **Status**: {{status}}
+- **Epics**: {{#each epics}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+{{/each}}
+
+## Dependencies
+{{#each dependencies}}
+- {{from}} → {{to}}: {{reason}}
+{{/each}}
+
+---
+*Generated at {{timestamp}}*

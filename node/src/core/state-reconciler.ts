@@ -152,6 +152,13 @@ export class StateReconciler extends EventEmitter {
   }
 
   /**
+   * 获取当前连接级别
+   */
+  getConnectionLevel(): ConnectionLevel {
+    return this.currentLevel;
+  }
+
+  /**
    * 检查是否正在重放
    */
   isInProgress(): boolean {
