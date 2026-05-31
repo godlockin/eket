@@ -91,12 +91,12 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
     while let Some(m) = matches.next() {
         let capture_names: Vec<&str> = m.captures.iter()
-            .map(|c| query.capture_names()[c.index as usize].as_ref())
+            .map(|c| query.capture_names()[c.index as usize])
             .collect();
 
         // Function declarations
         if capture_names.contains(&"fn.def") {
-            if let Some(info) = extract_function(&m, &query, content) {
+            if let Some(info) = extract_function(m, &query, content) {
                 let key = (info.name.clone(), info.start_line);
                 if seen_functions.insert(key) {
                     analysis.functions.push(info);
@@ -106,14 +106,14 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
         // Method declarations
         if capture_names.contains(&"method.def") {
-            if let Some((receiver_type, method_name)) = extract_method_info(&m, &query, content) {
+            if let Some((receiver_type, method_name)) = extract_method_info(m, &query, content) {
                 type_methods.entry(receiver_type).or_default().push(method_name);
             }
         }
 
         // Struct definitions
         if capture_names.contains(&"struct.def") {
-            if let Some(info) = extract_type_def(&m, &query, content, "struct.name", "struct") {
+            if let Some(info) = extract_type_def(m, &query, content, "struct.name", "struct") {
                 let key = (info.name.clone(), info.start_line);
                 if seen_types.insert(key) {
                     analysis.classes.push(info);
@@ -123,7 +123,7 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
         // Interface definitions
         if capture_names.contains(&"interface.def") {
-            if let Some(info) = extract_type_def(&m, &query, content, "interface.name", "interface") {
+            if let Some(info) = extract_type_def(m, &query, content, "interface.name", "interface") {
                 let key = (info.name.clone(), info.start_line);
                 if seen_types.insert(key) {
                     analysis.classes.push(info);
@@ -133,7 +133,7 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
         // Import declarations
         if capture_names.contains(&"import.def") {
-            if let Some(info) = extract_import(&m, &query, content) {
+            if let Some(info) = extract_import(m, &query, content) {
                 analysis.imports.push(info);
             }
         }
@@ -268,7 +268,7 @@ fn extract_import(
     let source = path.trim_matches('"').to_string();
 
     // Extract package name from path (last component)
-    let specifiers = source.split('/').last()
+    let specifiers = source.split('/').next_back()
         .map(|s| vec![s.to_string()])
         .unwrap_or_default();
 

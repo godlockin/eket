@@ -1,8 +1,6 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Arc;
-use std::time::SystemTime;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use tokio::fs;
 use tracing::{debug, error, info, warn};
 use eket_core::db::SqliteClient;
@@ -147,8 +145,10 @@ impl StateReconciler {
                 }
             };
 
+            #[allow(unused_assignments)]
             let mut id = String::new();
             let mut timestamp = chrono::Utc::now().timestamp_millis();
+            #[allow(unused_assignments)]
             let mut channel = String::from("default");
             let mut data = parsed.clone();
             let file_type = if is_msg { "msg" } else { "json" };
@@ -306,7 +306,7 @@ impl StateReconciler {
             // but we can check if the subscriber client is actually available to publish.
             // If Redis is active, publish and return true
             let msg_str = serde_json::to_string(&msg.data).unwrap_or_default();
-            if let Ok(_) = pubsub.publish(&msg.channel, &msg_str).await {
+            if pubsub.publish(&msg.channel, &msg_str).await.is_ok() {
                 // Only return success if published successfully to actual MQ (or we also update SQLite)
                 // Let's write to SQLite message_history too for complete synchronization.
             }
@@ -339,11 +339,7 @@ impl StateReconciler {
                         .and_then(|v| {
                             if let Some(p_str) = v.as_str() {
                                 Some(p_str.to_string())
-                            } else if let Some(p_int) = v.as_i64() {
-                                Some(p_int.to_string())
-                            } else {
-                                None
-                            }
+                            } else { v.as_i64().map(|p_int| p_int.to_string()) }
                         })
                         .unwrap_or_else(|| "P2".to_string());
                     let assignee = msg.data.get("assignee").and_then(|v| v.as_str());

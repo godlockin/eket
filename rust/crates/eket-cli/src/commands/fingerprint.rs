@@ -196,10 +196,7 @@ pub async fn run_diff(args: FingerprintDiffArgs) -> Result<()> {
         let path_str = path.to_string_lossy().to_string();
 
         // Compute current fingerprint
-        let new_fp = match compute_fingerprint(path, None) {
-            Ok(fp) => Some(fp),
-            Err(_) => None,
-        };
+        let new_fp = compute_fingerprint(path, None).ok();
 
         let old_fp = baseline_map.get(path_str.as_str()).copied();
         let change_type = classify_change(old_fp, new_fp.as_ref());
@@ -219,7 +216,7 @@ pub async fn run_diff(args: FingerprintDiffArgs) -> Result<()> {
     }
 
     // Check for deleted files
-    for (path, _) in &baseline_map {
+    for path in baseline_map.keys() {
         let target_path = args.target.join(path);
         if !target_path.exists() {
             summary.total += 1;

@@ -96,14 +96,13 @@ impl SurgicalChangesCheck {
             if line.starts_with("diff --git") || line.starts_with("+++ ") {
                 // Finalize previous file
                 if let Some(ref file) = current_file {
-                    if is_style_only && (file_additions > 0 || file_deletions > 0) && config.warn_style_only {
-                        if !is_in_scope(file, task_scope) {
+                    if is_style_only && (file_additions > 0 || file_deletions > 0) && config.warn_style_only
+                        && !is_in_scope(file, task_scope) {
                             unrelated_changes.push(UnrelatedChange {
                                 file: file.clone(),
                                 reason: "style-only change".to_string(),
                             });
                         }
-                    }
                 }
 
                 // Start new file
@@ -135,14 +134,13 @@ impl SurgicalChangesCheck {
 
         // Finalize last file
         if let Some(ref file) = current_file {
-            if is_style_only && (file_additions > 0 || file_deletions > 0) && config.warn_style_only {
-                if !is_in_scope(file, task_scope) {
+            if is_style_only && (file_additions > 0 || file_deletions > 0) && config.warn_style_only
+                && !is_in_scope(file, task_scope) {
                     unrelated_changes.push(UnrelatedChange {
                         file: file.clone(),
                         reason: "style-only change".to_string(),
                     });
                 }
-            }
         }
 
         // Determine severity
@@ -265,6 +263,7 @@ fn is_whitespace_only_change(content: &str) -> bool {
 }
 
 /// Check if a pair of lines represents only whitespace difference
+#[allow(dead_code)]
 fn is_whitespace_diff(old: &str, new: &str) -> bool {
     // Compare content after normalizing whitespace
     let old_normalized: String = old.split_whitespace().collect();
