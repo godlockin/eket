@@ -40,18 +40,15 @@ pub enum SymbolKind {
 /// 依赖边类型
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[derive(Default)]
 pub enum EdgeType {
+    #[default]
     Import,    // A imports B
     Extend,    // A extends B (class inheritance)
     Implement, // A implements B (interface)
     Use,       // A uses B (generic reference)
 }
 
-impl Default for EdgeType {
-    fn default() -> Self {
-        Self::Import
-    }
-}
 
 /// 跨批次邻居信息
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -164,9 +161,8 @@ fn guess_symbol_kind(name: &str) -> SymbolKind {
         } else {
             SymbolKind::Struct
         }
-    } else if name.starts_with("use_") || name.ends_with("_hook") {
-        SymbolKind::Function
     } else {
+        // Both use_* hooks and other functions are Function kind
         SymbolKind::Function
     }
 }

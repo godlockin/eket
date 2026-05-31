@@ -3,7 +3,6 @@
 
 use anyhow::{Context, Result};
 use clap::Args;
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 use eket_core::batch::{compute_batches, BatchConfig, BatchOutput, FileEntry};
@@ -82,7 +81,7 @@ pub async fn run_compute(args: BatchComputeArgs) -> Result<()> {
 }
 
 /// 扫描目录获取文件列表（简化版，实际应集成结构分析）
-fn scan_directory(path: &PathBuf) -> Result<Vec<FileEntry>> {
+fn scan_directory(path: &std::path::Path) -> Result<Vec<FileEntry>> {
     let mut files = Vec::new();
 
     // 支持的代码文件扩展名
