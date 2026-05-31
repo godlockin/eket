@@ -12,9 +12,11 @@ use crate::file::FileCategory;
 /// Node types for knowledge graph
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum NodeType {
     // === Code nodes ===
     /// Generic file node
+    #[default]
     File,
     /// Function/method definition
     Function,
@@ -54,11 +56,6 @@ pub enum NodeType {
     Meta,
 }
 
-impl Default for NodeType {
-    fn default() -> Self {
-        Self::File
-    }
-}
 
 /// Regex for detecting SQL CREATE TABLE statement (not in comments)
 fn create_table_regex() -> &'static Regex {
