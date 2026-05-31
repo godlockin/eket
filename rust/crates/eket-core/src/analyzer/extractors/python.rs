@@ -76,12 +76,12 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
     while let Some(m) = matches.next() {
         let capture_names: Vec<&str> = m.captures.iter()
-            .map(|c| query.capture_names()[c.index as usize].as_ref())
+            .map(|c| query.capture_names()[c.index as usize])
             .collect();
 
         // Function definitions (top-level only, not methods)
         if capture_names.contains(&"fn.def") && !capture_names.contains(&"method.name") {
-            if let Some(info) = extract_function(&m, &query, content) {
+            if let Some(info) = extract_function(m, &query, content) {
                 let key = (info.name.clone(), info.start_line);
                 if seen_functions.insert(key) {
                     analysis.functions.push(info);
@@ -91,7 +91,7 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
         // Class definitions
         if capture_names.contains(&"class.def") {
-            if let Some(info) = extract_class(&m, &query, content) {
+            if let Some(info) = extract_class(m, &query, content) {
                 let key = (info.name.clone(), info.start_line);
                 if seen_classes.insert(key) {
                     analysis.classes.push(info);
@@ -101,16 +101,16 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
         // Import statements
         if capture_names.contains(&"import.def") {
-            if let Some(info) = extract_import(&m, &query, content) {
+            if let Some(info) = extract_import(m, &query, content) {
                 analysis.imports.push(info);
             }
         }
 
         // Method names for class enrichment
         if capture_names.contains(&"method.name") {
-            if let Some(method_name) = get_capture_text(&m, &query, "method.name", content) {
+            if let Some(method_name) = get_capture_text(m, &query, "method.name", content) {
                 // Find parent class
-                if let Some(class_name) = get_capture_text(&m, &query, "class.name", content) {
+                if let Some(class_name) = get_capture_text(m, &query, "class.name", content) {
                     class_methods.entry(class_name).or_default().push(method_name);
                 }
             }

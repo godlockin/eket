@@ -361,9 +361,9 @@ fn extract_py_node(node: &tree_sitter::Node, content: &str, info: &mut Structura
             let import_text = &content[node.byte_range()];
             info.imports.push(import_text.to_string());
         }
-        "assignment" => {
+        "assignment"
             // Top-level assignments as constants
-            if node.parent().map_or(false, |p| p.kind() == "module") {
+            if node.parent().is_some_and(|p| p.kind() == "module") => {
                 if let Some(left) = node.child_by_field_name("left") {
                     if left.kind() == "identifier" {
                         let name = &content[left.byte_range()];
@@ -371,7 +371,6 @@ fn extract_py_node(node: &tree_sitter::Node, content: &str, info: &mut Structura
                     }
                 }
             }
-        }
         _ => {}
     }
 

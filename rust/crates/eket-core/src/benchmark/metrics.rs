@@ -51,6 +51,7 @@ pub struct MetricsCollector {
 
 /// Single task metric
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct TaskMetric {
     task_id: String,
     task_type: String,
