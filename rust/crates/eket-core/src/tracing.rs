@@ -46,7 +46,9 @@ pub struct NoOpSpan;
 
 impl Span for NoOpSpan {
     #[inline(always)]
-    fn span_id(&self) -> &str { "" }
+    fn span_id(&self) -> &str {
+        ""
+    }
     #[inline(always)]
     fn start(&self) {}
     #[inline(always)]
@@ -54,7 +56,9 @@ impl Span for NoOpSpan {
     #[inline(always)]
     fn set_attribute(&self, _key: &str, _value: &str) {}
     #[inline(always)]
-    fn child(&self, _name: &str) -> Box<dyn Span> { Box::new(NoOpSpan) }
+    fn child(&self, _name: &str) -> Box<dyn Span> {
+        Box::new(NoOpSpan)
+    }
 }
 
 // ─── Span record (for JSON export) ───────────────────────────────────────────
@@ -65,7 +69,7 @@ pub struct SpanRecord {
     pub parent_id: Option<String>,
     pub name: String,
     pub level: SpanLevel,
-    pub start_ts: u64,         // unix ms
+    pub start_ts: u64, // unix ms
     pub end_ts: Option<u64>,
     pub duration_ms: Option<u64>,
     pub attributes: HashMap<String, String>,
@@ -159,7 +163,12 @@ impl Span for TracingSpan {
             let rec = self.record.lock().expect("lock poisoned");
             rec.level.child().unwrap_or(SpanLevel::ToolCall)
         };
-        Box::new(TracingSpan::new(name, level, Some(parent_id), Arc::clone(&self.exporter)))
+        Box::new(TracingSpan::new(
+            name,
+            level,
+            Some(parent_id),
+            Arc::clone(&self.exporter),
+        ))
     }
 }
 
@@ -328,9 +337,9 @@ mod tests {
 
         let step = task.child("step-1");
         step.start();
-        step.finish();  // export #1
+        step.finish(); // export #1
 
-        task.finish();  // export #2
+        task.finish(); // export #2
         workflow.finish(); // export #3
 
         assert_eq!(counter.load(Ordering::SeqCst), 3);
@@ -355,7 +364,10 @@ mod tests {
         let content = std::fs::read_to_string(files[0].path()).unwrap();
         let record: SpanRecord = serde_json::from_str(&content).unwrap();
         assert_eq!(record.level, SpanLevel::Workflow);
-        assert_eq!(record.attributes.get("test").map(|s| s.as_str()), Some("true"));
+        assert_eq!(
+            record.attributes.get("test").map(|s| s.as_str()),
+            Some("true")
+        );
     }
 
     #[test]

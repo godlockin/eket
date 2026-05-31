@@ -117,7 +117,11 @@ impl CircuitBreaker {
 
     /// 当前状态（只读快照）
     pub fn state(&self) -> CircuitState {
-        self.inner.lock().unwrap_or_else(|p| p.into_inner()).state.clone()
+        self.inner
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .state
+            .clone()
     }
 
     /// 执行受保护的 async 操作
@@ -250,7 +254,9 @@ mod tests {
     async fn opens_after_threshold_failures() {
         let cb = CircuitBreaker::new("test", fast_config());
         for _ in 0..3 {
-            let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+            let _ = cb
+                .execute(|| async { Err::<(), _>(EketError::Other("fail".into())) })
+                .await;
         }
         assert_eq!(cb.state(), CircuitState::Open);
     }
@@ -259,7 +265,9 @@ mod tests {
     async fn rejects_when_open() {
         let cb = CircuitBreaker::new("test", fast_config());
         for _ in 0..3 {
-            let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+            let _ = cb
+                .execute(|| async { Err::<(), _>(EketError::Other("fail".into())) })
+                .await;
         }
         let result = cb.execute(|| async { Ok::<_, EketError>(42) }).await;
         assert!(matches!(result, Err(EketError::CircuitBreakerOpen { .. })));
@@ -269,7 +277,9 @@ mod tests {
     async fn transitions_half_open_after_timeout() {
         let cb = CircuitBreaker::new("test", fast_config());
         for _ in 0..3 {
-            let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+            let _ = cb
+                .execute(|| async { Err::<(), _>(EketError::Other("fail".into())) })
+                .await;
         }
         tokio::time::sleep(Duration::from_millis(60)).await;
         // Should be half_open now, allow one call
@@ -281,7 +291,9 @@ mod tests {
     async fn recovers_to_closed_after_successes() {
         let cb = CircuitBreaker::new("test", fast_config());
         for _ in 0..3 {
-            let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+            let _ = cb
+                .execute(|| async { Err::<(), _>(EketError::Other("fail".into())) })
+                .await;
         }
         tokio::time::sleep(Duration::from_millis(60)).await;
         for _ in 0..2 {
@@ -295,12 +307,16 @@ mod tests {
         let cb = CircuitBreaker::new("test", fast_config());
         // Open the breaker
         for _ in 0..3 {
-            let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+            let _ = cb
+                .execute(|| async { Err::<(), _>(EketError::Other("fail".into())) })
+                .await;
         }
         // Wait for timeout → half_open
         tokio::time::sleep(Duration::from_millis(60)).await;
         // Fail in half_open → should re-open
-        let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail again".into())) }).await;
+        let _ = cb
+            .execute(|| async { Err::<(), _>(EketError::Other("fail again".into())) })
+            .await;
         assert_eq!(cb.state(), CircuitState::Open);
     }
 
@@ -315,12 +331,16 @@ mod tests {
         let cb = CircuitBreaker::new("test", config);
         // Two failures
         for _ in 0..2 {
-            let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+            let _ = cb
+                .execute(|| async { Err::<(), _>(EketError::Other("fail".into())) })
+                .await;
         }
         // Wait for monitor window to expire
         tokio::time::sleep(Duration::from_millis(40)).await;
         // One more failure — counter should have reset, so still below threshold
-        let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+        let _ = cb
+            .execute(|| async { Err::<(), _>(EketError::Other("fail".into())) })
+            .await;
         assert_eq!(cb.state(), CircuitState::Closed);
     }
 
@@ -330,13 +350,17 @@ mod tests {
         let cb = CircuitBreaker::new("test", fast_config());
         // 2次失败
         for _ in 0..2 {
-            let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+            let _ = cb
+                .execute(|| async { Err::<(), _>(EketError::Other("fail".into())) })
+                .await;
         }
         // 1次成功（不再清零）
         let _ = cb.execute(|| async { Ok::<_, EketError>(()) }).await;
         // 再2次失败 → 窗口内共4次，超过threshold=3 → open
         for _ in 0..2 {
-            let _ = cb.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+            let _ = cb
+                .execute(|| async { Err::<(), _>(EketError::Other("fail".into())) })
+                .await;
         }
         assert_eq!(cb.state(), CircuitState::Open);
     }
@@ -360,7 +384,9 @@ mod tests {
         let cb1 = CircuitBreaker::new("shared", fast_config());
         let cb2 = cb1.clone();
         for _ in 0..3 {
-            let _ = cb1.execute(|| async { Err::<(), _>(EketError::Other("fail".into())) }).await;
+            let _ = cb1
+                .execute(|| async { Err::<(), _>(EketError::Other("fail".into())) })
+                .await;
         }
         // cb2 shares inner Arc<Mutex<>>
         assert_eq!(cb2.state(), CircuitState::Open);

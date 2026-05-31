@@ -41,9 +41,9 @@ fn try_load_alerts(db_path: &str) -> Vec<serde_json::Value> {
         )",
     );
 
-    let mut stmt = match conn.prepare(
-        "SELECT id, level, message, created_at FROM alerts ORDER BY created_at DESC",
-    ) {
+    let mut stmt = match conn
+        .prepare("SELECT id, level, message, created_at FROM alerts ORDER BY created_at DESC")
+    {
         Ok(s) => s,
         Err(_) => return vec![],
     };

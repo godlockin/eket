@@ -28,7 +28,9 @@ fn find_project_root() -> Result<PathBuf> {
             break;
         }
     }
-    anyhow::bail!("Cannot find project root (no jira/ directory found). Run from inside an EKET project.")
+    anyhow::bail!(
+        "Cannot find project root (no jira/ directory found). Run from inside an EKET project."
+    )
 }
 
 pub async fn run(args: EpicPlanArgs) -> Result<()> {
@@ -134,7 +136,11 @@ mod tests {
         let root = dir.path().to_path_buf();
         // Pre-write stale plan
         std::fs::create_dir_all(root.join("confluence/architecture")).unwrap();
-        std::fs::write(root.join("confluence/architecture/EPIC-OVR-plan.md"), "STALE").unwrap();
+        std::fs::write(
+            root.join("confluence/architecture/EPIC-OVR-plan.md"),
+            "STALE",
+        )
+        .unwrap();
 
         let renderer = TemplateRenderer::new();
         eket_core::doc_lifecycle::handle_event(
@@ -148,8 +154,7 @@ mod tests {
         .unwrap();
 
         let content =
-            std::fs::read_to_string(root.join("confluence/architecture/EPIC-OVR-plan.md"))
-                .unwrap();
+            std::fs::read_to_string(root.join("confluence/architecture/EPIC-OVR-plan.md")).unwrap();
         assert_ne!(content, "STALE", "Plan file should be overwritten");
         assert!(content.contains("EPIC-OVR"));
     }

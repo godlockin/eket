@@ -29,7 +29,6 @@ pub enum FileCategory {
     Meta,
 }
 
-
 /// Common dotfile config patterns (case-insensitive)
 const DOTFILE_CONFIGS: &[&str] = &[
     ".eslintrc",

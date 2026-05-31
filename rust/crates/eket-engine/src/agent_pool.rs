@@ -43,7 +43,11 @@ impl AgentInstance {
     }
 
     pub fn utilization(&self) -> f32 {
-        if self.max_load == 0 { 1.0 } else { self.current_load as f32 / self.max_load as f32 }
+        if self.max_load == 0 {
+            1.0
+        } else {
+            self.current_load as f32 / self.max_load as f32
+        }
     }
 }
 
@@ -57,11 +61,21 @@ pub struct TaskAssignmentResult {
 
 impl TaskAssignmentResult {
     pub fn ok(agent_id: String, role: String) -> Self {
-        Self { success: true, agent_id: Some(agent_id), agent_role: Some(role), error: None }
+        Self {
+            success: true,
+            agent_id: Some(agent_id),
+            agent_role: Some(role),
+            error: None,
+        }
     }
 
     pub fn err(msg: impl Into<String>) -> Self {
-        Self { success: false, agent_id: None, agent_role: None, error: Some(msg.into()) }
+        Self {
+            success: false,
+            agent_id: None,
+            agent_role: None,
+            error: Some(msg.into()),
+        }
     }
 }
 
@@ -116,7 +130,11 @@ impl AgentPool {
         if let Some(a) = agents.get_mut(agent_id) {
             let new_load = (a.current_load as i32 + delta).max(0) as u32;
             a.current_load = new_load.min(a.max_load);
-            a.status = if a.current_load == 0 { AgentStatus::Idle } else { AgentStatus::Busy };
+            a.status = if a.current_load == 0 {
+                AgentStatus::Idle
+            } else {
+                AgentStatus::Busy
+            };
         }
     }
 
@@ -199,15 +217,26 @@ impl AgentPool {
     /// Count agents by status
     pub async fn stats(&self) -> (usize, usize, usize) {
         let agents = self.agents.read().await;
-        let idle = agents.values().filter(|a| a.status == AgentStatus::Idle).count();
-        let busy = agents.values().filter(|a| a.status == AgentStatus::Busy).count();
-        let offline = agents.values().filter(|a| a.status == AgentStatus::Offline).count();
+        let idle = agents
+            .values()
+            .filter(|a| a.status == AgentStatus::Idle)
+            .count();
+        let busy = agents
+            .values()
+            .filter(|a| a.status == AgentStatus::Busy)
+            .count();
+        let offline = agents
+            .values()
+            .filter(|a| a.status == AgentStatus::Offline)
+            .count();
         (idle, busy, offline)
     }
 }
 
 impl Default for AgentPool {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────

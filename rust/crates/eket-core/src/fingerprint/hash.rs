@@ -88,10 +88,7 @@ pub fn compute_structure_hash(info: &StructuralInfo) -> String {
     }
 
     // Merkle-style: hash each signature, then hash the concatenation
-    let leaf_hashes: Vec<String> = all_sigs
-        .iter()
-        .map(|sig| hash_string(sig))
-        .collect();
+    let leaf_hashes: Vec<String> = all_sigs.iter().map(|sig| hash_string(sig)).collect();
 
     // If empty, return hash of empty string
     if leaf_hashes.is_empty() {
@@ -112,7 +109,10 @@ const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024;
 ///
 /// If structural analysis fails, uses content_hash as structure_hash (degraded mode).
 /// Returns error for files larger than 10MB.
-pub fn compute_fingerprint(path: &Path, info: Option<&StructuralInfo>) -> EketResult<FileFingerprint> {
+pub fn compute_fingerprint(
+    path: &Path,
+    info: Option<&StructuralInfo>,
+) -> EketResult<FileFingerprint> {
     // Check file size first to avoid loading large files
     let metadata = fs::metadata(path)?;
     if metadata.len() > MAX_FILE_SIZE {
@@ -203,7 +203,8 @@ fn extract_rust_node(node: &tree_sitter::Node, content: &str, info: &mut Structu
             if let Some(name_node) = node.child_by_field_name("name") {
                 let name = &content[name_node.byte_range()];
                 let methods = extract_rust_methods(node, content);
-                info.classes.push(format!("{}[{}]", name, methods.join(",")));
+                info.classes
+                    .push(format!("{}[{}]", name, methods.join(",")));
             }
         }
         "use_declaration" => {

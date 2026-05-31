@@ -43,12 +43,11 @@ pub enum SymbolKind {
 #[derive(Default)]
 pub enum EdgeType {
     #[default]
-    Import,    // A imports B
+    Import, // A imports B
     Extend,    // A extends B (class inheritance)
     Implement, // A implements B (interface)
     Use,       // A uses B (generic reference)
 }
-
 
 /// 跨批次邻居信息
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

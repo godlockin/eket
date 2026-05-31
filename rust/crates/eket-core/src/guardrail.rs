@@ -92,10 +92,7 @@ impl GuardrailRunner {
     /// 构建 claim 动作的默认守卫集合
     pub fn default_for_claim() -> Self {
         Self {
-            checks: vec![
-                Box::new(RoleMatchGuardrail),
-                Box::new(SelfReviewGuardrail),
-            ],
+            checks: vec![Box::new(RoleMatchGuardrail), Box::new(SelfReviewGuardrail)],
         }
     }
 
@@ -143,7 +140,11 @@ mod tests {
     fn guardrail_role_match() {
         let ctx = make_ctx(Some("backend"), Some("backend"));
         let violations = GuardrailRunner::default_for_claim().run(&ctx);
-        assert!(violations.is_empty(), "Expected no violations but got: {:?}", violations);
+        assert!(
+            violations.is_empty(),
+            "Expected no violations but got: {:?}",
+            violations
+        );
     }
 
     #[test]
@@ -157,7 +158,10 @@ mod tests {
     fn guardrail_case_insensitive() {
         let ctx = make_ctx(Some("Backend"), Some("backend"));
         let violations = GuardrailRunner::default_for_claim().run(&ctx);
-        assert!(violations.is_empty(), "Role match should be case-insensitive");
+        assert!(
+            violations.is_empty(),
+            "Role match should be case-insensitive"
+        );
     }
 
     #[test]

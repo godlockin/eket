@@ -10,6 +10,6 @@ pub mod harness;
 pub mod metrics;
 pub mod tasks;
 
-pub use harness::{BenchmarkHarness, BenchmarkConfig, BenchmarkResult};
+pub use harness::{BenchmarkConfig, BenchmarkHarness, BenchmarkResult};
 pub use metrics::{EvalMetrics, MetricsCollector};
-pub use tasks::{BenchmarkTask, TaskType, TaskOutcome};
+pub use tasks::{BenchmarkTask, TaskOutcome, TaskType};

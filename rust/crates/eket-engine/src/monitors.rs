@@ -72,17 +72,17 @@ impl HeartbeatMonitor {
         let db = Arc::clone(&self.db);
         let instances = match tokio::task::spawn_blocking(move || {
             let conn = db.pool().get()?;
-            let mut stmt = conn.prepare(
-                "SELECT id, status, CAST(last_seen AS TEXT) FROM slaver_instances",
-            )?;
-            let rows = stmt.query_map([], |row| {
-                Ok(RawInst {
-                    id: row.get(0)?,
-                    status: row.get(1)?,
-                    last_seen_str: row.get::<_, Option<String>>(2)?,
-                })
-            })?
-            .collect::<Result<Vec<_>, _>>()?;
+            let mut stmt =
+                conn.prepare("SELECT id, status, CAST(last_seen AS TEXT) FROM slaver_instances")?;
+            let rows = stmt
+                .query_map([], |row| {
+                    Ok(RawInst {
+                        id: row.get(0)?,
+                        status: row.get(1)?,
+                        last_seen_str: row.get::<_, Option<String>>(2)?,
+                    })
+                })?
+                .collect::<Result<Vec<_>, _>>()?;
             Ok::<_, eket_core::error::EketError>(rows)
         })
         .await
@@ -204,11 +204,7 @@ impl StaleCleaner {
             warn!("[StaleCleaner] update_ticket_status_str({ticket_id}) failed: {e}");
             return;
         }
-        let event = DomainEvent::new(
-            "task.stale",
-            json!({ "ticket_id": ticket_id }),
-            None,
-        );
+        let event = DomainEvent::new("task.stale", json!({ "ticket_id": ticket_id }), None);
         self.event_bus.publish(event).await;
     }
 }
@@ -260,7 +256,10 @@ mod tests {
         let bus = make_bus();
 
         // Register fresh instance
-        registry.register(sample_instance("inst-stale")).await.unwrap();
+        registry
+            .register(sample_instance("inst-stale"))
+            .await
+            .unwrap();
 
         // Backdate last_seen to 200s ago via direct SQL
         {
@@ -309,7 +308,10 @@ mod tests {
         let registry = make_registry(Arc::clone(&db));
         let bus = make_bus();
 
-        registry.register(sample_instance("inst-fresh")).await.unwrap();
+        registry
+            .register(sample_instance("inst-fresh"))
+            .await
+            .unwrap();
 
         let monitor = Arc::new(HeartbeatMonitor::new(
             Arc::clone(&db),
@@ -333,7 +335,10 @@ mod tests {
         })
         .await
         .unwrap();
-        assert_ne!(status, "offline", "fresh instance must not be marked offline");
+        assert_ne!(
+            status, "offline",
+            "fresh instance must not be marked offline"
+        );
     }
 
     #[tokio::test]
@@ -342,7 +347,10 @@ mod tests {
         let registry = make_registry(Arc::clone(&db));
         let bus = make_bus();
 
-        registry.register(sample_instance("inst-already-off")).await.unwrap();
+        registry
+            .register(sample_instance("inst-already-off"))
+            .await
+            .unwrap();
         registry.mark_offline("inst-already-off").await.unwrap();
 
         // Backdate last_seen to trigger TTL if status check is missing
@@ -393,8 +401,10 @@ mod tests {
         let db = make_db();
         let bus = make_bus();
 
-        db.create_ticket("T-stale", "Stale task", "P1", "task").unwrap();
-        db.update_ticket_status_str("T-stale", "in_progress").unwrap();
+        db.create_ticket("T-stale", "Stale task", "P1", "task")
+            .unwrap();
+        db.update_ticket_status_str("T-stale", "in_progress")
+            .unwrap();
 
         let dir = tempfile::tempdir().unwrap();
         let ticket_path = dir.path().join("T-stale.md");
@@ -432,8 +442,10 @@ mod tests {
         let db = make_db();
         let bus = make_bus();
 
-        db.create_ticket("T-fresh", "Fresh task", "P1", "task").unwrap();
-        db.update_ticket_status_str("T-fresh", "in_progress").unwrap();
+        db.create_ticket("T-fresh", "Fresh task", "P1", "task")
+            .unwrap();
+        db.update_ticket_status_str("T-fresh", "in_progress")
+            .unwrap();
 
         let dir = tempfile::tempdir().unwrap();
         let ticket_path = dir.path().join("T-fresh.md");
@@ -448,6 +460,9 @@ mod tests {
         cleaner.check_once().await;
 
         let row = db.get_ticket_row("T-fresh").unwrap().unwrap();
-        assert_eq!(row.status, "in_progress", "recent ticket must remain in_progress");
+        assert_eq!(
+            row.status, "in_progress",
+            "recent ticket must remain in_progress"
+        );
     }
 }

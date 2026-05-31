@@ -1,9 +1,9 @@
 //! Python structure extractor.
 
+use crate::analyzer::language::SupportedLanguage;
+use crate::analyzer::types::*;
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Parser, Query, QueryCursor, QueryMatch};
-use crate::analyzer::types::*;
-use crate::analyzer::language::SupportedLanguage;
 
 const PYTHON_QUERIES: &str = r#"
 ; Function definitions (also matches functions inside decorated_definition)
@@ -37,7 +37,9 @@ pub fn extract(content: &str) -> StructuralAnalysis {
     let mut analysis = StructuralAnalysis::empty("", lang.as_str());
 
     let mut parser = Parser::new();
-    parser.set_language(lang.grammar()).expect("Failed to set Python language");
+    parser
+        .set_language(lang.grammar())
+        .expect("Failed to set Python language");
 
     let tree = match parser.parse(content, None) {
         Some(t) => t,
@@ -72,10 +74,13 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
     let mut seen_functions = std::collections::HashSet::new();
     let mut seen_classes = std::collections::HashSet::new();
-    let mut class_methods: std::collections::HashMap<String, Vec<String>> = std::collections::HashMap::new();
+    let mut class_methods: std::collections::HashMap<String, Vec<String>> =
+        std::collections::HashMap::new();
 
     while let Some(m) = matches.next() {
-        let capture_names: Vec<&str> = m.captures.iter()
+        let capture_names: Vec<&str> = m
+            .captures
+            .iter()
             .map(|c| query.capture_names()[c.index as usize])
             .collect();
 
@@ -111,7 +116,10 @@ pub fn extract(content: &str) -> StructuralAnalysis {
             if let Some(method_name) = get_capture_text(m, &query, "method.name", content) {
                 // Find parent class
                 if let Some(class_name) = get_capture_text(m, &query, "class.name", content) {
-                    class_methods.entry(class_name).or_default().push(method_name);
+                    class_methods
+                        .entry(class_name)
+                        .or_default()
+                        .push(method_name);
                 }
             }
         }
@@ -125,20 +133,17 @@ pub fn extract(content: &str) -> StructuralAnalysis {
     }
 
     // Filter out methods from top-level functions (Python-specific)
-    let method_names: std::collections::HashSet<_> = class_methods.values()
-        .flat_map(|v| v.iter())
-        .collect();
-    analysis.functions.retain(|f| !method_names.contains(&f.name));
+    let method_names: std::collections::HashSet<_> =
+        class_methods.values().flat_map(|v| v.iter()).collect();
+    analysis
+        .functions
+        .retain(|f| !method_names.contains(&f.name));
 
     analysis.compute_metrics(content);
     analysis
 }
 
-fn extract_function(
-    m: &QueryMatch,
-    query: &Query,
-    content: &str,
-) -> Option<FunctionInfo> {
+fn extract_function(m: &QueryMatch, query: &Query, content: &str) -> Option<FunctionInfo> {
     let name = get_capture_text(m, query, "fn.name", content)?;
     let def_node = get_capture_node(m, query, "fn.def")?;
 
@@ -148,9 +153,10 @@ fn extract_function(
 
     let return_type = get_capture_text(m, query, "fn.return_type", content);
 
-    let is_async = m.captures.iter().any(|c| {
-        query.capture_names()[c.index as usize] == "fn.async"
-    });
+    let is_async = m
+        .captures
+        .iter()
+        .any(|c| query.capture_names()[c.index as usize] == "fn.async");
 
     Some(FunctionInfo {
         name,
@@ -163,11 +169,7 @@ fn extract_function(
     })
 }
 
-fn extract_class(
-    m: &QueryMatch,
-    query: &Query,
-    content: &str,
-) -> Option<ClassInfo> {
+fn extract_class(m: &QueryMatch, query: &Query, content: &str) -> Option<ClassInfo> {
     let name = get_capture_text(m, query, "class.name", content)?;
     let def_node = get_capture_node(m, query, "class.def")?;
 
@@ -181,11 +183,7 @@ fn extract_class(
     })
 }
 
-fn extract_import(
-    m: &QueryMatch,
-    query: &Query,
-    content: &str,
-) -> Option<ImportInfo> {
+fn extract_import(m: &QueryMatch, query: &Query, content: &str) -> Option<ImportInfo> {
     let source = get_capture_text(m, query, "import.source", content)?;
     let def_node = get_capture_node(m, query, "import.def")?;
 
@@ -222,13 +220,9 @@ fn extract_import_names(node: tree_sitter::Node, content: &str) -> Vec<String> {
     names
 }
 
-fn get_capture_text(
-    m: &QueryMatch,
-    query: &Query,
-    name: &str,
-    content: &str,
-) -> Option<String> {
-    m.captures.iter()
+fn get_capture_text(m: &QueryMatch, query: &Query, name: &str, content: &str) -> Option<String> {
+    m.captures
+        .iter()
         .find(|c| query.capture_names()[c.index as usize] == name)
         .and_then(|c| c.node.utf8_text(content.as_bytes()).ok())
         .map(|s| s.to_string())
@@ -239,7 +233,8 @@ fn get_capture_node<'a>(
     query: &Query,
     name: &str,
 ) -> Option<tree_sitter::Node<'a>> {
-    m.captures.iter()
+    m.captures
+        .iter()
         .find(|c| query.capture_names()[c.index as usize] == name)
         .map(|c| c.node)
 }
@@ -250,7 +245,8 @@ fn parse_python_params(params_str: &str) -> Vec<String> {
         return vec![];
     }
 
-    inner.split(',')
+    inner
+        .split(',')
         .filter_map(|p| {
             let p = p.trim();
             // Skip *args, **kwargs, and self
@@ -258,7 +254,9 @@ fn parse_python_params(params_str: &str) -> Vec<String> {
                 return None;
             }
             // Extract name before : or =
-            let name = p.split(':').next()
+            let name = p
+                .split(':')
+                .next()
                 .or_else(|| p.split('=').next())
                 .map(|s| s.trim())
                 .filter(|s| !s.is_empty())?;
@@ -372,7 +370,10 @@ def decorated_fn(x):
         assert_eq!(parse_python_params("(a, b, c)"), vec!["a", "b", "c"]);
         assert_eq!(parse_python_params("(self, x, y)"), vec!["x", "y"]);
         assert_eq!(parse_python_params("(a: int, b: str)"), vec!["a", "b"]);
-        assert_eq!(parse_python_params("(*args, **kwargs)"), Vec::<String>::new());
+        assert_eq!(
+            parse_python_params("(*args, **kwargs)"),
+            Vec::<String>::new()
+        );
         assert_eq!(parse_python_params("()"), Vec::<String>::new());
     }
 }

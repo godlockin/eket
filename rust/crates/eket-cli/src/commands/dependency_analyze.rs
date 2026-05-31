@@ -58,9 +58,7 @@ pub async fn run(args: DependencyAnalyzeArgs) -> Result<()> {
         .map_err(|_| anyhow::anyhow!("Ticket file not found: {}", ticket_path))?;
 
     // Load corpus from ticket_index (exclude target ticket itself)
-    let mut stmt = conn.prepare(
-        "SELECT id, title FROM ticket_index WHERE id != ?1",
-    )?;
+    let mut stmt = conn.prepare("SELECT id, title FROM ticket_index WHERE id != ?1")?;
     let rows: Vec<(String, String)> = stmt
         .query_map(rusqlite::params![args.ticket_id], |row| {
             Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))

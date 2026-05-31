@@ -205,7 +205,10 @@ mod tests {
         // Same structure hash, different content hash (only comments changed)
         let fp1 = make_fp("a.rs", "hash1", "struct1");
         let fp2 = make_fp("a.rs", "hash2", "struct1");
-        assert_eq!(classify_change(Some(&fp1), Some(&fp2)), ChangeType::Cosmetic);
+        assert_eq!(
+            classify_change(Some(&fp1), Some(&fp2)),
+            ChangeType::Cosmetic
+        );
     }
 
     #[test]
@@ -213,7 +216,10 @@ mod tests {
         // Different structure hash (code changed)
         let fp1 = make_fp("a.rs", "hash1", "struct1");
         let fp2 = make_fp("a.rs", "hash2", "struct2");
-        assert_eq!(classify_change(Some(&fp1), Some(&fp2)), ChangeType::Structural);
+        assert_eq!(
+            classify_change(Some(&fp1), Some(&fp2)),
+            ChangeType::Structural
+        );
     }
 
     #[test]

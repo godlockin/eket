@@ -1,5 +1,5 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use context_mon::ContextEstimator;
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 fn benchmark_rough_estimate(c: &mut Criterion) {
     let estimator = ContextEstimator::new();
