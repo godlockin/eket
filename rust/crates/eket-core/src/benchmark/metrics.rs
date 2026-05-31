@@ -106,36 +106,66 @@ impl MetricsCollector {
         let total_tokens: u64 = self.tasks.iter().map(|t| t.tokens).sum();
         let total_duration: f64 = self.tasks.iter().map(|t| t.duration_secs).sum();
 
-        let pass_rate = if total > 0 { passed as f64 / total as f64 } else { 0.0 };
-        let avg_tokens = if total > 0 { total_tokens as f64 / total as f64 } else { 0.0 };
-        let avg_duration = if total > 0 { total_duration / total as f64 } else { 0.0 };
+        let pass_rate = if total > 0 {
+            passed as f64 / total as f64
+        } else {
+            0.0
+        };
+        let avg_tokens = if total > 0 {
+            total_tokens as f64 / total as f64
+        } else {
+            0.0
+        };
+        let avg_duration = if total > 0 {
+            total_duration / total as f64
+        } else {
+            0.0
+        };
 
         let total_cost = total_tokens as f64 / 1000.0 * self.cost_per_1k_tokens;
-        let avg_cost = if total > 0 { total_cost / total as f64 } else { 0.0 };
+        let avg_cost = if total > 0 {
+            total_cost / total as f64
+        } else {
+            0.0
+        };
 
         // Aggregate by type (including avg_tokens and avg_duration)
-        let mut by_type: std::collections::HashMap<String, (TypeMetrics, u64, f64)> = std::collections::HashMap::new();
+        let mut by_type: std::collections::HashMap<String, (TypeMetrics, u64, f64)> =
+            std::collections::HashMap::new();
         for task in &self.tasks {
             let entry = by_type.entry(task.task_type.clone()).or_default();
             entry.0.total += 1;
             if task.passed {
                 entry.0.passed += 1;
             }
-            entry.1 += task.tokens;  // accumulate tokens
-            entry.2 += task.duration_secs;  // accumulate duration
+            entry.1 += task.tokens; // accumulate tokens
+            entry.2 += task.duration_secs; // accumulate duration
         }
         let by_type: std::collections::HashMap<String, TypeMetrics> = by_type
             .into_iter()
             .map(|(k, (mut m, tokens, duration))| {
-                m.pass_rate = if m.total > 0 { m.passed as f64 / m.total as f64 } else { 0.0 };
-                m.avg_tokens = if m.total > 0 { tokens as f64 / m.total as f64 } else { 0.0 };
-                m.avg_duration = if m.total > 0 { duration / m.total as f64 } else { 0.0 };
+                m.pass_rate = if m.total > 0 {
+                    m.passed as f64 / m.total as f64
+                } else {
+                    0.0
+                };
+                m.avg_tokens = if m.total > 0 {
+                    tokens as f64 / m.total as f64
+                } else {
+                    0.0
+                };
+                m.avg_duration = if m.total > 0 {
+                    duration / m.total as f64
+                } else {
+                    0.0
+                };
                 (k, m)
             })
             .collect();
 
         // Aggregate by difficulty (including avg_tokens and avg_duration)
-        let mut by_difficulty: std::collections::HashMap<u8, (TypeMetrics, u64, f64)> = std::collections::HashMap::new();
+        let mut by_difficulty: std::collections::HashMap<u8, (TypeMetrics, u64, f64)> =
+            std::collections::HashMap::new();
         for task in &self.tasks {
             let entry = by_difficulty.entry(task.difficulty).or_default();
             entry.0.total += 1;
@@ -148,9 +178,21 @@ impl MetricsCollector {
         let by_difficulty: std::collections::HashMap<u8, TypeMetrics> = by_difficulty
             .into_iter()
             .map(|(k, (mut m, tokens, duration))| {
-                m.pass_rate = if m.total > 0 { m.passed as f64 / m.total as f64 } else { 0.0 };
-                m.avg_tokens = if m.total > 0 { tokens as f64 / m.total as f64 } else { 0.0 };
-                m.avg_duration = if m.total > 0 { duration / m.total as f64 } else { 0.0 };
+                m.pass_rate = if m.total > 0 {
+                    m.passed as f64 / m.total as f64
+                } else {
+                    0.0
+                };
+                m.avg_tokens = if m.total > 0 {
+                    tokens as f64 / m.total as f64
+                } else {
+                    0.0
+                };
+                m.avg_duration = if m.total > 0 {
+                    duration / m.total as f64
+                } else {
+                    0.0
+                };
                 (k, m)
             })
             .collect();
@@ -196,13 +238,28 @@ impl EvalMetrics {
         output.push_str(&format!("| Total Tasks | {} |\n", self.total_tasks));
         output.push_str(&format!("| Passed | {} |\n", self.passed));
         output.push_str(&format!("| Failed | {} |\n", self.failed));
-        output.push_str(&format!("| **Pass Rate** | **{:.1}%** |\n", self.pass_rate * 100.0));
+        output.push_str(&format!(
+            "| **Pass Rate** | **{:.1}%** |\n",
+            self.pass_rate * 100.0
+        ));
         output.push_str(&format!("| Total Tokens | {} |\n", self.total_tokens));
-        output.push_str(&format!("| Avg Tokens/Task | {:.0} |\n", self.avg_tokens_per_task));
+        output.push_str(&format!(
+            "| Avg Tokens/Task | {:.0} |\n",
+            self.avg_tokens_per_task
+        ));
         output.push_str(&format!("| Total Cost | ${:.2} |\n", self.total_cost));
-        output.push_str(&format!("| Avg Cost/Task | ${:.3} |\n", self.avg_cost_per_task));
-        output.push_str(&format!("| Total Duration | {:.1}s |\n", self.total_duration_secs));
-        output.push_str(&format!("| Avg Duration/Task | {:.1}s |\n", self.avg_duration_per_task));
+        output.push_str(&format!(
+            "| Avg Cost/Task | ${:.3} |\n",
+            self.avg_cost_per_task
+        ));
+        output.push_str(&format!(
+            "| Total Duration | {:.1}s |\n",
+            self.total_duration_secs
+        ));
+        output.push_str(&format!(
+            "| Avg Duration/Task | {:.1}s |\n",
+            self.avg_duration_per_task
+        ));
 
         if !self.by_type.is_empty() {
             output.push_str("\n## By Task Type\n\n");

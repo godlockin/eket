@@ -166,12 +166,7 @@ impl LockManager {
         let redis_key = format!("eket:lock:{resource_id}");
 
         if self.redis.is_available() {
-            return self
-                .redis
-                .get(&redis_key)
-                .await
-                .unwrap_or(None)
-                .is_some();
+            return self.redis.get(&redis_key).await.unwrap_or(None).is_some();
         }
 
         let locks = self.memory_locks.read().await;
@@ -194,9 +189,7 @@ mod tests {
 
     async fn make_manager() -> LockManager {
         // 连接一个不存在的 Redis 地址，立即降级到内存锁
-        let redis = Arc::new(
-            EketRedisClient::connect("127.0.0.1", 19999, None).await,
-        );
+        let redis = Arc::new(EketRedisClient::connect("127.0.0.1", 19999, None).await);
         LockManager::new(redis)
     }
 

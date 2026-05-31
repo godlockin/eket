@@ -56,7 +56,13 @@ impl KnowledgeSchema {
         let content = b.add_text_field("content", TEXT);
         let doc_type = b.add_text_field("doc_type", STRING | STORED);
         let schema = b.build();
-        Self { id, title, content, doc_type, schema }
+        Self {
+            id,
+            title,
+            content,
+            doc_type,
+            schema,
+        }
     }
 }
 
@@ -93,7 +99,11 @@ impl KnowledgeBase {
             .writer(50_000_000)
             .map_err(|e| EketError::Other(e.to_string()))?;
 
-        Ok(Self { index, writer: Arc::new(Mutex::new(writer)), ks })
+        Ok(Self {
+            index,
+            writer: Arc::new(Mutex::new(writer)),
+            ks,
+        })
     }
 
     /// Index a single entry and commit immediately.
@@ -104,9 +114,16 @@ impl KnowledgeBase {
             self.ks.content => entry.content.as_str(),
             self.ks.doc_type=> entry.doc_type.as_str(),
         );
-        let mut writer = self.writer.lock().map_err(|e| EketError::Other(e.to_string()))?;
-        writer.add_document(doc).map_err(|e| EketError::Other(e.to_string()))?;
-        writer.commit().map_err(|e| EketError::Other(e.to_string()))?;
+        let mut writer = self
+            .writer
+            .lock()
+            .map_err(|e| EketError::Other(e.to_string()))?;
+        writer
+            .add_document(doc)
+            .map_err(|e| EketError::Other(e.to_string()))?;
+        writer
+            .commit()
+            .map_err(|e| EketError::Other(e.to_string()))?;
         Ok(())
     }
 
@@ -118,12 +135,15 @@ impl KnowledgeBase {
         let dir = dir.as_ref();
         let mut count = 0usize;
 
-        let mut writer = self.writer.lock().map_err(|e| EketError::Other(e.to_string()))?;
+        let mut writer = self
+            .writer
+            .lock()
+            .map_err(|e| EketError::Other(e.to_string()))?;
 
-        for dir_entry in
-            std::fs::read_dir(dir).map_err(|e| EketError::Other(e.to_string()))?
-        {
-            let path = dir_entry.map_err(|e| EketError::Other(e.to_string()))?.path();
+        for dir_entry in std::fs::read_dir(dir).map_err(|e| EketError::Other(e.to_string()))? {
+            let path = dir_entry
+                .map_err(|e| EketError::Other(e.to_string()))?
+                .path();
             if path.extension().and_then(|e| e.to_str()) != Some("md") {
                 continue;
             }
@@ -146,11 +166,15 @@ impl KnowledgeBase {
                 self.ks.content => content.as_str(),
                 self.ks.doc_type=> doc_type,
             );
-            writer.add_document(doc).map_err(|e| EketError::Other(e.to_string()))?;
+            writer
+                .add_document(doc)
+                .map_err(|e| EketError::Other(e.to_string()))?;
             count += 1;
         }
 
-        writer.commit().map_err(|e| EketError::Other(e.to_string()))?;
+        writer
+            .commit()
+            .map_err(|e| EketError::Other(e.to_string()))?;
         Ok(count)
     }
 
@@ -166,7 +190,9 @@ impl KnowledgeBase {
         let searcher = reader.searcher();
 
         let qp = QueryParser::for_index(&self.index, vec![self.ks.title, self.ks.content]);
-        let query = qp.parse_query(query_str).map_err(|e| EketError::Other(e.to_string()))?;
+        let query = qp
+            .parse_query(query_str)
+            .map_err(|e| EketError::Other(e.to_string()))?;
 
         let top_docs = searcher
             .search(&query, &TopDocs::with_limit(limit))
@@ -174,8 +200,9 @@ impl KnowledgeBase {
 
         let mut results = Vec::with_capacity(top_docs.len());
         for (score, addr) in top_docs {
-            let doc: TantivyDocument =
-                searcher.doc(addr).map_err(|e| EketError::Other(e.to_string()))?;
+            let doc: TantivyDocument = searcher
+                .doc(addr)
+                .map_err(|e| EketError::Other(e.to_string()))?;
 
             let id = doc
                 .get_first(self.ks.id)
@@ -188,7 +215,12 @@ impl KnowledgeBase {
                 .unwrap_or("")
                 .to_string();
 
-            results.push(SearchResult { id, title, score, snippet: String::new() });
+            results.push(SearchResult {
+                id,
+                title,
+                score,
+                snippet: String::new(),
+            });
         }
         Ok(results)
     }
@@ -220,8 +252,12 @@ mod tests {
     #[test]
     fn index_and_search() {
         let (kb, _dir) = open_tmp();
-        kb.index_entry(&entry("t1", "Rust Ownership", "Ownership is core to Rust memory safety."))
-            .unwrap();
+        kb.index_entry(&entry(
+            "t1",
+            "Rust Ownership",
+            "Ownership is core to Rust memory safety.",
+        ))
+        .unwrap();
         let results = kb.search("Ownership", 5).unwrap();
         assert!(!results.is_empty());
         assert_eq!(results[0].id, "t1");

@@ -3,10 +3,10 @@
 //! Uses Query-based extraction with S-expressions for performance.
 //! JavaScript files use the TypeScript parser for compatibility (>99%).
 
+use crate::analyzer::language::SupportedLanguage;
+use crate::analyzer::types::*;
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Parser, Query, QueryCursor, QueryMatch};
-use crate::analyzer::types::*;
-use crate::analyzer::language::SupportedLanguage;
 
 /// TypeScript/JavaScript query patterns (S-expressions).
 const TS_QUERIES: &str = r#"
@@ -80,7 +80,9 @@ pub fn extract(content: &str, lang: SupportedLanguage) -> StructuralAnalysis {
     let mut analysis = StructuralAnalysis::empty(path, lang.as_str());
 
     let mut parser = Parser::new();
-    parser.set_language(lang.grammar()).expect("Failed to set language");
+    parser
+        .set_language(lang.grammar())
+        .expect("Failed to set language");
 
     let tree = match parser.parse(content, None) {
         Some(t) => t,
@@ -124,7 +126,9 @@ pub fn extract(content: &str, lang: SupportedLanguage) -> StructuralAnalysis {
 
     // tree-sitter 0.24: use StreamingIterator
     while let Some(m) = matches.next() {
-        let capture_names: Vec<&str> = m.captures.iter()
+        let capture_names: Vec<&str> = m
+            .captures
+            .iter()
             .map(|c| query.capture_names()[c.index as usize])
             .collect();
 
@@ -201,11 +205,7 @@ pub fn extract(content: &str, lang: SupportedLanguage) -> StructuralAnalysis {
     analysis
 }
 
-fn extract_function(
-    m: &QueryMatch,
-    query: &Query,
-    content: &str,
-) -> Option<FunctionInfo> {
+fn extract_function(m: &QueryMatch, query: &Query, content: &str) -> Option<FunctionInfo> {
     let name = get_capture_text(m, query, "fn.name", content)?;
     let def_node = get_capture_node(m, query, "fn.def")?;
 
@@ -216,9 +216,10 @@ fn extract_function(
     let return_type = get_capture_text(m, query, "fn.return_type", content)
         .map(|t| t.trim_start_matches(':').trim().to_string());
 
-    let is_async = m.captures.iter().any(|c| {
-        query.capture_names()[c.index as usize] == "fn.async"
-    });
+    let is_async = m
+        .captures
+        .iter()
+        .any(|c| query.capture_names()[c.index as usize] == "fn.async");
 
     Some(FunctionInfo {
         name,
@@ -231,14 +232,17 @@ fn extract_function(
     })
 }
 
-fn extract_class(
-    m: &QueryMatch,
-    query: &Query,
-    content: &str,
-    kind: &str,
-) -> Option<ClassInfo> {
-    let name_capture = if kind == "interface" { "interface.name" } else { "class.name" };
-    let def_capture = if kind == "interface" { "interface.def" } else { "class.def" };
+fn extract_class(m: &QueryMatch, query: &Query, content: &str, kind: &str) -> Option<ClassInfo> {
+    let name_capture = if kind == "interface" {
+        "interface.name"
+    } else {
+        "class.name"
+    };
+    let def_capture = if kind == "interface" {
+        "interface.def"
+    } else {
+        "class.def"
+    };
 
     let name = get_capture_text(m, query, name_capture, content)?;
     let def_node = get_capture_node(m, query, def_capture)?;
@@ -253,11 +257,7 @@ fn extract_class(
     })
 }
 
-fn extract_import(
-    m: &QueryMatch,
-    query: &Query,
-    content: &str,
-) -> Option<ImportInfo> {
+fn extract_import(m: &QueryMatch, query: &Query, content: &str) -> Option<ImportInfo> {
     let source = get_capture_text(m, query, "import.source", content)?;
     let def_node = get_capture_node(m, query, "import.def")?;
 
@@ -292,12 +292,18 @@ fn extract_import_specifiers(node: tree_sitter::Node, content: &str) -> Vec<Stri
                                 for k in 0..spec_node.child_count() {
                                     if let Some(import_spec) = spec_node.child(k) {
                                         if import_spec.kind() == "import_specifier" {
-                                            if let Some(name_node) = import_spec.child_by_field_name("name") {
-                                                if let Ok(text) = name_node.utf8_text(content.as_bytes()) {
+                                            if let Some(name_node) =
+                                                import_spec.child_by_field_name("name")
+                                            {
+                                                if let Ok(text) =
+                                                    name_node.utf8_text(content.as_bytes())
+                                                {
                                                     specifiers.push(text.to_string());
                                                 }
                                             } else if let Some(first) = import_spec.child(0) {
-                                                if let Ok(text) = first.utf8_text(content.as_bytes()) {
+                                                if let Ok(text) =
+                                                    first.utf8_text(content.as_bytes())
+                                                {
                                                     specifiers.push(text.to_string());
                                                 }
                                             }
@@ -316,19 +322,16 @@ fn extract_import_specifiers(node: tree_sitter::Node, content: &str) -> Vec<Stri
     specifiers
 }
 
-fn extract_export(
-    m: &QueryMatch,
-    query: &Query,
-    content: &str,
-) -> Option<ExportInfo> {
+fn extract_export(m: &QueryMatch, query: &Query, content: &str) -> Option<ExportInfo> {
     let def_node = get_capture_node(m, query, "export.def")?;
 
-    let is_default = m.captures.iter().any(|c| {
-        query.capture_names()[c.index as usize] == "export.default"
-    });
+    let is_default = m
+        .captures
+        .iter()
+        .any(|c| query.capture_names()[c.index as usize] == "export.default");
 
-    let name = get_capture_text(m, query, "export.name", content)
-        .unwrap_or_else(|| "default".to_string());
+    let name =
+        get_capture_text(m, query, "export.name", content).unwrap_or_else(|| "default".to_string());
 
     Some(ExportInfo {
         name,
@@ -337,13 +340,9 @@ fn extract_export(
     })
 }
 
-fn get_capture_text(
-    m: &QueryMatch,
-    query: &Query,
-    name: &str,
-    content: &str,
-) -> Option<String> {
-    m.captures.iter()
+fn get_capture_text(m: &QueryMatch, query: &Query, name: &str, content: &str) -> Option<String> {
+    m.captures
+        .iter()
         .find(|c| query.capture_names()[c.index as usize] == name)
         .and_then(|c| c.node.utf8_text(content.as_bytes()).ok())
         .map(|s| s.to_string())
@@ -354,7 +353,8 @@ fn get_capture_node<'a>(
     query: &Query,
     name: &str,
 ) -> Option<tree_sitter::Node<'a>> {
-    m.captures.iter()
+    m.captures
+        .iter()
         .find(|c| query.capture_names()[c.index as usize] == name)
         .map(|c| c.node)
 }
@@ -366,7 +366,8 @@ fn parse_params(params_str: &str) -> Vec<String> {
         return vec![];
     }
 
-    inner.split(',')
+    inner
+        .split(',')
         .filter_map(|p| {
             let p = p.trim();
             // Extract just the parameter name (before : or =)
@@ -379,7 +380,11 @@ fn parse_params(params_str: &str) -> Vec<String> {
                 p
             };
             let name = name.trim();
-            if name.is_empty() { None } else { Some(name.to_string()) }
+            if name.is_empty() {
+                None
+            } else {
+                Some(name.to_string())
+            }
         })
         .collect()
 }
@@ -391,7 +396,12 @@ fn collect_errors(node: &tree_sitter::Node, content: &str, errors: &mut Vec<Pars
 }
 
 #[allow(clippy::only_used_in_recursion)]
-fn collect_errors_recursive(node: &tree_sitter::Node, content: &str, errors: &mut Vec<ParseError>, depth: usize) {
+fn collect_errors_recursive(
+    node: &tree_sitter::Node,
+    content: &str,
+    errors: &mut Vec<ParseError>,
+    depth: usize,
+) {
     if depth > MAX_ERROR_DEPTH {
         return;
     }
@@ -399,10 +409,7 @@ fn collect_errors_recursive(node: &tree_sitter::Node, content: &str, errors: &mu
     if node.is_error() || node.is_missing() {
         errors.push(ParseError {
             line: node.start_position().row as u32 + 1,
-            message: format!(
-                "Syntax error at column {}",
-                node.start_position().column
-            ),
+            message: format!("Syntax error at column {}", node.start_position().column),
         });
     }
 
@@ -431,7 +438,11 @@ function foo(a: string, b: number): boolean {
         let f = &analysis.functions[0];
         assert_eq!(f.name, "foo");
         assert_eq!(f.params, vec!["a", "b"]);
-        assert!(f.return_type.as_ref().map(|t| t.contains("boolean")).unwrap_or(false));
+        assert!(f
+            .return_type
+            .as_ref()
+            .map(|t| t.contains("boolean"))
+            .unwrap_or(false));
     }
 
     #[test]

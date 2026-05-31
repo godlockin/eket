@@ -42,10 +42,10 @@ pub enum ReviewVerdict {
 
 struct StructureCheck {
     has_title: bool,
-    has_scene: bool,       // 场景/症状
-    has_solution: bool,    // 方案/解法/根因
-    has_proof: bool,       // Execution Proof (frontmatter proof: 或 TASK- 引用)
-    has_source: bool,      // 来源：TASK-XXX
+    has_scene: bool,    // 场景/症状
+    has_solution: bool, // 方案/解法/根因
+    has_proof: bool,    // Execution Proof (frontmatter proof: 或 TASK- 引用)
+    has_source: bool,   // 来源：TASK-XXX
     word_count: usize,
 }
 
@@ -53,12 +53,22 @@ fn check_structure(content: &str) -> StructureCheck {
     let lower = content.to_lowercase();
     StructureCheck {
         has_title: content.lines().any(|l| l.starts_with('#')),
-        has_scene: lower.contains("场景") || lower.contains("症状") || lower.contains("when") || lower.contains("问题"),
-        has_solution: lower.contains("方案") || lower.contains("解法") || lower.contains("根因")
-            || lower.contains("solution") || lower.contains("fix") || lower.contains("如何"),
-        has_proof: content.contains("proof:") || content.contains("exit_code")
+        has_scene: lower.contains("场景")
+            || lower.contains("症状")
+            || lower.contains("when")
+            || lower.contains("问题"),
+        has_solution: lower.contains("方案")
+            || lower.contains("解法")
+            || lower.contains("根因")
+            || lower.contains("solution")
+            || lower.contains("fix")
+            || lower.contains("如何"),
+        has_proof: content.contains("proof:")
+            || content.contains("exit_code")
             || (content.contains("TASK-") && content.contains("timestamp")),
-        has_source: content.contains("来源") || content.contains("source") || content.contains("TASK-"),
+        has_source: content.contains("来源")
+            || content.contains("source")
+            || content.contains("TASK-"),
         word_count: content.split_whitespace().count(),
     }
 }
@@ -73,7 +83,8 @@ pub fn build_curator_prompt(file_path: &str, content: &str, ticket_id: Option<&s
         .map(|t| format!("关联 Ticket：{t}\n"))
         .unwrap_or_default();
 
-    format!(r#"
+    format!(
+        r#"
 # Knowledge Curator 评审任务
 
 你是 EKET 框架的知识策展专家（Knowledge Curator）。
@@ -133,14 +144,19 @@ REASON:
 - 综合分 ≥ 7 → ACCEPT
 - 综合分 5-6，有明确可改进项 → REVISE
 - 综合分 < 5，或有效性 < 5 → REJECT
-"#, ticket_ref = ticket_ref, file_path = file_path, content = content)
+"#,
+        ticket_ref = ticket_ref,
+        file_path = file_path,
+        content = content
+    )
 }
 
 // ─── 解析 curator 输出 ───────────────────────────────────────────────────────
 
 #[allow(dead_code)]
 pub fn parse_curator_output(output: &str) -> ReviewVerdict {
-    let verdict_line = output.lines()
+    let verdict_line = output
+        .lines()
         .find(|l| l.starts_with("VERDICT:"))
         .unwrap_or("VERDICT: REVISE");
 
@@ -164,11 +180,14 @@ pub fn parse_curator_output(output: &str) -> ReviewVerdict {
         }
         if in_section && (line.starts_with("REASON:") || line.starts_with("SCORES:")) {
             // next section
-            if !issues.is_empty() { in_section = false; }
+            if !issues.is_empty() {
+                in_section = false;
+            }
         }
     }
 
-    let reason = output.lines()
+    let reason = output
+        .lines()
         .skip_while(|l| !l.starts_with("REASON:"))
         .nth(1)
         .unwrap_or("内容质量不足")
@@ -178,13 +197,21 @@ pub fn parse_curator_output(output: &str) -> ReviewVerdict {
     if verdict_line.contains("REJECT") {
         ReviewVerdict::Reject(reason)
     } else {
-        ReviewVerdict::Revise(if issues.is_empty() { vec![reason] } else { issues })
+        ReviewVerdict::Revise(if issues.is_empty() {
+            vec![reason]
+        } else {
+            issues
+        })
     }
 }
 
 // ─── frontmatter 写回 ────────────────────────────────────────────────────────
 
-pub fn stamp_reviewed(file_path: &Path, verdict: &ReviewVerdict, ticket_id: Option<&str>) -> Result<()> {
+pub fn stamp_reviewed(
+    file_path: &Path,
+    verdict: &ReviewVerdict,
+    ticket_id: Option<&str>,
+) -> Result<()> {
     let content = std::fs::read_to_string(file_path)?;
 
     let status = match verdict {
@@ -198,7 +225,10 @@ pub fn stamp_reviewed(file_path: &Path, verdict: &ReviewVerdict, ticket_id: Opti
     // 如果已有 frontmatter (---) 则插入字段，否则在文件头加 frontmatter
     let stamped = if content.starts_with("---") {
         // 在第一个 --- 之后、第二个 --- 之前插入
-        let end = content[3..].find("---").map(|i| i + 6).unwrap_or(content.len());
+        let end = content[3..]
+            .find("---")
+            .map(|i| i + 6)
+            .unwrap_or(content.len());
         let (front, rest) = content.split_at(end);
         let insert = format!(
             "review_status: {status}\nreview_ticket: {ticket_ref}\nreviewed_at: {timestamp}\n"
@@ -221,7 +251,9 @@ pub fn stamp_reviewed(file_path: &Path, verdict: &ReviewVerdict, ticket_id: Opti
 
 pub fn stamp_ticket(tickets_dir: &Path, ticket_id: &str, verdict: &ReviewVerdict, file_name: &str) {
     let ticket_path = tickets_dir.join(format!("{ticket_id}.md"));
-    let Ok(content) = std::fs::read_to_string(&ticket_path) else { return };
+    let Ok(content) = std::fs::read_to_string(&ticket_path) else {
+        return;
+    };
 
     let icon = match verdict {
         ReviewVerdict::Accept => "✅",
@@ -235,7 +267,11 @@ pub fn stamp_ticket(tickets_dir: &Path, ticket_id: &str, verdict: &ReviewVerdict
     let updated = if let Some(pos) = content.find("## 知识沉淀") {
         let after = &content[pos..];
         let insert_at = pos + after.find('\n').unwrap_or(after.len()) + 1;
-        format!("{}{annotation}{}", &content[..insert_at], &content[insert_at..])
+        format!(
+            "{}{annotation}{}",
+            &content[..insert_at],
+            &content[insert_at..]
+        )
     } else {
         format!("{content}{annotation}")
     };
@@ -253,11 +289,17 @@ pub async fn run(args: MemoryReviewArgs) -> Result<()> {
     let file_path: PathBuf = match &args.file {
         Some(f) => {
             let p = PathBuf::from(f);
-            if p.is_absolute() { p } else { project_root.join(f) }
+            if p.is_absolute() {
+                p
+            } else {
+                project_root.join(f)
+            }
         }
         None => {
             // 从 ticket 知识沉淀 section 自动找文件
-            let ticket_id = args.ticket.as_deref()
+            let ticket_id = args
+                .ticket
+                .as_deref()
                 .ok_or_else(|| anyhow::anyhow!("需要指定 FILE 或 --ticket <ID>"))?;
             let ticket_path = tickets_dir.join(format!("{ticket_id}.md"));
             let ticket_content = std::fs::read_to_string(&ticket_path)
@@ -272,8 +314,12 @@ pub async fn run(args: MemoryReviewArgs) -> Result<()> {
     }
 
     let content = std::fs::read_to_string(&file_path)?;
-    let file_name = file_path.file_name().and_then(|n| n.to_str()).unwrap_or("unknown");
-    let rel_path = file_path.strip_prefix(&project_root)
+    let file_name = file_path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("unknown");
+    let rel_path = file_path
+        .strip_prefix(&project_root)
         .map(|p| p.display().to_string())
         .unwrap_or_else(|_| file_path.display().to_string());
 
@@ -281,12 +327,28 @@ pub async fn run(args: MemoryReviewArgs) -> Result<()> {
     let structure = check_structure(&content);
     let mut struct_issues: Vec<String> = Vec::new();
 
-    if !structure.has_title    { struct_issues.push("缺少标题（# 开头）".to_string()); }
-    if !structure.has_scene    { struct_issues.push("缺少场景/症状描述".to_string()); }
-    if !structure.has_solution { struct_issues.push("缺少方案/解法/根因".to_string()); }
-    if !structure.has_proof    { struct_issues.push("缺少 Execution Proof（proof: frontmatter 或 timestamp+exit_code）".to_string()); }
-    if !structure.has_source   { struct_issues.push("缺少来源 TASK-ID 引用".to_string()); }
-    if structure.word_count < 30 { struct_issues.push(format!("内容过于简短（{} 词，建议 ≥30）", structure.word_count)); }
+    if !structure.has_title {
+        struct_issues.push("缺少标题（# 开头）".to_string());
+    }
+    if !structure.has_scene {
+        struct_issues.push("缺少场景/症状描述".to_string());
+    }
+    if !structure.has_solution {
+        struct_issues.push("缺少方案/解法/根因".to_string());
+    }
+    if !structure.has_proof {
+        struct_issues
+            .push("缺少 Execution Proof（proof: frontmatter 或 timestamp+exit_code）".to_string());
+    }
+    if !structure.has_source {
+        struct_issues.push("缺少来源 TASK-ID 引用".to_string());
+    }
+    if structure.word_count < 30 {
+        struct_issues.push(format!(
+            "内容过于简短（{} 词，建议 ≥30）",
+            structure.word_count
+        ));
+    }
 
     if !struct_issues.is_empty() {
         let report = json!({
@@ -300,11 +362,18 @@ pub async fn run(args: MemoryReviewArgs) -> Result<()> {
         println!("{}", serde_json::to_string_pretty(&report)?);
 
         // 写 frontmatter
-        let _ = stamp_reviewed(&file_path, &ReviewVerdict::Revise(struct_issues.clone()),
-                               args.ticket.as_deref());
+        let _ = stamp_reviewed(
+            &file_path,
+            &ReviewVerdict::Revise(struct_issues.clone()),
+            args.ticket.as_deref(),
+        );
         if let Some(ref tid) = args.ticket {
-            stamp_ticket(&tickets_dir, tid,
-                         &ReviewVerdict::Revise(struct_issues), file_name);
+            stamp_ticket(
+                &tickets_dir,
+                tid,
+                &ReviewVerdict::Revise(struct_issues),
+                file_name,
+            );
         }
         bail!("memory:review REVISE — 结构不完整，请修复后重提");
     }
@@ -347,7 +416,9 @@ fn extract_memory_file_from_ticket(ticket_content: &str, project_root: &Path) ->
                     .find(|w| w.contains("confluence/memory/"))?
             };
             let path = project_root.join(path_str.trim_matches('`'));
-            if path.exists() { return Some(path); }
+            if path.exists() {
+                return Some(path);
+            }
         }
     }
     None
@@ -359,7 +430,9 @@ fn find_project_root() -> Option<PathBuf> {
         if dir.join("jira/tickets").exists() && dir.join(".eket").exists() {
             return Some(dir);
         }
-        if !dir.pop() { break; }
+        if !dir.pop() {
+            break;
+        }
     }
     None
 }

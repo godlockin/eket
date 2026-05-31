@@ -48,7 +48,9 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn new() -> Self {
-        Self { middlewares: Vec::new() }
+        Self {
+            middlewares: Vec::new(),
+        }
     }
 
     pub fn add_middleware(mut self, m: impl Middleware + 'static) -> Self {
@@ -148,7 +150,10 @@ impl Middleware for AuditMiddleware {
         let ticket_id = ctx.ticket_id.clone();
         let slaver_id = ctx.slaver_id.clone();
 
-        let conn = self.pool.get().map_err(|e| anyhow::anyhow!("DB pool error: {e}"))?;
+        let conn = self
+            .pool
+            .get()
+            .map_err(|e| anyhow::anyhow!("DB pool error: {e}"))?;
         Self::ensure_table(&conn)?;
         conn.execute(
             "INSERT INTO audit_log (command, ticket_id, slaver_id, elapsed_ms, created_at) VALUES (?1, ?2, ?3, ?4, ?5)",
@@ -175,7 +180,9 @@ mod tests {
         tokio::time::sleep(std::time::Duration::from_millis(5)).await;
         pipeline.run_post(&mut ctx).await.unwrap();
 
-        let elapsed = ctx.metadata["elapsed_ms"].as_u64().expect("elapsed_ms missing");
+        let elapsed = ctx.metadata["elapsed_ms"]
+            .as_u64()
+            .expect("elapsed_ms missing");
         assert!(elapsed > 0, "elapsed_ms should be > 0, got {elapsed}");
     }
 

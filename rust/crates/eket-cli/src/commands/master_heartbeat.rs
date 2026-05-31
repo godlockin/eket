@@ -1,7 +1,7 @@
 /// master:heartbeat — 长驻进程，周期扫描 ready tickets 并分配给 idle slaver
 use anyhow::Result;
-use clap::Args;
 use chrono::Utc;
+use clap::Args;
 use eket_core::{
     dag::{parse_tickets_dag, ready_tickets},
     db::{create_pool, InstanceRow, InstanceScoringStats, SqliteClient},
@@ -13,7 +13,11 @@ use eket_engine::{
     protocol::{ProtocolSender, TaskAssignPayload},
 };
 use serde_json::json;
-use std::{collections::{HashMap, HashSet}, path::{Path, PathBuf}, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 #[derive(Args, Debug)]
 pub struct MasterHeartbeatArgs {
@@ -74,32 +78,26 @@ pub fn parse_required_expertise(tickets_dir: &Path, ticket_id: &str) -> Vec<Stri
         let trimmed = line.trim();
         // Match patterns like:  required_expertise: [rust, devops]
         // or:                   - **required_expertise**: [rust]
-        if let Some(rest) = trimmed
-            .strip_prefix("required_expertise:")
-            .or_else(|| {
-                trimmed
-                    .to_lowercase()
-                    .contains("required_expertise")
-                    .then(|| {
-                        // find the colon after the keyword
-                        trimmed.find(':').map(|i| &trimmed[i + 1..])
-                    })
-                    .flatten()
-                    .map(|_| {
-                        // re-do without lowercase conversion to preserve casing
-                        let lower = trimmed.to_lowercase();
-                        let pos = lower.find("required_expertise").unwrap();
-                        let after_key = &trimmed[pos + "required_expertise".len()..];
-                        after_key.trim_start_matches(|c: char| c == '*' || c == ' ' || c == ':')
-                    })
-            })
-        {
+        if let Some(rest) = trimmed.strip_prefix("required_expertise:").or_else(|| {
+            trimmed
+                .to_lowercase()
+                .contains("required_expertise")
+                .then(|| {
+                    // find the colon after the keyword
+                    trimmed.find(':').map(|i| &trimmed[i + 1..])
+                })
+                .flatten()
+                .map(|_| {
+                    // re-do without lowercase conversion to preserve casing
+                    let lower = trimmed.to_lowercase();
+                    let pos = lower.find("required_expertise").unwrap();
+                    let after_key = &trimmed[pos + "required_expertise".len()..];
+                    after_key.trim_start_matches(|c: char| c == '*' || c == ' ' || c == ':')
+                })
+        }) {
             let rest = rest.trim();
             // strip surrounding brackets
-            let inner = rest
-                .trim_start_matches('[')
-                .trim_end_matches(']')
-                .trim();
+            let inner = rest.trim_start_matches('[').trim_end_matches(']').trim();
             if inner.is_empty() {
                 return vec!["any".to_string()];
             }
@@ -138,12 +136,19 @@ pub fn best_matching_slaver<'a>(
     // Helper: get TrustScore for an instance
     let trust = |inst: &&InstanceRow| -> f32 {
         let s = stats.get(&inst.id).cloned().unwrap_or_default();
-        compute_trust(&factors_from_stats(s.completed_count, s.failed_count, s.total_latency_ms), weights)
+        compute_trust(
+            &factors_from_stats(s.completed_count, s.failed_count, s.total_latency_ms),
+            weights,
+        )
     };
 
     // "any" / empty → all qualify, pick best TrustScore
     if required.is_empty() || required.iter().any(|r| r == "any") {
-        return idle.into_iter().max_by(|a, b| trust(a).partial_cmp(&trust(b)).unwrap_or(std::cmp::Ordering::Equal));
+        return idle.into_iter().max_by(|a, b| {
+            trust(a)
+                .partial_cmp(&trust(b))
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
     }
 
     // ── Layer 1: Vector cosine similarity ────────────────────────────────────
@@ -155,13 +160,21 @@ pub fn best_matching_slaver<'a>(
             let mut tags = inst.skills.clone();
             tags.push(inst.role.clone());
             let sim = cosine_similarity(&query_emb, &encode_tags(&tags));
-            if sim >= VECTOR_THRESHOLD { Some((*inst, sim)) } else { None }
+            if sim >= VECTOR_THRESHOLD {
+                Some((*inst, sim))
+            } else {
+                None
+            }
         })
         .collect();
 
     if !vec_candidates.is_empty() {
         // Among vector matches, pick highest TrustScore
-        vec_candidates.sort_by(|(a, _), (b, _)| trust(b).partial_cmp(&trust(a)).unwrap_or(std::cmp::Ordering::Equal));
+        vec_candidates.sort_by(|(a, _), (b, _)| {
+            trust(b)
+                .partial_cmp(&trust(a))
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
         return vec_candidates.into_iter().next().map(|(inst, _)| inst);
     }
 
@@ -170,17 +183,34 @@ pub fn best_matching_slaver<'a>(
     let mut tag_candidates: Vec<(&InstanceRow, u32)> = idle
         .iter()
         .filter_map(|inst| {
-            let role_score: u32 = if required_set.contains(inst.role.to_lowercase().as_str()) { 2 } else { 0 };
-            let skills_score: u32 = if inst.skills.iter().any(|s| required_set.contains(s.to_lowercase().as_str())) { 1 } else { 0 };
+            let role_score: u32 = if required_set.contains(inst.role.to_lowercase().as_str()) {
+                2
+            } else {
+                0
+            };
+            let skills_score: u32 = if inst
+                .skills
+                .iter()
+                .any(|s| required_set.contains(s.to_lowercase().as_str()))
+            {
+                1
+            } else {
+                0
+            };
             let score = role_score + skills_score;
-            if score > 0 { Some((*inst, score)) } else { None }
+            if score > 0 {
+                Some((*inst, score))
+            } else {
+                None
+            }
         })
         .collect();
 
     if !tag_candidates.is_empty() {
         // Among tag matches, pick highest TrustScore (break ties by tag score)
         tag_candidates.sort_by(|(a, sa), (b, sb)| {
-            trust(b).partial_cmp(&trust(a))
+            trust(b)
+                .partial_cmp(&trust(a))
                 .unwrap_or(std::cmp::Ordering::Equal)
                 .then(sb.cmp(sa))
         });
@@ -268,8 +298,12 @@ pub fn load_waiting_tickets(project_root: &Path) -> Vec<String> {
     if !path.exists() {
         return vec![];
     }
-    let Ok(raw) = std::fs::read_to_string(&path) else { return vec![] };
-    let Ok(mut entries) = serde_json::from_str::<Vec<serde_json::Value>>(&raw) else { return vec![] };
+    let Ok(raw) = std::fs::read_to_string(&path) else {
+        return vec![];
+    };
+    let Ok(mut entries) = serde_json::from_str::<Vec<serde_json::Value>>(&raw) else {
+        return vec![];
+    };
 
     entries.sort_by(|a, b| {
         let ra = a.get("retries").and_then(|v| v.as_u64()).unwrap_or(0);
@@ -279,7 +313,11 @@ pub fn load_waiting_tickets(project_root: &Path) -> Vec<String> {
 
     entries
         .iter()
-        .filter_map(|v| v.get("ticket_id").and_then(|s| s.as_str()).map(|s| s.to_string()))
+        .filter_map(|v| {
+            v.get("ticket_id")
+                .and_then(|s| s.as_str())
+                .map(|s| s.to_string())
+        })
         .collect()
 }
 
@@ -309,7 +347,7 @@ pub fn remove_waiting_entry(project_root: &Path, ticket_id: &str) {
 pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tickets_dir: &Path) {
     // 0. Derive project_root from tickets_dir (one level up from jira/tickets)
     let project_root = tickets_dir
-        .parent()    // jira/
+        .parent() // jira/
         .and_then(|p| p.parent()); // project root
 
     // 1. Collect completed / failed ticket IDs from DB
@@ -345,7 +383,9 @@ pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tick
                                 .unwrap_or(false)
                         })
                         .filter_map(|v| {
-                            v.get("ticket_id").and_then(|s| s.as_str()).map(|s| s.to_string())
+                            v.get("ticket_id")
+                                .and_then(|s| s.as_str())
+                                .map(|s| s.to_string())
                         })
                         .collect();
                     priority_tickets.extend(pending);
@@ -378,9 +418,7 @@ pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tick
     let sender = ProtocolSender::new(mailbox.clone());
 
     // Load TrustScore weights once per cycle (fallback to defaults if config missing)
-    let weights = project_root
-        .map(|r| load_weights(r))
-        .unwrap_or_default();
+    let weights = project_root.map(|r| load_weights(r)).unwrap_or_default();
     let instance_stats = client.get_all_instance_scoring_stats().unwrap_or_default();
 
     for ticket_id in priority_tickets {
@@ -425,7 +463,8 @@ pub async fn check_once(client: &SqliteClient, mailbox: &Arc<AgentMailbox>, tick
                 // Write scoring trace
                 if let Some(root) = project_root {
                     let s = instance_stats.get(&slaver.id).cloned().unwrap_or_default();
-                    let factors = factors_from_stats(s.completed_count, s.failed_count, s.total_latency_ms);
+                    let factors =
+                        factors_from_stats(s.completed_count, s.failed_count, s.total_latency_ms);
                     let trust_score = compute_trust(&factors, &weights);
                     write_scoring_trace(root, &ticket_id, &slaver.id, trust_score, &factors);
                 }
@@ -466,8 +505,12 @@ fn mark_unblocked_dispatched(project_root: &Path, ticket_id: &str) {
     if !queue_path.exists() {
         return;
     }
-    let Ok(raw) = std::fs::read_to_string(&queue_path) else { return };
-    let Ok(mut entries) = serde_json::from_str::<Vec<serde_json::Value>>(&raw) else { return };
+    let Ok(raw) = std::fs::read_to_string(&queue_path) else {
+        return;
+    };
+    let Ok(mut entries) = serde_json::from_str::<Vec<serde_json::Value>>(&raw) else {
+        return;
+    };
 
     let mut changed = false;
     for entry in &mut entries {
@@ -520,7 +563,11 @@ fn write_scoring_trace(
         }
     });
     use std::io::Write;
-    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&path) {
+    if let Ok(mut f) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+    {
         let _ = f.write_all(format!("{entry}\n").as_bytes());
     }
 }
@@ -546,9 +593,8 @@ mod tests {
         } else {
             blocked_by.join(", ")
         };
-        let content = format!(
-            "# {id}: Test ticket\n- **状态**: {status}\n- blocked_by: [{inner}]\n"
-        );
+        let content =
+            format!("# {id}: Test ticket\n- **状态**: {status}\n- blocked_by: [{inner}]\n");
         fs::write(dir.path().join(format!("{id}.md")), content).unwrap();
     }
 
@@ -585,7 +631,9 @@ mod tests {
         let client = make_client();
 
         make_ticket_file_with_expertise(&ticket_dir, "TASK-1", "todo", &[], &["rust"]);
-        client.create_ticket("TASK-1", "Test", "P1", "task").unwrap();
+        client
+            .create_ticket("TASK-1", "Test", "P1", "task")
+            .unwrap();
         client
             .upsert_instance("slaver-1", "slaver", &["rust".to_string()], "idle")
             .unwrap();
@@ -595,10 +643,17 @@ mod tests {
 
         let row = client.get_ticket_row("TASK-1").unwrap().unwrap();
         assert_eq!(row.status, "in_progress", "ticket should be in_progress");
-        assert_eq!(row.assignee.as_deref(), Some("slaver-1"), "assignee should be set");
+        assert_eq!(
+            row.assignee.as_deref(),
+            Some("slaver-1"),
+            "assignee should be set"
+        );
 
         let inst = client.get_instance("slaver-1").unwrap().unwrap();
-        assert_eq!(inst.status, "busy", "slaver should be busy after assignment");
+        assert_eq!(
+            inst.status, "busy",
+            "slaver should be busy after assignment"
+        );
     }
 
     /// 2. Ready ticket but no idle slaver → ticket stays todo
@@ -609,14 +664,19 @@ mod tests {
         let client = make_client();
 
         make_ticket_file(&ticket_dir, "TASK-2", "todo", &[]);
-        client.create_ticket("TASK-2", "No slaver test", "P1", "task").unwrap();
+        client
+            .create_ticket("TASK-2", "No slaver test", "P1", "task")
+            .unwrap();
         // deliberately no slaver registered
 
         let mailbox = Arc::new(AgentMailbox::new(mailbox_dir.path()));
         check_once(&client, &mailbox, ticket_dir.path()).await;
 
         let row = client.get_ticket_row("TASK-2").unwrap().unwrap();
-        assert_eq!(row.status, "todo", "ticket should remain todo when no idle slaver");
+        assert_eq!(
+            row.status, "todo",
+            "ticket should remain todo when no idle slaver"
+        );
     }
 
     /// 3. Ticket blocked by incomplete dependency → not assigned
@@ -629,18 +689,27 @@ mod tests {
         // TASK-3 blocked by TASK-4 (not done)
         make_ticket_file(&ticket_dir, "TASK-3", "todo", &["TASK-4"]);
         make_ticket_file(&ticket_dir, "TASK-4", "todo", &[]);
-        client.create_ticket("TASK-3", "Blocked ticket", "P1", "task").unwrap();
-        client.create_ticket("TASK-4", "Dependency", "P1", "task").unwrap();
+        client
+            .create_ticket("TASK-3", "Blocked ticket", "P1", "task")
+            .unwrap();
+        client
+            .create_ticket("TASK-4", "Dependency", "P1", "task")
+            .unwrap();
 
         // One idle slaver available — will be consumed by TASK-4 (unblocked)
-        client.upsert_instance("slaver-3", "slaver", &[], "idle").unwrap();
+        client
+            .upsert_instance("slaver-3", "slaver", &[], "idle")
+            .unwrap();
 
         let mailbox = Arc::new(AgentMailbox::new(mailbox_dir.path()));
         check_once(&client, &mailbox, ticket_dir.path()).await;
 
         // TASK-3 must remain todo — blocked by TASK-4 which is not done
         let row3 = client.get_ticket_row("TASK-3").unwrap().unwrap();
-        assert_eq!(row3.status, "todo", "TASK-3 should remain todo (blocked by TASK-4)");
+        assert_eq!(
+            row3.status, "todo",
+            "TASK-3 should remain todo (blocked by TASK-4)"
+        );
     }
 
     /// 4. Ticket requires rust, slaver has mismatched role/skills → ticket NOT assigned
@@ -651,7 +720,9 @@ mod tests {
         let client = make_client();
 
         make_ticket_file_with_expertise(&ticket_dir, "TASK-5", "todo", &[], &["rust"]);
-        client.create_ticket("TASK-5", "Rust-only task", "P1", "task").unwrap();
+        client
+            .create_ticket("TASK-5", "Rust-only task", "P1", "task")
+            .unwrap();
 
         // Slaver with frontend role and no skills — should NOT match "rust"
         client
@@ -662,7 +733,10 @@ mod tests {
         check_once(&client, &mailbox, ticket_dir.path()).await;
 
         let row = client.get_ticket_row("TASK-5").unwrap().unwrap();
-        assert_eq!(row.status, "todo", "ticket should remain todo: no matching slaver");
+        assert_eq!(
+            row.status, "todo",
+            "ticket should remain todo: no matching slaver"
+        );
         assert!(row.assignee.is_none(), "assignee should not be set");
     }
 
@@ -683,7 +757,11 @@ mod tests {
     #[test]
     fn parse_expertise_missing_field_returns_any() {
         let dir = TempDir::new().unwrap();
-        fs::write(dir.path().join("TASK-11.md"), "# TASK-11\nno expertise here\n").unwrap();
+        fs::write(
+            dir.path().join("TASK-11.md"),
+            "# TASK-11\nno expertise here\n",
+        )
+        .unwrap();
         let result = parse_required_expertise(dir.path(), "TASK-11");
         assert_eq!(result, vec!["any"]);
     }
@@ -698,40 +776,100 @@ mod tests {
     #[test]
     fn best_matching_any_returns_first_idle() {
         let instances = vec![
-            InstanceRow { id: "a".into(), role: "slaver".into(), skills: vec![], status: "idle".into(), last_seen: None },
-            InstanceRow { id: "b".into(), role: "slaver".into(), skills: vec![], status: "idle".into(), last_seen: None },
+            InstanceRow {
+                id: "a".into(),
+                role: "slaver".into(),
+                skills: vec![],
+                status: "idle".into(),
+                last_seen: None,
+            },
+            InstanceRow {
+                id: "b".into(),
+                role: "slaver".into(),
+                skills: vec![],
+                status: "idle".into(),
+                last_seen: None,
+            },
         ];
-        let result = best_matching_slaver(&instances, &["any".to_string()], &HashMap::new(), &ScoreWeights::default());
+        let result = best_matching_slaver(
+            &instances,
+            &["any".to_string()],
+            &HashMap::new(),
+            &ScoreWeights::default(),
+        );
         assert!(result.is_some()); // "any" → picks one idle (TrustScore-based, both equal)
     }
 
     #[test]
     fn best_matching_role_wins_over_skills() {
         let instances = vec![
-            InstanceRow { id: "skills-only".into(), role: "generic".into(), skills: vec!["rust".into()], status: "idle".into(), last_seen: None },
-            InstanceRow { id: "role-match".into(), role: "rust".into(), skills: vec![], status: "idle".into(), last_seen: None },
+            InstanceRow {
+                id: "skills-only".into(),
+                role: "generic".into(),
+                skills: vec!["rust".into()],
+                status: "idle".into(),
+                last_seen: None,
+            },
+            InstanceRow {
+                id: "role-match".into(),
+                role: "rust".into(),
+                skills: vec![],
+                status: "idle".into(),
+                last_seen: None,
+            },
         ];
-        let result = best_matching_slaver(&instances, &["rust".to_string()], &HashMap::new(), &ScoreWeights::default());
+        let result = best_matching_slaver(
+            &instances,
+            &["rust".to_string()],
+            &HashMap::new(),
+            &ScoreWeights::default(),
+        );
         // Both match via vector or tag; role-match has higher tag score → selected
         assert!(result.is_some());
     }
 
     #[test]
     fn best_matching_no_match_returns_none() {
-        let instances = vec![
-            InstanceRow { id: "fe".into(), role: "frontend".into(), skills: vec!["js".into()], status: "idle".into(), last_seen: None },
-        ];
-        let result = best_matching_slaver(&instances, &["rust".to_string()], &HashMap::new(), &ScoreWeights::default());
+        let instances = vec![InstanceRow {
+            id: "fe".into(),
+            role: "frontend".into(),
+            skills: vec!["js".into()],
+            status: "idle".into(),
+            last_seen: None,
+        }];
+        let result = best_matching_slaver(
+            &instances,
+            &["rust".to_string()],
+            &HashMap::new(),
+            &ScoreWeights::default(),
+        );
         assert!(result.is_none());
     }
 
     #[test]
     fn best_matching_skips_busy_instances() {
         let instances = vec![
-            InstanceRow { id: "busy-rust".into(), role: "rust".into(), skills: vec![], status: "busy".into(), last_seen: None },
-            InstanceRow { id: "idle-generic".into(), role: "generic".into(), skills: vec!["rust".into()], status: "idle".into(), last_seen: None },
+            InstanceRow {
+                id: "busy-rust".into(),
+                role: "rust".into(),
+                skills: vec![],
+                status: "busy".into(),
+                last_seen: None,
+            },
+            InstanceRow {
+                id: "idle-generic".into(),
+                role: "generic".into(),
+                skills: vec!["rust".into()],
+                status: "idle".into(),
+                last_seen: None,
+            },
         ];
-        let result = best_matching_slaver(&instances, &["rust".to_string()], &HashMap::new(), &ScoreWeights::default());
+        let result = best_matching_slaver(
+            &instances,
+            &["rust".to_string()],
+            &HashMap::new(),
+            &ScoreWeights::default(),
+        );
         assert_eq!(result.map(|i| i.id.as_str()), Some("idle-generic"));
     }
 
@@ -762,19 +900,28 @@ mod tests {
         let client = make_client();
 
         write_expertise_ticket(&tickets_dir, "TASK-201", &["rust"]);
-        client.create_ticket("TASK-201", "Rust task", "P1", "task").unwrap();
+        client
+            .create_ticket("TASK-201", "Rust task", "P1", "task")
+            .unwrap();
         // slaver with frontend skills — no match for "rust"
-        client.upsert_instance("slaver-fe", "slaver", &["frontend".to_string()], "idle").unwrap();
+        client
+            .upsert_instance("slaver-fe", "slaver", &["frontend".to_string()], "idle")
+            .unwrap();
 
         let mailbox = Arc::new(AgentMailbox::new(mailbox_dir.path()));
         check_once(&client, &mailbox, &tickets_dir).await;
 
         let waiting_path = root.path().join(".eket/state/waiting-for-expert.json");
-        assert!(waiting_path.exists(), "waiting-for-expert.json should exist");
+        assert!(
+            waiting_path.exists(),
+            "waiting-for-expert.json should exist"
+        );
         let raw = fs::read_to_string(&waiting_path).unwrap();
         let entries: Vec<serde_json::Value> = serde_json::from_str(&raw).unwrap();
         assert!(
-            entries.iter().any(|e| e["ticket_id"] == "TASK-201" && e["retries"] == 1),
+            entries
+                .iter()
+                .any(|e| e["ticket_id"] == "TASK-201" && e["retries"] == 1),
             "TASK-201 should be in waiting queue with retries=1"
         );
 
@@ -790,8 +937,12 @@ mod tests {
         let client = make_client();
 
         write_expertise_ticket(&tickets_dir, "TASK-201", &["rust"]);
-        client.create_ticket("TASK-201", "Rust task", "P1", "task").unwrap();
-        client.upsert_instance("slaver-fe", "slaver", &["frontend".to_string()], "idle").unwrap();
+        client
+            .create_ticket("TASK-201", "Rust task", "P1", "task")
+            .unwrap();
+        client
+            .upsert_instance("slaver-fe", "slaver", &["frontend".to_string()], "idle")
+            .unwrap();
 
         let mailbox = Arc::new(AgentMailbox::new(mailbox_dir.path()));
         // First call
@@ -803,7 +954,9 @@ mod tests {
         let raw = fs::read_to_string(&waiting_path).unwrap();
         let entries: Vec<serde_json::Value> = serde_json::from_str(&raw).unwrap();
         assert!(
-            entries.iter().any(|e| e["ticket_id"] == "TASK-201" && e["retries"] == 2),
+            entries
+                .iter()
+                .any(|e| e["ticket_id"] == "TASK-201" && e["retries"] == 2),
             "retries should be 2 after second call"
         );
     }
@@ -828,9 +981,13 @@ mod tests {
         fs::write(inbox_dir.join("need-expert-TASK-202.md"), "hint").unwrap();
 
         write_expertise_ticket(&tickets_dir, "TASK-202", &["rust"]);
-        client.create_ticket("TASK-202", "Rust task", "P1", "task").unwrap();
+        client
+            .create_ticket("TASK-202", "Rust task", "P1", "task")
+            .unwrap();
         // Rust-skilled slaver — matches
-        client.upsert_instance("slaver-rust", "slaver", &["rust".to_string()], "idle").unwrap();
+        client
+            .upsert_instance("slaver-rust", "slaver", &["rust".to_string()], "idle")
+            .unwrap();
 
         let mailbox = Arc::new(AgentMailbox::new(mailbox_dir.path()));
         check_once(&client, &mailbox, &tickets_dir).await;
@@ -851,23 +1008,71 @@ mod tests {
     #[test]
     fn test_heartbeat_vector_matching_basic() {
         let instances = vec![
-            InstanceRow { id: "slaver-rust".into(), role: "rust".into(), skills: vec!["rust".into()], status: "idle".into(), last_seen: None },
-            InstanceRow { id: "slaver-fe".into(), role: "frontend".into(), skills: vec!["js".into(), "css".into()], status: "idle".into(), last_seen: None },
+            InstanceRow {
+                id: "slaver-rust".into(),
+                role: "rust".into(),
+                skills: vec!["rust".into()],
+                status: "idle".into(),
+                last_seen: None,
+            },
+            InstanceRow {
+                id: "slaver-fe".into(),
+                role: "frontend".into(),
+                skills: vec!["js".into(), "css".into()],
+                status: "idle".into(),
+                last_seen: None,
+            },
         ];
-        let result = best_matching_slaver(&instances, &["rust".to_string()], &HashMap::new(), &ScoreWeights::default());
+        let result = best_matching_slaver(
+            &instances,
+            &["rust".to_string()],
+            &HashMap::new(),
+            &ScoreWeights::default(),
+        );
         assert_eq!(result.map(|i| i.id.as_str()), Some("slaver-rust"));
     }
 
     #[test]
     fn test_heartbeat_prefers_higher_trust_slaver() {
         let instances = vec![
-            InstanceRow { id: "low-trust".into(), role: "rust".into(), skills: vec!["rust".into()], status: "idle".into(), last_seen: None },
-            InstanceRow { id: "high-trust".into(), role: "rust".into(), skills: vec!["rust".into()], status: "idle".into(), last_seen: None },
+            InstanceRow {
+                id: "low-trust".into(),
+                role: "rust".into(),
+                skills: vec!["rust".into()],
+                status: "idle".into(),
+                last_seen: None,
+            },
+            InstanceRow {
+                id: "high-trust".into(),
+                role: "rust".into(),
+                skills: vec!["rust".into()],
+                status: "idle".into(),
+                last_seen: None,
+            },
         ];
         let mut stats = HashMap::new();
-        stats.insert("low-trust".to_string(), InstanceScoringStats { completed_count: 2, failed_count: 8, total_latency_ms: 120_000 });
-        stats.insert("high-trust".to_string(), InstanceScoringStats { completed_count: 50, failed_count: 2, total_latency_ms: 100_000 });
-        let result = best_matching_slaver(&instances, &["rust".to_string()], &stats, &ScoreWeights::default());
+        stats.insert(
+            "low-trust".to_string(),
+            InstanceScoringStats {
+                completed_count: 2,
+                failed_count: 8,
+                total_latency_ms: 120_000,
+            },
+        );
+        stats.insert(
+            "high-trust".to_string(),
+            InstanceScoringStats {
+                completed_count: 50,
+                failed_count: 2,
+                total_latency_ms: 100_000,
+            },
+        );
+        let result = best_matching_slaver(
+            &instances,
+            &["rust".to_string()],
+            &stats,
+            &ScoreWeights::default(),
+        );
         assert_eq!(result.map(|i| i.id.as_str()), Some("high-trust"));
     }
 }

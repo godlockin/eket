@@ -48,13 +48,12 @@ pub async fn run(args: TicketIndexArgs) -> Result<()> {
     let mut indexed = 0usize;
     let mut failed = 0usize;
 
-    scan_dir(dir, &mut |path| {
-        match TicketFile::read(path) {
-            Ok(ticket) => {
-                let now = chrono::Utc::now().timestamp();
-                let status_str = format!("{:?}", ticket.status).to_lowercase();
-                let result = conn.execute(
-                    r#"INSERT INTO ticket_index (id, title, status, priority, ticket_type, indexed_at)
+    scan_dir(dir, &mut |path| match TicketFile::read(path) {
+        Ok(ticket) => {
+            let now = chrono::Utc::now().timestamp();
+            let status_str = format!("{:?}", ticket.status).to_lowercase();
+            let result = conn.execute(
+                r#"INSERT INTO ticket_index (id, title, status, priority, ticket_type, indexed_at)
                        VALUES (?1, ?2, ?3, ?4, ?5, ?6)
                        ON CONFLICT(id) DO UPDATE SET
                            title = excluded.title,
@@ -62,22 +61,21 @@ pub async fn run(args: TicketIndexArgs) -> Result<()> {
                            priority = excluded.priority,
                            ticket_type = excluded.ticket_type,
                            indexed_at = excluded.indexed_at"#,
-                    rusqlite::params![
-                        ticket.id,
-                        ticket.title,
-                        status_str,
-                        ticket.priority,
-                        ticket.ticket_type,
-                        now,
-                    ],
-                );
-                match result {
-                    Ok(_) => indexed += 1,
-                    Err(_) => failed += 1,
-                }
+                rusqlite::params![
+                    ticket.id,
+                    ticket.title,
+                    status_str,
+                    ticket.priority,
+                    ticket.ticket_type,
+                    now,
+                ],
+            );
+            match result {
+                Ok(_) => indexed += 1,
+                Err(_) => failed += 1,
             }
-            Err(_) => failed += 1,
         }
+        Err(_) => failed += 1,
     });
 
     let elapsed_ms = start.elapsed().as_millis();

@@ -133,9 +133,7 @@ mod tests {
     use eket_core::redis::EketRedisClient;
 
     async fn make_resolver() -> ConflictResolver {
-        let redis = Arc::new(
-            EketRedisClient::connect("127.0.0.1", 19999, None).await,
-        );
+        let redis = Arc::new(EketRedisClient::connect("127.0.0.1", 19999, None).await);
         let lm = Arc::new(LockManager::new(redis));
         ConflictResolver::new(lm)
     }
@@ -143,7 +141,11 @@ mod tests {
     #[tokio::test]
     async fn task_conflict_first_claim_wins() {
         let resolver = make_resolver().await;
-        let claimants = vec!["slaver1".to_string(), "slaver2".to_string(), "slaver3".to_string()];
+        let claimants = vec![
+            "slaver1".to_string(),
+            "slaver2".to_string(),
+            "slaver3".to_string(),
+        ];
         let res = resolver.handle_task_conflict("TASK-001", &claimants).await;
         assert_eq!(res.winner, "slaver1");
         assert!(res.losers.contains(&"slaver2".to_string()));
@@ -154,7 +156,11 @@ mod tests {
     #[tokio::test]
     async fn resource_conflict_lock_queue() {
         let resolver = make_resolver().await;
-        let requestors = vec!["inst1".to_string(), "inst2".to_string(), "inst3".to_string()];
+        let requestors = vec![
+            "inst1".to_string(),
+            "inst2".to_string(),
+            "inst3".to_string(),
+        ];
         let res = resolver
             .handle_resource_conflict("shared-db", &requestors)
             .await;

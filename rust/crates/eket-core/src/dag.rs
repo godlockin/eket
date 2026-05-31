@@ -48,18 +48,16 @@ pub enum TriggerRule {
 pub fn parse_ticket_file(content: &str, ticket_id: &str) -> (DagNode, Vec<String>) {
     // Title: "# TASK-NNN: <title>" or "**标题**: <title>"
     let label = {
-        let h1 = content
-            .lines()
-            .find_map(|line| {
-                let line = line.trim();
-                if line.starts_with('#') {
-                    // "# TASK-NNN: <title>" — grab after first `: `
-                    if let Some(pos) = line.find(": ") {
-                        return Some(line[pos + 2..].trim().to_string());
-                    }
+        let h1 = content.lines().find_map(|line| {
+            let line = line.trim();
+            if line.starts_with('#') {
+                // "# TASK-NNN: <title>" — grab after first `: `
+                if let Some(pos) = line.find(": ") {
+                    return Some(line[pos + 2..].trim().to_string());
                 }
-                None
-            });
+            }
+            None
+        });
         h1.or_else(|| {
             content.lines().find_map(|line| {
                 let re = "**标题**";
@@ -353,10 +351,9 @@ pub fn detect_cycle(dag: &DagResponse) -> Option<Vec<String>> {
 
     let node_ids: Vec<String> = dag.nodes.iter().map(|n| n.id.clone()).collect();
     for id in &node_ids {
-        if !visited.contains(id)
-            && dfs(id, &adj, &mut visited, &mut rec_stack, &mut cycle) {
-                return Some(cycle);
-            }
+        if !visited.contains(id) && dfs(id, &adj, &mut visited, &mut rec_stack, &mut cycle) {
+            return Some(cycle);
+        }
     }
     None
 }
@@ -403,7 +400,10 @@ pub fn ready_tickets(
         .iter()
         .filter(|n| n.status == "todo")
         .filter(|n| {
-            let blocked_by = blocked_by_map.get(&n.id).map(|v| v.as_slice()).unwrap_or(&[]);
+            let blocked_by = blocked_by_map
+                .get(&n.id)
+                .map(|v| v.as_slice())
+                .unwrap_or(&[]);
             // TASK-187: Use per-ticket trigger_rule instead of hardcoded AllSuccess
             can_proceed(blocked_by, n.trigger_rule.clone(), completed, failed)
         })
@@ -679,8 +679,18 @@ mod tests {
     // 11. Empty blocked_by always proceeds
     #[test]
     fn test_can_proceed_empty_blocked_by() {
-        assert!(can_proceed(&[], TriggerRule::AllSuccess, &hs(&[]), &hs(&[])));
-        assert!(can_proceed(&[], TriggerRule::OneSuccess, &hs(&[]), &hs(&[])));
+        assert!(can_proceed(
+            &[],
+            TriggerRule::AllSuccess,
+            &hs(&[]),
+            &hs(&[])
+        ));
+        assert!(can_proceed(
+            &[],
+            TriggerRule::OneSuccess,
+            &hs(&[]),
+            &hs(&[])
+        ));
         assert!(can_proceed(&[], TriggerRule::AllDone, &hs(&[]), &hs(&[])));
     }
 

@@ -20,9 +20,7 @@ pub struct TeamStatusArgs {
 }
 
 pub async fn run(args: TeamStatusArgs) -> Result<()> {
-    let db_path = args
-        .db_path
-        .unwrap_or_else(|| ".eket/eket.db".to_string());
+    let db_path = args.db_path.unwrap_or_else(|| ".eket/eket.db".to_string());
 
     let report = match create_pool(&db_path) {
         Err(e) => json!({ "error": format!("db error: {e}") }),
@@ -43,7 +41,9 @@ pub fn build_team_status(client: &SqliteClient) -> serde_json::Value {
     };
 
     // For each instance, find their current ticket (in_progress)
-    let tickets = client.list_tickets(Some("in_progress"), None, None).unwrap_or_default();
+    let tickets = client
+        .list_tickets(Some("in_progress"), None, None)
+        .unwrap_or_default();
 
     let agents: Vec<serde_json::Value> = instances
         .iter()
@@ -102,8 +102,12 @@ mod tests {
         let pool = create_pool(&db_path).unwrap();
         let client = SqliteClient::new(pool);
 
-        client.upsert_instance("slaver_1", "backend", &[], "busy").unwrap();
-        client.upsert_instance("slaver_2", "frontend", &[], "idle").unwrap();
+        client
+            .upsert_instance("slaver_1", "backend", &[], "busy")
+            .unwrap();
+        client
+            .upsert_instance("slaver_2", "frontend", &[], "idle")
+            .unwrap();
 
         let result = build_team_status(&client);
         assert_eq!(result["summary"]["total"], 2);
