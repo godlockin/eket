@@ -161,7 +161,8 @@ impl ImportanceCalculator {
 
     /// Register an agent
     pub fn register_agent(&mut self, agent_id: &str, agent_name: &str) {
-        self.agent_names.insert(agent_id.to_string(), agent_name.to_string());
+        self.agent_names
+            .insert(agent_id.to_string(), agent_name.to_string());
         self.contributions.entry(agent_id.to_string()).or_default();
     }
 
@@ -175,67 +176,86 @@ impl ImportanceCalculator {
 
     /// Calculate scores for all agents
     pub fn calculate_scores(&self) -> Vec<AgentImportanceScore> {
-        let total_tokens: u64 = self.contributions.values()
+        let total_tokens: u64 = self
+            .contributions
+            .values()
             .flat_map(|v| v.iter())
             .map(|c| c.tokens_used)
             .sum();
 
         let max_tokens = total_tokens.max(1) as f64;
 
-        self.contributions.keys().map(|agent_id| {
-            let contributions = self.contributions.get(agent_id).unwrap();
-            let agent_name = self.agent_names.get(agent_id)
-                .cloned()
-                .unwrap_or_else(|| agent_id.clone());
+        self.contributions
+            .keys()
+            .map(|agent_id| {
+                let contributions = self.contributions.get(agent_id).unwrap();
+                let agent_name = self
+                    .agent_names
+                    .get(agent_id)
+                    .cloned()
+                    .unwrap_or_else(|| agent_id.clone());
 
-            let mut score = AgentImportanceScore::new(agent_id, &agent_name);
+                let mut score = AgentImportanceScore::new(agent_id, &agent_name);
 
-            if contributions.is_empty() {
-                return score;
-            }
+                if contributions.is_empty() {
+                    return score;
+                }
 
-            // Count metrics
-            let total = contributions.len() as f64;
-            let adopted = contributions.iter().filter(|c| c.adopted).count() as f64;
-            let solutions = contributions.iter()
-                .filter(|c| matches!(c.contribution_type, ContributionType::Solution | ContributionType::Implementation))
-                .count() as f64;
-            let tokens: u64 = contributions.iter().map(|c| c.tokens_used).sum();
-            let quality_sum: f64 = contributions.iter()
-                .filter_map(|c| c.quality_rating)
-                .map(|r| r as f64 / 5.0)
-                .sum();
-            let quality_count = contributions.iter()
-                .filter(|c| c.quality_rating.is_some())
-                .count() as f64;
+                // Count metrics
+                let total = contributions.len() as f64;
+                let adopted = contributions.iter().filter(|c| c.adopted).count() as f64;
+                let solutions = contributions
+                    .iter()
+                    .filter(|c| {
+                        matches!(
+                            c.contribution_type,
+                            ContributionType::Solution | ContributionType::Implementation
+                        )
+                    })
+                    .count() as f64;
+                let tokens: u64 = contributions.iter().map(|c| c.tokens_used).sum();
+                let quality_sum: f64 = contributions
+                    .iter()
+                    .filter_map(|c| c.quality_rating)
+                    .map(|r| r as f64 / 5.0)
+                    .sum();
+                let quality_count = contributions
+                    .iter()
+                    .filter(|c| c.quality_rating.is_some())
+                    .count() as f64;
 
-            // Calculate component scores
-            score.contribution_count = contributions.len() as u32;
-            score.tokens_used = tokens;
+                // Calculate component scores
+                score.contribution_count = contributions.len() as u32;
+                score.tokens_used = tokens;
 
-            // Task contribution: solutions / total contributions
-            score.task_contribution = if total > 0.0 { solutions / total } else { 0.0 };
+                // Task contribution: solutions / total contributions
+                score.task_contribution = if total > 0.0 { solutions / total } else { 0.0 };
 
-            // Quality impact: average quality rating
-            score.quality_impact = if quality_count > 0.0 { quality_sum / quality_count } else { 0.5 };
+                // Quality impact: average quality rating
+                score.quality_impact = if quality_count > 0.0 {
+                    quality_sum / quality_count
+                } else {
+                    0.5
+                };
 
-            // Efficiency: inverse of token proportion (less tokens = more efficient)
-            let token_proportion = tokens as f64 / max_tokens;
-            score.efficiency_score = 1.0 - (token_proportion * 0.8); // Scale down impact
+                // Efficiency: inverse of token proportion (less tokens = more efficient)
+                let token_proportion = tokens as f64 / max_tokens;
+                score.efficiency_score = 1.0 - (token_proportion * 0.8); // Scale down impact
 
-            // Adoption rate: adopted / total
-            score.adoption_rate = if total > 0.0 { adopted / total } else { 0.0 };
+                // Adoption rate: adopted / total
+                score.adoption_rate = if total > 0.0 { adopted / total } else { 0.0 };
 
-            // Calculate overall
-            score.overall_score = score.calculate_overall_with_weights(
-                self.weights.task_contribution,
-                self.weights.quality_impact,
-                self.weights.efficiency,
-                self.weights.adoption_rate,
-            );
+                // Calculate overall
+                score.overall_score = score.calculate_overall_with_weights(
+                    self.weights.task_contribution,
+                    self.weights.quality_impact,
+                    self.weights.efficiency,
+                    self.weights.adoption_rate,
+                );
 
-            score
-        }).collect()
+                score
+            })
+            .collect()
     }
 
     /// Generate a team score report
@@ -302,15 +322,22 @@ impl TeamScoreReport {
 
     /// Get agents below a score threshold (candidates for removal)
     pub fn underperformers(&self, threshold: f64) -> Vec<&AgentImportanceScore> {
-        self.scores.iter().filter(|s| s.overall_score < threshold).collect()
+        self.scores
+            .iter()
+            .filter(|s| s.overall_score < threshold)
+            .collect()
     }
 
     /// Format as markdown table
     pub fn to_markdown(&self) -> String {
         let mut output = String::new();
         output.push_str(&format!("## Team Score Report: {}\n\n", self.task_id));
-        output.push_str("| Rank | Expert | Score | Task | Quality | Efficiency | Adoption | Tokens |\n");
-        output.push_str("|------|--------|-------|------|---------|------------|----------|--------|\n");
+        output.push_str(
+            "| Rank | Expert | Score | Task | Quality | Efficiency | Adoption | Tokens |\n",
+        );
+        output.push_str(
+            "|------|--------|-------|------|---------|------------|----------|--------|\n",
+        );
 
         for (i, score) in self.scores.iter().enumerate() {
             output.push_str(&format!(

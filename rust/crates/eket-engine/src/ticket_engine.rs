@@ -54,7 +54,9 @@ pub struct TicketEngine {
 impl TicketEngine {
     pub fn new(pool: Arc<Pool<SqliteConnectionManager>>) -> Self {
         let (event_tx, _) = broadcast::channel(BROADCAST_CAPACITY);
-        let conn = pool.get().expect("TicketEngine::new: failed to get connection");
+        let conn = pool
+            .get()
+            .expect("TicketEngine::new: failed to get connection");
         Self::ensure_table(&conn).expect("TicketEngine::new: failed to ensure table");
         Self { pool, event_tx }
     }
@@ -88,8 +90,14 @@ impl TicketEngine {
                 rusqlite::params![tid, from_s, to_s, ts_clone],
             );
             match result {
-                Ok(_) => { conn.execute_batch("COMMIT")?; Ok(()) }
-                Err(e) => { let _ = conn.execute_batch("ROLLBACK"); Err(EketError::Sqlite(e)) }
+                Ok(_) => {
+                    conn.execute_batch("COMMIT")?;
+                    Ok(())
+                }
+                Err(e) => {
+                    let _ = conn.execute_batch("ROLLBACK");
+                    Err(EketError::Sqlite(e))
+                }
             }
         })
         .await
@@ -224,7 +232,8 @@ mod tests {
         );
         {
             let conn = pool.get().unwrap();
-            conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;").unwrap();
+            conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;")
+                .unwrap();
         }
         pool
     }
@@ -250,7 +259,8 @@ mod tests {
                     updated_at TEXT NOT NULL,
                     PRIMARY KEY (ticket_id, slaver_id)
                 )",
-            ).unwrap();
+            )
+            .unwrap();
         }
         (engine, pool)
     }
@@ -271,10 +281,13 @@ mod tests {
         assert_eq!(result.to, WorkflowState::Analysis);
 
         let conn = pool.get().unwrap();
-        let count: i64 = conn.query_row(
-            "SELECT COUNT(*) FROM workflow_transitions WHERE ticket_id = 'TASK-001'",
-            [], |row| row.get(0),
-        ).expect("count query");
+        let count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM workflow_transitions WHERE ticket_id = 'TASK-001'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("count query");
         assert_eq!(count, 1);
 
         let (from_s, to_s): (String, String) = conn.query_row(
@@ -302,10 +315,13 @@ mod tests {
         );
 
         let conn = pool.get().unwrap();
-        let count: i64 = conn.query_row(
-            "SELECT COUNT(*) FROM workflow_transitions WHERE ticket_id = 'TASK-002'",
-            [], |row| row.get(0),
-        ).expect("count query");
+        let count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM workflow_transitions WHERE ticket_id = 'TASK-002'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("count query");
         assert_eq!(count, 0);
     }
 
@@ -320,10 +336,12 @@ mod tests {
 
         let (r1, r2) = tokio::join!(
             tokio::spawn(async move {
-                e1.transition("TASK-010", WorkflowState::Backlog, WorkflowState::Analysis).await
+                e1.transition("TASK-010", WorkflowState::Backlog, WorkflowState::Analysis)
+                    .await
             }),
             tokio::spawn(async move {
-                e2.transition("TASK-011", WorkflowState::Analysis, WorkflowState::Ready).await
+                e2.transition("TASK-011", WorkflowState::Analysis, WorkflowState::Ready)
+                    .await
             }),
         );
         r1.expect("join1").expect("transition1");
@@ -349,10 +367,9 @@ mod tests {
             .await
             .expect("transition");
 
-        let event = tokio::time::timeout(
-            std::time::Duration::from_millis(500),
-            async { rx.recv().await },
-        )
+        let event = tokio::time::timeout(std::time::Duration::from_millis(500), async {
+            rx.recv().await
+        })
         .await
         .expect("timeout waiting for event")
         .expect("recv error");
@@ -377,7 +394,8 @@ mod tests {
                  (ticket_id, slaver_id, phase, session_id, metadata, created_at, updated_at) \
                  VALUES (?1, ?2, ?3, NULL, NULL, ?4, ?5)",
                 rusqlite::params!["TASK-300", "slaver_1", "in_progress", now, now],
-            ).unwrap();
+            )
+            .unwrap();
         }
 
         let result = engine.recover("TASK-300").await.expect("recover failed");
@@ -412,8 +430,15 @@ mod tests {
                 "INSERT INTO execution_checkpoints \
                  (ticket_id, slaver_id, phase, session_id, metadata, created_at, updated_at) \
                  VALUES (?1, ?2, ?3, NULL, NULL, ?4, ?5)",
-                rusqlite::params!["TASK-301", "slaver_1", "in_progress", ten_min_ago, ten_min_ago],
-            ).unwrap();
+                rusqlite::params![
+                    "TASK-301",
+                    "slaver_1",
+                    "in_progress",
+                    ten_min_ago,
+                    ten_min_ago
+                ],
+            )
+            .unwrap();
         }
 
         let result = engine.recover("TASK-301").await.expect("recover failed");
@@ -421,10 +446,9 @@ mod tests {
         assert_eq!(result.state, Some(WorkflowState::InProgress));
         assert!(result.reason.contains("ESCALATE"));
 
-        let event = tokio::time::timeout(
-            std::time::Duration::from_millis(500),
-            async { rx.recv().await },
-        )
+        let event = tokio::time::timeout(std::time::Duration::from_millis(500), async {
+            rx.recv().await
+        })
         .await
         .expect("timeout waiting for ESCALATE event")
         .expect("recv error");

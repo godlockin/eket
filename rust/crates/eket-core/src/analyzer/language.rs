@@ -99,9 +99,10 @@ pub fn is_binary_content(content: &[u8]) -> bool {
     }
 
     // High non-ASCII ratio (> 30% non-printable)
-    let non_text = sample.iter().filter(|&&b| {
-        b < 0x20 && b != b'\n' && b != b'\r' && b != b'\t'
-    }).count();
+    let non_text = sample
+        .iter()
+        .filter(|&&b| b < 0x20 && b != b'\n' && b != b'\r' && b != b'\t')
+        .count();
 
     non_text > sample.len() / 3
 }
@@ -112,13 +113,34 @@ mod tests {
 
     #[test]
     fn test_detect_language() {
-        assert_eq!(detect_language(Path::new("foo.ts")), Some(SupportedLanguage::TypeScript));
-        assert_eq!(detect_language(Path::new("foo.tsx")), Some(SupportedLanguage::Tsx));
-        assert_eq!(detect_language(Path::new("foo.js")), Some(SupportedLanguage::JavaScript));
-        assert_eq!(detect_language(Path::new("foo.mjs")), Some(SupportedLanguage::JavaScript));
-        assert_eq!(detect_language(Path::new("foo.py")), Some(SupportedLanguage::Python));
-        assert_eq!(detect_language(Path::new("foo.rs")), Some(SupportedLanguage::Rust));
-        assert_eq!(detect_language(Path::new("foo.go")), Some(SupportedLanguage::Go));
+        assert_eq!(
+            detect_language(Path::new("foo.ts")),
+            Some(SupportedLanguage::TypeScript)
+        );
+        assert_eq!(
+            detect_language(Path::new("foo.tsx")),
+            Some(SupportedLanguage::Tsx)
+        );
+        assert_eq!(
+            detect_language(Path::new("foo.js")),
+            Some(SupportedLanguage::JavaScript)
+        );
+        assert_eq!(
+            detect_language(Path::new("foo.mjs")),
+            Some(SupportedLanguage::JavaScript)
+        );
+        assert_eq!(
+            detect_language(Path::new("foo.py")),
+            Some(SupportedLanguage::Python)
+        );
+        assert_eq!(
+            detect_language(Path::new("foo.rs")),
+            Some(SupportedLanguage::Rust)
+        );
+        assert_eq!(
+            detect_language(Path::new("foo.go")),
+            Some(SupportedLanguage::Go)
+        );
         assert_eq!(detect_language(Path::new("foo.java")), None);
         assert_eq!(detect_language(Path::new("foo")), None);
     }
@@ -133,7 +155,9 @@ mod tests {
     fn test_is_binary_content() {
         assert!(!is_binary_content(b"hello world\nfoo bar"));
         assert!(is_binary_content(b"hello\x00world"));
-        assert!(!is_binary_content(b"fn main() {\n    println!(\"test\");\n}"));
+        assert!(!is_binary_content(
+            b"fn main() {\n    println!(\"test\");\n}"
+        ));
     }
 
     #[test]

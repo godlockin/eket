@@ -49,7 +49,6 @@ pub enum MessagePriority {
     Low,
 }
 
-
 impl Message {
     pub fn new(
         from: impl Into<String>,
@@ -98,7 +97,8 @@ pub enum QueueMode {
 
 // ─── MessageHandler ───────────────────────────────────────────────────────────
 
-pub type MessageHandler = Arc<dyn Fn(Message) -> futures::future::BoxFuture<'static, ()> + Send + Sync>;
+pub type MessageHandler =
+    Arc<dyn Fn(Message) -> futures::future::BoxFuture<'static, ()> + Send + Sync>;
 
 // ─── MessageQueue ─────────────────────────────────────────────────────────────
 
@@ -167,7 +167,10 @@ impl MessageQueue {
     // ── Redis impl ────────────────────────────────────────────────────────────
 
     async fn publish_redis(&self, msg: Message) -> EketResult<()> {
-        let redis = self.redis.as_ref().ok_or_else(|| EketError::Other("no Redis".into()))?;
+        let redis = self
+            .redis
+            .as_ref()
+            .ok_or_else(|| EketError::Other("no Redis".into()))?;
         let channel = msg.to.clone();
         let json = serde_json::to_string(&msg)?;
         let key = format!("eket:queue:{channel}");
@@ -177,7 +180,10 @@ impl MessageQueue {
     }
 
     async fn subscribe_redis(&self, channel: String, handler: MessageHandler) -> EketResult<()> {
-        let redis = self.redis.clone().ok_or_else(|| EketError::Other("no Redis".into()))?;
+        let redis = self
+            .redis
+            .clone()
+            .ok_or_else(|| EketError::Other("no Redis".into()))?;
         let key = format!("eket:queue:{channel}");
         let tx = self.local_bus.clone();
         let channel_name = channel.clone();
@@ -203,7 +209,10 @@ impl MessageQueue {
             }
         });
 
-        self.pollers.lock().await.insert(channel.clone(), handle.abort_handle());
+        self.pollers
+            .lock()
+            .await
+            .insert(channel.clone(), handle.abort_handle());
         Ok(())
     }
 
@@ -271,7 +280,10 @@ impl MessageQueue {
             }
         });
 
-        self.pollers.lock().await.insert(channel.clone(), handle.abort_handle());
+        self.pollers
+            .lock()
+            .await
+            .insert(channel.clone(), handle.abort_handle());
         Ok(())
     }
 }
@@ -342,16 +354,20 @@ impl RedisQueue {
         match &self.mode {
             QueueMode::TaskQueue => {
                 let result = self.redis.brpop(key, 5.0).await?;
-                debug!("RedisQueue(TaskQueue) BRPOP {key} → {:?}", result.as_deref());
+                debug!(
+                    "RedisQueue(TaskQueue) BRPOP {key} → {:?}",
+                    result.as_deref()
+                );
                 Ok(result)
             }
             QueueMode::EventBus => {
-                let handler = handler.ok_or_else(|| {
-                    EketError::Other("EventBus poll requires a handler".into())
-                })?;
+                let handler = handler
+                    .ok_or_else(|| EketError::Other("EventBus poll requires a handler".into()))?;
                 let subscriber = self.redis.new_subscriber();
                 let _jh = subscriber.connect();
-                subscriber.wait_for_connect().await
+                subscriber
+                    .wait_for_connect()
+                    .await
                     .map_err(|e| EketError::Redis(e.to_string()))?;
                 let key = key.to_string();
                 tokio::spawn(async move {
@@ -363,7 +379,11 @@ impl RedisQueue {
                     loop {
                         match rx.recv().await {
                             Ok(frame) => {
-                                let json = frame.value.as_str().map(|s| s.to_string()).unwrap_or_default();
+                                let json = frame
+                                    .value
+                                    .as_str()
+                                    .map(|s| s.to_string())
+                                    .unwrap_or_default();
                                 if let Ok(msg) = serde_json::from_str::<Message>(&json) {
                                     handler(msg).await;
                                 } else {
@@ -405,9 +425,16 @@ mod tests {
             Box::pin(async {})
         });
 
-        q.subscribe("test-channel".to_string(), handler).await.unwrap();
+        q.subscribe("test-channel".to_string(), handler)
+            .await
+            .unwrap();
 
-        let msg = Message::new("slaver_1", "test-channel", "test", serde_json::json!({"hello": "world"}));
+        let msg = Message::new(
+            "slaver_1",
+            "test-channel",
+            "test",
+            serde_json::json!({"hello": "world"}),
+        );
         q.publish(msg).await.unwrap();
 
         // Give poller time to pick up
@@ -457,7 +484,11 @@ mod tests {
 
         tokio::time::sleep(Duration::from_millis(600)).await;
         tokio::time::sleep(Duration::from_millis(400)).await;
-        assert_eq!(counter.load(Ordering::Relaxed), 1, "message should be delivered exactly once");
+        assert_eq!(
+            counter.load(Ordering::Relaxed),
+            1,
+            "message should be delivered exactly once"
+        );
     }
 
     #[tokio::test]
@@ -479,7 +510,11 @@ mod tests {
         q.publish(msg).await.unwrap();
 
         tokio::time::sleep(Duration::from_millis(500)).await;
-        assert_eq!(counter.load(Ordering::Relaxed), 0, "no delivery after unsubscribe");
+        assert_eq!(
+            counter.load(Ordering::Relaxed),
+            0,
+            "no delivery after unsubscribe"
+        );
     }
 
     #[tokio::test]

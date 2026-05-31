@@ -33,7 +33,10 @@ pub async fn run_migrate(args: DbMigrateArgs) -> Result<()> {
     }
 
     runner.run()?;
-    println!("Migrations applied. Current version: {}", runner.current_version()?);
+    println!(
+        "Migrations applied. Current version: {}",
+        runner.current_version()?
+    );
     Ok(())
 }
 

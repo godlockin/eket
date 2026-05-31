@@ -1,9 +1,9 @@
 //! Rust structure extractor.
 
+use crate::analyzer::language::SupportedLanguage;
+use crate::analyzer::types::*;
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Parser, Query, QueryCursor, QueryMatch};
-use crate::analyzer::types::*;
-use crate::analyzer::language::SupportedLanguage;
 
 const RUST_QUERIES: &str = r#"
 ; Function definitions - simplified
@@ -36,7 +36,9 @@ pub fn extract(content: &str) -> StructuralAnalysis {
     let mut analysis = StructuralAnalysis::empty("", lang.as_str());
 
     let mut parser = Parser::new();
-    parser.set_language(lang.grammar()).expect("Failed to set Rust language");
+    parser
+        .set_language(lang.grammar())
+        .expect("Failed to set Rust language");
 
     let tree = match parser.parse(content, None) {
         Some(t) => t,
@@ -71,10 +73,13 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
     let mut seen_functions = std::collections::HashSet::new();
     let mut seen_types = std::collections::HashSet::new();
-    let mut impl_methods: std::collections::HashMap<String, Vec<String>> = std::collections::HashMap::new();
+    let mut impl_methods: std::collections::HashMap<String, Vec<String>> =
+        std::collections::HashMap::new();
 
     while let Some(m) = matches.next() {
-        let capture_names: Vec<&str> = m.captures.iter()
+        let capture_names: Vec<&str> = m
+            .captures
+            .iter()
             .map(|c| query.capture_names()[c.index as usize])
             .collect();
 
@@ -159,11 +164,7 @@ pub fn extract(content: &str) -> StructuralAnalysis {
     analysis
 }
 
-fn extract_function(
-    m: &QueryMatch,
-    query: &Query,
-    content: &str,
-) -> Option<FunctionInfo> {
+fn extract_function(m: &QueryMatch, query: &Query, content: &str) -> Option<FunctionInfo> {
     let name = get_capture_text(m, query, "fn.name", content)?;
     let def_node = get_capture_node(m, query, "fn.def")?;
 
@@ -173,9 +174,10 @@ fn extract_function(
 
     let return_type = get_capture_text(m, query, "fn.return_type", content);
 
-    let is_async = m.captures.iter().any(|c| {
-        query.capture_names()[c.index as usize] == "fn.async"
-    });
+    let is_async = m
+        .captures
+        .iter()
+        .any(|c| query.capture_names()[c.index as usize] == "fn.async");
 
     let visibility = get_capture_text(m, query, "fn.visibility", content);
 
@@ -211,18 +213,15 @@ fn extract_type_def(
     })
 }
 
-fn extract_import(
-    m: &QueryMatch,
-    query: &Query,
-    content: &str,
-) -> Option<ImportInfo> {
+fn extract_import(m: &QueryMatch, query: &Query, content: &str) -> Option<ImportInfo> {
     let def_node = get_capture_node(m, query, "import.def")?;
 
     // Get the full text of the use declaration
     let full_text = def_node.utf8_text(content.as_bytes()).ok()?;
 
     // Remove "use " prefix and ";" suffix
-    let path = full_text.trim_start_matches("use ")
+    let path = full_text
+        .trim_start_matches("use ")
         .trim_end_matches(';')
         .trim()
         .to_string();
@@ -244,7 +243,7 @@ fn parse_use_path(path: &str) -> (String, Vec<String>) {
         let brace_end = path.rfind('}').unwrap_or(path.len());
         if brace_end > brace_start + 1 {
             let source = path[..brace_start].trim_end_matches("::").to_string();
-            let items = path[brace_start+1..brace_end]
+            let items = path[brace_start + 1..brace_end]
                 .split(',')
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty())
@@ -257,20 +256,16 @@ fn parse_use_path(path: &str) -> (String, Vec<String>) {
     } else if let Some(last_sep) = path.rfind("::") {
         // Handle use std::collections::HashMap;
         let source = path[..last_sep].to_string();
-        let item = path[last_sep+2..].to_string();
+        let item = path[last_sep + 2..].to_string();
         (source, vec![item])
     } else {
         (path.to_string(), vec![])
     }
 }
 
-fn get_capture_text(
-    m: &QueryMatch,
-    query: &Query,
-    name: &str,
-    content: &str,
-) -> Option<String> {
-    m.captures.iter()
+fn get_capture_text(m: &QueryMatch, query: &Query, name: &str, content: &str) -> Option<String> {
+    m.captures
+        .iter()
         .find(|c| query.capture_names()[c.index as usize] == name)
         .and_then(|c| c.node.utf8_text(content.as_bytes()).ok())
         .map(|s| s.to_string())
@@ -281,7 +276,8 @@ fn get_capture_node<'a>(
     query: &Query,
     name: &str,
 ) -> Option<tree_sitter::Node<'a>> {
-    m.captures.iter()
+    m.captures
+        .iter()
         .find(|c| query.capture_names()[c.index as usize] == name)
         .map(|c| c.node)
 }
@@ -292,7 +288,8 @@ fn parse_rust_params(params_str: &str) -> Vec<String> {
         return vec![];
     }
 
-    inner.split(',')
+    inner
+        .split(',')
         .filter_map(|p| {
             let p = p.trim();
             // Skip &self, &mut self, self
@@ -300,7 +297,9 @@ fn parse_rust_params(params_str: &str) -> Vec<String> {
                 return None;
             }
             // Extract name before :
-            let name = p.split(':').next()
+            let name = p
+                .split(':')
+                .next()
                 .map(|s| s.trim())
                 .filter(|s| !s.is_empty())?;
             Some(name.to_string())
@@ -425,7 +424,10 @@ use crate::module;
         let analysis = extract(code);
 
         assert!(analysis.imports.len() >= 2);
-        assert!(analysis.imports.iter().any(|i| i.source.contains("std::collections")));
+        assert!(analysis
+            .imports
+            .iter()
+            .any(|i| i.source.contains("std::collections")));
     }
 
     #[test]

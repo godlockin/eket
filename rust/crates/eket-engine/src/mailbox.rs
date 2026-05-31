@@ -149,22 +149,17 @@ impl AgentMailbox {
             .await
             .map_err(|e| format!("read failed: {e}"))?;
 
-        let mut messages: Vec<MailboxMessage> = serde_json::from_str(&data)
-            .unwrap_or_default();
+        let mut messages: Vec<MailboxMessage> = serde_json::from_str(&data).unwrap_or_default();
 
-        let unread: Vec<MailboxMessage> = messages
-            .iter()
-            .filter(|m| !m.read)
-            .cloned()
-            .collect();
+        let unread: Vec<MailboxMessage> = messages.iter().filter(|m| !m.read).cloned().collect();
 
         // Mark all as read
         for m in &mut messages {
             m.read = true;
         }
 
-        let json = serde_json::to_string_pretty(&messages)
-            .map_err(|e| format!("serialize: {e}"))?;
+        let json =
+            serde_json::to_string_pretty(&messages).map_err(|e| format!("serialize: {e}"))?;
         // Write remaining (all-read) messages back atomically, then remove processing file
         let tmp = inbox_path.with_extension("json.tmp");
         tokio::fs::write(&tmp, &json).await.ok();
@@ -204,7 +199,9 @@ impl AgentMailbox {
         if !inbox_path.exists() {
             return 0;
         }
-        let data = tokio::fs::read_to_string(&inbox_path).await.unwrap_or_default();
+        let data = tokio::fs::read_to_string(&inbox_path)
+            .await
+            .unwrap_or_default();
         let messages: Vec<MailboxMessage> = serde_json::from_str(&data).unwrap_or_default();
         messages.iter().filter(|m| !m.read).count()
     }
@@ -258,7 +255,10 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let mailbox = AgentMailbox::new(dir.path());
 
-        mailbox.send(make_msg("m", "a1", MailboxMessageType::AgentIdle)).await.unwrap();
+        mailbox
+            .send(make_msg("m", "a1", MailboxMessageType::AgentIdle))
+            .await
+            .unwrap();
 
         // First read: 1 unread
         let first = mailbox.read_messages("a1").await.unwrap();
@@ -275,7 +275,14 @@ mod tests {
         let mailbox = AgentMailbox::new(dir.path());
 
         for _ in 0..5 {
-            mailbox.send(make_msg("master", "slaver_2", MailboxMessageType::TaskAssigned)).await.unwrap();
+            mailbox
+                .send(make_msg(
+                    "master",
+                    "slaver_2",
+                    MailboxMessageType::TaskAssigned,
+                ))
+                .await
+                .unwrap();
         }
 
         let messages = mailbox.read_messages("slaver_2").await.unwrap();
@@ -294,7 +301,10 @@ mod tests {
     async fn clear_removes_all_messages() {
         let dir = TempDir::new().unwrap();
         let mailbox = AgentMailbox::new(dir.path());
-        mailbox.send(make_msg("m", "a1", MailboxMessageType::Shutdown)).await.unwrap();
+        mailbox
+            .send(make_msg("m", "a1", MailboxMessageType::Shutdown))
+            .await
+            .unwrap();
         mailbox.clear("a1").await.unwrap();
         assert_eq!(mailbox.unread_count("a1").await, 0);
     }

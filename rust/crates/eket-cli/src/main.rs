@@ -14,8 +14,8 @@ use clap::{Parser, Subcommand};
 use tracing_subscriber::{fmt, EnvFilter};
 
 mod commands;
-pub mod slaver_rules;
 pub mod guardrail_middleware;
+pub mod slaver_rules;
 
 #[derive(Parser)]
 #[command(
@@ -274,9 +274,10 @@ async fn main() -> Result<()> {
         Commands::Recommend(args) => commands::knowledge::run_recommend(args).await,
         Commands::SystemDoctor => commands::system_doctor::run().await,
         Commands::TaskClaim(args) => commands::task_claim::run(args).await,
-        Commands::TaskComplete { ticket_id, no_trailer } => {
-            commands::task_complete::run(ticket_id, no_trailer).await
-        }
+        Commands::TaskComplete {
+            ticket_id,
+            no_trailer,
+        } => commands::task_complete::run(ticket_id, no_trailer).await,
         Commands::TaskCreate(args) => commands::task_create::run(args).await,
         Commands::TaskTest(args) => commands::task_test::run(args).await,
         Commands::Server(args) => commands::server::run(args).await,
@@ -318,9 +319,11 @@ async fn main() -> Result<()> {
         Commands::SpikeComplete(args) => commands::spike_complete::run(args).await,
         Commands::DocCreate(args) => commands::doc_create::run(args).await,
         Commands::ExpertCompose(args) => commands::expert_compose::run(args).await,
-        Commands::ExpertSearch { keyword, pkg, limit } => {
-            commands::expert_compose::run_search(keyword, pkg, limit).await
-        }
+        Commands::ExpertSearch {
+            keyword,
+            pkg,
+            limit,
+        } => commands::expert_compose::run_search(keyword, pkg, limit).await,
         Commands::ExpertSkills { expert_id } => {
             commands::expert_compose::run_skills(expert_id).await
         }

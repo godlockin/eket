@@ -4,7 +4,7 @@
 ///   TYPE: design | adr | runbook | onboarding
 use anyhow::Result;
 use clap::Parser;
-use eket_core::doc_lifecycle::{DocEvent, TemplateRenderer, handle_event};
+use eket_core::doc_lifecycle::{handle_event, DocEvent, TemplateRenderer};
 use serde_json::json;
 use std::path::PathBuf;
 
@@ -36,7 +36,9 @@ fn find_project_root() -> Result<PathBuf> {
 pub async fn run(args: DocCreateArgs) -> Result<()> {
     match args.doc_type.as_str() {
         "design" | "adr" | "runbook" | "onboarding" => {}
-        other => anyhow::bail!("Invalid type '{other}'. Must be: design | adr | runbook | onboarding"),
+        other => {
+            anyhow::bail!("Invalid type '{other}'. Must be: design | adr | runbook | onboarding")
+        }
     }
 
     let root = find_project_root()?;

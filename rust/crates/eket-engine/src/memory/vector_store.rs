@@ -17,7 +17,9 @@ pub struct VectorStore {
 
 impl VectorStore {
     pub fn new() -> Self {
-        Self { entries: Vec::new() }
+        Self {
+            entries: Vec::new(),
+        }
     }
 
     /// 插入或更新向量（按 id 去重）。
@@ -74,7 +76,10 @@ mod tests {
         let results = store.query(&rust_emb, 2);
         assert!(!results.is_empty());
         assert_eq!(results[0].0, "slaver-rust");
-        assert!((results[0].1 - 1.0).abs() < 1e-5, "exact match should score ~1.0");
+        assert!(
+            (results[0].1 - 1.0).abs() < 1e-5,
+            "exact match should score ~1.0"
+        );
     }
 
     #[test]

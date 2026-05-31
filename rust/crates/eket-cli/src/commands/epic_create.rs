@@ -33,7 +33,9 @@ fn find_project_root() -> Result<PathBuf> {
             break;
         }
     }
-    anyhow::bail!("Cannot find project root (no jira/ directory found). Run from inside an EKET project.")
+    anyhow::bail!(
+        "Cannot find project root (no jira/ directory found). Run from inside an EKET project."
+    )
 }
 
 pub async fn run(args: EpicCreateArgs) -> Result<()> {
@@ -158,7 +160,9 @@ mod tests {
         .unwrap();
 
         assert!(root.join("jira/epics/EPIC-TEST/epic.md").exists());
-        assert!(root.join("confluence/requirements/EPIC-TEST-analysis.md").exists());
+        assert!(root
+            .join("confluence/requirements/EPIC-TEST-analysis.md")
+            .exists());
     }
 
     #[tokio::test]

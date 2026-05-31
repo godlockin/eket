@@ -3,7 +3,6 @@
 /// GuardrailMiddleware 在 pre() 阶段运行所有守卫检查，
 /// 将违规记录写入 ctx.metadata["guardrail_violations"]，
 /// 调用方（task_claim.rs）检查后决定是否 exit(1)。
-
 use async_trait::async_trait;
 use eket_core::{
     guardrail::{ActionContext, GuardrailRunner},
@@ -68,11 +67,13 @@ fn build_action_ctx(ctx: &PipelineCtx) -> ActionContext {
         action: ctx.command.clone(),
         ticket_id: ctx.ticket_id.clone().unwrap_or_default(),
         slaver_id: ctx.slaver_id.clone().unwrap_or_default(),
-        slaver_role: ctx.metadata
+        slaver_role: ctx
+            .metadata
             .get("slaver_role")
             .and_then(|v| v.as_str())
             .map(str::to_string),
-        ticket_role: ctx.metadata
+        ticket_role: ctx
+            .metadata
             .get("ticket_role")
             .and_then(|v| v.as_str())
             .map(str::to_string),
@@ -117,7 +118,11 @@ mod tests {
         // No role mismatch → no violations
         let violations = ctx.metadata.get("guardrail_violations");
         assert!(
-            violations.is_none() || violations.unwrap().as_array().map_or(true, |a| a.is_empty()),
+            violations.is_none()
+                || violations
+                    .unwrap()
+                    .as_array()
+                    .map_or(true, |a| a.is_empty()),
             "No violations expected for default claim context"
         );
     }
@@ -139,7 +144,8 @@ mod tests {
 
         pipeline.run_pre(&mut ctx).await.unwrap();
 
-        let violations = ctx.metadata
+        let violations = ctx
+            .metadata
             .get("guardrail_violations")
             .and_then(|v| v.as_array());
         assert!(

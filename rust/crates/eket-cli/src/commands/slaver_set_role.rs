@@ -56,8 +56,7 @@ fn get_or_create_slaver_id(project_root: &Path) -> String {
 }
 
 pub async fn run(args: SlaverSetRoleArgs) -> Result<()> {
-    let project_root = find_project_root()
-        .unwrap_or_else(|| std::env::current_dir().unwrap());
+    let project_root = find_project_root().unwrap_or_else(|| std::env::current_dir().unwrap());
 
     // Write role file
     let role_file = project_root.join(".eket/slaver-role");

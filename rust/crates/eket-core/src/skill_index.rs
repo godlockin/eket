@@ -52,14 +52,21 @@ pub fn load_skill_index(search_roots: &[PathBuf]) -> SkillIndex {
     }
 
     let model_route_table = build_model_route_table(&nodes);
-    SkillIndex { nodes, model_route_table }
+    SkillIndex {
+        nodes,
+        model_route_table,
+    }
 }
 
 /// 自动探测 project_root 下的 skills 目录 + ~/.eket/skills/
 pub fn default_search_roots(project_root: &Path) -> Vec<PathBuf> {
     let mut roots = vec![
         project_root.join("node").join("src").join("skills"),
-        project_root.join("node").join("src").join("skills").join("extended"),
+        project_root
+            .join("node")
+            .join("src")
+            .join("skills")
+            .join("extended"),
     ];
 
     if let Some(home) = dirs::home_dir() {
@@ -70,7 +77,9 @@ pub fn default_search_roots(project_root: &Path) -> Vec<PathBuf> {
 }
 
 fn scan_dir(dir: &Path, out: &mut Vec<SkillMeta>) {
-    let Ok(entries) = std::fs::read_dir(dir) else { return };
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
 
     for entry in entries.flatten() {
         let path = entry.path();
@@ -144,7 +153,11 @@ pub fn parse_assigned_experts(ticket_content: &str) -> Vec<String> {
 pub fn expert_search_roots() -> Vec<PathBuf> {
     let mut roots = Vec::new();
     if let Some(home) = dirs::home_dir() {
-        let base = home.join(".claude").join("skills").join("eket").join("experts");
+        let base = home
+            .join(".claude")
+            .join("skills")
+            .join("eket")
+            .join("experts");
         roots.push(base.join("default"));
         roots.push(base.join("optional"));
     }
@@ -275,14 +288,26 @@ mod tests {
     fn test_build_model_route_table() {
         let nodes = vec![
             SkillMeta {
-                id: "a".into(), skill_type: "skill".into(), domain: "dev".into(),
-                level: 2, model_hint: "sonnet".into(), triggers: vec![], collaborates_with: vec![],
-                lazy: false, description: "".into(),
+                id: "a".into(),
+                skill_type: "skill".into(),
+                domain: "dev".into(),
+                level: 2,
+                model_hint: "sonnet".into(),
+                triggers: vec![],
+                collaborates_with: vec![],
+                lazy: false,
+                description: "".into(),
             },
             SkillMeta {
-                id: "b".into(), skill_type: "skill".into(), domain: "dev".into(),
-                level: 3, model_hint: "opus".into(), triggers: vec![], collaborates_with: vec![],
-                lazy: false, description: "".into(),
+                id: "b".into(),
+                skill_type: "skill".into(),
+                domain: "dev".into(),
+                level: 3,
+                model_hint: "opus".into(),
+                triggers: vec![],
+                collaborates_with: vec![],
+                lazy: false,
+                description: "".into(),
             },
         ];
         let table = build_model_route_table(&nodes);

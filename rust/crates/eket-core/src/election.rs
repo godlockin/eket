@@ -169,7 +169,9 @@ impl MasterElection {
         let instance_id = format!("instance_{hostname}_{pid}_{rand}");
 
         // TASK-235: Build pubsub facade if Redis is configured
-        let pubsub = redis.as_ref().map(|r| Arc::new(RedisPubSub::new(r.clone())));
+        let pubsub = redis
+            .as_ref()
+            .map(|r| Arc::new(RedisPubSub::new(r.clone())));
 
         Self {
             instance_id,
@@ -298,7 +300,10 @@ impl MasterElection {
             // Existing instances see epoch bump → know a new master exists.
             redis.incr(REDIS_EPOCH_KEY).await.unwrap_or(0)
         } else {
-            info!("[Election] {} is slaver (Redis lock held)", self.instance_id);
+            info!(
+                "[Election] {} is slaver (Redis lock held)",
+                self.instance_id
+            );
             0
         };
 
@@ -391,7 +396,9 @@ impl MasterElection {
             // TASK-180: Use master_lock singleton table.
             // CHECK(singleton=1) + INSERT OR IGNORE ensures only one master exists.
             // First INSERT wins (rows=1); all subsequent are ignored (rows=0).
-            let expires_at = (chrono::Utc::now() + chrono::Duration::seconds(REDIS_LEASE_TTL_SECS as i64 * 2)).to_rfc3339();
+            let expires_at = (chrono::Utc::now()
+                + chrono::Duration::seconds(REDIS_LEASE_TTL_SECS as i64 * 2))
+            .to_rfc3339();
             let rows = conn.execute(
                 "INSERT OR IGNORE INTO master_lock (singleton, master_id, acquired_at, expires_at)
                  VALUES (1, ?1, ?2, ?3)",
@@ -403,7 +410,10 @@ impl MasterElection {
         .map_err(|e| EketError::Other(e.to_string()))??;
 
         if won {
-            info!("[Election] {} won via SQLite (master_lock)", self.instance_id);
+            info!(
+                "[Election] {} won via SQLite (master_lock)",
+                self.instance_id
+            );
         }
 
         Ok(ElectionResult {
@@ -461,7 +471,10 @@ impl MasterElection {
         let pid = std::process::id();
         let expires_at = chrono::Utc::now().timestamp() + FILE_LOCK_TTL_SECS as i64;
         // TASK-182: Lock file content: "{pid}:{instance_id}:{expires_at_unix}"
-        let lock_content = format!("{pid}:{instance_id}:{expires_at}", instance_id = self.instance_id);
+        let lock_content = format!(
+            "{pid}:{instance_id}:{expires_at}",
+            instance_id = self.instance_id
+        );
 
         // TASK-182: Check for stale lock before attempting exclusive create.
         // If lock file exists but PID is dead or TTL expired → remove it.

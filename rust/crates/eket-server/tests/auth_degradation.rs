@@ -26,14 +26,16 @@ async fn auth_fails_closed_when_db_unavailable() {
     let _client = eket_core::db::SqliteClient::new(pool);
 
     // 2. Enable auth (static token for simplicity)
-    std::env::set_var("EKET_AUTH_TOKEN", "valid-secret-32-chars-long-abc1234567890");
+    std::env::set_var(
+        "EKET_AUTH_TOKEN",
+        "valid-secret-32-chars-long-abc1234567890",
+    );
 
     // 3. Simulate DB failure: revoke all permissions on DB file
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
-        fs::set_permissions(&db_path, fs::Permissions::from_mode(0o000))
-            .expect("chmod 000 failed");
+        fs::set_permissions(&db_path, fs::Permissions::from_mode(0o000)).expect("chmod 000 failed");
     }
     #[cfg(not(unix))]
     {
@@ -46,8 +48,9 @@ async fn auth_fails_closed_when_db_unavailable() {
     let port = 19877; // Use unique port to avoid conflicts
     let result = timeout(
         Duration::from_secs(2),
-        eket_server::start(port, db_path.clone(), tickets_dir.clone())
-    ).await;
+        eket_server::start(port, db_path.clone(), tickets_dir.clone()),
+    )
+    .await;
 
     // 5. Server startup should fail (or timeout) — we can't start with broken DB
     // This is actually the fail-closed behavior: can't even start the server
