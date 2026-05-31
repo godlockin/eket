@@ -449,6 +449,7 @@ impl StateReconciler {
 mod tests {
     use super::*;
     use eket_core::db::create_pool;
+    use serde_json::json;
     use tempfile::TempDir;
 
     fn init_test_db(db_path: &str) -> Arc<SqliteClient> {
