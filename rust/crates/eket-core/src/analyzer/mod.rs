@@ -22,18 +22,18 @@
 //! ```
 
 // Code structure analysis (tree-sitter based)
-pub mod types;
-pub mod language;
 pub mod extractors;
+pub mod language;
 pub mod structure;
+pub mod types;
 
 // Non-code file analysis (TASK-E11-004)
 pub mod non_code;
 
 // Re-exports for code analysis
-pub use types::*;
 pub use language::{detect_language, is_binary_content, SupportedLanguage};
-pub use structure::{analyze_file, analyze_content};
+pub use structure::{analyze_content, analyze_file};
+pub use types::*;
 
 // Re-exports for non-code analysis
 pub use non_code::{analyze_non_code_file, NonCodeAnalysis, NonCodeNode};

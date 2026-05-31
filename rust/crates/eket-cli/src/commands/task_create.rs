@@ -56,7 +56,10 @@ pub struct TaskCreateArgs {
     pub expertise: Vec<String>,
 
     /// Estimated effort: supports 2d / 0.5d / 3h / 480 (plain = minutes)
-    #[arg(long, help = "Estimated effort: 2d, 0.5d, 3h, or plain minutes (e.g. 480)")]
+    #[arg(
+        long,
+        help = "Estimated effort: 2d, 0.5d, 3h, or plain minutes (e.g. 480)"
+    )]
     pub effort: Option<String>,
 
     /// Skip interactive prompts (CI mode)
@@ -370,7 +373,13 @@ async fn create_single_ticket(
         .write(true)
         .create_new(true)
         .open(&file_path)
-        .map_err(|e| anyhow::anyhow!("Failed to create ticket file {}: {}", file_path.display(), e))?;
+        .map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to create ticket file {}: {}",
+                file_path.display(),
+                e
+            )
+        })?;
     file.write_all(content.as_bytes())?;
 
     // Write to SQLite DB (TASK-270)
@@ -462,7 +471,10 @@ pub fn scaffold_missing_experts(tags: &[String], experts_base: &Path) -> Vec<Str
     let bridge = match ExpertSkillBridge::load_from_dirs(&dirs_to_load) {
         Ok(b) => b,
         Err(e) => {
-            eprintln!("[WARN] scaffold_missing_experts: failed to load bridge: {}", e);
+            eprintln!(
+                "[WARN] scaffold_missing_experts: failed to load bridge: {}",
+                e
+            );
             return vec![];
         }
     };
@@ -475,16 +487,20 @@ pub fn scaffold_missing_experts(tags: &[String], experts_base: &Path) -> Vec<Str
             continue;
         }
         // Check if any existing expert matches this tag
-        let exists = all.iter().any(|p| {
-            p.id.contains(tag.as_str()) || p.domain == *tag
-        });
+        let exists = all
+            .iter()
+            .any(|p| p.id.contains(tag.as_str()) || p.domain == *tag);
         if exists {
             continue;
         }
 
         // Ensure extended/ dir exists
         if let Err(e) = std::fs::create_dir_all(&extended_dir) {
-            eprintln!("[WARN] scaffold_missing_experts: cannot create {}: {}", extended_dir.display(), e);
+            eprintln!(
+                "[WARN] scaffold_missing_experts: cannot create {}: {}",
+                extended_dir.display(),
+                e
+            );
             continue;
         }
 
@@ -531,7 +547,11 @@ skills:
                 scaffolded.push(tag.clone());
             }
             Err(e) => {
-                eprintln!("[WARN] scaffold_missing_experts: failed to write {}: {}", file_path.display(), e);
+                eprintln!(
+                    "[WARN] scaffold_missing_experts: failed to write {}: {}",
+                    file_path.display(),
+                    e
+                );
             }
         }
     }
@@ -544,15 +564,13 @@ skills:
 pub async fn run(args: TaskCreateArgs) -> Result<()> {
     // Initialize DB client (TASK-270)
     let db_client = match EketConfig::load() {
-        Ok(config) => {
-            match create_pool(&config.sqlite.path) {
-                Ok(pool) => Some(SqliteClient::new(pool)),
-                Err(e) => {
-                    eprintln!("[WARN] Failed to create DB pool: {}", e);
-                    None
-                }
+        Ok(config) => match create_pool(&config.sqlite.path) {
+            Ok(pool) => Some(SqliteClient::new(pool)),
+            Err(e) => {
+                eprintln!("[WARN] Failed to create DB pool: {}", e);
+                None
             }
-        }
+        },
         Err(e) => {
             eprintln!("[WARN] Failed to load config: {}", e);
             None
@@ -560,17 +578,29 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
     };
 
     // Resolve type and priority: explicit > inferred from title
-    let ticket_type = args.r#type.as_deref().unwrap_or_else(|| infer_type(&args.title)).to_string();
-    let priority = args.priority.as_deref().unwrap_or_else(|| infer_priority(&args.title)).to_string();
+    let ticket_type = args
+        .r#type
+        .as_deref()
+        .unwrap_or_else(|| infer_type(&args.title))
+        .to_string();
+    let priority = args
+        .priority
+        .as_deref()
+        .unwrap_or_else(|| infer_priority(&args.title))
+        .to_string();
 
     // Validate expertise tags (warn on unknown, allow custom)
     const KNOWN_TAGS: &[&str] = &[
-        "rust", "node", "python", "go", "java", "frontend",
-        "devops", "qa", "docs", "ux", "data", "security", "any",
+        "rust", "node", "python", "go", "java", "frontend", "devops", "qa", "docs", "ux", "data",
+        "security", "any",
     ];
     for tag in &args.expertise {
         if !KNOWN_TAGS.contains(&tag.as_str()) {
-            eprintln!("[WARN] Unknown expertise tag '{}'. Known: {}", tag, KNOWN_TAGS.join(", "));
+            eprintln!(
+                "[WARN] Unknown expertise tag '{}'. Known: {}",
+                tag,
+                KNOWN_TAGS.join(", ")
+            );
         }
     }
 
@@ -599,7 +629,10 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
         let effort_minutes = match parse_effort(effort_str) {
             Some(m) => m,
             None => {
-                eprintln!("[WARN] Cannot parse --effort '{}'. Use formats like: 2d, 0.5d, 3h, 480", effort_str);
+                eprintln!(
+                    "[WARN] Cannot parse --effort '{}'. Use formats like: 2d, 0.5d, 3h, 480",
+                    effort_str
+                );
                 0
             }
         };
@@ -646,11 +679,14 @@ pub async fn run(args: TaskCreateArgs) -> Result<()> {
                                 results.push(report);
                             }
 
-                            println!("{}", serde_json::to_string_pretty(&json!({
-                                "status": "split_created",
-                                "count": results.len(),
-                                "tickets": results,
-                            }))?);
+                            println!(
+                                "{}",
+                                serde_json::to_string_pretty(&json!({
+                                    "status": "split_created",
+                                    "count": results.len(),
+                                    "tickets": results,
+                                }))?
+                            );
                             return Ok(());
                         }
                     }
@@ -927,7 +963,10 @@ mod tests {
         assert!(scaffold_path.exists(), "scaffold file should be created");
 
         let content = fs::read_to_string(&scaffold_path).unwrap();
-        assert!(content.contains("id: eket.data-engineer.scaffold"), "content should contain scaffold id");
+        assert!(
+            content.contains("id: eket.data-engineer.scaffold"),
+            "content should contain scaffold id"
+        );
 
         // Second call must NOT overwrite the file
         let original_content = content.clone();

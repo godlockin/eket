@@ -106,8 +106,10 @@ fn parse_ticket_md(path: &PathBuf) -> Result<TicketMetadata> {
 
     // 解析元数据区块（支持多种格式）
     let status = extract_field(&content, &["状态", "status"]).unwrap_or_else(|| "todo".to_string());
-    let priority_str = extract_field(&content, &["优先级", "priority"]).unwrap_or_else(|| "P2".to_string());
-    let ticket_type = extract_field(&content, &["类型", "type"]).unwrap_or_else(|| "feature".to_string());
+    let priority_str =
+        extract_field(&content, &["优先级", "priority"]).unwrap_or_else(|| "P2".to_string());
+    let ticket_type =
+        extract_field(&content, &["类型", "type"]).unwrap_or_else(|| "feature".to_string());
     let assignee = extract_field(&content, &["负责人", "assignee"]);
     let created_at = extract_field(&content, &["创建时间", "created_at"]);
 
@@ -229,7 +231,8 @@ pub async fn run(args: DbRecoverArgs) -> Result<()> {
                                 Ok(_) => {
                                     // 更新状态（create_ticket_with_source 只创建，状态需单独更新）
                                     if ticket.status != "todo" {
-                                        let _ = db.update_ticket_status_str(&ticket.id, &ticket.status);
+                                        let _ =
+                                            db.update_ticket_status_str(&ticket.id, &ticket.status);
                                     }
                                     success += 1;
                                 }

@@ -42,7 +42,9 @@ impl std::str::FromStr for WorkflowState {
             "done" => Ok(Self::Done),
             "blocked" => Ok(Self::Blocked),
             "cancelled" => Ok(Self::Cancelled),
-            other => Err(eket_core::error::EketError::InvalidInput(format!("unknown WorkflowState: {other}"))),
+            other => Err(eket_core::error::EketError::InvalidInput(format!(
+                "unknown WorkflowState: {other}"
+            ))),
         }
     }
 }
@@ -51,7 +53,10 @@ impl std::str::FromStr for WorkflowState {
 pub struct WorkflowTransition;
 
 impl WorkflowTransition {
-    pub fn validate(from: &WorkflowState, to: &WorkflowState) -> Result<(), eket_core::error::EketError> {
+    pub fn validate(
+        from: &WorkflowState,
+        to: &WorkflowState,
+    ) -> Result<(), eket_core::error::EketError> {
         let valid = matches!(
             (from, to),
             (WorkflowState::Backlog, WorkflowState::Analysis)
@@ -136,16 +141,31 @@ pub struct StepResult {
 
 impl StepResult {
     pub fn success(next: impl Into<Option<String>>) -> Self {
-        Self { success: true, next_step_id: next.into(), output: serde_json::Value::Null, error: None }
+        Self {
+            success: true,
+            next_step_id: next.into(),
+            output: serde_json::Value::Null,
+            error: None,
+        }
     }
 
     pub fn failure(reason: impl Into<String>) -> Self {
-        Self { success: false, next_step_id: None, output: serde_json::Value::Null, error: Some(reason.into()) }
+        Self {
+            success: false,
+            next_step_id: None,
+            output: serde_json::Value::Null,
+            error: Some(reason.into()),
+        }
     }
 }
 
-pub type StepExecutor =
-    Arc<dyn Fn(WorkflowContext) -> std::pin::Pin<Box<dyn std::future::Future<Output = StepResult> + Send>> + Send + Sync>;
+pub type StepExecutor = Arc<
+    dyn Fn(
+            WorkflowContext,
+        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = StepResult> + Send>>
+        + Send
+        + Sync,
+>;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct WorkflowContext {
@@ -212,7 +232,6 @@ pub enum JudgmentFallback {
     FailWorkflow,
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct WorkflowDefinition {
@@ -224,7 +243,9 @@ pub struct WorkflowDefinition {
     pub default_timeout_ms: u64,
 }
 
-fn default_timeout_ms() -> u64 { 300_000 }
+fn default_timeout_ms() -> u64 {
+    300_000
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkflowInstance {
@@ -278,7 +299,10 @@ impl WorkflowEngine {
         let mut seen = HashSet::new();
         for step in &def.steps {
             if !seen.insert(step.id.clone()) {
-                return Err(EketError::InvalidInput(format!("duplicate step id: {}", step.id)));
+                return Err(EketError::InvalidInput(format!(
+                    "duplicate step id: {}",
+                    step.id
+                )));
             }
         }
         self.definitions.write().await.insert(def.id.clone(), def);
@@ -320,10 +344,15 @@ impl WorkflowEngine {
             error: None,
         };
 
-        self.instances.insert(workflow_id.clone(), Arc::new(RwLock::new(instance)));
-        self.emit(crate::event_bus::events::WORKFLOW_STARTED, serde_json::json!({
-            "workflow_id": workflow_id, "definition_id": definition_id
-        })).await;
+        self.instances
+            .insert(workflow_id.clone(), Arc::new(RwLock::new(instance)));
+        self.emit(
+            crate::event_bus::events::WORKFLOW_STARTED,
+            serde_json::json!({
+                "workflow_id": workflow_id, "definition_id": definition_id
+            }),
+        )
+        .await;
 
         let runner = self.make_runner(workflow_id.clone(), def, self.snapshot_store.clone());
         let join_handle = tokio::spawn(runner);
@@ -364,7 +393,12 @@ impl WorkflowEngine {
         Some(inst)
     }
 
-    fn make_runner(&self, workflow_id: String, def: WorkflowDefinition, snapshot_store: Arc<std::sync::Mutex<StepSnapshotStore>>) -> impl std::future::Future<Output = ()> {
+    fn make_runner(
+        &self,
+        workflow_id: String,
+        def: WorkflowDefinition,
+        snapshot_store: Arc<std::sync::Mutex<StepSnapshotStore>>,
+    ) -> impl std::future::Future<Output = ()> {
         let instances = self.instances.clone();
         let executors = self.executors.clone();
         let pending_judgments = self.pending_judgments.clone();
@@ -373,8 +407,11 @@ impl WorkflowEngine {
         let default_timeout = self.default_timeout_ms;
 
         async move {
-            let step_map: HashMap<String, WorkflowStep> =
-                def.steps.iter().map(|s| (s.id.clone(), s.clone())).collect();
+            let step_map: HashMap<String, WorkflowStep> = def
+                .steps
+                .iter()
+                .map(|s| (s.id.clone(), s.clone()))
+                .collect();
             let mut current_step_id = def.entry_step_id.clone();
 
             // Helper: get instance Arc without holding DashMap ref across await
@@ -414,7 +451,10 @@ impl WorkflowEngine {
                         arc.write().await.status = WorkflowStatus::Paused;
                     }
 
-                    let jt = step.judgment_timeout_ms.or(step.timeout_ms).unwrap_or(default_timeout);
+                    let jt = step
+                        .judgment_timeout_ms
+                        .or(step.timeout_ms)
+                        .unwrap_or(default_timeout);
                     let approved = match tokio::time::timeout(Duration::from_millis(jt), rx).await {
                         Ok(Ok(v)) => v,
                         _ => {
@@ -435,7 +475,10 @@ impl WorkflowEngine {
                                     if let Some(arc) = get_inst_arc!() {
                                         let mut inst = arc.write().await;
                                         inst.status = WorkflowStatus::Failed;
-                                        inst.error = Some("Judgment escalated to master: awaiting decision".into());
+                                        inst.error = Some(
+                                            "Judgment escalated to master: awaiting decision"
+                                                .into(),
+                                        );
                                         inst.finished_at = Some(chrono::Utc::now());
                                     }
                                     false
@@ -451,7 +494,9 @@ impl WorkflowEngine {
                         }
                     }
 
-                    if !approved { break; }
+                    if !approved {
+                        break;
+                    }
                 }
 
                 // Check cancelled
@@ -461,7 +506,9 @@ impl WorkflowEngine {
                     } else {
                         false
                     };
-                    if cancelled { break; }
+                    if cancelled {
+                        break;
+                    }
                 }
 
                 let context = {
@@ -486,9 +533,19 @@ impl WorkflowEngine {
                         None
                     };
                 let context = if let Some(ref trimmed) = trimmed_data {
-                    let before_tokens: usize = context.data.values().map(crate::workflow::estimate_value_tokens).sum();
-                    let after_tokens: usize = trimmed.values().map(crate::workflow::estimate_value_tokens).sum();
-                    debug!("context budget applied: {} tokens → {} tokens (step={})", before_tokens, after_tokens, current_step_id);
+                    let before_tokens: usize = context
+                        .data
+                        .values()
+                        .map(crate::workflow::estimate_value_tokens)
+                        .sum();
+                    let after_tokens: usize = trimmed
+                        .values()
+                        .map(crate::workflow::estimate_value_tokens)
+                        .sum();
+                    debug!(
+                        "context budget applied: {} tokens → {} tokens (step={})",
+                        before_tokens, after_tokens, current_step_id
+                    );
                     let mut ctx = context;
                     ctx.data = trimmed.clone();
                     ctx
@@ -497,9 +554,14 @@ impl WorkflowEngine {
                 };
 
                 if let Some(ref bus) = event_bus {
-                    bus.publish(DomainEvent::new(crate::event_bus::events::STEP_STARTED, serde_json::json!({
-                        "workflow_id": workflow_id, "step_id": current_step_id
-                    }), None)).await;
+                    bus.publish(DomainEvent::new(
+                        crate::event_bus::events::STEP_STARTED,
+                        serde_json::json!({
+                            "workflow_id": workflow_id, "step_id": current_step_id
+                        }),
+                        None,
+                    ))
+                    .await;
                 }
 
                 let timeout_ms = step.timeout_ms.unwrap_or(default_timeout);
@@ -508,13 +570,20 @@ impl WorkflowEngine {
 
                 let result = match executor {
                     Some(exec) => {
-                        match tokio::time::timeout(Duration::from_millis(timeout_ms), exec(context)).await {
+                        match tokio::time::timeout(Duration::from_millis(timeout_ms), exec(context))
+                            .await
+                        {
                             Ok(r) => r,
                             Err(_) => {
                                 if let Some(ref bus) = event_bus {
-                                    bus.publish(DomainEvent::new(crate::event_bus::events::STEP_TIMEOUT, serde_json::json!({
-                                        "workflow_id": workflow_id, "step_id": current_step_id
-                                    }), None)).await;
+                                    bus.publish(DomainEvent::new(
+                                        crate::event_bus::events::STEP_TIMEOUT,
+                                        serde_json::json!({
+                                            "workflow_id": workflow_id, "step_id": current_step_id
+                                        }),
+                                        None,
+                                    ))
+                                    .await;
                                 }
                                 StepResult::failure(format!("Step {current_step_id} timed out"))
                             }
@@ -525,9 +594,14 @@ impl WorkflowEngine {
 
                 if result.success {
                     if let Some(ref bus) = event_bus {
-                        bus.publish(DomainEvent::new(crate::event_bus::events::STEP_COMPLETED, serde_json::json!({
-                            "workflow_id": workflow_id, "step_id": current_step_id
-                        }), None)).await;
+                        bus.publish(DomainEvent::new(
+                            crate::event_bus::events::STEP_COMPLETED,
+                            serde_json::json!({
+                                "workflow_id": workflow_id, "step_id": current_step_id
+                            }),
+                            None,
+                        ))
+                        .await;
                     }
                     match result.next_step_id {
                         Some(next) => {
@@ -569,9 +643,14 @@ impl WorkflowEngine {
                                 inst.finished_at = Some(chrono::Utc::now());
                             }
                             if let Some(ref bus) = event_bus {
-                                bus.publish(DomainEvent::new(crate::event_bus::events::WORKFLOW_COMPLETED, serde_json::json!({
-                                    "workflow_id": workflow_id
-                                }), None)).await;
+                                bus.publish(DomainEvent::new(
+                                    crate::event_bus::events::WORKFLOW_COMPLETED,
+                                    serde_json::json!({
+                                        "workflow_id": workflow_id
+                                    }),
+                                    None,
+                                ))
+                                .await;
                             }
                             info!("[Workflow] {} completed", workflow_id);
                             break;
@@ -585,9 +664,14 @@ impl WorkflowEngine {
                         inst.finished_at = Some(chrono::Utc::now());
                     }
                     if let Some(ref bus) = event_bus {
-                        bus.publish(DomainEvent::new(crate::event_bus::events::WORKFLOW_FAILED, serde_json::json!({
-                            "workflow_id": workflow_id, "error": result.error
-                        }), None)).await;
+                        bus.publish(DomainEvent::new(
+                            crate::event_bus::events::WORKFLOW_FAILED,
+                            serde_json::json!({
+                                "workflow_id": workflow_id, "error": result.error
+                            }),
+                            None,
+                        ))
+                        .await;
                     }
                     warn!("[Workflow] {} failed at {}", workflow_id, current_step_id);
                     break;
@@ -600,7 +684,12 @@ impl WorkflowEngine {
 
     async fn emit(&self, event_type: &str, payload: serde_json::Value) {
         if let Some(ref bus) = self.event_bus {
-            bus.publish(DomainEvent::new(event_type, payload, Some(self.instance_id.clone()))).await;
+            bus.publish(DomainEvent::new(
+                event_type,
+                payload,
+                Some(self.instance_id.clone()),
+            ))
+            .await;
         }
     }
 }
@@ -663,9 +752,10 @@ pub async fn execute_parallel(
     // Snapshot executors once to avoid holding the lock across awaits.
     let exec_map: HashMap<String, StepExecutor> = {
         let guard = executors.read().await;
-        steps.iter().filter_map(|s| {
-            guard.get(&s.id).map(|e| (s.id.clone(), e.clone()))
-        }).collect()
+        steps
+            .iter()
+            .filter_map(|s| guard.get(&s.id).map(|e| (s.id.clone(), e.clone())))
+            .collect()
     };
 
     let total = steps.len();
@@ -691,10 +781,8 @@ pub async fn execute_parallel(
                         error: Some("no executor registered".into()),
                     },
                     Some(f) => {
-                        match tokio::time::timeout(
-                            Duration::from_millis(timeout_ms),
-                            f(ctx),
-                        ).await {
+                        match tokio::time::timeout(Duration::from_millis(timeout_ms), f(ctx)).await
+                        {
                             Ok(r) => BranchOutcome {
                                 step_id: sid,
                                 success: r.success,
@@ -832,11 +920,17 @@ pub async fn execute_parallel(
                     let sid = o.step_id.clone();
                     let success = o.success;
                     outcomes.insert(sid, o);
-                    if success { completed += 1; }
-                    if completed >= need { break; }
+                    if success {
+                        completed += 1;
+                    }
+                    if completed >= need {
+                        break;
+                    }
                     // FailFast on failure
                     if !success {
-                        if let FailBehavior::FailFast = fail_behavior { break; }
+                        if let FailBehavior::FailFast = fail_behavior {
+                            break;
+                        }
                     }
                 }
                 // Drop `fu`; remaining spawned tasks are detached and will run
@@ -853,7 +947,9 @@ pub async fn execute_parallel(
         Err(_) => ExecutionReport {
             success: false,
             outcomes: HashMap::new(),
-            error: Some(format!("parallel execution timed out after {timeout_secs}s")),
+            error: Some(format!(
+                "parallel execution timed out after {timeout_secs}s"
+            )),
         },
         Ok(outcomes) => {
             let failed: Vec<&BranchOutcome> = outcomes.values().filter(|o| !o.success).collect();
@@ -861,12 +957,21 @@ pub async fn execute_parallel(
             let error = if success {
                 None
             } else {
-                Some(failed.iter()
-                    .map(|o| format!("{}: {}", o.step_id, o.error.as_deref().unwrap_or("failed")))
-                    .collect::<Vec<_>>()
-                    .join("; "))
+                Some(
+                    failed
+                        .iter()
+                        .map(|o| {
+                            format!("{}: {}", o.step_id, o.error.as_deref().unwrap_or("failed"))
+                        })
+                        .collect::<Vec<_>>()
+                        .join("; "),
+                )
             };
-            ExecutionReport { success, outcomes, error }
+            ExecutionReport {
+                success,
+                outcomes,
+                error,
+            }
         }
     }
 }
@@ -887,12 +992,18 @@ mod tests {
         WorkflowDefinition {
             id: Uuid::new_v4().to_string(),
             name: "test".into(),
-            steps: steps.iter().map(|(id, _)| WorkflowStep {
-                id: id.to_string(), name: id.to_string(),
-                timeout_ms: Some(500), judgment_required: false,
-                judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
-                context_budget: None,
-            }).collect(),
+            steps: steps
+                .iter()
+                .map(|(id, _)| WorkflowStep {
+                    id: id.to_string(),
+                    name: id.to_string(),
+                    timeout_ms: Some(500),
+                    judgment_required: false,
+                    judgment_fallback: JudgmentFallback::default(),
+                    judgment_timeout_ms: None,
+                    context_budget: None,
+                })
+                .collect(),
             entry_step_id: entry,
             default_timeout_ms: 500,
         }
@@ -904,11 +1015,22 @@ mod tests {
         let def = simple_def(vec![("s1", None)]);
         let def_id = def.id.clone();
         engine.register_definition(def).await.unwrap();
-        engine.register_step("s1", Arc::new(|_| Box::pin(async { StepResult::success(None) }))).await;
+        engine
+            .register_step(
+                "s1",
+                Arc::new(|_| Box::pin(async { StepResult::success(None) })),
+            )
+            .await;
 
-        let wf = engine.start_workflow(&def_id, HashMap::new()).await.unwrap();
+        let wf = engine
+            .start_workflow(&def_id, HashMap::new())
+            .await
+            .unwrap();
         tokio::time::sleep(Duration::from_millis(100)).await;
-        assert_eq!(engine.get_instance(&wf).await.unwrap().status, WorkflowStatus::Completed);
+        assert_eq!(
+            engine.get_instance(&wf).await.unwrap().status,
+            WorkflowStatus::Completed
+        );
     }
 
     #[tokio::test]
@@ -917,12 +1039,28 @@ mod tests {
         let def = simple_def(vec![("s1", Some("s2")), ("s2", None)]);
         let def_id = def.id.clone();
         engine.register_definition(def).await.unwrap();
-        engine.register_step("s1", Arc::new(|_| Box::pin(async { StepResult::success(Some("s2".into())) }))).await;
-        engine.register_step("s2", Arc::new(|_| Box::pin(async { StepResult::success(None) }))).await;
+        engine
+            .register_step(
+                "s1",
+                Arc::new(|_| Box::pin(async { StepResult::success(Some("s2".into())) })),
+            )
+            .await;
+        engine
+            .register_step(
+                "s2",
+                Arc::new(|_| Box::pin(async { StepResult::success(None) })),
+            )
+            .await;
 
-        let wf = engine.start_workflow(&def_id, HashMap::new()).await.unwrap();
+        let wf = engine
+            .start_workflow(&def_id, HashMap::new())
+            .await
+            .unwrap();
         tokio::time::sleep(Duration::from_millis(100)).await;
-        assert_eq!(engine.get_instance(&wf).await.unwrap().status, WorkflowStatus::Completed);
+        assert_eq!(
+            engine.get_instance(&wf).await.unwrap().status,
+            WorkflowStatus::Completed
+        );
     }
 
     #[tokio::test]
@@ -931,9 +1069,17 @@ mod tests {
         let def = simple_def(vec![("fail", None)]);
         let def_id = def.id.clone();
         engine.register_definition(def).await.unwrap();
-        engine.register_step("fail", Arc::new(|_| Box::pin(async { StepResult::failure("oops") }))).await;
+        engine
+            .register_step(
+                "fail",
+                Arc::new(|_| Box::pin(async { StepResult::failure("oops") })),
+            )
+            .await;
 
-        let wf = engine.start_workflow(&def_id, HashMap::new()).await.unwrap();
+        let wf = engine
+            .start_workflow(&def_id, HashMap::new())
+            .await
+            .unwrap();
         tokio::time::sleep(Duration::from_millis(100)).await;
         let inst = engine.get_instance(&wf).await.unwrap();
         assert_eq!(inst.status, WorkflowStatus::Failed);
@@ -945,32 +1091,45 @@ mod tests {
         let engine = make_engine();
         let counter = Arc::new(AtomicU32::new(0));
         let def = WorkflowDefinition {
-            id: "slow".into(), name: "slow".into(),
+            id: "slow".into(),
+            name: "slow".into(),
             steps: vec![WorkflowStep {
-                id: "slow".into(), name: "slow".into(),
-                timeout_ms: Some(10_000), judgment_required: false,
-                judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
+                id: "slow".into(),
+                name: "slow".into(),
+                timeout_ms: Some(10_000),
+                judgment_required: false,
+                judgment_fallback: JudgmentFallback::default(),
+                judgment_timeout_ms: None,
                 context_budget: None,
             }],
-            entry_step_id: "slow".into(), default_timeout_ms: 10_000,
+            entry_step_id: "slow".into(),
+            default_timeout_ms: 10_000,
         };
         engine.register_definition(def).await.unwrap();
         let c = counter.clone();
-        engine.register_step("slow", Arc::new(move |_| {
-            let cc = c.clone();
-            Box::pin(async move {
-                tokio::time::sleep(Duration::from_secs(10)).await;
-                cc.fetch_add(1, Ordering::Relaxed);
-                StepResult::success(None)
-            })
-        })).await;
+        engine
+            .register_step(
+                "slow",
+                Arc::new(move |_| {
+                    let cc = c.clone();
+                    Box::pin(async move {
+                        tokio::time::sleep(Duration::from_secs(10)).await;
+                        cc.fetch_add(1, Ordering::Relaxed);
+                        StepResult::success(None)
+                    })
+                }),
+            )
+            .await;
 
         let wf = engine.start_workflow("slow", HashMap::new()).await.unwrap();
         tokio::time::sleep(Duration::from_millis(50)).await;
         engine.cancel_workflow(&wf).await;
         tokio::time::sleep(Duration::from_millis(100)).await;
 
-        assert_eq!(engine.get_instance(&wf).await.unwrap().status, WorkflowStatus::Cancelled);
+        assert_eq!(
+            engine.get_instance(&wf).await.unwrap().status,
+            WorkflowStatus::Cancelled
+        );
         assert_eq!(counter.load(Ordering::Relaxed), 0);
     }
 
@@ -978,76 +1137,153 @@ mod tests {
     async fn step_timeout_fails_workflow() {
         let engine = make_engine();
         let def = WorkflowDefinition {
-            id: "t".into(), name: "t".into(),
+            id: "t".into(),
+            name: "t".into(),
             steps: vec![WorkflowStep {
-                id: "slow".into(), name: "slow".into(),
-                timeout_ms: Some(50), judgment_required: false,
-                judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
+                id: "slow".into(),
+                name: "slow".into(),
+                timeout_ms: Some(50),
+                judgment_required: false,
+                judgment_fallback: JudgmentFallback::default(),
+                judgment_timeout_ms: None,
                 context_budget: None,
             }],
-            entry_step_id: "slow".into(), default_timeout_ms: 50,
+            entry_step_id: "slow".into(),
+            default_timeout_ms: 50,
         };
         engine.register_definition(def).await.unwrap();
-        engine.register_step("slow", Arc::new(|_| Box::pin(async {
-            tokio::time::sleep(Duration::from_secs(10)).await;
-            StepResult::success(None)
-        }))).await;
+        engine
+            .register_step(
+                "slow",
+                Arc::new(|_| {
+                    Box::pin(async {
+                        tokio::time::sleep(Duration::from_secs(10)).await;
+                        StepResult::success(None)
+                    })
+                }),
+            )
+            .await;
 
         let wf = engine.start_workflow("t", HashMap::new()).await.unwrap();
         tokio::time::sleep(Duration::from_millis(200)).await;
-        assert_eq!(engine.get_instance(&wf).await.unwrap().status, WorkflowStatus::Failed);
+        assert_eq!(
+            engine.get_instance(&wf).await.unwrap().status,
+            WorkflowStatus::Failed
+        );
     }
 
     #[tokio::test]
     async fn judgment_approved_continues() {
         let engine = make_engine();
         let def = WorkflowDefinition {
-            id: "j".into(), name: "j".into(),
+            id: "j".into(),
+            name: "j".into(),
             steps: vec![
-                WorkflowStep { id: "gate".into(), name: "gate".into(), timeout_ms: Some(5_000),
-                    judgment_required: true, judgment_fallback: JudgmentFallback::Skip, judgment_timeout_ms: Some(2_000), context_budget: None },
-                WorkflowStep { id: "after".into(), name: "after".into(), timeout_ms: Some(500),
-                    judgment_required: false, judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None, context_budget: None },
+                WorkflowStep {
+                    id: "gate".into(),
+                    name: "gate".into(),
+                    timeout_ms: Some(5_000),
+                    judgment_required: true,
+                    judgment_fallback: JudgmentFallback::Skip,
+                    judgment_timeout_ms: Some(2_000),
+                    context_budget: None,
+                },
+                WorkflowStep {
+                    id: "after".into(),
+                    name: "after".into(),
+                    timeout_ms: Some(500),
+                    judgment_required: false,
+                    judgment_fallback: JudgmentFallback::default(),
+                    judgment_timeout_ms: None,
+                    context_budget: None,
+                },
             ],
-            entry_step_id: "gate".into(), default_timeout_ms: 5_000,
+            entry_step_id: "gate".into(),
+            default_timeout_ms: 5_000,
         };
         engine.register_definition(def).await.unwrap();
-        engine.register_step("gate", Arc::new(|_| Box::pin(async { StepResult::success(Some("after".into())) }))).await;
-        engine.register_step("after", Arc::new(|_| Box::pin(async { StepResult::success(None) }))).await;
+        engine
+            .register_step(
+                "gate",
+                Arc::new(|_| Box::pin(async { StepResult::success(Some("after".into())) })),
+            )
+            .await;
+        engine
+            .register_step(
+                "after",
+                Arc::new(|_| Box::pin(async { StepResult::success(None) })),
+            )
+            .await;
 
         let wf = engine.start_workflow("j", HashMap::new()).await.unwrap();
         tokio::time::sleep(Duration::from_millis(50)).await;
 
-        let jids: Vec<String> = engine.pending_judgments.iter().map(|r| r.key().clone()).collect();
+        let jids: Vec<String> = engine
+            .pending_judgments
+            .iter()
+            .map(|r| r.key().clone())
+            .collect();
         if let Some(jid) = jids.first() {
             engine.resolve_judgment(jid, true).await;
         }
 
         tokio::time::sleep(Duration::from_millis(200)).await;
-        assert_eq!(engine.get_instance(&wf).await.unwrap().status, WorkflowStatus::Completed);
+        assert_eq!(
+            engine.get_instance(&wf).await.unwrap().status,
+            WorkflowStatus::Completed
+        );
     }
 
     #[tokio::test]
     async fn judgment_timeout_skip_continues() {
         let engine = make_engine();
         let def = WorkflowDefinition {
-            id: "jt".into(), name: "jt".into(),
+            id: "jt".into(),
+            name: "jt".into(),
             steps: vec![
-                WorkflowStep { id: "gate".into(), name: "gate".into(), timeout_ms: Some(5_000),
-                    judgment_required: true, judgment_fallback: JudgmentFallback::Skip, judgment_timeout_ms: Some(50), context_budget: None },
-                WorkflowStep { id: "after".into(), name: "after".into(), timeout_ms: Some(500),
-                    judgment_required: false, judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None, context_budget: None },
+                WorkflowStep {
+                    id: "gate".into(),
+                    name: "gate".into(),
+                    timeout_ms: Some(5_000),
+                    judgment_required: true,
+                    judgment_fallback: JudgmentFallback::Skip,
+                    judgment_timeout_ms: Some(50),
+                    context_budget: None,
+                },
+                WorkflowStep {
+                    id: "after".into(),
+                    name: "after".into(),
+                    timeout_ms: Some(500),
+                    judgment_required: false,
+                    judgment_fallback: JudgmentFallback::default(),
+                    judgment_timeout_ms: None,
+                    context_budget: None,
+                },
             ],
-            entry_step_id: "gate".into(), default_timeout_ms: 5_000,
+            entry_step_id: "gate".into(),
+            default_timeout_ms: 5_000,
         };
         engine.register_definition(def).await.unwrap();
-        engine.register_step("gate", Arc::new(|_| Box::pin(async { StepResult::success(Some("after".into())) }))).await;
-        engine.register_step("after", Arc::new(|_| Box::pin(async { StepResult::success(None) }))).await;
+        engine
+            .register_step(
+                "gate",
+                Arc::new(|_| Box::pin(async { StepResult::success(Some("after".into())) })),
+            )
+            .await;
+        engine
+            .register_step(
+                "after",
+                Arc::new(|_| Box::pin(async { StepResult::success(None) })),
+            )
+            .await;
 
         let wf = engine.start_workflow("jt", HashMap::new()).await.unwrap();
         // Don't resolve — let it time out and skip
         tokio::time::sleep(Duration::from_millis(400)).await;
-        assert_eq!(engine.get_instance(&wf).await.unwrap().status, WorkflowStatus::Completed);
+        assert_eq!(
+            engine.get_instance(&wf).await.unwrap().status,
+            WorkflowStatus::Completed
+        );
     }
 
     // ── Parallel tests ─────────────────────────────────────────────────────────
@@ -1056,29 +1292,48 @@ mod tests {
         let mut m: HashMap<String, StepExecutor> = HashMap::new();
         for &id in ids {
             let sid = id.to_string();
-            m.insert(sid, Arc::new(|_| Box::pin(async { StepResult::success(None) })));
+            m.insert(
+                sid,
+                Arc::new(|_| Box::pin(async { StepResult::success(None) })),
+            );
         }
         Arc::new(RwLock::new(m))
     }
 
     fn par_steps(ids: &[&str]) -> Vec<WorkflowStep> {
-        ids.iter().map(|&id| WorkflowStep {
-            id: id.to_string(), name: id.to_string(),
-            timeout_ms: Some(500), judgment_required: false,
-            judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
-            context_budget: None,
-        }).collect()
+        ids.iter()
+            .map(|&id| WorkflowStep {
+                id: id.to_string(),
+                name: id.to_string(),
+                timeout_ms: Some(500),
+                judgment_required: false,
+                judgment_fallback: JudgmentFallback::default(),
+                judgment_timeout_ms: None,
+                context_budget: None,
+            })
+            .collect()
     }
 
     fn base_ctx() -> WorkflowContext {
-        WorkflowContext { workflow_id: "par-test".into(), ..Default::default() }
+        WorkflowContext {
+            workflow_id: "par-test".into(),
+            ..Default::default()
+        }
     }
 
     #[tokio::test]
     async fn parallel_all_succeed() {
         let steps = par_steps(&["a", "b", "c"]);
         let execs = make_executors(&["a", "b", "c"]);
-        let report = execute_parallel(steps, execs, base_ctx(), JoinPolicy::All, FailBehavior::FailFast, 5).await;
+        let report = execute_parallel(
+            steps,
+            execs,
+            base_ctx(),
+            JoinPolicy::All,
+            FailBehavior::FailFast,
+            5,
+        )
+        .await;
         assert!(report.success);
         assert_eq!(report.outcomes.len(), 3);
     }
@@ -1087,11 +1342,25 @@ mod tests {
     async fn parallel_all_failfast_on_first_failure() {
         let steps = par_steps(&["ok", "fail"]);
         let mut m: HashMap<String, StepExecutor> = HashMap::new();
-        m.insert("ok".into(), Arc::new(|_| Box::pin(async { StepResult::success(None) })));
-        m.insert("fail".into(), Arc::new(|_| Box::pin(async { StepResult::failure("boom") })));
+        m.insert(
+            "ok".into(),
+            Arc::new(|_| Box::pin(async { StepResult::success(None) })),
+        );
+        m.insert(
+            "fail".into(),
+            Arc::new(|_| Box::pin(async { StepResult::failure("boom") })),
+        );
         let execs = Arc::new(RwLock::new(m));
 
-        let report = execute_parallel(steps, execs, base_ctx(), JoinPolicy::All, FailBehavior::FailFast, 5).await;
+        let report = execute_parallel(
+            steps,
+            execs,
+            base_ctx(),
+            JoinPolicy::All,
+            FailBehavior::FailFast,
+            5,
+        )
+        .await;
         assert!(!report.success);
     }
 
@@ -1099,23 +1368,51 @@ mod tests {
     async fn parallel_any_succeeds_on_first() {
         let steps = par_steps(&["fast", "slow"]);
         let mut m: HashMap<String, StepExecutor> = HashMap::new();
-        m.insert("fast".into(), Arc::new(|_| Box::pin(async { StepResult::success(None) })));
-        m.insert("slow".into(), Arc::new(|_| Box::pin(async {
-            tokio::time::sleep(Duration::from_secs(10)).await;
-            StepResult::success(None)
-        })));
+        m.insert(
+            "fast".into(),
+            Arc::new(|_| Box::pin(async { StepResult::success(None) })),
+        );
+        m.insert(
+            "slow".into(),
+            Arc::new(|_| {
+                Box::pin(async {
+                    tokio::time::sleep(Duration::from_secs(10)).await;
+                    StepResult::success(None)
+                })
+            }),
+        );
         let execs = Arc::new(RwLock::new(m));
 
-        let report = execute_parallel(steps, execs, base_ctx(), JoinPolicy::Any, FailBehavior::ContinueOnError, 5).await;
+        let report = execute_parallel(
+            steps,
+            execs,
+            base_ctx(),
+            JoinPolicy::Any,
+            FailBehavior::ContinueOnError,
+            5,
+        )
+        .await;
         // At least one outcome recorded, and no timeout
-        assert!(report.error.as_deref().map(|e| !e.contains("timed out")).unwrap_or(true));
+        assert!(report
+            .error
+            .as_deref()
+            .map(|e| !e.contains("timed out"))
+            .unwrap_or(true));
     }
 
     #[tokio::test]
     async fn parallel_quorum_two_of_three() {
         let steps = par_steps(&["a", "b", "c"]);
         let execs = make_executors(&["a", "b", "c"]);
-        let report = execute_parallel(steps, execs, base_ctx(), JoinPolicy::Quorum(2), FailBehavior::ContinueOnError, 5).await;
+        let report = execute_parallel(
+            steps,
+            execs,
+            base_ctx(),
+            JoinPolicy::Quorum(2),
+            FailBehavior::ContinueOnError,
+            5,
+        )
+        .await;
         // At least 2 outcomes collected
         assert!(report.outcomes.len() >= 2);
     }
@@ -1124,13 +1421,26 @@ mod tests {
     async fn parallel_global_timeout() {
         let steps = par_steps(&["slow"]);
         let mut m: HashMap<String, StepExecutor> = HashMap::new();
-        m.insert("slow".into(), Arc::new(|_| Box::pin(async {
-            tokio::time::sleep(Duration::from_secs(60)).await;
-            StepResult::success(None)
-        })));
+        m.insert(
+            "slow".into(),
+            Arc::new(|_| {
+                Box::pin(async {
+                    tokio::time::sleep(Duration::from_secs(60)).await;
+                    StepResult::success(None)
+                })
+            }),
+        );
         let execs = Arc::new(RwLock::new(m));
 
-        let report = execute_parallel(steps, execs, base_ctx(), JoinPolicy::All, FailBehavior::FailFast, 1).await;
+        let report = execute_parallel(
+            steps,
+            execs,
+            base_ctx(),
+            JoinPolicy::All,
+            FailBehavior::FailFast,
+            1,
+        )
+        .await;
         assert!(!report.success);
         assert!(report.error.as_deref().unwrap_or("").contains("timed out"));
     }
@@ -1145,7 +1455,10 @@ mod tests {
 
         let steps = par_steps(&["a", "b"]);
         let mut m: HashMap<String, StepExecutor> = HashMap::new();
-        m.insert("a".into(), Arc::new(|_| Box::pin(async { StepResult::success(None) })));
+        m.insert(
+            "a".into(),
+            Arc::new(|_| Box::pin(async { StepResult::success(None) })),
+        );
         m.insert(
             "b".into(),
             Arc::new(move |_| {
@@ -1185,8 +1498,14 @@ mod tests {
 
         let steps = par_steps(&["a", "b", "c"]);
         let mut m: HashMap<String, StepExecutor> = HashMap::new();
-        m.insert("a".into(), Arc::new(|_| Box::pin(async { StepResult::success(None) })));
-        m.insert("b".into(), Arc::new(|_| Box::pin(async { StepResult::success(None) })));
+        m.insert(
+            "a".into(),
+            Arc::new(|_| Box::pin(async { StepResult::success(None) })),
+        );
+        m.insert(
+            "b".into(),
+            Arc::new(|_| Box::pin(async { StepResult::success(None) })),
+        );
         m.insert(
             "c".into(),
             Arc::new(move |_| {
@@ -1329,49 +1648,67 @@ mod tests {
 
         // Step s2 has a budget that keeps only 2 history items
         let budget_step = WorkflowStep {
-            id: "s2".into(), name: "s2".into(),
-            timeout_ms: Some(500), judgment_required: false,
-            judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
+            id: "s2".into(),
+            name: "s2".into(),
+            timeout_ms: Some(500),
+            judgment_required: false,
+            judgment_fallback: JudgmentFallback::default(),
+            judgment_timeout_ms: None,
             context_budget: Some(ContextBudget {
                 keep_recent_n: Some(2),
                 ..Default::default()
             }),
         };
         let def = WorkflowDefinition {
-            id: "budget-test".into(), name: "budget-test".into(),
+            id: "budget-test".into(),
+            name: "budget-test".into(),
             steps: vec![
                 WorkflowStep {
-                    id: "s1".into(), name: "s1".into(),
-                    timeout_ms: Some(500), judgment_required: false,
-                    judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
+                    id: "s1".into(),
+                    name: "s1".into(),
+                    timeout_ms: Some(500),
+                    judgment_required: false,
+                    judgment_fallback: JudgmentFallback::default(),
+                    judgment_timeout_ms: None,
                     context_budget: None,
                 },
                 budget_step,
             ],
-            entry_step_id: "s1".into(), default_timeout_ms: 500,
+            entry_step_id: "s1".into(),
+            default_timeout_ms: 500,
         };
         engine.register_definition(def).await.unwrap();
 
         // s1 succeeds and transitions to s2
-        engine.register_step("s1", Arc::new(|_| Box::pin(async {
-            StepResult::success(Some("s2".into()))
-        }))).await;
+        engine
+            .register_step(
+                "s1",
+                Arc::new(|_| Box::pin(async { StepResult::success(Some("s2".into())) })),
+            )
+            .await;
 
         // s2 captures the context it receives and verifies history is truncated
         let captured: Arc<tokio::sync::Mutex<Option<Vec<serde_json::Value>>>> =
             Arc::new(tokio::sync::Mutex::new(None));
         let cap2 = captured.clone();
-        engine.register_step("s2", Arc::new(move |ctx: WorkflowContext| {
-            let cap = cap2.clone();
-            Box::pin(async move {
-                let history = ctx.data.get("history")
-                    .and_then(|v| v.as_array())
-                    .cloned()
-                    .unwrap_or_default();
-                *cap.lock().await = Some(history);
-                StepResult::success(None)
-            })
-        })).await;
+        engine
+            .register_step(
+                "s2",
+                Arc::new(move |ctx: WorkflowContext| {
+                    let cap = cap2.clone();
+                    Box::pin(async move {
+                        let history = ctx
+                            .data
+                            .get("history")
+                            .and_then(|v| v.as_array())
+                            .cloned()
+                            .unwrap_or_default();
+                        *cap.lock().await = Some(history);
+                        StepResult::success(None)
+                    })
+                }),
+            )
+            .await;
 
         // Start with 5-item history
         let mut initial: HashMap<String, serde_json::Value> = HashMap::new();
@@ -1380,11 +1717,19 @@ mod tests {
         let wf = engine.start_workflow("budget-test", initial).await.unwrap();
         tokio::time::sleep(Duration::from_millis(200)).await;
 
-        assert_eq!(engine.get_instance(&wf).await.unwrap().status, WorkflowStatus::Completed);
+        assert_eq!(
+            engine.get_instance(&wf).await.unwrap().status,
+            WorkflowStatus::Completed
+        );
 
         // s2 should have received only 2 items (keep_recent_n=2)
         let hist = captured.lock().await.clone().expect("s2 never ran");
-        assert_eq!(hist.len(), 2, "expected 2 history items after budget, got {}", hist.len());
+        assert_eq!(
+            hist.len(),
+            2,
+            "expected 2 history items after budget, got {}",
+            hist.len()
+        );
         assert_eq!(hist[0], serde_json::json!(4));
         assert_eq!(hist[1], serde_json::json!(5));
     }
@@ -1410,17 +1755,33 @@ mod tests {
             }],
         };
         engine.register_definition(def).await.unwrap();
-        engine.register_step("s1", Arc::new(|_ctx| Box::pin(async { StepResult::success(None) }))).await;
+        engine
+            .register_step(
+                "s1",
+                Arc::new(|_ctx| Box::pin(async { StepResult::success(None) })),
+            )
+            .await;
 
-        let wf_id = engine.start_workflow("escalate-test", HashMap::new()).await.unwrap();
+        let wf_id = engine
+            .start_workflow("escalate-test", HashMap::new())
+            .await
+            .unwrap();
 
         tokio::time::sleep(Duration::from_millis(300)).await;
 
         let inst = engine.get_instance(&wf_id).await.expect("instance missing");
-        assert_eq!(inst.status, WorkflowStatus::Failed, "expected Failed, got {:?}", inst.status);
+        assert_eq!(
+            inst.status,
+            WorkflowStatus::Failed,
+            "expected Failed, got {:?}",
+            inst.status
+        );
         assert!(inst.finished_at.is_some(), "finished_at should be set");
         let err = inst.error.as_deref().unwrap_or("");
-        assert!(err.contains("escalated to master"), "unexpected error: {err}");
+        assert!(
+            err.contains("escalated to master"),
+            "unexpected error: {err}"
+        );
     }
 
     // ── TASK-215: snapshot must include step output ──────────────────────────────
@@ -1431,20 +1792,40 @@ mod tests {
         let def_id = def.id.clone();
         engine.register_definition(def).await.unwrap();
 
-        engine.register_step("s1", Arc::new(|_| Box::pin(async {
-            let mut r = StepResult::success(Some("s2".into()));
-            r.output = serde_json::json!({"answer": 42});
-            r
-        }))).await;
-        engine.register_step("s2", Arc::new(|_| Box::pin(async { StepResult::success(None) }))).await;
+        engine
+            .register_step(
+                "s1",
+                Arc::new(|_| {
+                    Box::pin(async {
+                        let mut r = StepResult::success(Some("s2".into()));
+                        r.output = serde_json::json!({"answer": 42});
+                        r
+                    })
+                }),
+            )
+            .await;
+        engine
+            .register_step(
+                "s2",
+                Arc::new(|_| Box::pin(async { StepResult::success(None) })),
+            )
+            .await;
 
-        let wf = engine.start_workflow(&def_id, HashMap::new()).await.unwrap();
+        let wf = engine
+            .start_workflow(&def_id, HashMap::new())
+            .await
+            .unwrap();
         tokio::time::sleep(Duration::from_millis(200)).await;
-        assert_eq!(engine.get_instance(&wf).await.unwrap().status, WorkflowStatus::Completed);
+        assert_eq!(
+            engine.get_instance(&wf).await.unwrap().status,
+            WorkflowStatus::Completed
+        );
 
         let store = engine.snapshot_store.lock().unwrap();
         let snapshots = store.list_snapshots(&wf).unwrap();
-        let s1_snap = snapshots.iter().find(|s| s.step_id == "s1")
+        let s1_snap = snapshots
+            .iter()
+            .find(|s| s.step_id == "s1")
             .expect("no snapshot for s1");
         assert!(
             s1_snap.full_data_json.contains("answer"),
@@ -1458,28 +1839,47 @@ mod tests {
     async fn task216_budget_written_back_to_inst_context() {
         let engine = make_engine();
         let budget_step = WorkflowStep {
-            id: "s1".into(), name: "s1".into(),
-            timeout_ms: Some(500), judgment_required: false,
-            judgment_fallback: JudgmentFallback::default(), judgment_timeout_ms: None,
-            context_budget: Some(ContextBudget { keep_recent_n: Some(1), ..Default::default() }),
+            id: "s1".into(),
+            name: "s1".into(),
+            timeout_ms: Some(500),
+            judgment_required: false,
+            judgment_fallback: JudgmentFallback::default(),
+            judgment_timeout_ms: None,
+            context_budget: Some(ContextBudget {
+                keep_recent_n: Some(1),
+                ..Default::default()
+            }),
         };
         let def = WorkflowDefinition {
-            id: "bw-test".into(), name: "bw-test".into(),
+            id: "bw-test".into(),
+            name: "bw-test".into(),
             steps: vec![budget_step],
-            entry_step_id: "s1".into(), default_timeout_ms: 500,
+            entry_step_id: "s1".into(),
+            default_timeout_ms: 500,
         };
         engine.register_definition(def).await.unwrap();
-        engine.register_step("s1", Arc::new(|_| Box::pin(async { StepResult::success(None) }))).await;
+        engine
+            .register_step(
+                "s1",
+                Arc::new(|_| Box::pin(async { StepResult::success(None) })),
+            )
+            .await;
 
         let mut initial: HashMap<String, serde_json::Value> = HashMap::new();
         initial.insert("history".into(), serde_json::json!([10, 20, 30, 40, 50]));
 
         let wf = engine.start_workflow("bw-test", initial).await.unwrap();
         tokio::time::sleep(Duration::from_millis(200)).await;
-        assert_eq!(engine.get_instance(&wf).await.unwrap().status, WorkflowStatus::Completed);
+        assert_eq!(
+            engine.get_instance(&wf).await.unwrap().status,
+            WorkflowStatus::Completed
+        );
 
         let inst = engine.get_instance(&wf).await.unwrap();
-        let hist = inst.context.data.get("history")
+        let hist = inst
+            .context
+            .data
+            .get("history")
             .and_then(|v| v.as_array())
             .cloned()
             .unwrap_or_default();

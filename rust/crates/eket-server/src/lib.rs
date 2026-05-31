@@ -191,7 +191,11 @@ async fn list_tasks(
 ) -> ApiResult<Value> {
     let rows = state
         .db
-        .list_tickets(q.status.as_deref(), q.assignee.as_deref(), q.priority.as_deref())
+        .list_tickets(
+            q.status.as_deref(),
+            q.assignee.as_deref(),
+            q.priority.as_deref(),
+        )
         .map_err(internal_error)?;
 
     let tasks: Vec<TaskItem> = if rows.is_empty() {
@@ -228,10 +232,7 @@ async fn list_tasks(
     Ok(Json(json!({ "tasks": tasks, "total": total })))
 }
 
-async fn get_task(
-    State(state): State<AppState>,
-    Path(id): Path<String>,
-) -> ApiResult<Value> {
+async fn get_task(State(state): State<AppState>, Path(id): Path<String>) -> ApiResult<Value> {
     let row = state.db.get_ticket_row(&id).map_err(internal_error)?;
     match row {
         Some(r) => {
@@ -289,10 +290,7 @@ async fn list_agents(
     Ok(Json(json!({ "agents": agents, "total": total })))
 }
 
-async fn get_agent(
-    State(state): State<AppState>,
-    Path(id): Path<String>,
-) -> ApiResult<Value> {
+async fn get_agent(State(state): State<AppState>, Path(id): Path<String>) -> ApiResult<Value> {
     let row = state.db.get_instance(&id).map_err(internal_error)?;
     match row {
         Some(r) => {
@@ -449,8 +447,15 @@ async fn live_handler() -> StatusCode {
 
 async fn ready_handler(State(state): State<AppState>) -> impl axum::response::IntoResponse {
     let db_ok = state.db.ping().is_ok();
-    let status = if db_ok { StatusCode::OK } else { StatusCode::SERVICE_UNAVAILABLE };
-    (status, Json(json!({ "ready": db_ok, "checks": { "sqlite": db_ok } })))
+    let status = if db_ok {
+        StatusCode::OK
+    } else {
+        StatusCode::SERVICE_UNAVAILABLE
+    };
+    (
+        status,
+        Json(json!({ "ready": db_ok, "checks": { "sqlite": db_ok } })),
+    )
 }
 
 pub fn build_router(state: AppState, auth_config: Arc<auth::AuthConfig>) -> Router {
@@ -467,7 +472,10 @@ pub fn build_router(state: AppState, auth_config: Arc<auth::AuthConfig>) -> Rout
         .route("/api/v1/agents/register", post(register_agent_handler))
         .route("/api/v1/agents/:id", get(get_agent))
         .route("/api/v1/agents/:id", delete(delete_agent_handler))
-        .route("/api/v1/agents/:id/heartbeat", post(agent_heartbeat_handler))
+        .route(
+            "/api/v1/agents/:id/heartbeat",
+            post(agent_heartbeat_handler),
+        )
         .route("/api/v1/tasks/:id/claim", post(claim_task_handler))
         .route("/api/v1/dag", get(get_dag))
         .route("/hooks/pre-tool-use", post(hooks::pre_tool_use))
@@ -535,9 +543,9 @@ mod tests {
     use super::*;
     use axum::body::Body;
     use axum::http::{Method, Request};
+    use axum::response::Response;
     use http_body_util::BodyExt;
     use tempfile::TempDir;
-    use axum::response::Response;
     use tower::util::ServiceExt;
 
     fn make_state(tmp: &TempDir) -> AppState {
@@ -556,7 +564,10 @@ mod tests {
     }
 
     fn no_auth() -> Arc<auth::AuthConfig> {
-        Arc::new(auth::AuthConfig { token: None, jwt_secret: None })
+        Arc::new(auth::AuthConfig {
+            token: None,
+            jwt_secret: None,
+        })
     }
 
     async fn body_json(body: Body) -> Value {
@@ -568,7 +579,10 @@ mod tests {
     async fn health_returns_ok() {
         let tmp = TempDir::new().unwrap();
         let app = build_router(make_state(&tmp), no_auth());
-        let req = Request::builder().uri("/health").body(Body::empty()).unwrap();
+        let req = Request::builder()
+            .uri("/health")
+            .body(Body::empty())
+            .unwrap();
         let resp: Response = app.oneshot(req).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
         let v = body_json(resp.into_body()).await;
@@ -696,8 +710,9 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(50)).await;
 
         let url = format!("ws://127.0.0.1:{}/ws", addr.port());
-        let (mut ws_stream, _) =
-            tokio_tungstenite::connect_async(&url).await.expect("ws connect");
+        let (mut ws_stream, _) = tokio_tungstenite::connect_async(&url)
+            .await
+            .expect("ws connect");
 
         let event = WorkflowEvent {
             ticket_id: "TASK-234".to_string(),

@@ -17,9 +17,20 @@ use crate::middleware_pipeline::{Middleware, PipelineCtx};
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(tag = "type")]
 pub enum DocEvent {
-    EpicCreated { epic_id: String, title: String, project_root: PathBuf },
-    EpicPlanned { epic_id: String, project_root: PathBuf },
-    TaskClaimed { ticket_id: String, slaver_id: String, project_root: PathBuf },
+    EpicCreated {
+        epic_id: String,
+        title: String,
+        project_root: PathBuf,
+    },
+    EpicPlanned {
+        epic_id: String,
+        project_root: PathBuf,
+    },
+    TaskClaimed {
+        ticket_id: String,
+        slaver_id: String,
+        project_root: PathBuf,
+    },
     TaskCompleted {
         ticket_id: String,
         title: String,
@@ -32,11 +43,32 @@ pub enum DocEvent {
         coverage: Option<u8>,
         project_root: PathBuf,
     },
-    ExpertReviewed { topic: String, project_root: PathBuf },
-    RoadmapUpdated { project_id: String, quarter: Option<String>, project_root: PathBuf },
-    SpikeStarted { spike_id: String, title: String, epic_id: Option<String>, project_root: PathBuf },
-    SpikeCompleted { spike_id: String, outcome: String, project_root: PathBuf },
-    DesignDocCreated { doc_type: String, doc_id: String, title: String, project_root: PathBuf },
+    ExpertReviewed {
+        topic: String,
+        project_root: PathBuf,
+    },
+    RoadmapUpdated {
+        project_id: String,
+        quarter: Option<String>,
+        project_root: PathBuf,
+    },
+    SpikeStarted {
+        spike_id: String,
+        title: String,
+        epic_id: Option<String>,
+        project_root: PathBuf,
+    },
+    SpikeCompleted {
+        spike_id: String,
+        outcome: String,
+        project_root: PathBuf,
+    },
+    DesignDocCreated {
+        doc_type: String,
+        doc_id: String,
+        title: String,
+        project_root: PathBuf,
+    },
 }
 
 // ─── TemplateRenderer ─────────────────────────────────────────────────────────
@@ -47,7 +79,9 @@ pub struct TemplateRenderer {
 
 impl TemplateRenderer {
     pub fn new() -> Self {
-        Self { handlebars: Handlebars::new() }
+        Self {
+            handlebars: Handlebars::new(),
+        }
     }
 
     /// Render template_name with data.
@@ -100,45 +134,53 @@ fn builtin_template(name: &str) -> Option<&'static str> {
         "confluence/retrospective.md.hbs" => Some(include_str!(
             "../../../../templates/confluence/retrospective.md.hbs"
         )),
-        "confluence/expert-review.md.hbs" => {
-            Some(include_str!("../../../../templates/confluence/expert-review.md.hbs"))
-        }
-        "jira/epic.md.hbs" => {
-            Some(include_str!("../../../../templates/jira/epic.md.hbs"))
-        }
-        "confluence/roadmap.md.hbs" => {
-            Some(include_str!("../../../../templates/confluence/roadmap.md.hbs"))
-        }
-        "confluence/spike-plan.md.hbs" => {
-            Some(include_str!("../../../../templates/confluence/spike-plan.md.hbs"))
-        }
-        "confluence/spike-findings.md.hbs" => {
-            Some(include_str!("../../../../templates/confluence/spike-findings.md.hbs"))
-        }
-        "confluence/design.md.hbs" => {
-            Some(include_str!("../../../../templates/confluence/design.md.hbs"))
-        }
+        "confluence/expert-review.md.hbs" => Some(include_str!(
+            "../../../../templates/confluence/expert-review.md.hbs"
+        )),
+        "jira/epic.md.hbs" => Some(include_str!("../../../../templates/jira/epic.md.hbs")),
+        "confluence/roadmap.md.hbs" => Some(include_str!(
+            "../../../../templates/confluence/roadmap.md.hbs"
+        )),
+        "confluence/spike-plan.md.hbs" => Some(include_str!(
+            "../../../../templates/confluence/spike-plan.md.hbs"
+        )),
+        "confluence/spike-findings.md.hbs" => Some(include_str!(
+            "../../../../templates/confluence/spike-findings.md.hbs"
+        )),
+        "confluence/design.md.hbs" => Some(include_str!(
+            "../../../../templates/confluence/design.md.hbs"
+        )),
         _ => None,
     }
 }
 
 // ─── handle_event ─────────────────────────────────────────────────────────────
 
-pub async fn handle_event(
-    event: DocEvent,
-    renderer: &TemplateRenderer,
-) -> anyhow::Result<()> {
+pub async fn handle_event(event: DocEvent, renderer: &TemplateRenderer) -> anyhow::Result<()> {
     let now = chrono::Utc::now();
     let timestamp = now.to_rfc3339();
     let date = now.format("%Y-%m-%d").to_string();
 
     match event {
-        DocEvent::EpicCreated { ref epic_id, ref title, ref project_root } => {
+        DocEvent::EpicCreated {
+            ref epic_id,
+            ref title,
+            ref project_root,
+        } => {
             // jira/epics/<EPIC>/epic.md
-            let epic_path =
-                project_root.join("jira").join("epics").join(epic_id).join("epic.md");
+            let epic_path = project_root
+                .join("jira")
+                .join("epics")
+                .join(epic_id)
+                .join("epic.md");
             let data = json!({ "epic_id": epic_id, "title": title, "timestamp": timestamp });
-            write_rendered(renderer, "jira/epic.md.hbs", &data, project_root, &epic_path)?;
+            write_rendered(
+                renderer,
+                "jira/epic.md.hbs",
+                &data,
+                project_root,
+                &epic_path,
+            )?;
 
             // confluence/requirements/<EPIC>-analysis.md
             let req_path = project_root
@@ -155,7 +197,10 @@ pub async fn handle_event(
             )?;
         }
 
-        DocEvent::EpicPlanned { ref epic_id, ref project_root } => {
+        DocEvent::EpicPlanned {
+            ref epic_id,
+            ref project_root,
+        } => {
             let plan_path = project_root
                 .join("confluence")
                 .join("architecture")
@@ -170,7 +215,11 @@ pub async fn handle_event(
             )?;
         }
 
-        DocEvent::TaskClaimed { ref ticket_id, ref slaver_id, ref project_root } => {
+        DocEvent::TaskClaimed {
+            ref ticket_id,
+            ref slaver_id,
+            ref project_root,
+        } => {
             let ticket_path = find_ticket_path(project_root, ticket_id);
             if let Some(path) = ticket_path {
                 let section_content = format!(
@@ -180,7 +229,12 @@ pub async fn handle_event(
             }
         }
 
-        DocEvent::TaskCompleted { ref ticket_id, ref title, ref slaver_id, ref project_root } => {
+        DocEvent::TaskCompleted {
+            ref ticket_id,
+            ref title,
+            ref slaver_id,
+            ref project_root,
+        } => {
             let retro_path = project_root
                 .join("confluence")
                 .join("memory")
@@ -202,7 +256,12 @@ pub async fn handle_event(
             )?;
         }
 
-        DocEvent::TaskTested { ref ticket_id, ref status, coverage, ref project_root } => {
+        DocEvent::TaskTested {
+            ref ticket_id,
+            ref status,
+            coverage,
+            ref project_root,
+        } => {
             let ticket_path = find_ticket_path(project_root, ticket_id);
             if let Some(path) = ticket_path {
                 let cov_str = coverage
@@ -215,7 +274,10 @@ pub async fn handle_event(
             }
         }
 
-        DocEvent::ExpertReviewed { ref topic, ref project_root } => {
+        DocEvent::ExpertReviewed {
+            ref topic,
+            ref project_root,
+        } => {
             let review_path = project_root
                 .join("docs")
                 .join("reviews")
@@ -230,7 +292,11 @@ pub async fn handle_event(
             )?;
         }
 
-        DocEvent::RoadmapUpdated { ref project_id, ref quarter, ref project_root } => {
+        DocEvent::RoadmapUpdated {
+            ref project_id,
+            ref quarter,
+            ref project_root,
+        } => {
             let q = quarter.clone().unwrap_or_else(current_quarter);
             let roadmap_path = project_root
                 .join("confluence")
@@ -244,13 +310,28 @@ pub async fn handle_event(
                 );
                 append_section_if_absent(&roadmap_path, &section_marker, &section_content)?;
             } else {
-                let data = json!({ "project_id": project_id, "quarter": q, "timestamp": timestamp });
-                write_rendered(renderer, "confluence/roadmap.md.hbs", &data, project_root, &roadmap_path)?;
+                let data =
+                    json!({ "project_id": project_id, "quarter": q, "timestamp": timestamp });
+                write_rendered(
+                    renderer,
+                    "confluence/roadmap.md.hbs",
+                    &data,
+                    project_root,
+                    &roadmap_path,
+                )?;
             }
         }
 
-        DocEvent::SpikeStarted { ref spike_id, ref title, ref epic_id, ref project_root } => {
-            let spike_dir = project_root.join("confluence").join("spikes").join(spike_id);
+        DocEvent::SpikeStarted {
+            ref spike_id,
+            ref title,
+            ref epic_id,
+            ref project_root,
+        } => {
+            let spike_dir = project_root
+                .join("confluence")
+                .join("spikes")
+                .join(spike_id);
             std::fs::create_dir_all(&spike_dir)?;
             let plan_path = spike_dir.join("plan.md");
             let data = json!({
@@ -259,20 +340,41 @@ pub async fn handle_event(
                 "epic_id": epic_id.as_deref().unwrap_or("N/A"),
                 "timestamp": timestamp,
             });
-            write_rendered(renderer, "confluence/spike-plan.md.hbs", &data, project_root, &plan_path)?;
+            write_rendered(
+                renderer,
+                "confluence/spike-plan.md.hbs",
+                &data,
+                project_root,
+                &plan_path,
+            )?;
         }
 
-        DocEvent::SpikeCompleted { ref spike_id, ref outcome, ref project_root } => {
+        DocEvent::SpikeCompleted {
+            ref spike_id,
+            ref outcome,
+            ref project_root,
+        } => {
             let findings_path = project_root
                 .join("confluence")
                 .join("spikes")
                 .join(spike_id)
                 .join("findings.md");
             let data = json!({ "spike_id": spike_id, "outcome": outcome, "timestamp": timestamp });
-            write_rendered(renderer, "confluence/spike-findings.md.hbs", &data, project_root, &findings_path)?;
+            write_rendered(
+                renderer,
+                "confluence/spike-findings.md.hbs",
+                &data,
+                project_root,
+                &findings_path,
+            )?;
         }
 
-        DocEvent::DesignDocCreated { ref doc_type, ref doc_id, ref title, ref project_root } => {
+        DocEvent::DesignDocCreated {
+            ref doc_type,
+            ref doc_id,
+            ref title,
+            ref project_root,
+        } => {
             let doc_path = project_root
                 .join("confluence")
                 .join(doc_type)
@@ -283,7 +385,13 @@ pub async fn handle_event(
                 "title": title,
                 "timestamp": timestamp,
             });
-            write_rendered(renderer, "confluence/design.md.hbs", &data, project_root, &doc_path)?;
+            write_rendered(
+                renderer,
+                "confluence/design.md.hbs",
+                &data,
+                project_root,
+                &doc_path,
+            )?;
         }
     }
 
@@ -326,13 +434,26 @@ pub fn append_section_if_absent(
 }
 
 fn find_ticket_path(project_root: &Path, ticket_id: &str) -> Option<PathBuf> {
-    let p = project_root.join("jira").join("tickets").join(format!("{ticket_id}.md"));
-    if p.exists() { Some(p) } else { None }
+    let p = project_root
+        .join("jira")
+        .join("tickets")
+        .join(format!("{ticket_id}.md"));
+    if p.exists() {
+        Some(p)
+    } else {
+        None
+    }
 }
 
 fn slugify(s: &str) -> String {
     s.chars()
-        .map(|c| if c.is_alphanumeric() || c == '-' { c.to_ascii_lowercase() } else { '-' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == '-' {
+                c.to_ascii_lowercase()
+            } else {
+                '-'
+            }
+        })
         .collect()
 }
 
@@ -430,6 +551,8 @@ mod tests {
         handle_event(event, &renderer).await.unwrap();
 
         assert!(root.join("jira/epics/EPIC-001/epic.md").exists());
-        assert!(root.join("confluence/requirements/EPIC-001-analysis.md").exists());
+        assert!(root
+            .join("confluence/requirements/EPIC-001-analysis.md")
+            .exists());
     }
 }

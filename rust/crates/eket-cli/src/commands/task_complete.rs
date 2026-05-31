@@ -46,7 +46,9 @@ struct ValidateTicket;
 
 #[async_trait]
 impl SagaStep<CompleteState> for ValidateTicket {
-    fn name(&self) -> &str { "ValidateTicket" }
+    fn name(&self) -> &str {
+        "ValidateTicket"
+    }
 
     async fn forward(
         &self,
@@ -80,7 +82,9 @@ struct CommitWork;
 
 #[async_trait]
 impl SagaStep<CompleteState> for CommitWork {
-    fn name(&self) -> &str { "CommitWork" }
+    fn name(&self) -> &str {
+        "CommitWork"
+    }
 
     async fn forward(
         &self,
@@ -136,7 +140,9 @@ struct UpdateTicketStatus;
 
 #[async_trait]
 impl SagaStep<CompleteState> for UpdateTicketStatus {
-    fn name(&self) -> &str { "UpdateTicketStatus" }
+    fn name(&self) -> &str {
+        "UpdateTicketStatus"
+    }
 
     async fn forward(
         &self,
@@ -175,7 +181,9 @@ struct NotifyMaster;
 
 #[async_trait]
 impl SagaStep<CompleteState> for NotifyMaster {
-    fn name(&self) -> &str { "NotifyMaster" }
+    fn name(&self) -> &str {
+        "NotifyMaster"
+    }
 
     async fn forward(
         &self,
@@ -239,7 +247,9 @@ struct RecordCompletion;
 
 #[async_trait]
 impl SagaStep<CompleteState> for RecordCompletion {
-    fn name(&self) -> &str { "RecordCompletion" }
+    fn name(&self) -> &str {
+        "RecordCompletion"
+    }
 
     async fn forward(
         &self,
@@ -265,14 +275,15 @@ impl SagaStep<CompleteState> for RecordCompletion {
     }
 }
 
-
 // ─── Step 6: RemoveWorktree ───────────────────────────────────────────────────
 
 struct RemoveWorktree;
 
 #[async_trait]
 impl SagaStep<CompleteState> for RemoveWorktree {
-    fn name(&self) -> &str { "RemoveWorktree" }
+    fn name(&self) -> &str {
+        "RemoveWorktree"
+    }
 
     async fn forward(
         &self,
@@ -284,13 +295,22 @@ impl SagaStep<CompleteState> for RemoveWorktree {
         }
 
         let status = std::process::Command::new("git")
-            .args(["worktree", "remove", "--force", &worktree_dir.to_string_lossy()])
+            .args([
+                "worktree",
+                "remove",
+                "--force",
+                &worktree_dir.to_string_lossy(),
+            ])
             .current_dir(&state.project_root)
             .status();
 
         match status {
             Ok(s) if s.success() => {}
-            Ok(s) => eprintln!("[WARN] worktree remove exited {}: {:?}", s.code().unwrap_or(-1), worktree_dir),
+            Ok(s) => eprintln!(
+                "[WARN] worktree remove exited {}: {:?}",
+                s.code().unwrap_or(-1),
+                worktree_dir
+            ),
             Err(e) => eprintln!("[WARN] worktree remove failed: {e}"),
         }
 
@@ -414,7 +434,7 @@ pub async fn run_complete(args: CompleteArgs) -> Result<()> {
     if result.success {
         // Doc lifecycle: write retrospective
         {
-            use eket_core::doc_lifecycle::{DocEvent, TemplateRenderer, handle_event};
+            use eket_core::doc_lifecycle::{handle_event, DocEvent, TemplateRenderer};
             let tickets_dir = result.state.project_root.join("jira/tickets");
             let title = eket_core::ticket::find_ticket(&tickets_dir, &args.ticket_id)
                 .map(|t| t.title)
@@ -434,16 +454,16 @@ pub async fn run_complete(args: CompleteArgs) -> Result<()> {
         generate_ticket_summary(&result.state.project_root, &args.ticket_id);
 
         // Step 7: Memory quality gate — review 知识沉淀 entries via Knowledge Curator
-        let memory_blocked = run_memory_quality_gate(
-            &result.state.project_root,
-            &args.ticket_id,
-        );
+        let memory_blocked = run_memory_quality_gate(&result.state.project_root, &args.ticket_id);
         if memory_blocked {
             // 阻断：Curator 要求修改，退出码非零让调用方感知
-            bail!("task:complete BLOCKED — memory:review 要求修改知识沉淀内容。\n\
+            bail!(
+                "task:complete BLOCKED — memory:review 要求修改知识沉淀内容。\n\
                    修改后重提：eket memory:review --ticket {} \n\
                    通过后再次运行：eket task:complete {}",
-                   args.ticket_id, args.ticket_id);
+                args.ticket_id,
+                args.ticket_id
+            );
         }
 
         // Step 8: 累计 complete 计数，达到阈值触发 knowledge index 重建
@@ -466,7 +486,7 @@ pub async fn run_complete(args: CompleteArgs) -> Result<()> {
 
         // Step 10: fire task.completed webhooks (non-blocking, failures → warn only)
         {
-            use eket_core::webhook::{WebhookEvent, dispatch_event};
+            use eket_core::webhook::{dispatch_event, WebhookEvent};
             let db_path = result.state.db_path.clone();
             let ticket_id_clone = args.ticket_id.clone();
             let slaver_id_clone = slaver_id.clone();
@@ -478,12 +498,7 @@ pub async fn run_complete(args: CompleteArgs) -> Result<()> {
                         "slaver_id": slaver_id_clone,
                         "pr_url": pr_url_clone,
                     });
-                    dispatch_event(
-                        pool,
-                        WebhookEvent::TaskCompleted,
-                        payload,
-                    )
-                    .await;
+                    dispatch_event(pool, WebhookEvent::TaskCompleted, payload).await;
                 }
             });
         }
@@ -593,8 +608,7 @@ fn generate_ticket_summary(project_root: &Path, ticket_id: &str) {
         return;
     }
 
-    let title = extract_section(&content, "title_line")
-        .unwrap_or_else(|| ticket_id.to_string());
+    let title = extract_section(&content, "title_line").unwrap_or_else(|| ticket_id.to_string());
     let test_result = extract_section(&content, "## 测试结果")
         .or_else(|| extract_section(&content, "## 测试"))
         .unwrap_or_else(|| "—".to_string());
@@ -681,33 +695,48 @@ fn truncate(s: &str, max: usize) -> String {
 /// 返回 true = 阻断（需要修改），false = 放行。
 /// 静默失败：找不到文件、无知识沉淀 → 放行。
 fn run_memory_quality_gate(project_root: &Path, ticket_id: &str) -> bool {
-    let ticket_path = project_root.join("jira/tickets").join(format!("{ticket_id}.md"));
-    let Ok(ticket_content) = std::fs::read_to_string(&ticket_path) else { return false };
+    let ticket_path = project_root
+        .join("jira/tickets")
+        .join(format!("{ticket_id}.md"));
+    let Ok(ticket_content) = std::fs::read_to_string(&ticket_path) else {
+        return false;
+    };
 
     // 找 ## 知识沉淀 section
-    let Some(section_start) = ticket_content.find("## 知识沉淀") else { return false };
+    let Some(section_start) = ticket_content.find("## 知识沉淀") else {
+        return false;
+    };
     let section = &ticket_content[section_start..];
 
     // 提取 confluence/memory/ 文件路径
-    let memory_files: Vec<std::path::PathBuf> = section.lines()
+    let memory_files: Vec<std::path::PathBuf> = section
+        .lines()
         .filter(|l| l.contains("confluence/memory/"))
         .filter_map(|l| {
             // 支持 markdown link `(path)` 和裸路径
             let raw = if l.contains('(') {
                 l.split('(').nth(1)?.split(')').next()?
             } else {
-                l.split_whitespace().find(|w| w.contains("confluence/memory/"))?
+                l.split_whitespace()
+                    .find(|w| w.contains("confluence/memory/"))?
             };
             let p = project_root.join(raw.trim_matches('`'));
-            if p.exists() { Some(p) } else { None }
+            if p.exists() {
+                Some(p)
+            } else {
+                None
+            }
         })
         .collect();
 
-    if memory_files.is_empty() { return false; }
+    if memory_files.is_empty() {
+        return false;
+    }
 
     let mut blocked = false;
     for file_path in &memory_files {
-        let rel = file_path.strip_prefix(project_root)
+        let rel = file_path
+            .strip_prefix(project_root)
             .map(|p| p.display().to_string())
             .unwrap_or_else(|_| file_path.display().to_string());
 
@@ -767,18 +796,26 @@ fn check_memory_structure(content: &str) -> Vec<String> {
         issues.push("缺少来源 TASK-ID 引用".to_string());
     }
     if content.split_whitespace().count() < 30 {
-        issues.push(format!("内容过短（{}词，建议≥30）", content.split_whitespace().count()));
+        issues.push(format!(
+            "内容过短（{}词，建议≥30）",
+            content.split_whitespace().count()
+        ));
     }
     issues
 }
 
 fn inject_frontmatter_status(content: &str, status: &str, ticket_id: &str) -> String {
     let timestamp = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
-    let new_fields = format!("review_status: {status}\nreview_ticket: {ticket_id}\nreviewed_at: {timestamp}\n");
+    let new_fields =
+        format!("review_status: {status}\nreview_ticket: {ticket_id}\nreviewed_at: {timestamp}\n");
     if content.starts_with("---") {
         if let Some(end) = content[3..].find("---") {
             let insert_at = end + 3; // after opening ---
-            return format!("{}{new_fields}{}", &content[..insert_at], &content[insert_at..]);
+            return format!(
+                "{}{new_fields}{}",
+                &content[..insert_at],
+                &content[insert_at..]
+            );
         }
     }
     format!("---\n{new_fields}---\n{content}")
@@ -796,18 +833,25 @@ fn maybe_rebuild_knowledge_index(project_root: &Path) {
     let count = std::fs::read_to_string(&counter_file)
         .ok()
         .and_then(|s| s.trim().parse::<u32>().ok())
-        .unwrap_or(0) + 1;
+        .unwrap_or(0)
+        + 1;
 
     if count >= threshold {
         // 触发重建
         let memory_dir = project_root.join("confluence/memory");
         if memory_dir.exists() {
-            eprintln!("[knowledge:index] 🔄 已完成 {count} 次 task:complete，触发 memory 知识库重建...");
+            eprintln!(
+                "[knowledge:index] 🔄 已完成 {count} 次 task:complete，触发 memory 知识库重建..."
+            );
             let db_path = project_root.join(".eket/eket.db");
             let status = std::process::Command::new("eket")
-                .args(["knowledge:index", "--dir",
-                       &memory_dir.display().to_string(),
-                       "--db-path", &db_path.display().to_string()])
+                .args([
+                    "knowledge:index",
+                    "--dir",
+                    &memory_dir.display().to_string(),
+                    "--db-path",
+                    &db_path.display().to_string(),
+                ])
                 .current_dir(project_root)
                 .status();
             match status {
@@ -850,9 +894,7 @@ fn notify_unblocked_tickets(project_root: &Path, completed_id: &str) -> Result<(
         let content = std::fs::read_to_string(&path).unwrap_or_default();
 
         if let Some(deps) = parse_blocked_by_field(&content) {
-            if deps.contains(&completed_id.to_string())
-                && all_deps_done(project_root, &deps)
-            {
+            if deps.contains(&completed_id.to_string()) && all_deps_done(project_root, &deps) {
                 if let Some(tid) = extract_ticket_id_from_path(&path) {
                     newly_unblocked.push(tid);
                 }
@@ -879,10 +921,7 @@ fn parse_blocked_by_field(content: &str) -> Option<Vec<String>> {
     for line in content.lines() {
         let lower = line.to_lowercase();
         if lower.contains("blocked_by") || lower.contains("**依赖**") {
-            let ids: Vec<String> = re
-                .find_iter(line)
-                .map(|m| m.as_str().to_string())
-                .collect();
+            let ids: Vec<String> = re.find_iter(line).map(|m| m.as_str().to_string()).collect();
             if !ids.is_empty() {
                 return Some(ids);
             }
@@ -936,7 +975,11 @@ fn append_unblocked_queue(project_root: &Path, ids: &[String]) -> Result<()> {
     // 收集已有 ticket_id（幂等去重）
     let existing_ids: std::collections::HashSet<String> = entries
         .iter()
-        .filter_map(|v| v.get("ticket_id").and_then(|s| s.as_str()).map(|s| s.to_string()))
+        .filter_map(|v| {
+            v.get("ticket_id")
+                .and_then(|s| s.as_str())
+                .map(|s| s.to_string())
+        })
         .collect();
 
     let now = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
@@ -956,15 +999,17 @@ fn append_unblocked_queue(project_root: &Path, ids: &[String]) -> Result<()> {
 
 fn read_rebuild_threshold(project_root: &Path) -> u32 {
     let config_path = project_root.join(".eket/config.yml");
-    let Ok(content) = std::fs::read_to_string(config_path) else { return 5 };
+    let Ok(content) = std::fs::read_to_string(config_path) else {
+        return 5;
+    };
     // 简单解析：knowledge_rebuild_threshold: N
-    content.lines()
+    content
+        .lines()
         .find(|l| l.contains("knowledge_rebuild_threshold"))
         .and_then(|l| l.split(':').nth(1))
         .and_then(|v| v.trim().parse().ok())
         .unwrap_or(5)
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -1016,7 +1061,10 @@ mod tests {
 
         assert!(result.is_ok(), "run_complete failed: {result:?}");
         let status = read_ticket_status(&root, "TASK-001");
-        assert_eq!(status, "done", "ticket status should be done, got: {status}");
+        assert_eq!(
+            status, "done",
+            "ticket status should be done, got: {status}"
+        );
     }
 
     #[tokio::test]
@@ -1032,7 +1080,10 @@ mod tests {
 
         assert!(result.is_ok());
         let status = read_ticket_status(&root, "TASK-002");
-        assert_eq!(status, "todo", "rollback should set status to todo, got: {status}");
+        assert_eq!(
+            status, "todo",
+            "rollback should set status to todo, got: {status}"
+        );
     }
 
     #[tokio::test]
@@ -1069,7 +1120,10 @@ mod tests {
 
         assert!(result.is_ok());
         let status = read_ticket_status(&root, "TASK-003");
-        assert_eq!(status, "todo", "ticket should remain todo after saga failure");
+        assert_eq!(
+            status, "todo",
+            "ticket should remain todo after saga failure"
+        );
     }
 
     #[tokio::test]
@@ -1079,17 +1133,26 @@ mod tests {
         let root = setup_project(&dir, "TASK-004", "in_progress");
 
         // Init git repo + initial commit so subsequent commit = "nothing to commit"
-        let _ = std::process::Command::new("git").args(["init"]).current_dir(&root).output();
+        let _ = std::process::Command::new("git")
+            .args(["init"])
+            .current_dir(&root)
+            .output();
         let _ = std::process::Command::new("git")
             .args(["config", "user.email", "test@test.com"])
-            .current_dir(&root).output();
+            .current_dir(&root)
+            .output();
         let _ = std::process::Command::new("git")
             .args(["config", "user.name", "Test"])
-            .current_dir(&root).output();
-        let _ = std::process::Command::new("git").args(["add", "-A"]).current_dir(&root).output();
+            .current_dir(&root)
+            .output();
+        let _ = std::process::Command::new("git")
+            .args(["add", "-A"])
+            .current_dir(&root)
+            .output();
         let _ = std::process::Command::new("git")
             .args(["commit", "-m", "initial"])
-            .current_dir(&root).output();
+            .current_dir(&root)
+            .output();
 
         let result = run_complete(args(&dir, "TASK-004", &root)).await;
 
@@ -1123,14 +1186,21 @@ mod tests {
         let tickets_dir = root.join("jira/tickets");
         std::fs::create_dir_all(&tickets_dir).unwrap();
 
-        let content = "# TASK-S01: 测试摘要功能\n\n## 测试结果\n全部通过\n\n## 知识沉淀\n- 关键经验\n";
+        let content =
+            "# TASK-S01: 测试摘要功能\n\n## 测试结果\n全部通过\n\n## 知识沉淀\n- 关键经验\n";
         std::fs::write(tickets_dir.join("TASK-S01.md"), content).unwrap();
 
         generate_ticket_summary(&root, "TASK-S01");
 
         let updated = std::fs::read_to_string(tickets_dir.join("TASK-S01.md")).unwrap();
-        assert!(updated.contains("## Summary"), "Summary section should be added");
-        assert!(updated.contains("全部通过"), "Test result should appear in summary");
+        assert!(
+            updated.contains("## Summary"),
+            "Summary section should be added"
+        );
+        assert!(
+            updated.contains("全部通过"),
+            "Test result should appear in summary"
+        );
     }
 
     #[test]
@@ -1147,7 +1217,11 @@ mod tests {
 
         let updated = std::fs::read_to_string(tickets_dir.join("TASK-S02.md")).unwrap();
         // Should not duplicate
-        assert_eq!(updated.matches("## Summary").count(), 1, "Summary should not be duplicated");
+        assert_eq!(
+            updated.matches("## Summary").count(),
+            1,
+            "Summary should not be duplicated"
+        );
     }
 
     #[test]

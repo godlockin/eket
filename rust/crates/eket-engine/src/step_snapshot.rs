@@ -138,10 +138,20 @@ impl StepSnapshotStore {
             "INSERT INTO workflow_step_snapshots
                 (workflow_id, step_id, summary, tags, full_data, created_at)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-            params![workflow_id, step_id, summary, tags_json, full_data_json, created_at_ms],
+            params![
+                workflow_id,
+                step_id,
+                summary,
+                tags_json,
+                full_data_json,
+                created_at_ms
+            ],
         )?;
 
-        debug!("archived step snapshot: workflow={} step={}", workflow_id, step_id);
+        debug!(
+            "archived step snapshot: workflow={} step={}",
+            workflow_id, step_id
+        );
         Ok(())
     }
 
@@ -178,8 +188,8 @@ impl StepSnapshotStore {
         for row in rows {
             let (wid, sid, summary, tags_json, full_data_json, created_at_ms) = row?;
             let tags: Vec<String> = serde_json::from_str(&tags_json).unwrap_or_default();
-            let created_at = DateTime::from_timestamp_millis(created_at_ms)
-                .unwrap_or_else(Utc::now);
+            let created_at =
+                DateTime::from_timestamp_millis(created_at_ms).unwrap_or_else(Utc::now);
             result.push(StepSnapshot {
                 workflow_id: wid,
                 step_id: sid,
@@ -216,8 +226,8 @@ impl StepSnapshotStore {
         for row in rows {
             let (wid, sid, summary, tags_json, full_data_json, created_at_ms) = row?;
             let tags: Vec<String> = serde_json::from_str(&tags_json).unwrap_or_default();
-            let created_at = DateTime::from_timestamp_millis(created_at_ms)
-                .unwrap_or_else(Utc::now);
+            let created_at =
+                DateTime::from_timestamp_millis(created_at_ms).unwrap_or_else(Utc::now);
             result.push(StepSnapshot {
                 workflow_id: wid,
                 step_id: sid,
@@ -261,7 +271,10 @@ pub fn archive_and_compress_context(
         .get("__history_index")
         .and_then(|v| serde_json::from_value(v.clone()).ok())
         .unwrap_or_default();
-    toc.push(HistoryIndexEntry { step_id: completed_step_id.to_string(), summary });
+    toc.push(HistoryIndexEntry {
+        step_id: completed_step_id.to_string(),
+        summary,
+    });
 
     // 4. 只移除该步骤的输出累积键（`{step_id}.output`），保留通用共享状态
     //    例：保留 "history"、"user_query" 等跨步骤共享字段
@@ -269,10 +282,7 @@ pub fn archive_and_compress_context(
     context_data.remove(&output_key);
 
     // 5. 更新 ToC 索引
-    context_data.insert(
-        "__history_index".to_string(),
-        serde_json::to_value(&toc)?,
-    );
+    context_data.insert("__history_index".to_string(), serde_json::to_value(&toc)?);
 
     Ok(())
 }
@@ -295,7 +305,10 @@ mod tests {
     #[test]
     fn archive_and_search_roundtrip() {
         let store = StepSnapshotStore::new_in_memory().unwrap();
-        let data = make_data("analyzed user input for intent", &[("user_query", "hello world")]);
+        let data = make_data(
+            "analyzed user input for intent",
+            &[("user_query", "hello world")],
+        );
         store.archive_step("wf-1", "step-analyze", &data).unwrap();
 
         let results = store.search_step_history("wf-1", "intent").unwrap();
@@ -336,7 +349,10 @@ mod tests {
             let step_id = format!("step-{i}");
             // inject the step's own output key (as workflow.rs does)
             ctx_data.insert(format!("{step_id}.output"), serde_json::json!(large_value));
-            ctx_data.insert("summary".into(), serde_json::json!(format!("step {i} done")));
+            ctx_data.insert(
+                "summary".into(),
+                serde_json::json!(format!("step {i} done")),
+            );
 
             archive_and_compress_context(&store, "wf-size", &step_id, &mut ctx_data).unwrap();
         }

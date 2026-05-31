@@ -198,9 +198,21 @@ mod tests {
     fn recommend_finds_similar() {
         let rec = Recommender::new();
         let corpus = vec![
-            ("T-1".to_owned(), "Memory Safety".to_owned(), "Rust ownership borrow checker memory safety".to_owned()),
-            ("T-2".to_owned(), "Web Framework".to_owned(), "HTTP server routing middleware REST API".to_owned()),
-            ("T-3".to_owned(), "Database".to_owned(), "SQLite query performance index optimization".to_owned()),
+            (
+                "T-1".to_owned(),
+                "Memory Safety".to_owned(),
+                "Rust ownership borrow checker memory safety".to_owned(),
+            ),
+            (
+                "T-2".to_owned(),
+                "Web Framework".to_owned(),
+                "HTTP server routing middleware REST API".to_owned(),
+            ),
+            (
+                "T-3".to_owned(),
+                "Database".to_owned(),
+                "SQLite query performance index optimization".to_owned(),
+            ),
         ];
         let results = rec.recommend("Rust memory ownership borrow checker", &corpus, 3);
         assert!(!results.is_empty());

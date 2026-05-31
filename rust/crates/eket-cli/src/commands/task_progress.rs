@@ -35,8 +35,16 @@ pub fn build_progress(tickets_dir: &std::path::Path) -> serde_json::Value {
     let dag = parse_tickets_dag(tickets_dir);
 
     let total = dag.nodes.len();
-    let done = dag.nodes.iter().filter(|n| n.status == "done" || n.status == "completed").count();
-    let in_progress = dag.nodes.iter().filter(|n| n.status == "in_progress").count();
+    let done = dag
+        .nodes
+        .iter()
+        .filter(|n| n.status == "done" || n.status == "completed")
+        .count();
+    let in_progress = dag
+        .nodes
+        .iter()
+        .filter(|n| n.status == "in_progress")
+        .count();
     let failed = dag.nodes.iter().filter(|n| n.status == "failed").count();
     let todo = total - done - in_progress - failed;
 
@@ -101,15 +109,18 @@ mod tests {
         fs::write(
             dir.path().join("TASK-001.md"),
             "# TASK-001: Setup\n**状态**: done\n",
-        ).unwrap();
+        )
+        .unwrap();
         fs::write(
             dir.path().join("TASK-002.md"),
             "# TASK-002: Impl\n**状态**: in_progress\n",
-        ).unwrap();
+        )
+        .unwrap();
         fs::write(
             dir.path().join("TASK-003.md"),
             "# TASK-003: Tests\n**状态**: todo\n- blocked_by: [TASK-002]\n",
-        ).unwrap();
+        )
+        .unwrap();
 
         let result = build_progress(dir.path());
         assert_eq!(result["total"], 3);

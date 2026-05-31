@@ -53,9 +53,9 @@ pub async fn run_index(args: KnowledgeIndexArgs) -> Result<()> {
     }
 
     // Single-entry mode: require ticket_id
-    let ticket_id = args.ticket_id.ok_or_else(|| {
-        anyhow::anyhow!("--ticket-id is required when --dir is not provided")
-    })?;
+    let ticket_id = args
+        .ticket_id
+        .ok_or_else(|| anyhow::anyhow!("--ticket-id is required when --dir is not provided"))?;
 
     let content = if let Some(file) = &args.file {
         std::fs::read_to_string(file)?

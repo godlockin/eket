@@ -50,9 +50,17 @@ pub fn parse_gh_checks_output(output: &str) -> Vec<CheckResult> {
         .filter(|l| !l.trim().is_empty())
         .map(|line| {
             let parts: Vec<&str> = line.splitn(3, '\t').collect();
-            let name = parts.first().copied().unwrap_or("unknown").trim().to_string();
+            let name = parts
+                .first()
+                .copied()
+                .unwrap_or("unknown")
+                .trim()
+                .to_string();
             let raw_status = parts.get(1).copied().unwrap_or("").trim().to_lowercase();
-            let status = if raw_status.contains("pass") || raw_status == "success" || raw_status == "completed" {
+            let status = if raw_status.contains("pass")
+                || raw_status == "success"
+                || raw_status == "completed"
+            {
                 "pass".to_string()
             } else {
                 "fail".to_string()
@@ -108,9 +116,7 @@ pub fn run_gate_review(pr_url: Option<&str>, ticket_id: Option<&str>) -> Value {
         });
     };
 
-    let output = Command::new("gh")
-        .args(["pr", "checks", url])
-        .output();
+    let output = Command::new("gh").args(["pr", "checks", url]).output();
 
     match output {
         Err(_) => json!({

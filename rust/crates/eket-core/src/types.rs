@@ -152,7 +152,12 @@ pub struct ApiResult<T> {
 
 impl<T> ApiResult<T> {
     pub fn ok(data: T) -> Self {
-        Self { success: true, data: Some(data), error: None, code: None }
+        Self {
+            success: true,
+            data: Some(data),
+            error: None,
+            code: None,
+        }
     }
 
     pub fn err(message: impl Into<String>, code: impl Into<String>) -> Self {

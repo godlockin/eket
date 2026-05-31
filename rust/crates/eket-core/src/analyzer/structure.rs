@@ -2,12 +2,12 @@
 //!
 //! This module provides the main entry point for analyzing source files.
 
-use std::path::Path;
 use std::fs;
+use std::path::Path;
 
-use crate::analyzer::types::*;
-use crate::analyzer::language::{detect_language, is_binary_content, SupportedLanguage};
 use crate::analyzer::extractors;
+use crate::analyzer::language::{detect_language, is_binary_content, SupportedLanguage};
+use crate::analyzer::types::*;
 
 /// Analyze a single source file and return structural information.
 ///

@@ -26,8 +26,7 @@ impl TicketFile {
     /// 从文件路径解析 ticket
     pub fn read(path: impl AsRef<Path>) -> EketResult<Self> {
         let path = path.as_ref();
-        let raw = std::fs::read_to_string(path)
-            .map_err(EketError::Io)?;
+        let raw = std::fs::read_to_string(path).map_err(EketError::Io)?;
 
         let id = path
             .file_stem()
@@ -57,7 +56,16 @@ impl TicketFile {
             .or_else(|| extract_field(&raw, "type"))
             .filter(|s| !s.is_empty());
 
-        Ok(Self { path: path.to_path_buf(), id, title, status, priority, assignee, ticket_type, raw })
+        Ok(Self {
+            path: path.to_path_buf(),
+            id,
+            title,
+            status,
+            priority,
+            assignee,
+            ticket_type,
+            raw,
+        })
     }
 
     /// 更新 ticket 文件中的 **状态** 字段（原子写）
@@ -226,7 +234,11 @@ fn regex_replace(input: &str, pattern: &str, replacement: &str) -> String {
 
     let joined = result.join("\n");
     // Preserve trailing newline
-    if input.ends_with('\n') { format!("{joined}\n") } else { joined }
+    if input.ends_with('\n') {
+        format!("{joined}\n")
+    } else {
+        joined
+    }
 }
 
 fn is_match(line: &str, pattern: &str) -> bool {
@@ -285,7 +297,8 @@ mod tests {
     fn set_status_updates_file() {
         let f = make_ticket_file(SAMPLE);
         let mut t = TicketFile::read(f.path()).unwrap();
-        t.set_status(TicketStatus::InProgress, Some("slaver_123")).unwrap();
+        t.set_status(TicketStatus::InProgress, Some("slaver_123"))
+            .unwrap();
 
         let updated = std::fs::read_to_string(f.path()).unwrap();
         assert!(updated.contains("**状态**: in_progress"));

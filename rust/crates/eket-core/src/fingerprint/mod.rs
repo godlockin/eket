@@ -15,4 +15,4 @@ pub mod storage;
 
 pub use classifier::{classify_change, ChangeType};
 pub use hash::{compute_fingerprint, FileFingerprint, StructuralInfo};
-pub use storage::{FingerprintStore, FingerprintBaseline};
+pub use storage::{FingerprintBaseline, FingerprintStore};

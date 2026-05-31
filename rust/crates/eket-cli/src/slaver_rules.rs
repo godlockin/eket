@@ -2,7 +2,6 @@
 ///
 /// 解析 SLAVER-RULES.md 中的红线规则，生成 SlaverRulesGuardrail。
 /// 接入 Pipeline 时通过 GuardrailMiddleware 封装。
-
 use eket_core::guardrail::{ActionContext, GuardrailCheck, GuardrailResult, GuardrailViolation};
 
 // ─── ParsedRule ───────────────────────────────────────────────────────────────
@@ -103,7 +102,9 @@ impl GuardrailCheck for SlaverRulesGuardrail {
     fn check(&self, ctx: &ActionContext) -> GuardrailResult {
         match ctx.action.as_str() {
             "claim" => {
-                if ctx.metadata.get("modifying_acceptance_criteria")
+                if ctx
+                    .metadata
+                    .get("modifying_acceptance_criteria")
                     .and_then(|v| v.as_bool())
                     .unwrap_or(false)
                 {
@@ -115,7 +116,9 @@ impl GuardrailCheck for SlaverRulesGuardrail {
                 }
             }
             "complete" => {
-                if ctx.metadata.get("self_review")
+                if ctx
+                    .metadata
+                    .get("self_review")
                     .and_then(|v| v.as_bool())
                     .unwrap_or(false)
                 {
@@ -199,7 +202,10 @@ mod tests {
         let g = SlaverRulesGuardrail { rules };
         let ctx = make_ctx("claim", json!({ "modifying_acceptance_criteria": true }));
         let result = g.check(&ctx);
-        assert!(result.is_err(), "Expected violation for modifying_acceptance_criteria");
+        assert!(
+            result.is_err(),
+            "Expected violation for modifying_acceptance_criteria"
+        );
         let err = result.unwrap_err();
         assert!(err.rule.contains("no_modify_acceptance"));
     }

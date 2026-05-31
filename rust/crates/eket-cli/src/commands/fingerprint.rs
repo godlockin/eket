@@ -74,10 +74,7 @@ pub async fn run_build(args: FingerprintBuildArgs) -> Result<()> {
         let path = entry.path();
 
         // Check extension
-        let ext = path
-            .extension()
-            .and_then(|e| e.to_str())
-            .unwrap_or("");
+        let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
         if !extensions.contains(&ext) {
             continue;
         }
@@ -329,9 +326,7 @@ fn get_db_path() -> Result<String> {
 }
 
 fn get_git_head() -> Result<Option<String>> {
-    let output = Command::new("git")
-        .args(["rev-parse", "HEAD"])
-        .output()?;
+    let output = Command::new("git").args(["rev-parse", "HEAD"]).output()?;
 
     if output.status.success() {
         let sha = String::from_utf8_lossy(&output.stdout).trim().to_string();

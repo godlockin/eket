@@ -55,10 +55,7 @@ impl KnowledgeBase {
         let conn = self.db.pool().get()?;
         let tags_str = entry.tags.join(" ");
         // FTS5 doesn't support ON CONFLICT; delete first then insert.
-        conn.execute(
-            "DELETE FROM knowledge_fts WHERE id = ?1",
-            params![entry.id],
-        )?;
+        conn.execute("DELETE FROM knowledge_fts WHERE id = ?1", params![entry.id])?;
         conn.execute(
             "INSERT INTO knowledge_fts (id, title, content, tags, ticket_id, created_at)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
@@ -148,10 +145,7 @@ impl KnowledgeBase {
     /// Delete entry by id. Returns true if deleted.
     pub fn delete(&self, id: &str) -> EketResult<bool> {
         let conn = self.db.pool().get()?;
-        let rows = conn.execute(
-            "DELETE FROM knowledge_fts WHERE id = ?1",
-            params![id],
-        )?;
+        let rows = conn.execute("DELETE FROM knowledge_fts WHERE id = ?1", params![id])?;
         Ok(rows > 0)
     }
 
@@ -228,7 +222,11 @@ mod tests {
     #[test]
     fn index_and_search() {
         let kb = make_kb();
-        let e = entry("kb-1", "Rust Ownership", "Ownership is core to Rust memory safety.");
+        let e = entry(
+            "kb-1",
+            "Rust Ownership",
+            "Ownership is core to Rust memory safety.",
+        );
         kb.index(&e).unwrap();
 
         let results = kb.search("Ownership", 10).unwrap();
