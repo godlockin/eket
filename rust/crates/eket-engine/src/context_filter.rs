@@ -151,7 +151,10 @@ impl MailboxContextFilter {
 
     /// Builder: enable recency decay with given half-life and floor.
     pub fn with_decay(mut self, half_life_secs: u64, floor: f32) -> Self {
-        self.decay_config = Some(DecayConfig { half_life_secs, floor });
+        self.decay_config = Some(DecayConfig {
+            half_life_secs,
+            floor,
+        });
         self
     }
 
@@ -239,7 +242,8 @@ impl MailboxContextFilter {
 
         // Take last window_size
         let window_start = messages.len().saturating_sub(self.window_size);
-        let mut indices: std::collections::BTreeSet<usize> = (window_start..messages.len()).collect();
+        let mut indices: std::collections::BTreeSet<usize> =
+            (window_start..messages.len()).collect();
 
         // Add preserved indices
         for i in preserved {
@@ -262,7 +266,11 @@ mod tests {
     }
 
     fn regular(from: &str) -> MailboxMessage {
-        msg(from, MailboxMessageType::Custom("chat".into()), json!({"text": "hello world"}))
+        msg(
+            from,
+            MailboxMessageType::Custom("chat".into()),
+            json!({"text": "hello world"}),
+        )
     }
 
     fn with_relevance(from: &str, score: f64) -> MailboxMessage {
@@ -274,11 +282,19 @@ mod tests {
     }
 
     fn task_assigned(from: &str) -> MailboxMessage {
-        msg(from, MailboxMessageType::TaskAssigned, json!({"task": "do something"}))
+        msg(
+            from,
+            MailboxMessageType::TaskAssigned,
+            json!({"task": "do something"}),
+        )
     }
 
     fn system_msg() -> MailboxMessage {
-        msg("system", MailboxMessageType::Custom("system".into()), json!({"text": "init"}))
+        msg(
+            "system",
+            MailboxMessageType::Custom("system".into()),
+            json!({"text": "init"}),
+        )
     }
 
     fn tool_result_msg(from: &str) -> MailboxMessage {
@@ -295,9 +311,15 @@ mod tests {
     fn phase1_drops_old_messages() {
         let filter = MailboxContextFilter::new(3, 0.0, 100);
         // 6 messages, max_age_turns=3 → keep last 3
-        let messages: Vec<_> = (0..6).map(|i| {
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"i": i}))
-        }).collect();
+        let messages: Vec<_> = (0..6)
+            .map(|i| {
+                msg(
+                    "a",
+                    MailboxMessageType::Custom("chat".into()),
+                    json!({"i": i}),
+                )
+            })
+            .collect();
 
         let result = filter.phase1_relevance(&messages);
         // Last 3 should remain (indices 3,4,5)
@@ -312,7 +334,9 @@ mod tests {
 
         let result = filter.phase1_relevance(&messages);
         // task_assigned is preserved
-        assert!(result.iter().any(|m| m.message_type == MailboxMessageType::TaskAssigned));
+        assert!(result
+            .iter()
+            .any(|m| m.message_type == MailboxMessageType::TaskAssigned));
     }
 
     #[test]
@@ -325,9 +349,9 @@ mod tests {
         ];
         let result = filter.phase1_relevance(&messages);
         assert_eq!(result.len(), 2);
-        assert!(result.iter().all(|m| {
-            m.payload["relevance_score"].as_f64().unwrap_or(1.0) >= 0.5
-        }));
+        assert!(result
+            .iter()
+            .all(|m| { m.payload["relevance_score"].as_f64().unwrap_or(1.0) >= 0.5 }));
     }
 
     #[test]
@@ -347,9 +371,21 @@ mod tests {
     fn phase2_collapses_identical_consecutive_same_sender() {
         let filter = MailboxContextFilter::default();
         let messages = vec![
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"text": "ping"})),
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"text": "ping"})),
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"text": "ping"})),
+            msg(
+                "a",
+                MailboxMessageType::Custom("chat".into()),
+                json!({"text": "ping"}),
+            ),
+            msg(
+                "a",
+                MailboxMessageType::Custom("chat".into()),
+                json!({"text": "ping"}),
+            ),
+            msg(
+                "a",
+                MailboxMessageType::Custom("chat".into()),
+                json!({"text": "ping"}),
+            ),
         ];
         let result = filter.phase2_dedup(&messages);
         assert_eq!(result.len(), 1);
@@ -359,8 +395,16 @@ mod tests {
     fn phase2_keeps_different_senders() {
         let filter = MailboxContextFilter::default();
         let messages = vec![
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"text": "ping"})),
-            msg("b", MailboxMessageType::Custom("chat".into()), json!({"text": "ping"})),
+            msg(
+                "a",
+                MailboxMessageType::Custom("chat".into()),
+                json!({"text": "ping"}),
+            ),
+            msg(
+                "b",
+                MailboxMessageType::Custom("chat".into()),
+                json!({"text": "ping"}),
+            ),
         ];
         let result = filter.phase2_dedup(&messages);
         assert_eq!(result.len(), 2);
@@ -370,8 +414,16 @@ mod tests {
     fn phase2_keeps_dissimilar_messages_same_sender() {
         let filter = MailboxContextFilter::default();
         let messages = vec![
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"text": "hello world this is message one"})),
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"text": "completely different task assignment with totally new content"})),
+            msg(
+                "a",
+                MailboxMessageType::Custom("chat".into()),
+                json!({"text": "hello world this is message one"}),
+            ),
+            msg(
+                "a",
+                MailboxMessageType::Custom("chat".into()),
+                json!({"text": "completely different task assignment with totally new content"}),
+            ),
         ];
         let result = filter.phase2_dedup(&messages);
         assert_eq!(result.len(), 2);
@@ -380,10 +432,7 @@ mod tests {
     #[test]
     fn phase2_never_deduplicates_preserved_messages() {
         let filter = MailboxContextFilter::default();
-        let messages = vec![
-            task_assigned("master"),
-            task_assigned("master"),
-        ];
+        let messages = vec![task_assigned("master"), task_assigned("master")];
         let result = filter.phase2_dedup(&messages);
         // Both preserved messages kept
         assert_eq!(result.len(), 2);
@@ -394,13 +443,20 @@ mod tests {
     #[test]
     fn phase3_keeps_last_k_messages() {
         let filter = MailboxContextFilter::new(100, 0.0, 5);
-        let messages: Vec<_> = (0..10).map(|i| {
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"i": i}))
-        }).collect();
+        let messages: Vec<_> = (0..10)
+            .map(|i| {
+                msg(
+                    "a",
+                    MailboxMessageType::Custom("chat".into()),
+                    json!({"i": i}),
+                )
+            })
+            .collect();
         let result = filter.phase3_sliding_window(&messages);
         assert_eq!(result.len(), 5);
         // Last 5 payloads
-        let indices: Vec<u64> = result.iter()
+        let indices: Vec<u64> = result
+            .iter()
             .map(|m| m.payload["i"].as_u64().unwrap())
             .collect();
         assert_eq!(indices, vec![5, 6, 7, 8, 9]);
@@ -409,22 +465,36 @@ mod tests {
     #[test]
     fn phase3_preserves_task_assigned_outside_window() {
         let filter = MailboxContextFilter::new(100, 0.0, 3);
-        let mut messages: Vec<_> = (0..6).map(|i| {
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"i": i}))
-        }).collect();
+        let mut messages: Vec<_> = (0..6)
+            .map(|i| {
+                msg(
+                    "a",
+                    MailboxMessageType::Custom("chat".into()),
+                    json!({"i": i}),
+                )
+            })
+            .collect();
         // Insert task_assigned at position 0 (outside window)
         messages.insert(0, task_assigned("master"));
 
         let result = filter.phase3_sliding_window(&messages);
-        assert!(result.iter().any(|m| m.message_type == MailboxMessageType::TaskAssigned));
+        assert!(result
+            .iter()
+            .any(|m| m.message_type == MailboxMessageType::TaskAssigned));
     }
 
     #[test]
     fn phase3_preserves_system_messages_outside_window() {
         let filter = MailboxContextFilter::new(100, 0.0, 3);
-        let mut messages: Vec<_> = (0..6).map(|i| {
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"i": i}))
-        }).collect();
+        let mut messages: Vec<_> = (0..6)
+            .map(|i| {
+                msg(
+                    "a",
+                    MailboxMessageType::Custom("chat".into()),
+                    json!({"i": i}),
+                )
+            })
+            .collect();
         messages.insert(0, system_msg());
 
         let result = filter.phase3_sliding_window(&messages);
@@ -434,13 +504,21 @@ mod tests {
     #[test]
     fn phase3_preserves_tool_result_outside_window() {
         let filter = MailboxContextFilter::new(100, 0.0, 3);
-        let mut messages: Vec<_> = (0..6).map(|i| {
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"i": i}))
-        }).collect();
+        let mut messages: Vec<_> = (0..6)
+            .map(|i| {
+                msg(
+                    "a",
+                    MailboxMessageType::Custom("chat".into()),
+                    json!({"i": i}),
+                )
+            })
+            .collect();
         messages.insert(0, tool_result_msg("agent"));
 
         let result = filter.phase3_sliding_window(&messages);
-        assert!(result.iter().any(|m| m.payload.get("tool_result").is_some()));
+        assert!(result
+            .iter()
+            .any(|m| m.payload.get("tool_result").is_some()));
     }
 
     // ── Decay tests ────────────────────────────────────────────────────────
@@ -455,16 +533,25 @@ mod tests {
 
     #[test]
     fn decay_within_half_life_gt_half() {
-        let config = DecayConfig { half_life_secs: 3600, floor: 0.1 };
+        let config = DecayConfig {
+            half_life_secs: 3600,
+            floor: 0.1,
+        };
         let w = decay(1800, &config); // half of half-life → ~0.577
         assert!(w > 0.5, "weight within half-life should be > 0.5, got {w}");
     }
 
     #[test]
     fn decay_three_half_lives_near_floor() {
-        let config = DecayConfig { half_life_secs: 3600, floor: 0.1 };
+        let config = DecayConfig {
+            half_life_secs: 3600,
+            floor: 0.1,
+        };
         let w = decay(10800, &config); // 3× half-life → 0.1 + 0.9×0.125 ≈ 0.2125
-        assert!(w < 0.25, "weight at 3× half-life should be near floor, got {w}");
+        assert!(
+            w < 0.25,
+            "weight at 3× half-life should be near floor, got {w}"
+        );
     }
 
     #[test]
@@ -484,24 +571,28 @@ mod tests {
     fn decay_drops_old_message_with_low_effective_score() {
         // half_life=3600, floor=0.1, age=7200 (2 half-lives) → decay≈0.325
         // score=0.8 → effective=0.8×0.325≈0.26 < threshold=0.3 → dropped
-        let filter = MailboxContextFilter::new(100, 0.3, 100)
-            .with_decay(3600, 0.1);
-        let messages = vec![
-            with_age_secs("a", 0.8, 7200),
-        ];
+        let filter = MailboxContextFilter::new(100, 0.3, 100).with_decay(3600, 0.1);
+        let messages = vec![with_age_secs("a", 0.8, 7200)];
         let result = filter.phase1_relevance(&messages);
-        assert_eq!(result.len(), 0, "old message with low effective_score should be dropped");
+        assert_eq!(
+            result.len(),
+            0,
+            "old message with low effective_score should be dropped"
+        );
     }
 
     #[test]
     fn decay_preserves_p0_messages_unaffected() {
-        let filter = MailboxContextFilter::new(100, 0.9, 100)
-            .with_decay(1, 0.0); // extreme decay
+        let filter = MailboxContextFilter::new(100, 0.9, 100).with_decay(1, 0.0); // extreme decay
         let mut ta = task_assigned("master");
         ta.payload = json!({"task": "do something", "age_secs": 999999999});
         let messages = vec![ta];
         let result = filter.phase1_relevance(&messages);
-        assert_eq!(result.len(), 1, "TaskAssigned must never be filtered by decay");
+        assert_eq!(
+            result.len(),
+            1,
+            "TaskAssigned must never be filtered by decay"
+        );
     }
 
     #[test]
@@ -509,9 +600,21 @@ mod tests {
         // A → B → A(similar): the second A should NOT be dropped (non-consecutive)
         let filter = MailboxContextFilter::default();
         let messages = vec![
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"text": "ping ping ping"})),
-            msg("b", MailboxMessageType::Custom("chat".into()), json!({"text": "other sender"})),
-            msg("a", MailboxMessageType::Custom("chat".into()), json!({"text": "ping ping ping"})),
+            msg(
+                "a",
+                MailboxMessageType::Custom("chat".into()),
+                json!({"text": "ping ping ping"}),
+            ),
+            msg(
+                "b",
+                MailboxMessageType::Custom("chat".into()),
+                json!({"text": "other sender"}),
+            ),
+            msg(
+                "a",
+                MailboxMessageType::Custom("chat".into()),
+                json!({"text": "ping ping ping"}),
+            ),
         ];
         let result = filter.phase2_dedup(&messages);
         // Second A is non-consecutive (B is between), must NOT be deduped
@@ -566,7 +669,9 @@ mod tests {
         let result = filter.filter(&messages);
 
         // task_assigned always preserved
-        assert!(result.iter().any(|m| m.message_type == MailboxMessageType::TaskAssigned));
+        assert!(result
+            .iter()
+            .any(|m| m.message_type == MailboxMessageType::TaskAssigned));
         // Total should be <= window_size + preserved_outside_window
         assert!(result.len() <= 10); // at most window(5) + task_assigned
     }

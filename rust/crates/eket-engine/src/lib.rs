@@ -1,19 +1,18 @@
 // eket-engine: 工作流引擎 / Agent Pool / Mailbox / EventBus
+pub mod agent_pool;
+pub mod conflict_resolver;
+pub mod context_budget;
+pub mod context_filter;
+pub mod event_bus;
 pub mod knowledge;
 pub mod knowledge_base;
-pub mod recommender;
-pub mod event_bus;
-pub mod reconciler;
-pub mod monitors;
-pub mod workflow;
-pub mod ticket_engine;
-pub mod agent_pool;
-pub mod mailbox;
-pub mod protocol;
 pub mod lock;
-pub mod conflict_resolver;
-pub mod context_filter;
-pub mod context_budget;
-pub mod step_snapshot;
+pub mod mailbox;
 pub mod memory;
-
+pub mod monitors;
+pub mod protocol;
+pub mod recommender;
+pub mod reconciler;
+pub mod step_snapshot;
+pub mod ticket_engine;
+pub mod workflow;

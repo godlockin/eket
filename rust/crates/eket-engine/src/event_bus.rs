@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 /// EventBus — 对应 TS: event-bus.ts
 ///
 /// 基于 tokio::sync::broadcast 的内存事件总线
@@ -9,7 +10,6 @@
 /// - 死信队列：超过 max_retry 次失败的事件写到 dead_letters
 use std::collections::HashMap;
 use std::sync::Arc;
-use serde::{Deserialize, Serialize};
 use tokio::sync::{broadcast, RwLock};
 use tracing::{debug, warn};
 use uuid::Uuid;
@@ -120,15 +120,16 @@ impl EventBus {
 
     /// Subscribe to an event type. Returns a broadcast::Receiver.
     /// Caller is responsible for polling the receiver (typically in a tokio::spawn).
-    pub async fn subscribe(&self, event_type: impl Into<String>) -> broadcast::Receiver<DomainEvent> {
+    pub async fn subscribe(
+        &self,
+        event_type: impl Into<String>,
+    ) -> broadcast::Receiver<DomainEvent> {
         let event_type = event_type.into();
         let mut channels = self.channels.write().await;
-        let tx = channels
-            .entry(event_type.clone())
-            .or_insert_with(|| {
-                let (tx, _) = broadcast::channel(self.config.channel_capacity);
-                tx
-            });
+        let tx = channels.entry(event_type.clone()).or_insert_with(|| {
+            let (tx, _) = broadcast::channel(self.config.channel_capacity);
+            tx
+        });
         tx.subscribe()
     }
 
@@ -215,8 +216,11 @@ mod tests {
 
         bus.on("test.event", move |_| {
             let c = count2.clone();
-            async move { c.fetch_add(1, Ordering::Relaxed); }
-        }).await;
+            async move {
+                c.fetch_add(1, Ordering::Relaxed);
+            }
+        })
+        .await;
 
         let event = DomainEvent::new("test.event", serde_json::json!({"x": 1}), None);
         bus.publish(event).await;
@@ -241,8 +245,11 @@ mod tests {
             let c = count.clone();
             bus.on("multi.event", move |_| {
                 let cc = c.clone();
-                async move { cc.fetch_add(1, Ordering::Relaxed); }
-            }).await;
+                async move {
+                    cc.fetch_add(1, Ordering::Relaxed);
+                }
+            })
+            .await;
         }
 
         let event = DomainEvent::new("multi.event", serde_json::json!(null), None);
@@ -265,7 +272,10 @@ mod tests {
 
     #[tokio::test]
     async fn dead_letter_lru_eviction() {
-        let config = EventBusConfig { dead_letter_limit: 3, ..Default::default() };
+        let config = EventBusConfig {
+            dead_letter_limit: 3,
+            ..Default::default()
+        };
         let bus = EventBus::new(config);
 
         for i in 0..5u32 {
@@ -286,8 +296,11 @@ mod tests {
 
         bus1.on("shared.event", move |_| {
             let cc = c.clone();
-            async move { cc.fetch_add(1, Ordering::Relaxed); }
-        }).await;
+            async move {
+                cc.fetch_add(1, Ordering::Relaxed);
+            }
+        })
+        .await;
 
         let event = DomainEvent::new("shared.event", serde_json::json!(null), None);
         bus2.publish(event).await;

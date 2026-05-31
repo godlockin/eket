@@ -12,23 +12,28 @@ use std::path::Path;
 
 #[derive(Debug, Clone, Default)]
 pub struct TrustFactors {
-    pub success_rate_7d: f32,   // 0.0~1.0
-    pub uptime_30d: f32,        // 0.0~1.0
-    pub avg_latency_norm: f32,  // 0.0~1.0（低延迟 = 高分）
-    pub error_rate: f32,        // 0.0~1.0（反向：越低越好）
+    pub success_rate_7d: f32,  // 0.0~1.0
+    pub uptime_30d: f32,       // 0.0~1.0
+    pub avg_latency_norm: f32, // 0.0~1.0（低延迟 = 高分）
+    pub error_rate: f32,       // 0.0~1.0（反向：越低越好）
 }
 
 #[derive(Debug, Clone)]
 pub struct ScoreWeights {
-    pub success: f32,  // 默认 0.4
-    pub uptime: f32,   // 默认 0.2
-    pub latency: f32,  // 默认 0.2
-    pub error: f32,    // 默认 0.2
+    pub success: f32, // 默认 0.4
+    pub uptime: f32,  // 默认 0.2
+    pub latency: f32, // 默认 0.2
+    pub error: f32,   // 默认 0.2
 }
 
 impl Default for ScoreWeights {
     fn default() -> Self {
-        Self { success: 0.4, uptime: 0.2, latency: 0.2, error: 0.2 }
+        Self {
+            success: 0.4,
+            uptime: 0.2,
+            latency: 0.2,
+            error: 0.2,
+        }
     }
 }
 
@@ -105,9 +110,9 @@ fn parse_weights_toml(content: &str) -> Option<ScoreWeights> {
                 let val: f32 = v.trim().parse().ok()?;
                 match k.trim() {
                     "success" => w.success = val,
-                    "uptime"  => w.uptime  = val,
+                    "uptime" => w.uptime = val,
                     "latency" => w.latency = val,
-                    "error"   => w.error   = val,
+                    "error" => w.error = val,
                     _ => {}
                 }
             }
@@ -126,8 +131,18 @@ mod tests {
     #[test]
     fn test_compute_trust_high_success_scores_higher() {
         let weights = ScoreWeights::default();
-        let high = TrustFactors { success_rate_7d: 0.95, uptime_30d: 1.0, avg_latency_norm: 0.9, error_rate: 0.05 };
-        let low  = TrustFactors { success_rate_7d: 0.30, uptime_30d: 0.5, avg_latency_norm: 0.3, error_rate: 0.50 };
+        let high = TrustFactors {
+            success_rate_7d: 0.95,
+            uptime_30d: 1.0,
+            avg_latency_norm: 0.9,
+            error_rate: 0.05,
+        };
+        let low = TrustFactors {
+            success_rate_7d: 0.30,
+            uptime_30d: 0.5,
+            avg_latency_norm: 0.3,
+            error_rate: 0.50,
+        };
         assert!(compute_trust(&high, &weights) > compute_trust(&low, &weights));
     }
 
@@ -136,14 +151,20 @@ mod tests {
         let factors = factors_from_stats(0, 0, 0);
         let score = compute_trust(&factors, &ScoreWeights::default());
         // 0.4×0.5 + 0.2×1.0 + 0.2×0.8 + 0.2×1.0 = 0.76
-        assert!(score > 0.5 && score <= 1.0, "neutral score expected, got {score}");
+        assert!(
+            score > 0.5 && score <= 1.0,
+            "neutral score expected, got {score}"
+        );
     }
 
     #[test]
     fn test_default_weights_sum_to_one() {
         let w = ScoreWeights::default();
         let sum = w.success + w.uptime + w.latency + w.error;
-        assert!((sum - 1.0).abs() < 1e-6, "weights must sum to 1.0, got {sum}");
+        assert!(
+            (sum - 1.0).abs() < 1e-6,
+            "weights must sum to 1.0, got {sum}"
+        );
     }
 
     #[test]
@@ -152,7 +173,7 @@ mod tests {
         let w = load_weights(dir.path());
         let d = ScoreWeights::default();
         assert!((w.success - d.success).abs() < 1e-6);
-        assert!((w.uptime  - d.uptime).abs()  < 1e-6);
+        assert!((w.uptime - d.uptime).abs() < 1e-6);
     }
 
     #[test]
@@ -163,7 +184,8 @@ mod tests {
         std::fs::write(
             cfg_dir.join("scoring_weights.toml"),
             "[weights]\nsuccess = 0.5\nuptime = 0.2\nlatency = 0.15\nerror = 0.15\n",
-        ).unwrap();
+        )
+        .unwrap();
         let w = load_weights(dir.path());
         assert!((w.success - 0.5).abs() < 1e-6);
         assert!((w.latency - 0.15).abs() < 1e-6);

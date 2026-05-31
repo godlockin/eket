@@ -250,7 +250,11 @@ impl FingerprintStore {
     }
 
     /// Store multiple fingerprints in a single transaction.
-    pub fn put_batch(&self, fps: &[FileFingerprint], commit_sha: Option<&str>) -> EketResult<usize> {
+    pub fn put_batch(
+        &self,
+        fps: &[FileFingerprint],
+        commit_sha: Option<&str>,
+    ) -> EketResult<usize> {
         let conn = self.db.get()?;
 
         let tx = conn.unchecked_transaction()?;
@@ -466,11 +470,7 @@ mod tests {
     #[test]
     fn test_batch_put() {
         let (store, _dir) = test_store();
-        let fps = vec![
-            make_fp("a.rs"),
-            make_fp("b.rs"),
-            make_fp("c.rs"),
-        ];
+        let fps = vec![make_fp("a.rs"), make_fp("b.rs"), make_fp("c.rs")];
 
         let count = store.put_batch(&fps, Some("commit1")).unwrap();
         assert_eq!(count, 3);

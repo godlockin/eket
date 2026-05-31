@@ -1,7 +1,10 @@
 /// slaver:register — 注册 Slaver 实例到 SQLite (+ Redis 降级)
 use anyhow::Result;
 use clap::Args;
-use eket_core::{config::EketConfig, db::{create_pool, SqliteClient}};
+use eket_core::{
+    config::EketConfig,
+    db::{create_pool, SqliteClient},
+};
 use serde_json::json;
 
 #[derive(Args, Debug)]
@@ -54,7 +57,8 @@ fn read_role_from_identity() -> Option<String> {
 
 pub async fn run(args: SlaverRegisterArgs) -> Result<()> {
     // Resolve role: explicit > .eket/IDENTITY.md > default "slaver"
-    let role = args.role
+    let role = args
+        .role
         .unwrap_or_else(|| read_role_from_identity().unwrap_or_else(|| "slaver".to_string()));
 
     let instance_id = args.id.unwrap_or_else(|| {
@@ -117,7 +121,11 @@ mod tests {
     use super::*;
     use eket_core::db::create_pool;
 
-    fn make_args(role: Option<&str>, skills: Vec<String>, id: Option<String>) -> SlaverRegisterArgs {
+    fn make_args(
+        role: Option<&str>,
+        skills: Vec<String>,
+        id: Option<String>,
+    ) -> SlaverRegisterArgs {
         SlaverRegisterArgs {
             role: role.map(|s| s.to_string()),
             skills,
@@ -127,7 +135,9 @@ mod tests {
     }
 
     async fn run_with_inmem(args: SlaverRegisterArgs) -> serde_json::Value {
-        let role = args.role.clone()
+        let role = args
+            .role
+            .clone()
             .unwrap_or_else(|| read_role_from_identity().unwrap_or_else(|| "slaver".to_string()));
         let instance_id = args.id.clone().unwrap_or_else(|| {
             let short = &uuid::Uuid::new_v4().to_string()[..8];
@@ -152,7 +162,11 @@ mod tests {
 
     #[tokio::test]
     async fn register_basic() {
-        let args = make_args(Some("slaver"), vec!["rust".to_string()], Some("slaver_test01".to_string()));
+        let args = make_args(
+            Some("slaver"),
+            vec!["rust".to_string()],
+            Some("slaver_test01".to_string()),
+        );
         let out = run_with_inmem(args).await;
         assert_eq!(out["status"], "registered");
         assert_eq!(out["instance_id"], "slaver_test01");
@@ -166,8 +180,14 @@ mod tests {
         let out = run_with_inmem(args).await;
         assert_eq!(out["status"], "registered");
         let id = out["instance_id"].as_str().unwrap();
-        assert!(id.starts_with("slaver_"), "auto id must start with role prefix, got: {id}");
-        assert!(id.len() > "slaver_".len(), "auto id must include uuid suffix");
+        assert!(
+            id.starts_with("slaver_"),
+            "auto id must start with role prefix, got: {id}"
+        );
+        assert!(
+            id.len() > "slaver_".len(),
+            "auto id must include uuid suffix"
+        );
     }
 
     #[tokio::test]

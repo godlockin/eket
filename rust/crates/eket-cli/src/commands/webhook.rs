@@ -63,30 +63,41 @@ pub async fn run(args: WebhookArgs) -> Result<()> {
     let store = WebhookStore::new(pool);
 
     match args.cmd {
-        WebhookCmd::Add { url, events, secret } => {
-            let event_list: Vec<String> =
-                events.split(',').map(|s| s.trim().to_string()).collect();
+        WebhookCmd::Add {
+            url,
+            events,
+            secret,
+        } => {
+            let event_list: Vec<String> = events.split(',').map(|s| s.trim().to_string()).collect();
 
             let wh = store.add_url(&url, &event_list, secret.as_deref())?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "status": "created",
-                "id": wh.id,
-                "url": wh.url,
-                "events": wh.events,
-                "created_at": wh.created_at,
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "status": "created",
+                    "id": wh.id,
+                    "url": wh.url,
+                    "events": wh.events,
+                    "created_at": wh.created_at,
+                }))?
+            );
         }
 
         WebhookCmd::List => {
             let list = store.list_urls()?;
             // Mask secret for display
-            let display: Vec<_> = list.iter().map(|wh| serde_json::json!({
-                "id": wh.id,
-                "url": wh.url,
-                "events": wh.events,
-                "secret_set": wh.secret.is_some(),
-                "created_at": wh.created_at,
-            })).collect();
+            let display: Vec<_> = list
+                .iter()
+                .map(|wh| {
+                    serde_json::json!({
+                        "id": wh.id,
+                        "url": wh.url,
+                        "events": wh.events,
+                        "secret_set": wh.secret.is_some(),
+                        "created_at": wh.created_at,
+                    })
+                })
+                .collect();
             println!("{}", serde_json::to_string_pretty(&display)?);
         }
 
@@ -95,10 +106,13 @@ pub async fn run(args: WebhookArgs) -> Result<()> {
             if n == 0 {
                 bail!("No webhook found with id={id}");
             }
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "status": "removed",
-                "id": id,
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "status": "removed",
+                    "id": id,
+                }))?
+            );
         }
 
         WebhookCmd::Events { status } => {
@@ -108,10 +122,13 @@ pub async fn run(args: WebhookArgs) -> Result<()> {
 
         WebhookCmd::Retry { event_record_id } => {
             store.reset_for_retry(&event_record_id)?;
-            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-                "status": "queued_for_retry",
-                "event_record_id": event_record_id,
-            }))?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "status": "queued_for_retry",
+                    "event_record_id": event_record_id,
+                }))?
+            );
         }
     }
 

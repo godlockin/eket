@@ -83,10 +83,7 @@ impl BenchmarkHarness {
 
     /// Load tasks from dataset
     pub fn load_tasks(&mut self, tasks: Vec<BenchmarkTask>) {
-        let filtered: Vec<_> = tasks
-            .into_iter()
-            .filter(|t| self.filter_task(t))
-            .collect();
+        let filtered: Vec<_> = tasks.into_iter().filter(|t| self.filter_task(t)).collect();
 
         self.tasks = if self.config.max_tasks > 0 {
             filtered.into_iter().take(self.config.max_tasks).collect()
@@ -171,7 +168,10 @@ impl BenchmarkResult {
         let mut output = String::new();
 
         output.push_str(&format!("# Benchmark Report: {}\n\n", self.config.name));
-        output.push_str(&format!("**Run Time**: {} seconds\n", self.run_duration_secs as u64));
+        output.push_str(&format!(
+            "**Run Time**: {} seconds\n",
+            self.run_duration_secs as u64
+        ));
         output.push_str(&format!("**Tasks**: {}\n\n", self.outcomes.len()));
 
         output.push_str(&self.metrics.to_markdown());
@@ -181,7 +181,11 @@ impl BenchmarkResult {
         output.push_str("|------|--------|--------|----------|\n");
 
         for outcome in &self.outcomes {
-            let status = if outcome.passed { "✅ Pass" } else { "❌ Fail" };
+            let status = if outcome.passed {
+                "✅ Pass"
+            } else {
+                "❌ Fail"
+            };
             output.push_str(&format!(
                 "| {} | {} | {} | {:.1}s |\n",
                 outcome.task_id, status, outcome.tokens_used, outcome.duration_secs
@@ -249,7 +253,7 @@ mod tests {
 
         let tasks = vec![
             BenchmarkTask::code_fix("T1", "Fix bug", vec!["src/main.rs".to_string()]), // difficulty 3
-            BenchmarkTask::config_change("T2", "Update config", "config.yaml"),        // difficulty 2
+            BenchmarkTask::config_change("T2", "Update config", "config.yaml"), // difficulty 2
         ];
 
         harness.load_tasks(tasks);
@@ -278,12 +282,19 @@ mod tests {
         let config = BenchmarkConfig::default();
         let mut harness = BenchmarkHarness::new(config);
 
-        let tasks = vec![
-            BenchmarkTask::code_fix("T1", "Fix bug", vec!["src/main.rs".to_string()]),
-        ];
+        let tasks = vec![BenchmarkTask::code_fix(
+            "T1",
+            "Fix bug",
+            vec!["src/main.rs".to_string()],
+        )];
         harness.load_tasks(tasks);
 
-        harness.record_outcome(TaskOutcome::passed("T1", vec!["src/main.rs".to_string()], 1000, 5.0));
+        harness.record_outcome(TaskOutcome::passed(
+            "T1",
+            vec!["src/main.rs".to_string()],
+            1000,
+            5.0,
+        ));
 
         let result = harness.finalize();
         assert_eq!(result.metrics.total_tasks, 1);
@@ -296,9 +307,7 @@ mod tests {
         let config = BenchmarkConfig::default();
         let mut harness = BenchmarkHarness::new(config);
 
-        let tasks = vec![
-            BenchmarkTask::code_fix("T1", "Fix bug", vec![]),
-        ];
+        let tasks = vec![BenchmarkTask::code_fix("T1", "Fix bug", vec![])];
         harness.load_tasks(tasks);
         harness.record_outcome(TaskOutcome::passed("T1", vec![], 1000, 5.0));
 

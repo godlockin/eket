@@ -8,7 +8,9 @@
 /// 5. 输出 JSON
 use anyhow::Result;
 use clap::Parser;
-use eket_core::doc_lifecycle::{append_section_if_absent, handle_event, DocEvent, TemplateRenderer};
+use eket_core::doc_lifecycle::{
+    append_section_if_absent, handle_event, DocEvent, TemplateRenderer,
+};
 use serde_json::json;
 use std::path::PathBuf;
 
@@ -41,7 +43,11 @@ pub struct TaskTestArgs {
 fn find_project_root(tickets_dir_hint: Option<PathBuf>) -> Result<PathBuf> {
     if let Some(p) = tickets_dir_hint {
         // Return parent of tickets dir as project root
-        return Ok(p.parent().and_then(|p| p.parent()).map(|p| p.to_path_buf()).unwrap_or(p));
+        return Ok(p
+            .parent()
+            .and_then(|p| p.parent())
+            .map(|p| p.to_path_buf())
+            .unwrap_or(p));
     }
     let mut dir = std::env::current_dir()?;
     loop {
@@ -94,7 +100,8 @@ pub async fn run(args: TaskTestArgs) -> Result<()> {
     let timestamp = now.to_rfc3339();
 
     // Build section content
-    let cov_str = args.coverage
+    let cov_str = args
+        .coverage
         .map(|c| format!("{c}%"))
         .unwrap_or_else(|| "N/A".to_string());
     let notes_str = args.notes.as_deref().unwrap_or("N/A");
@@ -163,7 +170,11 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let tickets_dir = make_project(&dir);
         let ticket_path = tickets_dir.join("TASK-1.md");
-        fs::write(&ticket_path, "# TASK-1: Test Ticket\n\n## 验收标准\n\n- [ ] todo\n").unwrap();
+        fs::write(
+            &ticket_path,
+            "# TASK-1: Test Ticket\n\n## 验收标准\n\n- [ ] todo\n",
+        )
+        .unwrap();
 
         let args = make_args("TASK-1", "pass", tickets_dir);
         run(args).await.unwrap();
@@ -180,8 +191,11 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let tickets_dir = make_project(&dir);
         let ticket_path = tickets_dir.join("TASK-2.md");
-        fs::write(&ticket_path, "# TASK-2: Idempotent Test\n\n## 验收标准\n\n- [ ] todo\n")
-            .unwrap();
+        fs::write(
+            &ticket_path,
+            "# TASK-2: Idempotent Test\n\n## 验收标准\n\n- [ ] todo\n",
+        )
+        .unwrap();
 
         // Run twice
         let args1 = make_args("TASK-2", "pass", tickets_dir.clone());

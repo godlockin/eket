@@ -66,8 +66,7 @@ fn load_skills_from_domain(project_root: &std::path::Path, domain: &str) -> Vec<
 }
 
 pub async fn run() -> Result<()> {
-    let project_root = find_project_root()
-        .unwrap_or_else(|| std::env::current_dir().unwrap());
+    let project_root = find_project_root().unwrap_or_else(|| std::env::current_dir().unwrap());
 
     let context_path = project_root.join(".eket/ACTIVE_CONTEXT.md");
 

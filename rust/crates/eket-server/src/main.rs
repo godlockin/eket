@@ -32,7 +32,8 @@ async fn main() -> Result<()> {
 
     let db_path = PathBuf::from(&cfg.sqlite.path);
 
-    let tickets_dir = cfg.tickets_dir
+    let tickets_dir = cfg
+        .tickets_dir
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("jira/tickets"));
 

@@ -103,7 +103,8 @@ impl ProtocolSender {
         to: &str,
         payload: TaskAssignPayload,
     ) -> Result<(), String> {
-        self.send_proto(from, to, ProtocolMessage::TaskAssign(payload)).await
+        self.send_proto(from, to, ProtocolMessage::TaskAssign(payload))
+            .await
     }
 
     pub async fn send_task_result(
@@ -112,7 +113,8 @@ impl ProtocolSender {
         to: &str,
         payload: TaskResultPayload,
     ) -> Result<(), String> {
-        self.send_proto(from, to, ProtocolMessage::TaskResult(payload)).await
+        self.send_proto(from, to, ProtocolMessage::TaskResult(payload))
+            .await
     }
 
     pub async fn send_status_update(
@@ -121,7 +123,8 @@ impl ProtocolSender {
         to: &str,
         payload: StatusUpdatePayload,
     ) -> Result<(), String> {
-        self.send_proto(from, to, ProtocolMessage::StatusUpdate(payload)).await
+        self.send_proto(from, to, ProtocolMessage::StatusUpdate(payload))
+            .await
     }
 
     pub async fn send_heartbeat(
@@ -130,7 +133,8 @@ impl ProtocolSender {
         to: &str,
         payload: HeartbeatPayload,
     ) -> Result<(), String> {
-        self.send_proto(from, to, ProtocolMessage::Heartbeat(payload)).await
+        self.send_proto(from, to, ProtocolMessage::Heartbeat(payload))
+            .await
     }
 
     pub async fn send_shutdown(
@@ -139,15 +143,11 @@ impl ProtocolSender {
         to: &str,
         reason: Option<String>,
     ) -> Result<(), String> {
-        self.send_proto(from, to, ProtocolMessage::Shutdown { reason }).await
+        self.send_proto(from, to, ProtocolMessage::Shutdown { reason })
+            .await
     }
 
-    pub async fn send_ack(
-        &self,
-        from: &str,
-        to: &str,
-        message_id: &str,
-    ) -> Result<(), String> {
+    pub async fn send_ack(&self, from: &str, to: &str, message_id: &str) -> Result<(), String> {
         self.send_proto(
             from,
             to,
@@ -198,7 +198,10 @@ mod tests {
             deadline_secs: Some(3600),
         };
 
-        sender.send_task_assign("master", "slaver_1", payload.clone()).await.unwrap();
+        sender
+            .send_task_assign("master", "slaver_1", payload.clone())
+            .await
+            .unwrap();
 
         let msgs = mailbox.read_messages("slaver_1").await.unwrap();
         assert_eq!(msgs.len(), 1);
@@ -227,7 +230,10 @@ mod tests {
             error: None,
         };
 
-        sender.send_task_result("slaver_1", "master", payload.clone()).await.unwrap();
+        sender
+            .send_task_result("slaver_1", "master", payload.clone())
+            .await
+            .unwrap();
 
         let msgs = mailbox.read_messages("master").await.unwrap();
         assert_eq!(msgs.len(), 1);
@@ -255,7 +261,10 @@ mod tests {
             load: 42,
         };
 
-        sender.send_heartbeat("slaver_1", "master", payload.clone()).await.unwrap();
+        sender
+            .send_heartbeat("slaver_1", "master", payload.clone())
+            .await
+            .unwrap();
 
         let msgs = mailbox.read_messages("master").await.unwrap();
         assert_eq!(msgs.len(), 1);
@@ -309,7 +318,10 @@ mod tests {
         let result = ProtocolSender::parse_message(&msg);
         assert!(result.is_err(), "expected Err for unknown kind");
         let err = result.unwrap_err();
-        assert!(err.contains("nonsense") || err.contains("parse") || err.contains("kind"), "err msg: {err}");
+        assert!(
+            err.contains("nonsense") || err.contains("parse") || err.contains("kind"),
+            "err msg: {err}"
+        );
     }
 
     #[tokio::test]
@@ -317,7 +329,10 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let (sender, mailbox) = make_sender(&dir);
 
-        sender.send_ack("slaver_1", "master", "msg-abc-123").await.unwrap();
+        sender
+            .send_ack("slaver_1", "master", "msg-abc-123")
+            .await
+            .unwrap();
 
         let msgs = mailbox.read_messages("master").await.unwrap();
         assert_eq!(msgs.len(), 1);

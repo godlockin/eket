@@ -96,12 +96,13 @@ pub async fn run(args: SubmitPrArgs) -> Result<()> {
                     gh_args.push(reviewer.clone());
                 }
 
-                let gh_out = Command::new("gh")
-                    .args(&gh_args)
-                    .output()
-                    .ok()?;
+                let gh_out = Command::new("gh").args(&gh_args).output().ok()?;
                 let s = String::from_utf8_lossy(&gh_out.stdout).trim().to_string();
-                if s.starts_with("http") { Some(s) } else { None }
+                if s.starts_with("http") {
+                    Some(s)
+                } else {
+                    None
+                }
             })
         }
     };
@@ -124,9 +125,7 @@ pub async fn run(args: SubmitPrArgs) -> Result<()> {
 
 fn append_pr_to_ticket(ticket_id: &str, pr_url: &str) -> Result<()> {
     // Search common locations
-    let candidates = [
-        format!("jira/tickets/{ticket_id}.md"),
-    ];
+    let candidates = [format!("jira/tickets/{ticket_id}.md")];
     for path in &candidates {
         if let Ok(content) = std::fs::read_to_string(path) {
             let updated = format!("{content}\n**PR**: {pr_url}\n");

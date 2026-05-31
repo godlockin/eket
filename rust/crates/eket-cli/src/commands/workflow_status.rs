@@ -24,8 +24,14 @@ pub async fn run(args: WorkflowStatusArgs) -> Result<()> {
 fn print_step(step: &WorkflowStep) {
     match &step.context_budget {
         Some(budget) => {
-            let max_tokens = budget.max_tokens.map(|n| n.to_string()).unwrap_or_else(|| "∞".into());
-            let keep_recent = budget.keep_recent_n.map(|n| n.to_string()).unwrap_or_else(|| "all".into());
+            let max_tokens = budget
+                .max_tokens
+                .map(|n| n.to_string())
+                .unwrap_or_else(|| "∞".into());
+            let keep_recent = budget
+                .keep_recent_n
+                .map(|n| n.to_string())
+                .unwrap_or_else(|| "all".into());
             println!(
                 "  Step: {} [budget: max_tokens={}, keep_recent={}]",
                 step.name, max_tokens, keep_recent

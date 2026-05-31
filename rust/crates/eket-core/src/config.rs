@@ -37,7 +37,11 @@ impl Default for EketConfig {
             },
             sqlite: SqliteConfig {
                 path: dirs::home_dir()
-                    .map(|h| h.join(".eket/data/sqlite/eket.db").to_string_lossy().into_owned())
+                    .map(|h| {
+                        h.join(".eket/data/sqlite/eket.db")
+                            .to_string_lossy()
+                            .into_owned()
+                    })
                     .unwrap_or_else(|| "~/.eket/data/sqlite/eket.db".to_string()),
             },
             log_level: "info".into(),
@@ -58,10 +62,15 @@ impl EketConfig {
             .set_default("redis.host", "localhost")?
             .set_default("redis.port", 6379)?
             .set_default("redis.db", 0)?
-            .set_default("sqlite.path",
+            .set_default(
+                "sqlite.path",
                 dirs::home_dir()
-                    .map(|h| h.join(".eket/data/sqlite/eket.db").to_string_lossy().into_owned())
-                    .unwrap_or_else(|| "~/.eket/data/sqlite/eket.db".to_string())
+                    .map(|h| {
+                        h.join(".eket/data/sqlite/eket.db")
+                            .to_string_lossy()
+                            .into_owned()
+                    })
+                    .unwrap_or_else(|| "~/.eket/data/sqlite/eket.db".to_string()),
             )?
             .set_default("log_level", "info")?
             .set_default("api_port", 9877)?

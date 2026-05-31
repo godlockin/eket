@@ -51,7 +51,10 @@ mod tests {
         let v = encode_tags(&tags);
         assert_eq!(v.len(), 64);
         let norm: f32 = v.iter().map(|x| x * x).sum::<f32>().sqrt();
-        assert!((norm - 1.0).abs() < 1e-5, "should be L2-normalized, norm={norm}");
+        assert!(
+            (norm - 1.0).abs() < 1e-5,
+            "should be L2-normalized, norm={norm}"
+        );
     }
 
     #[test]
@@ -66,7 +69,10 @@ mod tests {
         let tags = vec!["rust".to_string()];
         let v = encode_tags(&tags);
         let sim = cosine_similarity(&v, &v);
-        assert!((sim - 1.0).abs() < 1e-5, "identical vectors should have cosine=1.0, got {sim}");
+        assert!(
+            (sim - 1.0).abs() < 1e-5,
+            "identical vectors should have cosine=1.0, got {sim}"
+        );
     }
 
     #[test]

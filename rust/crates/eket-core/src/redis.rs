@@ -1,9 +1,9 @@
+use fred::clients::SubscriberClient;
+use fred::interfaces::{ClientLike, PubsubInterface};
 /// Redis client — 对应 TS: redis-client.ts
 ///
 /// 使用 fred v9（async Redis），连接失败时标记不可用（降级到 file queue）
 use fred::prelude::*;
-use fred::clients::SubscriberClient;
-use fred::interfaces::{ClientLike, PubsubInterface};
 use tracing::{info, warn};
 
 use crate::error::{EketError, EketResult};
@@ -40,11 +40,9 @@ impl EketRedisClient {
         let client = RedisClient::new(config.clone(), None, None, None);
         // fred v9: connect() returns a JoinHandle, wait_for_connect() does the actual wait
         let _jh = client.connect();
-        let connected = tokio::time::timeout(
-            std::time::Duration::from_secs(2),
-            client.wait_for_connect(),
-        )
-        .await;
+        let connected =
+            tokio::time::timeout(std::time::Duration::from_secs(2), client.wait_for_connect())
+                .await;
 
         match connected {
             Ok(Ok(_)) => {
@@ -79,7 +77,8 @@ impl EketRedisClient {
     }
 
     fn mark_unavailable(&self) {
-        self.available.store(false, std::sync::atomic::Ordering::Release);
+        self.available
+            .store(false, std::sync::atomic::Ordering::Release);
     }
 
     /// PING
@@ -112,32 +111,27 @@ impl EketRedisClient {
     /// GET
     pub async fn get(&self, key: &str) -> EketResult<Option<String>> {
         self.require_available()?;
-        self.inner
-            .get::<Option<String>, _>(key)
-            .await
-            .map_err(|e| {
-                self.mark_unavailable();
-                EketError::Redis(e.to_string())
-            })
+        self.inner.get::<Option<String>, _>(key).await.map_err(|e| {
+            self.mark_unavailable();
+            EketError::Redis(e.to_string())
+        })
     }
 
     /// DEL
     pub async fn del(&self, key: &str) -> EketResult<bool> {
         self.require_available()?;
-        let n: i64 = self.inner
-            .del(key)
-            .await
-            .map_err(|e| {
-                self.mark_unavailable();
-                EketError::Redis(e.to_string())
-            })?;
+        let n: i64 = self.inner.del(key).await.map_err(|e| {
+            self.mark_unavailable();
+            EketError::Redis(e.to_string())
+        })?;
         Ok(n > 0)
     }
 
     /// SET NX (SET if Not eXists) — 用于 master election
     pub async fn setnx(&self, key: &str, value: &str, ttl_secs: u64) -> EketResult<bool> {
         self.require_available()?;
-        let result: bool = self.inner
+        let result: bool = self
+            .inner
             .set::<bool, _, _>(
                 key,
                 value,
@@ -156,13 +150,10 @@ impl EketRedisClient {
     /// LPUSH — enqueue
     pub async fn lpush(&self, key: &str, value: &str) -> EketResult<i64> {
         self.require_available()?;
-        self.inner
-            .lpush(key, value)
-            .await
-            .map_err(|e| {
-                self.mark_unavailable();
-                EketError::Redis(e.to_string())
-            })
+        self.inner.lpush(key, value).await.map_err(|e| {
+            self.mark_unavailable();
+            EketError::Redis(e.to_string())
+        })
     }
 
     /// RPOP — dequeue
@@ -188,10 +179,8 @@ impl EketRedisClient {
     /// BRPOP — blocking dequeue, timeout_secs 0 = block forever
     pub async fn brpop(&self, key: &str, timeout_secs: f64) -> EketResult<Option<String>> {
         self.require_available()?;
-        let result: Option<(String, String)> = self.inner
-            .brpop(key, timeout_secs)
-            .await
-            .map_err(|e| {
+        let result: Option<(String, String)> =
+            self.inner.brpop(key, timeout_secs).await.map_err(|e| {
                 self.mark_unavailable();
                 EketError::Redis(e.to_string())
             })?;
@@ -201,30 +190,29 @@ impl EketRedisClient {
     /// INCR — atomic increment, returns new value
     pub async fn incr(&self, key: &str) -> EketResult<u64> {
         self.require_available()?;
-        self.inner
-            .incr::<u64, _>(key)
-            .await
-            .map_err(|e| {
-                self.mark_unavailable();
-                EketError::Redis(e.to_string())
-            })
+        self.inner.incr::<u64, _>(key).await.map_err(|e| {
+            self.mark_unavailable();
+            EketError::Redis(e.to_string())
+        })
     }
 
     /// PUBLISH — pub/sub fanout
     pub async fn publish(&self, channel: &str, message: &str) -> EketResult<i64> {
         self.require_available()?;
-        self.inner
-            .publish(channel, message)
-            .await
-            .map_err(|e| {
-                self.mark_unavailable();
-                EketError::Redis(e.to_string())
-            })
+        self.inner.publish(channel, message).await.map_err(|e| {
+            self.mark_unavailable();
+            EketError::Redis(e.to_string())
+        })
     }
 
     /// EVAL Lua script (TASK-181: atomic CAS renewal)
     /// Returns the integer result from the script.
-    pub async fn eval_lua(&self, script: &str, keys: Vec<String>, args: Vec<String>) -> EketResult<i64> {
+    pub async fn eval_lua(
+        &self,
+        script: &str,
+        keys: Vec<String>,
+        args: Vec<String>,
+    ) -> EketResult<i64> {
         self.require_available()?;
         self.inner
             .eval::<i64, _, _, _>(script, keys, args)
