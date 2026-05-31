@@ -56,7 +56,7 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: rust/crates/context-mon
+          workspaces: rust
           key: ${{ matrix.target }}
 
       - name: Install cross-compilation tools (Linux ARM only)
@@ -65,17 +65,17 @@ jobs:
           cargo install cross --git https://github.com/cross-rs/cross
 
       - name: Build binary
-        working-directory: rust/crates/context-mon
+        working-directory: rust
         run: |
           if [[ "${{ matrix.use_cross }}" == "true" ]]; then
-            cross build --release --target ${{ matrix.target }}
+            cross build --release --target ${{ matrix.target }} -p context-mon
           else
-            cargo build --release --target ${{ matrix.target }}
+            cargo build --release --target ${{ matrix.target }} -p context-mon
           fi
 
       - name: Strip binary (Unix)
         if: runner.os != 'Windows'
-        working-directory: rust/crates/context-mon
+        working-directory: rust
         run: |
           if [[ "${{ matrix.target }}" == *"linux"* ]]; then
             strip target/${{ matrix.target }}/release/context-mon || true
@@ -84,13 +84,13 @@ jobs:
           fi
 
       - name: Rename binary
-        working-directory: rust/crates/context-mon
+        working-directory: rust
         run: |
           cp target/${{ matrix.target }}/release/context-mon \
              ${{ matrix.artifact_name }}
 
       - name: Generate SHA256 checksum
-        working-directory: rust/crates/context-mon
+        working-directory: rust
         run: |
           if [[ "$RUNNER_OS" == "macOS" ]]; then
             shasum -a 256 ${{ matrix.artifact_name }} > ${{ matrix.artifact_name }}.sha256
@@ -103,8 +103,8 @@ jobs:
         with:
           name: ${{ matrix.artifact_name }}
           path: |
-            rust/crates/context-mon/${{ matrix.artifact_name }}
-            rust/crates/context-mon/${{ matrix.artifact_name }}.sha256
+            rust/${{ matrix.artifact_name }}
+            rust/${{ matrix.artifact_name }}.sha256
           retention-days: 7
 
   release:
