@@ -15,9 +15,6 @@ declare -A SHA256_MAP=(
   ["rust-linux-amd64"]="{{RUST_LINUX_SHA256}}"
   ["rust-darwin-arm64"]="{{RUST_DARWIN_ARM_SHA256}}"
   ["rust-darwin-amd64"]="{{RUST_DARWIN_AMD_SHA256}}"
-  ["node-linux-amd64"]="{{NODE_LINUX_SHA256}}"
-  ["node-darwin-arm64"]="{{NODE_DARWIN_ARM_SHA256}}"
-  ["node-darwin-amd64"]="{{NODE_DARWIN_AMD_SHA256}}"
 )
 
 # ─────────────────────────────────────────────────────────────
@@ -39,26 +36,19 @@ detect_platform() {
 # 下载 + 校验
 # ─────────────────────────────────────────────────────────────
 download_and_verify() {
-  local engine=$1  # rust or node
-  local platform=$2
-  local dest=$3
+  local platform=$1
+  local dest=$2
 
   # 构建文件名：匹配 release.yml 的命名规范
   local filename
-  if [[ "$engine" == "rust" ]]; then
-    # Rust 二进制：eket-linux-x64, eket-macos-arm64, eket-macos-x64
-    case "$platform" in
-      linux-amd64)   filename="eket-linux-x64" ;;
-      darwin-arm64)  filename="eket-macos-arm64" ;;
-      darwin-amd64)  filename="eket-macos-x64" ;;
-    esac
-  else
-    # Node 二进制：eket-node-linux-amd64, eket-node-darwin-arm64, eket-node-darwin-amd64
-    filename="eket-node-${platform}"
-  fi
+  case "$platform" in
+    linux-amd64)   filename="eket-linux-x64" ;;
+    darwin-arm64)  filename="eket-macos-arm64" ;;
+    darwin-amd64)  filename="eket-macos-x64" ;;
+  esac
 
   local url="${BASE_URL}/${filename}"
-  local key="${engine}-${platform}"
+  local key="rust-${platform}"
   local expected_sha="${SHA256_MAP[$key]}"
 
   echo "正在下载: $url"
@@ -141,29 +131,19 @@ main() {
   echo "检测到平台: $PLATFORM"
   echo ""
 
-  # 优先安装 Rust 版（轻量级，~10 MB）
-  echo "[1/3] 安装 EKET Rust 版..."
-  if download_and_verify "rust" "$PLATFORM" "/tmp/eket-rust"; then
-    sudo mv /tmp/eket-rust /usr/local/bin/eket
+  # 安装 Rust CLI
+  echo "[1/2] 安装 EKET CLI..."
+  if download_and_verify "$PLATFORM" "/tmp/eket"; then
+    sudo mv /tmp/eket /usr/local/bin/eket
     sudo chmod +x /usr/local/bin/eket
-    echo "✅ Rust 版安装完成 (/usr/local/bin/eket)"
+    echo "✅ CLI 安装完成 (/usr/local/bin/eket)"
   else
-    echo "⚠️  Rust 版安装失败，尝试 Node 版..."
-  fi
-
-  # Fallback: Node 版
-  echo "[2/3] 安装 EKET Node 版..."
-  if download_and_verify "node" "$PLATFORM" "/tmp/eket-node"; then
-    sudo mv /tmp/eket-node /usr/local/bin/eket-node
-    sudo chmod +x /usr/local/bin/eket-node
-    echo "✅ Node 版安装完成 (/usr/local/bin/eket-node)"
-  else
-    echo "❌ Node 版安装失败"
+    echo "❌ CLI 安装失败"
     exit 1
   fi
 
   # Skills 安装
-  echo "[3/3] 安装 Skills..."
+  echo "[2/2] 安装 Skills..."
   install_skills || {
     echo "❌ Skills 安装失败"
     exit 1
@@ -174,8 +154,7 @@ main() {
   echo "✅ EKET 安装完成！"
   echo ""
   echo "验证安装:"
-  echo "  eket --version        # Rust 版"
-  echo "  eket-node --version   # Node 版"
+  echo "  eket --version"
   echo ""
   echo "启动 EKET:"
   echo "  在 Claude Code 中输入 '/eket' 或 '召唤 EKET 团队'"
