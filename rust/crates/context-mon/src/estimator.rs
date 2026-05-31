@@ -30,6 +30,12 @@ const ROUGH_THRESHOLD: usize = 40_000;
 
 pub struct ContextEstimator;
 
+impl Default for ContextEstimator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ContextEstimator {
     pub fn new() -> Self {
         Self

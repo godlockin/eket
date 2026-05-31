@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 /// Edge types for knowledge graph relationships
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[derive(Default)]
 pub enum EdgeType {
     // === Structural relationships ===
     /// Module/file imports another
@@ -32,6 +33,7 @@ pub enum EdgeType {
 
     // === Dependency relationships ===
     /// Generic dependency relationship
+    #[default]
     DependsOn,
     /// Test file tests target
     TestedBy,
@@ -166,11 +168,6 @@ impl std::fmt::Display for EdgeType {
     }
 }
 
-impl Default for EdgeType {
-    fn default() -> Self {
-        Self::DependsOn
-    }
-}
 
 #[cfg(test)]
 mod tests {

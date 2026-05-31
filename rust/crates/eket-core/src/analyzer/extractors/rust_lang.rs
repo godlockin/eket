@@ -75,12 +75,12 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
     while let Some(m) = matches.next() {
         let capture_names: Vec<&str> = m.captures.iter()
-            .map(|c| query.capture_names()[c.index as usize].as_ref())
+            .map(|c| query.capture_names()[c.index as usize])
             .collect();
 
         // Function definitions (top-level)
         if capture_names.contains(&"fn.def") && !capture_names.contains(&"method.name") {
-            if let Some(info) = extract_function(&m, &query, content) {
+            if let Some(info) = extract_function(m, &query, content) {
                 let key = (info.name.clone(), info.start_line);
                 if seen_functions.insert(key) {
                     analysis.functions.push(info);
@@ -90,7 +90,7 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
         // Struct definitions
         if capture_names.contains(&"struct.def") {
-            if let Some(info) = extract_type_def(&m, &query, content, "struct.name", "struct") {
+            if let Some(info) = extract_type_def(m, &query, content, "struct.name", "struct") {
                 let key = (info.name.clone(), info.start_line);
                 if seen_types.insert(key) {
                     analysis.classes.push(info);
@@ -100,7 +100,7 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
         // Enum definitions
         if capture_names.contains(&"enum.def") {
-            if let Some(info) = extract_type_def(&m, &query, content, "enum.name", "enum") {
+            if let Some(info) = extract_type_def(m, &query, content, "enum.name", "enum") {
                 let key = (info.name.clone(), info.start_line);
                 if seen_types.insert(key) {
                     analysis.classes.push(info);
@@ -110,7 +110,7 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
         // Trait definitions
         if capture_names.contains(&"trait.def") {
-            if let Some(info) = extract_type_def(&m, &query, content, "trait.name", "trait") {
+            if let Some(info) = extract_type_def(m, &query, content, "trait.name", "trait") {
                 let key = (info.name.clone(), info.start_line);
                 if seen_types.insert(key) {
                     analysis.classes.push(info);
@@ -120,15 +120,15 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
         // Use statements (imports)
         if capture_names.contains(&"import.def") {
-            if let Some(info) = extract_import(&m, &query, content) {
+            if let Some(info) = extract_import(m, &query, content) {
                 analysis.imports.push(info);
             }
         }
 
         // Method names for impl enrichment
         if capture_names.contains(&"method.name") {
-            if let Some(method_name) = get_capture_text(&m, &query, "method.name", content) {
-                if let Some(impl_name) = get_capture_text(&m, &query, "impl.name", content) {
+            if let Some(method_name) = get_capture_text(m, &query, "method.name", content) {
+                if let Some(impl_name) = get_capture_text(m, &query, "impl.name", content) {
                     impl_methods.entry(impl_name).or_default().push(method_name);
                 }
             }
@@ -136,8 +136,8 @@ pub fn extract(content: &str) -> StructuralAnalysis {
 
         // Module declarations as exports
         if capture_names.contains(&"mod.def") {
-            if let Some(name) = get_capture_text(&m, &query, "mod.name", content) {
-                if let Some(node) = get_capture_node(&m, &query, "mod.def") {
+            if let Some(name) = get_capture_text(m, &query, "mod.name", content) {
+                if let Some(node) = get_capture_node(m, &query, "mod.def") {
                     analysis.exports.push(ExportInfo {
                         name,
                         line_number: node.start_position().row as u32 + 1,

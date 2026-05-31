@@ -79,3 +79,16 @@ opt-level = 3
 lto = true
 codegen-units = 1
 strip = true
+
+[workspace.lints.rust]
+dead_code = "warn"
+
+[workspace.lints.clippy]
+new_without_default = "warn"
+unnecessary_to_owned = "warn"
+only_used_in_recursion = "warn"
+double_ended_iterator_last = "warn"
+manual_contains = "warn"
+collapsible_match = "warn"
+map_or_is_some = "warn"
+if_same_then_else = "warn"
