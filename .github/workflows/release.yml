@@ -9,85 +9,6 @@ permissions:
   contents: read
 
 jobs:
-  # ─── PyPI 发布 ──────────────────────────────────────────────────────────────
-  publish-pypi:
-    name: Publish Python SDK to PyPI
-    runs-on: ubuntu-latest
-    environment: release
-    permissions:
-      id-token: write   # OIDC trusted publishing (preferred)
-      contents: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install build tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install build twine
-
-      - name: Build distribution
-        working-directory: sdk/python
-        run: python -m build
-
-      - name: Check distribution
-        working-directory: sdk/python
-        run: twine check dist/*
-
-      # Preferred: OIDC Trusted Publishing (no secret needed, set up on PyPI)
-      - name: Publish to PyPI (OIDC)
-        if: ${{ vars.PYPI_USE_OIDC == 'true' }}
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: sdk/python/dist/
-
-      # Fallback: API token via secret
-      - name: Publish to PyPI (token)
-        if: ${{ vars.PYPI_USE_OIDC != 'true' }}
-        working-directory: sdk/python
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: twine upload dist/*
-
-  # ─── npm 发布 ───────────────────────────────────────────────────────────────
-  publish-npm:
-    name: Publish JavaScript SDK to npm
-    runs-on: ubuntu-latest
-    environment: release
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Install dependencies
-        working-directory: sdk/javascript
-        run: npm ci
-
-      - name: Run tests
-        working-directory: sdk/javascript
-        run: npm test
-
-      - name: Publish to npm
-        working-directory: sdk/javascript
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
-
   # ─── Rust binary 多平台编译 ─────────────────────────────────────────────────
   build-binary:
     name: Build binary (${{ matrix.artifact }})
@@ -140,7 +61,7 @@ jobs:
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [publish-pypi, publish-npm, build-binary]
+    needs: [build-binary]
     permissions:
       contents: write
 
@@ -186,13 +107,9 @@ jobs:
           RUST_LINUX_SHA256=$(awk '{print $1}' eket-linux-x64.sha256)
           RUST_DARWIN_ARM_SHA256=$(awk '{print $1}' eket-macos-arm64.sha256)
           RUST_DARWIN_AMD_SHA256=$(awk '{print $1}' eket-macos-x64.sha256)
-          NODE_LINUX_SHA256=$(awk '{print $1}' eket-node-linux-amd64.sha256)
-          NODE_DARWIN_ARM_SHA256=$(awk '{print $1}' eket-node-darwin-arm64.sha256)
-          NODE_DARWIN_AMD_SHA256=$(awk '{print $1}' eket-node-darwin-amd64.sha256)
 
           # 验证变量非空
-          for var in RUST_LINUX_SHA256 RUST_DARWIN_ARM_SHA256 RUST_DARWIN_AMD_SHA256 \
-                     NODE_LINUX_SHA256 NODE_DARWIN_ARM_SHA256 NODE_DARWIN_AMD_SHA256; do
+          for var in RUST_LINUX_SHA256 RUST_DARWIN_ARM_SHA256 RUST_DARWIN_AMD_SHA256; do
             if [ -z "${!var}" ]; then
               echo "❌ 变量 $var 为空"
               exit 1
@@ -202,7 +119,6 @@ jobs:
           # 导出变量（供 envsubst 使用）
           export VERSION GENERATED_TIME
           export RUST_LINUX_SHA256 RUST_DARWIN_ARM_SHA256 RUST_DARWIN_AMD_SHA256
-          export NODE_LINUX_SHA256 NODE_DARWIN_ARM_SHA256 NODE_DARWIN_AMD_SHA256
 
           # 转换占位符格式：{{VAR}} -> $VAR
           sed 's/{{\([^}]*\)}}/\$\1/g' scripts/install-template.sh | envsubst > install.sh
@@ -255,14 +171,10 @@ jobs:
             ${{ steps.notes.outputs.notes }}
 
             ---
-            **Packages published:**
-            - PyPI: `pip install eket-sdk`
-            - npm: `npm install eket-sdk`
-
             **Pre-built binaries:**
-            - Linux x64: `eket-linux-x64` (Rust), `eket-node-linux-amd64` (Node.js)
-            - macOS arm64: `eket-macos-arm64` (Rust), `eket-node-darwin-arm64` (Node.js)
-            - macOS x64: `eket-macos-x64` (Rust), `eket-node-darwin-amd64` (Node.js)
+            - Linux x64: `eket-linux-x64`
+            - macOS arm64: `eket-macos-arm64`
+            - macOS x64: `eket-macos-x64`
 
             **Installation:**
             ```bash
