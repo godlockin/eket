@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eket.dev/schemas/dag.schema.json",
+  "title": "EKET DAG Schema",
+  "description": "Unified DAG YAML schema for Rust/Node/Shell engines",
+  "type": "object",
+  "required": ["version", "epic", "nodes"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "description": "Schema version (e.g., '1.0')"
+    },
+    "epic": {
+      "type": "string",
+      "pattern": "^EPIC-[0-9]+$",
+      "description": "Parent EPIC identifier"
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "items": {
+        "$ref": "#/$defs/node"
+      },
+      "description": "List of task nodes in the DAG (max 1000 nodes for DoS protection)"
+    },
+    "settings": {
+      "$ref": "#/$defs/settings"
+    }
+  },
+  "$defs": {
+    "node": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+          "description": "Unique node identifier (TASK-NNN or custom id like gate-check)"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["task", "gate", "foreach"],
+          "default": "task",
+          "description": "Node type: task (default), gate (conditional), foreach (dynamic expansion)"
+        },
+        "script": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10000,
+          "description": "Command or script to execute (max 10KB for security). Required for task/foreach types."
+        },
+        "condition": {
+          "type": "string",
+          "maxLength": 10000,
+          "description": "Shell command for gate nodes. Exit 0 = success, non-zero = failure."
+        },
+        "when": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*\\.(success|failure)$",
+          "description": "Conditional execution: '<gate-id>.success' or '<gate-id>.failure'"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "description": "Items for foreach expansion. Each item becomes a parallel node with ${item} substituted."
+        },
+        "deps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+          },
+          "default": [],
+          "description": "List of dependency node IDs"
+        },
+        "retry": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Node-level retry count (overrides settings)"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400,
+          "description": "Node-level timeout in seconds (overrides settings)"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Human-readable description"
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": { "type": { "const": "task" } }
+          },
+          "then": {
+            "required": ["script"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "gate" } }
+          },
+          "then": {
+            "required": ["condition"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "foreach" } }
+          },
+          "then": {
+            "required": ["script", "items"]
+          }
+        }
+      ]
+    },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "max_parallel": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 3,
+          "description": "Max concurrent tasks (Rust/Node only, Shell ignores)"
+        },
+        "retry_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 2,
+          "description": "Default retry count for all nodes"
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400,
+          "default": 3600,
+          "description": "Default timeout for all nodes"
+        },
+        "on_failure": {
+          "type": "string",
+          "enum": ["stop", "continue", "rollback"],
+          "default": "stop",
+          "description": "Behavior when a node fails"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,19 @@
+# Test DAG with cycle: A -> B -> C -> A
+version: "1.0"
+epic: EPIC-CYCLE
+
+nodes:
+  - id: TASK-001
+    script: "echo 'Task 1'"
+    deps: [TASK-003]
+
+  - id: TASK-002
+    script: "echo 'Task 2'"
+    deps: [TASK-001]
+
+  - id: TASK-003
+    script: "echo 'Task 3'"
+    deps: [TASK-002]
+
+settings:
+  on_failure: "stop"

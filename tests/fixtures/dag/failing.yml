@@ -1,0 +1,21 @@
+# Test DAG with a failing task
+version: "1.0"
+epic: EPIC-FAIL
+
+nodes:
+  - id: TASK-001
+    script: "echo 'Task 1 OK'"
+    deps: []
+
+  - id: TASK-002
+    script: "echo 'Task 2 will fail' && exit 1"
+    deps: [TASK-001]
+
+  - id: TASK-003
+    script: "echo 'Task 3 should be skipped'"
+    deps: [TASK-002]
+
+settings:
+  retry_count: 0
+  timeout_seconds: 10
+  on_failure: "stop"

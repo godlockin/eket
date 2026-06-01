@@ -1,0 +1,37 @@
+# TASK-641: Foreach DAG Fixture
+# Tests dynamic node expansion with foreach
+
+version: "1.0"
+epic: EPIC-017
+
+nodes:
+  - id: TASK-001
+    script: "echo 'Preparing batch processing'"
+    deps: []
+
+  - id: batch-process
+    type: foreach
+    items: ["module-a", "module-b", "module-c"]
+    script: "echo 'Building ${item}' && sleep 0.1"
+    deps: [TASK-001]
+    description: "Build each module in parallel"
+
+  - id: TASK-002
+    script: "echo 'All modules built, running integration tests'"
+    deps: [batch-process]
+
+  - id: deploy-batch
+    type: foreach
+    items: ["staging", "production"]
+    script: "echo 'Deploying to ${item}'"
+    deps: [TASK-002]
+    description: "Deploy to each environment"
+
+  - id: TASK-003
+    script: "echo 'Deployment complete'"
+    deps: [deploy-batch]
+
+settings:
+  max_parallel: 3
+  timeout_seconds: 300
+  on_failure: stop

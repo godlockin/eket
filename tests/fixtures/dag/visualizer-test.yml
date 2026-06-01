@@ -1,0 +1,34 @@
+# Test DAG for visualization (TASK-639)
+version: "1.0"
+epic: EPIC-017
+
+nodes:
+  - id: TASK-001
+    script: "echo 'Setup'"
+    deps: []
+    description: "Setup phase"
+
+  - id: TASK-002
+    script: "echo 'Build A'"
+    deps: [TASK-001]
+    description: "Build component A"
+
+  - id: TASK-003
+    script: "echo 'Build B'"
+    deps: [TASK-001]
+    description: "Build component B"
+
+  - id: TASK-004
+    script: "echo 'Test'"
+    deps: [TASK-002, TASK-003]
+    description: "Integration tests"
+
+  - id: TASK-005
+    script: "echo 'Deploy'"
+    deps: [TASK-004]
+    description: "Deploy to staging"
+
+settings:
+  retry_count: 1
+  timeout_seconds: 60
+  on_failure: "stop"

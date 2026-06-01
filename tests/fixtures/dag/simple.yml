@@ -1,0 +1,29 @@
+# Simple test DAG with echo commands
+version: "1.0"
+epic: EPIC-TEST
+
+nodes:
+  - id: TASK-001
+    script: "echo 'Hello from TASK-001'"
+    deps: []
+    description: "First task"
+
+  - id: TASK-002
+    script: "echo 'Hello from TASK-002'"
+    deps: [TASK-001]
+    description: "Second task"
+
+  - id: TASK-003
+    script: "echo 'Hello from TASK-003' && sleep 1 && echo 'Done'"
+    deps: [TASK-001]
+    description: "Third task"
+
+  - id: TASK-004
+    script: "echo 'Hello from TASK-004'"
+    deps: [TASK-002, TASK-003]
+    description: "Final task"
+
+settings:
+  retry_count: 1
+  timeout_seconds: 60
+  on_failure: "stop"
