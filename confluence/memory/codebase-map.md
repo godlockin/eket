@@ -322,6 +322,7 @@
 | node/src/hooks/ | |
 | node/src/i18n/ | |
 | node/src/integration/ | |
+| node/src/schemas/ | |
 | node/src/skills/ | |
 | node/src/types/ | |
 | node/src/utils/ | |
