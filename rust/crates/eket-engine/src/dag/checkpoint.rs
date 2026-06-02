@@ -74,6 +74,7 @@ impl NodeStatus {
         }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Self {
         match s {
             "pending" => NodeStatus::Pending,
@@ -110,6 +111,7 @@ impl RunStatus {
     }
 
     #[allow(dead_code)]
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Self {
         match s {
             "pending" => RunStatus::Pending,
