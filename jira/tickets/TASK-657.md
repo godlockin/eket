@@ -1,7 +1,7 @@
 # TASK-657: 正则预编译优化 (Linus P1)
 
 **EPIC**: EPIC-017  
-**状态**: todo  
+**状态**: done  
 **优先级**: P1  
 **预估**: 0.5d  
 **依赖**: 无  
@@ -25,8 +25,8 @@ fn mask_sensitive(s: &str) -> String {
 
 ## 验收标准
 
-- [ ] 用 `lazy_static!` 或 `once_cell` 预编译正则
-- [ ] 基准测试：1000 次调用前后对比
+- [x] 用 `lazy_static!` 或 `once_cell` 预编译正则
+- [x] 基准测试：1000 次调用前后对比
 
 ## 实现方案
 
@@ -58,3 +58,4 @@ fn mask_sensitive(s: &str) -> String {
 | 日期 | 变更 | 操作人 |
 |------|------|--------|
 | 2026-06-02 | 创建 ticket (Linus Review P1) | Master |
+| 2026-06-02 | 完成: once_cell 预编译 + benchmark | Slaver |

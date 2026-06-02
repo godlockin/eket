@@ -22,6 +22,7 @@ r2d2_sqlite = { workspace = true }
 tantivy = { workspace = true }
 dashmap = { workspace = true }
 regex = "1"  # TASK-638: Script log sanitization
+once_cell = "1"  # TASK-657: Regex precompilation
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["test-util"] }
@@ -30,6 +31,15 @@ futures = "0.3"
 rusqlite = { workspace = true }
 r2d2 = { workspace = true }
 r2d2_sqlite = { workspace = true }
+criterion = { workspace = true }
+
+[[bench]]
+name = "scheduler_scale"
+harness = false
+
+[[bench]]
+name = "mask_sensitive_bench"
+harness = false
 
 [lints]
 workspace = true

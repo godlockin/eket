@@ -14,6 +14,9 @@ pub mod schema;
 pub mod scheduler;
 
 pub use checkpoint::DagCheckpoint;
-pub use executor::{DryRunExecutor, ExecutorConfig, NodeExecutionResult, NodeExecutor};
+pub use executor::{
+    validate_script, DryRunExecutor, ExecutorConfig, NodeExecutionResult, NodeExecutor,
+    ScriptValidationError,
+};
 pub use schema::{DagNode, DagSchema, DagSettings, NodeType, OnFailure, ValidationError};
 pub use scheduler::{PriorityScheduler, ReadyNode};
