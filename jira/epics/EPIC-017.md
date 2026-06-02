@@ -140,3 +140,27 @@ CREATE TABLE dag_node_states (
 | 2026-06-01 | 创建 EPIC，脑爆定稿 | Master |
 | 2026-06-01 | Phase 1 完成 (631-635)，专家组评审通过 | Team |
 | 2026-06-01 | 创建 Phase 2 tickets (636-642) | Master |
+| 2026-06-01 | Phase 2 完成 (636-642) | Team |
+| 2026-06-01 | Phase 3 完成 (643-649) 安全加固 | Team |
+| 2026-06-01 | Phase 4 完成 (650-654) 性能优化 | Team |
+| 2026-06-02 | AB 专家组评审：CONDITIONAL_PASS | Linus + Jeff Dean |
+| 2026-06-02 | 创建 Phase 5 修复 tickets (655-658) | Master |
+
+## Phase 5: AB 评审修复 (待完成)
+
+| Ticket | 标题 | 优先级 | 状态 | 来源 |
+|--------|------|--------|------|------|
+| TASK-655 | Shell Injection 防护 | P0 | todo | Linus |
+| TASK-656 | SQLite Sync Pragma 崩溃安全 | P0 | todo | Jeff Dean |
+| TASK-657 | 正则预编译优化 | P1 | todo | Linus |
+| TASK-658 | 1K 节点基准测试 | P0 | todo | Jeff Dean |
+
+## 经验教训
+
+详见：`confluence/memory/lessons/epic-017-dag-lessons.md`
+
+### 关键收获
+1. **安全第一**：执行外部输入必须先验证（Shell Injection）
+2. **语义明确**：容错必须明确是 at-least-once 还是 exactly-once
+3. **性能验证**：声称支持 10K 节点就必须有基准测试
+4. **借鉴业界**：Borg/Flume/MapReduce 的设计模式值得学习
