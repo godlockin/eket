@@ -95,7 +95,7 @@ EKET_SECTION
       ok "CLAUDE.md 追加 EKET Framework 章节"
     fi
   else
-    local template="$EKET_ROOT/template/CLAUDE.md"
+    local template="$EKET_ROOT/template/CLAUDE-TEMPLATE.md"
     if [ -f "$template" ]; then
       cp "$template" "$target"
       ok "从模板复制 CLAUDE.md"
