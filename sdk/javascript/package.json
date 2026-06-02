@@ -37,7 +37,7 @@
   },
   "homepage": "https://eket.dev",
   "dependencies": {
-    "axios": "^1.6.0",
+    "axios": "^1.16.0",
     "ws": "^8.16.0"
   },
   "devDependencies": {
