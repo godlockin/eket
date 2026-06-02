@@ -1,0 +1,5 @@
+version: "1.0"
+epic: EPIC-017
+nodes:
+  - script: "echo no id field"
+    description: "This node is missing required id"

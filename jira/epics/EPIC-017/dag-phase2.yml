@@ -1,0 +1,50 @@
+# EPIC-017 Phase 2 DAG
+# 修复 + 增强阶段
+
+version: "1.0"
+epic: EPIC-017-phase2
+
+nodes:
+  # === 修复类 (可并行) ===
+  - id: TASK-636
+    script: "eket task:execute TASK-636"
+    deps: []
+    description: "Node.js resume dagPath 持久化修复"
+
+  - id: TASK-637
+    script: "eket task:execute TASK-637"
+    deps: []
+    description: "DAG Schema 安全加固"
+
+  - id: TASK-638
+    script: "eket task:execute TASK-638"
+    deps: []
+    description: "DAG 日志脱敏"
+
+  # === 功能增强 (依赖修复) ===
+  - id: TASK-639
+    script: "eket task:execute TASK-639"
+    deps: [TASK-637]
+    description: "DAG 可视化 (ASCII + Mermaid)"
+
+  - id: TASK-640
+    script: "eket task:execute TASK-640"
+    deps: [TASK-637]
+    description: "DAG 自动复杂度检测"
+
+  - id: TASK-641
+    script: "eket task:execute TASK-641"
+    deps: [TASK-637]
+    description: "DAG 条件分支 + 动态节点"
+
+  # === 核心整合 (依赖所有增强) ===
+  - id: TASK-642
+    script: "eket task:execute TASK-642"
+    deps: [TASK-639, TASK-640, TASK-641]
+    description: "DAG 与 Master-Slaver 协作整合"
+
+settings:
+  max_parallel: 3
+  retry_count: 2
+  timeout_seconds: 7200
+  on_failure: "stop"

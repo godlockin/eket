@@ -1,0 +1,11 @@
+version: "1.0"
+epic: EPIC-017
+nodes:
+  - id: TASK-631
+    script: "npm run build"
+    description: "Build the project"
+settings:
+  max_parallel: 3
+  retry_count: 2
+  timeout_seconds: 3600
+  on_failure: stop
