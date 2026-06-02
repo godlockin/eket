@@ -393,7 +393,7 @@ nodes:
     deps: []
   - id: gate
     type: gate
-    condition: "test -f flag.txt"
+    script: "test -f flag.txt"
     deps: [start]
   - id: success-path
     script: "echo success"
