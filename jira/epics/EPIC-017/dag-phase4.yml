@@ -1,0 +1,40 @@
+# EPIC-017 Phase 4 DAG
+# Jeff Dean 建议的性能优化
+
+version: "1.0"
+epic: EPIC-017-phase4
+
+nodes:
+  # === P0 关键修复 ===
+  - id: TASK-650
+    script: "eket task:execute TASK-650"
+    deps: []
+    description: "SQLite DAG 表实际创建 + WAL Checkpoint"
+
+  # === P1 性能优化 (依赖 650) ===
+  - id: TASK-651
+    script: "eket task:execute TASK-651"
+    deps: [TASK-650]
+    description: "Scheduler 锁竞争优化 (Sharded Locks)"
+
+  - id: TASK-652
+    script: "eket task:execute TASK-652"
+    deps: [TASK-651]
+    description: "O(N) 依赖扫描优化 (反向索引)"
+
+  # === P2 高级优化 (依赖 651/652) ===
+  - id: TASK-653
+    script: "eket task:execute TASK-653"
+    deps: [TASK-652]
+    description: "线性链融合优化 (Flume-style)"
+
+  - id: TASK-654
+    script: "eket task:execute TASK-654"
+    deps: [TASK-651]
+    description: "节点优先级调度 (Borg-style)"
+
+settings:
+  max_parallel: 2
+  retry_count: 2
+  timeout_seconds: 7200
+  on_failure: "stop"

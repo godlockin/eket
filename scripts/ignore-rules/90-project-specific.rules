@@ -44,12 +44,3 @@ sys_init/
 # Inbox human feedback (except .gitkeep)
 inbox/human_feedback/*
 !inbox/human_feedback/.gitkeep
-
-# Content output (marketing assets, not source code)
-output/content/
-
-# Playwright MCP browser cache
-.playwright-mcp/
-
-# Benchmark data
-benchmarks/

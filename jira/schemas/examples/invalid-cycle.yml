@@ -1,0 +1,12 @@
+version: "1.0"
+epic: EPIC-017
+nodes:
+  - id: TASK-001
+    script: "echo A"
+    deps: [TASK-002]
+  - id: TASK-002
+    script: "echo B"
+    deps: [TASK-003]
+  - id: TASK-003
+    script: "echo C"
+    deps: [TASK-001]

@@ -53,6 +53,7 @@ import { registerTaskVerify } from './commands/task-verify.js';
 import { registerTeamStatus } from './commands/team-status.js';
 import { registerUltrareview } from './commands/ultrareview.js';
 import { registerWorkflowCommands } from './commands/workflow.js';
+import { registerDAGCommands } from './commands/dag-commands.js';
 import { createAgentPoolManager } from './core/agent-pool.js';
 import { createHeartbeatManager, createSlaverMonitor } from './core/heartbeat-monitor.js';
 import { createMessageQueue, createMessage } from './core/message-queue.js';
@@ -169,6 +170,36 @@ export {
   ContextEstimator,
   type EstimateResult,
 } from './core/context-estimator.js';
+
+// ============================================================================
+// EPIC-017: DAG Execution Layer (TASK-635)
+// ============================================================================
+
+export {
+  // DAG Executor
+  DAGExecutor,
+  createDAGExecutor,
+  Semaphore,
+  DAGEvents,
+  type NodeStatus,
+  type RunStatus,
+  type NodeResult,
+  type DAGRun,
+  type ExecuteOptions,
+  type DAGRunStartedPayload,
+  type DAGRunCompletedPayload,
+  type DAGNodeEventPayload,
+} from './core/dag-executor.js';
+
+export {
+  // DAG Schema
+  type DagSchema,
+  type DagNode,
+  type DagSettings,
+  validateDag,
+  resolveNodeSettings,
+  DEFAULT_SETTINGS,
+} from './schemas/dag.js';
 
 // ============================================================================
 // Utility Exports (TASK-004: Progress Bar)
@@ -1522,6 +1553,9 @@ Related Commands:
 
   // TASK-119: Ultrareview — multi-agent parallel PR review
   registerUltrareview(program);
+
+  // TASK-635: DAG execution with auto-detection and routing
+  registerDAGCommands(program);
 
   // 解析命令行
   await program.parseAsync(process.argv);

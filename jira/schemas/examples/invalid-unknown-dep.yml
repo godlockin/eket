@@ -1,0 +1,6 @@
+version: "1.0"
+epic: EPIC-017
+nodes:
+  - id: TASK-001
+    script: "echo hello"
+    deps: [TASK-999]

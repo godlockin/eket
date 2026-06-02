@@ -1,0 +1,51 @@
+# EPIC-017 Phase 3 DAG
+# 安全加固 + 代码质量 + 功能增强
+
+version: "1.0"
+epic: EPIC-017-phase3
+
+nodes:
+  # === P0 安全修复 (立即) ===
+  - id: TASK-643
+    script: "eket task:execute TASK-643"
+    deps: []
+    description: "foreach ${item} Shell 注入防护"
+
+  # === P1 代码质量 (依赖 643) ===
+  - id: TASK-644
+    script: "eket task:execute TASK-644"
+    deps: [TASK-643]
+    description: "epic-run/epic-analyze 代码去重"
+
+  - id: TASK-645
+    script: "eket task:execute TASK-645"
+    deps: [TASK-644]
+    description: "命令层单元测试补充"
+
+  # === P2 修复 (可并行) ===
+  - id: TASK-646
+    script: "eket task:execute TASK-646"
+    deps: [TASK-643]
+    description: "watch 模式资源泄漏修复"
+
+  - id: TASK-647
+    script: "eket task:execute TASK-647"
+    deps: [TASK-643]
+    description: "日志脱敏补充 AWS/npm token"
+
+  # === P1/P2 功能增强 (依赖修复) ===
+  - id: TASK-648
+    script: "eket task:execute TASK-648"
+    deps: [TASK-646]
+    description: "DAG 实时进度 (--live) + Web API"
+
+  - id: TASK-649
+    script: "eket task:execute TASK-649"
+    deps: [TASK-647]
+    description: "DAGSlaverBridge 鉴权机制"
+
+settings:
+  max_parallel: 3
+  retry_count: 2
+  timeout_seconds: 7200
+  on_failure: "stop"

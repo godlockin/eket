@@ -1,5 +1,6 @@
 // eket-engine: 工作流引擎 / Agent Pool / Mailbox / EventBus
 pub mod agent_pool;
+pub mod dag;
 pub mod conflict_resolver;
 pub mod context_budget;
 pub mod context_filter;
