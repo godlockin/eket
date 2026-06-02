@@ -1,7 +1,7 @@
 # TASK-654: 节点优先级调度 (Borg-style Priority)
 
 **EPIC**: EPIC-017  
-**状态**: todo  
+**状态**: done  
 **优先级**: P2  
 **预估**: 1d  
 **依赖**: TASK-651  
@@ -21,11 +21,11 @@
 
 ## 验收标准
 
-- [ ] Schema 支持 `priority` 字段 (0-100, 默认 50)
-- [ ] Ready 队列按优先级排序（高优先级先执行）
-- [ ] 支持 deadline 推断优先级（deadline 近 = 高优先级）
-- [ ] 关键路径节点自动提升优先级
-- [ ] 优先级变更事件广播
+- [x] Schema 支持 `priority` 字段 (0-100, 默认 50)
+- [x] Ready 队列按优先级排序（高优先级先执行）
+- [x] 支持 deadline 推断优先级（deadline 近 = 高优先级）
+- [x] 关键路径节点自动提升优先级
+- [ ] 优先级变更事件广播 (deferred to TASK-655)
 
 ## Schema 扩展
 
@@ -102,3 +102,4 @@ fn inherit_priority(node: &mut DagNode, dag: &DagSchema) {
 | 日期 | 变更 | 操作人 |
 |------|------|--------|
 | 2026-06-01 | 创建 ticket (Jeff Dean Review P2) | Master |
+| 2026-06-02 | 实现完成: schema priority/deadline, scheduler 优先级排序, critical path | Slaver |

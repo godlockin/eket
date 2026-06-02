@@ -77,6 +77,10 @@ pub struct NodeExecutionResult {
     pub stderr: String,
     pub error_msg: Option<String>,
     pub duration_ms: u64,
+    /// Whether this was a gate node
+    pub is_gate: bool,
+    /// Whether gate condition passed (only meaningful if is_gate)
+    pub gate_passed: bool,
 }
 
 /// Node executor configuration
@@ -151,6 +155,8 @@ impl NodeExecutor {
             stderr: String::new(),
             error_msg: Some("No execution attempted".to_string()),
             duration_ms: 0,
+            is_gate: false,
+            gate_passed: false,
         })
     }
 
@@ -196,6 +202,8 @@ impl NodeExecutor {
                                 Some(format!("Exit code {}: {}", exit_code, stderr))
                             },
                             duration_ms,
+                            is_gate: false,
+                            gate_passed: false,
                         }
                     }
                     Err(e) => {
@@ -211,6 +219,8 @@ impl NodeExecutor {
                             stderr: String::new(),
                             error_msg: Some(format!("Execution error: {}", e)),
                             duration_ms: start.elapsed().as_millis() as u64,
+                            is_gate: false,
+                            gate_passed: false,
                         }
                     }
                 }
@@ -228,6 +238,8 @@ impl NodeExecutor {
                     stderr: String::new(),
                     error_msg: Some(format!("Timeout after {}s", node.timeout)),
                     duration_ms: start.elapsed().as_millis() as u64,
+                    is_gate: false,
+                    gate_passed: false,
                 }
             }
         }
@@ -304,6 +316,8 @@ impl DryRunExecutor {
             stderr: String::new(),
             error_msg: None,
             duration_ms: 100,
+            is_gate: false,
+            gate_passed: false,
         }
     }
 }
@@ -318,6 +332,9 @@ mod tests {
             script: script.to_string(),
             retry: 0,
             timeout,
+            priority: 50,
+            is_critical_path: false,
+            deadline: None,
         }
     }
 

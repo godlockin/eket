@@ -86,12 +86,15 @@ impl FusedNode {
             total_timeout = total_timeout.saturating_add(timeout);
             max_priority = max_priority.max(node.priority);
 
-            // Track earliest deadline
-            if let Some(dl) = node.deadline {
-                earliest_deadline = Some(match earliest_deadline {
-                    None => dl,
-                    Some(current) => current.min(dl),
-                });
+            // Track earliest deadline (parse from ISO 8601 string)
+            if let Some(ref dl_str) = node.deadline {
+                if let Ok(dl) = DateTime::parse_from_rfc3339(dl_str) {
+                    let dl_utc = dl.with_timezone(&Utc);
+                    earliest_deadline = Some(match earliest_deadline {
+                        None => dl_utc,
+                        Some(current) => current.min(dl_utc),
+                    });
+                }
             }
         }
 

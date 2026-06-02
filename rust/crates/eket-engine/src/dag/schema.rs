@@ -32,6 +32,19 @@ pub enum OnFailure {
     Rollback,
 }
 
+/// Node type for DAG scheduling
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum NodeType {
+    /// Standard task node (default)
+    #[default]
+    Task,
+    /// Gate node for conditional branching
+    Gate,
+    /// Foreach node for parallel expansion
+    Foreach,
+}
+
 /// DAG execution settings
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct DagSettings {
@@ -62,6 +75,11 @@ fn default_timeout_seconds() -> u64 {
     3600
 }
 
+/// Default priority for nodes (middle of 0-100 range)
+fn default_priority() -> u8 {
+    50
+}
+
 /// Single task node in the DAG
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DagNode {
@@ -83,6 +101,28 @@ pub struct DagNode {
 
     /// Human-readable description
     pub description: Option<String>,
+
+    /// Priority level (0-100, higher = more important)
+    /// Borg-style priority scheduling: higher priority nodes execute first
+    #[serde(default = "default_priority")]
+    pub priority: u8,
+
+    /// Deadline in ISO 8601 format (e.g., "2026-06-02T15:00:00Z")
+    /// Nodes with approaching deadlines get priority boost (+30)
+    #[serde(default)]
+    pub deadline: Option<String>,
+
+    /// Node type: task, gate, or foreach
+    #[serde(rename = "type", default)]
+    pub node_type: NodeType,
+
+    /// Conditional execution expression (e.g., "gate.success")
+    #[serde(default)]
+    pub when: Option<String>,
+
+    /// Gate condition (for Gate nodes only)
+    #[serde(default)]
+    pub condition: Option<String>,
 }
 
 /// Complete DAG definition
