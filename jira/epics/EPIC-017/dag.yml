@@ -1,0 +1,37 @@
+# EPIC-017 DAG 任务编排
+# 降级策略: Rust (L1) → Node (L2) → Shell (L0)
+
+version: "1.0"
+epic: EPIC-017
+
+nodes:
+  - id: TASK-631
+    script: "eket task:execute TASK-631"
+    deps: []
+    description: "DAG YAML Schema + 验证器"
+
+  - id: TASK-632
+    script: "eket task:execute TASK-632"
+    deps: [TASK-631]
+    description: "Shell DAG Runner (L0 兜底)"
+
+  - id: TASK-633
+    script: "eket task:execute TASK-633"
+    deps: [TASK-631]
+    description: "Node.js DAG Executor (L2 fallback)"
+
+  - id: TASK-634
+    script: "eket task:execute TASK-634"
+    deps: [TASK-631]
+    description: "Rust DAG Engine 核心 (L1 首选)"
+
+  - id: TASK-635
+    script: "eket task:execute TASK-635"
+    deps: [TASK-632, TASK-633, TASK-634]
+    description: "降级检测 + 自动路由"
+
+settings:
+  max_parallel: 3       # Rust/Node 用，Shell 串行忽略
+  retry_count: 2
+  timeout_seconds: 3600
+  on_failure: "stop"    # stop | continue | rollback

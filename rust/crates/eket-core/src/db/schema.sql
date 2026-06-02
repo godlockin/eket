@@ -116,3 +116,37 @@ CREATE TABLE IF NOT EXISTS message_history (
 
 CREATE INDEX IF NOT EXISTS idx_message_type ON message_history(type);
 
+-- TASK-650: DAG Run Checkpoint Tables for crash recovery
+-- dag_runs: Each DAG execution run
+CREATE TABLE IF NOT EXISTS dag_runs (
+    id           TEXT PRIMARY KEY,
+    epic_id      TEXT NOT NULL,
+    yaml_content TEXT NOT NULL,
+    status       TEXT NOT NULL DEFAULT 'pending',  -- pending, running, done, failed, aborted
+    engine_level INTEGER NOT NULL DEFAULT 3,       -- L1=Rust, L2=Node.js, L3=Shell
+    started_at   INTEGER,
+    finished_at  INTEGER,
+    error_msg    TEXT,
+    created_at   INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_dag_runs_epic ON dag_runs(epic_id);
+CREATE INDEX IF NOT EXISTS idx_dag_runs_status ON dag_runs(status);
+
+-- dag_node_states: State of each node in a DAG run
+CREATE TABLE IF NOT EXISTS dag_node_states (
+    run_id      TEXT NOT NULL,
+    node_id     TEXT NOT NULL,
+    status      TEXT NOT NULL DEFAULT 'pending',  -- pending, ready, dispatched, running, done, failed, skipped
+    started_at  INTEGER,
+    finished_at INTEGER,
+    exit_code   INTEGER,
+    error_msg   TEXT,
+    attempt     INTEGER NOT NULL DEFAULT 0,       -- TASK-656: Idempotency key component
+    PRIMARY KEY (run_id, node_id),
+    FOREIGN KEY (run_id) REFERENCES dag_runs(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_dag_node_states_status ON dag_node_states(status);
+CREATE INDEX IF NOT EXISTS idx_dag_node_states_run ON dag_node_states(run_id);
+

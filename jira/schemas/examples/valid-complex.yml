@@ -1,0 +1,33 @@
+version: "1.0"
+epic: EPIC-017
+nodes:
+  - id: TASK-100
+    script: "git checkout -b feature/test"
+    description: "Create feature branch"
+  - id: TASK-101
+    script: "npm install"
+    deps: [TASK-100]
+    timeout: 300
+    description: "Install dependencies"
+  - id: TASK-102
+    script: "npm run lint"
+    deps: [TASK-101]
+    retry: 1
+  - id: TASK-103
+    script: "npm run test"
+    deps: [TASK-101]
+    retry: 2
+    timeout: 600
+  - id: TASK-104
+    script: "npm run build"
+    deps: [TASK-102, TASK-103]
+  - id: TASK-105
+    script: "npm run deploy"
+    deps: [TASK-104]
+    timeout: 1800
+    description: "Deploy to staging"
+settings:
+  max_parallel: 4
+  retry_count: 2
+  timeout_seconds: 3600
+  on_failure: rollback
