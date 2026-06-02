@@ -224,7 +224,7 @@ impl PriorityScheduler {
             .collect();
 
         // Sort by effective priority (descending)
-        ready.sort_by(|a, b| b.effective_priority().cmp(&a.effective_priority()));
+        ready.sort_by_key(|n| std::cmp::Reverse(n.effective_priority()));
 
         info!(
             "[PriorityScheduler] {} ready nodes (highest priority: {})",

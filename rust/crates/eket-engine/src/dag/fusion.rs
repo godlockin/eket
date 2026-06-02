@@ -311,6 +311,7 @@ pub fn fuse_chain(chain: &[String], schema: &DagSchema) -> Option<FusedNode> {
 /// - Vec<FusedNode>: All fused chains
 /// - HashMap<String, Vec<String>>: fused_id -> original node IDs
 /// - HashMap<String, String>: original_id -> fused_id
+#[allow(clippy::type_complexity)]
 pub fn detect_and_fuse_all(
     schema: &DagSchema,
     deps: &HashMap<String, Vec<String>>,
