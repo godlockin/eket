@@ -182,7 +182,7 @@ download_repo() {
       .claude/skills/eket \
       template/.claude \
       template/hooks \
-      template/CLAUDE.md \
+      template/CLAUDE-TEMPLATE.md \
       template/AGENTS.md \
       template/confluence \
       template/jira \
