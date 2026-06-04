@@ -10,8 +10,8 @@
 | **Ticket** | An atomic, stateful unit of work. Lives in `jira/tickets/TASK-NNN/`. | `jira/tickets/` |
 | **Epic** | A grouping of related tickets. Lives in `jira/tickets/EPIC-NNN/`. | `jira/tickets/EPIC-*/` |
 | **Saga** | A 5-step atomic completion: validate → test → checkpoint → commit → notify. | `eket task:complete` |
-| **CAS** | Compare-And-Swap. The atomic claim primitive on SQLite. Prevents double-claim. | `rust/crates/eket-core/src/claim.rs` |
-| **Checkpoint** | A persisted snapshot of Slaver state, recoverable via `eket task:resume`. | `node/src/core/checkpoint.ts` |
+| **CAS** | Compare-And-Swap. The atomic claim primitive on SQLite. Prevents double-claim. | `node/src/core/sqlite-client.ts:966-976` |
+| **Checkpoint** | A persisted snapshot of Slaver state, recoverable via `eket task:resume`. | `node/src/core/task-checkpoint.ts:48-108` |
 | **Four-Level Degradation** | L0 Shell → L1 Rust → L2 Node.js → L3 Shell fallback. Same protocol, different implementations. | `docs/architecture/DEGRADATION-STRATEGY.md` |
 | **Three-Repo Architecture** | Knowledge in `confluence/`, tasks in `jira/`, code in `code_repo/` (or `rust/`, `node/`). | `docs/architecture/THREE_REPO_ARCHITECTURE.md` |
 | **Branch Strategy** | `feature/*` → `testing` → `main` → `miao`. Four-stage promotion. | `scripts/sync-branches.sh` |

@@ -1,6 +1,6 @@
 # Index — Full Table of Contents
 
-> Last updated: 2026-06-04 · Series version: 0.2 (4 articles drafted)
+> Last updated: 2026-06-04 · Series version: 0.3 (6 articles drafted)
 
 ## Status legend
 
@@ -21,11 +21,11 @@
 
 | # | Article | EN | ZH | Status | Words (EN) |
 |---|---|---|---|---|---|
-| 03 | [Technical Value: 7 Non-Obvious Choices](./03-technical-value-choices/en/article.md) | [EN](./03-technical-value-choices/en/article.md) | [ZH](./03-technical-value-choices/zh-CN/article.md) | ⚪ Queued | — |
+| 03 | [Technical Value: 7 Non-Obvious Choices](./03-technical-value-choices/en/article.md) | [EN](./03-technical-value-choices/en/article.md) | [ZH](./03-technical-value-choices/zh-CN/article.md) | 🟡 Drafted | ~7800 |
 | 04 | [Three-Repo Architecture](./04-three-repo-arch/en/article.md) | [EN](./04-three-repo-arch/en/article.md) | [ZH](./04-three-repo-arch/zh-CN/article.md) | 🟡 Drafted | ~5200 |
 | 05 | [Four-Level Degradation](./05-four-level-degradation/en/article.md) | [EN](./05-four-level-degradation/en/article.md) | [ZH](./05-four-level-degradation/zh-CN/article.md) | 🟡 Drafted | ~3784 |
 | 06 | [Master-Slaver Protocol](./06-master-slaver-protocol/en/article.md) | [EN](./06-master-slaver-protocol/en/article.md) | [ZH](./06-master-slaver-protocol/zh-CN/article.md) | 🟡 Drafted | ~6448 |
-| 07 | [Storage, CAS, and Event-Sourced State](./07-storage-and-events/en/article.md) | [EN](./07-storage-and-events/en/article.md) | [ZH](./07-storage-and-events/zh-CN/article.md) | ⚪ Queued | — |
+| 07 | [Storage, CAS, and Event-Sourced State](./07-storage-and-events/en/article.md) | [EN](./07-storage-and-events/en/article.md) | [ZH](./07-storage-and-events/zh-CN/article.md) | 🟡 Drafted | ~7359 |
 
 ## Volume 3 — Engineering in Practice
 
@@ -56,8 +56,8 @@
 
 - Total articles: **15** (incl. foreword)
 - Done: **1** (06.7%)
-- Drafted: **4** (02, 04, 05, 06)
-- Queued: **10**
+- Drafted: **6** (02, 03, 04, 05, 06, 07)
+- Queued: **8**
 - EPIC: `EPIC-008-articles-series`
 - Owner: Master (Claude Code)
 - Reviewer: Master
