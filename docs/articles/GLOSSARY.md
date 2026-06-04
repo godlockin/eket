@@ -24,6 +24,9 @@
 | **OpenClaw** | A companion AI agent protocol. EKET bridges to it. | `docs/architecture/OPENCLAW-INTEGRATION-DESIGN.md` |
 | **ADR** | Architecture Decision Record. Three exist as of v2.14. | `docs/adr/ADR-001..003-*.md` |
 | **Gate Review** | A pre-completion quality gate. Must pass before `task:complete` succeeds. | `eket gate:review` |
+| **Coordination Debt** | The hidden tax that compounds as N agents + humans work on the same source of truth without a protocol. Distinct from *technical debt*; arises only at multi-executor scale. Solved by the EKET protocol, not by better tools. | `docs/articles/02-why-you-need-eket/en/article.md:44,243` |
+| **Headline Number** | A single, traceable, source-cited performance figure used to anchor an ROI argument (e.g. "19× faster `task:claim`"). The article series insists every headline number carry a `file:line` reference to its source — no aspirational numbers. | `docs/articles/02-why-you-need-eket/en/article.md:21,80` |
+| **Pain × Solution Map** | The 1:1 mapping from coordination pain (lost context, conflicting edits, opaque review, no audit) to protocol mechanism (checkpoint, CAS, ticket-plan-precondition, Saga 5-step). Used as a diagnostic: if your workaround does not map to one of these, it is probably not solving the pain you think. | `docs/articles/02-why-you-need-eket/en/article.md:241` |
 
 ---
 

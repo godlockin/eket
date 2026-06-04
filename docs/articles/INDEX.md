@@ -15,6 +15,7 @@
 |---|---|---|---|---|---|
 | 00 | [Foreword](./00-foreword/en/foreword.md) | [EN](./00-foreword/en/foreword.md) | [ZH](./00-foreword/zh-CN/foreword.md) | ⚪ Queued | — |
 | 01 | [What is EKET: The Special-Forces Thesis](./01-what-is-eket/en/article.md) | [EN](./01-what-is-eket/en/article.md) | [ZH](./01-what-is-eket/zh-CN/article.md) | 🟢 Done | ~2200 |
+| 02 | [Why You Need EKET: Pain x Solution x ROI](./02-why-you-need-eket/en/article.md) | [EN](./02-why-you-need-eket/en/article.md) | [ZH](./02-why-you-need-eket/zh-CN/article.md) | 🟡 Drafted | ~3500 |
 
 ## Volume 2 — Architecture Deep Dive
 
@@ -23,7 +24,7 @@
 | 03 | [Technical Value: 7 Non-Obvious Choices](./03-technical-value-choices/en/article.md) | [EN](./03-technical-value-choices/en/article.md) | [ZH](./03-technical-value-choices/zh-CN/article.md) | ⚪ Queued | — |
 | 04 | [Three-Repo Architecture](./04-three-repo-arch/en/article.md) | [EN](./04-three-repo-arch/en/article.md) | [ZH](./04-three-repo-arch/zh-CN/article.md) | ⚪ Queued | — |
 | 05 | [Four-Level Degradation](./05-four-level-degradation/en/article.md) | [EN](./05-four-level-degradation/en/article.md) | [ZH](./05-four-level-degradation/zh-CN/article.md) | ⚪ Queued | — |
-| 06 | [Master-Slaver Protocol](./06-master-slaver-protocol/en/article.md) | [EN](./06-master-slaver-protocol/en/article.md) | [ZH](./06-master-slaver-protocol/zh-CN/article.md) | ⚪ Queued | — |
+| 06 | [Master-Slaver Protocol](./06-master-slaver-protocol/en/article.md) | [EN](./06-master-slaver-protocol/en/article.md) | [ZH](./06-master-slaver-protocol/zh-CN/article.md) | 🟡 Drafted | ~6448 |
 | 07 | [Storage, CAS, and Event-Sourced State](./07-storage-and-events/en/article.md) | [EN](./07-storage-and-events/en/article.md) | [ZH](./07-storage-and-events/zh-CN/article.md) | ⚪ Queued | — |
 
 ## Volume 3 — Engineering in Practice
@@ -55,8 +56,9 @@
 
 - Total articles: **15** (incl. foreword)
 - Done: **1** (06.7%)
-- Queued: **14**
-- EPIC: `EPIC-008-articles-series` (to be created)
+- Drafted: **2** (02, 06)
+- Queued: **12**
+- EPIC: `EPIC-008-articles-series`
 - Owner: Master (Claude Code)
 - Reviewer: Master
 
