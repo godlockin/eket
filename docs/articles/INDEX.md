@@ -1,6 +1,6 @@
 # Index — Full Table of Contents
 
-> Last updated: 2026-06-04 · Series version: 0.6 (11 articles drafted)
+> Last updated: 2026-06-04 · Series version: 0.7 (12 articles drafted)
 
 ## Status legend
 
@@ -56,8 +56,8 @@
 
 - Total articles: **15** (incl. foreword)
 - Done: **1** (06.7%)
-- Drafted: **11** (02, 03, 04, 05, 06, 07, 08, 09, 10, 12, 13)
-- Queued: **3**
+- Drafted: **12** (02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13)
+- Queued: **2**
 - EPIC: `EPIC-008-articles-series`
 - Owner: Master (Claude Code)
 - Reviewer: Master
