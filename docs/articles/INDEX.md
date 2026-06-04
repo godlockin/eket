@@ -1,6 +1,6 @@
 # Index — Full Table of Contents
 
-> Last updated: 2026-06-04 · Series version: 0.3 (6 articles drafted)
+> Last updated: 2026-06-04 · Series version: 0.4 (7 articles drafted)
 
 ## Status legend
 
@@ -31,7 +31,7 @@
 
 | # | Article | EN | ZH | Status | Words (EN) |
 |---|---|---|---|---|---|
-| 08 | [Rust Performance: 21ms vs 400ms](./08-rust-performance/en/article.md) | [EN](./08-rust-performance/en/article.md) | [ZH](./08-rust-performance/zh-CN/article.md) | ⚪ Queued | — |
+| 08 | [Rust Performance: 21ms vs 400ms](./08-rust-performance/en/article.md) | [EN](./08-rust-performance/en/article.md) | [ZH](./08-rust-performance/zh-CN/article.md) | 🟡 Drafted | ~5100 |
 | 09 | [Observability and Recovery](./09-observability-recovery/en/article.md) | [EN](./09-observability-recovery/en/article.md) | [ZH](./09-observability-recovery/zh-CN/article.md) | ⚪ Queued | — |
 | 10 | [Onboarding Playbook: 0→1 Slaver](./10-onboarding-playbook/en/article.md) | [EN](./10-onboarding-playbook/en/article.md) | [ZH](./10-onboarding-playbook/zh-CN/article.md) | ⚪ Queued | — |
 | 11 | [SDK and Integration](./11-sdk-and-integration/en/article.md) | [EN](./11-sdk-and-integration/en/article.md) | [ZH](./11-sdk-and-integration/zh-CN/article.md) | ⚪ Queued | — |
@@ -56,8 +56,8 @@
 
 - Total articles: **15** (incl. foreword)
 - Done: **1** (06.7%)
-- Drafted: **6** (02, 03, 04, 05, 06, 07)
-- Queued: **8**
+- Drafted: **7** (02, 03, 04, 05, 06, 07, 08)
+- Queued: **7**
 - EPIC: `EPIC-008-articles-series`
 - Owner: Master (Claude Code)
 - Reviewer: Master
