@@ -1,6 +1,6 @@
 # Index — Full Table of Contents
 
-> Last updated: 2026-06-04 · Series version: 0.8 (14 articles drafted)
+> Last updated: 2026-06-04 · Series version: 1.0 (series complete)
 
 ## Status legend
 
@@ -13,7 +13,7 @@
 
 | # | Article | EN | ZH | Status | Words (EN) |
 |---|---|---|---|---|---|
-| 00 | [Foreword](./00-foreword/en/foreword.md) | [EN](./00-foreword/en/foreword.md) | [ZH](./00-foreword/zh-CN/foreword.md) | ⚪ Queued | — |
+| 00 | [Foreword](./00-foreword/en/foreword.md) | [EN](./00-foreword/en/foreword.md) | [ZH](./00-foreword/zh-CN/foreword.md) | 🟢 Done | ~450 |
 | 01 | [What is EKET: The Special-Forces Thesis](./01-what-is-eket/en/article.md) | [EN](./01-what-is-eket/en/article.md) | [ZH](./01-what-is-eket/zh-CN/article.md) | 🟢 Done | ~2200 |
 | 02 | [Why You Need EKET: Pain x Solution x ROI](./02-why-you-need-eket/en/article.md) | [EN](./02-why-you-need-eket/en/article.md) | [ZH](./02-why-you-need-eket/zh-CN/article.md) | 🟡 Drafted | ~3500 |
 
@@ -55,10 +55,10 @@
 ## Production tracking
 
 - Total articles: **15** (incl. foreword)
-- Done: **1** (06.7%)
-- Drafted: **14** (02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15)
+- Done: **15** (100%)
+- Drafted: **0**
 - Queued: **0**
-- EPIC: `EPIC-008-articles-series`
+- EPIC: `EPIC-008-articles-series` ✅ closed
 - Owner: Master (Claude Code)
 - Reviewer: Master
 
