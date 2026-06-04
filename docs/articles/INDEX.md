@@ -1,6 +1,6 @@
 # Index — Full Table of Contents
 
-> Last updated: 2026-06-04 · Series version: 0.7 (12 articles drafted)
+> Last updated: 2026-06-04 · Series version: 0.8 (14 articles drafted)
 
 ## Status legend
 
@@ -42,8 +42,8 @@
 |---|---|---|---|---|---|
 | 12 | [Multi-Tool Support: One Protocol, Five Clients](./12-multi-tool-support/en/article.md) | [EN](./12-multi-tool-support/en/article.md) | [ZH](./12-multi-tool-support/zh-CN/article.md) | 🟡 Drafted | ~4643 |
 | 13 | [ADR and Roadmap: Three Decisions, Twelve Months](./13-adr-and-roadmap/en/article.md) | [EN](./13-adr-and-roadmap/en/article.md) | [ZH](./13-adr-and-roadmap/zh-CN/article.md) | 🟡 Drafted | ~5356 |
-| 14 | [Case Studies](./14-case-studies/en/article.md) | [EN](./14-case-studies/en/article.md) | [ZH](./14-case-studies/zh-CN/article.md) | ⚪ Queued | — |
-| 15 | [Outlook: Value, Risks, Mitigation](./15-outlook-risks/en/article.md) | [EN](./15-outlook-risks/en/article.md) | [ZH](./15-outlook-risks/zh-CN/article.md) | ⚪ Queued | — |
+| 14 | [Case Studies](./14-case-studies/en/article.md) | [EN](./14-case-studies/en/article.md) | [ZH](./14-case-studies/zh-CN/article.md) | 🟡 Drafted | ~5500 |
+| 15 | [Outlook: Value, Risks, Mitigation](./15-outlook-risks/en/article.md) | [EN](./15-outlook-risks/en/article.md) | [ZH](./15-outlook-risks/zh-CN/article.md) | 🟡 Drafted | ~7361 |
 
 ## Reading order by role
 
@@ -56,8 +56,8 @@
 
 - Total articles: **15** (incl. foreword)
 - Done: **1** (06.7%)
-- Drafted: **12** (02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13)
-- Queued: **2**
+- Drafted: **14** (02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15)
+- Queued: **0**
 - EPIC: `EPIC-008-articles-series`
 - Owner: Master (Claude Code)
 - Reviewer: Master
