@@ -59,4 +59,5 @@ Executive Summary 永远在文章最前。其它都不读，也请读它。
 
 ---
 
+> **源码仓库：** [`git.build.ingka.ikea.com/china-digital-hub/eket`](https://git.build.ingka.ikea.com/china-digital-hub/eket)（内部）
 > **下一篇：** [`01 — 什么是 EKET`](../01-what-is-eket/zh-CN/article.md)

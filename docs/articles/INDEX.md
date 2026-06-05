@@ -64,6 +64,7 @@
 
 ## Cross-references
 
+- **Repository:** [`git.build.ingka.ikea.com/china-digital-hub/eket`](https://git.build.ingka.ikea.com/china-digital-hub/eket) (internal)
 - White paper source: `../architecture/FRAMEWORK.md`
 - Glossary: [`GLOSSARY.md`](./GLOSSARY.md)
 - Top-level navigation: [`README.md`](./README.md)

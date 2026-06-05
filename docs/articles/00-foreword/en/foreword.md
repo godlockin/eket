@@ -59,4 +59,5 @@ The framework itself is the work of the EKET community. The series is one person
 
 ---
 
+> **Source code:** [`git.build.ingka.ikea.com/china-digital-hub/eket`](https://git.build.ingka.ikea.com/china-digital-hub/eket) (internal)
 > **Next:** [`01 — What is EKET`](../01-what-is-eket/en/article.md)

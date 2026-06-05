@@ -2,6 +2,8 @@
 
 > A 15-article, dual-language deep dive into the EKET framework — written for both decision-makers and developers.
 
+**Repository:** [`git.build.ingka.ikea.com/china-digital-hub/eket`](https://git.build.ingka.ikea.com/china-digital-hub/eket) (internal, Ingka China Digital Hub)
+
 ## What this is
 
 This is **not** documentation. Documentation tells you *how* to use EKET (see `docs/architecture/` for that).
