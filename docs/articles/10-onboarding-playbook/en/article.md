@@ -131,7 +131,8 @@ What you will see on screen (trimmed from the actual output at [`scripts/quick-s
 ✓ Hooks (3 个)
 → 初始化项目 → /Users/you/projects/your-project
 ✓ CLAUDE.md
-✓ AGENTS.md
+✓ AGENTS.md                       (slim bootstrap, ~95 lines)
+✓ docs/agents/AGENTS.md           (full guide, ~668 lines, loaded on demand)
 ✓ .claude/settings.json
 ✓ confluence/
 ✓ jira/
@@ -153,7 +154,10 @@ The function `init_project` at [`scripts/quick-setup.sh:270-329`](../../../scrip
 ```
 your-project/
 ├── CLAUDE.md                        # copy of template/CLAUDE.md
-├── AGENTS.md                        # copy of template/AGENTS.md
+├── AGENTS.md                        # copy of template/AGENTS.md (slim bootstrap)
+├── docs/
+│   └── agents/
+│       └── AGENTS.md                # copy of template/AGENTS.md (full guide, on demand)
 ├── .claude/
 │   ├── settings.json                # hooks + commands
 │   └── commands/                    # symlinks to global eket-*.sh

@@ -83,12 +83,12 @@ The matrix below is the *honest* one. It is not a leaderboard. Full support mean
 | Ticket YAML frontmatter read/write | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `task:claim` via `eket` CLI | ✅ (Subagent) | ✅ (bash block) | ✅ (bash) | ✅ (bash) | ✅ (bash) |
 | `task:complete` Saga 5-step | ✅ (full Saga) | ✅ (full Saga) | ⚠️ (manual 5 steps) | ⚠️ (manual 5 steps) | ⚠️ (manual 5 steps) |
-| Skills (`.claude/skills/eket/`) | ✅ | ❌ (read markdown only) | ❌ (read `AGENTS.md`) | ❌ (read `AGENTS.md`) | ❌ (read `AGENTS.md`) |
+| Skills (`.claude/skills/eket/`) | ✅ | ❌ (read `AGENTS.md` bootstrap + `docs/agents/AGENTS.md` on demand) | ❌ (same as Cursor) | ❌ (same as Cursor) | ❌ (same as Cursor) |
 | Subagent dispatch (multi-agent in one process) | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Hook events to HTTP server | ✅ (native) | ⚠️ (via shell shim) | ⚠️ (via shell shim) | ❌ (out-of-band) | ❌ (out-of-band) |
 | Multi-instance same backlog (CAS-safe) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Single-agent mode (one session = Master + Slaver) | n/a (full) | n/a (full) | ✅ | ✅ | ✅ |
-| Adapter file | `CLAUDE.md` (`CLAUDE.md:1-84`) | `CURSOR.md` (`CURSOR.md:1-32`) | `CODEX.md` (`CODEX.md:1-104`) | `COPILOT.md` (`COPILOT.md:1-80`) | `AGENTS.md` (`AGENTS.md:1-43`) |
+| Adapter file | `CLAUDE.md` (Claude-Code-specific) | `CURSOR.md` (Cursor-specific) | `CODEX.md` (Codex-specific) | `COPILOT.md` (Copilot-specific) | `AGENTS.md` (root bootstrap) → `docs/agents/AGENTS.md` (full guide, on demand) |
 
 **How to read this:** Full adapters (Claude Code, Cursor) get the *entire* protocol surface — Skills, Subagents, and Hooks — out of the box. Degraded adapters (Codex, Copilot, AGENTS.md / Gemini) cover the same **protocol** but not the same **surface**: they run one agent at a time, follow the same ticket flow, and write to the same SQLite, but they cannot dispatch subagents to themselves and must register hook events by shelling out to `curl` rather than via a native hook subsystem.
 
@@ -98,7 +98,7 @@ This is the right place to be honest about strengths and limits:
 - **Cursor** is excellent at in-file refactors and at working in a `.cursorrules` + `CURSOR.md` pair, but it has no Skills system, so all behavior is markdown-driven. Its adapter file is correspondingly short — 32 lines — because most of the work is delegated to the EKET CLI (`CURSOR.md:1-32`).
 - **Codex CLI** has no Hooks, no Subagents, no Slash Commands (`CODEX.md:82-88`); its strength is code generation from a tight spec, and its adapter is built around a "find a `status: ready` ticket, edit the file, commit, push" loop (`CODEX.md:50-65`).
 - **Copilot CLI** has the same limitations as Codex and ships with the same single-agent mode (`COPILOT.md:17-28`); its adapter is a strict subset of the Codex one.
-- **AGENTS.md** is the universal fallback for any LLM tool that can read a markdown file (Gemini, Aider, custom agents). It is intentionally generic — no vendor-specific extensions, no skills, no hooks (`AGENTS.md:1-9`).
+- **AGENTS.md** is the universal fallback for any LLM tool that can read a markdown file (Gemini, Aider, custom agents). It is intentionally generic — no vendor-specific extensions, no skills, no hooks. The root `AGENTS.md` is a slim ~95-line bootstrap; the full ~668-line universal guide lives at `docs/agents/AGENTS.md` and is loaded on demand (see `AGENTS.md` §2 "On-demand loading").
 
 None of these gaps are tool-shaming. They are descriptions of what each tool's native primitives can do, and the adapter file is the *bridge* that lets each one speak EKET.
 
@@ -136,10 +136,10 @@ None of these gaps are tool-shaming. They are descriptions of what each tool's n
 
 ### 4.5 Gemini / AGENTS.md — universal fallback
 
-- **Adapter file**: `AGENTS.md:1-43` for the universal portion (the file is 668 lines in total; the first 43 cover identity, structure, and Master/Slaver roles).
+- **Adapter file**: root `AGENTS.md` is the ~95-line slim bootstrap auto-loaded by every tool that supports it; the full ~668-line universal guide is at `docs/agents/AGENTS.md` and is loaded on demand. Identity, structure, and Master/Slaver roles are covered in `docs/agents/AGENTS.md` §1–§5.
 - **Strengths**: works with any LLM that can read a markdown file — Gemini, Aider, custom agents, future tools. The adapter is intentionally generic; the README's "其他 LLM Agent" row (`README.md:57`) maps to this entry.
-- **Limits**: no native extensions of any kind. Every protocol operation is a markdown instruction that the agent has to read and execute. The `AGENTS.md` Master section (`AGENTS.md:75-80`) explicitly forbids the Master role from writing code — a rule that is enforced by markdown trust, not by tooling.
-- **Best fit**: the *long tail*. When the next LLM tool ships, its adapter is `AGENTS.md` plus a thin shim file, and the protocol survives.
+- **Limits**: no native extensions of any kind. Every protocol operation is a markdown instruction that the agent has to read and execute. The Master role section (`docs/agents/AGENTS.md` §4 "Master Role") explicitly forbids the Master role from writing code — a rule that is enforced by markdown trust, not by tooling.
+- **Best fit**: the *long tail*. When the next LLM tool ships, its adapter is `AGENTS.md` (bootstrap) plus a thin shim file, and the protocol survives.
 
 ### 4.6 Honest gap
 
@@ -250,7 +250,7 @@ The adapter contract is intentionally small. The following five requirements are
 
 ### Requirement 1 — Identity file (`.eket/IDENTITY.md`)
 
-The adapter must read `.eket/IDENTITY.md` on every startup and refuse to act if the file is missing or unreadable. The identity file declares role (Master / Slaver), agent id, and a list of forbidden actions. This is required by `template/CLAUDE-TEMPLATE.md:30-38` ("身份确认") and reproduced, in the universal agent guide, at `AGENTS.md:24-33`.
+The adapter must read `.eket/IDENTITY.md` on every startup and refuse to act if the file is missing or unreadable. The identity file declares role (Master / Slaver), agent id, and a list of forbidden actions. This is required by `template/CLAUDE-TEMPLATE.md` §"身份确认" and reproduced, in the universal agent guide, at `docs/agents/AGENTS.md` §2 "First Thing: Read Your Identity".
 
 **Testability**: launch the adapter without `.eket/IDENTITY.md`; the adapter must exit with a clear error before reading any ticket.
 
@@ -329,7 +329,7 @@ Restated for the multi-tool case: **if your team is using more than one LLM tool
   - `CURSOR.md:1-32` — Cursor IDE (full support, IDE-anchored, no Skills/Subagents)
   - `CODEX.md:1-104` — Codex CLI (degraded, single-agent, Slaver pattern)
   - `COPILOT.md:1-80` — Copilot CLI (degraded, single-agent, strict subset of Codex)
-  - `AGENTS.md:1-43` — universal fallback (Gemini, Aider, future tools)
+  - `AGENTS.md` (root bootstrap) + `docs/agents/AGENTS.md` (full guide, on-demand) — universal fallback (Gemini, Aider, future tools)
 - **Template** (the contract every adapter is a specialization of):
   - `template/CLAUDE-TEMPLATE.md:30-38` — identity confirmation
   - `template/CLAUDE-TEMPLATE.md:82-94` — core workflow

@@ -131,7 +131,8 @@ curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-s
 ✓ Hooks (3 个)
 → 初始化项目 → /Users/you/projects/your-project
 ✓ CLAUDE.md
-✓ AGENTS.md
+✓ AGENTS.md                       (slim bootstrap, ~95 行)
+✓ docs/agents/AGENTS.md           (完整指南, ~668 行, 按需加载)
 ✓ .claude/settings.json
 ✓ confluence/
 ✓ jira/
@@ -152,8 +153,11 @@ curl -fsSL https://raw.githubusercontent.com/godlockin/eket/main/scripts/quick-s
 
 ```
 your-project/
-├── CLAUDE.md                        # 来自 template/CLAUDE.md
-├── AGENTS.md                        # 来自 template/AGENTS.md
+├── CLAUDE.md                        # copy of template/CLAUDE.md
+├── AGENTS.md                        # 来自 template/AGENTS.md (slim bootstrap)
+├── docs/
+│   └── agents/
+│       └── AGENTS.md                # 来自 template/AGENTS.md (完整指南, 按需加载)
 ├── .claude/
 │   ├── settings.json                # hooks + commands 配置
 │   └── commands/                    # 软链到全局 eket-*.sh

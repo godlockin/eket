@@ -472,7 +472,8 @@ shared/message_queue/
 ```
 eket/
 ├── CLAUDE.md                 # 系统核心文档
-├── AGENTS.md                 # 智能体定义和协作规范
+├── AGENTS.md                 # 智能体引导文件（slim bootstrap，~95 行）
+├── docs/agents/AGENTS.md     # 完整智能体协作规范（按需加载）
 ├── SKILLS.md                 # 技能库
 ├── docs/
 │   ├── expert-review.md      # 专家组审查报告

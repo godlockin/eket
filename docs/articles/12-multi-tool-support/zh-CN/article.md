@@ -83,12 +83,12 @@ ticket（YAML frontmatter + 正文）
 | 读写 Ticket YAML frontmatter | ✅ | ✅ | ✅ | ✅ | ✅ |
 | 通过 `eket` CLI 执行 `task:claim` | ✅（Subagent） | ✅（bash 块） | ✅（bash） | ✅（bash） | ✅（bash） |
 | 执行 `task:complete` Saga 5 步 | ✅（完整 Saga） | ✅（完整 Saga） | ⚠️（手动 5 步） | ⚠️（手动 5 步） | ⚠️（手动 5 步） |
-| Skills（`.claude/skills/eket/`） | ✅ | ❌（仅读 markdown） | ❌（读 `AGENTS.md`） | ❌（读 `AGENTS.md`） | ❌（读 `AGENTS.md`） |
+| Skills（`.claude/skills/eket/`） | ✅ | ❌（读 `AGENTS.md` bootstrap + 按需 `docs/agents/AGENTS.md`） | ❌（同 Cursor） | ❌（同 Cursor） | ❌（同 Cursor） |
 | Subagent 调度（单进程内多 agent） | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Hook 事件发往 HTTP 服务器 | ✅（原生） | ⚠️（shell shim） | ⚠️（shell shim） | ❌（out-of-band） | ❌（out-of-band） |
 | 多实例同 backlog（CAS 安全） | ✅ | ✅ | ✅ | ✅ | ✅ |
 | 单 agent 模式（一会话 = Master + Slaver） | n/a（完整） | n/a（完整） | ✅ | ✅ | ✅ |
-| 适配器文件 | `CLAUDE.md`（`CLAUDE.md:1-84`） | `CURSOR.md`（`CURSOR.md:1-32`） | `CODEX.md`（`CODEX.md:1-104`） | `COPILOT.md`（`COPILOT.md:1-80`） | `AGENTS.md`（`AGENTS.md:1-43`） |
+| 适配器文件 | `CLAUDE.md`（Claude Code 专用） | `CURSOR.md`（Cursor 专用） | `CODEX.md`（Codex 专用） | `COPILOT.md`（Copilot 专用） | `AGENTS.md`（根目录 bootstrap）→ `docs/agents/AGENTS.md`（按需加载完整版） |
 
 **怎么读这张表：** 完整适配器（Claude Code、Cursor）原生支持整套*协议表面*——Skills、Subagents、Hooks。降级适配器（Codex、Copilot、AGENTS.md / Gemini）覆盖同样的**协议**，但覆盖不到同样的**表面**：单 agent 运行、遵守同样的 ticket 流、写入同一张 SQLite，但无法向自己派发 subagent，必须通过 shell 调用 `curl` 注册 hook 事件，而不是通过原生 hook 子系统。
 
@@ -98,7 +98,7 @@ ticket（YAML frontmatter + 正文）
 - **Cursor** 在 in-file 重构、IDE 内丰富上下文方面表现出色；`CURSOR.md` + `.cursorrules` 配对是五者中最精简的。Cursor 读 `CURSOR.md` 拿项目级规则，回退到 `.cursorrules` 拿 cursor 范围行为。**注意：截至本文撰写时仓库根目录下尚无独立 `.cursorrules` 文件**（README 的适配器行 `README.md:53` 提到了它），所以其 hook 集成走 shell shim 而非原生 on-save 规则——这一点在第 4.6 节还会复述。
 - **Codex CLI** 没有 Hooks、Subagents、Slash Commands（`CODEX.md:82-88`）；其长项是从紧凑 spec 生成代码，适配器围绕"找 `status: ready` ticket → 改文件 → 提交 → 推送"循环构建（`CODEX.md:50-65`）。
 - **Copilot CLI** 与 Codex 局限相同，配置相同的单 agent 模式（`COPILOT.md:17-28`）；其适配器是 Codex 适配器的严格子集。
-- **AGENTS.md** 是任何能读 markdown 文件的 LLM 的通用回退——Gemini、Aider、自定义 agent、未来工具。设计上故意保持通用：不绑特定厂商、不绑 skills、不绑 hooks（`AGENTS.md:1-9`）。
+- **AGENTS.md** 是任何能读 markdown 文件的 LLM 的通用回退——Gemini、Aider、自定义 agent、未来工具。设计上故意保持通用：不绑特定厂商、不绑 skills、不绑 hooks。根目录 `AGENTS.md` 是 ~95 行 slim bootstrap；完整的 ~668 行通用指南放在 `docs/agents/AGENTS.md`，按需加载（见 `AGENTS.md` §2 "On-demand loading"）。
 
 这些差距都不是工具贬低。它们是对各工具原生原语能做什么的描述，适配器文件就是让每种工具"讲 EKET 语"的*桥*。
 
@@ -136,10 +136,10 @@ ticket（YAML frontmatter + 正文）
 
 ### 4.5 Gemini / AGENTS.md —— 通用回退
 
-- **适配器文件**：通用部分为 `AGENTS.md:1-43`（全文 668 行；前 43 行覆盖身份、结构、Master/Slaver 角色）。
+- **适配器文件**：根目录 `AGENTS.md` 是 ~95 行 slim bootstrap（被所有支持的工具自动加载）；完整的 ~668 行通用指南在 `docs/agents/AGENTS.md`，按需加载。身份、结构、Master/Slaver 角色覆盖在 `docs/agents/AGENTS.md` §1–§5。
 - **强项**：任何能读 markdown 的 LLM 都可用——Gemini、Aider、自定义 agent、未来工具。适配器故意保持通用；README 的"其他 LLM Agent"行（`README.md:57`）就指向这一项。
-- **局限**：没有任何原生扩展。每个协议操作都是一份 markdown 指令，agent 自行读、自行执行。`AGENTS.md` 的 Master 节（`AGENTS.md:75-80`）明确禁止 Master 角色写代码——这条规则靠 markdown 信任而非工具强制。
-- **最佳适用**：*长尾*场景。下一种 LLM 工具发布时，其适配器就是 `AGENTS.md` 加一份薄 shim 文件，协议照旧幸存。
+- **局限**：没有任何原生扩展。每个协议操作都是一份 markdown 指令，agent 自行读、自行执行。Master 角色节（`docs/agents/AGENTS.md` §4 "Master Role"）明确禁止 Master 角色写代码——这条规则靠 markdown 信任而非工具强制。
+- **最佳适用**：*长尾*场景。下一种 LLM 工具发布时，其适配器就是 `AGENTS.md`（bootstrap）加一份薄 shim 文件，协议照旧幸存。
 
 ### 4.6 诚实声明的差距
 
@@ -250,7 +250,7 @@ InstructionsLoaded、CwdChanged、FileChanged
 
 ### 要求 1 —— 身份文件（`.eket/IDENTITY.md`）
 
-适配器必须在每次启动时读 `.eket/IDENTITY.md`，若文件缺失或不可读则拒绝执行。身份文件声明角色（Master / Slaver）、agent id、禁止动作清单。由 `template/CLAUDE-TEMPLATE.md:30-38`（"身份确认"）强制，并在通用 agent 指南 `AGENTS.md:24-33` 复述。
+适配器必须在每次启动时读 `.eket/IDENTITY.md`，若文件缺失或不可读则拒绝执行。身份文件声明角色（Master / Slaver）、agent id、禁止动作清单。由 `template/CLAUDE-TEMPLATE.md` §"身份确认" 强制，并在通用 agent 指南 `docs/agents/AGENTS.md` §2 "First Thing: Read Your Identity" 复述。
 
 **可测试性**：不创建 `.eket/IDENTITY.md` 启动适配器；适配器必须在读任何 ticket 之前以明确错误退出。
 
@@ -329,7 +329,7 @@ priority: P0 | P1 | P2 | P3
   - `CURSOR.md:1-32` —— Cursor IDE（完整支持，IDE 锚定，无 Skills/Subagents）
   - `CODEX.md:1-104` —— Codex CLI（降级，单 agent，Slaver 模式）
   - `COPILOT.md:1-80` —— Copilot CLI（降级，单 agent，Codex 严格子集）
-  - `AGENTS.md:1-43` —— 通用回退（Gemini、Aider、未来工具）
+  - `AGENTS.md`（根目录 bootstrap）+ `docs/agents/AGENTS.md`（按需完整版）—— 通用回退（Gemini、Aider、未来工具）
 - **模板**（每个适配器是它的特化）：
   - `template/CLAUDE-TEMPLATE.md:30-38` —— 身份确认
   - `template/CLAUDE-TEMPLATE.md:82-94` —— 核心工作流
