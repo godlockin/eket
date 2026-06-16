@@ -58,7 +58,7 @@ npm run lint                        # 代码检查
 | `/eket-start` | 手动读 `.eket/IDENTITY.md` |
 | `/eket-claim` | 手动编辑 ticket 的 `assigned_to` 字段 |
 | Subagent 派发 | 人工开多个会话 |
-| Skills 系统 | 读本文件 + `AGENTS.md` |
+| Skills 系统 | 读本文件 + `AGENTS.md`（bootstrap），按需加载 `docs/agents/AGENTS.md` |
 | Hooks | 无替代，依赖人工检查 |
 
 ## 项目结构
@@ -72,7 +72,7 @@ confluence/memory/    # 知识库
 
 ## 详细规则
 
-- 完整协作规范: `AGENTS.md`
+- 完整协作规范: `AGENTS.md` (bootstrap) + `docs/agents/AGENTS.md` (按需加载)
 - 反模式库: `.claude/skills/eket/references/anti-patterns.md`
 - Master 规则: `template/docs/MASTER-RULES.md`
 - Slaver 规则: `template/docs/SLAVER-RULES.md`

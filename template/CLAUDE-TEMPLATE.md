@@ -36,7 +36,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 - 启动检查清单
 - 可用命令
 
-> 如果使用其他大模型（Gemini、GPT、Cursor 等），请阅读 `AGENTS.md`，内容与本文件互补，覆盖通用行为规范。
+> 如果使用其他大模型（Gemini、GPT、Cursor 等），请阅读 `AGENTS.md`（slim bootstrap）；详细规范按需加载 `docs/agents/AGENTS.md`。
 
 ---
 
