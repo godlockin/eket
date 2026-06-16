@@ -87,11 +87,13 @@ EKET framework 将文件分为四大类：
 |------|------|----------|
 | `docs/EKET-VISION.md` | 框架协作愿景和核心原则 | 启动时加载到记忆 |
 | `CLAUDE.md` (template) | Claude Code 项目指南 | 复制到项目根目录 |
-| `AGENTS.md` (template) | 通用 AI Agent 引导文件 | 复制到项目根目录 |
+| `AGENTS.md` (template) | 通用 AI Agent 引导文件（slim bootstrap） | 复制到项目根目录 |
+| `docs/agents/AGENTS.md` | 完整通用 agent 指南 | 复制到 `docs/agents/`（按需加载） |
 
 **初始化策略**:
 - `EKET-VISION.md` 不复制到项目，由实例在启动时读取
 - `CLAUDE.md` 和 `AGENTS.md` 复制到项目根目录
+- `docs/agents/AGENTS.md` 复制到 `docs/agents/`，按需 Read（不自动加载全文）
 
 ### B2. 角色行为规范
 
@@ -290,7 +292,7 @@ EKET framework 将文件分为四大类：
 ```bash
 # 1. 核心文档
 cp template/CLAUDE.md
-cp template/AGENTS.md
+cp template/AGENTS.md           # slim bootstrap (按需加载 docs/agents/AGENTS.md)
 cp template/README.md
 cp template/SYSTEM-SETTINGS.md
 cp template/SECURITY.md

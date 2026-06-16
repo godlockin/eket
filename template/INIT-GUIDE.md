@@ -66,7 +66,8 @@ inbox/dependency-clarification.md # 依赖追问模板
 ```bash
 # 根目录文档
 cp template/CLAUDE.md → CLAUDE.md
-cp template/AGENTS.md → AGENTS.md
+cp template/AGENTS.md → AGENTS.md                # slim bootstrap
+cp template/AGENTS.md → docs/agents/AGENTS.md   # 完整内容（按需加载）
 cp template/README.md → README.md
 cp template/SYSTEM-SETTINGS.md → SYSTEM-SETTINGS.md
 cp template/SECURITY.md → SECURITY.md
