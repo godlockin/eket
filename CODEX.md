@@ -81,7 +81,7 @@ gh pr create --title "feat(TASK-001): 实现用户登录"
 
 | 功能 | 状态 | 替代方案 |
 |------|------|----------|
-| Skills | ❌ | 读 `AGENTS.md` |
+| Skills | ❌ | 读 `AGENTS.md` (bootstrap)，按需加载 `docs/agents/AGENTS.md` |
 | Subagent | ❌ | 人工多会话 |
 | Slash Commands | ❌ | 手动执行 bash |
 | Hooks | ❌ | 人工检查 |
@@ -98,6 +98,6 @@ gh pr create --title "feat(TASK-001): 实现用户登录"
 
 ## 参考文档
 
-- `AGENTS.md` - 完整协作规范
+- `AGENTS.md` - bootstrap（按需读 `docs/agents/AGENTS.md`）
 - `template/docs/SLAVER-RULES.md` - Slaver 行为规则
 - `.claude/skills/eket/references/anti-patterns.md` - 反模式

@@ -54,8 +54,8 @@ cd your-project; .\quick-setup.ps1 -Init
 | **Cursor** | ✅ 完整 | `CURSOR.md` + `.cursorrules` | 通过项目指令支持 |
 | **GitHub Copilot CLI** | ⚠️ 降级 | `COPILOT.md` | 单 Agent 模式，无 Subagent |
 | **OpenAI Codex** | ⚠️ 降级 | `CODEX.md` | 单 Agent 模式，无 Subagent |
-| **Gemini CLI** | ⚠️ 降级 | `AGENTS.md` | 通用规范 |
-| **其他 LLM Agent** | ⚠️ 降级 | `AGENTS.md` | 通用规范 |
+| **Gemini CLI** | ⚠️ 降级 | `AGENTS.md` | Bootstrap + 按需读 `docs/agents/AGENTS.md` |
+| **其他 LLM Agent** | ⚠️ 降级 | `AGENTS.md` | Bootstrap + 按需读 `docs/agents/AGENTS.md` |
 
 **降级模式说明：** 不支持 Skills/Subagent 的工具以单 Agent 模式运行，同时承担简化版 Master + Slaver 职责。
 
