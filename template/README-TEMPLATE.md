@@ -9,7 +9,8 @@
 ```
 template/
 ├── CLAUDE.md                     # Claude Code 项目指南
-├── AGENTS.md                     # 通用 AI Agent 引导文件
+├── AGENTS.md                     # 通用 AI Agent 引导文件（slim bootstrap）
+├── docs/agents/AGENTS.md         # 完整通用 agent 指南（按需加载）
 ├── README.md                     # 项目 README 模板
 ├── SYSTEM-SETTINGS.md            # 系统设定模板
 ├── SECURITY.md                   # 安全指南
