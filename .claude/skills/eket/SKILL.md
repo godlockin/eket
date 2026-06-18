@@ -1,6 +1,6 @@
 ---
 name: eket
-description: EKET AI 智能体协作框架 - Master-Slaver 多智能体开发框架 (v2.9.2 / Node.js ≥20)
+description: Use when the user wants to start, claim, create, or complete EKET tasks/tickets, register a Slaver, run system diagnostics, do a gate review, hand off work between agents, or coordinate Master-Slaver multi-agent workflows in this project. Load this skill whenever the user mentions "eket", "领取任务", "claim task", "slaver注册", "系统诊断", "system:doctor", "Master-Slaver", "master", "slaver", "gate review", "多智能体开发", "多 agent 协作", "task:claim", "task:create", "task:complete", "task:resume", "task:handoff", "epic:create", or asks how to coordinate agents / orchestrate development. EKET is a Master-Slaver multi-agent framework (v2.9.2, Node.js ≥20, hybrid Rust + Node.js).
 ---
 
 # EKET Framework — 命令索引

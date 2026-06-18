@@ -38,7 +38,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## ⚠️ 大文件提示（节省 Token）
 
 以下文件仅在用户明确要求时读取，不要主动读取：
-- `AGENTS.md` (668行) - 通用 LLM 规范
+- `AGENTS.md` (slim bootstrap) + `docs/agents/AGENTS.md` (668行) - 通用 LLM 规范按需加载
 - `CHANGELOG.md` (844行) - 版本历史
 - `README_zh-CN.md` (440行) - 中文说明，与 README.md 重复
 - `docs/architecture/*.md` - 参考文档，按需读取
@@ -81,4 +81,4 @@ eket knowledge:search "<关键词>"          # 检索经验
 ---
 
 > 详细规则见对应 RULES.md，分支策略见 `confluence/memory/branch-strategy-guide.md`  
-> 使用其他大模型时读 `AGENTS.md`
+> 使用其他大模型时读 `AGENTS.md`（bootstrap）+ 按需加载 `docs/agents/AGENTS.md`
